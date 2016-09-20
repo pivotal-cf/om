@@ -1,36 +1,52 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+	"log"
 	"os"
+
+	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/flags"
 )
 
 var version = "unknown"
 
 func main() {
-	var printVersion bool
+	logger := log.New(os.Stdout, "", 0)
 
-	set := flag.NewFlagSet("default", flag.ContinueOnError)
-	set.SetOutput(os.Stdout)
-	set.BoolVar(&printVersion, "v", false, "prints the version")
-	set.BoolVar(&printVersion, "version", false, "prints the version")
-	err := set.Parse(os.Args[1:])
+	global := flags.NewGlobal()
+	args, err := global.Parse(os.Args[1:])
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 
-	if len(set.Args()) > 0 {
-		switch set.Args()[0] {
-		case "version":
-			printVersion = true
-		default:
-			set.PrintDefaults()
-			os.Exit(1)
-		}
+	var command string
+	if len(args) > 0 {
+		command = args[0]
 	}
 
-	if printVersion {
-		fmt.Println(version)
+	if global.Version.Value {
+		command = "version"
+	}
+
+	if global.Help.Value {
+		command = "help"
+	}
+
+	versionCommand := commands.NewVersion(version, os.Stdout)
+	helpCommand := commands.NewHelp([]commands.Helper{
+		global.Version,
+		global.Help,
+	}, []commands.Helper{
+		versionCommand,
+	}, os.Stdout)
+
+	commandSet := commands.Set{
+		"version": versionCommand,
+		"help":    helpCommand,
+	}
+
+	err = commandSet.Execute(command)
+	if err != nil {
+		logger.Fatal(err)
 	}
 }

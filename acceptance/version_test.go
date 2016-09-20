@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
@@ -26,37 +25,34 @@ var _ = Describe("Version", func() {
 
 	Context("when given the -v short flag", func() {
 		It("returns the binary version", func() {
-			cmd := exec.Command(pathToMain, "-v")
-
-			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			command := exec.Command(pathToMain, "-v")
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).Should(gbytes.Say(version))
+			Expect(session.Out.Contents()).To(ContainSubstring(version))
 		})
 	})
 
 	Context("when given the --version long flag", func() {
 		It("returns the binary version", func() {
-			cmd := exec.Command(pathToMain, "--version")
-
-			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			command := exec.Command(pathToMain, "--version")
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).Should(gbytes.Say(version))
+			Expect(session.Out.Contents()).To(ContainSubstring(version))
 		})
 	})
 
 	Context("when given the version command", func() {
 		It("returns the binary version", func() {
-			cmd := exec.Command(pathToMain, "version")
-
-			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			command := exec.Command(pathToMain, "version")
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).Should(gbytes.Say(version))
+			Expect(session.Out.Contents()).To(ContainSubstring(version))
 		})
 	})
 })

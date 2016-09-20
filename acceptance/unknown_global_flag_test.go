@@ -10,14 +10,14 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Unknown Command", func() {
+var _ = Describe("Unknown global flag", func() {
 	It("prints the usage", func() {
-		cmd := exec.Command(pathToMain, "banana")
+		cmd := exec.Command(pathToMain, "-?")
 
 		session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(1))
-		Expect(session.Out).Should(gbytes.Say("unknown command: banana"))
+		Expect(session.Out).Should(gbytes.Say("flag provided but not defined: -?"))
 	})
 })
