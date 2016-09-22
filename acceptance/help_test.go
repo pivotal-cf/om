@@ -12,8 +12,8 @@ import (
 const USAGE = `om cli helps you interact with an OpsManager
 
 Usage: om [options] <command> [<args>]
-  -v, --version  prints the om release version
-  -h, --help     prints this usage information
+  -v, --version  bool  prints the om release version (default: false)
+  -h, --help     bool  prints this usage information (default: false)
 
 Commands:
   version  prints the om release version

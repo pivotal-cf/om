@@ -3,6 +3,7 @@ package commands
 import (
 	"html/template"
 	"io"
+	"strings"
 )
 
 const usage = `om cli helps you interact with an OpsManager
@@ -20,16 +21,16 @@ type Helper interface {
 }
 
 type Help struct {
-	flags    []Helper
-	commands []Helper
 	output   io.Writer
+	flags    string
+	commands []Helper
 }
 
-func NewHelp(flags []Helper, commands []Helper, output io.Writer) Help {
+func NewHelp(output io.Writer, flags string, commands ...Helper) Help {
 	return Help{
+		output:   output,
 		flags:    flags,
 		commands: commands,
-		output:   output,
 	}
 }
 
@@ -39,8 +40,8 @@ func (h Help) Help() string {
 
 func (h Help) Execute() error {
 	var flags []string
-	for _, flag := range h.flags {
-		flags = append(flags, flag.Help())
+	for _, flag := range strings.Split(h.flags, "\n") {
+		flags = append(flags, flag)
 	}
 
 	var commands []string

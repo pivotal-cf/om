@@ -13,8 +13,16 @@ var version = "unknown"
 func main() {
 	logger := log.New(os.Stdout, "", 0)
 
-	global := flags.NewGlobal()
-	args, err := global.Parse(os.Args[1:])
+	var global struct {
+		Version bool `short:"v" long:"version" default:"false" description:"prints the om release version"`
+		Help    bool `short:"h" long:"help"    default:"false" description:"prints this usage information"`
+	}
+	args, err := flags.Parse(&global, os.Args[1:])
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	globalFlagsUsage, err := flags.Usage(global)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -24,21 +32,16 @@ func main() {
 		command = args[0]
 	}
 
-	if global.Version.Value {
+	if global.Version {
 		command = "version"
 	}
 
-	if global.Help.Value {
+	if global.Help {
 		command = "help"
 	}
 
 	versionCommand := commands.NewVersion(version, os.Stdout)
-	helpCommand := commands.NewHelp([]commands.Helper{
-		global.Version,
-		global.Help,
-	}, []commands.Helper{
-		versionCommand,
-	}, os.Stdout)
+	helpCommand := commands.NewHelp(os.Stdout, globalFlagsUsage, versionCommand)
 
 	commandSet := commands.Set{
 		"version": versionCommand,
