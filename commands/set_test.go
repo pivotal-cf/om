@@ -19,17 +19,17 @@ var _ = Describe("Set", func() {
 				"my-command": command,
 			}
 
-			err := commandSet.Execute("my-command")
+			err := commandSet.Execute("my-command", []string{"--arg-1", "--arg-2"})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(command.ExecuteCall.CallCount).To(Equal(1))
+			Expect(command.ExecuteCall.Receives.Args).To(Equal([]string{"--arg-1", "--arg-2"}))
 		})
 
 		Context("when the given command does not exist", func() {
 			It("returns an error", func() {
 				commandSet := commands.Set{}
 
-				err := commandSet.Execute("missing-command")
+				err := commandSet.Execute("missing-command", []string{})
 				Expect(err).To(MatchError("unknown command: missing-command"))
 			})
 		})
@@ -44,7 +44,7 @@ var _ = Describe("Set", func() {
 						"erroring-command": command,
 					}
 
-					err := commandSet.Execute("erroring-command")
+					err := commandSet.Execute("erroring-command", []string{})
 					Expect(err).To(MatchError("could not execute \"erroring-command\": failed to execute"))
 				})
 			})

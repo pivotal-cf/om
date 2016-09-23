@@ -2,15 +2,17 @@ package fakes
 
 type Command struct {
 	ExecuteCall struct {
-		CallCount int
-		Returns   struct {
+		Receives struct {
+			Args []string
+		}
+		Returns struct {
 			Error error
 		}
 	}
 }
 
-func (c *Command) Execute() error {
-	c.ExecuteCall.CallCount++
+func (c *Command) Execute(args []string) error {
+	c.ExecuteCall.Receives.Args = args
 
 	return c.ExecuteCall.Returns.Error
 }

@@ -40,7 +40,7 @@ var _ = Describe("Help", func() {
 			clean.HelpCall.Returns.Help = "clean    cleans up after baking"
 
 			help := commands.NewHelp(output, strings.TrimSpace(flags), bake, clean)
-			err := help.Execute()
+			err := help.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output.String()).To(ContainSubstring(USAGE))

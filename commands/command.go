@@ -1,5 +1,5 @@
 package commands
 
 type Command interface {
-	Execute() error
+	Execute(args []string) error
 }

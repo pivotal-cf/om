@@ -34,11 +34,7 @@ func NewHelp(output io.Writer, flags string, commands ...Helper) Help {
 	}
 }
 
-func (h Help) Help() string {
-	return "help     prints this usage information"
-}
-
-func (h Help) Execute() error {
+func (h Help) Execute([]string) error {
 	var flags []string
 	for _, flag := range strings.Split(h.flags, "\n") {
 		flags = append(flags, flag)
@@ -59,4 +55,8 @@ func (h Help) Execute() error {
 	}
 
 	return nil
+}
+
+func (h Help) Help() string {
+	return "help     prints this usage information"
 }

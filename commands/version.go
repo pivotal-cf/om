@@ -17,15 +17,15 @@ func NewVersion(version string, output io.Writer) Version {
 	}
 }
 
-func (v Version) Help() string {
-	return "version  prints the om release version"
-}
-
-func (v Version) Execute() error {
+func (v Version) Execute([]string) error {
 	_, err := v.output.Write(v.version)
 	if err != nil {
 		return fmt.Errorf("could not print version: %s", err)
 	}
 
 	return nil
+}
+
+func (v Version) Help() string {
+	return "version  prints the om release version"
 }

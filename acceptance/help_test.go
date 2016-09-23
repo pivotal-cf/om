@@ -12,8 +12,10 @@ import (
 const USAGE = `om cli helps you interact with an OpsManager
 
 Usage: om [options] <command> [<args>]
-  -v, --version  bool  prints the om release version (default: false)
-  -h, --help     bool  prints this usage information (default: false)
+  -v, --version              bool    prints the om release version (default: false)
+  -h, --help                 bool    prints this usage information (default: false)
+  -t, --target               string  location of the OpsManager VM
+  -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
 
 Commands:
   version  prints the om release version

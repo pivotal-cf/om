@@ -48,7 +48,17 @@ func Usage(receiver interface{}) (string, error) {
 	}
 
 	for i, field := range fields {
-		usage[i] = fmt.Sprintf("%s  %s", usage[i], field.Type.Kind())
+		line := fmt.Sprintf("%s  %s", usage[i], field.Type.Kind())
+
+		if len(line) > length {
+			length = len(line)
+		}
+
+		usage[i] = line
+	}
+
+	for i, line := range usage {
+		usage[i] = pad(line, " ", length)
 	}
 
 	for i, field := range fields {
