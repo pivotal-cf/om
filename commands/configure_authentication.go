@@ -26,6 +26,10 @@ func NewConfigureAuthentication(service setupService) ConfigureAuthentication {
 	}
 }
 
+func (ca ConfigureAuthentication) Help() string {
+	return "configures OpsManager with an internal userstore and admin user account"
+}
+
 func (ca ConfigureAuthentication) Execute(args []string) error {
 	_, err := flags.Parse(&ca.Options, args)
 	if err != nil {

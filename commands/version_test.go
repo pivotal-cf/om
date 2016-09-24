@@ -41,7 +41,7 @@ var _ = Describe("Version", func() {
 	Describe("Help", func() {
 		It("returns a short help description of the command", func() {
 			version := commands.NewVersion("v1.2.3", nil)
-			Expect(version.Help()).To(Equal("version  prints the om release version"))
+			Expect(version.Help()).To(Equal("prints the om release version"))
 		})
 	})
 })

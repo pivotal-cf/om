@@ -60,4 +60,11 @@ var _ = Describe("ConfigureAuthentication", func() {
 			})
 		})
 	})
+
+	Describe("Help", func() {
+		It("returns a short help description of the command", func() {
+			command := commands.NewConfigureAuthentication(nil)
+			Expect(command.Help()).To(Equal("configures OpsManager with an internal userstore and admin user account"))
+		})
+	})
 })

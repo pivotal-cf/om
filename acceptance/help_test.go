@@ -18,8 +18,9 @@ Usage: om [options] <command> [<args>]
   -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
 
 Commands:
-  version  prints the om release version
-  help     prints this usage information
+  configure-authentication  configures OpsManager with an internal userstore and admin user account
+  help                      prints this usage information
+  version                   prints the om release version
 `
 
 var _ = Describe("Help", func() {

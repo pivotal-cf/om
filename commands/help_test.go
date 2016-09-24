@@ -18,9 +18,8 @@ Usage: om [options] <command> [<args>]
   -!, --surprise  gives you a present
 
 Commands:
-  bake     bakes you a cake
-  clean    cleans up after baking
-  help     prints this usage information
+  bake   bakes you a cake
+  clean  cleans up after baking
 `
 
 var _ = Describe("Help", func() {
@@ -33,13 +32,16 @@ var _ = Describe("Help", func() {
 -!, --surprise  gives you a present
 `
 
-			bake := &fakes.Helper{}
-			bake.HelpCall.Returns.Help = "bake     bakes you a cake"
+			bake := &fakes.Command{}
+			bake.HelpCall.Returns.Help = "bakes you a cake"
 
-			clean := &fakes.Helper{}
-			clean.HelpCall.Returns.Help = "clean    cleans up after baking"
+			clean := &fakes.Command{}
+			clean.HelpCall.Returns.Help = "cleans up after baking"
 
-			help := commands.NewHelp(output, strings.TrimSpace(flags), bake, clean)
+			help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{
+				"bake":  bake,
+				"clean": clean,
+			})
 			err := help.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -49,8 +51,8 @@ var _ = Describe("Help", func() {
 
 	Describe("Help", func() {
 		It("returns a short help description of the command", func() {
-			help := commands.NewHelp(nil, "")
-			Expect(help.Help()).To(Equal("help     prints this usage information"))
+			help := commands.NewHelp(nil, "", commands.Set{})
+			Expect(help.Help()).To(Equal("prints this usage information"))
 		})
 	})
 })

@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"fmt"
 	"html/template"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -16,22 +18,22 @@ Commands:
 {{end}}
 `
 
-type Helper interface {
-	Help() string
-}
-
 type Help struct {
 	output   io.Writer
 	flags    string
-	commands []Helper
+	commands Set
 }
 
-func NewHelp(output io.Writer, flags string, commands ...Helper) Help {
+func NewHelp(output io.Writer, flags string, commands Set) Help {
 	return Help{
 		output:   output,
 		flags:    flags,
 		commands: commands,
 	}
+}
+
+func (h Help) Help() string {
+	return "prints this usage information"
 }
 
 func (h Help) Execute([]string) error {
@@ -40,9 +42,25 @@ func (h Help) Execute([]string) error {
 		flags = append(flags, flag)
 	}
 
+	var (
+		length int
+		names  []string
+	)
+
+	for name, _ := range h.commands {
+		names = append(names, name)
+		if len(name) > length {
+			length = len(name)
+		}
+	}
+
+	sort.Strings(names)
+
 	var commands []string
-	for _, command := range append(h.commands, h) {
-		commands = append(commands, command.Help())
+	for _, name := range names {
+		command := h.commands[name]
+		name = h.pad(name, " ", length)
+		commands = append(commands, fmt.Sprintf("%s  %s", name, command.Help()))
 	}
 
 	t := template.Must(template.New("usage").Parse(usage))
@@ -57,6 +75,11 @@ func (h Help) Execute([]string) error {
 	return nil
 }
 
-func (h Help) Help() string {
-	return "help     prints this usage information"
+func (h Help) pad(str, pad string, length int) string {
+	for {
+		str += pad
+		if len(str) > length {
+			return str[0:length]
+		}
+	}
 }

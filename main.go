@@ -48,15 +48,10 @@ func main() {
 
 	setupService := api.NewSetupService(unauthenticatedClient)
 
-	versionCommand := commands.NewVersion(version, os.Stdout)
-	helpCommand := commands.NewHelp(os.Stdout, globalFlagsUsage, versionCommand)
-	configureAuthenticationCommand := commands.NewConfigureAuthentication(setupService)
-
-	commandSet := commands.Set{
-		"version": versionCommand,
-		"help":    helpCommand,
-		"configure-authentication": configureAuthenticationCommand,
-	}
+	commandSet := commands.Set{}
+	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
+	commandSet["version"] = commands.NewVersion(version, os.Stdout)
+	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
