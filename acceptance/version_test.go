@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Version", func() {
+var _ = Describe("version command", func() {
 	var version string
 
 	BeforeEach(func() {

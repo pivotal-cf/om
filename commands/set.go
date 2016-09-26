@@ -17,3 +17,12 @@ func (s Set) Execute(command string, args []string) error {
 
 	return nil
 }
+
+func (s Set) Usage(command string) (Usage, error) {
+	cmd, ok := s[command]
+	if !ok {
+		return Usage{}, fmt.Errorf("unknown command: %s", command)
+	}
+
+	return cmd.Usage(), nil
+}

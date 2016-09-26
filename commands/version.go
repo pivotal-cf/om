@@ -17,8 +17,11 @@ func NewVersion(version string, output io.Writer) Version {
 	}
 }
 
-func (v Version) Help() string {
-	return "prints the om release version"
+func (v Version) Usage() Usage {
+	return Usage{
+		Description:      "This command prints the om release version number.",
+		ShortDescription: "prints the om release version",
+	}
 }
 
 func (v Version) Execute([]string) error {

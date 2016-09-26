@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Unknown Command", func() {
+var _ = Describe("unknown command", func() {
 	It("prints the usage", func() {
 		cmd := exec.Command(pathToMain, "banana")
 

@@ -61,10 +61,14 @@ var _ = Describe("ConfigureAuthentication", func() {
 		})
 	})
 
-	Describe("Help", func() {
-		It("returns a short help description of the command", func() {
+	Describe("Usage", func() {
+		It("returns usage information for the command", func() {
 			command := commands.NewConfigureAuthentication(nil)
-			Expect(command.Help()).To(Equal("configures OpsManager with an internal userstore and admin user account"))
+			Expect(command.Usage()).To(Equal(commands.Usage{
+				Description:      "This command helps setup the authentication mechanism for your OpsManager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
+				ShortDescription: "configures OpsManager with an internal userstore and admin user account",
+				Flags:            command.Options,
+			}))
 		})
 	})
 })

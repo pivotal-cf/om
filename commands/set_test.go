@@ -50,4 +50,29 @@ var _ = Describe("Set", func() {
 			})
 		})
 	})
+
+	Describe("Usage", func() {
+		It("returns the usage information for the given command", func() {
+			command := &fakes.Command{}
+			command.UsageCall.Returns.Usage = commands.Usage{Description: "my-command description"}
+
+			commandSet := commands.Set{
+				"my-command": command,
+			}
+
+			usage, err := commandSet.Usage("my-command")
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(usage).To(Equal(commands.Usage{Description: "my-command description"}))
+		})
+
+		Context("when the given command does not exist", func() {
+			It("returns an error", func() {
+				commandSet := commands.Set{}
+
+				_, err := commandSet.Usage("missing-command")
+				Expect(err).To(MatchError("unknown command: missing-command"))
+			})
+		})
+	})
 })

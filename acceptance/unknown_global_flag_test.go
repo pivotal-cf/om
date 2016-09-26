@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Unknown global flag", func() {
+var _ = Describe("unknown global flag", func() {
 	It("prints the usage", func() {
 		cmd := exec.Command(pathToMain, "-?")
 

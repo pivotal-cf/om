@@ -1,5 +1,7 @@
 package fakes
 
+import "github.com/pivotal-cf/om/commands"
+
 type Command struct {
 	ExecuteCall struct {
 		Receives struct {
@@ -10,9 +12,9 @@ type Command struct {
 		}
 	}
 
-	HelpCall struct {
+	UsageCall struct {
 		Returns struct {
-			Help string
+			Usage commands.Usage
 		}
 	}
 }
@@ -23,6 +25,6 @@ func (c *Command) Execute(args []string) error {
 	return c.ExecuteCall.Returns.Error
 }
 
-func (c *Command) Help() string {
-	return c.HelpCall.Returns.Help
+func (c *Command) Usage() commands.Usage {
+	return c.UsageCall.Returns.Usage
 }

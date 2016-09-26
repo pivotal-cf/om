@@ -26,8 +26,12 @@ func NewConfigureAuthentication(service setupService) ConfigureAuthentication {
 	}
 }
 
-func (ca ConfigureAuthentication) Help() string {
-	return "configures OpsManager with an internal userstore and admin user account"
+func (ca ConfigureAuthentication) Usage() Usage {
+	return Usage{
+		Description:      "This command helps setup the authentication mechanism for your OpsManager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
+		ShortDescription: "configures OpsManager with an internal userstore and admin user account",
+		Flags:            ca.Options,
+	}
 }
 
 func (ca ConfigureAuthentication) Execute(args []string) error {

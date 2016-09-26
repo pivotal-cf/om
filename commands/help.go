@@ -2,21 +2,39 @@ package commands
 
 import (
 	"fmt"
-	"html/template"
 	"io"
 	"sort"
 	"strings"
+	"text/template"
+
+	"github.com/pivotal-cf/om/flags"
 )
 
-const usage = `om cli helps you interact with an OpsManager
+const tmpl = `{{.Title}}
+{{.Description}}
 
-Usage: om [options] <command> [<args>]
-{{range .flags}}  {{.}}
+Usage: {{.Usage}}
+{{range .GlobalFlags}}  {{.}}
 {{end}}
-Commands:
-{{range .commands}}  {{.}}
-{{end}}
+{{if .Arguments}}{{.ArgumentsName}}:
+{{range .Arguments}}  {{.}}
+{{end}}{{end}}
 `
+
+type Usage struct {
+	Description      string
+	ShortDescription string
+	Flags            interface{}
+}
+
+type TemplateContext struct {
+	Title         string
+	Description   string
+	Usage         string
+	GlobalFlags   []string
+	ArgumentsName string
+	Arguments     []string
+}
 
 type Help struct {
 	output   io.Writer
@@ -32,16 +50,43 @@ func NewHelp(output io.Writer, flags string, commands Set) Help {
 	}
 }
 
-func (h Help) Help() string {
-	return "prints this usage information"
+func (h Help) Usage() Usage {
+	return Usage{
+		Description:      "This command prints helpful usage information.",
+		ShortDescription: "prints this usage information",
+	}
 }
 
-func (h Help) Execute([]string) error {
-	var flags []string
+func (h Help) Execute(args []string) error {
+	var globalFlags []string
 	for _, flag := range strings.Split(h.flags, "\n") {
-		flags = append(flags, flag)
+		globalFlags = append(globalFlags, flag)
 	}
 
+	var context TemplateContext
+	if len(args) == 0 {
+		context = h.buildGlobalContext()
+	} else {
+		var err error
+		context, err = h.buildCommandContext(args[0])
+		if err != nil {
+			return err
+		}
+	}
+
+	context.GlobalFlags = globalFlags
+
+	t := template.Must(template.New("usage").Parse(tmpl))
+
+	err := t.Execute(h.output, context)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h Help) buildGlobalContext() TemplateContext {
 	var (
 		length int
 		names  []string
@@ -60,19 +105,48 @@ func (h Help) Execute([]string) error {
 	for _, name := range names {
 		command := h.commands[name]
 		name = h.pad(name, " ", length)
-		commands = append(commands, fmt.Sprintf("%s  %s", name, command.Help()))
+		commands = append(commands, fmt.Sprintf("%s  %s", name, command.Usage().ShortDescription))
 	}
 
-	t := template.Must(template.New("usage").Parse(usage))
-	err := t.Execute(h.output, map[string]interface{}{
-		"flags":    flags,
-		"commands": commands,
-	})
+	return TemplateContext{
+		Title:         "ॐ",
+		Description:   "om helps you interact with an OpsManager",
+		Usage:         "om [options] <command> [<args>]",
+		ArgumentsName: "Commands",
+		Arguments:     commands,
+	}
+}
+
+func (h Help) buildCommandContext(command string) (TemplateContext, error) {
+	usage, err := h.commands.Usage(command)
 	if err != nil {
-		return err
+		return TemplateContext{}, err
 	}
 
-	return nil
+	var (
+		flagList        []string
+		argsPlaceholder string
+	)
+	if usage.Flags != nil {
+		argsPlaceholder = " [<args>]"
+
+		flagUsage, err := flags.Usage(usage.Flags)
+		if err != nil {
+			return TemplateContext{}, err
+		}
+
+		for _, flag := range strings.Split(flagUsage, "\n") {
+			flagList = append(flagList, flag)
+		}
+	}
+
+	return TemplateContext{
+		Title:         fmt.Sprintf("ॐ  %s", command),
+		Description:   usage.Description,
+		Usage:         fmt.Sprintf("om [options] %s%s", command, argsPlaceholder),
+		ArgumentsName: "Command Arguments",
+		Arguments:     flagList,
+	}, nil
 }
 
 func (h Help) pad(str, pad string, length int) string {
