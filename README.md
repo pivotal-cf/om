@@ -24,14 +24,16 @@ https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
 ## Current Commands
 
 ```
-$ om -h
-om cli helps you interact with an OpsManager
+om helps you interact with an OpsManager
 
 Usage: om [options] <command> [<args>]
-  -v, --version  prints the om release version
-  -h, --help     prints this usage information
+  -v, --version              bool    prints the om release version (default: false)
+  -h, --help                 bool    prints this usage information (default: false)
+  -t, --target               string  location of the OpsManager VM
+  -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
 
 Commands:
-  version  prints the om release version
-  help     prints this usage information
+  configure-authentication  configures OpsManager with an internal userstore and admin user account
+  help                      prints this usage information
+  version                   prints the om release version
 ```
