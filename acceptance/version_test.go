@@ -30,7 +30,7 @@ var _ = Describe("version command", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out.Contents()).To(ContainSubstring(version))
+			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
 		})
 	})
 
@@ -41,7 +41,7 @@ var _ = Describe("version command", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out.Contents()).To(ContainSubstring(version))
+			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
 		})
 	})
 
@@ -52,7 +52,7 @@ var _ = Describe("version command", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out.Contents()).To(ContainSubstring(version))
+			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
 		})
 	})
 })

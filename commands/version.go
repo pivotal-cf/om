@@ -12,7 +12,7 @@ type Version struct {
 
 func NewVersion(version string, output io.Writer) Version {
 	return Version{
-		version: []byte(version),
+		version: []byte(version + "\n"),
 		output:  output,
 	}
 }

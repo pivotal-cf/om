@@ -20,7 +20,7 @@ var _ = Describe("Version", func() {
 			err := version.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(output).To(ContainSubstring("v1.2.3"))
+			Expect(output).To(ContainSubstring("v1.2.3\n"))
 		})
 
 		Context("failure cases", func() {
