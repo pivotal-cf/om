@@ -94,7 +94,7 @@ var _ = Describe("SetupService", func() {
 				client.RoundTripCall.Returns.Response = &http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
-						"Location": []string{"/login/setup"},
+						"Location": []string{"https://some-opsman/setup"},
 					},
 				}
 
@@ -131,7 +131,7 @@ var _ = Describe("SetupService", func() {
 				client.RoundTripCall.Returns.Response = &http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
-						"Location": []string{"/auth/cloudfoundry"},
+						"Location": []string{"https://some-opsman/auth/cloudfoundry"},
 					},
 				}
 
@@ -142,6 +142,37 @@ var _ = Describe("SetupService", func() {
 				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
 				}))
+			})
+		})
+
+		Context("failure cases", func() {
+			Context("when the request fails", func() {
+				It("returns an error", func() {
+					client := &fakes.Client{}
+					client.RoundTripCall.Returns.Error = errors.New("failed to make round trip")
+
+					service := api.NewSetupService(client)
+
+					_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+					Expect(err).To(MatchError("could not make request round trip: failed to make round trip"))
+				})
+			})
+
+			Context("when the location header cannot be parsed", func() {
+				It("returns an error", func() {
+					client := &fakes.Client{}
+					client.RoundTripCall.Returns.Response = &http.Response{
+						StatusCode: http.StatusFound,
+						Header: http.Header{
+							"Location": []string{"%%%%%%"},
+						},
+					}
+
+					service := api.NewSetupService(client)
+
+					_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+					Expect(err).To(MatchError("could not parse redirect url: parse %%%%%%: invalid URL escape \"%%%\""))
+				})
 			})
 		})
 	})

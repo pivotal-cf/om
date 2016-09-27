@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"strconv"
 )
 
@@ -95,18 +96,23 @@ type EnsureAvailabilityOutput struct {
 func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (EnsureAvailabilityOutput, error) {
 	request, err := http.NewRequest("GET", "/login/ensure_availability", nil)
 	if err != nil {
-		panic(err)
+		return EnsureAvailabilityOutput{}, err
 	}
 
 	response, err := ss.client.RoundTrip(request)
 	if err != nil {
-		panic(err)
+		return EnsureAvailabilityOutput{}, fmt.Errorf("could not make request round trip: %s", err)
 	}
 
 	var status string
 	switch {
 	case response.StatusCode == http.StatusFound:
-		if response.Header.Get("Location") == "/login/setup" {
+		location, err := url.Parse(response.Header.Get("Location"))
+		if err != nil {
+			return EnsureAvailabilityOutput{}, fmt.Errorf("could not parse redirect url: %s", err)
+		}
+
+		if location.Path == "/setup" {
 			status = EnsureAvailabilityStatusUnstarted
 		} else {
 			status = EnsureAvailabilityStatusComplete

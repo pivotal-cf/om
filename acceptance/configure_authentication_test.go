@@ -39,7 +39,7 @@ var _ = Describe("configure-authentication command", func() {
 				ensureAvailabilityCallCount++
 
 				if ensureAvailabilityCallCount == 1 {
-					w.Header().Set("Location", "/login/setup")
+					w.Header().Set("Location", "/setup")
 					w.WriteHeader(http.StatusFound)
 					return
 				}
