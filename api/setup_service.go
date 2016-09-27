@@ -9,6 +9,16 @@ import (
 	"strconv"
 )
 
+type SetupService struct {
+	client httpClient
+}
+
+func NewSetupService(client httpClient) SetupService {
+	return SetupService{
+		client: client,
+	}
+}
+
 type SetupInput struct {
 	IdentityProvider                 string
 	AdminUserName                    string
@@ -20,16 +30,6 @@ type SetupInput struct {
 }
 
 type SetupOutput struct{}
-
-type SetupService struct {
-	client httpClient
-}
-
-func NewSetupService(client httpClient) SetupService {
-	return SetupService{
-		client: client,
-	}
-}
 
 func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 	var setup struct {
@@ -79,4 +79,41 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 	}
 
 	return SetupOutput{}, nil
+}
+
+const (
+	EnsureAvailabilityStatusUnstarted = "unstarted"
+	EnsureAvailabilityStatusPending   = "pending"
+	EnsureAvailabilityStatusComplete  = "complete"
+)
+
+type EnsureAvailabilityInput struct{}
+type EnsureAvailabilityOutput struct {
+	Status string
+}
+
+func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (EnsureAvailabilityOutput, error) {
+	request, err := http.NewRequest("GET", "/login/ensure_availability", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := ss.client.RoundTrip(request)
+	if err != nil {
+		panic(err)
+	}
+
+	var status string
+	switch {
+	case response.StatusCode == http.StatusFound:
+		if response.Header.Get("Location") == "/login/setup" {
+			status = EnsureAvailabilityStatusUnstarted
+		} else {
+			status = EnsureAvailabilityStatusComplete
+		}
+	case response.StatusCode == http.StatusOK:
+		status = EnsureAvailabilityStatusPending
+	}
+
+	return EnsureAvailabilityOutput{Status: status}, nil
 }

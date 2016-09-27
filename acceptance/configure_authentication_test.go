@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"os/exec"
 
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
@@ -27,12 +28,29 @@ var _ = Describe("configure-authentication command", func() {
 				EULAAccepted           string `json:"eula_accepted"`
 			} `json:"setup"`
 		}
+		var ensureAvailabilityCallCount int
 
 		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			switch req.URL.Path {
 			case "/api/v0/setup":
 				err := json.NewDecoder(req.Body).Decode(&auth)
 				Expect(err).NotTo(HaveOccurred())
+			case "/login/ensure_availability":
+				ensureAvailabilityCallCount++
+
+				if ensureAvailabilityCallCount == 1 {
+					w.Header().Set("Location", "/login/setup")
+					w.WriteHeader(http.StatusFound)
+					return
+				}
+
+				if ensureAvailabilityCallCount < 3 {
+					w.WriteHeader(http.StatusOK)
+					return
+				}
+
+				w.Header().Set("Location", "/auth/cloudfoundry")
+				w.WriteHeader(http.StatusFound)
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -52,7 +70,7 @@ var _ = Describe("configure-authentication command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
+		Eventually(session, "5s").Should(gexec.Exit(0))
 
 		Expect(auth.Setup.IdentityProvider).To(Equal("internal"))
 		Expect(auth.Setup.Username).To(Equal("username"))
@@ -61,5 +79,11 @@ var _ = Describe("configure-authentication command", func() {
 		Expect(auth.Setup.Passphrase).To(Equal("passphrase"))
 		Expect(auth.Setup.PassphraseConfirmation).To(Equal("passphrase"))
 		Expect(auth.Setup.EULAAccepted).To(Equal("true"))
+
+		Expect(ensureAvailabilityCallCount).To(Equal(3))
+
+		Expect(session.Out).To(gbytes.Say("configuring internal userstore..."))
+		Expect(session.Out).To(gbytes.Say("waiting for configuration to complete..."))
+		Expect(session.Out).To(gbytes.Say("configuration complete"))
 	})
 })

@@ -86,4 +86,63 @@ var _ = Describe("SetupService", func() {
 			})
 		})
 	})
+
+	Describe("EnsureAvailability", func() {
+		Context("when the authentication mechanism has not been setup", func() {
+			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
+				client := &fakes.Client{}
+				client.RoundTripCall.Returns.Response = &http.Response{
+					StatusCode: http.StatusFound,
+					Header: http.Header{
+						"Location": []string{"/login/setup"},
+					},
+				}
+
+				service := api.NewSetupService(client)
+
+				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusUnstarted,
+				}))
+			})
+		})
+
+		Context("when the authentication mechanism is currently being setup", func() {
+			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
+				client := &fakes.Client{}
+				client.RoundTripCall.Returns.Response = &http.Response{
+					StatusCode: http.StatusOK,
+				}
+
+				service := api.NewSetupService(client)
+
+				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusPending,
+				}))
+			})
+		})
+
+		Context("when the authentication mechanism is completely setup", func() {
+			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
+				client := &fakes.Client{}
+				client.RoundTripCall.Returns.Response = &http.Response{
+					StatusCode: http.StatusFound,
+					Header: http.Header{
+						"Location": []string{"/auth/cloudfoundry"},
+					},
+				}
+
+				service := api.NewSetupService(client)
+
+				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusComplete,
+				}))
+			})
+		})
+	})
 })

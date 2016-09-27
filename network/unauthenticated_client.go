@@ -36,3 +36,15 @@ func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error)
 
 	return c.client.Do(request)
 }
+
+func (c UnauthenticatedClient) RoundTrip(request *http.Request) (*http.Response, error) {
+	targetURL, err := url.Parse(c.target)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse target url: %s", err)
+	}
+
+	request.URL.Scheme = targetURL.Scheme
+	request.URL.Host = targetURL.Host
+
+	return c.client.Transport.RoundTrip(request)
+}

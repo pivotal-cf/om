@@ -51,7 +51,7 @@ func main() {
 	commandSet := commands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
-	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService)
+	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, logger)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
