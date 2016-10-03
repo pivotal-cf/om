@@ -110,7 +110,7 @@ func (h Help) buildGlobalContext() TemplateContext {
 
 	return TemplateContext{
 		Title:         "ॐ",
-		Description:   "om helps you interact with an OpsManager",
+		Description:   "om helps you interact with an Ops Manager",
 		Usage:         "om [options] <command> [<args>]",
 		ArgumentsName: "Commands",
 		Arguments:     commands,

@@ -13,7 +13,7 @@ import (
 
 const (
 	GLOBAL_USAGE = `ॐ
-om helps you interact with an OpsManager
+om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
   -?, --query     asks a question
