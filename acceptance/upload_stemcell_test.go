@@ -44,6 +44,12 @@ var _ = Describe("upload-stemcell command", func() {
 				"expires_in": 3600
 			}`
 			case "/api/v0/stemcells":
+				auth := req.Header.Get("Authorization")
+				if auth != "Bearer some-opsman-token" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
 				err := req.ParseMultipartForm(100)
 				if err != nil {
 					panic(err)
@@ -80,8 +86,9 @@ var _ = Describe("upload-stemcell command", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
-		Eventually(session.Out).Should(gbytes.Say(fmt.Sprintf("Uploading content to '%s'...", server.URL)))
-		Eventually(session.Out).Should(gbytes.Say("Done."))
+		Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
+		Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
+		Eventually(session.Out).Should(gbytes.Say("finished upload"))
 
 		Expect(stemcellName).To(Equal(filepath.Base(content.Name())))
 	})
@@ -115,7 +122,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Err).Should(gbytes.Say(`cowardly refusing to upload empty file - please check`))
+				Eventually(session.Out).Should(gbytes.Say("failed to load stemcell: file provided has no content"))
 			})
 		})
 
@@ -139,7 +146,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Err).Should(gbytes.Say(`permission denied`))
+				Eventually(session.Out).Should(gbytes.Say(`permission denied`))
 			})
 		})
 	})
