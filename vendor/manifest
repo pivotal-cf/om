@@ -200,6 +200,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/cheggaaa/pb",
+			"repository": "https://github.com/cheggaaa/pb",
+			"vcs": "git",
+			"revision": "ad4efe000aa550bb54918c06ebbadc0ff17687b9",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/golang/glog",
 			"repository": "https://github.com/golang/glog",
 			"vcs": "git",
