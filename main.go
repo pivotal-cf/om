@@ -50,13 +50,9 @@ func main() {
 
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation)
 
-	var authedClient network.AuthenticatedClient
-	if global.Username != "" && global.Password != "" {
-		var err error
-		authedClient, err = network.NewAuthenticatedClient(global.Target, global.Username, global.Password, global.SkipSSLValidation)
-		if err != nil {
-			logger.Fatal(err)
-		}
+	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation)
+	if err != nil {
+		logger.Fatal(err)
 	}
 
 	setupService := api.NewSetupService(unauthenticatedClient)

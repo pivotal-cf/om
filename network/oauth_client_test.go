@@ -14,17 +14,19 @@ import (
 	"github.com/pivotal-cf/om/network"
 )
 
-var _ = Describe("AuthenticatedClient", func() {
+var _ = Describe("OAuthClient", func() {
 	Describe("Do", func() {
 		It("makes a request with authentication", func() {
 			var (
 				receivedRequest []byte
 				authHeader      string
+				callCount       int
 			)
 
 			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
+					callCount++
 					var err error
 					receivedRequest, err = httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())
@@ -43,8 +45,10 @@ var _ = Describe("AuthenticatedClient", func() {
 				}
 			}))
 
-			client, err := network.NewAuthenticatedClient(server.URL, "opsman-username", "opsman-password", true)
+			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
 			Expect(err).NotTo(HaveOccurred())
+
+			Expect(callCount).To(Equal(0))
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
 			Expect(err).NotTo(HaveOccurred())
@@ -72,6 +76,21 @@ var _ = Describe("AuthenticatedClient", func() {
 				"username":   []string{"opsman-username"},
 				"password":   []string{"opsman-password"},
 			}))
+		})
+
+		Context("when an error occurs", func() {
+			Context("when the initial token cannot be retrieved", func() {
+				It("returns an error", func() {
+					client, err := network.NewOAuthClient("%%%", "username", "password", false)
+					Expect(err).NotTo(HaveOccurred())
+
+					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = client.Do(req)
+					Expect(err).To(MatchError("token could not be retrieved from target url: parse %%%/uaa/oauth/token: invalid URL escape \"%%%\""))
+				})
+			})
 		})
 	})
 
@@ -103,7 +122,7 @@ var _ = Describe("AuthenticatedClient", func() {
 				}
 			}))
 
-			client, err := network.NewAuthenticatedClient(server.URL, "opsman-username", "opsman-password", true)
+			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
 			Expect(err).NotTo(HaveOccurred())
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -138,7 +157,13 @@ var _ = Describe("AuthenticatedClient", func() {
 	Context("when an error occurs", func() {
 		Context("when the initial token cannot be retrieved", func() {
 			It("returns an error", func() {
-				_, err := network.NewAuthenticatedClient("%%%", "username", "password", false)
+				client, err := network.NewOAuthClient("%%%", "username", "password", false)
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.RoundTrip(req)
 				Expect(err).To(MatchError("token could not be retrieved from target url: parse %%%/uaa/oauth/token: invalid URL escape \"%%%\""))
 			})
 		})
