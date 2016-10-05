@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/pivotal-cf/om/api"
@@ -17,28 +16,13 @@ import (
 var _ = Describe("StemcellService", func() {
 	Describe("Upload", func() {
 		var (
-			client           *fakes.HttpClient
-			stemcellLocation string
+			client *fakes.HttpClient
+			bar    *fakes.Progress
 		)
 
 		BeforeEach(func() {
 			client = &fakes.HttpClient{}
-
-			stemcell, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			_, err = stemcell.WriteString("some content")
-			Expect(err).NotTo(HaveOccurred())
-
-			err = stemcell.Close()
-			Expect(err).NotTo(HaveOccurred())
-
-			stemcellLocation = stemcell.Name()
-		})
-
-		AfterEach(func() {
-			err := os.Remove(stemcellLocation)
-			Expect(err).NotTo(HaveOccurred())
+			bar = &fakes.Progress{}
 		})
 
 		It("makes a request to upload the stemcell to the OpsManager", func() {
@@ -47,14 +31,12 @@ var _ = Describe("StemcellService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader("{}")),
 			}, nil)
 
-			service := api.NewUploadStemcellService(client)
-
-			content, err := os.Open(stemcellLocation)
-			Expect(err).NotTo(HaveOccurred())
+			bar.NewBarReaderReturns(strings.NewReader("some other content"))
+			service := api.NewUploadStemcellService(client, bar)
 
 			output, err := service.Upload(api.StemcellUploadInput{
 				ContentLength: 10,
-				Stemcell:      content,
+				Stemcell:      strings.NewReader("some content"),
 				ContentType:   "some content-type",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -69,14 +51,22 @@ var _ = Describe("StemcellService", func() {
 			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(body)).To(Equal("some content"))
+			Expect(string(body)).To(Equal("some other content"))
+
+			newReaderContent, err := ioutil.ReadAll(bar.NewBarReaderArgsForCall(0))
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(string(newReaderContent)).To(Equal("some content"))
+			Expect(bar.SetTotalArgsForCall(0)).To(BeNumerically("==", 10))
+			Expect(bar.KickoffCallCount()).To(Equal(1))
+			Expect(bar.EndCallCount()).To(Equal(1))
 		})
 
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewUploadStemcellService(client)
+					service := api.NewUploadStemcellService(client, bar)
 
 					_, err := service.Upload(api.StemcellUploadInput{})
 					Expect(err).To(MatchError("could not make api request to stemcells endpoint: some client error"))
@@ -89,7 +79,7 @@ var _ = Describe("StemcellService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewUploadStemcellService(client)
+					service := api.NewUploadStemcellService(client, bar)
 
 					_, err := service.Upload(api.StemcellUploadInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))

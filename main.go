@@ -9,6 +9,7 @@ import (
 	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
+	"github.com/pivotal-cf/om/progress"
 )
 
 var version = "unknown"
@@ -59,7 +60,7 @@ func main() {
 	}
 
 	setupService := api.NewSetupService(unauthenticatedClient)
-	uploadStemcellService := api.NewUploadStemcellService(authedClient)
+	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 
 	commandSet := commands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
