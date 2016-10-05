@@ -9,42 +9,46 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/pivotal-cf/om/network"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/om/network"
 )
 
 var _ = Describe("OAuthClient", func() {
-	Describe("Do", func() {
-		It("makes a request with authentication", func() {
-			var (
-				receivedRequest []byte
-				authHeader      string
-				callCount       int
-			)
+	var (
+		receivedRequest []byte
+		authHeader      string
+		callCount       int
+		server          *httptest.Server
+	)
 
-			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					callCount++
-					var err error
-					receivedRequest, err = httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
+	BeforeEach(func() {
+		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			switch req.URL.Path {
+			case "/uaa/oauth/token":
+				callCount++
+				var err error
+				receivedRequest, err = httputil.DumpRequest(req, true)
+				Expect(err).NotTo(HaveOccurred())
 
-					w.Header().Set("Content-Type", "application/json")
-					w.Write([]byte(`{
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{
 					"access_token": "some-opsman-token",
 					"token_type": "bearer",
 					"expires_in": 3600
 					}`))
-				default:
-					authHeader = req.Header.Get("Authorization")
+			default:
+				authHeader = req.Header.Get("Authorization")
 
-					w.WriteHeader(http.StatusNoContent)
-					w.Write([]byte("response"))
-				}
-			}))
+				w.WriteHeader(http.StatusNoContent)
+				w.Write([]byte("response"))
+			}
+		}))
+	})
 
+	Describe("Do", func() {
+		It("makes a request with authentication", func() {
 			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -96,32 +100,6 @@ var _ = Describe("OAuthClient", func() {
 
 	Describe("RoundTrip", func() {
 		It("makes a request with authentication", func() {
-			var (
-				receivedRequest []byte
-				authHeader      string
-			)
-
-			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					var err error
-					receivedRequest, err = httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-
-					w.Header().Set("Content-Type", "application/json")
-					w.Write([]byte(`{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-					}`))
-				default:
-					authHeader = req.Header.Get("Authorization")
-
-					w.WriteHeader(http.StatusNoContent)
-					w.Write([]byte("response"))
-				}
-			}))
-
 			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
 			Expect(err).NotTo(HaveOccurred())
 
