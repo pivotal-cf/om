@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
@@ -28,15 +29,17 @@ type stemcellService interface {
 	Upload(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
 }
 
-// TODO: check stemcell availability first
+//go:generate counterfeiter -o ./fakes/diagnostic_service.go --fake-name DiagnosticService . diagnosticService
 type diagnosticService interface {
+	Report() (api.DiagnosticReport, error)
 }
 
-func NewUploadStemcell(multipart multipart, stemcellService stemcellService, logger logger) UploadStemcell {
+func NewUploadStemcell(multipart multipart, stemcellService stemcellService, diagnosticService diagnosticService, logger logger) UploadStemcell {
 	return UploadStemcell{
-		multipart:       multipart,
-		logger:          logger,
-		stemcellService: stemcellService,
+		multipart:         multipart,
+		logger:            logger,
+		stemcellService:   stemcellService,
+		diagnosticService: diagnosticService,
 	}
 }
 
@@ -55,6 +58,18 @@ func (us UploadStemcell) Execute(args []string) error {
 	}
 
 	us.logger.Printf("processing stemcell")
+
+	report, err := us.diagnosticService.Report()
+	if err != nil {
+		return fmt.Errorf("failed to get diagnostic report: %s", err)
+	}
+
+	for _, stemcell := range report.Stemcells {
+		if stemcell == filepath.Base(us.Options.Stemcell) {
+			us.logger.Printf("stemcell has already been uploaded")
+			return nil
+		}
+	}
 
 	submission, err := us.multipart.Create(us.Options.Stemcell)
 	if err != nil {
