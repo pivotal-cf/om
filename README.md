@@ -25,16 +25,21 @@ https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
 ## Current Commands
 
 ```
-om helps you interact with an OpsManager
+ॐ
+om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
   -v, --version              bool    prints the om release version (default: false)
   -h, --help                 bool    prints this usage information (default: false)
-  -t, --target               string  location of the OpsManager VM
+  -t, --target               string  location of the Ops Manager VM
+  -u, --username             string  admin username for the Ops Manager VM
+  -p, --password             string  admin password for the Ops Manager VM
   -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
 
 Commands:
-  configure-authentication  configures OpsManager with an internal userstore and admin user account
+  configure-authentication  configures Ops Manager with an internal userstore and admin user account
   help                      prints this usage information
+  upload-stemcell           uploads a given stemcell to the Ops Manager targeted
   version                   prints the om release version
+
 ```
