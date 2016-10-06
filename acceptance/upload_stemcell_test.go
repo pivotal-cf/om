@@ -68,8 +68,7 @@ var _ = Describe("upload-stemcell command", func() {
 	})
 
 	AfterEach(func() {
-		err := os.Remove(content.Name())
-		Expect(err).NotTo(HaveOccurred())
+		os.Remove(content.Name())
 	})
 
 	It("successfully sends the stemcell to ops-manager", func() {
@@ -128,7 +127,7 @@ var _ = Describe("upload-stemcell command", func() {
 
 		Context("when the content cannot be read", func() {
 			BeforeEach(func() {
-				err := content.Chmod(000)
+				err := os.Remove(content.Name())
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -146,7 +145,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say(`permission denied`))
+				Eventually(session.Out).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
 	})
