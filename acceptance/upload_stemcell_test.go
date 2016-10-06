@@ -68,8 +68,7 @@ var _ = Describe("upload-stemcell command", func() {
 	})
 
 	AfterEach(func() {
-		err := os.Remove(content.Name())
-		Expect(err).NotTo(HaveOccurred())
+		os.Remove(content.Name())
 	})
 
 	It("successfully sends the stemcell to ops-manager", func() {
@@ -91,6 +90,57 @@ var _ = Describe("upload-stemcell command", func() {
 		Eventually(session.Out).Should(gbytes.Say("finished upload"))
 
 		Expect(stemcellName).To(Equal(filepath.Base(content.Name())))
+	})
+
+	Context("when the stemcell already exists", func() {
+		It("exits early with no error", func() {
+			var diagnosticReport []byte
+			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch req.URL.Path {
+				case "/uaa/oauth/token":
+					w.Write([]byte(`{
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+					}`))
+				case "/api/v0/dianostic_report":
+					auth := req.Header.Get("Authorization")
+					if auth != "Bearer some-opsman-token" {
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+
+					w.Write(diagnosticReport)
+				default:
+					out, err := httputil.DumpRequest(req, true)
+					Expect(err).NotTo(HaveOccurred())
+					Fail(fmt.Sprintf("unexpected request: %s", out))
+				}
+			}))
+
+			diagnosticReport = []byte(fmt.Sprintf(`{
+			 "stemcells": [
+					"bosh-stemcell-3215-vsphere-esxi-ubuntu-trusty-go_agent.tgz",
+					"%q"
+				]
+			}`, filepath.Base(content.Name())))
+
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-stemcell",
+				"--stemcell", content.Name(),
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Eventually(session.Out).Should(gbytes.Say("stemcell has already been uploaded"))
+		})
 	})
 
 	Context("when an error occurs", func() {
@@ -128,7 +178,7 @@ var _ = Describe("upload-stemcell command", func() {
 
 		Context("when the content cannot be read", func() {
 			BeforeEach(func() {
-				err := content.Chmod(000)
+				err := os.Remove(content.Name())
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -146,7 +196,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say(`permission denied`))
+				Eventually(session.Out).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
 	})
