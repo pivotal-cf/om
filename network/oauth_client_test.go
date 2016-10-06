@@ -24,6 +24,7 @@ var _ = Describe("OAuthClient", func() {
 	)
 
 	BeforeEach(func() {
+		callCount = 0
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
