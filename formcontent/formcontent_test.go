@@ -25,8 +25,7 @@ var _ = Describe("Form", func() {
 		})
 
 		AfterEach(func() {
-			err := os.Remove(fileWithContent)
-			Expect(err).NotTo(HaveOccurred())
+			os.Remove(fileWithContent)
 		})
 
 		It("assembles a ContentSubmission out of the provided file", func() {
@@ -58,12 +57,13 @@ var _ = Describe("Form", func() {
 		Context("when an error occurs", func() {
 			Context("when the original file cannot be read", func() {
 				It("returns an error", func() {
-					err := os.Chmod(fileWithContent, 000)
+					err := os.Remove(fileWithContent)
 					Expect(err).NotTo(HaveOccurred())
+
 					form := formcontent.NewForm("something[file]")
 
 					_, err = form.Create(fileWithContent)
-					Expect(err).To(MatchError(ContainSubstring("permission denied")))
+					Expect(err).To(MatchError(ContainSubstring("no such file or directory")))
 				})
 			})
 		})
