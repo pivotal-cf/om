@@ -22,6 +22,7 @@ Usage: om [options] <command> [<args>]
 
 Commands:
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
+  export-installation       exports the installation of the target ops manager
   help                      prints this usage information
   upload-product            uploads a given product to the Ops Manager targeted
   upload-stemcell           uploads a given stemcell to the Ops Manager targeted
