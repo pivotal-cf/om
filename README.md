@@ -23,10 +23,9 @@ please note, this can and will change from the final readme below
 https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
 
 ## Current Commands
-
 ```
 ॐ
-om helps you interact with Ops Manager
+om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
   -v, --version              bool    prints the om release version (default: false)
@@ -43,4 +42,5 @@ Commands:
   upload-product            uploads a given product to the Ops Manager targeted
   upload-stemcell           uploads a given stemcell to the Ops Manager targeted
   version                   prints the om release version
+
 ```
