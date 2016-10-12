@@ -26,7 +26,7 @@ https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
 
 ```
 ॐ
-om helps you interact with an Ops Manager
+om helps you interact with Ops Manager
 
 Usage: om [options] <command> [<args>]
   -v, --version              bool    prints the om release version (default: false)
