@@ -96,6 +96,7 @@ var _ = Describe("SetupService", func() {
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/setup"},
 					},
+					Body: ioutil.NopCloser(strings.NewReader("")),
 				}
 
 				service := api.NewSetupService(client)
@@ -113,6 +114,7 @@ var _ = Describe("SetupService", func() {
 				client := &fakes.Client{}
 				client.RoundTripCall.Returns.Response = &http.Response{
 					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("")),
 				}
 
 				service := api.NewSetupService(client)
@@ -133,6 +135,7 @@ var _ = Describe("SetupService", func() {
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/auth/cloudfoundry"},
 					},
+					Body: ioutil.NopCloser(strings.NewReader("")),
 				}
 
 				service := api.NewSetupService(client)
@@ -166,6 +169,7 @@ var _ = Describe("SetupService", func() {
 						Header: http.Header{
 							"Location": []string{"%%%%%%"},
 						},
+						Body: ioutil.NopCloser(strings.NewReader("")),
 					}
 
 					service := api.NewSetupService(client)

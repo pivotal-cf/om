@@ -70,6 +70,8 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 		return SetupOutput{}, fmt.Errorf("could not make api request to setup endpoint: %s", err)
 	}
 
+	defer response.Body.Close()
+
 	if response.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(response, true)
 		if err != nil {
@@ -103,6 +105,8 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 	if err != nil {
 		return EnsureAvailabilityOutput{}, fmt.Errorf("could not make request round trip: %s", err)
 	}
+
+	defer response.Body.Close()
 
 	var status string
 	switch {
