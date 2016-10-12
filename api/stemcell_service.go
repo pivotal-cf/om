@@ -20,14 +20,6 @@ type UploadStemcellService struct {
 	progress progress
 }
 
-//go:generate counterfeiter -o ./fakes/progress.go --fake-name Progress . progress
-type progress interface {
-	SetTotal(int64)
-	NewBarReader(io.Reader) io.Reader
-	Kickoff()
-	End()
-}
-
 func NewUploadStemcellService(client httpClient, progress progress) UploadStemcellService {
 	return UploadStemcellService{
 		client:   client,
