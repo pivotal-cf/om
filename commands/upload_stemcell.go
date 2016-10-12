@@ -21,7 +21,9 @@ type UploadStemcell struct {
 
 //go:generate counterfeiter -o ./fakes/multipart.go --fake-name Multipart . multipart
 type multipart interface {
-	Create(path string) (formcontent.ContentSubmission, error)
+	Create() (formcontent.ContentSubmission, error)
+	AddFile(key, path string) error
+	AddField(key, value string) error
 }
 
 //go:generate counterfeiter -o ./fakes/stemcell_service.go --fake-name StemcellService . stemcellService
@@ -71,9 +73,14 @@ func (us UploadStemcell) Execute(args []string) error {
 		}
 	}
 
-	submission, err := us.multipart.Create(us.Options.Stemcell)
+	err = us.multipart.AddFile("stemcell[file]", us.Options.Stemcell)
 	if err != nil {
 		return fmt.Errorf("failed to load stemcell: %s", err)
+	}
+
+	submission, err := us.multipart.Create()
+	if err != nil {
+		return fmt.Errorf("failed to create multipart form: %s", err)
 	}
 
 	us.logger.Printf("beginning stemcell upload to Ops Manager")

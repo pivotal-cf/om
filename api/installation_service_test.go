@@ -106,4 +106,77 @@ var _ = Describe("InstallationService", func() {
 			})
 		})
 	})
+
+	Describe("Import", func() {
+		var (
+			client *fakes.HttpClient
+			bar    *fakes.Progress
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+			bar = &fakes.Progress{}
+		})
+
+		It("makes a request to import the installation to the Ops Manager", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader("{}")),
+			}, nil)
+
+			bar.NewBarReaderReturns(strings.NewReader("some other installation"))
+			service := api.NewInstallationService(client, bar)
+
+			err := service.Import(api.ImportInstallationInput{
+				ContentLength: 10,
+				Installation:  strings.NewReader("some installation"),
+				ContentType:   "some content-type",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			request := client.DoArgsForCall(0)
+			Expect(request.Method).To(Equal("POST"))
+			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
+			Expect(request.ContentLength).To(Equal(int64(10)))
+			Expect(request.Header.Get("Content-Type")).To(Equal("some content-type"))
+
+			body, err := ioutil.ReadAll(request.Body)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(string(body)).To(Equal("some other installation"))
+
+			newReaderContent, err := ioutil.ReadAll(bar.NewBarReaderArgsForCall(0))
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(string(newReaderContent)).To(Equal("some installation"))
+			Expect(bar.SetTotalArgsForCall(0)).To(BeNumerically("==", 10))
+			Expect(bar.KickoffCallCount()).To(Equal(1))
+			Expect(bar.EndCallCount()).To(Equal(1))
+		})
+
+		Context("when an error occurs", func() {
+			Context("when the client errors before the request", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{}, errors.New("some client error"))
+					service := api.NewInstallationService(client, bar)
+
+					err := service.Import(api.ImportInstallationInput{})
+					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
+				})
+			})
+
+			Context("when the api returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					}, nil)
+					service := api.NewInstallationService(client, bar)
+
+					err := service.Import(api.ImportInstallationInput{})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+		})
+	})
 })

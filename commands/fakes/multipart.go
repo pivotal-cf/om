@@ -8,28 +8,42 @@ import (
 )
 
 type Multipart struct {
-	CreateStub        func(path string) (formcontent.ContentSubmission, error)
+	CreateStub        func() (formcontent.ContentSubmission, error)
 	createMutex       sync.RWMutex
-	createArgsForCall []struct {
-		path string
-	}
-	createReturns struct {
+	createArgsForCall []struct{}
+	createReturns     struct {
 		result1 formcontent.ContentSubmission
 		result2 error
+	}
+	AddFileStub        func(key, path string) error
+	addFileMutex       sync.RWMutex
+	addFileArgsForCall []struct {
+		key  string
+		path string
+	}
+	addFileReturns struct {
+		result1 error
+	}
+	AddFieldStub        func(key, value string) error
+	addFieldMutex       sync.RWMutex
+	addFieldArgsForCall []struct {
+		key   string
+		value string
+	}
+	addFieldReturns struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Multipart) Create(path string) (formcontent.ContentSubmission, error) {
+func (fake *Multipart) Create() (formcontent.ContentSubmission, error) {
 	fake.createMutex.Lock()
-	fake.createArgsForCall = append(fake.createArgsForCall, struct {
-		path string
-	}{path})
-	fake.recordInvocation("Create", []interface{}{path})
+	fake.createArgsForCall = append(fake.createArgsForCall, struct{}{})
+	fake.recordInvocation("Create", []interface{}{})
 	fake.createMutex.Unlock()
 	if fake.CreateStub != nil {
-		return fake.CreateStub(path)
+		return fake.CreateStub()
 	} else {
 		return fake.createReturns.result1, fake.createReturns.result2
 	}
@@ -41,12 +55,6 @@ func (fake *Multipart) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *Multipart) CreateArgsForCall(i int) string {
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	return fake.createArgsForCall[i].path
-}
-
 func (fake *Multipart) CreateReturns(result1 formcontent.ContentSubmission, result2 error) {
 	fake.CreateStub = nil
 	fake.createReturns = struct {
@@ -55,11 +63,83 @@ func (fake *Multipart) CreateReturns(result1 formcontent.ContentSubmission, resu
 	}{result1, result2}
 }
 
+func (fake *Multipart) AddFile(key string, path string) error {
+	fake.addFileMutex.Lock()
+	fake.addFileArgsForCall = append(fake.addFileArgsForCall, struct {
+		key  string
+		path string
+	}{key, path})
+	fake.recordInvocation("AddFile", []interface{}{key, path})
+	fake.addFileMutex.Unlock()
+	if fake.AddFileStub != nil {
+		return fake.AddFileStub(key, path)
+	} else {
+		return fake.addFileReturns.result1
+	}
+}
+
+func (fake *Multipart) AddFileCallCount() int {
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	return len(fake.addFileArgsForCall)
+}
+
+func (fake *Multipart) AddFileArgsForCall(i int) (string, string) {
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	return fake.addFileArgsForCall[i].key, fake.addFileArgsForCall[i].path
+}
+
+func (fake *Multipart) AddFileReturns(result1 error) {
+	fake.AddFileStub = nil
+	fake.addFileReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *Multipart) AddField(key string, value string) error {
+	fake.addFieldMutex.Lock()
+	fake.addFieldArgsForCall = append(fake.addFieldArgsForCall, struct {
+		key   string
+		value string
+	}{key, value})
+	fake.recordInvocation("AddField", []interface{}{key, value})
+	fake.addFieldMutex.Unlock()
+	if fake.AddFieldStub != nil {
+		return fake.AddFieldStub(key, value)
+	} else {
+		return fake.addFieldReturns.result1
+	}
+}
+
+func (fake *Multipart) AddFieldCallCount() int {
+	fake.addFieldMutex.RLock()
+	defer fake.addFieldMutex.RUnlock()
+	return len(fake.addFieldArgsForCall)
+}
+
+func (fake *Multipart) AddFieldArgsForCall(i int) (string, string) {
+	fake.addFieldMutex.RLock()
+	defer fake.addFieldMutex.RUnlock()
+	return fake.addFieldArgsForCall[i].key, fake.addFieldArgsForCall[i].value
+}
+
+func (fake *Multipart) AddFieldReturns(result1 error) {
+	fake.AddFieldStub = nil
+	fake.addFieldReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *Multipart) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	fake.addFieldMutex.RLock()
+	defer fake.addFieldMutex.RUnlock()
 	return fake.invocations
 }
 
