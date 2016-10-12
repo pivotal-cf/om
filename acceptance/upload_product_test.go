@@ -17,11 +17,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("upload-stemcell command", func() {
+var _ = Describe("upload-product command", func() {
 	var (
-		stemcellName string
-		content      *os.File
-		server       *httptest.Server
+		product string
+		content *os.File
+		server  *httptest.Server
 	)
 
 	BeforeEach(func() {
@@ -45,7 +45,7 @@ var _ = Describe("upload-stemcell command", func() {
 			}`
 			case "/api/v0/diagnostic_report":
 				responseString = "{}"
-			case "/api/v0/stemcells":
+			case "/api/v0/available_products":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {
 					w.WriteHeader(http.StatusUnauthorized)
@@ -57,7 +57,7 @@ var _ = Describe("upload-stemcell command", func() {
 					panic(err)
 				}
 
-				stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
+				product = req.MultipartForm.File["product[file]"][0].Filename
 				responseString = "{}"
 			default:
 				out, err := httputil.DumpRequest(req, true)
@@ -73,78 +73,25 @@ var _ = Describe("upload-stemcell command", func() {
 		os.Remove(content.Name())
 	})
 
-	It("successfully sends the stemcell to the Ops Manager", func() {
+	It("successfully uploads a product to the Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
-			"upload-stemcell",
-			"--stemcell", content.Name(),
+			"upload-product",
+			"--product", content.Name(),
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
-		Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
-		Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
+		Eventually(session.Out).Should(gbytes.Say("processing product"))
+		Eventually(session.Out).Should(gbytes.Say("beginning product upload to Ops Manager"))
 		Eventually(session.Out).Should(gbytes.Say("finished upload"))
 
-		Expect(stemcellName).To(Equal(filepath.Base(content.Name())))
-	})
-
-	Context("when the stemcell already exists", func() {
-		It("exits early with no error", func() {
-			var diagnosticReport []byte
-			server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					w.Write([]byte(`{
-						"access_token": "some-opsman-token",
-						"token_type": "bearer",
-						"expires_in": 3600
-					}`))
-				case "/api/v0/diagnostic_report":
-					auth := req.Header.Get("Authorization")
-					if auth != "Bearer some-opsman-token" {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					w.Write(diagnosticReport)
-				default:
-					out, err := httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-					Fail(fmt.Sprintf("unexpected request: %s", out))
-				}
-			}))
-
-			diagnosticReport = []byte(fmt.Sprintf(`{
-			 "stemcells": [
-					"bosh-stemcell-3215-vsphere-esxi-ubuntu-trusty-go_agent.tgz",
-					%q
-				]
-			}`, filepath.Base(content.Name())))
-
-			server.StartTLS()
-
-			command := exec.Command(pathToMain,
-				"--target", server.URL,
-				"--username", "some-username",
-				"--password", "some-password",
-				"--skip-ssl-validation",
-				"upload-stemcell",
-				"--stemcell", content.Name(),
-			)
-
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
-
-			Eventually(session).Should(gexec.Exit(0))
-			Eventually(session.Out).Should(gbytes.Say("stemcell has already been uploaded"))
-		})
+		Expect(product).To(Equal(filepath.Base(content.Name())))
 	})
 
 	Context("when an error occurs", func() {
@@ -168,15 +115,15 @@ var _ = Describe("upload-stemcell command", func() {
 					"--username", "some-username",
 					"--password", "some-password",
 					"--skip-ssl-validation",
-					"upload-stemcell",
-					"--stemcell", emptyContent.Name(),
+					"upload-product",
+					"--product", emptyContent.Name(),
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("failed to load stemcell: file provided has no content"))
+				Eventually(session.Out).Should(gbytes.Say("failed to load product: file provided has no content"))
 			})
 		})
 
@@ -192,8 +139,8 @@ var _ = Describe("upload-stemcell command", func() {
 					"--username", "some-username",
 					"--password", "some-password",
 					"--skip-ssl-validation",
-					"upload-stemcell",
-					"--stemcell", content.Name(),
+					"upload-product",
+					"--product", content.Name(),
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
