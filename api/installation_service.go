@@ -36,10 +36,11 @@ func (is InstallationService) Export(outputFile string) error {
 	is.progress.SetTotal(resp.ContentLength)
 	is.progress.Kickoff()
 	progressReader := is.progress.NewBarReader(resp.Body)
+	defer resp.Body.Close()
 
 	respBody, err := ioutil.ReadAll(progressReader)
 	if err != nil {
-		return fmt.Errorf("request failed: response cannot be read") //Can't test drive
+		return fmt.Errorf("request failed: response cannot be read")
 	}
 
 	is.progress.End()

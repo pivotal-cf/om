@@ -26,13 +26,13 @@ var _ = Describe("InstallationService", func() {
 			var err error
 			client = &fakes.HttpClient{}
 			outputFile, err = ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 			bar = &fakes.Progress{}
 		})
 
 		AfterEach(func() {
 			err := os.Remove(outputFile.Name())
-			Expect(err).ToNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("makes a request to export the current OpsManager installation", func() {
@@ -55,7 +55,7 @@ var _ = Describe("InstallationService", func() {
 
 			By("writing the installation to a local file")
 			ins, err := ioutil.ReadFile(outputFile.Name())
-			Expect(err).ToNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 			Expect(string(ins)).To(Equal("some-fake-installation"))
 
 			newReaderContent, err := ioutil.ReadAll(bar.NewBarReaderArgsForCall(0))
