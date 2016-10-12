@@ -54,6 +54,8 @@ func (us UploadStemcellService) Upload(input StemcellUploadInput) (StemcellUploa
 		return StemcellUploadOutput{}, fmt.Errorf("could not make api request to stemcells endpoint: %s", err)
 	}
 
+	defer resp.Body.Close()
+
 	us.progress.End()
 
 	if resp.StatusCode != http.StatusOK {
