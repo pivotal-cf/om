@@ -92,21 +92,6 @@ var _ = Describe("InstallationService", func() {
 			})
 
 			Context("when the output file cannot be written", func() {
-				var roOutputFile *os.File
-				BeforeEach(func() {
-					var err error
-					roOutputFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					err = os.Chmod(roOutputFile.Name(), 0000)
-					Expect(err).NotTo(HaveOccurred())
-				})
-
-				AfterEach(func() {
-					err := os.Remove(roOutputFile.Name())
-					Expect(err).NotTo(HaveOccurred())
-				})
-
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -115,8 +100,8 @@ var _ = Describe("InstallationService", func() {
 					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
 					service := api.NewInstallationService(client, bar)
 
-					err := service.Export(roOutputFile.Name())
-					Expect(err).To(MatchError(ContainSubstring("permission denied")))
+					err := service.Export("fake-dir/fake-file")
+					Expect(err).To(MatchError(ContainSubstring("no such file")))
 				})
 			})
 		})
