@@ -30,7 +30,7 @@ func NewExportInstallation(installationService installationService, logger logge
 func (ei ExportInstallation) Usage() Usage {
 	return Usage{
 		Description:      "This command will export the current installation of the target Ops Manager.",
-		ShortDescription: "exports the installation of the target ops manager",
+		ShortDescription: "exports the installation of the target Ops Manager",
 		Flags:            ei.Options,
 	}
 }

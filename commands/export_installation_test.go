@@ -76,7 +76,7 @@ var _ = Describe("ExportInstallation", func() {
 			command := commands.NewExportInstallation(nil, nil)
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This command will export the current installation of the target Ops Manager.",
-				ShortDescription: "exports the installation of the target ops manager",
+				ShortDescription: "exports the installation of the target Ops Manager",
 				Flags:            command.Options,
 			}))
 		})
