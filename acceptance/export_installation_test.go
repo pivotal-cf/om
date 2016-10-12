@@ -85,22 +85,6 @@ var _ = Describe("export-installation command", func() {
 
 	Context("when an error occurs", func() {
 		Context("when the output file cannot be written to", func() {
-			var badOutputFile *os.File
-
-			BeforeEach(func() {
-				var err error
-				badOutputFile, err = ioutil.TempFile("", "")
-				Expect(err).NotTo(HaveOccurred())
-
-				err = os.Chmod(badOutputFile.Name(), 0000)
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			AfterEach(func() {
-				err := os.Remove(badOutputFile.Name())
-				Expect(err).NotTo(HaveOccurred())
-			})
-
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
@@ -108,7 +92,7 @@ var _ = Describe("export-installation command", func() {
 					"--password", "some-password",
 					"--skip-ssl-validation",
 					"export-installation",
-					"--output-file", badOutputFile.Name(),
+					"--output-file", "fake-dir/fake-file",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
