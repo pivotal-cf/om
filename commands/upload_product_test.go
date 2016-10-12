@@ -43,12 +43,16 @@ var _ = Describe("UploadProduct", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(multipart.CreateArgsForCall(0)).To(Equal("/path/to/some-product.tgz"))
+		key, file := multipart.AddFileArgsForCall(0)
+		Expect(key).To(Equal("product[file]"))
+		Expect(file).To(Equal("/path/to/some-product.tgz"))
 		Expect(productService.UploadArgsForCall(0)).To(Equal(api.UploadProductInput{
 			ContentLength: 10,
 			Product:       ioutil.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
 		}))
+
+		Expect(multipart.CreateCallCount()).To(Equal(1))
 
 		format, v := logger.PrintfArgsForCall(0)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("processing product"))
@@ -69,10 +73,10 @@ var _ = Describe("UploadProduct", func() {
 			})
 		})
 
-		Context("when the file cannot be opened", func() {
+		Context("when adding the file fails", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, productService, logger)
-				multipart.CreateReturns(formcontent.ContentSubmission{}, errors.New("bad file"))
+				multipart.AddFileReturns(errors.New("bad file"))
 
 				err := command.Execute([]string{"--product", "/some/path"})
 				Expect(err).To(MatchError("failed to load product: bad file"))

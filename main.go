@@ -64,15 +64,21 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	uploadProductService := api.NewUploadProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	installationService := api.NewInstallationService(authedClient, progress.NewBar())
+	installationService := api.NewInstallationService(unauthenticatedClient, progress.NewBar())
+
+	form, err := formcontent.NewForm()
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	commandSet := commands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, logger)
-	commandSet["upload-stemcell"] = commands.NewUploadStemcell(formcontent.NewForm("stemcell[file]"), uploadStemcellService, diagnosticService, logger)
-	commandSet["upload-product"] = commands.NewUploadProduct(formcontent.NewForm("product[file]"), uploadProductService, logger)
+	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, logger)
+	commandSet["upload-product"] = commands.NewUploadProduct(form, uploadProductService, logger)
 	commandSet["export-installation"] = commands.NewExportInstallation(installationService, logger)
+	commandSet["import-installation"] = commands.NewImportInstallation(form, installationService, logger)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

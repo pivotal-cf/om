@@ -44,10 +44,14 @@ func (up UploadProduct) Execute(args []string) error {
 	}
 
 	up.logger.Printf("processing product")
-
-	submission, err := up.multipart.Create(up.Options.Product)
+	err = up.multipart.AddFile("product[file]", up.Options.Product)
 	if err != nil {
 		return fmt.Errorf("failed to load product: %s", err)
+	}
+
+	submission, err := up.multipart.Create()
+	if err != nil {
+		return fmt.Errorf("failed to create multipart form: %s", err)
 	}
 
 	up.logger.Printf("beginning product upload to Ops Manager")

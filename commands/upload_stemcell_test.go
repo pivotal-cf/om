@@ -47,12 +47,16 @@ var _ = Describe("UploadStemcell", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(multipart.CreateArgsForCall(0)).To(Equal("/path/to/stemcell.tgz"))
+		key, file := multipart.AddFileArgsForCall(0)
+		Expect(key).To(Equal("stemcell[file]"))
+		Expect(file).To(Equal("/path/to/stemcell.tgz"))
 		Expect(stemcellService.UploadArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 			ContentLength: 10,
 			Stemcell:      ioutil.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
 		}))
+
+		Expect(multipart.CreateCallCount()).To(Equal(1))
 
 		format, v := logger.PrintfArgsForCall(0)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
@@ -101,7 +105,7 @@ var _ = Describe("UploadStemcell", func() {
 		Context("when the file cannot be opened", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
-				multipart.CreateReturns(formcontent.ContentSubmission{}, errors.New("bad file"))
+				multipart.AddFileReturns(errors.New("bad file"))
 
 				err := command.Execute([]string{"--stemcell", "/some/path"})
 				Expect(err).To(MatchError("failed to load stemcell: bad file"))

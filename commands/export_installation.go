@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/flags"
+	"github.com/pivotal-cf/om/api"
 )
 
 type ExportInstallation struct {
@@ -18,6 +19,7 @@ type ExportInstallation struct {
 //go:generate counterfeiter -o ./fakes/installation_service.go --fake-name InstallationService . installationService
 type installationService interface {
 	Export(string) error
+	Import(api.ImportInstallationInput) error
 }
 
 func NewExportInstallation(installationService installationService, logger logger) ExportInstallation {
