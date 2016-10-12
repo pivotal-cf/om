@@ -15,12 +15,17 @@ import (
 
 var _ = Describe("SetupService", func() {
 	Describe("Setup", func() {
+		var client *fakes.HttpClient
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+		})
+
 		It("makes a request to setup the OpsManager", func() {
-			client := &fakes.Client{}
-			client.DoCall.Returns.Response = &http.Response{
+			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader("{}")),
-			}
+			}, nil)
 
 			service := api.NewSetupService(client)
 
@@ -36,12 +41,13 @@ var _ = Describe("SetupService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(api.SetupOutput{}))
 
-			Expect(client.DoCall.Receives.Request).NotTo(BeNil())
-			Expect(client.DoCall.Receives.Request.Method).To(Equal("POST"))
-			Expect(client.DoCall.Receives.Request.URL.Path).To(Equal("/api/v0/setup"))
-			Expect(client.DoCall.Receives.Request.Header.Get("Content-Type")).To(Equal("application/json"))
+			request := client.DoArgsForCall(0)
+			Expect(request).NotTo(BeNil())
+			Expect(request.Method).To(Equal("POST"))
+			Expect(request.URL.Path).To(Equal("/api/v0/setup"))
+			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
 
-			body, err := ioutil.ReadAll(client.DoCall.Receives.Request.Body)
+			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(body).To(MatchJSON(`{
 				"setup": {
@@ -59,8 +65,7 @@ var _ = Describe("SetupService", func() {
 		Context("failure cases", func() {
 			Context("when the client fails to make the request", func() {
 				It("returns an error", func() {
-					client := &fakes.Client{}
-					client.DoCall.Returns.Error = errors.New("could not make request")
+					client.DoReturns(&http.Response{}, errors.New("could not make request"))
 
 					service := api.NewSetupService(client)
 
@@ -71,12 +76,11 @@ var _ = Describe("SetupService", func() {
 
 			Context("when the api returns an unexpected status code", func() {
 				It("returns an error", func() {
-					client := &fakes.Client{}
-					client.DoCall.Returns.Response = &http.Response{
+					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
 						Status:     http.StatusText(http.StatusInternalServerError),
 						Body:       ioutil.NopCloser(strings.NewReader(`{"error": "something bad happened"}`)),
-					}
+					}, nil)
 
 					service := api.NewSetupService(client)
 
@@ -88,16 +92,21 @@ var _ = Describe("SetupService", func() {
 	})
 
 	Describe("EnsureAvailability", func() {
+		var client *fakes.HttpClient
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+		})
+
 		Context("when the authentication mechanism has not been setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
-				client := &fakes.Client{}
-				client.RoundTripCall.Returns.Response = &http.Response{
+				client.RoundTripReturns(&http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/setup"},
 					},
 					Body: ioutil.NopCloser(strings.NewReader("")),
-				}
+				}, nil)
 
 				service := api.NewSetupService(client)
 
@@ -111,11 +120,10 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the authentication mechanism is currently being setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
-				client := &fakes.Client{}
-				client.RoundTripCall.Returns.Response = &http.Response{
+				client.RoundTripReturns(&http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader("")),
-				}
+				}, nil)
 
 				service := api.NewSetupService(client)
 
@@ -129,14 +137,13 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the authentication mechanism is completely setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
-				client := &fakes.Client{}
-				client.RoundTripCall.Returns.Response = &http.Response{
+				client.RoundTripReturns(&http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/auth/cloudfoundry"},
 					},
 					Body: ioutil.NopCloser(strings.NewReader("")),
-				}
+				}, nil)
 
 				service := api.NewSetupService(client)
 
@@ -151,8 +158,7 @@ var _ = Describe("SetupService", func() {
 		Context("failure cases", func() {
 			Context("when the request fails", func() {
 				It("returns an error", func() {
-					client := &fakes.Client{}
-					client.RoundTripCall.Returns.Error = errors.New("failed to make round trip")
+					client.RoundTripReturns(&http.Response{}, errors.New("failed to make round trip"))
 
 					service := api.NewSetupService(client)
 
@@ -163,14 +169,13 @@ var _ = Describe("SetupService", func() {
 
 			Context("when the location header cannot be parsed", func() {
 				It("returns an error", func() {
-					client := &fakes.Client{}
-					client.RoundTripCall.Returns.Response = &http.Response{
+					client.RoundTripReturns(&http.Response{
 						StatusCode: http.StatusFound,
 						Header: http.Header{
 							"Location": []string{"%%%%%%"},
 						},
 						Body: ioutil.NopCloser(strings.NewReader("")),
-					}
+					}, nil)
 
 					service := api.NewSetupService(client)
 
