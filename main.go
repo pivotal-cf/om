@@ -57,6 +57,7 @@ func main() {
 
 	setupService := api.NewSetupService(unauthenticatedClient)
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
+	uploadProductService := api.NewUploadProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
 
 	commandSet := commands.Set{}
@@ -64,6 +65,7 @@ func main() {
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, logger)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(formcontent.NewForm("stemcell[file]"), uploadStemcellService, diagnosticService, logger)
+	commandSet["upload-product"] = commands.NewUploadProduct(formcontent.NewForm("product[file]"), uploadProductService, logger)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
