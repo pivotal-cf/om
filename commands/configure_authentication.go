@@ -31,7 +31,7 @@ func NewConfigureAuthentication(service setupService, logger logger) ConfigureAu
 
 func (ca ConfigureAuthentication) Usage() Usage {
 	return Usage{
-		Description:      "This command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
+		Description:      "This unauthenticated command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
 		ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
 		Flags:            ca.Options,
 	}

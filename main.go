@@ -21,8 +21,8 @@ func main() {
 		Version           bool   `short:"v" long:"version"             description:"prints the om release version"                        default:"false"`
 		Help              bool   `short:"h" long:"help"                description:"prints this usage information"                        default:"false"`
 		Target            string `short:"t" long:"target"              description:"location of the Ops Manager VM"`
-		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM"`
-		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM"`
+		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
+		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
 	}
 	args, err := flags.Parse(&global, os.Args[1:])
@@ -59,7 +59,8 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	uploadProductService := api.NewUploadProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	installationService := api.NewInstallationService(unauthenticatedClient, progress.NewBar())
+	importInstallationService := api.NewInstallationService(unauthenticatedClient, progress.NewBar())
+	exportInstallationService := api.NewInstallationService(authedClient, progress.NewBar())
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -72,8 +73,8 @@ func main() {
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, logger)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, logger)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, uploadProductService, logger)
-	commandSet["export-installation"] = commands.NewExportInstallation(installationService, logger)
-	commandSet["import-installation"] = commands.NewImportInstallation(form, installationService, logger)
+	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, logger)
+	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, logger)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

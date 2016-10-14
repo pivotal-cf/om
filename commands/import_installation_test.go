@@ -40,7 +40,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		err := command.Execute([]string{
 			"--installation", "/path/to/some-installation",
-			"--passphrase", "some-passphrase",
+			"--decryption-passphrase", "some-passphrase",
 		})
 		Expect(err).NotTo(HaveOccurred())
 
@@ -107,7 +107,7 @@ var _ = Describe("ImportInstallation", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewImportInstallation(nil, nil, nil)
 			Expect(command.Usage()).To(Equal(commands.Usage{
-				Description:      "This command attempts to import an installation to the Ops Manager",
+				Description:      "This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
 				ShortDescription: "imports a given installation to the Ops Manager targeted",
 				Flags:            command.Options,
 			}))
