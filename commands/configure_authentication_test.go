@@ -141,7 +141,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewConfigureAuthentication(nil, nil)
 			Expect(command.Usage()).To(Equal(commands.Usage{
-				Description:      "This command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
+				Description:      "This unauthenticated command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
 				ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
 				Flags:            command.Options,
 			}))

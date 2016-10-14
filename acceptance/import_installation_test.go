@@ -38,21 +38,9 @@ var _ = Describe("import-installation command", func() {
 			w.Header().Set("Content-Type", "application/json")
 
 			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
 			case "/api/v0/diagnostic_report":
 				responseString = "{}"
 			case "/api/v0/installation_asset_collection":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
 				err := req.ParseMultipartForm(100)
 				if err != nil {
 					panic(err)
@@ -78,12 +66,10 @@ var _ = Describe("import-installation command", func() {
 	It("successfully uploads an installation to the Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
-			"--username", "some-username",
-			"--password", "some-password",
 			"--skip-ssl-validation",
 			"import-installation",
 			"--installation", content.Name(),
-			"--passphrase", "fake-passphrase",
+			"--decryption-passphrase", "fake-passphrase",
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -116,12 +102,10 @@ var _ = Describe("import-installation command", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
-					"--username", "some-username",
-					"--password", "some-password",
 					"--skip-ssl-validation",
 					"import-installation",
 					"--installation", emptyContent.Name(),
-					"--passphrase", "fake-passphrase",
+					"--decryption-passphrase", "fake-passphrase",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -141,11 +125,10 @@ var _ = Describe("import-installation command", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
-					"--username", "some-username",
-					"--password", "some-password",
 					"--skip-ssl-validation",
 					"import-installation",
 					"--installation", content.Name(),
+					"--decryption-passphrase", "fake-passphrase",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

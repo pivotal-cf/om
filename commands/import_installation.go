@@ -12,8 +12,8 @@ type ImportInstallation struct {
 	logger              logger
 	installationService installationService
 	Options             struct {
-		Installation string `short:"i"  long:"installation"  description:"path to installation"`
-		Passphrase   string `short:"p" long:"passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
+		Installation string `short:"i"  long:"installation"  description:"path to installation."`
+		Passphrase   string `short:"dp" long:"decryption-passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
 	}
 }
 
@@ -27,7 +27,7 @@ func NewImportInstallation(multipart multipart, installationService installation
 
 func (ii ImportInstallation) Usage() Usage {
 	return Usage{
-		Description:      "This command attempts to import an installation to the Ops Manager",
+		Description:      "This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
 		ShortDescription: "imports a given installation to the Ops Manager targeted",
 		Flags:            ii.Options,
 	}
