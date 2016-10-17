@@ -38,8 +38,6 @@ var _ = Describe("import-installation command", func() {
 			w.Header().Set("Content-Type", "application/json")
 
 			switch req.URL.Path {
-			case "/api/v0/diagnostic_report":
-				responseString = "{}"
 			case "/api/v0/installation_asset_collection":
 				err := req.ParseMultipartForm(100)
 				if err != nil {
