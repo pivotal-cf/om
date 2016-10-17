@@ -51,7 +51,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("failed to insert passphrase: %s", err)
 	}
 
-	submission, err := ii.multipart.Create()
+	submission, err := ii.multipart.Finalize()
 	if err != nil {
 		return fmt.Errorf("failed to create multipart form: %s", err)
 	}

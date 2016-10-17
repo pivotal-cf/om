@@ -49,7 +49,7 @@ var _ = Describe("Form", func() {
 			err = form.AddFile("something[file2]", fileWithContent2)
 			Expect(err).NotTo(HaveOccurred())
 
-			submission, err := form.Create()
+			submission, err := form.Finalize()
 			Expect(err).NotTo(HaveOccurred())
 
 			content, err := ioutil.ReadAll(submission.Content)
@@ -106,7 +106,7 @@ var _ = Describe("Form", func() {
 			err = form.AddField("key3", "value3")
 			Expect(err).NotTo(HaveOccurred())
 
-			submission, err := form.Create()
+			submission, err := form.Finalize()
 			Expect(err).NotTo(HaveOccurred())
 
 			content, err := ioutil.ReadAll(submission.Content)
@@ -121,7 +121,7 @@ var _ = Describe("Form", func() {
 		})
 	})
 
-	Describe("Create", func() {
+	Describe("Finalize", func() {
 		var form formcontent.Form
 
 		BeforeEach(func() {
@@ -134,7 +134,7 @@ var _ = Describe("Form", func() {
 			err := form.AddField("key1", "value1")
 			Expect(err).NotTo(HaveOccurred())
 
-			submission, err := form.Create()
+			submission, err := form.Finalize()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(submission.Length).To(Equal(int64(185)))
