@@ -49,7 +49,7 @@ func (up UploadProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to load product: %s", err)
 	}
 
-	submission, err := up.multipart.Create()
+	submission, err := up.multipart.Finalize()
 	if err != nil {
 		return fmt.Errorf("failed to create multipart form: %s", err)
 	}

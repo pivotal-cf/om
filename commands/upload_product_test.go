@@ -34,7 +34,7 @@ var _ = Describe("UploadProduct", func() {
 			Content:     ioutil.NopCloser(strings.NewReader("")),
 			ContentType: "some content-type",
 		}
-		multipart.CreateReturns(submission, nil)
+		multipart.FinalizeReturns(submission, nil)
 
 		command := commands.NewUploadProduct(multipart, productService, logger)
 
@@ -52,7 +52,7 @@ var _ = Describe("UploadProduct", func() {
 			ContentType:   "some content-type",
 		}))
 
-		Expect(multipart.CreateCallCount()).To(Equal(1))
+		Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
 		format, v := logger.PrintfArgsForCall(0)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("processing product"))

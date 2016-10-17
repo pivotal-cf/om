@@ -8,10 +8,10 @@ import (
 )
 
 type Multipart struct {
-	CreateStub        func() (formcontent.ContentSubmission, error)
-	createMutex       sync.RWMutex
-	createArgsForCall []struct{}
-	createReturns     struct {
+	FinalizeStub        func() (formcontent.ContentSubmission, error)
+	finalizeMutex       sync.RWMutex
+	finalizeArgsForCall []struct{}
+	finalizeReturns     struct {
 		result1 formcontent.ContentSubmission
 		result2 error
 	}
@@ -37,27 +37,27 @@ type Multipart struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Multipart) Create() (formcontent.ContentSubmission, error) {
-	fake.createMutex.Lock()
-	fake.createArgsForCall = append(fake.createArgsForCall, struct{}{})
-	fake.recordInvocation("Create", []interface{}{})
-	fake.createMutex.Unlock()
-	if fake.CreateStub != nil {
-		return fake.CreateStub()
+func (fake *Multipart) Finalize() (formcontent.ContentSubmission, error) {
+	fake.finalizeMutex.Lock()
+	fake.finalizeArgsForCall = append(fake.finalizeArgsForCall, struct{}{})
+	fake.recordInvocation("Finalize", []interface{}{})
+	fake.finalizeMutex.Unlock()
+	if fake.FinalizeStub != nil {
+		return fake.FinalizeStub()
 	} else {
-		return fake.createReturns.result1, fake.createReturns.result2
+		return fake.finalizeReturns.result1, fake.finalizeReturns.result2
 	}
 }
 
-func (fake *Multipart) CreateCallCount() int {
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	return len(fake.createArgsForCall)
+func (fake *Multipart) FinalizeCallCount() int {
+	fake.finalizeMutex.RLock()
+	defer fake.finalizeMutex.RUnlock()
+	return len(fake.finalizeArgsForCall)
 }
 
-func (fake *Multipart) CreateReturns(result1 formcontent.ContentSubmission, result2 error) {
-	fake.CreateStub = nil
-	fake.createReturns = struct {
+func (fake *Multipart) FinalizeReturns(result1 formcontent.ContentSubmission, result2 error) {
+	fake.FinalizeStub = nil
+	fake.finalizeReturns = struct {
 		result1 formcontent.ContentSubmission
 		result2 error
 	}{result1, result2}
@@ -134,8 +134,8 @@ func (fake *Multipart) AddFieldReturns(result1 error) {
 func (fake *Multipart) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
+	fake.finalizeMutex.RLock()
+	defer fake.finalizeMutex.RUnlock()
 	fake.addFileMutex.RLock()
 	defer fake.addFileMutex.RUnlock()
 	fake.addFieldMutex.RLock()

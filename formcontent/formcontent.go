@@ -32,7 +32,7 @@ func NewForm() (Form, error) {
 	}, nil
 }
 
-func (f Form) Create() (ContentSubmission, error) {
+func (f Form) Finalize() (ContentSubmission, error) {
 	err := f.multipartWriter.Close()
 	if err != nil {
 		return ContentSubmission{}, err

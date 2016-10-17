@@ -36,7 +36,7 @@ var _ = Describe("UploadStemcell", func() {
 			Content:     ioutil.NopCloser(strings.NewReader("")),
 			ContentType: "some content-type",
 		}
-		multipart.CreateReturns(submission, nil)
+		multipart.FinalizeReturns(submission, nil)
 
 		diagnosticService.ReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
@@ -56,7 +56,7 @@ var _ = Describe("UploadStemcell", func() {
 			ContentType:   "some content-type",
 		}))
 
-		Expect(multipart.CreateCallCount()).To(Equal(1))
+		Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
 		format, v := logger.PrintfArgsForCall(0)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
@@ -75,7 +75,7 @@ var _ = Describe("UploadStemcell", func() {
 				Content:     ioutil.NopCloser(strings.NewReader("")),
 				ContentType: "some content-type",
 			}
-			multipart.CreateReturns(submission, nil)
+			multipart.FinalizeReturns(submission, nil)
 
 			diagnosticService.ReportReturns(api.DiagnosticReport{
 				Stemcells: []string{"stemcell.tgz"},

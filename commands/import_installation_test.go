@@ -34,7 +34,7 @@ var _ = Describe("ImportInstallation", func() {
 			Content:     ioutil.NopCloser(strings.NewReader("")),
 			ContentType: "some content-type",
 		}
-		multipart.CreateReturns(submission, nil)
+		multipart.FinalizeReturns(submission, nil)
 
 		command := commands.NewImportInstallation(multipart, installationService, logger)
 
@@ -52,7 +52,7 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(key).To(Equal("passphrase"))
 		Expect(val).To(Equal("some-passphrase"))
 
-		Expect(multipart.CreateCallCount()).To(Equal(1))
+		Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
 		Expect(installationService.ImportArgsForCall(0)).To(Equal(api.ImportInstallationInput{
 			ContentLength: 10,
