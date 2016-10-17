@@ -84,6 +84,10 @@ func (is InstallationService) Import(input ImportInstallationInput) error {
 
 	is.progress.End()
 
+	if resp.StatusCode == 422 {
+		return fmt.Errorf("request failed: Ops Manager is already configured. You can only import an installation into a raw Ops Manager.")
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)
 		if err != nil {
