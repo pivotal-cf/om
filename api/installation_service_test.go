@@ -165,7 +165,20 @@ var _ = Describe("InstallationService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			Context("when the api returns a 422 due to Ops Manager already being configured", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: 422,
+						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					}, nil)
+					service := api.NewInstallationService(client, bar)
+
+					err := service.Import(api.ImportInstallationInput{})
+					Expect(err).To(MatchError(ContainSubstring("request failed: Ops Manager is already configured. You can only import an installation into a raw Ops Manager.")))
+				})
+			})
+
+			Context("when the api returns any other non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
