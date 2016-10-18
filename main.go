@@ -25,6 +25,7 @@ func main() {
 		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM"`
 		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
 	}
+
 	args, err := flags.Parse(&global, os.Args[1:])
 	if err != nil {
 		logger.Fatal(err)

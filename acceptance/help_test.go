@@ -48,6 +48,17 @@ Command Arguments:
 `
 
 var _ = Describe("help", func() {
+	Context("when given no command at all", func() {
+		It("prints the global usage", func() {
+			command := exec.Command(pathToMain)
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Expect(string(session.Out.Contents())).To(ContainSubstring(GLOBAL_USAGE))
+		})
+	})
+
 	Context("when given the -h short flag", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "-h")
