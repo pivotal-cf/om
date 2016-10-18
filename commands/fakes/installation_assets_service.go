@@ -3,7 +3,7 @@ package fakes
 
 import "sync"
 
-type InstallationService struct {
+type InstallationAssetsService struct {
 	ExportStub        func(string) error
 	exportMutex       sync.RWMutex
 	exportArgsForCall []struct {
@@ -16,7 +16,7 @@ type InstallationService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *InstallationService) Export(arg1 string) error {
+func (fake *InstallationAssetsService) Export(arg1 string) error {
 	fake.exportMutex.Lock()
 	fake.exportArgsForCall = append(fake.exportArgsForCall, struct {
 		arg1 string
@@ -30,26 +30,26 @@ func (fake *InstallationService) Export(arg1 string) error {
 	}
 }
 
-func (fake *InstallationService) ExportCallCount() int {
+func (fake *InstallationAssetsService) ExportCallCount() int {
 	fake.exportMutex.RLock()
 	defer fake.exportMutex.RUnlock()
 	return len(fake.exportArgsForCall)
 }
 
-func (fake *InstallationService) ExportArgsForCall(i int) string {
+func (fake *InstallationAssetsService) ExportArgsForCall(i int) string {
 	fake.exportMutex.RLock()
 	defer fake.exportMutex.RUnlock()
 	return fake.exportArgsForCall[i].arg1
 }
 
-func (fake *InstallationService) ExportReturns(result1 error) {
+func (fake *InstallationAssetsService) ExportReturns(result1 error) {
 	fake.ExportStub = nil
 	fake.exportReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *InstallationService) Invocations() map[string][][]interface{} {
+func (fake *InstallationAssetsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.exportMutex.RLock()
@@ -57,7 +57,7 @@ func (fake *InstallationService) Invocations() map[string][][]interface{} {
 	return fake.invocations
 }
 
-func (fake *InstallationService) recordInvocation(key string, args []interface{}) {
+func (fake *InstallationAssetsService) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
