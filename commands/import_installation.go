@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
@@ -11,17 +12,19 @@ type ImportInstallation struct {
 	multipart           multipart
 	logger              logger
 	installationService installationService
+	setupService        setupService
 	Options             struct {
 		Installation string `short:"i"  long:"installation"  description:"path to installation."`
 		Passphrase   string `short:"dp" long:"decryption-passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
 	}
 }
 
-func NewImportInstallation(multipart multipart, installationService installationService, logger logger) ImportInstallation {
+func NewImportInstallation(multipart multipart, installationService installationService, setupService setupService, logger logger) ImportInstallation {
 	return ImportInstallation{
 		multipart:           multipart,
 		logger:              logger,
 		installationService: installationService,
+		setupService:        setupService,
 	}
 }
 
@@ -37,6 +40,19 @@ func (ii ImportInstallation) Execute(args []string) error {
 	_, err := flags.Parse(&ii.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
+	}
+
+	if ii.Options.Passphrase == "" {
+		return errors.New("could not parse import-installation flags: decryption passphrase not provided")
+	}
+
+	ensureAvailabilityOutput, err := ii.setupService.EnsureAvailability(api.EnsureAvailabilityInput{})
+	if err != nil {
+		return fmt.Errorf("could not check Ops Manager status: %s", err)
+	}
+
+	if ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusUnstarted {
+		return errors.New("cannot import installation to an Ops Manager that is already configured")
 	}
 
 	ii.logger.Printf("processing installation")

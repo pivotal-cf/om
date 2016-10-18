@@ -38,6 +38,9 @@ var _ = Describe("import-installation command", func() {
 			w.Header().Set("Content-Type", "application/json")
 
 			switch req.URL.Path {
+			case "/login/ensure_availability":
+				w.Header().Set("Location", "/setup")
+				w.WriteHeader(http.StatusFound)
 			case "/api/v0/installation_asset_collection":
 				err := req.ParseMultipartForm(100)
 				if err != nil {
@@ -80,6 +83,43 @@ var _ = Describe("import-installation command", func() {
 
 		Expect(installation).To(Equal(filepath.Base(content.Name())))
 		Expect(passphrase).To(Equal("fake-passphrase"))
+	})
+
+	Context("when the ops manager is already configured", func() {
+		BeforeEach(func() {
+			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				var responseString string
+				w.Header().Set("Content-Type", "application/json")
+
+				switch req.URL.Path {
+				case "/login/ensure_availability":
+					w.Header().Set("Location", "/auth/cloudfoundry")
+					w.WriteHeader(http.StatusOK)
+				default:
+					out, err := httputil.DumpRequest(req, true)
+					Expect(err).NotTo(HaveOccurred())
+					Fail(fmt.Sprintf("unexpected request: %s", out))
+				}
+
+				w.Write([]byte(responseString))
+			}))
+		})
+
+		It("returns an error", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--skip-ssl-validation",
+				"import-installation",
+				"--installation", content.Name(),
+				"--decryption-passphrase", "fake-passphrase",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(1))
+			Eventually(session.Out).Should(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
+		})
 	})
 
 	Context("when an error occurs", func() {

@@ -79,7 +79,7 @@ func main() {
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, logger)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, uploadProductService, logger)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, logger)
-	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, logger)
+	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, logger)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
