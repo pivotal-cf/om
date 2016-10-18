@@ -8,22 +8,22 @@ import (
 )
 
 type ExportInstallation struct {
-	logger              logger
-	installationService installationService
-	Options             struct {
+	logger                    logger
+	installationAssetsService installationAssetsService
+	Options                   struct {
 		OutputFile string `short:"o"  long:"output-file"  description:"output path to write installation to"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installation_service.go --fake-name InstallationService . installationService
-type installationService interface {
+//go:generate counterfeiter -o ./fakes/installation_assets_service.go --fake-name InstallationAssetsService . installationAssetsService
+type installationAssetsService interface {
 	Export(string) error
 }
 
-func NewExportInstallation(installationService installationService, logger logger) ExportInstallation {
+func NewExportInstallation(installationAssetsService installationAssetsService, logger logger) ExportInstallation {
 	return ExportInstallation{
-		logger:              logger,
-		installationService: installationService,
+		logger: logger,
+		installationAssetsService: installationAssetsService,
 	}
 }
 
@@ -46,10 +46,12 @@ func (ei ExportInstallation) Execute(args []string) error {
 	}
 
 	ei.logger.Printf("exporting installation")
-	err = ei.installationService.Export(ei.Options.OutputFile)
+
+	err = ei.installationAssetsService.Export(ei.Options.OutputFile)
 	if err != nil {
 		return fmt.Errorf("failed to export installation: %s", err)
 	}
+
 	ei.logger.Printf("finished exporting installation")
 
 	return nil

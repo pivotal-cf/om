@@ -13,17 +13,17 @@ import (
 
 var _ = Describe("ExportInstallation", func() {
 	var (
-		installationService *fakes.InstallationService
-		logger              *fakes.OtherLogger
+		installationAssetsService *fakes.InstallationAssetsService
+		logger                    *fakes.OtherLogger
 	)
 
 	BeforeEach(func() {
-		installationService = &fakes.InstallationService{}
+		installationAssetsService = &fakes.InstallationAssetsService{}
 		logger = &fakes.OtherLogger{}
 	})
 
 	It("exports the installation", func() {
-		command := commands.NewExportInstallation(installationService, logger)
+		command := commands.NewExportInstallation(installationAssetsService, logger)
 
 		err := command.Execute([]string{
 			"--output-file", "/path/to/output.zip",
@@ -31,8 +31,8 @@ var _ = Describe("ExportInstallation", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("calling export on the installation service")
-		Expect(installationService.ExportCallCount()).To(Equal(1))
-		Expect(installationService.ExportArgsForCall(0)).To(Equal("/path/to/output.zip"))
+		Expect(installationAssetsService.ExportCallCount()).To(Equal(1))
+		Expect(installationAssetsService.ExportArgsForCall(0)).To(Equal("/path/to/output.zip"))
 
 		By("printing correct log messages")
 		Expect(logger.PrintfCallCount()).To(Equal(2))
@@ -46,7 +46,7 @@ var _ = Describe("ExportInstallation", func() {
 	Context("failure cases", func() {
 		Context("when an unkwown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewExportInstallation(installationService, logger)
+				command := commands.NewExportInstallation(installationAssetsService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse export-installation flags: flag provided but not defined: -badflag"))
 			})
@@ -54,7 +54,7 @@ var _ = Describe("ExportInstallation", func() {
 
 		Context("when output file is not provided", func() {
 			It("returns an error and prints out usage", func() {
-				command := commands.NewExportInstallation(installationService, logger)
+				command := commands.NewExportInstallation(installationAssetsService, logger)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("expected flag --output-file. Run 'om help export-installation' for more information."))
 			})
@@ -62,8 +62,8 @@ var _ = Describe("ExportInstallation", func() {
 
 		Context("when the installation cannot be exported", func() {
 			It("returns and error", func() {
-				command := commands.NewExportInstallation(installationService, logger)
-				installationService.ExportReturns(errors.New("some error"))
+				command := commands.NewExportInstallation(installationAssetsService, logger)
+				installationAssetsService.ExportReturns(errors.New("some error"))
 
 				err := command.Execute([]string{"--output-file", "/some/path"})
 				Expect(err).To(MatchError("failed to export installation: some error"))
