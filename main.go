@@ -48,6 +48,10 @@ func main() {
 		command = "help"
 	}
 
+	if command == "" {
+		command = "help"
+	}
+
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation)
 
 	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation)
