@@ -66,6 +66,7 @@ func main() {
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar())
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar())
+	installationsService := api.NewInstallationsService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -81,6 +82,7 @@ func main() {
 	commandSet["upload-product"] = commands.NewUploadProduct(form, productService, logger)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, logger)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, logger)
+	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logger)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
