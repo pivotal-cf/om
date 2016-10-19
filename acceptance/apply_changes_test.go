@@ -19,6 +19,7 @@ var _ = Describe("apply-changes command", func() {
 		server                       *httptest.Server
 		installationsStatusCallCount int
 		installationsLogsCallCount   int
+		logLines                     string
 	)
 
 	BeforeEach(func() {
@@ -42,14 +43,18 @@ var _ = Describe("apply-changes command", func() {
 				w.Write([]byte(`{ "install": { "id": 42 } }`))
 			case "/api/v0/installations/42":
 				if installationsStatusCallCount == 3 {
-					w.Write([]byte(`{ "status": "succeed" }`))
+					w.Write([]byte(`{ "status": "succeeded" }`))
 					return
 				}
 
 				installationsStatusCallCount++
 				w.Write([]byte(`{ "status": "running" }`))
-			case "/api/v0/installations/logs":
-				w.Write([]byte(fmt.Sprintf(`{ "logs": "something logged for call #%d" }`, installationsLogsCallCount)))
+			case "/api/v0/installations/42/logs":
+				if installationsLogsCallCount != 3 {
+					logLines += fmt.Sprintf("something logged for call #%d\n", installationsLogsCallCount)
+				}
+
+				w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
 				installationsLogsCallCount++
 			default:
 				out, err := httputil.DumpRequest(req, true)
@@ -70,8 +75,9 @@ var _ = Describe("apply-changes command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
+		Eventually(session, "10s").Should(gexec.Exit(0))
 
+		Expect(installationsStatusCallCount).To(Equal(3))
 		Expect(installationsStatusCallCount).To(Equal(3))
 
 		Expect(session.Out).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
