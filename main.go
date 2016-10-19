@@ -14,6 +14,8 @@ import (
 
 var version = "unknown"
 
+const applySleepSeconds = 1
+
 func main() {
 	logger := log.New(os.Stdout, "", 0)
 
@@ -67,6 +69,7 @@ func main() {
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar())
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar())
 	installationsService := api.NewInstallationsService(authedClient)
+	logWriter := commands.NewLogWriter(os.Stdout)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -81,7 +84,7 @@ func main() {
 	commandSet["upload-product"] = commands.NewUploadProduct(form, uploadProductService, logger)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, logger)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, logger)
-	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logger)
+	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, logger, applySleepSeconds)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

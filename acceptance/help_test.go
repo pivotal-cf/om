@@ -21,6 +21,7 @@ Usage: om [options] <command> [<args>]
   -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
 
 Commands:
+  apply-changes             triggers an install on the Ops Manager targeted
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
   export-installation       exports the installation of the target Ops Manager
   help                      prints this usage information

@@ -40,6 +40,8 @@ func NewApplyChanges(installationsService installationsService, logWriter logWri
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
+	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
+
 	installation, err := ac.installationsService.Trigger()
 	if err != nil {
 		return fmt.Errorf("installation failed to trigger: %s", err)
@@ -96,5 +98,9 @@ func checkErr(err error) (bool, error) {
 }
 
 func (ac ApplyChanges) Usage() Usage {
-	return Usage{}
+	return Usage{
+		Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
+		ShortDescription: "triggers an install on the Ops Manager targeted",
+		Flags:            ac.Options,
+	}
 }
