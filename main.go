@@ -64,8 +64,8 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	uploadProductService := api.NewUploadProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	importInstallationService := api.NewInstallationService(unauthenticatedClient, progress.NewBar())
-	exportInstallationService := api.NewInstallationService(authedClient, progress.NewBar())
+	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar())
+	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar())
 
 	form, err := formcontent.NewForm()
 	if err != nil {

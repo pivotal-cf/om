@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("InstallationService", func() {
+var _ = Describe("InstallationAssetService", func() {
 	Describe("Export", func() {
 		var (
 			client     *fakes.HttpClient
@@ -35,7 +35,7 @@ var _ = Describe("InstallationService", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("makes a request to export the current OpsManager installation", func() {
+		It("makes a request to export the current Ops Manager installation", func() {
 			client.DoReturns(&http.Response{
 				StatusCode:    http.StatusOK,
 				ContentLength: 22,
@@ -43,7 +43,7 @@ var _ = Describe("InstallationService", func() {
 			}, nil)
 
 			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
-			service := api.NewInstallationService(client, bar)
+			service := api.NewInstallationAssetService(client, bar)
 
 			err := service.Export(outputFile.Name())
 			Expect(err).NotTo(HaveOccurred())
@@ -71,7 +71,7 @@ var _ = Describe("InstallationService", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationService(client, bar)
+					service := api.NewInstallationAssetService(client, bar)
 
 					err := service.Export("fake-file")
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -84,7 +84,7 @@ var _ = Describe("InstallationService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewInstallationService(client, bar)
+					service := api.NewInstallationAssetService(client, bar)
 
 					err := service.Export("fake-file")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -98,7 +98,7 @@ var _ = Describe("InstallationService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
-					service := api.NewInstallationService(client, bar)
+					service := api.NewInstallationAssetService(client, bar)
 
 					err := service.Export("fake-dir/fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file")))
@@ -125,7 +125,7 @@ var _ = Describe("InstallationService", func() {
 			}, nil)
 
 			bar.NewBarReaderReturns(strings.NewReader("some other installation"))
-			service := api.NewInstallationService(client, bar)
+			service := api.NewInstallationAssetService(client, bar)
 
 			err := service.Import(api.ImportInstallationInput{
 				ContentLength: 10,
@@ -158,7 +158,7 @@ var _ = Describe("InstallationService", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationService(client, bar)
+					service := api.NewInstallationAssetService(client, bar)
 
 					err := service.Import(api.ImportInstallationInput{})
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -171,7 +171,7 @@ var _ = Describe("InstallationService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewInstallationService(client, bar)
+					service := api.NewInstallationAssetService(client, bar)
 
 					err := service.Import(api.ImportInstallationInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))

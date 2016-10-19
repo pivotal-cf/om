@@ -5,27 +5,25 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/flags"
-	"github.com/pivotal-cf/om/api"
 )
 
 type ExportInstallation struct {
-	logger              logger
-	installationService installationService
-	Options             struct {
+	logger                           logger
+	installationAssetExporterService installationAssetExporterService
+	Options                          struct {
 		OutputFile string `short:"o"  long:"output-file"  description:"output path to write installation to"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installation_service.go --fake-name InstallationService . installationService
-type installationService interface {
+//go:generate counterfeiter -o ./fakes/installation_asset_exporter_service.go --fake-name InstallationAssetExporterService . installationAssetExporterService
+type installationAssetExporterService interface {
 	Export(string) error
-	Import(api.ImportInstallationInput) error
 }
 
-func NewExportInstallation(installationService installationService, logger logger) ExportInstallation {
+func NewExportInstallation(installationAssetExporterService installationAssetExporterService, logger logger) ExportInstallation {
 	return ExportInstallation{
-		logger:              logger,
-		installationService: installationService,
+		logger: logger,
+		installationAssetExporterService: installationAssetExporterService,
 	}
 }
 
@@ -48,10 +46,12 @@ func (ei ExportInstallation) Execute(args []string) error {
 	}
 
 	ei.logger.Printf("exporting installation")
-	err = ei.installationService.Export(ei.Options.OutputFile)
+
+	err = ei.installationAssetExporterService.Export(ei.Options.OutputFile)
 	if err != nil {
 		return fmt.Errorf("failed to export installation: %s", err)
 	}
+
 	ei.logger.Printf("finished exporting installation")
 
 	return nil

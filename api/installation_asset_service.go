@@ -14,25 +14,25 @@ type ImportInstallationInput struct {
 	ContentType   string
 }
 
-type InstallationService struct {
+type InstallationAssetService struct {
 	client   httpClient
 	progress progress
 }
 
-func NewInstallationService(client httpClient, progress progress) InstallationService {
-	return InstallationService{
+func NewInstallationAssetService(client httpClient, progress progress) InstallationAssetService {
+	return InstallationAssetService{
 		client:   client,
 		progress: progress,
 	}
 }
 
-func (is InstallationService) Export(outputFile string) error {
+func (ia InstallationAssetService) Export(outputFile string) error {
 	req, err := http.NewRequest("GET", "/api/v0/installation_asset_collection", nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := is.client.Do(req)
+	resp, err := ia.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
@@ -41,9 +41,9 @@ func (is InstallationService) Export(outputFile string) error {
 		return fmt.Errorf("request failed: unexpected response")
 	}
 
-	is.progress.SetTotal(resp.ContentLength)
-	is.progress.Kickoff()
-	progressReader := is.progress.NewBarReader(resp.Body)
+	ia.progress.SetTotal(resp.ContentLength)
+	ia.progress.Kickoff()
+	progressReader := ia.progress.NewBarReader(resp.Body)
 	defer resp.Body.Close()
 
 	respBody, err := ioutil.ReadAll(progressReader)
@@ -51,7 +51,7 @@ func (is InstallationService) Export(outputFile string) error {
 		return fmt.Errorf("request failed: response cannot be read")
 	}
 
-	is.progress.End()
+	ia.progress.End()
 
 	err = ioutil.WriteFile(outputFile, respBody, 0644)
 	if err != nil {
@@ -61,9 +61,9 @@ func (is InstallationService) Export(outputFile string) error {
 	return nil
 }
 
-func (is InstallationService) Import(input ImportInstallationInput) error {
-	is.progress.SetTotal(input.ContentLength)
-	body := is.progress.NewBarReader(input.Installation)
+func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
+	ia.progress.SetTotal(input.ContentLength)
+	body := ia.progress.NewBarReader(input.Installation)
 
 	req, err := http.NewRequest("POST", "/api/v0/installation_asset_collection", body)
 	if err != nil {
@@ -73,16 +73,16 @@ func (is InstallationService) Import(input ImportInstallationInput) error {
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	is.progress.Kickoff()
+	ia.progress.Kickoff()
 
-	resp, err := is.client.Do(req)
+	resp, err := ia.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	is.progress.End()
+	ia.progress.End()
 
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)

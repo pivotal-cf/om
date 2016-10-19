@@ -17,7 +17,7 @@ import (
 
 var _ = Describe("ImportInstallation", func() {
 	var (
-		installationService *fakes.InstallationService
+		installationService *fakes.InstallationAssetImporterService
 		setupService        *fakes.SetupService
 		multipart           *fakes.Multipart
 		logger              *fakes.OtherLogger
@@ -25,7 +25,7 @@ var _ = Describe("ImportInstallation", func() {
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
-		installationService = &fakes.InstallationService{}
+		installationService = &fakes.InstallationAssetImporterService{}
 		logger = &fakes.OtherLogger{}
 	})
 

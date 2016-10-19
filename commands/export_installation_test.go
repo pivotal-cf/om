@@ -13,12 +13,12 @@ import (
 
 var _ = Describe("ExportInstallation", func() {
 	var (
-		installationService *fakes.InstallationService
+		installationService *fakes.InstallationAssetExporterService
 		logger              *fakes.OtherLogger
 	)
 
 	BeforeEach(func() {
-		installationService = &fakes.InstallationService{}
+		installationService = &fakes.InstallationAssetExporterService{}
 		logger = &fakes.OtherLogger{}
 	})
 

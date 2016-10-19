@@ -9,22 +9,27 @@ import (
 )
 
 type ImportInstallation struct {
-	multipart           multipart
-	logger              logger
-	installationService installationService
-	setupService        setupService
-	Options             struct {
+	multipart                        multipart
+	logger                           logger
+	installationAssetImporterService installationAssetImporterService
+	setupService                     setupService
+	Options                          struct {
 		Installation string `short:"i"  long:"installation"  description:"path to installation."`
 		Passphrase   string `short:"dp" long:"decryption-passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
 	}
 }
 
-func NewImportInstallation(multipart multipart, installationService installationService, setupService setupService, logger logger) ImportInstallation {
+//go:generate counterfeiter -o ./fakes/installation_asset_importer_service.go --fake-name InstallationAssetImporterService . installationAssetImporterService
+type installationAssetImporterService interface {
+	Import(api.ImportInstallationInput) error
+}
+
+func NewImportInstallation(multipart multipart, installationAssetImporterService installationAssetImporterService, setupService setupService, logger logger) ImportInstallation {
 	return ImportInstallation{
-		multipart:           multipart,
-		logger:              logger,
-		installationService: installationService,
-		setupService:        setupService,
+		multipart: multipart,
+		logger:    logger,
+		installationAssetImporterService: installationAssetImporterService,
+		setupService:                     setupService,
 	}
 }
 
@@ -74,7 +79,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 
 	ii.logger.Printf("beginning installation import to Ops Manager")
 
-	err = ii.installationService.Import(api.ImportInstallationInput{
+	err = ii.installationAssetImporterService.Import(api.ImportInstallationInput{
 		ContentLength: submission.Length,
 		Installation:  submission.Content,
 		ContentType:   submission.ContentType,
