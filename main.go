@@ -62,7 +62,7 @@ func main() {
 
 	setupService := api.NewSetupService(unauthenticatedClient)
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
-	uploadProductService := api.NewUploadProductService(authedClient, progress.NewBar())
+	productService := api.NewProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar())
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar())
@@ -77,7 +77,8 @@ func main() {
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, logger)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, logger)
-	commandSet["upload-product"] = commands.NewUploadProduct(form, uploadProductService, logger)
+	commandSet["stage-product"] = commands.NewStageProduct(productService, logger)
+	commandSet["upload-product"] = commands.NewUploadProduct(form, productService, logger)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, logger)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, logger)
 

@@ -25,6 +25,7 @@ Commands:
   export-installation       exports the installation of the target Ops Manager
   help                      prints this usage information
   import-installation       imports a given installation to the Ops Manager targeted
+  stage-product             stages a given product in the Ops Manager targeted
   upload-product            uploads a given product to the Ops Manager targeted
   upload-stemcell           uploads a given stemcell to the Ops Manager targeted
   version                   prints the om release version

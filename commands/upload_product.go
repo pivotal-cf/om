@@ -19,6 +19,7 @@ type UploadProduct struct {
 //go:generate counterfeiter -o ./fakes/product.go --fake-name ProductService . productService
 type productService interface {
 	Upload(api.UploadProductInput) (api.UploadProductOutput, error)
+	Stage(api.StageProductInput) error
 }
 
 func NewUploadProduct(multipart multipart, productService productService, logger logger) UploadProduct {
