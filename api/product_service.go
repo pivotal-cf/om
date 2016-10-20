@@ -17,7 +17,8 @@ type UploadProductInput struct {
 }
 
 type StageProductInput struct {
-	ProductName string
+	ProductName    string
+	ProductVersion string
 }
 
 type UploadProductOutput struct{}
@@ -85,7 +86,7 @@ func (p ProductService) Upload(input UploadProductInput) (UploadProductOutput, e
 }
 
 func (p ProductService) Stage(input StageProductInput) error {
-	productToStage, err := p.checkAvailableProducts(input.ProductName)
+	productToStage, err := p.checkAvailableProducts(input.ProductName, input.ProductVersion)
 	if err != nil {
 		return err
 	}
@@ -136,7 +137,7 @@ func (p ProductService) Stage(input StageProductInput) error {
 	return nil
 }
 
-func (p ProductService) checkAvailableProducts(productName string) (ProductInfo, error) {
+func (p ProductService) checkAvailableProducts(productName string, productVersion string) (ProductInfo, error) {
 	avReq, err := http.NewRequest("GET", "/api/v0/available_products", nil)
 	if err != nil {
 		return ProductInfo{}, err
@@ -166,7 +167,7 @@ func (p ProductService) checkAvailableProducts(productName string) (ProductInfo,
 	var foundProduct ProductInfo
 	var prodFound bool
 	for _, product := range availableProducts {
-		if product.Name == productName {
+		if product.Name == productName && product.Version == productVersion {
 			foundProduct = product
 			prodFound = true
 			break
@@ -174,7 +175,7 @@ func (p ProductService) checkAvailableProducts(productName string) (ProductInfo,
 	}
 
 	if !prodFound {
-		return ProductInfo{}, fmt.Errorf("cannot find product %s", productName)
+		return ProductInfo{}, fmt.Errorf("cannot find product %s %s", productName, productVersion)
 	}
 
 	return foundProduct, nil

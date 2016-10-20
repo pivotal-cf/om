@@ -27,17 +27,19 @@ var _ = Describe("StageProduct", func() {
 		command := commands.NewStageProduct(productService, logger)
 
 		err := command.Execute([]string{
-			"--product", "some-product",
+			"--product-name", "some-product",
+			"--product-version", "some-version",
 		})
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(productService.StageCallCount()).To(Equal(1))
 		Expect(productService.StageArgsForCall(0)).To(Equal(api.StageProductInput{
-			ProductName: "some-product",
+			ProductName:    "some-product",
+			ProductVersion: "some-version",
 		}))
 
 		format, v := logger.PrintfArgsForCall(0)
-		Expect(fmt.Sprintf(format, v...)).To(Equal("staging some-product"))
+		Expect(fmt.Sprintf(format, v...)).To(Equal("staging some-product some-version"))
 
 		format, v = logger.PrintfArgsForCall(1)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished staging"))
@@ -52,12 +54,28 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
+		Context("when the product-name flag is not provided", func() {
+			It("returns an error", func() {
+				command := commands.NewStageProduct(productService, logger)
+				err := command.Execute([]string{"--product-version", "1.0"})
+				Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
+			})
+		})
+
+		Context("when the product-version flag is not provided", func() {
+			It("returns an error", func() {
+				command := commands.NewStageProduct(productService, logger)
+				err := command.Execute([]string{"--product-name", "some-product"})
+				Expect(err).To(MatchError("error: product-version is missing. Please see usage for more information."))
+			})
+		})
+
 		Context("when the product cannot be staged", func() {
 			It("returns and error", func() {
 				command := commands.NewStageProduct(productService, logger)
 				productService.StageReturns(errors.New("some product error"))
 
-				err := command.Execute([]string{"--product", "some-product"})
+				err := command.Execute([]string{"--product-name", "some-product", "--product-version", "some-version"})
 				Expect(err).To(MatchError("failed to stage product: some product error"))
 			})
 		})

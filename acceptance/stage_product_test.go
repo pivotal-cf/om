@@ -84,7 +84,8 @@ var _ = Describe("stage-product command", func() {
 				"--password", "some-password",
 				"--skip-ssl-validation",
 				"stage-product",
-				"--product", "cf",
+				"--product-name", "cf",
+				"--product-version", "1.8.7-build.3",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -173,7 +174,8 @@ var _ = Describe("stage-product command", func() {
 				"--password", "some-password",
 				"--skip-ssl-validation",
 				"stage-product",
-				"--product", "cf",
+				"--product-name", "cf",
+				"--product-version", "1.8.7-build.3",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -253,7 +255,8 @@ var _ = Describe("stage-product command", func() {
 					"--password", "some-password",
 					"--skip-ssl-validation",
 					"stage-product",
-					"--product", "bosh",
+					"--product-name", "bosh",
+					"--product-version", "2.0",
 				)
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())

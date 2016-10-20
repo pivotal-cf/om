@@ -130,7 +130,8 @@ var _ = Describe("ProductService", func() {
 			service := api.NewProductService(client, nil)
 
 			err := service.Stage(api.StageProductInput{
-				ProductName: "some-product",
+				ProductName:    "some-product",
+				ProductVersion: "some-version",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -203,7 +204,8 @@ var _ = Describe("ProductService", func() {
 				service := api.NewProductService(client, nil)
 
 				err := service.Stage(api.StageProductInput{
-					ProductName: "some-product",
+					ProductName:    "some-product",
+					ProductVersion: "1.1.0",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -235,9 +237,22 @@ var _ = Describe("ProductService", func() {
 				service := api.NewProductService(client, nil)
 
 				err := service.Stage(api.StageProductInput{
-					ProductName: "some-unavailable-product",
+					ProductName:    "some-unavailable-product",
+					ProductVersion: "1.2",
 				})
-				Expect(err).To(MatchError(ContainSubstring("cannot find product some-unavailable-product")))
+				Expect(err).To(MatchError(ContainSubstring("cannot find product some-unavailable-product 1.2")))
+			})
+		})
+
+		Context("when the requested product version is not available", func() {
+			It("returns an error", func() {
+				service := api.NewProductService(client, nil)
+
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "some-product",
+					ProductVersion: "1.2",
+				})
+				Expect(err).To(MatchError(ContainSubstring("cannot find product some-product 1.2")))
 			})
 		})
 
@@ -312,7 +327,10 @@ var _ = Describe("ProductService", func() {
 				It("returns an error", func() {
 					service := api.NewProductService(client, nil)
 
-					err := service.Stage(api.StageProductInput{ProductName: "some-product"})
+					err := service.Stage(api.StageProductInput{
+						ProductName:    "some-product",
+						ProductVersion: "some-version",
+					})
 					Expect(err).To(MatchError("could not make api request to deployed products endpoint: some client error"))
 				})
 			})
@@ -353,7 +371,10 @@ var _ = Describe("ProductService", func() {
 				It("returns an error", func() {
 					service := api.NewProductService(client, nil)
 
-					err := service.Stage(api.StageProductInput{ProductName: "some-product"})
+					err := service.Stage(api.StageProductInput{
+						ProductName:    "some-product",
+						ProductVersion: "some-version",
+					})
 					Expect(err).To(MatchError(ContainSubstring("could not make api request to deployed products endpoint: unexpected response 500")))
 				})
 			})
@@ -394,7 +415,10 @@ var _ = Describe("ProductService", func() {
 				It("returns an error", func() {
 					service := api.NewProductService(client, nil)
 
-					err := service.Stage(api.StageProductInput{ProductName: "some-product"})
+					err := service.Stage(api.StageProductInput{
+						ProductName:    "some-product",
+						ProductVersion: "some-version",
+					})
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
@@ -422,7 +446,8 @@ var _ = Describe("ProductService", func() {
 					service := api.NewProductService(client, nil)
 
 					err := service.Stage(api.StageProductInput{
-						ProductName: "foo",
+						ProductName:    "foo",
+						ProductVersion: "bar",
 					})
 					Expect(err).To(MatchError("could not make api request to staged products endpoint: some error"))
 				})
@@ -453,7 +478,8 @@ var _ = Describe("ProductService", func() {
 				It("returns an error", func() {
 					service := api.NewProductService(client, nil)
 					err := service.Stage(api.StageProductInput{
-						ProductName: "foo",
+						ProductName:    "foo",
+						ProductVersion: "bar",
 					})
 					Expect(err).To(MatchError("could not make api request to staged products endpoint: unexpected response 500. Please make sure the product you are adding is compatible with everything that is currently staged/deployed."))
 				})

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
@@ -11,7 +12,8 @@ type StageProduct struct {
 	logger         logger
 	productService productService
 	Options        struct {
-		Product string `short:"p"  long:"product"  description:"name of product"`
+		Product string `short:"p"  long:"product-name"  description:"name of product"`
+		Version string `short:"v"  long:"product-version"  description:"version of product"`
 	}
 }
 
@@ -36,10 +38,19 @@ func (sp StageProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}
 
-	sp.logger.Printf("staging %s", sp.Options.Product)
+	if sp.Options.Product == "" {
+		return errors.New("error: product-name is missing. Please see usage for more information.")
+	}
+
+	if sp.Options.Version == "" {
+		return errors.New("error: product-version is missing. Please see usage for more information.")
+	}
+
+	sp.logger.Printf("staging %s %s", sp.Options.Product, sp.Options.Version)
 
 	err = sp.productService.Stage(api.StageProductInput{
-		ProductName: sp.Options.Product,
+		ProductName:    sp.Options.Product,
+		ProductVersion: sp.Options.Version,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to stage product: %s", err)
