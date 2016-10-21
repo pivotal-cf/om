@@ -14,7 +14,7 @@ import (
 
 var version = "unknown"
 
-const applySleepSeconds = 1
+const applySleepSeconds = 10
 
 func main() {
 	logger := log.New(os.Stdout, "", 0)
