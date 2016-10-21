@@ -75,7 +75,7 @@ var _ = Describe("apply-changes command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session, "10s").Should(gexec.Exit(0))
+		Eventually(session, "40s").Should(gexec.Exit(0))
 
 		Expect(installationsStatusCallCount).To(Equal(3))
 		Expect(installationsStatusCallCount).To(Equal(3))
