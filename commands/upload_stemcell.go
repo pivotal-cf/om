@@ -5,13 +5,14 @@ import (
 	"path/filepath"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 )
 
 type UploadStemcell struct {
 	multipart         multipart
-	logger            logger
+	logger            common.Logger
 	stemcellService   stemcellService
 	diagnosticService diagnosticService
 	Options           struct {
@@ -36,7 +37,7 @@ type diagnosticService interface {
 	Report() (api.DiagnosticReport, error)
 }
 
-func NewUploadStemcell(multipart multipart, stemcellService stemcellService, diagnosticService diagnosticService, logger logger) UploadStemcell {
+func NewUploadStemcell(multipart multipart, stemcellService stemcellService, diagnosticService diagnosticService, logger common.Logger) UploadStemcell {
 	return UploadStemcell{
 		multipart:         multipart,
 		logger:            logger,

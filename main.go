@@ -66,8 +66,8 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	productService := api.NewProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar())
-	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar())
+	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), nil)
+	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), logger)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 

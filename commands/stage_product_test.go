@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,12 +16,12 @@ import (
 var _ = Describe("StageProduct", func() {
 	var (
 		productService *fakes.ProductService
-		logger         *fakes.OtherLogger
+		logger         *commonfakes.OtherLogger
 	)
 
 	BeforeEach(func() {
 		productService = &fakes.ProductService{}
-		logger = &fakes.OtherLogger{}
+		logger = &commonfakes.OtherLogger{}
 	})
 
 	It("stages a product", func() {

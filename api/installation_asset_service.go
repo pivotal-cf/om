@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"time"
+
+	"github.com/pivotal-cf/om/common"
 )
 
 type ImportInstallationInput struct {
@@ -17,12 +20,14 @@ type ImportInstallationInput struct {
 type InstallationAssetService struct {
 	client   httpClient
 	progress progress
+	logger   common.Logger
 }
 
-func NewInstallationAssetService(client httpClient, progress progress) InstallationAssetService {
+func NewInstallationAssetService(client httpClient, progress progress, logger common.Logger) InstallationAssetService {
 	return InstallationAssetService{
 		client:   client,
 		progress: progress,
+		logger:   logger,
 	}
 }
 
@@ -32,7 +37,23 @@ func (ia InstallationAssetService) Export(outputFile string) error {
 		return err
 	}
 
+	respChan := make(chan error)
+	go func() {
+		var elapsedTime int
+		for {
+			select {
+			case _ = <-respChan:
+				return
+			default:
+				time.Sleep(1 * time.Second)
+				elapsedTime++
+				ia.logger.Printf("\r%ds elapsed, waiting for response...", elapsedTime)
+			}
+		}
+	}()
+
 	resp, err := ia.client.Do(req)
+	respChan <- err
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
@@ -14,7 +15,7 @@ type setupService interface {
 
 type ConfigureAuthentication struct {
 	service setupService
-	logger  logger
+	logger  common.Logger
 	Options struct {
 		Username             string `short:"u"  long:"username"              description:"admin username"`
 		Password             string `short:"p"  long:"password"              description:"admin password"`
@@ -22,7 +23,7 @@ type ConfigureAuthentication struct {
 	}
 }
 
-func NewConfigureAuthentication(service setupService, logger logger) ConfigureAuthentication {
+func NewConfigureAuthentication(service setupService, logger common.Logger) ConfigureAuthentication {
 	return ConfigureAuthentication{
 		service: service,
 		logger:  logger,

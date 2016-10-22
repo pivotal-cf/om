@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
 type ExportInstallation struct {
-	logger                           logger
+	logger                           common.Logger
 	installationAssetExporterService installationAssetExporterService
 	Options                          struct {
 		OutputFile string `short:"o"  long:"output-file"  description:"output path to write installation to"`
@@ -20,7 +21,7 @@ type installationAssetExporterService interface {
 	Export(string) error
 }
 
-func NewExportInstallation(installationAssetExporterService installationAssetExporterService, logger logger) ExportInstallation {
+func NewExportInstallation(installationAssetExporterService installationAssetExporterService, logger common.Logger) ExportInstallation {
 	return ExportInstallation{
 		logger: logger,
 		installationAssetExporterService: installationAssetExporterService,

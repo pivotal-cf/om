@@ -6,6 +6,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +22,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 				{Status: api.EnsureAvailabilityStatusPending},
 				{Status: api.EnsureAvailabilityStatusComplete},
 			}
-			logger := &fakes.Logger{}
+			logger := &commonfakes.Logger{}
 
 			command := commands.NewConfigureAuthentication(service, logger)
 			err := command.Execute([]string{
@@ -56,7 +57,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 				service.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
 					{Status: api.EnsureAvailabilityStatusComplete},
 				}
-				logger := &fakes.Logger{}
+				logger := &commonfakes.Logger{}
 
 				command := commands.NewConfigureAuthentication(service, logger)
 				err := command.Execute([]string{
@@ -78,7 +79,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureAuthentication(&fakes.SetupService{}, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(&fakes.SetupService{}, &commonfakes.Logger{})
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-authentication flags: flag provided but not defined: -banana"))
 				})
@@ -89,7 +90,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					service := &fakes.SetupService{}
 					service.EnsureAvailabilityCall.Returns.Errors = []error{errors.New("failed to fetch status")}
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, &commonfakes.Logger{})
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -107,7 +108,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					}
 					service.SetupCall.Returns.Error = errors.New("could not setup")
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, &commonfakes.Logger{})
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -125,7 +126,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					}
 					service.EnsureAvailabilityCall.Returns.Errors = []error{nil, nil, nil, errors.New("failed to fetch status")}
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, &commonfakes.Logger{})
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",

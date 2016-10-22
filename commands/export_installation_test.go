@@ -6,6 +6,7 @@ import (
 
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,12 +15,12 @@ import (
 var _ = Describe("ExportInstallation", func() {
 	var (
 		installationService *fakes.InstallationAssetExporterService
-		logger              *fakes.OtherLogger
+		logger              *commonfakes.OtherLogger
 	)
 
 	BeforeEach(func() {
 		installationService = &fakes.InstallationAssetExporterService{}
-		logger = &fakes.OtherLogger{}
+		logger = &commonfakes.OtherLogger{}
 	})
 
 	It("exports the installation", func() {

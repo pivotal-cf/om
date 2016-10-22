@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/common"
 )
 
 type ApplyChanges struct {
 	installationsService installationsService
-	logger               logger
+	logger               common.Logger
 	logWriter            logWriter
 	waitDuration         int
 	Options              struct{}
@@ -30,7 +31,7 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(installationsService installationsService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
+func NewApplyChanges(installationsService installationsService, logWriter logWriter, logger common.Logger, waitDuration int) ApplyChanges {
 	return ApplyChanges{
 		installationsService: installationsService,
 		logger:               logger,

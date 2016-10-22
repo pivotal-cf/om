@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -47,6 +48,7 @@ var _ = Describe("export-installation command", func() {
 					return
 				}
 				responseString = "some-installation"
+				time.Sleep(2 * time.Second)
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -74,9 +76,10 @@ var _ = Describe("export-installation command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
-		Eventually(session.Out).Should(gbytes.Say("exporting installation"))
-		Eventually(session.Out).Should(gbytes.Say("finished exporting installation"))
+		Eventually(session, 5).Should(gexec.Exit(0))
+		Eventually(session.Out, 5).Should(gbytes.Say("exporting installation"))
+		Eventually(session.Out, 5).Should(gbytes.Say("2s elapsed, waiting for response"))
+		Eventually(session.Out, 5).Should(gbytes.Say("finished exporting installation"))
 
 		content, err := ioutil.ReadFile(outputFileName)
 		Expect(err).NotTo(HaveOccurred())
@@ -98,8 +101,8 @@ var _ = Describe("export-installation command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("request failed: cannot write to output file: open"))
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Out, 5).Should(gbytes.Say("request failed: cannot write to output file: open"))
 			})
 		})
 	})

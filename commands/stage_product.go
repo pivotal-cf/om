@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
 type StageProduct struct {
-	logger         logger
+	logger         common.Logger
 	productService productService
 	Options        struct {
 		Product string `short:"p"  long:"product-name"  description:"name of product"`
@@ -17,7 +18,7 @@ type StageProduct struct {
 	}
 }
 
-func NewStageProduct(productService productService, logger logger) StageProduct {
+func NewStageProduct(productService productService, logger common.Logger) StageProduct {
 	return StageProduct{
 		logger:         logger,
 		productService: productService,
