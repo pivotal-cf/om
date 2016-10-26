@@ -9,25 +9,24 @@ import (
 )
 
 type UploadProduct struct {
-	multipart      multipart
-	logger         common.Logger
-	productService productService
-	Options        struct {
+	multipart       multipart
+	logger          common.Logger
+	productsService productUploader
+	Options         struct {
 		Product string `short:"p"  long:"product"  description:"path to product"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/product.go --fake-name ProductService . productService
-type productService interface {
+//go:generate counterfeiter -o ./fakes/product_uploader.go --fake-name ProductUploader . productUploader
+type productUploader interface {
 	Upload(api.UploadProductInput) (api.UploadProductOutput, error)
-	Stage(api.StageProductInput) error
 }
 
-func NewUploadProduct(multipart multipart, productService productService, logger common.Logger) UploadProduct {
+func NewUploadProduct(multipart multipart, productUploader productUploader, logger common.Logger) UploadProduct {
 	return UploadProduct{
-		multipart:      multipart,
-		logger:         logger,
-		productService: productService,
+		multipart:       multipart,
+		logger:          logger,
+		productsService: productUploader,
 	}
 }
 
@@ -58,7 +57,7 @@ func (up UploadProduct) Execute(args []string) error {
 
 	up.logger.Printf("beginning product upload to Ops Manager")
 
-	_, err = up.productService.Upload(api.UploadProductInput{
+	_, err = up.productsService.Upload(api.UploadProductInput{
 		ContentLength: submission.Length,
 		Product:       submission.Content,
 		ContentType:   submission.ContentType,

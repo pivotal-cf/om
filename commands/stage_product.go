@@ -10,18 +10,23 @@ import (
 )
 
 type StageProduct struct {
-	logger         common.Logger
-	productService productService
-	Options        struct {
+	logger          common.Logger
+	productsService productStager
+	Options         struct {
 		Product string `short:"p"  long:"product-name"  description:"name of product"`
 		Version string `short:"v"  long:"product-version"  description:"version of product"`
 	}
 }
 
-func NewStageProduct(productService productService, logger common.Logger) StageProduct {
+//go:generate counterfeiter -o ./fakes/product_stager.go --fake-name ProductStager . productStager
+type productStager interface {
+	Stage(api.StageProductInput) error
+}
+
+func NewStageProduct(productStager productStager, logger common.Logger) StageProduct {
 	return StageProduct{
-		logger:         logger,
-		productService: productService,
+		logger:          logger,
+		productsService: productStager,
 	}
 }
 
@@ -49,7 +54,7 @@ func (sp StageProduct) Execute(args []string) error {
 
 	sp.logger.Printf("staging %s %s", sp.Options.Product, sp.Options.Version)
 
-	err = sp.productService.Stage(api.StageProductInput{
+	err = sp.productsService.Stage(api.StageProductInput{
 		ProductName:    sp.Options.Product,
 		ProductVersion: sp.Options.Version,
 	})

@@ -18,14 +18,14 @@ import (
 
 var _ = Describe("UploadProduct", func() {
 	var (
-		productService *fakes.ProductService
-		multipart      *fakes.Multipart
-		logger         *commonfakes.OtherLogger
+		productsService *fakes.ProductUploader
+		multipart       *fakes.Multipart
+		logger          *commonfakes.OtherLogger
 	)
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
-		productService = &fakes.ProductService{}
+		productsService = &fakes.ProductUploader{}
 		logger = &commonfakes.OtherLogger{}
 	})
 
@@ -37,7 +37,7 @@ var _ = Describe("UploadProduct", func() {
 		}
 		multipart.FinalizeReturns(submission, nil)
 
-		command := commands.NewUploadProduct(multipart, productService, logger)
+		command := commands.NewUploadProduct(multipart, productsService, logger)
 
 		err := command.Execute([]string{
 			"--product", "/path/to/some-product.tgz",
@@ -47,7 +47,7 @@ var _ = Describe("UploadProduct", func() {
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("product[file]"))
 		Expect(file).To(Equal("/path/to/some-product.tgz"))
-		Expect(productService.UploadArgsForCall(0)).To(Equal(api.UploadProductInput{
+		Expect(productsService.UploadArgsForCall(0)).To(Equal(api.UploadProductInput{
 			ContentLength: 10,
 			Product:       ioutil.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
@@ -68,7 +68,7 @@ var _ = Describe("UploadProduct", func() {
 	Context("failure cases", func() {
 		Context("when an unkwown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadProduct(multipart, productService, logger)
+				command := commands.NewUploadProduct(multipart, productsService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse upload-product flags: flag provided but not defined: -badflag"))
 			})
@@ -76,7 +76,7 @@ var _ = Describe("UploadProduct", func() {
 
 		Context("when adding the file fails", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadProduct(multipart, productService, logger)
+				command := commands.NewUploadProduct(multipart, productsService, logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
 				err := command.Execute([]string{"--product", "/some/path"})
@@ -86,8 +86,8 @@ var _ = Describe("UploadProduct", func() {
 
 		Context("when the product cannot be uploaded", func() {
 			It("returns and error", func() {
-				command := commands.NewUploadProduct(multipart, productService, logger)
-				productService.UploadReturns(api.UploadProductOutput{}, errors.New("some product error"))
+				command := commands.NewUploadProduct(multipart, productsService, logger)
+				productsService.UploadReturns(api.UploadProductOutput{}, errors.New("some product error"))
 
 				err := command.Execute([]string{"--product", "/some/path"})
 				Expect(err).To(MatchError("failed to upload product: some product error"))

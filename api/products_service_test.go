@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ProductService", func() {
+var _ = Describe("ProductsService", func() {
 	Describe("Upload", func() {
 		var (
 			client *fakes.HttpClient
@@ -34,7 +34,7 @@ var _ = Describe("ProductService", func() {
 			}, nil)
 
 			bar.NewBarReaderReturns(strings.NewReader("some other content"))
-			service := api.NewProductService(client, bar)
+			service := api.NewProductsService(client, bar)
 
 			output, err := service.Upload(api.UploadProductInput{
 				ContentLength: 10,
@@ -68,7 +68,7 @@ var _ = Describe("ProductService", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewProductService(client, bar)
+					service := api.NewProductsService(client, bar)
 
 					_, err := service.Upload(api.UploadProductInput{})
 					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
@@ -81,7 +81,7 @@ var _ = Describe("ProductService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewProductService(client, bar)
+					service := api.NewProductsService(client, bar)
 
 					_, err := service.Upload(api.UploadProductInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -127,7 +127,7 @@ var _ = Describe("ProductService", func() {
 		})
 
 		It("makes a request to stage the product to the Ops Manager", func() {
-			service := api.NewProductService(client, nil)
+			service := api.NewProductsService(client, nil)
 
 			err := service.Stage(api.StageProductInput{
 				ProductName:    "some-product",
@@ -201,7 +201,7 @@ var _ = Describe("ProductService", func() {
 			})
 
 			It("makes a request to stage the product to the Ops Manager", func() {
-				service := api.NewProductService(client, nil)
+				service := api.NewProductsService(client, nil)
 
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
@@ -234,7 +234,7 @@ var _ = Describe("ProductService", func() {
 
 		Context("when the requested product is not available", func() {
 			It("returns an error", func() {
-				service := api.NewProductService(client, nil)
+				service := api.NewProductsService(client, nil)
 
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-unavailable-product",
@@ -246,7 +246,7 @@ var _ = Describe("ProductService", func() {
 
 		Context("when the requested product version is not available", func() {
 			It("returns an error", func() {
-				service := api.NewProductService(client, nil)
+				service := api.NewProductsService(client, nil)
 
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
@@ -260,7 +260,7 @@ var _ = Describe("ProductService", func() {
 			Context("when the available products endpoint returns an error", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{})
 					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
@@ -273,7 +273,7 @@ var _ = Describe("ProductService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{})
 					Expect(err).To(MatchError(ContainSubstring("could not make api request to available_products endpoint: unexpected response")))
@@ -286,7 +286,7 @@ var _ = Describe("ProductService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("%%%")),
 					}, nil)
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{})
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
@@ -325,7 +325,7 @@ var _ = Describe("ProductService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "some-product",
@@ -369,7 +369,7 @@ var _ = Describe("ProductService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "some-product",
@@ -413,7 +413,7 @@ var _ = Describe("ProductService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "some-product",
@@ -443,7 +443,7 @@ var _ = Describe("ProductService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
@@ -476,7 +476,7 @@ var _ = Describe("ProductService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductService(client, nil)
+					service := api.NewProductsService(client, nil)
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
 						ProductVersion: "bar",

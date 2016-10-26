@@ -23,7 +23,7 @@ type StageProductInput struct {
 
 type UploadProductOutput struct{}
 
-type ProductService struct {
+type ProductsService struct {
 	client   httpClient
 	progress progress
 }
@@ -43,14 +43,14 @@ type UpgradeRequest struct {
 	ToVersion string `json:"to_version"`
 }
 
-func NewProductService(client httpClient, progress progress) ProductService {
-	return ProductService{
+func NewProductsService(client httpClient, progress progress) ProductsService {
+	return ProductsService{
 		client:   client,
 		progress: progress,
 	}
 }
 
-func (p ProductService) Upload(input UploadProductInput) (UploadProductOutput, error) {
+func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, error) {
 	p.progress.SetTotal(input.ContentLength)
 	body := p.progress.NewBarReader(input.Product)
 
@@ -85,7 +85,7 @@ func (p ProductService) Upload(input UploadProductInput) (UploadProductOutput, e
 	return UploadProductOutput{}, nil
 }
 
-func (p ProductService) Stage(input StageProductInput) error {
+func (p ProductsService) Stage(input StageProductInput) error {
 	productToStage, err := p.checkAvailableProducts(input.ProductName, input.ProductVersion)
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (p ProductService) Stage(input StageProductInput) error {
 	return nil
 }
 
-func (p ProductService) checkAvailableProducts(productName string, productVersion string) (ProductInfo, error) {
+func (p ProductsService) checkAvailableProducts(productName string, productVersion string) (ProductInfo, error) {
 	avReq, err := http.NewRequest("GET", "/api/v0/available_products", nil)
 	if err != nil {
 		return ProductInfo{}, err
@@ -181,7 +181,7 @@ func (p ProductService) checkAvailableProducts(productName string, productVersio
 	return foundProduct, nil
 }
 
-func (p ProductService) checkDeployedProducts(productName string) (string, error) {
+func (p ProductsService) checkDeployedProducts(productName string) (string, error) {
 	depReq, err := http.NewRequest("GET", "/api/v0/deployed/products", nil)
 	if err != nil {
 		return "", err
