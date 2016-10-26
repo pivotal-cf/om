@@ -11,6 +11,8 @@ Currently being developed by RelEng, backlog link is [here](https://www.pivotalt
 
 - less flakey / faster replacement of [opsmgr](https://github.com/pivotal-cf/opsmgr)
 - single binary that can be run on multiple platforms
+- split environment creation from Ops Manager configuration (these are two tools)
+- no longer rely on specific environment file format
 - fully tested, not using tests to to execute browser behavior
 - no capybara
 - [small sharp tool](https://brandur.org/small-sharp-tools)
