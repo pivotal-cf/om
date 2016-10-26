@@ -43,9 +43,7 @@ var _ = Describe("import-installation command", func() {
 				w.WriteHeader(http.StatusFound)
 			case "/api/v0/installation_asset_collection":
 				err := req.ParseMultipartForm(100)
-				if err != nil {
-					panic(err)
-				}
+				Expect(err).NotTo(HaveOccurred())
 
 				installation = req.MultipartForm.File["installation[file]"][0].Filename
 				passphrase = req.MultipartForm.Value["passphrase"][0]

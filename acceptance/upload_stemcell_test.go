@@ -47,6 +47,7 @@ var _ = Describe("upload-stemcell command", func() {
 				responseString = "{}"
 			case "/api/v0/stemcells":
 				auth := req.Header.Get("Authorization")
+
 				if auth != "Bearer some-opsman-token" {
 					w.WriteHeader(http.StatusUnauthorized)
 					return

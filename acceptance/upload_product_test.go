@@ -53,9 +53,7 @@ var _ = Describe("upload-product command", func() {
 				}
 
 				err := req.ParseMultipartForm(100)
-				if err != nil {
-					panic(err)
-				}
+				Expect(err).NotTo(HaveOccurred())
 
 				product = req.MultipartForm.File["product[file]"][0].Filename
 				responseString = "{}"
