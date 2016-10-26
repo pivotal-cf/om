@@ -17,7 +17,8 @@ var version = "unknown"
 const applySleepSeconds = 10
 
 func main() {
-	logger := log.New(os.Stdout, "", 0)
+	stdout := log.New(os.Stdout, "", 0)
+	stderr := log.New(os.Stderr, "", 0)
 
 	var global struct {
 		Version           bool   `short:"v" long:"version"             description:"prints the om release version"                        default:"false"`
@@ -30,12 +31,12 @@ func main() {
 
 	args, err := flags.Parse(&global, os.Args[1:])
 	if err != nil {
-		logger.Fatal(err)
+		stdout.Fatal(err)
 	}
 
 	globalFlagsUsage, err := flags.Usage(global)
 	if err != nil {
-		logger.Fatal(err)
+		stdout.Fatal(err)
 	}
 
 	var command string
@@ -59,7 +60,7 @@ func main() {
 
 	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation)
 	if err != nil {
-		logger.Fatal(err)
+		stdout.Fatal(err)
 	}
 
 	setupService := api.NewSetupService(unauthenticatedClient)
@@ -67,28 +68,30 @@ func main() {
 	productService := api.NewProductService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), nil)
-	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), logger)
+	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), stdout)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
+	requestService := api.NewRequestService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
-		logger.Fatal(err)
+		stdout.Fatal(err)
 	}
 
 	commandSet := commands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
-	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, logger)
-	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, logger)
-	commandSet["stage-product"] = commands.NewStageProduct(productService, logger)
-	commandSet["upload-product"] = commands.NewUploadProduct(form, productService, logger)
-	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, logger)
-	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, logger)
-	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, logger, applySleepSeconds)
+	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
+	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
+	commandSet["upload-product"] = commands.NewUploadProduct(form, productService, stdout)
+	commandSet["stage-product"] = commands.NewStageProduct(productService, stdout)
+	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
+	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, stdout)
+	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
+	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
-		logger.Fatal(err)
+		stdout.Fatal(err)
 	}
 }

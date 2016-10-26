@@ -21,12 +21,6 @@ Usage: {{.Usage}}
 {{end}}{{end}}
 `
 
-type Usage struct {
-	Description      string
-	ShortDescription string
-	Flags            interface{}
-}
-
 type TemplateContext struct {
 	Title         string
 	Description   string
