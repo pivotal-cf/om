@@ -40,6 +40,7 @@ Usage: om [options] <command> [<args>]
 Commands:
   apply-changes             triggers an install on the Ops Manager targeted
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
+  configure-product         configures a staged product
   curl                      issues an authenticated API request
   export-installation       exports the installation of the target Ops Manager
   help                      prints this usage information
