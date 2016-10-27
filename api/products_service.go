@@ -16,12 +16,30 @@ type UploadProductInput struct {
 	ContentType   string
 }
 
+type UploadProductOutput struct{}
+
 type StageProductInput struct {
 	ProductName    string
 	ProductVersion string
 }
 
-type UploadProductOutput struct{}
+type StagedProductsOutput struct {
+	Products []StagedProduct
+}
+
+type StagedProduct struct {
+	GUID string
+	Type string
+}
+
+type ProductsConfigurationInput struct {
+	GUID          string
+	Configuration string
+}
+
+type ProductConfiguration struct {
+	Properties map[string]interface{}
+}
 
 type ProductsService struct {
 	client   httpClient
@@ -131,7 +149,74 @@ func (p ProductsService) Stage(input StageProductInput) error {
 	defer stResp.Body.Close()
 
 	if stResp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not make api request to staged products endpoint: unexpected response %d. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.", stResp.StatusCode)
+		out, err := httputil.DumpResponse(stResp, true)
+		if err != nil {
+			return fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return fmt.Errorf("could not make api request to staged products endpoint: unexpected response. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.\n%s", out)
+	}
+
+	return nil
+}
+
+func (p ProductsService) StagedProducts() (StagedProductsOutput, error) {
+	req, err := http.NewRequest("GET", "/api/v0/staged/products", nil)
+	if err != nil {
+		return StagedProductsOutput{}, err
+	}
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return StagedProductsOutput{}, fmt.Errorf("could not make api request to staged products endpoint: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return StagedProductsOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return StagedProductsOutput{}, fmt.Errorf("could not make api request to staged products endpoint: unexpected response.\n%s", out)
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return StagedProductsOutput{}, err
+	}
+
+	var stagedProducts []StagedProduct
+	err = json.Unmarshal(respBody, &stagedProducts)
+	if err != nil {
+		return StagedProductsOutput{}, fmt.Errorf("could not unmarshal staged products response: %s", err)
+	}
+
+	return StagedProductsOutput{
+		Products: stagedProducts,
+	}, nil
+}
+
+func (p ProductsService) Configure(input ProductsConfigurationInput) error {
+	req, err := http.NewRequest("PUT",
+		fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID),
+		bytes.NewBufferString(fmt.Sprintf(`{"properties": %s}`, input.Configuration)))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return fmt.Errorf("could not make api request to staged product properties endpoint: unexpected response.\n%s", out)
 	}
 
 	return nil
@@ -150,7 +235,11 @@ func (p ProductsService) checkAvailableProducts(productName string, productVersi
 	defer avResp.Body.Close()
 
 	if avResp.StatusCode != http.StatusOK {
-		return ProductInfo{}, fmt.Errorf("could not make api request to available_products endpoint: unexpected response %d", avResp.StatusCode)
+		out, err := httputil.DumpResponse(avResp, true)
+		if err != nil {
+			return ProductInfo{}, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return ProductInfo{}, fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
 	}
 
 	avRespBody, err := ioutil.ReadAll(avResp.Body)
@@ -194,7 +283,11 @@ func (p ProductsService) checkDeployedProducts(productName string) (string, erro
 	defer depResp.Body.Close()
 
 	if depResp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("could not make api request to deployed products endpoint: unexpected response %d", depResp.StatusCode)
+		out, err := httputil.DumpResponse(depResp, true)
+		if err != nil {
+			return "", fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return "", fmt.Errorf("could not make api request to deployed products endpoint: unexpected response.\n%s", out)
 	}
 
 	depRespBody, err := ioutil.ReadAll(depResp.Body)

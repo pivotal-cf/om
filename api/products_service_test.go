@@ -375,7 +375,7 @@ var _ = Describe("ProductsService", func() {
 						ProductName:    "some-product",
 						ProductVersion: "some-version",
 					})
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to deployed products endpoint: unexpected response 500")))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to deployed products endpoint: unexpected response")))
 				})
 			})
 
@@ -481,7 +481,196 @@ var _ = Describe("ProductsService", func() {
 						ProductName:    "foo",
 						ProductVersion: "bar",
 					})
-					Expect(err).To(MatchError("could not make api request to staged products endpoint: unexpected response 500. Please make sure the product you are adding is compatible with everything that is currently staged/deployed."))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products endpoint: unexpected response. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.")))
+				})
+			})
+		})
+	})
+
+	Describe("StagedProducts", func() {
+		var (
+			client *fakes.HttpClient
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				resp = &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
+				}
+				switch req.URL.Path {
+				case "/api/v0/staged/products":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`[{
+							"guid":"some-product-guid",
+							"type":"some-type"
+						},
+						{
+							"guid":"some-other-product-guid",
+							"type":"some-other-type"
+						}]`)),
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("retrieves a list of staged products from the Ops Manager", func() {
+			service := api.NewProductsService(client, nil)
+
+			output, err := service.StagedProducts()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(output).To(Equal(api.StagedProductsOutput{
+				Products: []api.StagedProduct{
+					{
+						GUID: "some-product-guid",
+						Type: "some-type",
+					},
+					{
+						GUID: "some-other-product-guid",
+						Type: "some-other-type",
+					},
+				},
+			}))
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			By("checking for staged products")
+			avReq := client.DoArgsForCall(0)
+			Expect(avReq.URL.Path).To(Equal("/api/v0/staged/products"))
+		})
+
+		Context("failure cases", func() {
+			Context("when the request fails", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{}, errors.New("nope"))
+				})
+
+				It("returns an error", func() {
+					service := api.NewProductsService(client, nil)
+
+					_, err := service.StagedProducts()
+					Expect(err).To(MatchError("could not make api request to staged products endpoint: nope"))
+				})
+			})
+
+			Context("when the server returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusTeapot,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+					}, nil)
+				})
+
+				It("returns an error", func() {
+					service := api.NewProductsService(client, nil)
+
+					_, err := service.StagedProducts()
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products endpoint: unexpected response")))
+				})
+			})
+
+			Context("when the server returns invalid JSON", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("%%")),
+					}, nil)
+				})
+
+				It("returns an error", func() {
+					service := api.NewProductsService(client, nil)
+
+					_, err := service.StagedProducts()
+					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
+				})
+			})
+		})
+	})
+
+	Describe("Configure", func() {
+		var (
+			client *fakes.HttpClient
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				switch req.URL.Path {
+				case "/api/v0/staged/products/some-product-guid/properties":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("configures the properties of the given staged product in the Ops Manager", func() {
+			service := api.NewProductsService(client, nil)
+
+			err := service.Configure(api.ProductsConfigurationInput{
+				GUID: "some-product-guid",
+				Configuration: `{
+					"key": "value"
+				}`,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("configuring the staged product")
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			reqBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(reqBody).To(MatchJSON(`{
+				"properties" : {
+					"key": "value"
+				}
+			}`))
+		})
+
+		Context("failure cases", func() {
+			Context("when the request fails", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{}, errors.New("nope"))
+				})
+
+				It("returns an error", func() {
+					service := api.NewProductsService(client, nil)
+
+					err := service.Configure(api.ProductsConfigurationInput{
+						GUID:          "foo",
+						Configuration: `{}`,
+					})
+					Expect(err).To(MatchError("could not make api request to staged product properties endpoint: nope"))
+				})
+			})
+
+			Context("when the server returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusTeapot,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+					}, nil)
+				})
+
+				It("returns an error", func() {
+					service := api.NewProductsService(client, nil)
+
+					err := service.Configure(api.ProductsConfigurationInput{
+						GUID:          "foo",
+						Configuration: `{}`,
+					})
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product properties endpoint: unexpected response")))
 				})
 			})
 		})

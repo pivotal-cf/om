@@ -85,6 +85,7 @@ func main() {
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, productsService, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(productsService, stdout)
+	commandSet["configure-product"] = commands.NewConfigureProduct(productsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, stdout)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
