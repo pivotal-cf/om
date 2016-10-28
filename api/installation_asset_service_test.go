@@ -186,6 +186,35 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(bar.EndCallCount()).To(Equal(1))
 		})
 
+		It("logs while waiting for a response from the Ops Manager", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				if req.URL.Path == "/api/v0/installation_asset_collection" {
+					time.Sleep(5 * time.Second)
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					}, nil
+				}
+				return nil, nil
+			}
+
+			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+			service := api.NewInstallationAssetService(client, bar, logger)
+
+			err := service.Import(api.ImportInstallationInput{
+				ContentLength: 10,
+				Installation:  strings.NewReader("some installation"),
+				ContentType:   "some content-type",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(logger.PrintfCallCount()).To(Equal(5))
+			for i := 0; i < 5; i++ {
+				format, v := logger.PrintfArgsForCall(i)
+				Expect(fmt.Sprintf(format, v...)).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+			}
+		})
+
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {

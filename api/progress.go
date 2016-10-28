@@ -8,4 +8,6 @@ type progress interface {
 	NewBarReader(io.Reader) io.Reader
 	Kickoff()
 	End()
+	GetTotal() int64
+	GetCurrent() int64
 }

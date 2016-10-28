@@ -47,7 +47,7 @@ func (ia InstallationAssetService) Export(outputFile string) error {
 			default:
 				time.Sleep(1 * time.Second)
 				elapsedTime++
-				ia.logger.Printf("\r%ds elapsed, waiting for response...", elapsedTime)
+				ia.logger.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
 			}
 		}
 	}()
@@ -95,8 +95,25 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	req.ContentLength = input.ContentLength
 
 	ia.progress.Kickoff()
+	respChan := make(chan error)
+	go func() {
+		var elapsedTime int
+		for {
+			select {
+			case _ = <-respChan:
+				return
+			default:
+				time.Sleep(1 * time.Second)
+				if ia.progress.GetCurrent() == ia.progress.GetTotal() { // so that we only start logging time elapsed after the progress bar is done
+					elapsedTime++
+					ia.logger.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+				}
+			}
+		}
+	}()
 
 	resp, err := ia.client.Do(req)
+	respChan <- err
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}

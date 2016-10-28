@@ -22,6 +22,14 @@ func (b Bar) SetTotal(initialSize int64) {
 	b.Total = initialSize
 }
 
+func (b Bar) GetCurrent() int64 {
+	return b.Get()
+}
+
+func (b Bar) GetTotal() int64 {
+	return b.Total
+}
+
 func (b Bar) NewBarReader(r io.Reader) io.Reader {
 	return b.NewProxyReader(r)
 }

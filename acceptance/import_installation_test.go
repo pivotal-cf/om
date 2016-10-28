@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -48,6 +49,7 @@ var _ = Describe("import-installation command", func() {
 				installation = req.MultipartForm.File["installation[file]"][0].Filename
 				passphrase = req.MultipartForm.Value["passphrase"][0]
 				responseString = "{}"
+				time.Sleep(2 * time.Second)
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -74,10 +76,10 @@ var _ = Describe("import-installation command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
-		Eventually(session.Out).Should(gbytes.Say("processing installation"))
-		Eventually(session.Out).Should(gbytes.Say("beginning installation import to Ops Manager"))
-		Eventually(session.Out).Should(gbytes.Say("finished import"))
+		Eventually(session, 5).Should(gexec.Exit(0))
+		Eventually(session.Out, 5).Should(gbytes.Say("processing installation"))
+		Eventually(session.Out, 5).Should(gbytes.Say("beginning installation import to Ops Manager"))
+		Eventually(session.Out, 5).Should(gbytes.Say("finished import"))
 
 		Expect(installation).To(Equal(filepath.Base(content.Name())))
 		Expect(passphrase).To(Equal("fake-passphrase"))
@@ -115,8 +117,8 @@ var _ = Describe("import-installation command", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(1))
-			Eventually(session.Out).Should(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
+			Eventually(session, 5).Should(gexec.Exit(1))
+			Eventually(session.Out, 5).Should(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
 		})
 	})
 
@@ -147,8 +149,8 @@ var _ = Describe("import-installation command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("failed to load installation: file provided has no content"))
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Out, 5).Should(gbytes.Say("failed to load installation: file provided has no content"))
 			})
 		})
 
@@ -170,8 +172,8 @@ var _ = Describe("import-installation command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say(`no such file or directory`))
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Out, 5).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
 	})

@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/gosuri/uilive"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/flags"
@@ -17,6 +19,10 @@ var version = "unknown"
 const applySleepSeconds = 10
 
 func main() {
+	liveWriter := uilive.New()
+	liveWriter.Start()
+	liveLog := log.New(liveWriter, "", 0)
+
 	stdout := log.New(os.Stdout, "", 0)
 	stderr := log.New(os.Stderr, "", 0)
 
@@ -67,8 +73,8 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	productsService := api.NewProductsService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), nil)
-	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), stdout)
+	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveLog)
+	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveLog)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
@@ -95,4 +101,6 @@ func main() {
 	if err != nil {
 		stdout.Fatal(err)
 	}
+
+	liveWriter.Stop()
 }

@@ -243,6 +243,22 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/gosuri/uilive",
+			"repository": "https://github.com/gosuri/uilive",
+			"vcs": "git",
+			"revision": "efb88ccd059957c48f24f9d351d33a0eb00ede41",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattn/go-isatty",
+			"repository": "https://github.com/mattn/go-isatty",
+			"vcs": "git",
+			"revision": "66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/onsi/ginkgo",
 			"repository": "https://github.com/onsi/ginkgo",
 			"vcs": "git",
