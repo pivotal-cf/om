@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type UnauthenticatedClient struct {
@@ -12,7 +13,7 @@ type UnauthenticatedClient struct {
 	client *http.Client
 }
 
-func NewUnauthenticatedClient(target string, insecureSkipVerify bool) UnauthenticatedClient {
+func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTimeout time.Duration) UnauthenticatedClient {
 	return UnauthenticatedClient{
 		target: target,
 		client: &http.Client{
@@ -21,6 +22,7 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool) Unauthenti
 					InsecureSkipVerify: insecureSkipVerify,
 				},
 			},
+			Timeout: requestTimeout,
 		},
 	}
 }

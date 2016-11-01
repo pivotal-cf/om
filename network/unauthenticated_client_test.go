@@ -13,6 +13,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"time"
 )
 
 var _ = Describe("UnauthenticatedClient", func() {
@@ -28,7 +29,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				w.Write([]byte("response"))
 			}))
 
-			client := network.NewUnauthenticatedClient(server.URL, true)
+			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second)
 
 			request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
 			Expect(err).NotTo(HaveOccurred())
@@ -57,7 +58,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 		Context("failure cases", func() {
 			Context("when the target url cannot be parsed", func() {
 				It("returns an error", func() {
-					client := network.NewUnauthenticatedClient("%%%", false)
+					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second)
 					_, err := client.Do(&http.Request{})
 					Expect(err).To(MatchError("could not parse target url: parse %%%: invalid URL escape \"%%%\""))
 				})
@@ -78,7 +79,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				w.Write([]byte("response"))
 			}))
 
-			client := network.NewUnauthenticatedClient(server.URL, true)
+			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second)
 
 			request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
 			Expect(err).NotTo(HaveOccurred())
@@ -108,7 +109,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 		Context("failure cases", func() {
 			Context("when the target url cannot be parsed", func() {
 				It("returns an error", func() {
-					client := network.NewUnauthenticatedClient("%%%", false)
+					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second)
 					_, err := client.RoundTrip(&http.Request{})
 					Expect(err).To(MatchError("could not parse target url: parse %%%: invalid URL escape \"%%%\""))
 				})

@@ -19,9 +19,10 @@ type OAuthClient struct {
 	password    string
 	target      string
 	client      *http.Client
+	timeout     time.Duration
 }
 
-func NewOAuthClient(target, username, password string, insecureSkipVerify bool) (OAuthClient, error) {
+func NewOAuthClient(target, username, password string, insecureSkipVerify bool, requestTimeout time.Duration) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
@@ -39,9 +40,7 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool) 
 				Timeout:   5 * time.Second,
 				KeepAlive: 30 * time.Second,
 			}).Dial,
-			ResponseHeaderTimeout: 15 * time.Minute,
 		},
-		Timeout: 30 * time.Minute,
 	}
 
 	insecureContext := context.Background()
@@ -54,6 +53,7 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool) 
 		password:    password,
 		target:      target,
 		client:      nil,
+		timeout:     requestTimeout,
 	}, nil
 }
 
@@ -64,6 +64,7 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	}
 
 	client := oc.oauthConfig.Client(oc.context, token)
+	client.Timeout =  oc.timeout
 
 	targetURL, err := url.Parse(oc.target)
 	if err != nil {
@@ -83,6 +84,7 @@ func (oc OAuthClient) RoundTrip(request *http.Request) (*http.Response, error) {
 	}
 
 	client := oc.oauthConfig.Client(oc.context, token)
+	client.Timeout =  oc.timeout
 
 	targetURL, err := url.Parse(oc.target)
 	if err != nil {
