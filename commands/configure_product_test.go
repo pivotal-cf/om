@@ -53,10 +53,10 @@ var _ = Describe("ConfigureProduct", func() {
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("i know this, setting properties"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
 
 			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties, hold on to your butts"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
 		})
 
 		Context("failure cases", func() {

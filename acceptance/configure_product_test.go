@@ -88,8 +88,8 @@ var _ = Describe("configure-product command", func() {
 
 		Eventually(session).Should(gexec.Exit(0))
 
-		Expect(session.Out).To(gbytes.Say("i know this, setting properties"))
-		Expect(session.Out).To(gbytes.Say("finished setting properties, hold on to your butts"))
+		Expect(session.Out).To(gbytes.Say("setting properties"))
+		Expect(session.Out).To(gbytes.Say("finished setting properties"))
 
 		Expect(propertiesMethod).To(Equal("PUT"))
 		Expect(propertiesBody).To(MatchJSON(fmt.Sprintf(`{"properties": %s}`, propertiesJSON)))

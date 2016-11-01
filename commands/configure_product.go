@@ -45,7 +45,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return errors.New("error: product-properties is missing. Please see usage for more information.")
 	}
 
-	cp.logger.Printf("i know this, setting properties")
+	cp.logger.Printf("setting properties")
 	stagedProducts, err := cp.productsService.StagedProducts()
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to configure product: %s", err)
 	}
 
-	cp.logger.Printf("finished setting properties, hold on to your butts")
+	cp.logger.Printf("finished setting properties")
 
 	return nil
 }
