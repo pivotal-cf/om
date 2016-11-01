@@ -34,7 +34,7 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool, 
 	httpclient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: insecureSkipVerify,
 			},
 			Dial: (&net.Dialer{
 				Timeout:   5 * time.Second,
