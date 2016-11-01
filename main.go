@@ -12,6 +12,7 @@ import (
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/progress"
+	"time"
 )
 
 var version = "unknown"
@@ -33,6 +34,7 @@ func main() {
 		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
 		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
+		RequestTimeout    int	 `short:"r" long:"request-timeout"     description:"timeout in seconds for HTTP requests to Ops Manager" default:"1800"`
 	}
 
 	args, err := flags.Parse(&global, os.Args[1:])
@@ -62,9 +64,11 @@ func main() {
 		command = "help"
 	}
 
-	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation)
+	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 
-	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation)
+	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
+
+	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}

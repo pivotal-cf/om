@@ -105,5 +105,24 @@ var _ = Describe("export-installation command", func() {
 				Eventually(session.Out, 5).Should(gbytes.Say("request failed: cannot write to output file: open"))
 			})
 		})
+		Context("when the request takes longer than specified timeout", func() {
+			It("returns an error", func() {
+				command := exec.Command(pathToMain,
+					"--target", server.URL,
+					"--username", "some-username",
+					"--password", "some-password",
+					"--skip-ssl-validation",
+					"--request-timeout", "1",
+					"export-installation",
+					"--output-file", outputFileName,
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 3).Should(gexec.Exit(1))
+				Eventually(session.Out, 3).Should(gbytes.Say(`.*request canceled \(Client\.Timeout exceeded while awaiting headers\)`))
+			})
+		})
 	})
 })
