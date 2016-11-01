@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"time"
@@ -18,16 +19,23 @@ type ImportInstallationInput struct {
 }
 
 type InstallationAssetService struct {
-	client   httpClient
-	progress progress
-	logger   common.Logger
+	client     httpClient
+	progress   progress
+	liveWriter liveWriter
 }
 
-func NewInstallationAssetService(client httpClient, progress progress, logger common.Logger) InstallationAssetService {
+//go:generate counterfeiter -o ./fakes/livewriter.go --fake-name LiveWriter . liveWriter
+type liveWriter interface {
+	io.Writer
+	Start()
+	Stop()
+}
+
+func NewInstallationAssetService(client httpClient, progress progress, liveWriter liveWriter) InstallationAssetService {
 	return InstallationAssetService{
-		client:   client,
-		progress: progress,
-		logger:   logger,
+		client:     client,
+		progress:   progress,
+		liveWriter: liveWriter,
 	}
 }
 
@@ -40,14 +48,20 @@ func (ia InstallationAssetService) Export(outputFile string) error {
 	respChan := make(chan error)
 	go func() {
 		var elapsedTime int
+		var liveLog common.Logger
 		for {
 			select {
 			case _ = <-respChan:
+				ia.liveWriter.Stop()
 				return
 			default:
+				if elapsedTime == 0 {
+					ia.liveWriter.Start()
+					liveLog = log.New(ia.liveWriter, "", 0)
+				}
 				time.Sleep(1 * time.Second)
 				elapsedTime++
-				ia.logger.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+				liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
 			}
 		}
 	}()
@@ -98,15 +112,22 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	respChan := make(chan error)
 	go func() {
 		var elapsedTime int
+		var liveLog common.Logger
 		for {
 			select {
 			case _ = <-respChan:
+				ia.liveWriter.Stop()
 				return
 			default:
 				time.Sleep(1 * time.Second)
 				if ia.progress.GetCurrent() == ia.progress.GetTotal() { // so that we only start logging time elapsed after the progress bar is done
+					ia.progress.End()
+					if elapsedTime == 0 {
+						ia.liveWriter.Start()
+						liveLog = log.New(ia.liveWriter, "", 0)
+					}
 					elapsedTime++
-					ia.logger.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+					liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
 				}
 			}
 		}
@@ -119,8 +140,6 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	}
 
 	defer resp.Body.Close()
-
-	ia.progress.End()
 
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)

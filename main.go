@@ -20,8 +20,6 @@ const applySleepSeconds = 10
 
 func main() {
 	liveWriter := uilive.New()
-	liveWriter.Start()
-	liveLog := log.New(liveWriter, "", 0)
 
 	stdout := log.New(os.Stdout, "", 0)
 	stderr := log.New(os.Stderr, "", 0)
@@ -73,8 +71,8 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	productsService := api.NewProductsService(authedClient, progress.NewBar())
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveLog)
-	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveLog)
+	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveWriter)
+	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
@@ -101,6 +99,4 @@ func main() {
 	if err != nil {
 		stdout.Fatal(err)
 	}
-
-	liveWriter.Stop()
 }

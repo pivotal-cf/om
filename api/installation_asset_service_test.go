@@ -11,7 +11,6 @@ import (
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/api/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,13 +22,13 @@ var _ = Describe("InstallationAssetService", func() {
 			client     *fakes.HttpClient
 			outputFile *os.File
 			bar        *fakes.Progress
-			logger     *commonfakes.OtherLogger
+			liveWriter *fakes.LiveWriter
 		)
 
 		BeforeEach(func() {
 			var err error
 			client = &fakes.HttpClient{}
-			logger = &commonfakes.OtherLogger{}
+			liveWriter = &fakes.LiveWriter{}
 			outputFile, err = ioutil.TempFile("", "")
 			Expect(err).NotTo(HaveOccurred())
 			bar = &fakes.Progress{}
@@ -48,7 +47,7 @@ var _ = Describe("InstallationAssetService", func() {
 			}, nil)
 
 			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
-			service := api.NewInstallationAssetService(client, bar, logger)
+			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Export(outputFile.Name())
 			Expect(err).NotTo(HaveOccurred())
@@ -85,23 +84,29 @@ var _ = Describe("InstallationAssetService", func() {
 			}
 
 			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
-			service := api.NewInstallationAssetService(client, bar, logger)
+			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Export(outputFile.Name())
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(logger.PrintfCallCount()).To(Equal(5))
+			By("starting the live log writer")
+			Expect(liveWriter.StartCallCount()).To(Equal(1))
+
+			By("writing to the live log writer")
+			Expect(liveWriter.WriteCallCount()).To(Equal(5))
 			for i := 0; i < 5; i++ {
-				format, v := logger.PrintfArgsForCall(i)
-				Expect(fmt.Sprintf(format, v...)).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
 			}
+
+			By("flushing the live log writer")
+			Expect(liveWriter.StopCallCount()).To(Equal(1))
 		})
 
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationAssetService(client, bar, logger)
+					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Export("fake-file")
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -114,7 +119,7 @@ var _ = Describe("InstallationAssetService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
-					service := api.NewInstallationAssetService(client, bar, logger)
+					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Export("fake-file")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -128,7 +133,7 @@ var _ = Describe("InstallationAssetService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
-					service := api.NewInstallationAssetService(client, bar, logger)
+					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Export("fake-dir/fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file")))
@@ -139,14 +144,14 @@ var _ = Describe("InstallationAssetService", func() {
 
 	Describe("Import", func() {
 		var (
-			client *fakes.HttpClient
-			bar    *fakes.Progress
-			logger *commonfakes.OtherLogger
+			client     *fakes.HttpClient
+			bar        *fakes.Progress
+			liveWriter *fakes.LiveWriter
 		)
 
 		BeforeEach(func() {
 			client = &fakes.HttpClient{}
-			logger = &commonfakes.OtherLogger{}
+			liveWriter = &fakes.LiveWriter{}
 			bar = &fakes.Progress{}
 		})
 
@@ -157,7 +162,7 @@ var _ = Describe("InstallationAssetService", func() {
 			}, nil)
 
 			bar.NewBarReaderReturns(strings.NewReader("some other installation"))
-			service := api.NewInstallationAssetService(client, bar, logger)
+			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Import(api.ImportInstallationInput{
 				ContentLength: 10,
@@ -199,7 +204,7 @@ var _ = Describe("InstallationAssetService", func() {
 			}
 
 			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
-			service := api.NewInstallationAssetService(client, bar, logger)
+			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Import(api.ImportInstallationInput{
 				ContentLength: 10,
@@ -208,18 +213,24 @@ var _ = Describe("InstallationAssetService", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(logger.PrintfCallCount()).To(Equal(5))
+			By("starting the live log writer")
+			Expect(liveWriter.StartCallCount()).To(Equal(1))
+
+			By("writing to the live log writer")
+			Expect(liveWriter.WriteCallCount()).To(Equal(5))
 			for i := 0; i < 5; i++ {
-				format, v := logger.PrintfArgsForCall(i)
-				Expect(fmt.Sprintf(format, v...)).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
 			}
+
+			By("flushing the live log writer")
+			Expect(liveWriter.StopCallCount()).To(Equal(1))
 		})
 
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationAssetService(client, bar, logger)
+					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Import(api.ImportInstallationInput{})
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -232,7 +243,7 @@ var _ = Describe("InstallationAssetService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewInstallationAssetService(client, bar, logger)
+					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Import(api.ImportInstallationInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
