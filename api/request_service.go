@@ -32,6 +32,7 @@ func (rs RequestService) Invoke(input RequestServiceInvokeInput) (RequestService
 		return RequestServiceInvokeOutput{}, fmt.Errorf("failed constructing request: %s", err)
 	}
 
+	request.Header.Set("Content-Type", "application/json")
 	response, err := rs.client.Do(request)
 	if err != nil {
 		return RequestServiceInvokeOutput{}, fmt.Errorf("failed submitting request: %s", err)
