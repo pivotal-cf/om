@@ -44,6 +44,9 @@ var _ = Describe("RequestService", func() {
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("PUT"))
 			Expect(request.URL.Path).To(Equal("/api/v0/api/endpoint"))
+			Expect(request.Header).To(Equal(http.Header{
+				"Content-Type": []string{"application/json"},
+			}))
 
 			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
