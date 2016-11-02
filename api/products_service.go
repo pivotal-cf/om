@@ -197,57 +197,67 @@ func (p ProductsService) StagedProducts() (StagedProductsOutput, error) {
 }
 
 func (p ProductsService) Configure(input ProductsConfigurationInput) error {
-	req, err := createConfigureRequest(input)
+	reqList, err := createConfigureRequests(input)
 	if err != nil {
 		return err
 	}
 
-	resp, err := p.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
+	for _, req := range reqList {
+		resp, err := p.client.Do(req)
 		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
+			return fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
 		}
-		return fmt.Errorf("could not make api request to staged product properties endpoint: unexpected response.\n%s", out)
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			out, err := httputil.DumpResponse(resp, true)
+			if err != nil {
+				return fmt.Errorf("request failed: unexpected response: %s", err)
+			}
+			return fmt.Errorf("could not make api request to staged product properties endpoint: unexpected response.\n%s", out)
+		}
 	}
 
 	return nil
 }
 
-func createConfigureRequest(input ProductsConfigurationInput) (*http.Request, error) {
-	var (
-		req  *http.Request
-		err  error
-		url  string
-		body *bytes.Buffer
-	)
+func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request, error) {
+	var reqList []*http.Request
 
-	if input.Configuration != "" {
-		url = fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID)
-		body = bytes.NewBufferString(fmt.Sprintf(`{"properties": %s}`, input.Configuration))
-	}
-	if input.Network != "" {
-		url = fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", input.GUID)
-		body = bytes.NewBufferString(fmt.Sprintf(`{"networks_and_azs": %s}`, input.Network))
-	}
-
-	if url == "" {
-		return nil, fmt.Errorf("failed to construct request, missing network configuration")
-	}
-
-	req, err = http.NewRequest("PUT", url, body)
-	if err != nil {
-		panic(err)
+	configurations := []struct {
+		Method        string
+		URL           string
+		Configuration string
+	}{
+		{
+			Method:        "PUT",
+			URL:           fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID),
+			Configuration: fmt.Sprintf(`{"properties": %s}`, input.Configuration),
+		},
+		{
+			Method:        "PUT",
+			URL:           fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", input.GUID),
+			Configuration: fmt.Sprintf(`{"networks_and_azs": %s}`, input.Network),
+		},
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	for _, config := range configurations {
+		if config.Configuration == "" {
+			continue
+		}
 
-	return req, err
+		body := bytes.NewBufferString(config.Configuration)
+		req, err := http.NewRequest(config.Method, config.URL, body)
+		if err != nil {
+			return reqList, err
+		}
+
+		req.Header.Set("Content-Type", "application/json")
+
+		reqList = append(reqList, req)
+	}
+
+	return reqList, nil
 }
 
 func (p ProductsService) checkAvailableProducts(productName string, productVersion string) (ProductInfo, error) {
