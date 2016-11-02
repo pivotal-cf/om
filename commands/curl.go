@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
@@ -19,8 +18,8 @@ type requestService interface {
 
 type Curl struct {
 	requestService requestService
-	stdout         common.Logger
-	stderr         common.Logger
+	stdout         logger
+	stderr         logger
 	Options        struct {
 		Path   string `short:"p" long:"path"    description:"path to api endpoint"`
 		Method string `short:"x" long:"request" description:"http verb"`
@@ -28,7 +27,7 @@ type Curl struct {
 	}
 }
 
-func NewCurl(rs requestService, stdout common.Logger, stderr common.Logger) Curl {
+func NewCurl(rs requestService, stdout logger, stderr logger) Curl {
 	return Curl{requestService: rs, stdout: stdout, stderr: stderr}
 }
 

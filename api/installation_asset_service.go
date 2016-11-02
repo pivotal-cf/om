@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"time"
-
-	"github.com/pivotal-cf/om/common"
 )
 
 type ImportInstallationInput struct {
@@ -22,6 +20,10 @@ type InstallationAssetService struct {
 	client     httpClient
 	progress   progress
 	liveWriter liveWriter
+}
+
+type logger interface {
+	Printf(format string, v ...interface{})
 }
 
 //go:generate counterfeiter -o ./fakes/livewriter.go --fake-name LiveWriter . liveWriter
@@ -48,7 +50,7 @@ func (ia InstallationAssetService) Export(outputFile string) error {
 	respChan := make(chan error)
 	go func() {
 		var elapsedTime int
-		var liveLog common.Logger
+		var liveLog logger
 		for {
 			select {
 			case _ = <-respChan:
@@ -112,7 +114,7 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	respChan := make(chan error)
 	go func() {
 		var elapsedTime int
-		var liveLog common.Logger
+		var liveLog logger
 		for {
 			select {
 			case _ = <-respChan:

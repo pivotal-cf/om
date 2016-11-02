@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -9,7 +10,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -26,14 +26,14 @@ var _ = Describe("Curl", func() {
 		var (
 			command        commands.Curl
 			requestService *fakes.RequestService
-			stdout         *commonfakes.Logger
-			stderr         *commonfakes.Logger
+			stdout         *fakes.Logger
+			stderr         *fakes.Logger
 		)
 
 		BeforeEach(func() {
 			requestService = &fakes.RequestService{}
-			stdout = &commonfakes.Logger{}
-			stderr = &commonfakes.Logger{}
+			stdout = &fakes.Logger{}
+			stderr = &fakes.Logger{}
 			command = commands.NewCurl(requestService, stdout, stderr)
 		})
 
@@ -63,12 +63,14 @@ var _ = Describe("Curl", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(data)).To(Equal(`{"some-key": "some-value"}`))
 
-			Expect(stdout.Lines).To(HaveLen(1))
-			Expect(stdout.Lines[0]).To(MatchJSON(`{"some-response-key": "some-response-value"}`))
+			format, content := stdout.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(MatchJSON(`{"some-response-key": "some-response-value"}`))
 
-			Expect(stderr.Lines).To(HaveLen(2))
-			Expect(stderr.Lines[0]).To(Equal("Status: 418 I'm a teapot"))
-			Expect(stderr.Lines[1]).To(Equal("Accept: text/plain\r\nContent-Length: 33\r\nContent-Type: application/json\r\n"))
+			format, content = stderr.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 418 I'm a teapot"))
+
+			format, content = stderr.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("Accept: text/plain\r\nContent-Length: 33\r\nContent-Type: application/json\r\n"))
 		})
 
 		Context("failure cases", func() {
@@ -93,7 +95,6 @@ var _ = Describe("Curl", func() {
 
 			Context("when the response body cannot be read", func() {
 				It("returns an error", func() {
-
 					requestService.InvokeReturns(api.RequestServiceInvokeOutput{
 						Body: errReader{},
 					}, nil)

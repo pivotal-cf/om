@@ -5,13 +5,12 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
 type ImportInstallation struct {
 	multipart                        multipart
-	logger                           common.Logger
+	logger                           logger
 	installationAssetImporterService installationAssetImporterService
 	setupService                     setupService
 	Options                          struct {
@@ -25,7 +24,7 @@ type installationAssetImporterService interface {
 	Import(api.ImportInstallationInput) error
 }
 
-func NewImportInstallation(multipart multipart, installationAssetImporterService installationAssetImporterService, setupService setupService, logger common.Logger) ImportInstallation {
+func NewImportInstallation(multipart multipart, installationAssetImporterService installationAssetImporterService, setupService setupService, logger logger) ImportInstallation {
 	return ImportInstallation{
 		multipart: multipart,
 		logger:    logger,

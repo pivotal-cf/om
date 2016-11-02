@@ -9,7 +9,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 	"github.com/pivotal-cf/om/formcontent"
 
 	. "github.com/onsi/ginkgo"
@@ -21,13 +20,13 @@ var _ = Describe("ImportInstallation", func() {
 		installationService *fakes.InstallationAssetImporterService
 		setupService        *fakes.SetupService
 		multipart           *fakes.Multipart
-		logger              *commonfakes.OtherLogger
+		logger              *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
 		installationService = &fakes.InstallationAssetImporterService{}
-		logger = &commonfakes.OtherLogger{}
+		logger = &fakes.Logger{}
 	})
 
 	It("imports an installation", func() {

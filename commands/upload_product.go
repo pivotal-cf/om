@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
 type UploadProduct struct {
 	multipart       multipart
-	logger          common.Logger
+	logger          logger
 	productsService productUploader
 	Options         struct {
 		Product string `short:"p"  long:"product"  description:"path to product"`
@@ -22,7 +21,7 @@ type productUploader interface {
 	Upload(api.UploadProductInput) (api.UploadProductOutput, error)
 }
 
-func NewUploadProduct(multipart multipart, productUploader productUploader, logger common.Logger) UploadProduct {
+func NewUploadProduct(multipart multipart, productUploader productUploader, logger logger) UploadProduct {
 	return UploadProduct{
 		multipart:       multipart,
 		logger:          logger,

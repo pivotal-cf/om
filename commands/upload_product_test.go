@@ -9,7 +9,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 	"github.com/pivotal-cf/om/formcontent"
 
 	. "github.com/onsi/ginkgo"
@@ -20,13 +19,13 @@ var _ = Describe("UploadProduct", func() {
 	var (
 		productsService *fakes.ProductUploader
 		multipart       *fakes.Multipart
-		logger          *commonfakes.OtherLogger
+		logger          *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
 		productsService = &fakes.ProductUploader{}
-		logger = &commonfakes.OtherLogger{}
+		logger = &fakes.Logger{}
 	})
 
 	It("uploads a product", func() {

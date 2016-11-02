@@ -5,13 +5,12 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/common"
 	"github.com/pivotal-cf/om/flags"
 )
 
 type ConfigureProduct struct {
 	productsService productConfigurer
-	logger          common.Logger
+	logger          logger
 	Options         struct {
 		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
 		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format"`
@@ -25,7 +24,7 @@ type productConfigurer interface {
 	Configure(api.ProductsConfigurationInput) error
 }
 
-func NewConfigureProduct(productConfigurer productConfigurer, logger common.Logger) ConfigureProduct {
+func NewConfigureProduct(productConfigurer productConfigurer, logger logger) ConfigureProduct {
 	return ConfigureProduct{
 		productsService: productConfigurer,
 		logger:          logger,

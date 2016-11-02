@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 type netError struct {
@@ -28,7 +28,7 @@ func (ne netError) Timeout() bool {
 var _ = Describe("ApplyChanges", func() {
 	var (
 		service       *fakes.InstallationsService
-		logger        *commonfakes.OtherLogger
+		logger        *fakes.Logger
 		writer        *fakes.LogWriter
 		statusOutputs []api.InstallationsServiceOutput
 		statusErrors  []error
@@ -40,7 +40,7 @@ var _ = Describe("ApplyChanges", func() {
 
 	BeforeEach(func() {
 		service = &fakes.InstallationsService{}
-		logger = &commonfakes.OtherLogger{}
+		logger = &fakes.Logger{}
 		writer = &fakes.LogWriter{}
 
 		statusCount = 0

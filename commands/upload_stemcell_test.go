@@ -9,7 +9,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 	"github.com/pivotal-cf/om/formcontent"
 
 	. "github.com/onsi/ginkgo"
@@ -21,14 +20,14 @@ var _ = Describe("UploadStemcell", func() {
 		stemcellService   *fakes.StemcellService
 		diagnosticService *fakes.DiagnosticService
 		multipart         *fakes.Multipart
-		logger            *commonfakes.OtherLogger
+		logger            *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
 		stemcellService = &fakes.StemcellService{}
 		diagnosticService = &fakes.DiagnosticService{}
-		logger = &commonfakes.OtherLogger{}
+		logger = &fakes.Logger{}
 	})
 
 	It("uploads the stemcell", func() {

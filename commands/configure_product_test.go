@@ -7,7 +7,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,12 +27,12 @@ var _ = Describe("ConfigureProduct", func() {
 	Describe("Execute", func() {
 		var (
 			service *fakes.ProductConfigurer
-			logger  *commonfakes.OtherLogger
+			logger  *fakes.Logger
 		)
 
 		BeforeEach(func() {
 			service = &fakes.ProductConfigurer{}
-			logger = &commonfakes.OtherLogger{}
+			logger = &fakes.Logger{}
 		})
 
 		It("configures a product", func() {

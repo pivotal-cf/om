@@ -2,11 +2,11 @@ package commands_test
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	commonfakes "github.com/pivotal-cf/om/common/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,7 +22,8 @@ var _ = Describe("ConfigureAuthentication", func() {
 				{Status: api.EnsureAvailabilityStatusPending},
 				{Status: api.EnsureAvailabilityStatusComplete},
 			}
-			logger := &commonfakes.Logger{}
+
+			logger := &fakes.Logger{}
 
 			command := commands.NewConfigureAuthentication(service, logger)
 			err := command.Execute([]string{
@@ -44,11 +45,14 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Expect(service.EnsureAvailabilityCall.CallCount).To(Equal(4))
 
-			Expect(logger.Lines).To(Equal([]string{
-				"configuring internal userstore...",
-				"waiting for configuration to complete...",
-				"configuration complete",
-			}))
+			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring internal userstore..."))
+
+			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+			format, content = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
 		})
 
 		Context("when the authentication setup has already been configured", func() {
@@ -57,7 +61,8 @@ var _ = Describe("ConfigureAuthentication", func() {
 				service.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
 					{Status: api.EnsureAvailabilityStatusComplete},
 				}
-				logger := &commonfakes.Logger{}
+
+				logger := &fakes.Logger{}
 
 				command := commands.NewConfigureAuthentication(service, logger)
 				err := command.Execute([]string{
@@ -70,16 +75,15 @@ var _ = Describe("ConfigureAuthentication", func() {
 				Expect(service.EnsureAvailabilityCall.CallCount).To(Equal(1))
 				Expect(service.SetupCall.CallCount).To(Equal(0))
 
-				Expect(logger.Lines).To(Equal([]string{
-					"configuration previously completed, skipping configuration",
-				}))
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration previously completed, skipping configuration"))
 			})
 		})
 
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureAuthentication(&fakes.SetupService{}, &commonfakes.Logger{})
+					command := commands.NewConfigureAuthentication(&fakes.SetupService{}, &fakes.Logger{})
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-authentication flags: flag provided but not defined: -banana"))
 				})
@@ -90,7 +94,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					service := &fakes.SetupService{}
 					service.EnsureAvailabilityCall.Returns.Errors = []error{errors.New("failed to fetch status")}
 
-					command := commands.NewConfigureAuthentication(service, &commonfakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -108,7 +112,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					}
 					service.SetupCall.Returns.Error = errors.New("could not setup")
 
-					command := commands.NewConfigureAuthentication(service, &commonfakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -126,7 +130,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					}
 					service.EnsureAvailabilityCall.Returns.Errors = []error{nil, nil, nil, errors.New("failed to fetch status")}
 
-					command := commands.NewConfigureAuthentication(service, &commonfakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
