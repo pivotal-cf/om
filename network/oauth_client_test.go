@@ -147,4 +147,32 @@ var _ = Describe("OAuthClient", func() {
 			})
 		})
 	})
+
+	Describe("Passing in verification of certificate option", func() {
+		Context("being disabled", func() {
+			It("should result in an error", func() {
+				client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", false)
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err.Error()).To(HaveSuffix("certificate signed by unknown authority"))
+			})
+		})
+		Context("being enabled", func() {
+			It("should not result in an error", func() {
+				client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+	})
+
 })
