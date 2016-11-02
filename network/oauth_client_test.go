@@ -83,6 +83,34 @@ var _ = Describe("OAuthClient", func() {
 			}))
 		})
 
+		Context("when insecureSkipVerify is configured", func() {
+			Context("when it is set to false", func() {
+				It("throws an error for invalid certificates", func() {
+					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", false)
+					Expect(err).NotTo(HaveOccurred())
+
+					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = client.Do(req)
+					Expect(err.Error()).To(HaveSuffix("certificate signed by unknown authority"))
+				})
+			})
+
+			Context("when it is set to true", func() {
+				It("does not verify certificates", func() {
+					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
+					Expect(err).NotTo(HaveOccurred())
+
+					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = client.Do(req)
+					Expect(err).NotTo(HaveOccurred())
+				})
+			})
+		})
+
 		Context("when an error occurs", func() {
 			Context("when the initial token cannot be retrieved", func() {
 				It("returns an error", func() {
@@ -147,32 +175,4 @@ var _ = Describe("OAuthClient", func() {
 			})
 		})
 	})
-
-	Describe("Passing in verification of certificate option", func() {
-		Context("being disabled", func() {
-			It("should result in an error", func() {
-				client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", false)
-				Expect(err).NotTo(HaveOccurred())
-
-				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).NotTo(HaveOccurred())
-
-				_, err = client.Do(req)
-				Expect(err.Error()).To(HaveSuffix("certificate signed by unknown authority"))
-			})
-		})
-		Context("being enabled", func() {
-			It("should not result in an error", func() {
-				client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
-				Expect(err).NotTo(HaveOccurred())
-
-				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).NotTo(HaveOccurred())
-
-				_, err = client.Do(req)
-				Expect(err).NotTo(HaveOccurred())
-			})
-		})
-	})
-
 })
