@@ -156,10 +156,12 @@ var _ = Describe("InstallationAssetService", func() {
 		})
 
 		It("makes a request to import the installation to the Ops Manager", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader("{}")),
-			}, nil)
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				time.Sleep(1 * time.Second)
+				return &http.Response{StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader("{}")),
+				}, nil
+			}
 
 			bar.NewBarReaderReturns(strings.NewReader("some other installation"))
 			service := api.NewInstallationAssetService(client, bar, liveWriter)
