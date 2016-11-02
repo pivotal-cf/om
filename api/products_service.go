@@ -35,6 +35,7 @@ type StagedProduct struct {
 type ProductsConfigurationInput struct {
 	GUID          string
 	Configuration string
+	Network       string
 }
 
 type ProductConfiguration struct {
@@ -196,14 +197,10 @@ func (p ProductsService) StagedProducts() (StagedProductsOutput, error) {
 }
 
 func (p ProductsService) Configure(input ProductsConfigurationInput) error {
-	req, err := http.NewRequest("PUT",
-		fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID),
-		bytes.NewBufferString(fmt.Sprintf(`{"properties": %s}`, input.Configuration)))
+	req, err := createConfigureRequest(input)
 	if err != nil {
 		return err
 	}
-
-	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := p.client.Do(req)
 	if err != nil {
@@ -220,6 +217,37 @@ func (p ProductsService) Configure(input ProductsConfigurationInput) error {
 	}
 
 	return nil
+}
+
+func createConfigureRequest(input ProductsConfigurationInput) (*http.Request, error) {
+	var (
+		req  *http.Request
+		err  error
+		url  string
+		body *bytes.Buffer
+	)
+
+	if input.Configuration != "" {
+		url = fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID)
+		body = bytes.NewBufferString(fmt.Sprintf(`{"properties": %s}`, input.Configuration))
+	}
+	if input.Network != "" {
+		url = fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", input.GUID)
+		body = bytes.NewBufferString(fmt.Sprintf(`{"networks_and_azs": %s}`, input.Network))
+	}
+
+	if url == "" {
+		return nil, fmt.Errorf("failed to construct request, missing network configuration")
+	}
+
+	req, err = http.NewRequest("PUT", url, body)
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	return req, err
 }
 
 func (p ProductsService) checkAvailableProducts(productName string, productVersion string) (ProductInfo, error) {

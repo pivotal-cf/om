@@ -20,6 +20,12 @@ const propertiesJSON = `{
 	".top-level-property": { "value": [ { "guid": "some-guid", "name": "max", "my-secret": {"secret": "headroom"} } ] }
 }`
 
+const productNetworksJSON = `{
+  "singleton_availability_zone": {"name": "az-one"},
+  "other_availability_zones": [{"name": "az-two" }, {"name": "az-three"}],
+  "network": {"name": "network-one"}
+}`
+
 var _ = Describe("configure-product command", func() {
 	var (
 		server           *httptest.Server
@@ -52,6 +58,13 @@ var _ = Describe("configure-product command", func() {
 					}
 				]`))
 			case "/api/v0/staged/products/some-product-guid/properties":
+				var err error
+				propertiesMethod = req.Method
+				propertiesBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				w.Write([]byte(`{}`))
+			case "/api/v0/staged/products/some-product-guid/networks_and_azs":
 				var err error
 				propertiesMethod = req.Method
 				propertiesBody, err = ioutil.ReadAll(req.Body)
@@ -93,5 +106,28 @@ var _ = Describe("configure-product command", func() {
 
 		Expect(propertiesMethod).To(Equal("PUT"))
 		Expect(propertiesBody).To(MatchJSON(fmt.Sprintf(`{"properties": %s}`, propertiesJSON)))
+	})
+
+	It("successfully configures a product with product-network flag", func() {
+		command := exec.Command(pathToMain,
+			"--target", server.URL,
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"configure-product",
+			"--product-name", "cf",
+			"--product-network", productNetworksJSON,
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+
+		Expect(session.Out).To(gbytes.Say("setting properties"))
+		Expect(session.Out).To(gbytes.Say("finished setting properties"))
+
+		Expect(propertiesMethod).To(Equal("PUT"))
+		Expect(propertiesBody).To(MatchJSON(fmt.Sprintf(`{"networks_and_azs": %s}`, productNetworksJSON)))
 	})
 })

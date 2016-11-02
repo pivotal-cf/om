@@ -15,6 +15,7 @@ type ConfigureProduct struct {
 	Options         struct {
 		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
 		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format"`
+		NetworkProperties string `short:"pn" long:"product-network" descriptions:"properties to be configured in JSON format"`
 	}
 }
 
@@ -41,8 +42,8 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return errors.New("error: product-name is missing. Please see usage for more information.")
 	}
 
-	if cp.Options.ProductProperties == "" {
-		return errors.New("error: product-properties is missing. Please see usage for more information.")
+	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" {
+		return errors.New("error: product-properties or network-properties are required. Please see usage for more information.")
 	}
 
 	cp.logger.Printf("setting properties")
@@ -62,6 +63,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	err = cp.productsService.Configure(api.ProductsConfigurationInput{
 		GUID:          productGUID,
 		Configuration: cp.Options.ProductProperties,
+		Network:       cp.Options.NetworkProperties,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to configure product: %s", err)

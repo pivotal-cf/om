@@ -606,6 +606,11 @@ var _ = Describe("ProductsService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
 					}
+				case "/api/v0/staged/products/some-product-guid/networks_and_azs":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+					}
 				}
 				return resp, nil
 			}
@@ -633,6 +638,33 @@ var _ = Describe("ProductsService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(reqBody).To(MatchJSON(`{
 				"properties" : {
+					"key": "value"
+				}
+			}`))
+		})
+
+		It("configures the properties of the given staged product in the Ops Manager with product-network flag", func() {
+			service := api.NewProductsService(client, nil)
+
+			err := service.Configure(api.ProductsConfigurationInput{
+				GUID: "some-product-guid",
+				Network: `{
+					"key": "value"
+				}`,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("configuring the staged product")
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/networks_and_azs"))
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			reqBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(reqBody).To(MatchJSON(`{
+				"networks_and_azs" : {
 					"key": "value"
 				}
 			}`))
@@ -671,6 +703,17 @@ var _ = Describe("ProductsService", func() {
 						Configuration: `{}`,
 					})
 					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product properties endpoint: unexpected response")))
+				})
+			})
+
+			Context("when the network properties are empty", func() {
+				It("returns an error", func() {
+					service := api.NewProductsService(client, nil)
+
+					err := service.Configure(api.ProductsConfigurationInput{
+						GUID: "some-product-guid",
+					})
+					Expect(err).To(MatchError(ContainSubstring("failed to construct request, missing network configuration")))
 				})
 			})
 		})
