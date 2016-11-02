@@ -11,9 +11,10 @@ import (
 
 	"github.com/pivotal-cf/om/network"
 
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"time"
 )
 
 var _ = Describe("OAuthClient", func() {
@@ -87,7 +88,7 @@ var _ = Describe("OAuthClient", func() {
 		Context("when insecureSkipVerify is configured", func() {
 			Context("when it is set to false", func() {
 				It("throws an error for invalid certificates", func() {
-					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", false)
+					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", false, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -100,7 +101,7 @@ var _ = Describe("OAuthClient", func() {
 
 			Context("when it is set to true", func() {
 				It("does not verify certificates", func() {
-					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true)
+					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", true, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
