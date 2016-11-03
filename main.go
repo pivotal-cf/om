@@ -74,7 +74,7 @@ func main() {
 
 	setupService := api.NewSetupService(unauthenticatedClient)
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
-	productsService := api.NewProductsService(authedClient, progress.NewBar())
+	productsService := api.NewProductsService(authedClient, progress.NewBar(), liveWriter)
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveWriter)
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)

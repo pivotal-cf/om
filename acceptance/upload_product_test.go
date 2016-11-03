@@ -84,10 +84,10 @@ var _ = Describe("upload-product command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
-		Eventually(session.Out).Should(gbytes.Say("processing product"))
-		Eventually(session.Out).Should(gbytes.Say("beginning product upload to Ops Manager"))
-		Eventually(session.Out).Should(gbytes.Say("finished upload"))
+		Eventually(session, 5).Should(gexec.Exit(0))
+		Eventually(session.Out, 5).Should(gbytes.Say("processing product"))
+		Eventually(session.Out, 5).Should(gbytes.Say("beginning product upload to Ops Manager"))
+		Eventually(session.Out, 5).Should(gbytes.Say("finished upload"))
 
 		Expect(product).To(Equal(filepath.Base(content.Name())))
 	})
@@ -120,8 +120,8 @@ var _ = Describe("upload-product command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("failed to load product: file provided has no content"))
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Out, 5).Should(gbytes.Say("failed to load product: file provided has no content"))
 			})
 		})
 
@@ -144,8 +144,8 @@ var _ = Describe("upload-product command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say(`no such file or directory`))
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Out, 5).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
 	})
