@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
+	"time"
 )
 
 type UploadProductInput struct {
@@ -39,8 +41,9 @@ type ProductsConfigurationInput struct {
 }
 
 type ProductsService struct {
-	client   httpClient
-	progress progress
+	client     httpClient
+	progress   progress
+	liveWriter liveWriter
 }
 
 type ProductInfo struct {
@@ -64,10 +67,11 @@ type ConfigurationRequest struct {
 	Configuration string
 }
 
-func NewProductsService(client httpClient, progress progress) ProductsService {
+func NewProductsService(client httpClient, progress progress, liveWriter liveWriter) ProductsService {
 	return ProductsService{
-		client:   client,
-		progress: progress,
+		client:     client,
+		progress:   progress,
+		liveWriter: liveWriter,
 	}
 }
 
@@ -84,8 +88,32 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 	req.ContentLength = input.ContentLength
 
 	p.progress.Kickoff()
+	respChan := make(chan error)
+	go func() {
+		var elapsedTime int
+		var liveLog logger
+		for {
+			select {
+			case _ = <-respChan:
+				p.liveWriter.Stop()
+				return
+			default:
+				time.Sleep(1 * time.Second)
+				if p.progress.GetCurrent() == p.progress.GetTotal() { // so that we only start logging time elapsed after the progress bar is done
+					p.progress.End()
+					if elapsedTime == 0 {
+						p.liveWriter.Start()
+						liveLog = log.New(p.liveWriter, "", 0)
+					}
+					elapsedTime++
+					liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+				}
+			}
+		}
+	}()
 
 	resp, err := p.client.Do(req)
+	respChan <- err
 	if err != nil {
 		return UploadProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
