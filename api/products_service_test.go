@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/api/fakes"
@@ -18,12 +19,14 @@ import (
 var _ = Describe("ProductsService", func() {
 	Describe("Upload", func() {
 		var (
-			client *fakes.HttpClient
-			bar    *fakes.Progress
+			client     *fakes.HttpClient
+			bar        *fakes.Progress
+			liveWriter *fakes.LiveWriter
 		)
 
 		BeforeEach(func() {
 			client = &fakes.HttpClient{}
+			liveWriter = &fakes.LiveWriter{}
 			bar = &fakes.Progress{}
 		})
 
@@ -34,7 +37,7 @@ var _ = Describe("ProductsService", func() {
 			}, nil)
 
 			bar.NewBarReaderReturns(strings.NewReader("some other content"))
-			service := api.NewProductsService(client, bar)
+			service := api.NewProductsService(client, bar, liveWriter)
 
 			output, err := service.Upload(api.UploadProductInput{
 				ContentLength: 10,
@@ -64,11 +67,46 @@ var _ = Describe("ProductsService", func() {
 			Expect(bar.EndCallCount()).To(Equal(1))
 		})
 
+		It("logs while waiting for a response from the Ops Manager", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				if req.URL.Path == "/api/v0/available_products" {
+					time.Sleep(5 * time.Second)
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader("some-installation")),
+					}, nil
+				}
+				return nil, nil
+			}
+
+			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+			service := api.NewProductsService(client, bar, liveWriter)
+
+			_, err := service.Upload(api.UploadProductInput{
+				ContentLength: 10,
+				Product:       strings.NewReader("some content"),
+				ContentType:   "some content-type",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("starting the live log writer")
+			Expect(liveWriter.StartCallCount()).To(Equal(1))
+
+			By("writing to the live log writer")
+			Expect(liveWriter.WriteCallCount()).To(Equal(5))
+			for i := 0; i < 5; i++ {
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+			}
+
+			By("flushing the live log writer")
+			Expect(liveWriter.StopCallCount()).To(Equal(1))
+		})
+
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewProductsService(client, bar)
+					service := api.NewProductsService(client, bar, liveWriter)
 
 					_, err := service.Upload(api.UploadProductInput{})
 					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
@@ -81,7 +119,7 @@ var _ = Describe("ProductsService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewProductsService(client, bar)
+					service := api.NewProductsService(client, bar, liveWriter)
 
 					_, err := service.Upload(api.UploadProductInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -127,7 +165,7 @@ var _ = Describe("ProductsService", func() {
 		})
 
 		It("makes a request to stage the product to the Ops Manager", func() {
-			service := api.NewProductsService(client, nil)
+			service := api.NewProductsService(client, nil, nil)
 
 			err := service.Stage(api.StageProductInput{
 				ProductName:    "some-product",
@@ -201,7 +239,7 @@ var _ = Describe("ProductsService", func() {
 			})
 
 			It("makes a request to stage the product to the Ops Manager", func() {
-				service := api.NewProductsService(client, nil)
+				service := api.NewProductsService(client, nil, nil)
 
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
@@ -234,7 +272,7 @@ var _ = Describe("ProductsService", func() {
 
 		Context("when the requested product is not available", func() {
 			It("returns an error", func() {
-				service := api.NewProductsService(client, nil)
+				service := api.NewProductsService(client, nil, nil)
 
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-unavailable-product",
@@ -246,7 +284,7 @@ var _ = Describe("ProductsService", func() {
 
 		Context("when the requested product version is not available", func() {
 			It("returns an error", func() {
-				service := api.NewProductsService(client, nil)
+				service := api.NewProductsService(client, nil, nil)
 
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
@@ -260,7 +298,7 @@ var _ = Describe("ProductsService", func() {
 			Context("when the available products endpoint returns an error", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{})
 					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
@@ -273,7 +311,7 @@ var _ = Describe("ProductsService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{})
 					Expect(err).To(MatchError(ContainSubstring("could not make api request to available_products endpoint: unexpected response")))
@@ -286,7 +324,7 @@ var _ = Describe("ProductsService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("%%%")),
 					}, nil)
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{})
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
@@ -325,7 +363,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "some-product",
@@ -369,7 +407,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "some-product",
@@ -413,7 +451,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "some-product",
@@ -443,7 +481,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
@@ -476,7 +514,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
 						ProductVersion: "bar",
@@ -519,7 +557,7 @@ var _ = Describe("ProductsService", func() {
 		})
 
 		It("retrieves a list of staged products from the Ops Manager", func() {
-			service := api.NewProductsService(client, nil)
+			service := api.NewProductsService(client, nil, nil)
 
 			output, err := service.StagedProducts()
 			Expect(err).NotTo(HaveOccurred())
@@ -550,7 +588,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					_, err := service.StagedProducts()
 					Expect(err).To(MatchError("could not make api request to staged products endpoint: nope"))
@@ -566,7 +604,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					_, err := service.StagedProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products endpoint: unexpected response")))
@@ -582,7 +620,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					_, err := service.StagedProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
@@ -617,7 +655,7 @@ var _ = Describe("ProductsService", func() {
 		})
 
 		It("configures the given staged product in the Ops Manager", func() {
-			service := api.NewProductsService(client, nil)
+			service := api.NewProductsService(client, nil, nil)
 
 			err := service.Configure(api.ProductsConfigurationInput{
 				GUID: "some-product-guid",
@@ -667,7 +705,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Configure(api.ProductsConfigurationInput{
 						GUID:          "foo",
@@ -686,7 +724,7 @@ var _ = Describe("ProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewProductsService(client, nil)
+					service := api.NewProductsService(client, nil, nil)
 
 					err := service.Configure(api.ProductsConfigurationInput{
 						GUID:          "foo",
