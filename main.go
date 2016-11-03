@@ -6,13 +6,14 @@ import (
 
 	"github.com/gosuri/uilive"
 
+	"time"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/progress"
-	"time"
 )
 
 var version = "unknown"
@@ -32,7 +33,7 @@ func main() {
 		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
 		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
-		RequestTimeout    int	 `short:"r" long:"request-timeout"     description:"timeout in seconds for HTTP requests to Ops Manager" default:"1800"`
+		RequestTimeout    int    `short:"r" long:"request-timeout"     description:"timeout in seconds for HTTP requests to Ops Manager" default:"1800"`
 	}
 
 	args, err := flags.Parse(&global, os.Args[1:])
@@ -73,7 +74,7 @@ func main() {
 
 	setupService := api.NewSetupService(unauthenticatedClient)
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
-	productsService := api.NewProductsService(authedClient, progress.NewBar())
+	productsService := api.NewProductsService(authedClient, progress.NewBar(), liveWriter)
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveWriter)
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)
