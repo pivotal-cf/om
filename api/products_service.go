@@ -89,6 +89,7 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 
 	p.progress.Kickoff()
 	respChan := make(chan error)
+	progressDone := p.trackProgress()
 	go func() {
 		var elapsedTime int
 		var liveLog logger
@@ -97,14 +98,13 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 			case _ = <-respChan:
 				p.liveWriter.Stop()
 				return
+			case _ = <-progressDone:
+				p.progress.End()
+				p.liveWriter.Start()
+				liveLog = log.New(p.liveWriter, "", 0)
 			default:
 				time.Sleep(1 * time.Second)
-				if p.progress.GetCurrent() == p.progress.GetTotal() { // so that we only start logging time elapsed after the progress bar is done
-					p.progress.End()
-					if elapsedTime == 0 {
-						p.liveWriter.Start()
-						liveLog = log.New(p.liveWriter, "", 0)
-					}
+				if liveLog != nil {
 					elapsedTime++
 					liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
 				}
@@ -130,6 +130,19 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 	}
 
 	return UploadProductOutput{}, nil
+}
+
+func (p ProductsService) trackProgress() chan string {
+	progressChan := make(chan string)
+	go func() {
+		for {
+			if p.progress.GetCurrent() == p.progress.GetTotal() {
+				progressChan <- "done"
+				break
+			}
+		}
+	}()
+	return progressChan
 }
 
 func (p ProductsService) Stage(input StageProductInput) error {
