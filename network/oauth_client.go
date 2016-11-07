@@ -12,6 +12,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+
 type OAuthClient struct {
 	oauthConfig *oauth2.Config
 	context     context.Context
@@ -21,6 +22,8 @@ type OAuthClient struct {
 	client      *http.Client
 	timeout     time.Duration
 }
+
+const retryCount = 3
 
 func NewOAuthClient(target, username, password string, insecureSkipVerify bool, requestTimeout time.Duration) (OAuthClient, error) {
 	conf := &oauth2.Config{
@@ -58,7 +61,8 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool, 
 }
 
 func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
-	token, err := oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
+	token, err := oc.tokenRetry()
+
 	if err != nil {
 		return nil, fmt.Errorf("token could not be retrieved from target url: %s", err)
 	}
@@ -78,7 +82,8 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 }
 
 func (oc OAuthClient) RoundTrip(request *http.Request) (*http.Response, error) {
-	token, err := oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
+	token, err := oc.tokenRetry()
+
 	if err != nil {
 		return nil, fmt.Errorf("token could not be retrieved from target url: %s", err)
 	}
@@ -95,4 +100,17 @@ func (oc OAuthClient) RoundTrip(request *http.Request) (*http.Response, error) {
 	request.URL.Host = targetURL.Host
 
 	return client.Transport.RoundTrip(request)
+}
+
+func (oc OAuthClient) tokenRetry() (token *oauth2.Token, err error){
+	count := 0
+	for (count < retryCount) {
+		token, err = oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
+		if e, ok := err.(net.Error); !(ok && e.Timeout()) {
+			return
+		}
+		count += 1
+		time.Sleep(30 * time.Second)
+	}
+	return
 }
