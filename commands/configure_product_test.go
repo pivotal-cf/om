@@ -35,36 +35,7 @@ var _ = Describe("ConfigureProduct", func() {
 			logger = &fakes.Logger{}
 		})
 
-		It("configures a product", func() {
-			client := commands.NewConfigureProduct(service, logger)
-
-			service.StagedProductsReturns(api.StagedProductsOutput{
-				Products: []api.StagedProduct{
-					{GUID: "some-product-guid", Type: "cf"},
-					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
-				},
-			}, nil)
-
-			err := client.Execute([]string{
-				"--product-name", "cf",
-				"--product-properties", productProperties,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(service.StagedProductsCallCount()).To(Equal(1))
-			Expect(service.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
-				GUID:          "some-product-guid",
-				Configuration: productProperties,
-			}))
-
-			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
-
-			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
-		})
-
-		It("configures a product with product-network flag", func() {
+		It("configures a product and its network", func() {
 			client := commands.NewConfigureProduct(service, logger)
 
 			service.StagedProductsReturns(api.StagedProductsOutput{
@@ -95,36 +66,85 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
 		})
 
+		It("configures a product", func() {
+			client := commands.NewConfigureProduct(service, logger)
+
+			service.StagedProductsReturns(api.StagedProductsOutput{
+				Products: []api.StagedProduct{
+					{GUID: "some-product-guid", Type: "cf"},
+					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+				},
+			}, nil)
+
+			err := client.Execute([]string{
+				"--product-name", "cf",
+				"--product-properties", productProperties,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.StagedProductsCallCount()).To(Equal(1))
+			Expect(service.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
+				GUID:          "some-product-guid",
+				Configuration: productProperties,
+				Network:       "{}",
+			}))
+
+			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
+
+			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
+		})
+
+		It("configures the product-network", func() {
+			client := commands.NewConfigureProduct(service, logger)
+
+			service.StagedProductsReturns(api.StagedProductsOutput{
+				Products: []api.StagedProduct{
+					{GUID: "some-product-guid", Type: "cf"},
+					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+				},
+			}, nil)
+
+			err := client.Execute([]string{
+				"--product-name", "cf",
+				"--product-network", networkProperties,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.StagedProductsCallCount()).To(Equal(1))
+			Expect(service.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
+				GUID:          "some-product-guid",
+				Network:       networkProperties,
+				Configuration: "{}",
+			}))
+
+			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
+
+			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
+		})
+
+		Context("when neither the product-properties or product-network flag is provided", func() {
+			It("logs and then does nothing", func() {
+				command := commands.NewConfigureProduct(service, logger)
+				err := command.Execute([]string{"--product-name", "cf"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.StagedProductsCallCount()).To(Equal(0))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("Provided properties are empty, nothing to do here"))
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(service, logger)
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse configure-product flags: flag provided but not defined: -badflag"))
-				})
-			})
-
-			Context("when the product-name flag is not provided", func() {
-				It("returns an error", func() {
-					command := commands.NewConfigureProduct(service, logger)
-					err := command.Execute([]string{"--product-properties", "{}"})
-					Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
-				})
-			})
-
-			Context("when the product-properties flag is not provided", func() {
-				It("returns an error", func() {
-					command := commands.NewConfigureProduct(service, logger)
-					err := command.Execute([]string{"--product-name", "some-product"})
-					Expect(err).To(MatchError("error: product-properties or network-properties are required. Please see usage for more information."))
-				})
-			})
-
-			Context("when the network-properties flag is empty", func() {
-				It("returns an error", func() {
-					command := commands.NewConfigureProduct(service, logger)
-					err := command.Execute([]string{"--product-name", "some-product"})
-					Expect(err).To(MatchError("error: product-properties or network-properties are required. Please see usage for more information."))
 				})
 			})
 

@@ -13,8 +13,8 @@ type ConfigureProduct struct {
 	logger          logger
 	Options         struct {
 		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
-		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format"`
-		NetworkProperties string `short:"pn" long:"product-network" descriptions:"properties to be configured in JSON format"`
+		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format" default:"{}"`
+		NetworkProperties string `short:"pn" long:"product-network" descriptions:"properties to be configured in JSON format" default:"{}"`
 	}
 }
 
@@ -41,8 +41,9 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return errors.New("error: product-name is missing. Please see usage for more information.")
 	}
 
-	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" {
-		return errors.New("error: product-properties or network-properties are required. Please see usage for more information.")
+	if cp.Options.ProductProperties == "{}" && cp.Options.NetworkProperties == "{}" {
+		cp.logger.Printf("Provided properties are empty, nothing to do here")
+		return nil
 	}
 
 	cp.logger.Printf("setting properties")
