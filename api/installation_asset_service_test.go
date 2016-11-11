@@ -253,4 +253,76 @@ var _ = Describe("InstallationAssetService", func() {
 			})
 		})
 	})
+
+	Describe("Delete", func() {
+		var (
+			client *fakes.HttpClient
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+		})
+
+		It("makes a request to delete the installation on the Ops Manager", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				time.Sleep(1 * time.Second)
+				return &http.Response{StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(`{
+						"install": {
+							"id": 12
+						}
+					}`)),
+				}, nil
+			}
+
+			service := api.NewInstallationAssetService(client, nil, nil)
+
+			output, err := service.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output.ID).To(Equal(12))
+
+			request := client.DoArgsForCall(0)
+			Expect(request.Method).To(Equal("DELETE"))
+			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
+			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
+		})
+
+		Context("when an error occurs", func() {
+			Context("when the client errors before the request", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{}, errors.New("some client error"))
+					service := api.NewInstallationAssetService(client, nil, nil)
+
+					_, err := service.Delete()
+					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
+				})
+			})
+
+			Context("when the api returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					}, nil)
+					service := api.NewInstallationAssetService(client, nil, nil)
+
+					_, err := service.Delete()
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+			Context("when the api response cannot be unmarshaled", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader("%%%")),
+					}, nil)
+					service := api.NewInstallationAssetService(client, nil, nil)
+
+					_, err := service.Delete()
+					Expect(err).To(MatchError(ContainSubstring("invalid character")))
+				})
+			})
+		})
+	})
 })

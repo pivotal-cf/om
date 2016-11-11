@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -153,4 +154,41 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	}
 
 	return nil
+}
+
+func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) {
+	req, err := http.NewRequest("DELETE", "/api/v0/installation_asset_collection", nil)
+	if err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := ia.client.Do(req)
+	if err != nil {
+		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+
+		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	}
+
+	var installation struct {
+		Install struct {
+			ID int
+		}
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&installation)
+	if err != nil {
+		return InstallationsServiceOutput{}, fmt.Errorf("could not read response from installation_asset_collection endpoint: %s", err)
+	}
+
+	return InstallationsServiceOutput{ID: installation.Install.ID}, nil
 }
