@@ -43,6 +43,7 @@ Commands:
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
   configure-product         configures a staged product
   curl                      issues an authenticated API request
+  delete-installation       deletes all the products on the Ops Manager targeted
   export-installation       exports the installation of the target Ops Manager
   help                      prints this usage information
   import-installation       imports a given installation to the Ops Manager targeted
