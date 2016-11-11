@@ -33,11 +33,14 @@ type Multipart struct {
 	addFieldReturns struct {
 		result1 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *Multipart) Finalize() (formcontent.ContentSubmission, error) {
 	fake.finalizeMutex.Lock()
 	fake.finalizeArgsForCall = append(fake.finalizeArgsForCall, struct{}{})
+	fake.recordInvocation("Finalize", []interface{}{})
 	fake.finalizeMutex.Unlock()
 	if fake.FinalizeStub != nil {
 		return fake.FinalizeStub()
@@ -66,6 +69,7 @@ func (fake *Multipart) AddFile(key string, path string) error {
 		key  string
 		path string
 	}{key, path})
+	fake.recordInvocation("AddFile", []interface{}{key, path})
 	fake.addFileMutex.Unlock()
 	if fake.AddFileStub != nil {
 		return fake.AddFileStub(key, path)
@@ -99,6 +103,7 @@ func (fake *Multipart) AddField(key string, value string) error {
 		key   string
 		value string
 	}{key, value})
+	fake.recordInvocation("AddField", []interface{}{key, value})
 	fake.addFieldMutex.Unlock()
 	if fake.AddFieldStub != nil {
 		return fake.AddFieldStub(key, value)
@@ -124,4 +129,28 @@ func (fake *Multipart) AddFieldReturns(result1 error) {
 	fake.addFieldReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *Multipart) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.finalizeMutex.RLock()
+	defer fake.finalizeMutex.RUnlock()
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	fake.addFieldMutex.RLock()
+	defer fake.addFieldMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *Multipart) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

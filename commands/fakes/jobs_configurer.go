@@ -25,6 +25,8 @@ type JobsConfigurer struct {
 	configureReturns struct {
 		result1 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *JobsConfigurer) Jobs(productGUID string) (api.JobsOutput, error) {
@@ -32,6 +34,7 @@ func (fake *JobsConfigurer) Jobs(productGUID string) (api.JobsOutput, error) {
 	fake.jobsArgsForCall = append(fake.jobsArgsForCall, struct {
 		productGUID string
 	}{productGUID})
+	fake.recordInvocation("Jobs", []interface{}{productGUID})
 	fake.jobsMutex.Unlock()
 	if fake.JobsStub != nil {
 		return fake.JobsStub(productGUID)
@@ -65,6 +68,7 @@ func (fake *JobsConfigurer) Configure(arg1 api.JobConfigurationInput) error {
 	fake.configureArgsForCall = append(fake.configureArgsForCall, struct {
 		arg1 api.JobConfigurationInput
 	}{arg1})
+	fake.recordInvocation("Configure", []interface{}{arg1})
 	fake.configureMutex.Unlock()
 	if fake.ConfigureStub != nil {
 		return fake.ConfigureStub(arg1)
@@ -90,4 +94,26 @@ func (fake *JobsConfigurer) ConfigureReturns(result1 error) {
 	fake.configureReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *JobsConfigurer) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.jobsMutex.RLock()
+	defer fake.jobsMutex.RUnlock()
+	fake.configureMutex.RLock()
+	defer fake.configureMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *JobsConfigurer) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

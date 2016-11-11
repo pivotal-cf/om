@@ -16,6 +16,8 @@ type InstallationAssetImporterService struct {
 	importReturns struct {
 		result1 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *InstallationAssetImporterService) Import(arg1 api.ImportInstallationInput) error {
@@ -23,6 +25,7 @@ func (fake *InstallationAssetImporterService) Import(arg1 api.ImportInstallation
 	fake.importArgsForCall = append(fake.importArgsForCall, struct {
 		arg1 api.ImportInstallationInput
 	}{arg1})
+	fake.recordInvocation("Import", []interface{}{arg1})
 	fake.importMutex.Unlock()
 	if fake.ImportStub != nil {
 		return fake.ImportStub(arg1)
@@ -48,4 +51,24 @@ func (fake *InstallationAssetImporterService) ImportReturns(result1 error) {
 	fake.importReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *InstallationAssetImporterService) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.importMutex.RLock()
+	defer fake.importMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *InstallationAssetImporterService) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

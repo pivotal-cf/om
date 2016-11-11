@@ -15,11 +15,14 @@ type DiagnosticService struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *DiagnosticService) Report() (api.DiagnosticReport, error) {
 	fake.reportMutex.Lock()
 	fake.reportArgsForCall = append(fake.reportArgsForCall, struct{}{})
+	fake.recordInvocation("Report", []interface{}{})
 	fake.reportMutex.Unlock()
 	if fake.ReportStub != nil {
 		return fake.ReportStub()
@@ -40,4 +43,24 @@ func (fake *DiagnosticService) ReportReturns(result1 api.DiagnosticReport, resul
 		result1 api.DiagnosticReport
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *DiagnosticService) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.reportMutex.RLock()
+	defer fake.reportMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *DiagnosticService) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

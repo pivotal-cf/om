@@ -12,6 +12,8 @@ type LogWriter struct {
 	flushReturns struct {
 		result1 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *LogWriter) Flush(logs string) error {
@@ -19,6 +21,7 @@ func (fake *LogWriter) Flush(logs string) error {
 	fake.flushArgsForCall = append(fake.flushArgsForCall, struct {
 		logs string
 	}{logs})
+	fake.recordInvocation("Flush", []interface{}{logs})
 	fake.flushMutex.Unlock()
 	if fake.FlushStub != nil {
 		return fake.FlushStub(logs)
@@ -44,4 +47,24 @@ func (fake *LogWriter) FlushReturns(result1 error) {
 	fake.flushReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *LogWriter) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.flushMutex.RLock()
+	defer fake.flushMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *LogWriter) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }
