@@ -78,6 +78,7 @@ func main() {
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveWriter)
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)
+	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil, nil)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
@@ -98,6 +99,7 @@ func main() {
 	commandSet["configure-product"] = commands.NewConfigureProduct(productsService, jobsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, stdout)
+	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
 
