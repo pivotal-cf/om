@@ -52,38 +52,7 @@ var _ = Describe("ConfigureProduct", func() {
 			logger = &fakes.Logger{}
 		})
 
-		It("configures a product and its network", func() {
-			client := commands.NewConfigureProduct(productsService, jobsService, logger)
-
-			productsService.StagedProductsReturns(api.StagedProductsOutput{
-				Products: []api.StagedProduct{
-					{GUID: "some-product-guid", Type: "cf"},
-					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
-				},
-			}, nil)
-
-			err := client.Execute([]string{
-				"--product-name", "cf",
-				"--product-properties", productProperties,
-				"--product-network", networkProperties,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
-			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
-				GUID:          "some-product-guid",
-				Configuration: productProperties,
-				Network:       networkProperties,
-			}))
-
-			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
-
-			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
-		})
-
-		It("configures a product", func() {
+		It("configures a product's properties", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
 
 			productsService.StagedProductsReturns(api.StagedProductsOutput{
@@ -99,11 +68,16 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(jobsService.ConfigureArgsForCall(0)).To(Equal(api.JobConfigurationInput{
+				ProductGUID: "some-product-guid",
+				Jobs:        api.JobConfig{},
+			}))
+
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
 				GUID:          "some-product-guid",
 				Configuration: productProperties,
-				Network:       "{}",
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -113,7 +87,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
 		})
 
-		It("configures the product-network", func() {
+		It("configures a product's network", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
 
 			productsService.StagedProductsReturns(api.StagedProductsOutput{
@@ -129,11 +103,16 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(jobsService.ConfigureArgsForCall(0)).To(Equal(api.JobConfigurationInput{
+				ProductGUID: "some-product-guid",
+				Jobs:        api.JobConfig{},
+			}))
+
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
-				GUID:          "some-product-guid",
-				Network:       networkProperties,
-				Configuration: "{}",
+				GUID:    "some-product-guid",
+				Network: networkProperties,
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)

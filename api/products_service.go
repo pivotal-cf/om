@@ -38,10 +38,6 @@ type ProductsConfigurationInput struct {
 	Network       string
 }
 
-type ProductConfiguration struct {
-	Properties map[string]interface{}
-}
-
 type ProductsService struct {
 	client   httpClient
 	progress progress
@@ -60,6 +56,12 @@ type DeployedProductInfo struct {
 
 type UpgradeRequest struct {
 	ToVersion string `json:"to_version"`
+}
+
+type ConfigurationRequest struct {
+	Method        string
+	URL           string
+	Configuration string
 }
 
 func NewProductsService(client httpClient, progress progress) ProductsService {
@@ -224,28 +226,29 @@ func (p ProductsService) Configure(input ProductsConfigurationInput) error {
 func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request, error) {
 	var reqList []*http.Request
 
-	configurations := []struct {
-		Method        string
-		URL           string
-		Configuration string
-	}{
-		{
-			Method:        "PUT",
-			URL:           fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID),
-			Configuration: fmt.Sprintf(`{"properties": %s}`, input.Configuration),
-		},
-		{
-			Method:        "PUT",
-			URL:           fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", input.GUID),
-			Configuration: fmt.Sprintf(`{"networks_and_azs": %s}`, input.Network),
-		},
+	var configurations []ConfigurationRequest
+
+	if input.Configuration != "" {
+		configurations = append(configurations,
+			ConfigurationRequest{
+				Method:        "PUT",
+				URL:           fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID),
+				Configuration: fmt.Sprintf(`{"properties": %s}`, input.Configuration),
+			},
+		)
+	}
+
+	if input.Network != "" {
+		configurations = append(configurations,
+			ConfigurationRequest{
+				Method:        "PUT",
+				URL:           fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", input.GUID),
+				Configuration: fmt.Sprintf(`{"networks_and_azs": %s}`, input.Network),
+			},
+		)
 	}
 
 	for _, config := range configurations {
-		if config.Configuration == "" {
-			continue
-		}
-
 		body := bytes.NewBufferString(config.Configuration)
 		req, err := http.NewRequest(config.Method, config.URL, body)
 		if err != nil {

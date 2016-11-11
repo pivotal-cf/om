@@ -616,7 +616,7 @@ var _ = Describe("ProductsService", func() {
 			}
 		})
 
-		It("configures the given staged product in the Ops Manager", func() {
+		It("configures the properties for the given staged product in the Ops Manager", func() {
 			service := api.NewProductsService(client, nil)
 
 			err := service.Configure(api.ProductsConfigurationInput{
@@ -624,14 +624,11 @@ var _ = Describe("ProductsService", func() {
 				Configuration: `{
 					"key": "value"
 				}`,
-				Network: `{
-					"key": "value"
-				}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("configuring the product properties")
-			Expect(client.DoCallCount()).To(Equal(2))
+			Expect(client.DoCallCount()).To(Equal(1))
 			req := client.DoArgsForCall(0)
 			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
 			Expect(req.Method).To(Equal("PUT"))
@@ -644,14 +641,27 @@ var _ = Describe("ProductsService", func() {
 					"key": "value"
 				}
 			}`))
+		})
+
+		It("configures the network for the given staged product in the Ops Manager", func() {
+			service := api.NewProductsService(client, nil)
+
+			err := service.Configure(api.ProductsConfigurationInput{
+				GUID: "some-product-guid",
+				Network: `{
+					"key": "value"
+				}`,
+			})
+			Expect(err).NotTo(HaveOccurred())
 
 			By("configuring the product network")
-			req = client.DoArgsForCall(1)
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
 			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/networks_and_azs"))
 			Expect(req.Method).To(Equal("PUT"))
 			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
-			reqBody, err = ioutil.ReadAll(req.Body)
+			reqBody, err := ioutil.ReadAll(req.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(reqBody).To(MatchJSON(`{
 				"networks_and_azs": {

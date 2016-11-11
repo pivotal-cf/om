@@ -15,8 +15,8 @@ type ConfigureProduct struct {
 	logger          logger
 	Options         struct {
 		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
-		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format" default:"{}"`
-		NetworkProperties string `short:"pn" long:"product-network" description:"network properties in JSON format" default:"{}"`
+		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format" default:""`
+		NetworkProperties string `short:"pn" long:"product-network" description:"network properties in JSON format" default:""`
 		ProductResources  string `short:"pr" long:"product-resources" description:"resource configurations in JSON format" default:"{}"`
 	}
 }
@@ -51,7 +51,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("error: product-name is missing. Please see usage for more information.")
 	}
 
-	if cp.Options.ProductProperties == "{}" && cp.Options.NetworkProperties == "{}" && cp.Options.ProductResources == "{}" {
+	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "{}" {
 		cp.logger.Printf("Provided properties are empty, nothing to do here")
 		return nil
 	}
@@ -67,6 +67,16 @@ func (cp ConfigureProduct) Execute(args []string) error {
 			productGUID = sp.GUID
 			break
 		}
+	}
+
+	cp.logger.Printf("setting properties")
+	err = cp.productsService.Configure(api.ProductsConfigurationInput{
+		GUID:          productGUID,
+		Configuration: cp.Options.ProductProperties,
+		Network:       cp.Options.NetworkProperties,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to configure product: %s", err)
 	}
 
 	var userProvidedConfig api.JobConfig
@@ -87,16 +97,6 @@ func (cp ConfigureProduct) Execute(args []string) error {
 				resourceConfig[job.GUID] = userprops
 			}
 		}
-	}
-
-	cp.logger.Printf("setting properties")
-	err = cp.productsService.Configure(api.ProductsConfigurationInput{
-		GUID:          productGUID,
-		Configuration: cp.Options.ProductProperties,
-		Network:       cp.Options.NetworkProperties,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to configure product: %s", err)
 	}
 
 	err = cp.jobsService.Configure(api.JobConfigurationInput{
