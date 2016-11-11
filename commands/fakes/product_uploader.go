@@ -17,8 +17,6 @@ type ProductUploader struct {
 		result1 api.UploadProductOutput
 		result2 error
 	}
-	invocations      map[string][][]interface{}
-	invocationsMutex sync.RWMutex
 }
 
 func (fake *ProductUploader) Upload(arg1 api.UploadProductInput) (api.UploadProductOutput, error) {
@@ -26,7 +24,6 @@ func (fake *ProductUploader) Upload(arg1 api.UploadProductInput) (api.UploadProd
 	fake.uploadArgsForCall = append(fake.uploadArgsForCall, struct {
 		arg1 api.UploadProductInput
 	}{arg1})
-	fake.recordInvocation("Upload", []interface{}{arg1})
 	fake.uploadMutex.Unlock()
 	if fake.UploadStub != nil {
 		return fake.UploadStub(arg1)
@@ -53,24 +50,4 @@ func (fake *ProductUploader) UploadReturns(result1 api.UploadProductOutput, resu
 		result1 api.UploadProductOutput
 		result2 error
 	}{result1, result2}
-}
-
-func (fake *ProductUploader) Invocations() map[string][][]interface{} {
-	fake.invocationsMutex.RLock()
-	defer fake.invocationsMutex.RUnlock()
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
-	return fake.invocations
-}
-
-func (fake *ProductUploader) recordInvocation(key string, args []interface{}) {
-	fake.invocationsMutex.Lock()
-	defer fake.invocationsMutex.Unlock()
-	if fake.invocations == nil {
-		fake.invocations = map[string][][]interface{}{}
-	}
-	if fake.invocations[key] == nil {
-		fake.invocations[key] = [][]interface{}{}
-	}
-	fake.invocations[key] = append(fake.invocations[key], args)
 }

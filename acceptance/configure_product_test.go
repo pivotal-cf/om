@@ -26,6 +26,15 @@ const productNetworkJSON = `{
   "network": {"name": "network-one"}
 }`
 
+const resourceConfigJSON = `
+{
+  "some-job": {
+	  "instances": 1,
+		"persistent_disk": { "size_mb": "20480" },
+    "instance_type": { "id": "m1.medium" }
+  }
+}`
+
 var _ = Describe("configure-product command", func() {
 	var (
 		server                  *httptest.Server
@@ -33,6 +42,8 @@ var _ = Describe("configure-product command", func() {
 		productPropertiesBody   []byte
 		productNetworkMethod    string
 		productNetworkBody      []byte
+		resourceConfigMethod    string
+		resourceConfigBody      []byte
 	)
 
 	BeforeEach(func() {
@@ -59,6 +70,19 @@ var _ = Describe("configure-product command", func() {
 						"type": "p-bosh"
 					}
 				]`))
+			case "/api/v0/staged/products/some-product-guid/jobs":
+				w.Write([]byte(`{
+					"jobs": [
+					  {
+							"name": "not-the-job",
+							"guid": "bad-guid"
+						},
+					  {
+							"name": "some-job",
+							"guid": "the-right-guid"
+						}
+					]
+				}`))
 			case "/api/v0/staged/products/some-product-guid/properties":
 				var err error
 				productPropertiesMethod = req.Method
@@ -70,6 +94,13 @@ var _ = Describe("configure-product command", func() {
 				var err error
 				productNetworkMethod = req.Method
 				productNetworkBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				w.Write([]byte(`{}`))
+			case "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config":
+				var err error
+				resourceConfigMethod = req.Method
+				resourceConfigBody, err = ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 
 				w.Write([]byte(`{}`))
@@ -97,6 +128,7 @@ var _ = Describe("configure-product command", func() {
 			"--product-name", "cf",
 			"--product-properties", propertiesJSON,
 			"--product-network", productNetworkJSON,
+			"--product-resources", resourceConfigJSON,
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -112,5 +144,18 @@ var _ = Describe("configure-product command", func() {
 
 		Expect(productNetworkMethod).To(Equal("PUT"))
 		Expect(productNetworkBody).To(MatchJSON(fmt.Sprintf(`{"networks_and_azs": %s}`, productNetworkJSON)))
+
+		Expect(resourceConfigMethod).To(Equal("PUT"))
+		Expect(resourceConfigBody).To(MatchJSON(`{
+        "instances": 1,
+        "persistent_disk": {
+          "size_mb": "20480"
+        },
+        "instance_type": {
+          "id": "m1.medium"
+        },
+        "internet_connected": false,
+        "elb_names": null
+      }`))
 	})
 })

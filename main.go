@@ -6,13 +6,14 @@ import (
 
 	"github.com/gosuri/uilive"
 
+	"time"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/progress"
-	"time"
 )
 
 var version = "unknown"
@@ -32,7 +33,7 @@ func main() {
 		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
 		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
-		RequestTimeout    int	 `short:"r" long:"request-timeout"     description:"timeout in seconds for HTTP requests to Ops Manager" default:"1800"`
+		RequestTimeout    int    `short:"r" long:"request-timeout"     description:"timeout in seconds for HTTP requests to Ops Manager" default:"1800"`
 	}
 
 	args, err := flags.Parse(&global, os.Args[1:])
@@ -80,6 +81,7 @@ func main() {
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
+	jobsService := api.NewJobsService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -93,7 +95,7 @@ func main() {
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, productsService, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(productsService, stdout)
-	commandSet["configure-product"] = commands.NewConfigureProduct(productsService, stdout)
+	commandSet["configure-product"] = commands.NewConfigureProduct(productsService, jobsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, stdout)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
