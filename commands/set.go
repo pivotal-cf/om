@@ -10,6 +10,12 @@ func (s Set) Execute(command string, args []string) error {
 		return fmt.Errorf("unknown command: %s", command)
 	}
 
+	for _, arg := range args {
+		if arg == "--help" {
+			return s.Execute("help", []string{command})
+		}
+	}
+
 	err := cmd.Execute(args)
 	if err != nil {
 		return fmt.Errorf("could not execute %q: %s", command, err)
