@@ -73,6 +73,54 @@ var _ = Describe("Curl", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Accept: text/plain\r\nContent-Length: 33\r\nContent-Type: application/json\r\n"))
 		})
 
+		Describe("pretty printing", func() {
+			Context("when the response type is JSON", func() {
+				It("pretty prints the response body", func() {
+					requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+						StatusCode: http.StatusTeapot,
+						Headers: http.Header{
+							"Content-Length": []string{"33"},
+							"Content-Type":   []string{"application/json; charset=utf-8"},
+						},
+						Body: strings.NewReader(`{"some-response-key": "some-response-value"}`),
+					}, nil)
+
+					err := command.Execute([]string{
+						"--path", "/api/v0/some/path",
+						"--request", "POST",
+						"--data", `{"some-key": "some-value"}`,
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					format, content := stdout.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("{\n  \"some-response-key\": \"some-response-value\"\n}"))
+				})
+			})
+
+			Context("when the response type is not JSON", func() {
+				It("doesn't format the response body", func() {
+					requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+						StatusCode: http.StatusTeapot,
+						Headers: http.Header{
+							"Content-Length": []string{"33"},
+							"Content-Type":   []string{"text/plain; charset=utf-8"},
+						},
+						Body: strings.NewReader(`{"some-response-key": "some-response-value"}`),
+					}, nil)
+
+					err := command.Execute([]string{
+						"--path", "/api/v0/some/path",
+						"--request", "POST",
+						"--data", `{"some-key": "some-value"}`,
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					format, content := stdout.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal(`{"some-response-key": "some-response-value"}`))
+				})
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when the flags cannot be parsed", func() {
 				It("returns an error", func() {

@@ -65,6 +65,6 @@ var _ = Describe("curl command", func() {
 
 		Expect(session.Err.Contents()).To(ContainSubstring("Status: 200 OK"))
 		Expect(session.Err.Contents()).To(ContainSubstring("Content-Type: application/json"))
-		Expect(string(session.Out.Contents())).To(ContainSubstring(`{"some-key": "some-value"}`))
+		Expect(string(session.Out.Contents())).To(MatchJSON(`{"some-key": "some-value"}`))
 	})
 })

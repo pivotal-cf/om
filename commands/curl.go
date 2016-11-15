@@ -9,6 +9,7 @@ import (
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
+	"encoding/json"
 )
 
 //go:generate counterfeiter -o ./fakes/request_service.go --fake-name RequestService . requestService
@@ -61,6 +62,19 @@ func (c Curl) Execute(args []string) error {
 	body, err := ioutil.ReadAll(output.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read api response body: %s", err)
+	}
+
+	for _, contentType := range output.Headers["Content-Type"] {
+		if strings.HasPrefix(contentType, "application/json") {
+			var prettyJSON bytes.Buffer
+			err := json.Indent(&prettyJSON, body, "", "  ")
+			if err != nil {
+				panic(err)
+			}
+			body = prettyJSON.Bytes()
+
+			break
+		}
 	}
 
 	c.stdout.Printf(string(body))
