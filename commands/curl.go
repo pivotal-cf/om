@@ -23,7 +23,7 @@ type Curl struct {
 	stderr         logger
 	Options        struct {
 		Path   string `short:"p" long:"path"    description:"path to api endpoint"`
-		Method string `short:"x" long:"request" description:"http verb"`
+		Method string `short:"x" long:"request" description:"http verb" default:"GET"`
 		Data   string `short:"d" long:"data"    description:"api request payload"`
 	}
 }
