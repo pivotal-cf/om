@@ -182,6 +182,24 @@ var _ = Describe("ConfigureProduct", func() {
 		})
 
 		Context("when an error occurs", func() {
+			Context("when the product does not exist", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureProduct(productsService, jobsService, logger)
+
+					productsService.StagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+						},
+					}, nil)
+
+					err := command.Execute([]string{
+						"--product-name", "cf",
+						"--product-properties", productProperties,
+					})
+					Expect(err).To(MatchError(`could not find product "cf"`))
+				})
+			})
+
 			Context("when the product resources cannot be decoded", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
@@ -250,6 +268,12 @@ var _ = Describe("ConfigureProduct", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
 					productsService.ConfigureReturns(errors.New("some product error"))
+
+					productsService.StagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "some-product"},
+						},
+					}, nil)
 
 					err := command.Execute([]string{"--product-name", "some-product", "--product-properties", "{}", "--product-network", "anything"})
 					Expect(err).To(MatchError("failed to configure product: some product error"))

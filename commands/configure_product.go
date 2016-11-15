@@ -69,6 +69,10 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		}
 	}
 
+	if productGUID == "" {
+		return fmt.Errorf(`could not find product "%s"`, cp.Options.ProductName)
+	}
+
 	cp.logger.Printf("setting properties")
 	err = cp.productsService.Configure(api.ProductsConfigurationInput{
 		GUID:          productGUID,
