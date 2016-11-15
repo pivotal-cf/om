@@ -21,7 +21,7 @@ type JobConfig map[string]JobProperties
 
 type JobProperties struct {
 	Instances         int          `json:"instances"`
-	PersistentDisk    Disk         `json:"persistent_disk"`
+	PersistentDisk    *Disk        `json:"persistent_disk,omitempty"`
 	InstanceType      InstanceType `json:"instance_type"`
 	InternetConnected bool         `json:"internet_connected"`
 	LBNames           []string     `json:"elb_names"`

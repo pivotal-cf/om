@@ -152,14 +152,14 @@ var _ = Describe("ConfigureProduct", func() {
 				Jobs: api.JobConfig{
 					"a-guid": api.JobProperties{
 						Instances:         1,
-						PersistentDisk:    api.Disk{Size: "20480"},
+						PersistentDisk:    &api.Disk{Size: "20480"},
 						InstanceType:      api.InstanceType{ID: "m1.medium"},
 						InternetConnected: true,
 						LBNames:           []string{"some-lb"},
 					},
 					"a-different-guid": api.JobProperties{
 						Instances:         1,
-						PersistentDisk:    api.Disk{Size: "20480"},
+						PersistentDisk:    &api.Disk{Size: "20480"},
 						InstanceType:      api.InstanceType{ID: "m1.medium"},
 						InternetConnected: false,
 						LBNames:           nil,

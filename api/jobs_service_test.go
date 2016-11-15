@@ -99,15 +99,19 @@ var _ = Describe("JobsService", func() {
 				Jobs: api.JobConfig{
 					"some-job-guid": {
 						Instances:         1,
-						PersistentDisk:    api.Disk{Size: "290"},
+						PersistentDisk:    &api.Disk{Size: "290"},
 						InstanceType:      api.InstanceType{ID: "number-1"},
 						InternetConnected: true,
 						LBNames:           []string{"something"},
 					},
 					"some-other-guid": {
 						Instances:      2,
-						PersistentDisk: api.Disk{Size: "000"},
+						PersistentDisk: &api.Disk{Size: "000"},
 						InstanceType:   api.InstanceType{ID: "number-2"},
+					},
+					"no-persistent-disk": {
+						Instances:    2,
+						InstanceType: api.InstanceType{ID: "number-2"},
 					},
 				},
 			})
@@ -115,11 +119,13 @@ var _ = Describe("JobsService", func() {
 
 			firstRequest := client.DoArgsForCall(0)
 			secondRequest := client.DoArgsForCall(1)
+			thirdRequest := client.DoArgsForCall(2)
 
 			Expect("application/json").To(And(Equal(firstRequest.Header.Get("Content-Type")), Equal(secondRequest.Header.Get("Content-Type"))))
 			Expect("PUT").To(And(Equal(firstRequest.Method), Equal(secondRequest.Method)))
-			Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path)))
-			Expect("/api/v0/staged/products/some-product-guid/jobs/some-other-guid/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path)))
+			Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path), Equal(thirdRequest.URL.Path)))
+			Expect("/api/v0/staged/products/some-product-guid/jobs/some-other-guid/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path), Equal(thirdRequest.URL.Path)))
+			Expect("/api/v0/staged/products/some-product-guid/jobs/no-persistent-disk/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path), Equal(thirdRequest.URL.Path)))
 
 			responseBodyOne := `
 			{
@@ -139,14 +145,26 @@ var _ = Describe("JobsService", func() {
 				"elb_names": null
 			}`
 
+			responseBodyThree := `
+			{
+				"instances": 2,
+				"instance_type": { "id": "number-2" },
+				"internet_connected": false,
+				"elb_names": null
+			}`
+
 			respBytes, err := ioutil.ReadAll(firstRequest.Body)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo)))
+			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo), MatchJSON(responseBodyThree)))
 
 			respBytes, err = ioutil.ReadAll(secondRequest.Body)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo)))
+			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo), MatchJSON(responseBodyThree)))
+
+			respBytes, err = ioutil.ReadAll(thirdRequest.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo), MatchJSON(responseBodyThree)))
 		})
 
 		Context("when an error occurs", func() {
@@ -164,7 +182,7 @@ var _ = Describe("JobsService", func() {
 						Jobs: api.JobConfig{
 							"some-other-guid": {
 								Instances:      2,
-								PersistentDisk: api.Disk{Size: "000"},
+								PersistentDisk: &api.Disk{Size: "000"},
 								InstanceType:   api.InstanceType{ID: "number-2"},
 							},
 						},
@@ -187,7 +205,7 @@ var _ = Describe("JobsService", func() {
 						Jobs: api.JobConfig{
 							"some-other-guid": {
 								Instances:      2,
-								PersistentDisk: api.Disk{Size: "000"},
+								PersistentDisk: &api.Disk{Size: "000"},
 								InstanceType:   api.InstanceType{ID: "number-2"},
 							},
 						},
