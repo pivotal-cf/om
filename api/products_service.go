@@ -91,23 +91,34 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 	respChan := make(chan error)
 	progressDone := p.trackProgress()
 	go func() {
+		for {
+			var pbDone bool
+			select {
+			case _ = <-progressDone:
+				p.progress.End()
+				pbDone = true
+			default:
+				time.Sleep(1 * time.Second)
+			}
+
+			if pbDone {
+				break
+			}
+		}
+
 		var elapsedTime int
-		var liveLog logger
+		p.liveWriter.Start()
+		liveLog := log.New(p.liveWriter, "", 0)
+
 		for {
 			select {
 			case _ = <-respChan:
 				p.liveWriter.Stop()
 				return
-			case _ = <-progressDone:
-				p.progress.End()
-				p.liveWriter.Start()
-				liveLog = log.New(p.liveWriter, "", 0)
 			default:
 				time.Sleep(1 * time.Second)
-				if liveLog != nil {
-					elapsedTime++
-					liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
-				}
+				elapsedTime++
+				liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
 			}
 		}
 	}()

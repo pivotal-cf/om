@@ -157,7 +157,6 @@ var _ = Describe("InstallationAssetService", func() {
 
 		It("makes a request to import the installation to the Ops Manager", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				time.Sleep(1 * time.Second)
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader("{}")),
 				}, nil
@@ -190,6 +189,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(string(newReaderContent)).To(Equal("some installation"))
 			Expect(bar.SetTotalArgsForCall(0)).To(BeNumerically("==", 10))
 			Expect(bar.KickoffCallCount()).To(Equal(1))
+			By("ending the progress bar")
 			Expect(bar.EndCallCount()).To(Equal(1))
 		})
 
