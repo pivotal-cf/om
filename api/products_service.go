@@ -89,21 +89,14 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 
 	p.progress.Kickoff()
 	respChan := make(chan error)
-	progressDone := p.trackProgress()
 	go func() {
 		for {
-			var pbDone bool
-			select {
-			case _ = <-progressDone:
+			if p.progress.GetCurrent() == p.progress.GetTotal() {
 				p.progress.End()
-				pbDone = true
-			default:
-				time.Sleep(1 * time.Second)
-			}
-
-			if pbDone {
 				break
 			}
+
+			time.Sleep(1 * time.Second)
 		}
 
 		var elapsedTime int
@@ -141,19 +134,6 @@ func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, 
 	}
 
 	return UploadProductOutput{}, nil
-}
-
-func (p ProductsService) trackProgress() chan string {
-	progressChan := make(chan string)
-	go func() {
-		for {
-			if p.progress.GetCurrent() == p.progress.GetTotal() {
-				progressChan <- "done"
-				break
-			}
-		}
-	}()
-	return progressChan
 }
 
 func (p ProductsService) Stage(input StageProductInput) error {
