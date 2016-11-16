@@ -113,19 +113,10 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 
 	ia.progress.Kickoff()
 	respChan := make(chan error)
-	progressDone := ia.trackProgress()
 	go func() {
 		for {
-			var pbDone bool
-			select {
-			case _ = <-progressDone:
+			if ia.progress.GetCurrent() == ia.progress.GetTotal() {
 				ia.progress.End()
-				pbDone = true
-			default:
-				time.Sleep(1 * time.Second)
-			}
-
-			if pbDone {
 				break
 			}
 		}
@@ -202,17 +193,4 @@ func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) 
 	}
 
 	return InstallationsServiceOutput{ID: installation.Install.ID}, nil
-}
-
-func (ia InstallationAssetService) trackProgress() chan string {
-	progressChan := make(chan string)
-	go func() {
-		for {
-			if ia.progress.GetCurrent() == ia.progress.GetTotal() {
-				progressChan <- "done"
-				break
-			}
-		}
-	}()
-	return progressChan
 }
