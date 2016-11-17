@@ -3,6 +3,7 @@ package network
 import (
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -21,6 +22,10 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTim
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: insecureSkipVerify,
 				},
+				Dial: (&net.Dialer{
+					Timeout:   5 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
 			},
 			Timeout: requestTimeout,
 		},

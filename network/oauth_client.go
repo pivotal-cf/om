@@ -64,7 +64,7 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	}
 
 	client := oc.oauthConfig.Client(oc.context, token)
-	client.Timeout =  oc.timeout
+	client.Timeout = oc.timeout
 
 	targetURL, err := url.Parse(oc.target)
 	if err != nil {
@@ -84,7 +84,7 @@ func (oc OAuthClient) RoundTrip(request *http.Request) (*http.Response, error) {
 	}
 
 	client := oc.oauthConfig.Client(oc.context, token)
-	client.Timeout =  oc.timeout
+	client.Timeout = oc.timeout
 
 	targetURL, err := url.Parse(oc.target)
 	if err != nil {
