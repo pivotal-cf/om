@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 type SetupService struct {
@@ -88,6 +90,7 @@ const (
 	EnsureAvailabilityStatusUnstarted = "unstarted"
 	EnsureAvailabilityStatusPending   = "pending"
 	EnsureAvailabilityStatusComplete  = "complete"
+	EnsureAvailabilityStatusUnknown   = "unknown"
 )
 
 type EnsureAvailabilityInput struct{}
@@ -108,7 +111,7 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 
 	defer response.Body.Close()
 
-	var status string
+	status := EnsureAvailabilityStatusUnknown
 	switch {
 	case response.StatusCode == http.StatusFound:
 		location, err := url.Parse(response.Header.Get("Location"))
@@ -118,11 +121,19 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 
 		if location.Path == "/setup" {
 			status = EnsureAvailabilityStatusUnstarted
-		} else {
+		} else if location.Path == "/auth/cloudfoundry" {
 			status = EnsureAvailabilityStatusComplete
 		}
+
 	case response.StatusCode == http.StatusOK:
-		status = EnsureAvailabilityStatusPending
+		respBody, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return EnsureAvailabilityOutput{}, err
+		}
+
+		if strings.Contains("Waiting for authentication system to start...", string(respBody)) {
+			status = EnsureAvailabilityStatusPending
+		}
 	}
 
 	return EnsureAvailabilityOutput{Status: status}, nil

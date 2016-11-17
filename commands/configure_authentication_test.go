@@ -104,6 +104,23 @@ var _ = Describe("ConfigureAuthentication", func() {
 				})
 			})
 
+			Context("when the initial configuration status is unknown", func() {
+				It("returns an error", func() {
+					service := &fakes.SetupService{}
+					service.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
+						{Status: api.EnsureAvailabilityStatusUnknown},
+					}
+
+					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					err := command.Execute([]string{
+						"--username", "some-username",
+						"--password", "some-password",
+						"--decryption-passphrase", "some-passphrase",
+					})
+					Expect(err).To(MatchError("could not determine initial configuration status: received unexpected status"))
+				})
+			})
+
 			Context("when the setup service encounters an error", func() {
 				It("returns an error", func() {
 					service := &fakes.SetupService{}

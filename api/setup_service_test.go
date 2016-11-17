@@ -98,6 +98,60 @@ var _ = Describe("SetupService", func() {
 			client = &fakes.HttpClient{}
 		})
 
+		Context("when the availability endpoint returns an unexpected status code", func() {
+			It("returns unknown status", func() {
+				client.RoundTripReturns(&http.Response{
+					StatusCode: http.StatusTeapot,
+					Body:       ioutil.NopCloser(strings.NewReader("")),
+				}, nil)
+
+				service := api.NewSetupService(client)
+
+				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusUnknown,
+				}))
+			})
+		})
+
+		Context("when the availability endpoint returns an OK status with an unexpected body", func() {
+			It("returns unknown status", func() {
+				client.RoundTripReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("some body")),
+				}, nil)
+
+				service := api.NewSetupService(client)
+
+				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusUnknown,
+				}))
+			})
+		})
+
+		Context("when the availability endpoint returns a found status with an unexpected location header", func() {
+			It("returns unknown status", func() {
+				client.RoundTripReturns(&http.Response{
+					StatusCode: http.StatusFound,
+					Header: http.Header{
+						"Location": []string{"https://some-opsman/something/else"},
+					},
+					Body: ioutil.NopCloser(strings.NewReader("")),
+				}, nil)
+
+				service := api.NewSetupService(client)
+
+				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusUnknown,
+				}))
+			})
+		})
+
 		Context("when the authentication mechanism has not been setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
 				client.RoundTripReturns(&http.Response{
@@ -122,7 +176,7 @@ var _ = Describe("SetupService", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
 				client.RoundTripReturns(&http.Response{
 					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("")),
+					Body:       ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
 				}, nil)
 
 				service := api.NewSetupService(client)

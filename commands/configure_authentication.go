@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
@@ -46,6 +47,10 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 	ensureAvailabilityOutput, err := ca.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 	if err != nil {
 		return fmt.Errorf("could not determine initial configuration status: %s", err)
+	}
+
+	if ensureAvailabilityOutput.Status == api.EnsureAvailabilityStatusUnknown {
+		return errors.New("could not determine initial configuration status: received unexpected status")
 	}
 
 	if ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusUnstarted {
