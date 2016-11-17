@@ -139,6 +139,24 @@ var _ = Describe("Help", func() {
 					Expect(output.String()).NotTo(ContainSubstring("Command Arguments"))
 				})
 			})
+
+			Context("when there is an empty flag object", func() {
+				It("prints the usage of a flag-less command", func() {
+					bake := &fakes.Command{}
+					bake.UsageCall.Returns.Usage = commands.Usage{
+						Description:      "This command will help you bake a cake.",
+						ShortDescription: "bakes you a cake",
+						Flags:            struct{}{},
+					}
+
+					help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
+					err := help.Execute([]string{"bake"})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
+					Expect(output.String()).NotTo(ContainSubstring("Command Arguments"))
+				})
+			})
 		})
 	})
 

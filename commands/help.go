@@ -122,15 +122,19 @@ func (h Help) buildCommandContext(command string) (TemplateContext, error) {
 		argsPlaceholder string
 	)
 	if usage.Flags != nil {
-		argsPlaceholder = " [<args>]"
-
 		flagUsage, err := flags.Usage(usage.Flags)
 		if err != nil {
 			return TemplateContext{}, err
 		}
 
 		for _, flag := range strings.Split(flagUsage, "\n") {
-			flagList = append(flagList, flag)
+			if (len(flag) != 0) {
+				flagList = append(flagList, flag)
+			}
+		}
+
+		if len(flagList) != 0 {
+			argsPlaceholder = " [<args>]"
 		}
 	}
 
