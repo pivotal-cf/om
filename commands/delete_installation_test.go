@@ -348,7 +348,6 @@ var _ = Describe("DeleteInstallation", func() {
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This authenticated command deletes all the products installed on the targeted Ops Manager.",
 				ShortDescription: "deletes all the products on the Ops Manager targeted",
-				Flags:            command.Options,
 			}))
 		})
 	})

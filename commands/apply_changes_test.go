@@ -334,7 +334,6 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 				ShortDescription: "triggers an install on the Ops Manager targeted",
-				Flags:            command.Options,
 			}))
 		})
 	})

@@ -14,7 +14,6 @@ type DeleteInstallation struct {
 	logger               logger
 	logWriter            logWriter
 	waitDuration         int
-	Options              struct{}
 }
 
 //go:generate counterfeiter -o ./fakes/installation_asset_deleter_service.go --fake-name InstallationAssetDeleterService . installationAssetDeleterService
@@ -76,6 +75,5 @@ func (ac DeleteInstallation) Usage() Usage {
 	return Usage{
 		Description:      "This authenticated command deletes all the products installed on the targeted Ops Manager.",
 		ShortDescription: "deletes all the products on the Ops Manager targeted",
-		Flags:            ac.Options,
 	}
 }

@@ -15,7 +15,6 @@ type ApplyChanges struct {
 	logger               logger
 	logWriter            logWriter
 	waitDuration         int
-	Options              struct{}
 }
 
 //go:generate counterfeiter -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
@@ -101,6 +100,5 @@ func (ac ApplyChanges) Usage() Usage {
 	return Usage{
 		Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 		ShortDescription: "triggers an install on the Ops Manager targeted",
-		Flags:            ac.Options,
 	}
 }
