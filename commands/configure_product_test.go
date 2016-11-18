@@ -32,7 +32,6 @@ const resourceConfig = `{
 		"elb_names": ["some-lb"]
   },
   "some-other-job": {
-	  "instances": 1,
 		"persistent_disk": { "size_mb": "20480" },
     "instance_type": { "id": "m1.medium" }
   }
@@ -139,6 +138,32 @@ var _ = Describe("ConfigureProduct", func() {
 				},
 			}, nil)
 
+			jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+				if productGUID == "some-product-guid" {
+					switch jobGUID {
+					case "a-guid":
+						return api.JobProperties{
+							Instances:         0,
+							PersistentDisk:    &api.Disk{Size: "000"},
+							InstanceType:      api.InstanceType{ID: "t2.micro"},
+							InternetConnected: false,
+							LBNames:           []string{"pre-existing-1"},
+						}, nil
+					case "a-different-guid":
+						return api.JobProperties{
+							Instances:         2,
+							PersistentDisk:    &api.Disk{Size: "000"},
+							InstanceType:      api.InstanceType{ID: "t2.micro"},
+							InternetConnected: true,
+							LBNames:           []string{"pre-existing-2"},
+						}, nil
+					default:
+						return api.JobProperties{}, nil
+					}
+				}
+				return api.JobProperties{}, errors.New("guid not found")
+			}
+
 			err := client.Execute([]string{
 				"--product-name", "cf",
 				"--product-resources", resourceConfig,
@@ -158,14 +183,42 @@ var _ = Describe("ConfigureProduct", func() {
 						LBNames:           []string{"some-lb"},
 					},
 					"a-different-guid": api.JobProperties{
-						Instances:         1,
+						Instances:         2,
 						PersistentDisk:    &api.Disk{Size: "20480"},
 						InstanceType:      api.InstanceType{ID: "m1.medium"},
-						InternetConnected: false,
-						LBNames:           nil,
+						InternetConnected: true,
+						LBNames:           []string{"pre-existing-2"},
 					},
 				},
 			}))
+		})
+
+		Context("when GetExistingJobConfig returns an error", func() {
+			It("returns an error", func() {
+				client := commands.NewConfigureProduct(productsService, jobsService, logger)
+				productsService.StagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+
+				jobsService.JobsReturns(api.JobsOutput{
+					Jobs: []api.Job{
+						{Name: "some-job", GUID: "a-guid"},
+						{Name: "some-other-job", GUID: "a-different-guid"},
+						{Name: "bad", GUID: "do-not-use"},
+					},
+				}, nil)
+
+				jobsService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some error"))
+				err := client.Execute([]string{
+					"--product-name", "cf",
+					"--product-resources", resourceConfig,
+				})
+
+				Expect(err).To(MatchError("could not fetch existing job configuration: some error"))
+			})
 		})
 
 		Context("when neither the product-properties or product-network flag is provided", func() {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 )
@@ -79,6 +80,40 @@ func (j JobsService) Jobs(productGUID string) (JobsOutput, error) {
 	}
 
 	return output, nil
+}
+
+func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobProperties, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), nil)
+	if err != nil {
+		return JobProperties{}, err
+	}
+
+	resp, err := j.client.Do(req)
+	if err != nil {
+		return JobProperties{}, fmt.Errorf("could not make api request to resource_config endpoint: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return JobProperties{}, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+
+		return JobProperties{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	}
+
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return JobProperties{}, err
+	}
+
+	var existingConfig JobProperties
+	err = json.Unmarshal(content, &existingConfig)
+	if err != nil {
+		return JobProperties{}, err
+	}
+
+	return existingConfig, nil
 }
 
 func (j JobsService) Configure(input JobConfigurationInput) error {

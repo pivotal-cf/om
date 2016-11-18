@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
@@ -30,6 +29,7 @@ type productConfigurer interface {
 //go:generate counterfeiter -o ./fakes/jobs_configurer.go --fake-name JobsConfigurer . jobsConfigurer
 type jobsConfigurer interface {
 	Jobs(productGUID string) (api.JobsOutput, error)
+	GetExistingJobConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	Configure(api.JobConfigurationInput) error
 }
 
@@ -83,8 +83,8 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to configure product: %s", err)
 	}
 
-	var userProvidedConfig api.JobConfig
-	err = json.NewDecoder(strings.NewReader(cp.Options.ProductResources)).Decode(&userProvidedConfig)
+	var userProvidedConfig map[string]interface{}
+	err = json.Unmarshal([]byte(cp.Options.ProductResources), &userProvidedConfig)
 	if err != nil {
 		return fmt.Errorf("could not decode product-resource json: %s", err)
 	}
@@ -98,7 +98,22 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	for _, job := range jobsOutput.Jobs {
 		for name, userprops := range userProvidedConfig {
 			if job.Name == name {
-				resourceConfig[job.GUID] = userprops
+				jobResourceConfig, err := cp.jobsService.GetExistingJobConfig(productGUID, job.GUID)
+				if err != nil {
+					return fmt.Errorf("could not fetch existing job configuration: %s", err)
+				}
+
+				userPropsJson, err := json.Marshal(userprops)
+				if err != nil {
+					return err
+				}
+
+				err = json.Unmarshal(userPropsJson, &jobResourceConfig)
+				if err != nil {
+					return err
+				}
+
+				resourceConfig[job.GUID] = jobResourceConfig
 			}
 		}
 	}

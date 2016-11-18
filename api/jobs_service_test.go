@@ -85,6 +85,80 @@ var _ = Describe("JobsService", func() {
 		})
 	})
 
+	Describe("GetExistingJobConfig", func() {
+		It("fetches the resource config for a given job", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body: ioutil.NopCloser(strings.NewReader(`{
+					"instances": 1,
+					"instance_type": { "id": "number-1" },
+					"persistent_disk": { "size_mb": "290" },
+					"internet_connected": true,
+					"elb_names": ["something"]
+				}`)),
+			}, nil)
+
+			service := api.NewJobsService(client)
+			job, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(client.DoCallCount()).To(Equal(1))
+			Expect(job).To(Equal(api.JobProperties{
+				Instances:         1,
+				PersistentDisk:    &api.Disk{Size: "290"},
+				InstanceType:      api.InstanceType{ID: "number-1"},
+				InternetConnected: true,
+				LBNames:           []string{"something"},
+			}))
+			request := client.DoArgsForCall(0)
+			Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+		})
+
+		Context("failure cases", func() {
+			Context("when the resource config endpoint returns an error", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+					}, errors.New("some client error"))
+
+					service := api.NewJobsService(client)
+					_, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+
+					Expect(err).To(MatchError("could not make api request to resource_config endpoint: some client error"))
+				})
+			})
+
+			Context("when the resource config endpoint returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusTeapot,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+					}, nil)
+
+					service := api.NewJobsService(client)
+					_, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+
+					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
+				})
+			})
+
+			Context("when the resource config returns invalid JSON", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`%%%`)),
+					}, nil)
+
+					service := api.NewJobsService(client)
+					_, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+
+					Expect(err).To(MatchError(ContainSubstring("invalid character")))
+				})
+			})
+		})
+	})
+
 	Describe("Configure", func() {
 		It("configures job resources", func() {
 			client.DoReturns(&http.Response{
