@@ -40,7 +40,7 @@ func NewJobsService(client httpClient) JobsService {
 	}
 }
 
-func (j JobsService) Jobs(productGUID string) ([]Job, error) {
+func (j JobsService) Jobs(productGUID string) (map[string]string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs", productGUID), nil)
 	if err != nil {
 		return nil, err
@@ -62,16 +62,21 @@ func (j JobsService) Jobs(productGUID string) ([]Job, error) {
 		return nil, fmt.Errorf("request failed: unexpected response:\n%s", out)
 	}
 
-	var JobsOutput struct {
+	var jobsOutput struct {
 		Jobs []Job
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&JobsOutput)
+	err = json.NewDecoder(resp.Body).Decode(&jobsOutput)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode jobs json response: %s", err)
 	}
 
-	return JobsOutput.Jobs, nil
+	jobGUIDMap := make(map[string]string)
+	for _, job := range jobsOutput.Jobs {
+		jobGUIDMap[job.Name] = job.GUID
+	}
+
+	return jobGUIDMap, nil
 }
 
 func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobProperties, error) {

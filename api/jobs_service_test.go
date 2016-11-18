@@ -23,18 +23,20 @@ var _ = Describe("JobsService", func() {
 	})
 
 	Describe("Jobs", func() {
-		It("returns a listing of the jobs", func() {
+		It("returns a map of the jobs", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{"jobs": [{"name":"job-1","guid":"some-guid"}]}`)),
+				Body: ioutil.NopCloser(strings.NewReader(`{"jobs": [{"name":"job-1","guid":"some-guid-1"},
+				{"name":"job-2","guid":"some-guid-2"}]}`)),
 			}, nil)
 
 			service := api.NewJobsService(client)
 
 			jobs, err := service.Jobs("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(jobs).To(Equal([]api.Job{
-				{Name: "job-1", GUID: "some-guid"},
+			Expect(jobs).To(Equal(map[string]string{
+				"job-1": "some-guid-1",
+				"job-2": "some-guid-2",
 			}))
 
 			request := client.DoArgsForCall(0)

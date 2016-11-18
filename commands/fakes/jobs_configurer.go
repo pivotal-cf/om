@@ -8,13 +8,13 @@ import (
 )
 
 type JobsConfigurer struct {
-	JobsStub        func(productGUID string) ([]api.Job, error)
+	JobsStub        func(productGUID string) (map[string]string, error)
 	jobsMutex       sync.RWMutex
 	jobsArgsForCall []struct {
 		productGUID string
 	}
 	jobsReturns struct {
-		result1 []api.Job
+		result1 map[string]string
 		result2 error
 	}
 	GetExistingJobConfigStub        func(productGUID, jobGUID string) (api.JobProperties, error)
@@ -41,7 +41,7 @@ type JobsConfigurer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *JobsConfigurer) Jobs(productGUID string) ([]api.Job, error) {
+func (fake *JobsConfigurer) Jobs(productGUID string) (map[string]string, error) {
 	fake.jobsMutex.Lock()
 	fake.jobsArgsForCall = append(fake.jobsArgsForCall, struct {
 		productGUID string
@@ -67,10 +67,10 @@ func (fake *JobsConfigurer) JobsArgsForCall(i int) string {
 	return fake.jobsArgsForCall[i].productGUID
 }
 
-func (fake *JobsConfigurer) JobsReturns(result1 []api.Job, result2 error) {
+func (fake *JobsConfigurer) JobsReturns(result1 map[string]string, result2 error) {
 	fake.JobsStub = nil
 	fake.jobsReturns = struct {
-		result1 []api.Job
+		result1 map[string]string
 		result2 error
 	}{result1, result2}
 }

@@ -126,10 +126,10 @@ var _ = Describe("ConfigureProduct", func() {
 				},
 			}, nil)
 
-			jobsService.JobsReturns([]api.Job{
-				{Name: "some-job", GUID: "a-guid"},
-				{Name: "some-other-job", GUID: "a-different-guid"},
-				{Name: "bad", GUID: "do-not-use"},
+			jobsService.JobsReturns(map[string]string{
+				"some-job":       "a-guid",
+				"some-other-job": "a-different-guid",
+				"bad":            "do-not-use",
 			}, nil)
 
 			jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
@@ -201,10 +201,10 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				jobsService.JobsReturns([]api.Job{
-					{Name: "some-job", GUID: "a-guid"},
-					{Name: "some-other-job", GUID: "a-different-guid"},
-					{Name: "bad", GUID: "do-not-use"},
+				jobsService.JobsReturns(map[string]string{
+					"some-job":       "a-guid",
+					"some-other-job": "a-different-guid",
+					"bad":            "do-not-use",
 				}, nil)
 
 				jobsService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some error"))
@@ -272,9 +272,10 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					jobsService.JobsReturns([]api.Job{
-						{Name: "some-job", GUID: "a-guid"},
-					}, errors.New("boom"))
+					jobsService.JobsReturns(
+						map[string]string{
+							"some-job": "a-guid",
+						}, errors.New("boom"))
 
 					err := command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig})
 					Expect(err).To(MatchError("failed to fetch jobs: boom"))
@@ -290,9 +291,10 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					jobsService.JobsReturns([]api.Job{
-						{Name: "some-job", GUID: "a-guid"},
-					}, nil)
+					jobsService.JobsReturns(
+						map[string]string{
+							"some-job": "a-guid",
+						}, nil)
 
 					jobsService.ConfigureJobReturns(errors.New("bad things happened"))
 

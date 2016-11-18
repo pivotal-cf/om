@@ -28,7 +28,7 @@ type productConfigurer interface {
 
 //go:generate counterfeiter -o ./fakes/jobs_configurer.go --fake-name JobsConfigurer . jobsConfigurer
 type jobsConfigurer interface {
-	Jobs(productGUID string) ([]api.Job, error)
+	Jobs(productGUID string) (map[string]string, error)
 	GetExistingJobConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	ConfigureJob(productGUID, jobGUID string, jobProperties api.JobProperties) error
 }
@@ -94,24 +94,20 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to fetch jobs: %s", err)
 	}
 
-	for _, job := range jobs {
-		for name, userJobPropsJSON := range userProvidedConfig {
-			if job.Name == name {
-				jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, job.GUID)
-				if err != nil {
-					return fmt.Errorf("could not fetch existing job configuration: %s", err)
-				}
+	for name, userJobPropsJSON := range userProvidedConfig {
+		jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, jobs[name])
+		if err != nil {
+			return fmt.Errorf("could not fetch existing job configuration: %s", err)
+		}
 
-				err = json.Unmarshal(userJobPropsJSON, &jobProperties)
-				if err != nil {
-					return err
-				}
+		err = json.Unmarshal(userJobPropsJSON, &jobProperties)
+		if err != nil {
+			return err
+		}
 
-				err = cp.jobsService.ConfigureJob(productGUID, job.GUID, jobProperties)
-				if err != nil {
-					return fmt.Errorf("failed to configure resources: %s", err)
-				}
-			}
+		err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
+		if err != nil {
+			return fmt.Errorf("failed to configure resources: %s", err)
 		}
 	}
 
