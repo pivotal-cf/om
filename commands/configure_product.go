@@ -83,7 +83,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to configure product: %s", err)
 	}
 
-	var userProvidedConfig map[string]interface{}
+	var userProvidedConfig map[string]json.RawMessage
 	err = json.Unmarshal([]byte(cp.Options.ProductResources), &userProvidedConfig)
 	if err != nil {
 		return fmt.Errorf("could not decode product-resource json: %s", err)
@@ -103,12 +103,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 					return fmt.Errorf("could not fetch existing job configuration: %s", err)
 				}
 
-				userJobPropsJson, err := json.Marshal(userJobProps)
-				if err != nil {
-					return err
-				}
-
-				err = json.Unmarshal(userJobPropsJson, &jobResourceConfig)
+				err = json.Unmarshal(userJobProps, &jobResourceConfig)
 				if err != nil {
 					return err
 				}
