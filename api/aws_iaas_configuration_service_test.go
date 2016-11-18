@@ -24,7 +24,7 @@ var _ = Describe("AWSIaasConfigurationService", func() {
 	AfterEach(func() {
 		server.Close()
 	})
-	Describe("FConfigure", func() {
+	Describe("Configure", func() {
 		It("makes a request to IaasConfiguration edit", func() {
 			//Using unauthenticated client as don't want to verify the setup of WebClient
 			client := network.NewUnauthenticatedClient(server.URL(), true, 1800*time.Second)
