@@ -15,6 +15,7 @@ import (
 var _ = Describe("StageProduct", func() {
 	var (
 		stagedProductsService    *fakes.ProductStager
+		diagnosticService        *fakes.DiagnosticService
 		availableProductsService *fakes.AvailableProductChecker
 		logger                   *fakes.Logger
 	)
@@ -22,13 +23,14 @@ var _ = Describe("StageProduct", func() {
 	BeforeEach(func() {
 		stagedProductsService = &fakes.ProductStager{}
 		availableProductsService = &fakes.AvailableProductChecker{}
+		diagnosticService = &fakes.DiagnosticService{}
 		logger = &fakes.Logger{}
 	})
 
 	It("stages a product", func() {
 		availableProductsService.CheckProductAvailabilityReturns(true, nil)
 
-		command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+		command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 
 		err := command.Execute([]string{
 			"--product-name", "some-product",
@@ -49,10 +51,37 @@ var _ = Describe("StageProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished staging"))
 	})
 
+	Context("when the product version has already been staged", func() {
+		It("no-ops and returns successfully", func() {
+			availableProductsService.CheckProductAvailabilityReturns(true, nil)
+			diagnosticService.ReportReturns(api.DiagnosticReport{
+				StagedProducts: []api.DiagnosticProduct{
+					{
+						Name:    "some-product",
+						Version: "some-version",
+					},
+				},
+			}, nil)
+
+			command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
+
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--product-version", "some-version",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("some-product some-version is already staged"))
+
+			Expect(stagedProductsService.StageCallCount()).To(Equal(0))
+		})
+	})
+
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse stage-product flags: flag provided but not defined: -badflag"))
 			})
@@ -60,7 +89,7 @@ var _ = Describe("StageProduct", func() {
 
 		Context("when the product-name flag is not provided", func() {
 			It("returns an error", func() {
-				command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 				err := command.Execute([]string{"--product-version", "1.0"})
 				Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
 			})
@@ -68,7 +97,7 @@ var _ = Describe("StageProduct", func() {
 
 		Context("when the product-version flag is not provided", func() {
 			It("returns an error", func() {
-				command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 				err := command.Execute([]string{"--product-name", "some-product"})
 				Expect(err).To(MatchError("error: product-version is missing. Please see usage for more information."))
 			})
@@ -80,7 +109,7 @@ var _ = Describe("StageProduct", func() {
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -96,7 +125,7 @@ var _ = Describe("StageProduct", func() {
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -107,8 +136,8 @@ var _ = Describe("StageProduct", func() {
 		})
 
 		Context("when the product cannot be staged", func() {
-			It("returns and error", func() {
-				command := commands.NewStageProduct(stagedProductsService, availableProductsService, logger)
+			It("returns an error", func() {
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
 				availableProductsService.CheckProductAvailabilityReturns(true, nil)
 				stagedProductsService.StageReturns(errors.New("some product error"))
 
@@ -116,11 +145,22 @@ var _ = Describe("StageProduct", func() {
 				Expect(err).To(MatchError("failed to stage product: some product error"))
 			})
 		})
+
+		Context("when the diagnostic report cannot be fetched", func() {
+			It("returns an error", func() {
+				command := commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, logger)
+				availableProductsService.CheckProductAvailabilityReturns(true, nil)
+				diagnosticService.ReportReturns(api.DiagnosticReport{}, errors.New("bad diagnostic report"))
+
+				err := command.Execute([]string{"--product-name", "some-product", "--product-version", "some-version"})
+				Expect(err).To(MatchError("failed to stage product: bad diagnostic report"))
+			})
+		})
 	})
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewStageProduct(nil, nil, nil)
+			command := commands.NewStageProduct(nil, nil, nil, nil)
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This command attempts to stage a product in the Ops Manager",
 				ShortDescription: "stages a given product in the Ops Manager targeted",

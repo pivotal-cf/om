@@ -96,7 +96,7 @@ func main() {
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, availableProductsService, stdout)
-	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, availableProductsService, stdout)
+	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(stagedProductsService, jobsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
 	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, stdout)

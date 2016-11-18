@@ -12,8 +12,15 @@ type DiagnosticService struct {
 	client httpClient
 }
 
+type DiagnosticProduct struct {
+	Name     string
+	Version  string
+	Stemcell string
+}
+
 type DiagnosticReport struct {
-	Stemcells []string
+	Stemcells      []string
+	StagedProducts []DiagnosticProduct
 }
 
 func NewDiagnosticService(client httpClient) DiagnosticService {
@@ -49,11 +56,21 @@ func (ds DiagnosticService) Report() (DiagnosticReport, error) {
 		return DiagnosticReport{}, err
 	}
 
-	var report *DiagnosticReport
-	err = json.Unmarshal(body, &report)
+	var apiResponse *struct {
+		DiagnosticReport
+		AddedProducts struct {
+			StagedProducts []DiagnosticProduct `json:"staged"`
+		} `json:"added_products"`
+	}
+
+	err = json.Unmarshal(body, &apiResponse)
+
 	if err != nil {
 		return DiagnosticReport{}, fmt.Errorf("invalid json received from server: %s", err)
 	}
 
-	return *report, nil
+	return DiagnosticReport{
+		Stemcells:      apiResponse.Stemcells,
+		StagedProducts: apiResponse.AddedProducts.StagedProducts,
+	}, nil
 }

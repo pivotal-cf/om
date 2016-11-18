@@ -13,6 +13,35 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const report = `{
+  "stemcells": ["light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"],
+  "added_products": {
+    "deployed": [
+      {
+        "name": "p-bosh",
+        "version": "1.8.8.0",
+        "stemcell": "light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"
+      }
+    ],
+    "staged": [
+      {
+        "name": "p-bosh",
+        "version": "1.8.8.0",
+        "stemcell": "light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"
+      },
+      {
+        "name": "gcp-service-broker",
+        "version": "2.0.1",
+        "stemcell": "light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"
+      },
+      {
+        "name": "gitlab-ee",
+        "version": "1.0.1"
+      }
+    ]
+  }
+}`
+
 var _ = Describe("DiagnosticService", func() {
 	var client *fakes.HttpClient
 
@@ -24,7 +53,7 @@ var _ = Describe("DiagnosticService", func() {
 		It("returns a diagnostic report", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{"stemcells":["some-stemcell", "some-other-stemcell"]}`)),
+				Body:       ioutil.NopCloser(strings.NewReader(report)),
 			}, nil)
 
 			service := api.NewDiagnosticService(client)
@@ -35,7 +64,23 @@ var _ = Describe("DiagnosticService", func() {
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.Path).To(Equal("/api/v0/diagnostic_report"))
 
-			Expect(report.Stemcells).To(Equal([]string{"some-stemcell", "some-other-stemcell"}))
+			Expect(report.Stemcells).To(Equal([]string{"light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"}))
+			Expect(report.StagedProducts).To(Equal([]api.DiagnosticProduct{
+				{
+					Name:     "p-bosh",
+					Version:  "1.8.8.0",
+					Stemcell: "light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz",
+				},
+				{
+					Name:     "gcp-service-broker",
+					Version:  "2.0.1",
+					Stemcell: "light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz",
+				},
+				{
+					Name:    "gitlab-ee",
+					Version: "1.0.1",
+				},
+			}))
 		})
 
 		Context("when an error occurs", func() {

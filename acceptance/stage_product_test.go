@@ -67,6 +67,8 @@ var _ = Describe("stage-product command", func() {
 					reqBody, err := ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
 					stageRequest = string(reqBody)
+				case "/api/v0/diagnostic_report":
+					responseString = `{}`
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())
@@ -157,6 +159,8 @@ var _ = Describe("stage-product command", func() {
 					reqBody, err := ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
 					stageRequest = string(reqBody)
+				case "/api/v0/diagnostic_report":
+					responseString = `{}`
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())
@@ -237,6 +241,8 @@ var _ = Describe("stage-product command", func() {
 					reqBody, err := ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
 					stageRequest = string(reqBody)
+				case "/api/v0/diagnostic_report":
+					responseString = `{}`
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())

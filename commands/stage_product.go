@@ -12,6 +12,7 @@ type StageProduct struct {
 	logger                   logger
 	stagedProductsService    productStager
 	availableProductsService availableProductChecker
+	diagnosticService        diagnosticService
 	Options                  struct {
 		Product string `short:"p"  long:"product-name"  description:"name of product"`
 		Version string `short:"v"  long:"product-version"  description:"version of product"`
@@ -28,11 +29,12 @@ type availableProductChecker interface {
 	CheckProductAvailability(productName string, productVersion string) (bool, error)
 }
 
-func NewStageProduct(productStager productStager, availableProductChecker availableProductChecker, logger logger) StageProduct {
+func NewStageProduct(productStager productStager, availableProductChecker availableProductChecker, diagnosticService diagnosticService, logger logger) StageProduct {
 	return StageProduct{
 		logger:                   logger,
 		stagedProductsService:    productStager,
 		availableProductsService: availableProductChecker,
+		diagnosticService:        diagnosticService,
 	}
 }
 
@@ -48,6 +50,18 @@ func (sp StageProduct) Execute(args []string) error {
 
 	if sp.Options.Version == "" {
 		return errors.New("error: product-version is missing. Please see usage for more information.")
+	}
+
+	diagnosticReport, err := sp.diagnosticService.Report()
+	if err != nil {
+		return fmt.Errorf("failed to stage product: %s", err)
+	}
+
+	for _, stagedProduct := range diagnosticReport.StagedProducts {
+		if stagedProduct.Name == sp.Options.Product && stagedProduct.Version == sp.Options.Version {
+			sp.logger.Printf("%s %s is already staged", sp.Options.Product, sp.Options.Version)
+			return nil
+		}
 	}
 
 	available, err := sp.availableProductsService.CheckProductAvailability(sp.Options.Product, sp.Options.Version)
