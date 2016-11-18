@@ -68,9 +68,8 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-			argProductGUID, argJobsConfig := jobsService.ConfigureArgsForCall(0)
-			Expect(argProductGUID).To(Equal("some-product-guid"))
-			Expect(argJobsConfig).To(Equal(api.JobsConfig{}))
+			Expect(jobsService.GetExistingJobConfigCallCount()).To(Equal(0))
+			Expect(jobsService.ConfigureJobCallCount()).To(Equal(0))
 
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
@@ -102,10 +101,8 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-
-			argProductGUID, argJobsConfig := jobsService.ConfigureArgsForCall(0)
-			Expect(argProductGUID).To(Equal("some-product-guid"))
-			Expect(argJobsConfig).To(Equal(api.JobsConfig{}))
+			Expect(jobsService.GetExistingJobConfigCallCount()).To(Equal(0))
+			Expect(jobsService.ConfigureJobCallCount()).To(Equal(0))
 
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
@@ -169,24 +166,28 @@ var _ = Describe("ConfigureProduct", func() {
 
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(jobsService.ConfigureJobCallCount()).To(Equal(2))
 
-			argProductGUID, argResourceConfig := jobsService.ConfigureArgsForCall(0)
+			argProductGUID, argJobGUID, argProperties := jobsService.ConfigureJobArgsForCall(0)
 			Expect(argProductGUID).To(Equal("some-product-guid"))
-			Expect(argResourceConfig).To(Equal(api.JobsConfig{
-				"a-guid": api.JobProperties{
-					Instances:         1,
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: true,
-					LBNames:           []string{"some-lb"},
-				},
-				"a-different-guid": api.JobProperties{
-					Instances:         2,
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: true,
-					LBNames:           []string{"pre-existing-2"},
-				},
+			Expect(argJobGUID).To(Equal("a-guid"))
+			Expect(argProperties).To(Equal(api.JobProperties{
+				Instances:         1,
+				PersistentDisk:    &api.Disk{Size: "20480"},
+				InstanceType:      api.InstanceType{ID: "m1.medium"},
+				InternetConnected: true,
+				LBNames:           []string{"some-lb"},
+			}))
+
+			argProductGUID, argJobGUID, argProperties = jobsService.ConfigureJobArgsForCall(1)
+			Expect(argProductGUID).To(Equal("some-product-guid"))
+			Expect(argJobGUID).To(Equal("a-different-guid"))
+			Expect(argProperties).To(Equal(api.JobProperties{
+				Instances:         2,
+				PersistentDisk:    &api.Disk{Size: "20480"},
+				InstanceType:      api.InstanceType{ID: "m1.medium"},
+				InternetConnected: true,
+				LBNames:           []string{"pre-existing-2"},
 			}))
 		})
 
@@ -293,7 +294,7 @@ var _ = Describe("ConfigureProduct", func() {
 						{Name: "some-job", GUID: "a-guid"},
 					}, nil)
 
-					jobsService.ConfigureReturns(errors.New("bad things happened"))
+					jobsService.ConfigureJobReturns(errors.New("bad things happened"))
 
 					err := command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig})
 					Expect(err).To(MatchError("failed to configure resources: bad things happened"))

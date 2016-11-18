@@ -158,7 +158,7 @@ var _ = Describe("JobsService", func() {
 		})
 	})
 
-	Describe("Configure", func() {
+	Describe("ConfigureJob", func() {
 		It("configures job resources", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -167,74 +167,31 @@ var _ = Describe("JobsService", func() {
 
 			service := api.NewJobsService(client)
 
-			err := service.Configure("some-product-guid", api.JobsConfig{
-				"some-job-guid": {
+			err := service.ConfigureJob("some-product-guid", "some-job-guid",
+				api.JobProperties{
 					Instances:         1,
 					PersistentDisk:    &api.Disk{Size: "290"},
 					InstanceType:      api.InstanceType{ID: "number-1"},
 					InternetConnected: true,
 					LBNames:           []string{"something"},
-				},
-				"some-other-guid": {
-					Instances:      2,
-					PersistentDisk: &api.Disk{Size: "000"},
-					InstanceType:   api.InstanceType{ID: "number-2"},
-				},
-				"no-persistent-disk": {
-					Instances:    2,
-					InstanceType: api.InstanceType{ID: "number-2"},
-				},
-			})
+				})
 			Expect(err).NotTo(HaveOccurred())
 
-			firstRequest := client.DoArgsForCall(0)
-			secondRequest := client.DoArgsForCall(1)
-			thirdRequest := client.DoArgsForCall(2)
+			Expect(client.DoCallCount()).To(Equal(1))
+			request := client.DoArgsForCall(0)
 
-			Expect("application/json").To(And(Equal(firstRequest.Header.Get("Content-Type")), Equal(secondRequest.Header.Get("Content-Type"))))
-			Expect("PUT").To(And(Equal(firstRequest.Method), Equal(secondRequest.Method)))
-			Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path), Equal(thirdRequest.URL.Path)))
-			Expect("/api/v0/staged/products/some-product-guid/jobs/some-other-guid/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path), Equal(thirdRequest.URL.Path)))
-			Expect("/api/v0/staged/products/some-product-guid/jobs/no-persistent-disk/resource_config").To(Or(Equal(firstRequest.URL.Path), Equal(secondRequest.URL.Path), Equal(thirdRequest.URL.Path)))
-
-			responseBodyOne := `
-			{
+			Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
+			Expect("PUT").To(Equal(request.Method))
+			Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
+			reqBytes, err := ioutil.ReadAll(request.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(reqBytes).To(MatchJSON(`{
 				"instances": 1,
 				"instance_type": { "id": "number-1" },
 				"persistent_disk": { "size_mb": "290" },
 				"internet_connected": true,
 				"elb_names": ["something"]
-			}`
-
-			responseBodyTwo := `
-			{
-				"instances": 2,
-				"instance_type": { "id": "number-2" },
-				"persistent_disk": { "size_mb": "000" },
-				"internet_connected": false,
-				"elb_names": null
-			}`
-
-			responseBodyThree := `
-			{
-				"instances": 2,
-				"instance_type": { "id": "number-2" },
-				"internet_connected": false,
-				"elb_names": null
-			}`
-
-			respBytes, err := ioutil.ReadAll(firstRequest.Body)
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo), MatchJSON(responseBodyThree)))
-
-			respBytes, err = ioutil.ReadAll(secondRequest.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo), MatchJSON(responseBodyThree)))
-
-			respBytes, err = ioutil.ReadAll(thirdRequest.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(respBytes)).To(Or(MatchJSON(responseBodyOne), MatchJSON(responseBodyTwo), MatchJSON(responseBodyThree)))
+			}`))
 		})
 
 		Context("when an error occurs", func() {
@@ -247,12 +204,10 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					err := service.Configure("some-product-guid", api.JobsConfig{
-						"some-other-guid": {
-							Instances:      2,
-							PersistentDisk: &api.Disk{Size: "000"},
-							InstanceType:   api.InstanceType{ID: "number-2"},
-						},
+					err := service.ConfigureJob("some-product-guid", "some-other-guid", api.JobProperties{
+						Instances:      2,
+						PersistentDisk: &api.Disk{Size: "000"},
+						InstanceType:   api.InstanceType{ID: "number-2"},
 					})
 					Expect(err).To(MatchError("could not make api request to jobs resource_config endpoint: bad things"))
 				})
@@ -267,12 +222,10 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					err := service.Configure("some-product-guid", api.JobsConfig{
-						"some-other-guid": {
-							Instances:      2,
-							PersistentDisk: &api.Disk{Size: "000"},
-							InstanceType:   api.InstanceType{ID: "number-2"},
-						},
+					err := service.ConfigureJob("some-product-guid", "some-other-guid", api.JobProperties{
+						Instances:      2,
+						PersistentDisk: &api.Disk{Size: "000"},
+						InstanceType:   api.InstanceType{ID: "number-2"},
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
 				})

@@ -13,8 +13,6 @@ type JobsService struct {
 	client httpClient
 }
 
-type JobsConfig map[string]JobProperties
-
 type JobProperties struct {
 	Instances         int          `json:"instances"`
 	PersistentDisk    *Disk        `json:"persistent_disk,omitempty"`
@@ -87,6 +85,8 @@ func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobPrope
 		return JobProperties{}, fmt.Errorf("could not make api request to resource_config endpoint: %s", err)
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)
 		if err != nil {
@@ -110,41 +110,34 @@ func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobPrope
 	return existingConfig, nil
 }
 
-func (j JobsService) Configure(productGUID string, jobsConfig JobsConfig) error {
-	var requests []*http.Request
-	for jobGUID, resourceConfig := range jobsConfig {
-		bodyBytes := bytes.NewBuffer([]byte{})
-		err := json.NewEncoder(bodyBytes).Encode(resourceConfig)
-		if err != nil {
-			return err
-		}
-
-		req, err := http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), bodyBytes)
-		if err != nil {
-			return err
-		}
-
-		req.Header.Add("Content-Type", "application/json")
-
-		requests = append(requests, req)
+func (j JobsService) ConfigureJob(productGUID, jobGUID string, jobProperties JobProperties) error {
+	bodyBytes := bytes.NewBuffer([]byte{})
+	err := json.NewEncoder(bodyBytes).Encode(jobProperties)
+	if err != nil {
+		return err
 	}
 
-	for _, req := range requests {
-		resp, err := j.client.Do(req)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), bodyBytes)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := j.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not make api request to jobs resource_config endpoint: %s", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
 		if err != nil {
-			return fmt.Errorf("could not make api request to jobs resource_config endpoint: %s", err)
+			return fmt.Errorf("request failed: unexpected response: %s", err)
 		}
 
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			out, err := httputil.DumpResponse(resp, true)
-			if err != nil {
-				return fmt.Errorf("request failed: unexpected response: %s", err)
-			}
-
-			return fmt.Errorf("request failed: unexpected response:\n%s", out)
-		}
+		return fmt.Errorf("request failed: unexpected response:\n%s", out)
 	}
 
 	return nil

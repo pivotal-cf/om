@@ -30,7 +30,7 @@ type productConfigurer interface {
 type jobsConfigurer interface {
 	Jobs(productGUID string) ([]api.Job, error)
 	GetExistingJobConfig(productGUID, jobGUID string) (api.JobProperties, error)
-	Configure(productGUID string, jobsConfig api.JobsConfig) error
+	ConfigureJob(productGUID, jobGUID string, jobProperties api.JobProperties) error
 }
 
 func NewConfigureProduct(productConfigurer productConfigurer, jobsConfigurer jobsConfigurer, logger logger) ConfigureProduct {
@@ -94,28 +94,25 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to fetch jobs: %s", err)
 	}
 
-	resourceConfig := make(api.JobsConfig)
 	for _, job := range jobs {
-		for name, userJobProps := range userProvidedConfig {
+		for name, userJobPropsJSON := range userProvidedConfig {
 			if job.Name == name {
-				jobResourceConfig, err := cp.jobsService.GetExistingJobConfig(productGUID, job.GUID)
+				jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, job.GUID)
 				if err != nil {
 					return fmt.Errorf("could not fetch existing job configuration: %s", err)
 				}
 
-				err = json.Unmarshal(userJobProps, &jobResourceConfig)
+				err = json.Unmarshal(userJobPropsJSON, &jobProperties)
 				if err != nil {
 					return err
 				}
 
-				resourceConfig[job.GUID] = jobResourceConfig
+				err = cp.jobsService.ConfigureJob(productGUID, job.GUID, jobProperties)
+				if err != nil {
+					return fmt.Errorf("failed to configure resources: %s", err)
+				}
 			}
 		}
-	}
-
-	err = cp.jobsService.Configure(productGUID, resourceConfig)
-	if err != nil {
-		return fmt.Errorf("failed to configure resources: %s", err)
 	}
 
 	cp.logger.Printf("finished setting properties")
