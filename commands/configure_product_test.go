@@ -68,10 +68,9 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-			Expect(jobsService.ConfigureArgsForCall(0)).To(Equal(api.JobConfigurationInput{
-				ProductGUID: "some-product-guid",
-				Jobs:        api.JobConfig{},
-			}))
+			argProductGUID, argJobsConfig := jobsService.ConfigureArgsForCall(0)
+			Expect(argProductGUID).To(Equal("some-product-guid"))
+			Expect(argJobsConfig).To(Equal(api.JobsConfig{}))
 
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
@@ -103,10 +102,10 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-			Expect(jobsService.ConfigureArgsForCall(0)).To(Equal(api.JobConfigurationInput{
-				ProductGUID: "some-product-guid",
-				Jobs:        api.JobConfig{},
-			}))
+
+			argProductGUID, argJobsConfig := jobsService.ConfigureArgsForCall(0)
+			Expect(argProductGUID).To(Equal("some-product-guid"))
+			Expect(argJobsConfig).To(Equal(api.JobsConfig{}))
 
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
@@ -130,12 +129,10 @@ var _ = Describe("ConfigureProduct", func() {
 				},
 			}, nil)
 
-			jobsService.JobsReturns(api.JobsOutput{
-				Jobs: []api.Job{
-					{Name: "some-job", GUID: "a-guid"},
-					{Name: "some-other-job", GUID: "a-different-guid"},
-					{Name: "bad", GUID: "do-not-use"},
-				},
+			jobsService.JobsReturns([]api.Job{
+				{Name: "some-job", GUID: "a-guid"},
+				{Name: "some-other-job", GUID: "a-different-guid"},
+				{Name: "bad", GUID: "do-not-use"},
 			}, nil)
 
 			jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
@@ -172,23 +169,23 @@ var _ = Describe("ConfigureProduct", func() {
 
 			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-			Expect(jobsService.ConfigureArgsForCall(0)).To(Equal(api.JobConfigurationInput{
-				ProductGUID: "some-product-guid",
-				Jobs: api.JobConfig{
-					"a-guid": api.JobProperties{
-						Instances:         1,
-						PersistentDisk:    &api.Disk{Size: "20480"},
-						InstanceType:      api.InstanceType{ID: "m1.medium"},
-						InternetConnected: true,
-						LBNames:           []string{"some-lb"},
-					},
-					"a-different-guid": api.JobProperties{
-						Instances:         2,
-						PersistentDisk:    &api.Disk{Size: "20480"},
-						InstanceType:      api.InstanceType{ID: "m1.medium"},
-						InternetConnected: true,
-						LBNames:           []string{"pre-existing-2"},
-					},
+
+			argProductGUID, argResourceConfig := jobsService.ConfigureArgsForCall(0)
+			Expect(argProductGUID).To(Equal("some-product-guid"))
+			Expect(argResourceConfig).To(Equal(api.JobsConfig{
+				"a-guid": api.JobProperties{
+					Instances:         1,
+					PersistentDisk:    &api.Disk{Size: "20480"},
+					InstanceType:      api.InstanceType{ID: "m1.medium"},
+					InternetConnected: true,
+					LBNames:           []string{"some-lb"},
+				},
+				"a-different-guid": api.JobProperties{
+					Instances:         2,
+					PersistentDisk:    &api.Disk{Size: "20480"},
+					InstanceType:      api.InstanceType{ID: "m1.medium"},
+					InternetConnected: true,
+					LBNames:           []string{"pre-existing-2"},
 				},
 			}))
 		})
@@ -203,12 +200,10 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				jobsService.JobsReturns(api.JobsOutput{
-					Jobs: []api.Job{
-						{Name: "some-job", GUID: "a-guid"},
-						{Name: "some-other-job", GUID: "a-different-guid"},
-						{Name: "bad", GUID: "do-not-use"},
-					},
+				jobsService.JobsReturns([]api.Job{
+					{Name: "some-job", GUID: "a-guid"},
+					{Name: "some-other-job", GUID: "a-different-guid"},
+					{Name: "bad", GUID: "do-not-use"},
 				}, nil)
 
 				jobsService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some error"))
@@ -276,10 +271,8 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					jobsService.JobsReturns(api.JobsOutput{
-						Jobs: []api.Job{
-							{Name: "some-job", GUID: "a-guid"},
-						},
+					jobsService.JobsReturns([]api.Job{
+						{Name: "some-job", GUID: "a-guid"},
 					}, errors.New("boom"))
 
 					err := command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig})
@@ -296,10 +289,8 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					jobsService.JobsReturns(api.JobsOutput{
-						Jobs: []api.Job{
-							{Name: "some-job", GUID: "a-guid"},
-						},
+					jobsService.JobsReturns([]api.Job{
+						{Name: "some-job", GUID: "a-guid"},
 					}, nil)
 
 					jobsService.ConfigureReturns(errors.New("bad things happened"))

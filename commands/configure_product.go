@@ -28,9 +28,9 @@ type productConfigurer interface {
 
 //go:generate counterfeiter -o ./fakes/jobs_configurer.go --fake-name JobsConfigurer . jobsConfigurer
 type jobsConfigurer interface {
-	Jobs(productGUID string) (api.JobsOutput, error)
+	Jobs(productGUID string) ([]api.Job, error)
 	GetExistingJobConfig(productGUID, jobGUID string) (api.JobProperties, error)
-	Configure(api.JobConfigurationInput) error
+	Configure(productGUID string, jobsConfig api.JobsConfig) error
 }
 
 func NewConfigureProduct(productConfigurer productConfigurer, jobsConfigurer jobsConfigurer, logger logger) ConfigureProduct {
@@ -89,26 +89,26 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("could not decode product-resource json: %s", err)
 	}
 
-	jobsOutput, err := cp.jobsService.Jobs(productGUID)
+	jobs, err := cp.jobsService.Jobs(productGUID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch jobs: %s", err)
 	}
 
-	resourceConfig := make(api.JobConfig)
-	for _, job := range jobsOutput.Jobs {
-		for name, userprops := range userProvidedConfig {
+	resourceConfig := make(api.JobsConfig)
+	for _, job := range jobs {
+		for name, userJobProps := range userProvidedConfig {
 			if job.Name == name {
 				jobResourceConfig, err := cp.jobsService.GetExistingJobConfig(productGUID, job.GUID)
 				if err != nil {
 					return fmt.Errorf("could not fetch existing job configuration: %s", err)
 				}
 
-				userPropsJson, err := json.Marshal(userprops)
+				userJobPropsJson, err := json.Marshal(userJobProps)
 				if err != nil {
 					return err
 				}
 
-				err = json.Unmarshal(userPropsJson, &jobResourceConfig)
+				err = json.Unmarshal(userJobPropsJson, &jobResourceConfig)
 				if err != nil {
 					return err
 				}
@@ -118,10 +118,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		}
 	}
 
-	err = cp.jobsService.Configure(api.JobConfigurationInput{
-		ProductGUID: productGUID,
-		Jobs:        resourceConfig,
-	})
+	err = cp.jobsService.Configure(productGUID, resourceConfig)
 	if err != nil {
 		return fmt.Errorf("failed to configure resources: %s", err)
 	}

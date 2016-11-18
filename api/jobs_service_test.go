@@ -31,12 +31,11 @@ var _ = Describe("JobsService", func() {
 
 			service := api.NewJobsService(client)
 
-			output, err := service.Jobs("some-product-guid")
+			jobs, err := service.Jobs("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(output).To(Equal(api.JobsOutput{
-				Jobs: []api.Job{
-					{Name: "job-1", GUID: "some-guid"},
-				}}))
+			Expect(jobs).To(Equal([]api.Job{
+				{Name: "job-1", GUID: "some-guid"},
+			}))
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))
@@ -168,25 +167,22 @@ var _ = Describe("JobsService", func() {
 
 			service := api.NewJobsService(client)
 
-			err := service.Configure(api.JobConfigurationInput{
-				ProductGUID: "some-product-guid",
-				Jobs: api.JobConfig{
-					"some-job-guid": {
-						Instances:         1,
-						PersistentDisk:    &api.Disk{Size: "290"},
-						InstanceType:      api.InstanceType{ID: "number-1"},
-						InternetConnected: true,
-						LBNames:           []string{"something"},
-					},
-					"some-other-guid": {
-						Instances:      2,
-						PersistentDisk: &api.Disk{Size: "000"},
-						InstanceType:   api.InstanceType{ID: "number-2"},
-					},
-					"no-persistent-disk": {
-						Instances:    2,
-						InstanceType: api.InstanceType{ID: "number-2"},
-					},
+			err := service.Configure("some-product-guid", api.JobsConfig{
+				"some-job-guid": {
+					Instances:         1,
+					PersistentDisk:    &api.Disk{Size: "290"},
+					InstanceType:      api.InstanceType{ID: "number-1"},
+					InternetConnected: true,
+					LBNames:           []string{"something"},
+				},
+				"some-other-guid": {
+					Instances:      2,
+					PersistentDisk: &api.Disk{Size: "000"},
+					InstanceType:   api.InstanceType{ID: "number-2"},
+				},
+				"no-persistent-disk": {
+					Instances:    2,
+					InstanceType: api.InstanceType{ID: "number-2"},
 				},
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -251,14 +247,11 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					err := service.Configure(api.JobConfigurationInput{
-						ProductGUID: "some-product-guid",
-						Jobs: api.JobConfig{
-							"some-other-guid": {
-								Instances:      2,
-								PersistentDisk: &api.Disk{Size: "000"},
-								InstanceType:   api.InstanceType{ID: "number-2"},
-							},
+					err := service.Configure("some-product-guid", api.JobsConfig{
+						"some-other-guid": {
+							Instances:      2,
+							PersistentDisk: &api.Disk{Size: "000"},
+							InstanceType:   api.InstanceType{ID: "number-2"},
 						},
 					})
 					Expect(err).To(MatchError("could not make api request to jobs resource_config endpoint: bad things"))
@@ -274,14 +267,11 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					err := service.Configure(api.JobConfigurationInput{
-						ProductGUID: "some-product-guid",
-						Jobs: api.JobConfig{
-							"some-other-guid": {
-								Instances:      2,
-								PersistentDisk: &api.Disk{Size: "000"},
-								InstanceType:   api.InstanceType{ID: "number-2"},
-							},
+					err := service.Configure("some-product-guid", api.JobsConfig{
+						"some-other-guid": {
+							Instances:      2,
+							PersistentDisk: &api.Disk{Size: "000"},
+							InstanceType:   api.InstanceType{ID: "number-2"},
 						},
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))

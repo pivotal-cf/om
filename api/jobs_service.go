@@ -13,12 +13,7 @@ type JobsService struct {
 	client httpClient
 }
 
-type JobConfigurationInput struct {
-	ProductGUID string
-	Jobs        JobConfig
-}
-
-type JobConfig map[string]JobProperties
+type JobsConfig map[string]JobProperties
 
 type JobProperties struct {
 	Instances         int          `json:"instances"`
@@ -36,10 +31,6 @@ type InstanceType struct {
 	ID string `json:"id"`
 }
 
-type JobsOutput struct {
-	Jobs []Job
-}
-
 type Job struct {
 	GUID string
 	Name string
@@ -51,15 +42,15 @@ func NewJobsService(client httpClient) JobsService {
 	}
 }
 
-func (j JobsService) Jobs(productGUID string) (JobsOutput, error) {
+func (j JobsService) Jobs(productGUID string) ([]Job, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs", productGUID), nil)
 	if err != nil {
-		return JobsOutput{}, err
+		return nil, err
 	}
 
 	resp, err := j.client.Do(req)
 	if err != nil {
-		return JobsOutput{}, fmt.Errorf("could not make api request to jobs endpoint: %s", err)
+		return nil, fmt.Errorf("could not make api request to jobs endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
@@ -67,19 +58,22 @@ func (j JobsService) Jobs(productGUID string) (JobsOutput, error) {
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)
 		if err != nil {
-			return JobsOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
+			return nil, fmt.Errorf("request failed: unexpected response: %s", err)
 		}
 
-		return JobsOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+		return nil, fmt.Errorf("request failed: unexpected response:\n%s", out)
 	}
 
-	var output JobsOutput
-	err = json.NewDecoder(resp.Body).Decode(&output)
+	var JobsOutput struct {
+		Jobs []Job
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&JobsOutput)
 	if err != nil {
-		return JobsOutput{}, fmt.Errorf("failed to decode jobs json response: %s", err)
+		return nil, fmt.Errorf("failed to decode jobs json response: %s", err)
 	}
 
-	return output, nil
+	return JobsOutput.Jobs, nil
 }
 
 func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobProperties, error) {
@@ -116,16 +110,16 @@ func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobPrope
 	return existingConfig, nil
 }
 
-func (j JobsService) Configure(input JobConfigurationInput) error {
+func (j JobsService) Configure(productGUID string, jobsConfig JobsConfig) error {
 	var requests []*http.Request
-	for jobGUID, resourceConfig := range input.Jobs {
+	for jobGUID, resourceConfig := range jobsConfig {
 		bodyBytes := bytes.NewBuffer([]byte{})
 		err := json.NewEncoder(bodyBytes).Encode(resourceConfig)
 		if err != nil {
 			return err
 		}
 
-		req, err := http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", input.ProductGUID, jobGUID), bodyBytes)
+		req, err := http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), bodyBytes)
 		if err != nil {
 			return err
 		}
