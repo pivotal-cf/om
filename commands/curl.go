@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 
+	"encoding/json"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
-	"encoding/json"
 )
 
 //go:generate counterfeiter -o ./fakes/request_service.go --fake-name RequestService . requestService

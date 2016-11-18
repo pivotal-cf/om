@@ -57,7 +57,7 @@ var _ = Describe("Set", func() {
 
 				commandSet := commands.Set{
 					"my-command": command,
-					"help": helpCommand,
+					"help":       helpCommand,
 				}
 
 				err := commandSet.Execute("my-command", []string{"--arg-1", "--help", "--arg-2"})

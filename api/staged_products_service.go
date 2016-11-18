@@ -4,25 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
-	"time"
 )
 
-type UploadProductInput struct {
-	ContentLength int64
-	Product       io.Reader
-	ContentType   string
-}
-
-type UploadProductOutput struct{}
-
 type StageProductInput struct {
-	ProductName    string
-	ProductVersion string
+	ProductName    string `json:"name"`
+	ProductVersion string `json:"product_version"`
 }
 
 type StagedProductsOutput struct {
@@ -40,15 +29,8 @@ type ProductsConfigurationInput struct {
 	Network       string
 }
 
-type ProductsService struct {
-	client     httpClient
-	progress   progress
-	liveWriter liveWriter
-}
-
-type ProductInfo struct {
-	Name    string `json:"name"`
-	Version string `json:"product_version"`
+type StagedProductsService struct {
+	client httpClient
 }
 
 type DeployedProductInfo struct {
@@ -67,81 +49,13 @@ type ConfigurationRequest struct {
 	Configuration string
 }
 
-func NewProductsService(client httpClient, progress progress, liveWriter liveWriter) ProductsService {
-	return ProductsService{
-		client:     client,
-		progress:   progress,
-		liveWriter: liveWriter,
+func NewStagedProductsService(client httpClient) StagedProductsService {
+	return StagedProductsService{
+		client: client,
 	}
 }
 
-func (p ProductsService) Upload(input UploadProductInput) (UploadProductOutput, error) {
-	p.progress.SetTotal(input.ContentLength)
-	body := p.progress.NewBarReader(input.Product)
-
-	req, err := http.NewRequest("POST", "/api/v0/available_products", body)
-	if err != nil {
-		return UploadProductOutput{}, err
-	}
-
-	req.Header.Set("Content-Type", input.ContentType)
-	req.ContentLength = input.ContentLength
-
-	p.progress.Kickoff()
-	respChan := make(chan error)
-	go func() {
-		for {
-			if p.progress.GetCurrent() == p.progress.GetTotal() {
-				p.progress.End()
-				break
-			}
-
-			time.Sleep(1 * time.Second)
-		}
-
-		var elapsedTime int
-		p.liveWriter.Start()
-		liveLog := log.New(p.liveWriter, "", 0)
-
-		for {
-			select {
-			case _ = <-respChan:
-				p.liveWriter.Stop()
-				return
-			default:
-				time.Sleep(1 * time.Second)
-				elapsedTime++
-				liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
-			}
-		}
-	}()
-
-	resp, err := p.client.Do(req)
-	respChan <- err
-	if err != nil {
-		return UploadProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return UploadProductOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return UploadProductOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return UploadProductOutput{}, nil
-}
-
-func (p ProductsService) Stage(input StageProductInput) error {
-	productToStage, err := p.checkAvailableProducts(input.ProductName, input.ProductVersion)
-	if err != nil {
-		return err
-	}
-
+func (p StagedProductsService) Stage(input StageProductInput) error {
 	deployedGuid, err := p.checkDeployedProducts(input.ProductName)
 	if err != nil {
 		return err
@@ -149,7 +63,7 @@ func (p ProductsService) Stage(input StageProductInput) error {
 
 	var stReq *http.Request
 	if deployedGuid == "" {
-		stagedProductBody, err := json.Marshal(productToStage)
+		stagedProductBody, err := json.Marshal(input)
 		if err != nil {
 			return err
 		}
@@ -160,7 +74,7 @@ func (p ProductsService) Stage(input StageProductInput) error {
 		}
 	} else {
 		upgradeReq := UpgradeRequest{
-			ToVersion: productToStage.Version,
+			ToVersion: input.ProductVersion,
 		}
 
 		upgradeReqBody, err := json.Marshal(upgradeReq)
@@ -192,7 +106,7 @@ func (p ProductsService) Stage(input StageProductInput) error {
 	return nil
 }
 
-func (p ProductsService) StagedProducts() (StagedProductsOutput, error) {
+func (p StagedProductsService) StagedProducts() (StagedProductsOutput, error) {
 	req, err := http.NewRequest("GET", "/api/v0/staged/products", nil)
 	if err != nil {
 		return StagedProductsOutput{}, err
@@ -228,7 +142,7 @@ func (p ProductsService) StagedProducts() (StagedProductsOutput, error) {
 	}, nil
 }
 
-func (p ProductsService) Configure(input ProductsConfigurationInput) error {
+func (p StagedProductsService) Configure(input ProductsConfigurationInput) error {
 	reqList, err := createConfigureRequests(input)
 	if err != nil {
 		return err
@@ -293,55 +207,7 @@ func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request,
 	return reqList, nil
 }
 
-func (p ProductsService) checkAvailableProducts(productName string, productVersion string) (ProductInfo, error) {
-	avReq, err := http.NewRequest("GET", "/api/v0/available_products", nil)
-	if err != nil {
-		return ProductInfo{}, err
-	}
-
-	avResp, err := p.client.Do(avReq)
-	if err != nil {
-		return ProductInfo{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
-	}
-	defer avResp.Body.Close()
-
-	if avResp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(avResp, true)
-		if err != nil {
-			return ProductInfo{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return ProductInfo{}, fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
-	}
-
-	avRespBody, err := ioutil.ReadAll(avResp.Body)
-	if err != nil {
-		return ProductInfo{}, err
-	}
-
-	var availableProducts []ProductInfo
-	err = json.Unmarshal(avRespBody, &availableProducts)
-	if err != nil {
-		return ProductInfo{}, fmt.Errorf("could not unmarshal available_products response: %s", err)
-	}
-
-	var foundProduct ProductInfo
-	var prodFound bool
-	for _, product := range availableProducts {
-		if product.Name == productName && product.Version == productVersion {
-			foundProduct = product
-			prodFound = true
-			break
-		}
-	}
-
-	if !prodFound {
-		return ProductInfo{}, fmt.Errorf("cannot find product %s %s", productName, productVersion)
-	}
-
-	return foundProduct, nil
-}
-
-func (p ProductsService) checkDeployedProducts(productName string) (string, error) {
+func (p StagedProductsService) checkDeployedProducts(productName string) (string, error) {
 	depReq, err := http.NewRequest("GET", "/api/v0/deployed/products", nil)
 	if err != nil {
 		return "", err

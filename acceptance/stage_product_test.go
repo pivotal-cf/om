@@ -31,10 +31,10 @@ var _ = Describe("stage-product command", func() {
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
 					responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+					}`
 				case "/api/v0/available_products":
 					auth := req.Header.Get("Authorization")
 					if auth != "Bearer some-opsman-token" {
@@ -42,8 +42,8 @@ var _ = Describe("stage-product command", func() {
 						return
 					}
 					responseString = `[{
-					"name": "cf",
-					"product_version": "1.8.7-build.3"
+						"name": "cf",
+						"product_version": "1.8.7-build.3"
 					}]`
 				case "/api/v0/deployed/products":
 					auth := req.Header.Get("Authorization")
@@ -112,10 +112,10 @@ var _ = Describe("stage-product command", func() {
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
 					responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+					}`
 				case "/api/v0/available_products":
 					auth := req.Header.Get("Authorization")
 					if auth != "Bearer some-opsman-token" {
@@ -201,10 +201,10 @@ var _ = Describe("stage-product command", func() {
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
 					responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+					}`
 				case "/api/v0/available_products":
 					auth := req.Header.Get("Authorization")
 					if auth != "Bearer some-opsman-token" {
@@ -212,8 +212,8 @@ var _ = Describe("stage-product command", func() {
 						return
 					}
 					responseString = `[{
-					"name": "cf",
-					"product_version": "1.8.7-build.3"
+						"name": "cf",
+						"product_version": "1.8.7-build.3"
 					}]`
 				case "/api/v0/deployed/products":
 					auth := req.Header.Get("Authorization")
@@ -262,7 +262,7 @@ var _ = Describe("stage-product command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("cannot find product bosh"))
+				Eventually(session.Out).Should(gbytes.Say("cannot find product bosh 2.0"))
 			})
 		})
 	})

@@ -9,9 +9,10 @@ import (
 )
 
 type StageProduct struct {
-	logger          logger
-	productsService productStager
-	Options         struct {
+	logger                   logger
+	stagedProductsService    productStager
+	availableProductsService availableProductChecker
+	Options                  struct {
 		Product string `short:"p"  long:"product-name"  description:"name of product"`
 		Version string `short:"v"  long:"product-version"  description:"version of product"`
 	}
@@ -22,18 +23,16 @@ type productStager interface {
 	Stage(api.StageProductInput) error
 }
 
-func NewStageProduct(productStager productStager, logger logger) StageProduct {
-	return StageProduct{
-		logger:          logger,
-		productsService: productStager,
-	}
+//go:generate counterfeiter -o ./fakes/available_product_checker.go --fake-name AvailableProductChecker . availableProductChecker
+type availableProductChecker interface {
+	CheckProductAvailability(productName string, productVersion string) (bool, error)
 }
 
-func (sp StageProduct) Usage() Usage {
-	return Usage{
-		Description:      "This command attempts to stage a product in the Ops Manager",
-		ShortDescription: "stages a given product in the Ops Manager targeted",
-		Flags:            sp.Options,
+func NewStageProduct(productStager productStager, availableProductChecker availableProductChecker, logger logger) StageProduct {
+	return StageProduct{
+		logger:                   logger,
+		stagedProductsService:    productStager,
+		availableProductsService: availableProductChecker,
 	}
 }
 
@@ -51,9 +50,18 @@ func (sp StageProduct) Execute(args []string) error {
 		return errors.New("error: product-version is missing. Please see usage for more information.")
 	}
 
+	available, err := sp.availableProductsService.CheckProductAvailability(sp.Options.Product, sp.Options.Version)
+	if err != nil {
+		return fmt.Errorf("failed to stage product: cannot check availability of product %s %s", sp.Options.Product, sp.Options.Version)
+	}
+
+	if !available {
+		return fmt.Errorf("failed to stage product: cannot find product %s %s", sp.Options.Product, sp.Options.Version)
+	}
+
 	sp.logger.Printf("staging %s %s", sp.Options.Product, sp.Options.Version)
 
-	err = sp.productsService.Stage(api.StageProductInput{
+	err = sp.stagedProductsService.Stage(api.StageProductInput{
 		ProductName:    sp.Options.Product,
 		ProductVersion: sp.Options.Version,
 	})
@@ -64,4 +72,12 @@ func (sp StageProduct) Execute(args []string) error {
 	sp.logger.Printf("finished staging")
 
 	return nil
+}
+
+func (sp StageProduct) Usage() Usage {
+	return Usage{
+		Description:      "This command attempts to stage a product in the Ops Manager",
+		ShortDescription: "stages a given product in the Ops Manager targeted",
+		Flags:            sp.Options,
+	}
 }
