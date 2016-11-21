@@ -20,10 +20,11 @@ import (
 
 var _ = Describe("import-installation command", func() {
 	var (
-		installation string
-		passphrase   string
-		content      *os.File
-		server       *httptest.Server
+		installation                string
+		passphrase                  string
+		content                     *os.File
+		server                      *httptest.Server
+		ensureAvailabilityCallCount int
 	)
 
 	BeforeEach(func() {
@@ -40,8 +41,14 @@ var _ = Describe("import-installation command", func() {
 
 			switch req.URL.Path {
 			case "/login/ensure_availability":
-				w.Header().Set("Location", "/setup")
-				w.WriteHeader(http.StatusFound)
+				if ensureAvailabilityCallCount < 2 {
+					w.Header().Set("Location", "/setup")
+					w.WriteHeader(http.StatusFound)
+				} else {
+					w.Header().Set("Location", "/auth/cloudfoundry")
+					w.WriteHeader(http.StatusFound)
+				}
+				ensureAvailabilityCallCount++
 			case "/api/v0/installation_asset_collection":
 				err := req.ParseMultipartForm(100)
 				Expect(err).NotTo(HaveOccurred())
@@ -94,7 +101,7 @@ var _ = Describe("import-installation command", func() {
 				switch req.URL.Path {
 				case "/login/ensure_availability":
 					w.Header().Set("Location", "/auth/cloudfoundry")
-					w.WriteHeader(http.StatusOK)
+					w.WriteHeader(http.StatusFound)
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())

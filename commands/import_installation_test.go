@@ -39,6 +39,10 @@ var _ = Describe("ImportInstallation", func() {
 		setupService = &fakes.SetupService{}
 		setupService.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
 			{Status: api.EnsureAvailabilityStatusUnstarted},
+			{Status: api.EnsureAvailabilityStatusPending},
+			{Status: api.EnsureAvailabilityStatusPending},
+			{Status: api.EnsureAvailabilityStatusPending},
+			{Status: api.EnsureAvailabilityStatusComplete},
 		}
 
 		command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
@@ -48,7 +52,7 @@ var _ = Describe("ImportInstallation", func() {
 			"--decryption-passphrase", "some-passphrase",
 		})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(setupService.EnsureAvailabilityCall.CallCount).To(Equal(1))
+		Expect(setupService.EnsureAvailabilityCall.CallCount).To(Equal(5))
 
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("installation[file]"))

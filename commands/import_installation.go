@@ -88,6 +88,13 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("failed to import installation: %s", err)
 	}
 
+	for ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusComplete {
+		ensureAvailabilityOutput, err = ii.setupService.EnsureAvailability(api.EnsureAvailabilityInput{})
+		if err != nil {
+			return fmt.Errorf("could not check Ops Manager Status: %s", err)
+		}
+	}
+
 	ii.logger.Printf("finished import")
 
 	return nil
