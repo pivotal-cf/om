@@ -35,6 +35,8 @@ var _ = Describe("import-installation command", func() {
 		_, err = content.WriteString("content so validation does not fail")
 		Expect(err).NotTo(HaveOccurred())
 
+		ensureAvailabilityCallCount = 0
+
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			var responseString string
 			w.Header().Set("Content-Type", "application/json")
