@@ -68,6 +68,12 @@ func main() {
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
 
 	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, requestTimeout)
+
+	if err != nil {
+		stdout.Fatal(err)
+	}
+
+	webClient, err := network.NewWebClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
@@ -84,6 +90,7 @@ func main() {
 	logWriter := commands.NewLogWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
 	jobsService := api.NewJobsService(authedClient)
+	awsService := api.NewAWSIaasConfigurationService(webClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -103,6 +110,7 @@ func main() {
 	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
+	commandSet["aws"] = commands.NewAWS(awsService, stdout, stderr)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

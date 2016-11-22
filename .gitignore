@@ -1,0 +1,3 @@
+integration/*
+configure_aws_director_test.go
+aws.json
