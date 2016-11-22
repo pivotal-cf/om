@@ -40,6 +40,11 @@ func (c WebClient) authenticate() error {
 	var err error
 	var resp *http.Response
 	var XUaaCsrf, UAAToken string
+
+	if c.target == "" {
+		return nil
+	}
+
 	if resp, err = c.HTTPClient.Get(fmt.Sprintf("%s/auth/cloudfoundry", c.target)); err == nil {
 		defer resp.Body.Close()
 		if err = c.handleResponse(resp); err != nil {
@@ -96,6 +101,16 @@ func (c WebClient) handleResponse(resp *http.Response) error {
 }
 
 func (c WebClient) Do(request *http.Request) (*http.Response, error) {
+	if c.target == "" {
+		return nil, fmt.Errorf("must specify target")
+	}
+	if c.username == "" {
+		return nil, fmt.Errorf("must specify username")
+	}
+	if c.password == "" {
+		return nil, fmt.Errorf("must specify password")
+	}
+
 	targetURL, err := url.Parse(c.target)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse target url: %s", err)
