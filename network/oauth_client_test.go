@@ -175,6 +175,20 @@ var _ = Describe("OAuthClient", func() {
 				_, err = client.RoundTrip(req)
 				Expect(err).To(MatchError("token could not be retrieved from target url: parse %%%/uaa/oauth/token: invalid URL escape \"%%%\""))
 			})
+			It("retries", func() {
+				client, err := network.NewOAuthClient("http://240.255.255.255:12345", "opsman-username", "opsman-password", true, time.Duration(2)*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				var req http.Request
+				start := time.Now()
+
+				_, err = client.Do(&req)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("token could not be retrieved from target url: Post http://240.255.255.255:12345/uaa/oauth/token: dial tcp 240.255.255.255:12345: i/o timeout"))
+
+				duration := time.Now().Sub(start)
+				Expect(duration).To(BeNumerically(">", 90 * time.Second))
+			})
 		})
 	})
 })
