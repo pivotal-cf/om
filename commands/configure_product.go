@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
@@ -94,13 +95,20 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to fetch jobs: %s", err)
 	}
 
-	for name, userJobPropsJSON := range userProvidedConfig {
+	var names []string
+	for name, _ := range userProvidedConfig {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+
+	for _, name := range names {
 		jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, jobs[name])
 		if err != nil {
 			return fmt.Errorf("could not fetch existing job configuration: %s", err)
 		}
 
-		err = json.Unmarshal(userJobPropsJSON, &jobProperties)
+		err = json.Unmarshal(userProvidedConfig[name], &jobProperties)
 		if err != nil {
 			return err
 		}
