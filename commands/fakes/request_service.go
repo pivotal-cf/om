@@ -17,8 +17,6 @@ type RequestService struct {
 		result1 api.RequestServiceInvokeOutput
 		result2 error
 	}
-	invocations      map[string][][]interface{}
-	invocationsMutex sync.RWMutex
 }
 
 func (fake *RequestService) Invoke(arg1 api.RequestServiceInvokeInput) (api.RequestServiceInvokeOutput, error) {
@@ -26,7 +24,6 @@ func (fake *RequestService) Invoke(arg1 api.RequestServiceInvokeInput) (api.Requ
 	fake.invokeArgsForCall = append(fake.invokeArgsForCall, struct {
 		arg1 api.RequestServiceInvokeInput
 	}{arg1})
-	fake.recordInvocation("Invoke", []interface{}{arg1})
 	fake.invokeMutex.Unlock()
 	if fake.InvokeStub != nil {
 		return fake.InvokeStub(arg1)
@@ -53,24 +50,4 @@ func (fake *RequestService) InvokeReturns(result1 api.RequestServiceInvokeOutput
 		result1 api.RequestServiceInvokeOutput
 		result2 error
 	}{result1, result2}
-}
-
-func (fake *RequestService) Invocations() map[string][][]interface{} {
-	fake.invocationsMutex.RLock()
-	defer fake.invocationsMutex.RUnlock()
-	fake.invokeMutex.RLock()
-	defer fake.invokeMutex.RUnlock()
-	return fake.invocations
-}
-
-func (fake *RequestService) recordInvocation(key string, args []interface{}) {
-	fake.invocationsMutex.Lock()
-	defer fake.invocationsMutex.Unlock()
-	if fake.invocations == nil {
-		fake.invocations = map[string][][]interface{}{}
-	}
-	if fake.invocations[key] == nil {
-		fake.invocations[key] = [][]interface{}{}
-	}
-	fake.invocations[key] = append(fake.invocations[key], args)
 }

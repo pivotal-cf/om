@@ -23,14 +23,11 @@ type ProductConfigurer struct {
 	configureReturns struct {
 		result1 error
 	}
-	invocations      map[string][][]interface{}
-	invocationsMutex sync.RWMutex
 }
 
 func (fake *ProductConfigurer) StagedProducts() (api.StagedProductsOutput, error) {
 	fake.stagedProductsMutex.Lock()
 	fake.stagedProductsArgsForCall = append(fake.stagedProductsArgsForCall, struct{}{})
-	fake.recordInvocation("StagedProducts", []interface{}{})
 	fake.stagedProductsMutex.Unlock()
 	if fake.StagedProductsStub != nil {
 		return fake.StagedProductsStub()
@@ -58,7 +55,6 @@ func (fake *ProductConfigurer) Configure(arg1 api.ProductsConfigurationInput) er
 	fake.configureArgsForCall = append(fake.configureArgsForCall, struct {
 		arg1 api.ProductsConfigurationInput
 	}{arg1})
-	fake.recordInvocation("Configure", []interface{}{arg1})
 	fake.configureMutex.Unlock()
 	if fake.ConfigureStub != nil {
 		return fake.ConfigureStub(arg1)
@@ -84,26 +80,4 @@ func (fake *ProductConfigurer) ConfigureReturns(result1 error) {
 	fake.configureReturns = struct {
 		result1 error
 	}{result1}
-}
-
-func (fake *ProductConfigurer) Invocations() map[string][][]interface{} {
-	fake.invocationsMutex.RLock()
-	defer fake.invocationsMutex.RUnlock()
-	fake.stagedProductsMutex.RLock()
-	defer fake.stagedProductsMutex.RUnlock()
-	fake.configureMutex.RLock()
-	defer fake.configureMutex.RUnlock()
-	return fake.invocations
-}
-
-func (fake *ProductConfigurer) recordInvocation(key string, args []interface{}) {
-	fake.invocationsMutex.Lock()
-	defer fake.invocationsMutex.Unlock()
-	if fake.invocations == nil {
-		fake.invocations = map[string][][]interface{}{}
-	}
-	if fake.invocations[key] == nil {
-		fake.invocations[key] = [][]interface{}{}
-	}
-	fake.invocations[key] = append(fake.invocations[key], args)
 }
