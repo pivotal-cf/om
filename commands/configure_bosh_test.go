@@ -108,8 +108,8 @@ var _ = Describe("ConfigureBOSH", func() {
 			command := commands.NewConfigureBOSH(nil, nil)
 
 			Expect(command.Usage()).To(Equal(commands.Usage{
-				Description:      "configures the bosh director that is deployed by the ops manager",
-				ShortDescription: "bosh director configuration",
+				Description:      "configures the bosh director that is deployed by the Ops Manager",
+				ShortDescription: "configures Ops Manager deployed bosh director",
 				Flags:            command.Options,
 			}))
 		})

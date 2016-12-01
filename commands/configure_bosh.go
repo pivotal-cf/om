@@ -79,8 +79,8 @@ func (c ConfigureBOSH) Execute(args []string) error {
 
 func (c ConfigureBOSH) Usage() Usage {
 	return Usage{
-		Description:      "configures the bosh director that is deployed by the ops manager",
-		ShortDescription: "bosh director configuration",
+		Description:      "configures the bosh director that is deployed by the Ops Manager",
+		ShortDescription: "configures Ops Manager deployed bosh director",
 		Flags:            c.Options,
 	}
 }

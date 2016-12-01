@@ -24,7 +24,7 @@ Usage: om [options] <command> [<args>]
 Commands:
   apply-changes             triggers an install on the Ops Manager targeted
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
-  configure-bosh            bosh director configuration
+  configure-bosh            configures Ops Manager deployed bosh director
   configure-product         configures a staged product
   curl                      issues an authenticated API request
   delete-installation       deletes all the products on the Ops Manager targeted
