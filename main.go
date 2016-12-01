@@ -67,7 +67,12 @@ func main() {
 
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
 
-	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, requestTimeout)
+	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, false, requestTimeout)
+	if err != nil {
+		stdout.Fatal(err)
+	}
+
+	authedCookieClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, true, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
@@ -84,7 +89,7 @@ func main() {
 	logWriter := commands.NewLogWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
 	jobsService := api.NewJobsService(authedClient)
-	BOSHService := api.NewBoshFormService(authedClient)
+	BOSHService := api.NewBoshFormService(authedCookieClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {

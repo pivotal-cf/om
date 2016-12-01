@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"time"
 
@@ -14,15 +15,15 @@ import (
 
 type OAuthClient struct {
 	oauthConfig *oauth2.Config
+	jar         *cookiejar.Jar
 	context     context.Context
 	username    string
 	password    string
 	target      string
-	client      *http.Client
 	timeout     time.Duration
 }
 
-func NewOAuthClient(target, username, password string, insecureSkipVerify bool, requestTimeout time.Duration) (OAuthClient, error) {
+func NewOAuthClient(target, username, password string, insecureSkipVerify bool, includeCookies bool, requestTimeout time.Duration) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
@@ -43,16 +44,25 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool, 
 		},
 	}
 
+	var jar *cookiejar.Jar
+	if includeCookies {
+		var err error
+		jar, err = cookiejar.New(nil)
+		if err != nil {
+			return OAuthClient{}, fmt.Errorf("could not create cookie jar")
+		}
+	}
+
 	insecureContext := context.Background()
 	insecureContext = context.WithValue(insecureContext, oauth2.HTTPClient, httpclient)
 
 	return OAuthClient{
 		oauthConfig: conf,
+		jar:         jar,
 		context:     insecureContext,
 		username:    username,
 		password:    password,
 		target:      target,
-		client:      nil,
 		timeout:     requestTimeout,
 	}, nil
 }
@@ -65,6 +75,10 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 
 	client := oc.oauthConfig.Client(oc.context, token)
 	client.Timeout = oc.timeout
+
+	if oc.jar != nil {
+		client.Jar = oc.jar
+	}
 
 	targetURL, err := url.Parse(oc.target)
 	if err != nil {
