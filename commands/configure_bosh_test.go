@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ConfigureBOSH", func() {
+var _ = Describe("ConfigureBosh", func() {
 	var (
 		service *fakes.BoshFormService
 		logger  *fakes.Logger
@@ -25,7 +25,7 @@ var _ = Describe("ConfigureBOSH", func() {
 
 	Describe("Execute", func() {
 		It("configures the bosh", func() {
-			command := commands.NewConfigureBOSH(service, logger)
+			command := commands.NewConfigureBosh(service, logger)
 
 			service.GetFormReturns(api.Form{
 				Action:            "form-action",
@@ -63,7 +63,7 @@ var _ = Describe("ConfigureBOSH", func() {
 		Context("error cases", func() {
 			Context("when an invalid flag is passed", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureBOSH(service, logger)
+					command := commands.NewConfigureBosh(service, logger)
 
 					err := command.Execute([]string{"--not-a-real-flag"})
 					Expect(err).To(MatchError("flag provided but not defined: -not-a-real-flag"))
@@ -74,7 +74,7 @@ var _ = Describe("ConfigureBOSH", func() {
 				It("returns an error", func() {
 					service.GetFormReturns(api.Form{}, errors.New("meow meow meow"))
 
-					command := commands.NewConfigureBOSH(service, logger)
+					command := commands.NewConfigureBosh(service, logger)
 
 					err := command.Execute([]string{""})
 					Expect(err).To(MatchError("could not fetch form: meow meow meow"))
@@ -83,7 +83,7 @@ var _ = Describe("ConfigureBOSH", func() {
 
 			Context("when the json can't be decoded", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureBOSH(service, logger)
+					command := commands.NewConfigureBosh(service, logger)
 
 					err := command.Execute([]string{"--iaas-configuration", "%$#@#$"})
 					Expect(err).To(MatchError("could not decode json: invalid character '%' looking for beginning of value"))
@@ -94,7 +94,7 @@ var _ = Describe("ConfigureBOSH", func() {
 				It("returns an error", func() {
 					service.ConfigureIAASReturns(errors.New("NOPE"))
 
-					command := commands.NewConfigureBOSH(service, logger)
+					command := commands.NewConfigureBosh(service, logger)
 
 					err := command.Execute([]string{"--iaas-configuration", "{}"})
 					Expect(err).To(MatchError("tile failed to configure: NOPE"))
@@ -105,7 +105,7 @@ var _ = Describe("ConfigureBOSH", func() {
 
 	Describe("Usage", func() {
 		It("returns the usage for the command", func() {
-			command := commands.NewConfigureBOSH(nil, nil)
+			command := commands.NewConfigureBosh(nil, nil)
 
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "configures the bosh director that is deployed by the Ops Manager",

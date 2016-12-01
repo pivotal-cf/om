@@ -12,7 +12,7 @@ import (
 
 const iaasConfigurationPath = "/infrastructure/iaas_configuration/edit"
 
-type ConfigureBOSH struct {
+type ConfigureBosh struct {
 	service boshFormService
 	logger  logger
 	Options struct {
@@ -46,11 +46,11 @@ type boshFormService interface {
 	ConfigureIAAS(api.ConfigureIAASInput) error
 }
 
-func NewConfigureBOSH(s boshFormService, l logger) ConfigureBOSH {
-	return ConfigureBOSH{service: s, logger: l}
+func NewConfigureBosh(s boshFormService, l logger) ConfigureBosh {
+	return ConfigureBosh{service: s, logger: l}
 }
 
-func (c ConfigureBOSH) Execute(args []string) error {
+func (c ConfigureBosh) Execute(args []string) error {
 	_, err := flags.Parse(&c.Options, args)
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (c ConfigureBOSH) Execute(args []string) error {
 	return nil
 }
 
-func (c ConfigureBOSH) Usage() Usage {
+func (c ConfigureBosh) Usage() Usage {
 	return Usage{
 		Description:      "configures the bosh director that is deployed by the Ops Manager",
 		ShortDescription: "configures Ops Manager deployed bosh director",
