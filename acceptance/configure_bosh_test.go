@@ -55,33 +55,117 @@ var _ = Describe("configure-bosh command", func() {
 		Forms = []url.Values{}
 	})
 
-	It("configures the bosh tile with iaas configuration", func() {
-		iaasConfiguration := `{
+	Context("GCP", func() {
+		var (
+			command *exec.Cmd
+		)
+
+		BeforeEach(func() {
+			iaasConfiguration := `{
 			"project": "my-project",
 			"default_deployment_tag": "my-vms",
 			"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-private-key\"}"
 		}`
 
-		command := exec.Command(pathToMain,
-			"--target", server.URL,
-			"--username", "fake-username",
-			"--password", "fake-password",
-			"--skip-ssl-validation",
-			"configure-bosh",
-			"--iaas-configuration", iaasConfiguration)
+			command = exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "fake-username",
+				"--password", "fake-password",
+				"--skip-ssl-validation",
+				"configure-bosh",
+				"--iaas-configuration", iaasConfiguration)
+		})
 
-		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		It("configures the bosh tile with the provided iaas configuration", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
+			Eventually(session).Should(gexec.Exit(0))
 
-		Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
-		Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
+			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
 
-		Expect(Forms[0].Get("iaas_configuration[project]")).To(Equal("my-project"))
-		Expect(Forms[0].Get("iaas_configuration[default_deployment_tag]")).To(Equal("my-vms"))
-		Expect(Forms[0].Get("iaas_configuration[auth_json]")).To(Equal(`{"service_account_key": "some-service-key","private_key": "some-private-key"}`))
-		Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
-		Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+			Expect(Forms[0].Get("iaas_configuration[project]")).To(Equal("my-project"))
+			Expect(Forms[0].Get("iaas_configuration[default_deployment_tag]")).To(Equal("my-vms"))
+			Expect(Forms[0].Get("iaas_configuration[auth_json]")).To(Equal(`{"service_account_key": "some-service-key","private_key": "some-private-key"}`))
+
+			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+		})
+
+		It("does not configure keys that are not part of input", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
+			Expect(ok).To(BeFalse())
+		})
+
+	})
+
+	Context("Azure", func() {
+
+		var (
+			command *exec.Cmd
+		)
+
+		BeforeEach(func() {
+			iaasConfiguration := `{
+		  "subscription_id": "my-subscription",
+		  "tenant_id": "my-tenant",
+		  "client_id": "my-client",
+		  "client_secret": "my-client-secret",
+		  "resource_group_name": "my-group",
+		  "bosh_storage_account_name": "my-storage-account",
+		  "deployments_storage_account_name": "my-deployments-storage-account",
+		  "default_security_group": "my-security-group",
+		  "ssh_public_key": "my-public-key",
+		  "ssh_private_key": "my-private-key"
+			}`
+
+			command = exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "fake-username",
+				"--password", "fake-password",
+				"--skip-ssl-validation",
+				"configure-bosh",
+				"--iaas-configuration", iaasConfiguration)
+		})
+
+		It("configures the bosh tile with the provided iaas configuration", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
+
+			Expect(Forms[0].Get("iaas_configuration[subscription_id]")).To(Equal("my-subscription"))
+			Expect(Forms[0].Get("iaas_configuration[tenant_id]")).To(Equal("my-tenant"))
+			Expect(Forms[0].Get("iaas_configuration[client_id]")).To(Equal("my-client"))
+			Expect(Forms[0].Get("iaas_configuration[client_secret]")).To(Equal("my-client-secret"))
+			Expect(Forms[0].Get("iaas_configuration[resource_group_name]")).To(Equal("my-group"))
+			Expect(Forms[0].Get("iaas_configuration[bosh_storage_account_name]")).To(Equal("my-storage-account"))
+			Expect(Forms[0].Get("iaas_configuration[deployments_storage_account_name]")).To(Equal("my-deployments-storage-account"))
+			Expect(Forms[0].Get("iaas_configuration[default_security_group]")).To(Equal("my-security-group"))
+			Expect(Forms[0].Get("iaas_configuration[ssh_public_key]")).To(Equal("my-public-key"))
+			Expect(Forms[0].Get("iaas_configuration[ssh_private_key]")).To(Equal("my-private-key"))
+
+			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+		})
+
+		It("does not configure keys that are not part of input", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			_, ok := Forms[0]["iaas_configuration[project]"]
+			Expect(ok).To(BeFalse())
+		})
 	})
 })

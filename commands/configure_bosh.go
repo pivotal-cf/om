@@ -21,11 +21,23 @@ type ConfigureBOSH struct {
 }
 
 type IAASConfiguration struct {
-	Project              string `url:"iaas_configuration[project]" json:"project"`
-	DefaultDeploymentTag string `url:"iaas_configuration[default_deployment_tag]" json:"default_deployment_tag"`
-	AuthJSON             string `url:"iaas_configuration[auth_json]" json:"auth_json"`
-	AuthenticityToken    string `url:"authenticity_token"`
-	Method               string `url:"_method"`
+	Project              string `url:"iaas_configuration[project],omitempty" json:"project"`
+	DefaultDeploymentTag string `url:"iaas_configuration[default_deployment_tag],omitempty" json:"default_deployment_tag"`
+	AuthJSON             string `url:"iaas_configuration[auth_json],omitempty" json:"auth_json"`
+
+	SubscriptionID                string `url:"iaas_configuration[subscription_id],omitempty" json:"subscription_id"`
+	TenantID                      string `url:"iaas_configuration[tenant_id],omitempty" json:"tenant_id"`
+	ClientID                      string `url:"iaas_configuration[client_id],omitempty" json:"client_id"`
+	ClientSecret                  string `url:"iaas_configuration[client_secret],omitempty" json:"client_secret"`
+	ResourceGroupName             string `url:"iaas_configuration[resource_group_name],omitempty" json:"resource_group_name"`
+	BoshStorageAccountName        string `url:"iaas_configuration[bosh_storage_account_name],omitempty" json:"bosh_storage_account_name"`
+	DefaultSecurityGroup          string `url:"iaas_configuration[default_security_group],omitempty" json:"default_security_group"`
+	SSHPublicKey                  string `url:"iaas_configuration[ssh_public_key],omitempty" json:"ssh_public_key"`
+	SSHPrivateKey                 string `url:"iaas_configuration[ssh_private_key],omitempty" json:"ssh_private_key"`
+	DeploymentsStorageAccountName string `url:"iaas_configuration[deployments_storage_account_name],omitempty" json:"deployments_storage_account_name"`
+
+	AuthenticityToken string `url:"authenticity_token"`
+	Method            string `url:"_method"`
 }
 
 //go:generate counterfeiter -o ./fakes/bosh_form_service.go --fake-name BoshFormService . boshFormService
