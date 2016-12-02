@@ -168,4 +168,64 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(ok).To(BeFalse())
 		})
 	})
+
+	Context("AWS", func() {
+		var (
+			command *exec.Cmd
+		)
+
+		BeforeEach(func() {
+			iaasConfiguration := `{
+			"access_key_id": "my-access-key",
+			"secret_access_key": "my-secret-key",
+			"vpc_id": "my-vpc",
+      "security_group": "my-security-group",
+			"key_pair_name": "my-key-pair",
+			"ssh_private_key": "my-private-ssh-key",
+			"region": "some-region",
+			"encrypted": "false"
+		}`
+
+			command = exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "fake-username",
+				"--password", "fake-password",
+				"--skip-ssl-validation",
+				"configure-bosh",
+				"--iaas-configuration", iaasConfiguration)
+		})
+
+		It("configures the bosh tile with the provided iaas configuration", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
+
+			Expect(Forms[0].Get("iaas_configuration[access_key_id]")).To(Equal("my-access-key"))
+			Expect(Forms[0].Get("iaas_configuration[secret_access_key]")).To(Equal("my-secret-key"))
+			Expect(Forms[0].Get("iaas_configuration[vpc_id]")).To(Equal("my-vpc"))
+			Expect(Forms[0].Get("iaas_configuration[security_group]")).To(Equal("my-security-group"))
+			Expect(Forms[0].Get("iaas_configuration[key_pair_name]")).To(Equal("my-key-pair"))
+			Expect(Forms[0].Get("iaas_configuration[ssh_private_key]")).To(Equal("my-private-ssh-key"))
+			Expect(Forms[0].Get("iaas_configuration[region]")).To(Equal("some-region"))
+			Expect(Forms[0].Get("iaas_configuration[encrypted]")).To(Equal("false"))
+
+			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+		})
+
+		It("does not configure keys that are not part of input", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
+			Expect(ok).To(BeFalse())
+		})
+
+	})
 })
