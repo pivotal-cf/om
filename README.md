@@ -2,7 +2,7 @@
 
 _is a mantra, or vibration, that is traditionally chanted_
 
-<iframe src="//giphy.com/embed/3o7qDQ5iw1oXyDeJAk" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="http://giphy.com/gifs/qz-3o7qDQ5iw1oXyDeJAk">via GIPHY</a></p>
+http://giphy.com/gifs/qz-3o7qDQ5iw1oXyDeJAk
 
 ## What it is
 
