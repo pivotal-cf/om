@@ -102,21 +102,21 @@ var _ = Describe("BoshFormService", func() {
 		})
 	})
 
-	Describe("ConfigureIAAS", func() {
+	Describe("PostForm", func() {
 		It("submits the form content", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader("")),
 			}, nil)
 
-			input := api.ConfigureIAASInput{
+			input := api.PostFormInput{
 				Form: api.Form{
 					Action: "/some/action",
 				},
 				EncodedPayload: "some-payload",
 			}
 
-			err := service.ConfigureIAAS(input)
+			err := service.PostForm(input)
 			Expect(err).NotTo(HaveOccurred())
 
 			req := client.DoArgsForCall(0)
@@ -133,13 +133,13 @@ var _ = Describe("BoshFormService", func() {
 		Context("when an error occurs", func() {
 			Context("when a request cannot be constructed", func() {
 				It("returns an error", func() {
-					input := api.ConfigureIAASInput{
+					input := api.PostFormInput{
 						Form: api.Form{
 							Action: "%%%%",
 						},
 					}
 
-					err := service.ConfigureIAAS(input)
+					err := service.PostForm(input)
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
@@ -151,7 +151,7 @@ var _ = Describe("BoshFormService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, errors.New("some error"))
 
-					err := service.ConfigureIAAS(api.ConfigureIAASInput{})
+					err := service.PostForm(api.PostFormInput{})
 					Expect(err).To(MatchError("failed to POST form: some error"))
 				})
 			})
@@ -163,7 +163,7 @@ var _ = Describe("BoshFormService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					err := service.ConfigureIAAS(api.ConfigureIAASInput{})
+					err := service.PostForm(api.PostFormInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

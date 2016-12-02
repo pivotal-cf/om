@@ -16,7 +16,7 @@ type Form struct {
 	RailsMethod       string
 }
 
-type ConfigureIAASInput struct {
+type PostFormInput struct {
 	Form
 	EncodedPayload string
 }
@@ -72,7 +72,7 @@ func (bs BoshFormService) GetForm(path string) (Form, error) {
 	}, nil
 }
 
-func (bs BoshFormService) ConfigureIAAS(input ConfigureIAASInput) error {
+func (bs BoshFormService) PostForm(input PostFormInput) error {
 	req, err := http.NewRequest("POST", input.Action, strings.NewReader(input.EncodedPayload))
 	if err != nil {
 		return err

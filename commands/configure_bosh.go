@@ -20,13 +20,13 @@ type ConfigureBosh struct {
 	}
 }
 
-type IAASConfiguration struct {
-	// GCP-only configurations
+type GCPConfiguration struct {
 	Project              string `url:"iaas_configuration[project],omitempty" json:"project"`
 	DefaultDeploymentTag string `url:"iaas_configuration[default_deployment_tag],omitempty" json:"default_deployment_tag"`
 	AuthJSON             string `url:"iaas_configuration[auth_json],omitempty" json:"auth_json"`
+}
 
-	// Azure-only configurations
+type AzureConfiguration struct {
 	SubscriptionID                string `url:"iaas_configuration[subscription_id],omitempty" json:"subscription_id"`
 	TenantID                      string `url:"iaas_configuration[tenant_id],omitempty" json:"tenant_id"`
 	ClientID                      string `url:"iaas_configuration[client_id],omitempty" json:"client_id"`
@@ -36,25 +36,35 @@ type IAASConfiguration struct {
 	DefaultSecurityGroup          string `url:"iaas_configuration[default_security_group],omitempty" json:"default_security_group"`
 	SSHPublicKey                  string `url:"iaas_configuration[ssh_public_key],omitempty" json:"ssh_public_key"`
 	DeploymentsStorageAccountName string `url:"iaas_configuration[deployments_storage_account_name],omitempty" json:"deployments_storage_account_name"`
+}
 
-	// AWS-only configurations
+type AWSConfiguration struct {
 	AccessKeyID     string `url:"iaas_configuration[access_key_id],omitempty" json:"access_key_id"`
 	SecretAccessKey string `url:"iaas_configuration[secret_access_key],omitempty" json:"secret_access_key"`
 	VpcID           string `url:"iaas_configuration[vpc_id],omitempty" json:"vpc_id"`
 	SecurityGroup   string `url:"iaas_configuration[security_group],omitempty" json:"security_group"`
 	KeyPairName     string `url:"iaas_configuration[key_pair_name],omitempty" json:"key_pair_name"`
 	Region          string `url:"iaas_configuration[region],omitempty" json:"region"`
-	Encrypted       string `url:"iaas_configuration[encrypted],omitempty" json:"encrypted"`
+	Encrypted       *bool  `url:"iaas_configuration[encrypted],omitempty" json:"encrypted"`
+}
 
+type CommonConfiguration struct {
 	SSHPrivateKey     string `url:"iaas_configuration[ssh_private_key],omitempty" json:"ssh_private_key"`
 	AuthenticityToken string `url:"authenticity_token"`
 	Method            string `url:"_method"`
 }
 
+type IAASConfiguration struct {
+	GCPConfiguration
+	AzureConfiguration
+	AWSConfiguration
+	CommonConfiguration
+}
+
 //go:generate counterfeiter -o ./fakes/bosh_form_service.go --fake-name BoshFormService . boshFormService
 type boshFormService interface {
 	GetForm(path string) (api.Form, error)
-	ConfigureIAAS(api.ConfigureIAASInput) error
+	PostForm(api.PostFormInput) error
 }
 
 func NewConfigureBosh(s boshFormService, l logger) ConfigureBosh {
@@ -88,7 +98,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		return err // cannot be tested
 	}
 
-	err = c.service.ConfigureIAAS(api.ConfigureIAASInput{
+	err = c.service.PostForm(api.PostFormInput{
 		Form:           form,
 		EncodedPayload: values.Encode(),
 	})

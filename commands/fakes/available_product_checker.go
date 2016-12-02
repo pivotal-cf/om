@@ -14,6 +14,8 @@ type AvailableProductChecker struct {
 		result1 bool
 		result2 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *AvailableProductChecker) CheckProductAvailability(productName string, productVersion string) (bool, error) {
@@ -22,6 +24,7 @@ func (fake *AvailableProductChecker) CheckProductAvailability(productName string
 		productName    string
 		productVersion string
 	}{productName, productVersion})
+	fake.recordInvocation("CheckProductAvailability", []interface{}{productName, productVersion})
 	fake.checkProductAvailabilityMutex.Unlock()
 	if fake.CheckProductAvailabilityStub != nil {
 		return fake.CheckProductAvailabilityStub(productName, productVersion)
@@ -48,4 +51,24 @@ func (fake *AvailableProductChecker) CheckProductAvailabilityReturns(result1 boo
 		result1 bool
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *AvailableProductChecker) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.checkProductAvailabilityMutex.RLock()
+	defer fake.checkProductAvailabilityMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *AvailableProductChecker) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

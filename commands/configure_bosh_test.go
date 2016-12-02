@@ -50,7 +50,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
 
-			Expect(service.ConfigureIAASArgsForCall(0)).To(Equal(api.ConfigureIAASInput{
+			Expect(service.PostFormArgsForCall(0)).To(Equal(api.PostFormInput{
 				Form: api.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
@@ -92,7 +92,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Context("when configuring the tile fails", func() {
 				It("returns an error", func() {
-					service.ConfigureIAASReturns(errors.New("NOPE"))
+					service.PostFormReturns(errors.New("NOPE"))
 
 					command := commands.NewConfigureBosh(service, logger)
 

@@ -33,11 +33,14 @@ type InstallationsService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *InstallationsService) Trigger() (api.InstallationsServiceOutput, error) {
 	fake.triggerMutex.Lock()
 	fake.triggerArgsForCall = append(fake.triggerArgsForCall, struct{}{})
+	fake.recordInvocation("Trigger", []interface{}{})
 	fake.triggerMutex.Unlock()
 	if fake.TriggerStub != nil {
 		return fake.TriggerStub()
@@ -65,6 +68,7 @@ func (fake *InstallationsService) Status(id int) (api.InstallationsServiceOutput
 	fake.statusArgsForCall = append(fake.statusArgsForCall, struct {
 		id int
 	}{id})
+	fake.recordInvocation("Status", []interface{}{id})
 	fake.statusMutex.Unlock()
 	if fake.StatusStub != nil {
 		return fake.StatusStub(id)
@@ -98,6 +102,7 @@ func (fake *InstallationsService) Logs(id int) (api.InstallationsServiceOutput, 
 	fake.logsArgsForCall = append(fake.logsArgsForCall, struct {
 		id int
 	}{id})
+	fake.recordInvocation("Logs", []interface{}{id})
 	fake.logsMutex.Unlock()
 	if fake.LogsStub != nil {
 		return fake.LogsStub(id)
@@ -124,4 +129,28 @@ func (fake *InstallationsService) LogsReturns(result1 api.InstallationsServiceOu
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *InstallationsService) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.triggerMutex.RLock()
+	defer fake.triggerMutex.RUnlock()
+	fake.statusMutex.RLock()
+	defer fake.statusMutex.RUnlock()
+	fake.logsMutex.RLock()
+	defer fake.logsMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *InstallationsService) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

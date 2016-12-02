@@ -37,6 +37,8 @@ type JobsConfigurer struct {
 	configureJobReturns struct {
 		result1 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *JobsConfigurer) Jobs(productGUID string) (map[string]string, error) {
@@ -44,6 +46,7 @@ func (fake *JobsConfigurer) Jobs(productGUID string) (map[string]string, error) 
 	fake.jobsArgsForCall = append(fake.jobsArgsForCall, struct {
 		productGUID string
 	}{productGUID})
+	fake.recordInvocation("Jobs", []interface{}{productGUID})
 	fake.jobsMutex.Unlock()
 	if fake.JobsStub != nil {
 		return fake.JobsStub(productGUID)
@@ -78,6 +81,7 @@ func (fake *JobsConfigurer) GetExistingJobConfig(productGUID string, jobGUID str
 		productGUID string
 		jobGUID     string
 	}{productGUID, jobGUID})
+	fake.recordInvocation("GetExistingJobConfig", []interface{}{productGUID, jobGUID})
 	fake.getExistingJobConfigMutex.Unlock()
 	if fake.GetExistingJobConfigStub != nil {
 		return fake.GetExistingJobConfigStub(productGUID, jobGUID)
@@ -113,6 +117,7 @@ func (fake *JobsConfigurer) ConfigureJob(productGUID string, jobGUID string, job
 		jobGUID       string
 		jobProperties api.JobProperties
 	}{productGUID, jobGUID, jobProperties})
+	fake.recordInvocation("ConfigureJob", []interface{}{productGUID, jobGUID, jobProperties})
 	fake.configureJobMutex.Unlock()
 	if fake.ConfigureJobStub != nil {
 		return fake.ConfigureJobStub(productGUID, jobGUID, jobProperties)
@@ -138,4 +143,28 @@ func (fake *JobsConfigurer) ConfigureJobReturns(result1 error) {
 	fake.configureJobReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *JobsConfigurer) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.jobsMutex.RLock()
+	defer fake.jobsMutex.RUnlock()
+	fake.getExistingJobConfigMutex.RLock()
+	defer fake.getExistingJobConfigMutex.RUnlock()
+	fake.configureJobMutex.RLock()
+	defer fake.configureJobMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *JobsConfigurer) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

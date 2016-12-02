@@ -12,6 +12,8 @@ type InstallationAssetExporterService struct {
 	exportReturns struct {
 		result1 error
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *InstallationAssetExporterService) Export(arg1 string) error {
@@ -19,6 +21,7 @@ func (fake *InstallationAssetExporterService) Export(arg1 string) error {
 	fake.exportArgsForCall = append(fake.exportArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	fake.recordInvocation("Export", []interface{}{arg1})
 	fake.exportMutex.Unlock()
 	if fake.ExportStub != nil {
 		return fake.ExportStub(arg1)
@@ -44,4 +47,24 @@ func (fake *InstallationAssetExporterService) ExportReturns(result1 error) {
 	fake.exportReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *InstallationAssetExporterService) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.exportMutex.RLock()
+	defer fake.exportMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *InstallationAssetExporterService) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

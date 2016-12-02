@@ -10,6 +10,8 @@ type Logger struct {
 		format string
 		v      []interface{}
 	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *Logger) Printf(format string, v ...interface{}) {
@@ -18,6 +20,7 @@ func (fake *Logger) Printf(format string, v ...interface{}) {
 		format string
 		v      []interface{}
 	}{format, v})
+	fake.recordInvocation("Printf", []interface{}{format, v})
 	fake.printfMutex.Unlock()
 	if fake.PrintfStub != nil {
 		fake.PrintfStub(format, v...)
@@ -34,4 +37,24 @@ func (fake *Logger) PrintfArgsForCall(i int) (string, []interface{}) {
 	fake.printfMutex.RLock()
 	defer fake.printfMutex.RUnlock()
 	return fake.printfArgsForCall[i].format, fake.printfArgsForCall[i].v
+}
+
+func (fake *Logger) Invocations() map[string][][]interface{} {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	fake.printfMutex.RLock()
+	defer fake.printfMutex.RUnlock()
+	return fake.invocations
+}
+
+func (fake *Logger) recordInvocation(key string, args []interface{}) {
+	fake.invocationsMutex.Lock()
+	defer fake.invocationsMutex.Unlock()
+	if fake.invocations == nil {
+		fake.invocations = map[string][][]interface{}{}
+	}
+	if fake.invocations[key] == nil {
+		fake.invocations[key] = [][]interface{}{}
+	}
+	fake.invocations[key] = append(fake.invocations[key], args)
 }

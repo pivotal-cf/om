@@ -194,7 +194,7 @@ var _ = Describe("configure-bosh command", func() {
 			"key_pair_name": "my-key-pair",
 			"ssh_private_key": "my-private-ssh-key",
 			"region": "some-region",
-			"encrypted": "false"
+			"encrypted": true
 		}`
 
 			command = exec.Command(pathToMain,
@@ -222,7 +222,7 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[0].Get("iaas_configuration[key_pair_name]")).To(Equal("my-key-pair"))
 			Expect(Forms[0].Get("iaas_configuration[ssh_private_key]")).To(Equal("my-private-ssh-key"))
 			Expect(Forms[0].Get("iaas_configuration[region]")).To(Equal("some-region"))
-			Expect(Forms[0].Get("iaas_configuration[encrypted]")).To(Equal("false"))
+			Expect(Forms[0].Get("iaas_configuration[encrypted]")).To(Equal("true"))
 
 			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
