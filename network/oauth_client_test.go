@@ -79,6 +79,7 @@ var _ = Describe("OAuthClient", func() {
 			req, err = http.ReadRequest(bufio.NewReader(bytes.NewReader(receivedRequest)))
 			Expect(req.Method).To(Equal("POST"))
 			Expect(req.URL.Path).To(Equal("/uaa/oauth/token"))
+
 			username, password, ok := req.BasicAuth()
 			Expect(ok).To(BeTrue())
 			Expect(username).To(Equal("opsman"))

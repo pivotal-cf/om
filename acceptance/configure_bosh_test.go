@@ -16,8 +16,9 @@ import (
 
 var _ = Describe("configure-bosh command", func() {
 	var (
-		server *httptest.Server
-		Forms  []url.Values
+		server          *httptest.Server
+		receivedCookies []*http.Cookie
+		Forms           []url.Values
 	)
 
 	BeforeEach(func() {
@@ -32,6 +33,12 @@ var _ = Describe("configure-bosh command", func() {
 				"expires_in": 3600
 			}`))
 			case "/infrastructure/iaas_configuration/edit":
+				http.SetCookie(w, &http.Cookie{
+					Name:  "somecookie",
+					Value: "somevalue",
+					Path:  "/",
+				})
+
 				w.Write([]byte(`<html>
 				<body>
 					<form action="/some-form" method="post">
@@ -41,6 +48,7 @@ var _ = Describe("configure-bosh command", func() {
 					</body>
 				</html>`))
 			case "/some-form":
+				receivedCookies = req.Cookies()
 				req.ParseForm()
 				Forms = append(Forms, req.Form)
 			default:
@@ -91,6 +99,9 @@ var _ = Describe("configure-bosh command", func() {
 
 			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+
+			Expect(receivedCookies).To(HaveLen(1))
+			Expect(receivedCookies[0].Name).To(Equal("somecookie"))
 		})
 
 		It("does not configure keys that are not part of input", func() {
