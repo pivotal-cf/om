@@ -1,6 +1,7 @@
 # Om
 
 _is a mantra, or vibration, that is traditionally chanted_
+https://www.tumblr.com/search/meditation%20gif#
 
 ## What it is
 
