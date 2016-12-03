@@ -47,6 +47,21 @@ var _ = Describe("configure-bosh command", func() {
 					</form>
 					</body>
 				</html>`))
+			case "/infrastructure/director_configuration/edit":
+				http.SetCookie(w, &http.Cookie{
+					Name:  "somecookie",
+					Value: "somevalue",
+					Path:  "/",
+				})
+
+				w.Write([]byte(`<html>
+				<body>
+					<form action="/some-form" method="post">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+					</form>
+					</body>
+				</html>`))
 			case "/some-form":
 				receivedCookies = req.Cookies()
 				req.ParseForm()
@@ -75,32 +90,48 @@ var _ = Describe("configure-bosh command", func() {
 			"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-private-key\"}"
 		}`
 
+			directorConfiguration := `{
+				"ntp_servers_string": "some-ntp-servers-string",
+				"metrics_ip": "some-metrics-ip",
+				"hm_pager_duty_options": {
+					"enabled": true
+				}
+			}`
+
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "fake-username",
 				"--password", "fake-password",
 				"--skip-ssl-validation",
 				"configure-bosh",
-				"--iaas-configuration", iaasConfiguration)
+				"--iaas-configuration", iaasConfiguration,
+				"--director-configuration", directorConfiguration)
 		})
 
-		It("configures the bosh tile with the provided iaas configuration", func() {
+		It("configures the bosh tile with the provided bosh configuration", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 
 			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("configuring director options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
 
+			Expect(receivedCookies).To(HaveLen(1))
 			Expect(Forms[0].Get("iaas_configuration[project]")).To(Equal("my-project"))
 			Expect(Forms[0].Get("iaas_configuration[default_deployment_tag]")).To(Equal("my-vms"))
 			Expect(Forms[0].Get("iaas_configuration[auth_json]")).To(Equal(`{"service_account_key": "some-service-key","private_key": "some-private-key"}`))
-
 			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+			Expect(receivedCookies[0].Name).To(Equal("somecookie"))
 
 			Expect(receivedCookies).To(HaveLen(1))
+			Expect(Forms[1].Get("director_configuration[ntp_servers_string]")).To(Equal("some-ntp-servers-string"))
+			Expect(Forms[1].Get("director_configuration[metrics_ip]")).To(Equal("some-metrics-ip"))
+			Expect(Forms[1].Get("director_configuration[hm_pager_duty_options][enabled]")).To(Equal("true"))
+			Expect(Forms[1].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[1].Get("_method")).To(Equal("fakemethod"))
 			Expect(receivedCookies[0].Name).To(Equal("somecookie"))
 		})
 

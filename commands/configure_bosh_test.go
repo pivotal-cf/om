@@ -36,9 +36,18 @@ var _ = Describe("ConfigureBosh", func() {
 			err := command.Execute([]string{
 				"--iaas-configuration",
 				`{
-				"project": "some-project",
-				"default_deployment_tag": "my-vms",
-				"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-key\"}"
+						"project": "some-project",
+						"default_deployment_tag": "my-vms",
+						"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-key\"}"
+			  }`,
+				"--director-configuration",
+				`{
+					  "ntp_servers_string": "some-ntp-servers-string",
+						"metrics_ip": "some-metrics-ip",
+						"hm_pager_duty_options": {
+							"enabled": true
+						}
+					}
 			}`})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -46,6 +55,9 @@ var _ = Describe("ConfigureBosh", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring iaas specific options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(2)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 
 			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
@@ -57,6 +69,17 @@ var _ = Describe("ConfigureBosh", func() {
 					RailsMethod:       "the-rails",
 				},
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&iaas_configuration%5Bauth_json%5D=%7B%22service_account_key%22%3A+%22some-service-key%22%2C%22private_key%22%3A+%22some-key%22%7D&iaas_configuration%5Bdefault_deployment_tag%5D=my-vms&iaas_configuration%5Bproject%5D=some-project",
+			}))
+
+			Expect(service.GetFormArgsForCall(1)).To(Equal("/infrastructure/director_configuration/edit"))
+
+			Expect(service.PostFormArgsForCall(1)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
 			}))
 		})
 
@@ -76,7 +99,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 					command := commands.NewConfigureBosh(service, logger)
 
-					err := command.Execute([]string{""})
+					err := command.Execute([]string{"--iaas-configuration", "{}"})
 					Expect(err).To(MatchError("could not fetch form: meow meow meow"))
 				})
 			})
