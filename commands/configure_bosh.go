@@ -10,8 +10,11 @@ import (
 	"github.com/pivotal-cf/om/flags"
 )
 
-const iaasConfigurationPath = "/infrastructure/iaas_configuration/edit"
-const directorConfigurationPath = "/infrastructure/director_configuration/edit"
+const (
+	iaasConfigurationPath     = "/infrastructure/iaas_configuration/edit"
+	directorConfigurationPath = "/infrastructure/director_configuration/edit"
+	securityConfigurationPath = "/infrastructure/security_tokens/edit"
+)
 
 type ConfigureBosh struct {
 	service boshFormService
@@ -19,6 +22,7 @@ type ConfigureBosh struct {
 	Options struct {
 		IaaSConfiguration     string `short:"i"  long:"iaas-configuration"  description:"iaas specific configuration for the bosh director"`
 		DirectorConfiguration string `short:"d"  long:"director-configuration"  description:"director-specific configuration for the bosh director"`
+		SecurityConfiguration string `short:"s"  long:"security-configuration"  description:"security-specific configuration for the bosh director"`
 	}
 }
 
@@ -80,6 +84,14 @@ func (c ConfigureBosh) Execute(args []string) error {
 	if c.Options.DirectorConfiguration != "" {
 		c.logger.Printf("configuring director options for bosh tile")
 		err = c.ConfigureForm(directorConfigurationPath, c.Options.DirectorConfiguration)
+		if err != nil {
+			return err
+		}
+	}
+
+	if c.Options.SecurityConfiguration != "" {
+		c.logger.Printf("configuring security options for bosh tile")
+		err = c.ConfigureForm(securityConfigurationPath, c.Options.SecurityConfiguration)
 		if err != nil {
 			return err
 		}

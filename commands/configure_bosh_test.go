@@ -48,7 +48,12 @@ var _ = Describe("ConfigureBosh", func() {
 							"enabled": true
 						}
 					}
-			}`})
+				}`,
+				"--security-configuration",
+				`{
+						"trusted_certificates": "some-trusted-certificates",
+						"vm_password_type": "some-vm-password-type"
+				}`})
 			Expect(err).NotTo(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -58,6 +63,9 @@ var _ = Describe("ConfigureBosh", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(3)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 
 			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
@@ -80,6 +88,17 @@ var _ = Describe("ConfigureBosh", func() {
 					RailsMethod:       "the-rails",
 				},
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
+			}))
+
+			Expect(service.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
+
+			Expect(service.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
 			}))
 		})
 

@@ -61,9 +61,15 @@ type DirectorConfiguration struct {
 	DirectorHostname          string                  `url:"director_configuration[director_hostname],omitempty" json:"director_hostname"`
 }
 
+type SecurityConfiguration struct {
+	TrustedCertificates string `url:"security_tokens[trusted_certificates],omitempty" json:"trusted_certificates"`
+	VMPasswordType      string `url:"security_tokens[vm_password_type],omitempty" json:"vm_password_type"`
+}
+
 type BoshConfiguration struct {
 	IaaSConfiguration
 	DirectorConfiguration
+	SecurityConfiguration
 	CommonConfiguration
 }
 

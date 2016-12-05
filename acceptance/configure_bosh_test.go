@@ -62,6 +62,21 @@ var _ = Describe("configure-bosh command", func() {
 					</form>
 					</body>
 				</html>`))
+			case "/infrastructure/security_tokens/edit":
+				http.SetCookie(w, &http.Cookie{
+					Name:  "somecookie",
+					Value: "somevalue",
+					Path:  "/",
+				})
+
+				w.Write([]byte(`<html>
+				<body>
+					<form action="/some-form" method="post">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+					</form>
+					</body>
+				</html>`))
 			case "/some-form":
 				receivedCookies = req.Cookies()
 				req.ParseForm()
@@ -85,10 +100,10 @@ var _ = Describe("configure-bosh command", func() {
 
 		BeforeEach(func() {
 			iaasConfiguration := `{
-			"project": "my-project",
-			"default_deployment_tag": "my-vms",
-			"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-private-key\"}"
-		}`
+				"project": "my-project",
+				"default_deployment_tag": "my-vms",
+				"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-private-key\"}"
+			}`
 
 			directorConfiguration := `{
 				"ntp_servers_string": "some-ntp-servers-string",
@@ -98,6 +113,11 @@ var _ = Describe("configure-bosh command", func() {
 				}
 			}`
 
+			securityConfiguration := `{
+				"trusted_certificates": "some-trusted-certificates",
+				"vm_password_type": "some-vm-password-type"
+			}`
+
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "fake-username",
@@ -105,7 +125,8 @@ var _ = Describe("configure-bosh command", func() {
 				"--skip-ssl-validation",
 				"configure-bosh",
 				"--iaas-configuration", iaasConfiguration,
-				"--director-configuration", directorConfiguration)
+				"--director-configuration", directorConfiguration,
+				"--security-configuration", securityConfiguration)
 		})
 
 		It("configures the bosh tile with the provided bosh configuration", func() {
@@ -116,23 +137,28 @@ var _ = Describe("configure-bosh command", func() {
 
 			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring director options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("configuring security options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
 
 			Expect(receivedCookies).To(HaveLen(1))
+			Expect(receivedCookies[0].Name).To(Equal("somecookie"))
+
 			Expect(Forms[0].Get("iaas_configuration[project]")).To(Equal("my-project"))
 			Expect(Forms[0].Get("iaas_configuration[default_deployment_tag]")).To(Equal("my-vms"))
 			Expect(Forms[0].Get("iaas_configuration[auth_json]")).To(Equal(`{"service_account_key": "some-service-key","private_key": "some-private-key"}`))
 			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
-			Expect(receivedCookies[0].Name).To(Equal("somecookie"))
 
-			Expect(receivedCookies).To(HaveLen(1))
 			Expect(Forms[1].Get("director_configuration[ntp_servers_string]")).To(Equal("some-ntp-servers-string"))
 			Expect(Forms[1].Get("director_configuration[metrics_ip]")).To(Equal("some-metrics-ip"))
 			Expect(Forms[1].Get("director_configuration[hm_pager_duty_options][enabled]")).To(Equal("true"))
 			Expect(Forms[1].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[1].Get("_method")).To(Equal("fakemethod"))
-			Expect(receivedCookies[0].Name).To(Equal("somecookie"))
+
+			Expect(Forms[2].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
+			Expect(Forms[2].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
+			Expect(Forms[2].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[2].Get("_method")).To(Equal("fakemethod"))
 		})
 
 		It("does not configure keys that are not part of input", func() {
@@ -144,27 +170,23 @@ var _ = Describe("configure-bosh command", func() {
 			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
 			Expect(ok).To(BeFalse())
 		})
-
 	})
 
 	Context("Azure", func() {
-
-		var (
-			command *exec.Cmd
-		)
+		var command *exec.Cmd
 
 		BeforeEach(func() {
 			iaasConfiguration := `{
-		  "subscription_id": "my-subscription",
-		  "tenant_id": "my-tenant",
-		  "client_id": "my-client",
-		  "client_secret": "my-client-secret",
-		  "resource_group_name": "my-group",
-		  "bosh_storage_account_name": "my-storage-account",
-		  "deployments_storage_account_name": "my-deployments-storage-account",
-		  "default_security_group": "my-security-group",
-		  "ssh_public_key": "my-public-key",
-		  "ssh_private_key": "my-private-key"
+				"subscription_id": "my-subscription",
+				"tenant_id": "my-tenant",
+				"client_id": "my-client",
+				"client_secret": "my-client-secret",
+				"resource_group_name": "my-group",
+				"bosh_storage_account_name": "my-storage-account",
+				"deployments_storage_account_name": "my-deployments-storage-account",
+				"default_security_group": "my-security-group",
+				"ssh_public_key": "my-public-key",
+				"ssh_private_key": "my-private-key"
 			}`
 
 			command = exec.Command(pathToMain,
@@ -212,21 +234,19 @@ var _ = Describe("configure-bosh command", func() {
 	})
 
 	Context("AWS", func() {
-		var (
-			command *exec.Cmd
-		)
+		var command *exec.Cmd
 
 		BeforeEach(func() {
 			iaasConfiguration := `{
-			"access_key_id": "my-access-key",
-			"secret_access_key": "my-secret-key",
-			"vpc_id": "my-vpc",
-      "security_group": "my-security-group",
-			"key_pair_name": "my-key-pair",
-			"ssh_private_key": "my-private-ssh-key",
-			"region": "some-region",
-			"encrypted": true
-		}`
+				"access_key_id": "my-access-key",
+				"secret_access_key": "my-secret-key",
+				"vpc_id": "my-vpc",
+				"security_group": "my-security-group",
+				"key_pair_name": "my-key-pair",
+				"ssh_private_key": "my-private-ssh-key",
+				"region": "some-region",
+				"encrypted": true
+			}`
 
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
@@ -268,6 +288,5 @@ var _ = Describe("configure-bosh command", func() {
 			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
 			Expect(ok).To(BeFalse())
 		})
-
 	})
 })
