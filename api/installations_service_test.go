@@ -116,7 +116,7 @@ var _ = Describe("InstallationsService", func() {
 
 			body, err := ioutil.ReadAll(req.Body)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(body)).To(Equal("{}"))
+			Expect(string(body)).To(Equal(`{"ignore_warnings": true}`))
 		})
 
 		Context("when an error occurs", func() {

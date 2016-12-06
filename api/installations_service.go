@@ -70,7 +70,7 @@ func (is InstallationsService) RunningInstallation() (InstallationsServiceOutput
 }
 
 func (is InstallationsService) Trigger() (InstallationsServiceOutput, error) {
-	req, err := http.NewRequest("POST", "/api/v0/installations", strings.NewReader(`{}`))
+	req, err := http.NewRequest("POST", "/api/v0/installations", strings.NewReader(`{"ignore_warnings": true}`))
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}
