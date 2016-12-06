@@ -131,7 +131,7 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 			return EnsureAvailabilityOutput{}, err
 		}
 
-		if strings.Contains("Waiting for authentication system to start...", string(respBody)) {
+		if strings.Contains(string(respBody), "Waiting for authentication system to start...") {
 			status = EnsureAvailabilityStatusPending
 		}
 	}
