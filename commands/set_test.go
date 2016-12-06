@@ -85,6 +85,24 @@ var _ = Describe("Set", func() {
 				Expect(helpCommand.ExecuteCall.Receives.Args).To(Equal([]string{"my-command"}))
 			})
 		})
+
+		Describe("when -help is passed as an argument", func() {
+			It("executes the help for the command", func() {
+				command := &fakes.Command{}
+				helpCommand := &fakes.Command{}
+
+				commandSet := commands.Set{
+					"my-command": command,
+					"help":       helpCommand,
+				}
+
+				err := commandSet.Execute("my-command", []string{"--arg-1", "-help", "--arg-2"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(command.ExecuteCall.Receives.Args).To(BeNil())
+				Expect(helpCommand.ExecuteCall.Receives.Args).To(Equal([]string{"my-command"}))
+			})
+		})
 	})
 
 	Describe("Usage", func() {
