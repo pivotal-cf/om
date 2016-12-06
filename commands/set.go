@@ -11,7 +11,7 @@ func (s Set) Execute(command string, args []string) error {
 	}
 
 	for _, arg := range args {
-		if arg == "--help" {
+		if arg == "--help" || arg == "-h" {
 			return s.Execute("help", []string{command})
 		}
 	}
