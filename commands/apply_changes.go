@@ -22,6 +22,7 @@ type installationsService interface {
 	Trigger() (api.InstallationsServiceOutput, error)
 	Status(id int) (api.InstallationsServiceOutput, error)
 	Logs(id int) (api.InstallationsServiceOutput, error)
+	RunningInstallation() (api.InstallationsServiceOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
@@ -39,11 +40,19 @@ func NewApplyChanges(installationsService installationsService, logWriter logWri
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
-	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-
-	installation, err := ac.installationsService.Trigger()
+	installation, err := ac.installationsService.RunningInstallation()
 	if err != nil {
-		return fmt.Errorf("installation failed to trigger: %s", err)
+		return fmt.Errorf("could not check for any already running installation: %s", err)
+	}
+
+	if installation == (api.InstallationsServiceOutput{}) {
+		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
+		installation, err = ac.installationsService.Trigger()
+		if err != nil {
+			return fmt.Errorf("installation failed to trigger: %s", err)
+		}
+	} else {
+		ac.logger.Printf("found already running installation...re-attaching")
 	}
 
 	for {

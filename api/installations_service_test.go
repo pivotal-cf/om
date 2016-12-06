@@ -23,6 +23,80 @@ var _ = Describe("InstallationsService", func() {
 		is = api.NewInstallationsService(client)
 	})
 
+	Describe("RunningInstallation", func() {
+		It("fetches the guid of any running installation on the Ops Manager", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body: ioutil.NopCloser(strings.NewReader(`{
+					"installations": [
+						{
+							"user_name": "admin",
+							"finished_at": null,
+							"status": "running",
+							"id": 3
+						},
+						{
+							"user_name": "admin",
+							"finished_at": "sometime",
+							"status": "succeeded",
+							"id": 2
+						}
+					]
+				}`))}, nil)
+
+			output, err := is.RunningInstallation()
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal(api.InstallationsServiceOutput{
+				ID:     3,
+				Status: "running",
+			}))
+
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+		})
+
+		Context("error cases", func() {
+			Context("when the client has an error during the request", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, errors.New("some error"))
+
+					_, err := is.RunningInstallation()
+					Expect(err).To(MatchError("could not make api request to installations endpoint: some error"))
+				})
+			})
+
+			Context("when the client returns a non-2XX", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, nil)
+
+					_, err := is.RunningInstallation()
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+			Context("when the json cannot be decoded", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader("##################")),
+					}, nil)
+
+					_, err := is.RunningInstallation()
+					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
+				})
+			})
+		})
+	})
+
 	Describe("Trigger", func() {
 		It("triggers an installation on an Ops Manager", func() {
 			client.DoReturns(&http.Response{

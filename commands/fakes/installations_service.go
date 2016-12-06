@@ -33,6 +33,13 @@ type InstallationsService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
+	RunningInstallationStub        func() (api.InstallationsServiceOutput, error)
+	runningInstallationMutex       sync.RWMutex
+	runningInstallationArgsForCall []struct{}
+	runningInstallationReturns     struct {
+		result1 api.InstallationsServiceOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -131,6 +138,32 @@ func (fake *InstallationsService) LogsReturns(result1 api.InstallationsServiceOu
 	}{result1, result2}
 }
 
+func (fake *InstallationsService) RunningInstallation() (api.InstallationsServiceOutput, error) {
+	fake.runningInstallationMutex.Lock()
+	fake.runningInstallationArgsForCall = append(fake.runningInstallationArgsForCall, struct{}{})
+	fake.recordInvocation("RunningInstallation", []interface{}{})
+	fake.runningInstallationMutex.Unlock()
+	if fake.RunningInstallationStub != nil {
+		return fake.RunningInstallationStub()
+	} else {
+		return fake.runningInstallationReturns.result1, fake.runningInstallationReturns.result2
+	}
+}
+
+func (fake *InstallationsService) RunningInstallationCallCount() int {
+	fake.runningInstallationMutex.RLock()
+	defer fake.runningInstallationMutex.RUnlock()
+	return len(fake.runningInstallationArgsForCall)
+}
+
+func (fake *InstallationsService) RunningInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
+	fake.RunningInstallationStub = nil
+	fake.runningInstallationReturns = struct {
+		result1 api.InstallationsServiceOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *InstallationsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -140,6 +173,8 @@ func (fake *InstallationsService) Invocations() map[string][][]interface{} {
 	defer fake.statusMutex.RUnlock()
 	fake.logsMutex.RLock()
 	defer fake.logsMutex.RUnlock()
+	fake.runningInstallationMutex.RLock()
+	defer fake.runningInstallationMutex.RUnlock()
 	return fake.invocations
 }
 

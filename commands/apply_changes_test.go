@@ -65,6 +65,7 @@ var _ = Describe("ApplyChanges", func() {
 	Describe("Execute", func() {
 		It("applies changes to the Ops Manager", func() {
 			service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+			service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
 			statusOutputs = []api.InstallationsServiceOutput{
 				{Status: "running"},
@@ -87,6 +88,8 @@ var _ = Describe("ApplyChanges", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(service.TriggerCallCount()).To(Equal(1))
+
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
 
@@ -100,6 +103,39 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(writer.FlushArgsForCall(0)).To(Equal("start of logs"))
 			Expect(writer.FlushArgsForCall(1)).To(Equal("these logs"))
 			Expect(writer.FlushArgsForCall(2)).To(Equal("some other logs"))
+		})
+
+		It("re-attaches to an ongoing installation", func() {
+			service.RunningInstallationReturns(api.InstallationsServiceOutput{ID: 200, Status: "running"}, nil)
+
+			statusOutputs = []api.InstallationsServiceOutput{
+				{Status: "running"},
+				{Status: "running"},
+				{Status: "succeeded"},
+			}
+
+			statusErrors = []error{nil, nil, nil}
+
+			logsOutputs = []api.InstallationsServiceOutput{
+				{Logs: "start of logs"},
+				{Logs: "these logs"},
+				{Logs: "some other logs"},
+			}
+
+			logsErrors = []error{nil, nil, nil}
+
+			command := commands.NewApplyChanges(service, writer, logger, 1)
+
+			err := command.Execute([]string{})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.TriggerCallCount()).To(Equal(0))
+
+			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching"))
+
+			Expect(service.StatusArgsForCall(0)).To(Equal(200))
+			Expect(service.LogsArgsForCall(0)).To(Equal(200))
 		})
 
 		It("handles a failed installation", func() {
@@ -256,6 +292,17 @@ var _ = Describe("ApplyChanges", func() {
 		})
 
 		Context("failure cases", func() {
+			Context("when checking for an already running installation returns an error", func() {
+				It("returns an error", func() {
+					service.RunningInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+
+					command := commands.NewApplyChanges(service, writer, logger, 1)
+
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("could not check for any already running installation: some error"))
+				})
+			})
+
 			Context("when an installation cannot be triggered", func() {
 				It("returns an error", func() {
 					service.TriggerReturns(api.InstallationsServiceOutput{}, errors.New("some error"))

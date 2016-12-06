@@ -30,6 +30,45 @@ func NewInstallationsService(client httpClient) InstallationsService {
 	}
 }
 
+func (is InstallationsService) RunningInstallation() (InstallationsServiceOutput, error) {
+	req, err := http.NewRequest("GET", "/api/v0/installations", nil)
+	if err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
+	resp, err := is.client.Do(req)
+	if err != nil {
+		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations endpoint: %s", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+
+		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	}
+
+	var responseStruct struct {
+		Installations []InstallationsServiceOutput
+	}
+	err = json.NewDecoder(resp.Body).Decode(&responseStruct)
+	if err != nil {
+		return InstallationsServiceOutput{}, fmt.Errorf("failed to decode response: %s", err)
+	}
+
+	for _, installation := range responseStruct.Installations {
+		if installation.Status == "running" {
+			return installation, nil
+		}
+	}
+
+	return InstallationsServiceOutput{}, nil
+}
+
 func (is InstallationsService) Trigger() (InstallationsServiceOutput, error) {
 	req, err := http.NewRequest("POST", "/api/v0/installations", strings.NewReader(`{}`))
 	if err != nil {
