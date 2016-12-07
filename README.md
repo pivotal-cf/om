@@ -26,6 +26,10 @@ please note, this can and will change from the final readme below
 
 https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
 
+## Docs
+
+See [here] (docs) for useful examples and documentation
+
 ## Current Commands
 ```
 ॐ
