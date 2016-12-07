@@ -38,7 +38,7 @@ var _ = Describe("ConfigureBosh", func() {
 				`{
 						"project": "some-project",
 						"default_deployment_tag": "my-vms",
-						"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-key\"}"
+						"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			  }`,
 				"--director-configuration",
 				`{
@@ -53,7 +53,10 @@ var _ = Describe("ConfigureBosh", func() {
 				`{
 						"trusted_certificates": "some-trusted-certificates",
 						"vm_password_type": "some-vm-password-type"
-				}`})
+				}`,
+				"--az-configuration",
+				`{"availability_zones": [ "some-az-1","some-other-az-2" ] }`})
+
 			Expect(err).NotTo(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -63,9 +66,12 @@ var _ = Describe("ConfigureBosh", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(2)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring availability zones for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(4)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 
 			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
@@ -76,7 +82,7 @@ var _ = Describe("ConfigureBosh", func() {
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				},
-				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&iaas_configuration%5Bauth_json%5D=%7B%22service_account_key%22%3A+%22some-service-key%22%2C%22private_key%22%3A+%22some-key%22%7D&iaas_configuration%5Bdefault_deployment_tag%5D=my-vms&iaas_configuration%5Bproject%5D=some-project",
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&iaas_configuration%5Bauth_json%5D=%7B%22some-auth-field%22%3A+%22some-service-key%22%2C%22some-private_key%22%3A+%22some-key%22%7D&iaas_configuration%5Bdefault_deployment_tag%5D=my-vms&iaas_configuration%5Bproject%5D=some-project",
 			}))
 
 			Expect(service.GetFormArgsForCall(1)).To(Equal("/infrastructure/director_configuration/edit"))
@@ -90,9 +96,20 @@ var _ = Describe("ConfigureBosh", func() {
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
 			}))
 
-			Expect(service.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
+			Expect(service.GetFormArgsForCall(2)).To(Equal("/infrastructure/availability_zones/edit"))
 
 			Expect(service.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-other-az-2",
+			}))
+
+			Expect(service.GetFormArgsForCall(3)).To(Equal("/infrastructure/security_tokens/edit"))
+
+			Expect(service.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
 				Form: api.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",

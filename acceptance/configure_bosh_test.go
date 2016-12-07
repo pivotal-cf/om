@@ -62,6 +62,21 @@ var _ = Describe("configure-bosh command", func() {
 					</form>
 					</body>
 				</html>`))
+			case "/infrastructure/availability_zones/edit":
+				http.SetCookie(w, &http.Cookie{
+					Name:  "somecookie",
+					Value: "somevalue",
+					Path:  "/",
+				})
+
+				w.Write([]byte(`<html>
+				<body>
+					<form action="/some-form" method="post">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+					</form>
+					</body>
+				</html>`))
 			case "/infrastructure/security_tokens/edit":
 				http.SetCookie(w, &http.Cookie{
 					Name:  "somecookie",
@@ -102,7 +117,7 @@ var _ = Describe("configure-bosh command", func() {
 			iaasConfiguration := `{
 				"project": "my-project",
 				"default_deployment_tag": "my-vms",
-				"auth_json": "{\"service_account_key\": \"some-service-key\",\"private_key\": \"some-private-key\"}"
+				"auth_json": "{\"some-auth-field\": \"some-value\",\"some-private-key\": \"some-private-key\"}"
 			}`
 
 			directorConfiguration := `{
@@ -111,6 +126,10 @@ var _ = Describe("configure-bosh command", func() {
 				"hm_pager_duty_options": {
 					"enabled": true
 				}
+			}`
+
+			availabilityZonesConfiguration := `{
+			  "availability_zones": ["some-az-1", "some-other-az-2"]
 			}`
 
 			securityConfiguration := `{
@@ -126,7 +145,8 @@ var _ = Describe("configure-bosh command", func() {
 				"configure-bosh",
 				"--iaas-configuration", iaasConfiguration,
 				"--director-configuration", directorConfiguration,
-				"--security-configuration", securityConfiguration)
+				"--security-configuration", securityConfiguration,
+				"--az-configuration", availabilityZonesConfiguration)
 		})
 
 		It("configures the bosh tile with the provided bosh configuration", func() {
@@ -145,7 +165,7 @@ var _ = Describe("configure-bosh command", func() {
 
 			Expect(Forms[0].Get("iaas_configuration[project]")).To(Equal("my-project"))
 			Expect(Forms[0].Get("iaas_configuration[default_deployment_tag]")).To(Equal("my-vms"))
-			Expect(Forms[0].Get("iaas_configuration[auth_json]")).To(Equal(`{"service_account_key": "some-service-key","private_key": "some-private-key"}`))
+			Expect(Forms[0].Get("iaas_configuration[auth_json]")).To(Equal(`{"some-auth-field": "some-value","some-private-key": "some-private-key"}`))
 			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
 
@@ -155,10 +175,12 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[1].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[1].Get("_method")).To(Equal("fakemethod"))
 
-			Expect(Forms[2].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
-			Expect(Forms[2].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
-			Expect(Forms[2].Get("authenticity_token")).To(Equal("fake_authenticity"))
-			Expect(Forms[2].Get("_method")).To(Equal("fakemethod"))
+			Expect(Forms[2]["availability_zones[availability_zones][][iaas_identifier]"]).To(Equal([]string{"some-az-1", "some-other-az-2"}))
+
+			Expect(Forms[3].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
+			Expect(Forms[3].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
+			Expect(Forms[3].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[3].Get("_method")).To(Equal("fakemethod"))
 		})
 
 		It("does not configure keys that are not part of input", func() {

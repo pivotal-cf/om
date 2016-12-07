@@ -11,18 +11,20 @@ import (
 )
 
 const (
-	iaasConfigurationPath     = "/infrastructure/iaas_configuration/edit"
-	directorConfigurationPath = "/infrastructure/director_configuration/edit"
-	securityConfigurationPath = "/infrastructure/security_tokens/edit"
+	iaasConfigurationPath              = "/infrastructure/iaas_configuration/edit"
+	directorConfigurationPath          = "/infrastructure/director_configuration/edit"
+	securityConfigurationPath          = "/infrastructure/security_tokens/edit"
+	availabilityZonesConfigurationPath = "/infrastructure/availability_zones/edit"
 )
 
 type ConfigureBosh struct {
 	service boshFormService
 	logger  logger
 	Options struct {
-		IaaSConfiguration     string `short:"i"  long:"iaas-configuration"  description:"iaas specific configuration for the bosh director"`
-		DirectorConfiguration string `short:"d"  long:"director-configuration"  description:"director-specific configuration for the bosh director"`
-		SecurityConfiguration string `short:"s"  long:"security-configuration"  description:"security-specific configuration for the bosh director"`
+		IaaSConfiguration              string `short:"i"  long:"iaas-configuration"  description:"iaas specific JSON configuration for the bosh director"`
+		DirectorConfiguration          string `short:"d"  long:"director-configuration"  description:"director-specific JSON configuration for the bosh director"`
+		SecurityConfiguration          string `short:"s"  long:"security-configuration"  description:"security-specific JSON configuration for the bosh director"`
+		AvailabilityZonesConfiguration string `short:"a"  long:"az-configuration"  description:"availability zones JSON configuration for the bosh directory"`
 	}
 }
 
@@ -84,6 +86,14 @@ func (c ConfigureBosh) Execute(args []string) error {
 	if c.Options.DirectorConfiguration != "" {
 		c.logger.Printf("configuring director options for bosh tile")
 		err = c.ConfigureForm(directorConfigurationPath, c.Options.DirectorConfiguration)
+		if err != nil {
+			return err
+		}
+	}
+
+	if c.Options.AvailabilityZonesConfiguration != "" {
+		c.logger.Printf("configuring availability zones for bosh tile")
+		err = c.ConfigureForm(availabilityZonesConfigurationPath, c.Options.AvailabilityZonesConfiguration)
 		if err != nil {
 			return err
 		}
