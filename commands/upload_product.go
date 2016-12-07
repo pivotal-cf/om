@@ -14,18 +14,26 @@ type UploadProduct struct {
 	Options         struct {
 		Product string `short:"p"  long:"product"  description:"path to product"`
 	}
+	extractor extractor
 }
 
 //go:generate counterfeiter -o ./fakes/product_uploader.go --fake-name ProductUploader . productUploader
 type productUploader interface {
 	Upload(api.UploadProductInput) (api.UploadProductOutput, error)
+	CheckProductAvailability(string, string) (bool, error)
 }
 
-func NewUploadProduct(multipart multipart, productUploader productUploader, logger logger) UploadProduct {
+//go:generate counterfeiter -o ./fakes/extractor.go --fake-name Extractor . extractor
+type extractor interface {
+	ExtractMetadata(string) (string, string, error)
+}
+
+func NewUploadProduct(multipart multipart, extractor extractor, productUploader productUploader, logger logger) UploadProduct {
 	return UploadProduct{
 		multipart:       multipart,
 		logger:          logger,
 		productsService: productUploader,
+		extractor:       extractor,
 	}
 }
 
@@ -41,6 +49,21 @@ func (up UploadProduct) Execute(args []string) error {
 	_, err := flags.Parse(&up.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
+	}
+
+	productName, productVersion, err := up.extractor.ExtractMetadata(up.Options.Product)
+	if err != nil {
+		return fmt.Errorf("failed to extract product metadata: %s", err)
+	}
+
+	prodAvailable, err := up.productsService.CheckProductAvailability(productName, productVersion)
+	if err != nil {
+		return fmt.Errorf("failed to check product availability: %s", err)
+	}
+
+	if prodAvailable {
+		up.logger.Printf("product %s %s is already uploaded, nothing to be done.", productName, productVersion)
+		return nil
 	}
 
 	up.logger.Printf("processing product")

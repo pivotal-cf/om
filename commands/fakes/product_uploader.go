@@ -17,6 +17,16 @@ type ProductUploader struct {
 		result1 api.UploadProductOutput
 		result2 error
 	}
+	CheckProductAvailabilityStub        func(string, string) (bool, error)
+	checkProductAvailabilityMutex       sync.RWMutex
+	checkProductAvailabilityArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	checkProductAvailabilityReturns struct {
+		result1 bool
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -55,11 +65,48 @@ func (fake *ProductUploader) UploadReturns(result1 api.UploadProductOutput, resu
 	}{result1, result2}
 }
 
+func (fake *ProductUploader) CheckProductAvailability(arg1 string, arg2 string) (bool, error) {
+	fake.checkProductAvailabilityMutex.Lock()
+	fake.checkProductAvailabilityArgsForCall = append(fake.checkProductAvailabilityArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("CheckProductAvailability", []interface{}{arg1, arg2})
+	fake.checkProductAvailabilityMutex.Unlock()
+	if fake.CheckProductAvailabilityStub != nil {
+		return fake.CheckProductAvailabilityStub(arg1, arg2)
+	} else {
+		return fake.checkProductAvailabilityReturns.result1, fake.checkProductAvailabilityReturns.result2
+	}
+}
+
+func (fake *ProductUploader) CheckProductAvailabilityCallCount() int {
+	fake.checkProductAvailabilityMutex.RLock()
+	defer fake.checkProductAvailabilityMutex.RUnlock()
+	return len(fake.checkProductAvailabilityArgsForCall)
+}
+
+func (fake *ProductUploader) CheckProductAvailabilityArgsForCall(i int) (string, string) {
+	fake.checkProductAvailabilityMutex.RLock()
+	defer fake.checkProductAvailabilityMutex.RUnlock()
+	return fake.checkProductAvailabilityArgsForCall[i].arg1, fake.checkProductAvailabilityArgsForCall[i].arg2
+}
+
+func (fake *ProductUploader) CheckProductAvailabilityReturns(result1 bool, result2 error) {
+	fake.CheckProductAvailabilityStub = nil
+	fake.checkProductAvailabilityReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *ProductUploader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.uploadMutex.RLock()
 	defer fake.uploadMutex.RUnlock()
+	fake.checkProductAvailabilityMutex.RLock()
+	defer fake.checkProductAvailabilityMutex.RUnlock()
 	return fake.invocations
 }
 

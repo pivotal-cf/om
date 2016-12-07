@@ -10,6 +10,7 @@ import (
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
@@ -96,13 +97,15 @@ func main() {
 		stdout.Fatal(err)
 	}
 
+	extractor := extractor.ProductUnzipper{}
+
 	commandSet := commands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
 	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
-	commandSet["upload-product"] = commands.NewUploadProduct(form, availableProductsService, stdout)
+	commandSet["upload-product"] = commands.NewUploadProduct(form, extractor, availableProductsService, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(stagedProductsService, jobsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)

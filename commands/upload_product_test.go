@@ -18,6 +18,7 @@ import (
 var _ = Describe("UploadProduct", func() {
 	var (
 		productsService *fakes.ProductUploader
+		extractor       *fakes.Extractor
 		multipart       *fakes.Multipart
 		logger          *fakes.Logger
 	)
@@ -25,6 +26,7 @@ var _ = Describe("UploadProduct", func() {
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
 		productsService = &fakes.ProductUploader{}
+		extractor = &fakes.Extractor{}
 		logger = &fakes.Logger{}
 	})
 
@@ -36,7 +38,7 @@ var _ = Describe("UploadProduct", func() {
 		}
 		multipart.FinalizeReturns(submission, nil)
 
-		command := commands.NewUploadProduct(multipart, productsService, logger)
+		command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
 
 		err := command.Execute([]string{
 			"--product", "/path/to/some-product.tgz",
@@ -64,18 +66,59 @@ var _ = Describe("UploadProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
 	})
 
+	Context("when the same product is already present", func() {
+		It("does nothing and exits gracefully", func() {
+			command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
+			extractor.ExtractMetadataReturns("cf", "1.5.0", nil)
+			productsService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
+				if name == "cf" && version == "1.5.0" {
+					return true, nil
+				}
+				return false, errors.New("unknown")
+			}
+
+			err := command.Execute([]string{
+				"--product", "/path/to/some-product.tgz",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(extractor.ExtractMetadataCallCount()).To(Equal(1))
+			Expect(productsService.UploadCallCount()).To(Equal(0))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done."))
+		})
+	})
+
 	Context("failure cases", func() {
 		Context("when an unkwown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadProduct(multipart, productsService, logger)
+				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse upload-product flags: flag provided but not defined: -badflag"))
 			})
 		})
 
+		Context("when extracting the product metadata returns an error", func() {
+			It("returns an error", func() {
+				extractor.ExtractMetadataReturns("", "", errors.New("some error"))
+				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
+				err := command.Execute([]string{"--product", "/some/path"})
+				Expect(err).To(MatchError("failed to extract product metadata: some error"))
+			})
+		})
+
+		Context("when checking for product availability returns an error", func() {
+			It("returns an error", func() {
+				productsService.CheckProductAvailabilityReturns(true, errors.New("some error"))
+				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
+				err := command.Execute([]string{"--product", "/some/path"})
+				Expect(err).To(MatchError("failed to check product availability: some error"))
+			})
+		})
+
 		Context("when adding the file fails", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadProduct(multipart, productsService, logger)
+				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
 				err := command.Execute([]string{"--product", "/some/path"})
@@ -85,7 +128,7 @@ var _ = Describe("UploadProduct", func() {
 
 		Context("when the product cannot be uploaded", func() {
 			It("returns and error", func() {
-				command := commands.NewUploadProduct(multipart, productsService, logger)
+				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
 				productsService.UploadReturns(api.UploadProductOutput{}, errors.New("some product error"))
 
 				err := command.Execute([]string{"--product", "/some/path"})
@@ -96,7 +139,7 @@ var _ = Describe("UploadProduct", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewUploadProduct(nil, nil, nil)
+			command := commands.NewUploadProduct(nil, nil, nil, nil)
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This command attempts to upload a product to the Ops Manager",
 				ShortDescription: "uploads a given product to the Ops Manager targeted",
