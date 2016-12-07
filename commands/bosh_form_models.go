@@ -90,7 +90,7 @@ type HMEmailPlugin struct {
 	Port       *int   `url:"port,omitempty" json:"port"`
 	Domain     string `url:"domain,omitempty" json:"domain"`
 	From       string `url:"from,omitempty" json:"from"`
-	Recipients string `url:"recipients,omitempty" json:"recipients"`
+	Recipients string `url:"recipients[value],omitempty" json:"recipients"`
 	Username   string `url:"smtp_user,omitempty" json:"smtp_user"`
 	Password   string `url:"smtp_password,omitempty" json:"smtp_password"`
 	TLS        *bool  `url:"tls,omitempty" json:"tls"`
