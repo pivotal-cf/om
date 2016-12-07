@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/flags"
 )
 
 type ApplyChanges struct {
@@ -15,11 +16,14 @@ type ApplyChanges struct {
 	logger               logger
 	logWriter            logWriter
 	waitDuration         int
+	Options              struct {
+		IgnoreWarnings bool `short:"i" long:"ignore-warnings" description:"ignore issues reported by Ops Manager when applying changes"`
+	}
 }
 
 //go:generate counterfeiter -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
 type installationsService interface {
-	Trigger() (api.InstallationsServiceOutput, error)
+	Trigger(bool) (api.InstallationsServiceOutput, error)
 	Status(id int) (api.InstallationsServiceOutput, error)
 	Logs(id int) (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
@@ -40,6 +44,11 @@ func NewApplyChanges(installationsService installationsService, logWriter logWri
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
+	_, err := flags.Parse(&ac.Options, args)
+	if err != nil {
+		return fmt.Errorf("could not parse apply-changes flags: %s", err)
+	}
+
 	installation, err := ac.installationsService.RunningInstallation()
 	if err != nil {
 		return fmt.Errorf("could not check for any already running installation: %s", err)
@@ -47,7 +56,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-		installation, err = ac.installationsService.Trigger()
+		installation, err = ac.installationsService.Trigger(ac.Options.IgnoreWarnings)
 		if err != nil {
 			return fmt.Errorf("installation failed to trigger: %s", err)
 		}
@@ -109,5 +118,6 @@ func (ac ApplyChanges) Usage() Usage {
 	return Usage{
 		Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 		ShortDescription: "triggers an install on the Ops Manager targeted",
+		Flags:            ac.Options,
 	}
 }

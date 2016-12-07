@@ -8,10 +8,12 @@ import (
 )
 
 type InstallationsService struct {
-	TriggerStub        func() (api.InstallationsServiceOutput, error)
+	TriggerStub        func(bool) (api.InstallationsServiceOutput, error)
 	triggerMutex       sync.RWMutex
-	triggerArgsForCall []struct{}
-	triggerReturns     struct {
+	triggerArgsForCall []struct {
+		arg1 bool
+	}
+	triggerReturns struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
@@ -44,13 +46,15 @@ type InstallationsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *InstallationsService) Trigger() (api.InstallationsServiceOutput, error) {
+func (fake *InstallationsService) Trigger(arg1 bool) (api.InstallationsServiceOutput, error) {
 	fake.triggerMutex.Lock()
-	fake.triggerArgsForCall = append(fake.triggerArgsForCall, struct{}{})
-	fake.recordInvocation("Trigger", []interface{}{})
+	fake.triggerArgsForCall = append(fake.triggerArgsForCall, struct {
+		arg1 bool
+	}{arg1})
+	fake.recordInvocation("Trigger", []interface{}{arg1})
 	fake.triggerMutex.Unlock()
 	if fake.TriggerStub != nil {
-		return fake.TriggerStub()
+		return fake.TriggerStub(arg1)
 	} else {
 		return fake.triggerReturns.result1, fake.triggerReturns.result2
 	}
@@ -60,6 +64,12 @@ func (fake *InstallationsService) TriggerCallCount() int {
 	fake.triggerMutex.RLock()
 	defer fake.triggerMutex.RUnlock()
 	return len(fake.triggerArgsForCall)
+}
+
+func (fake *InstallationsService) TriggerArgsForCall(i int) bool {
+	fake.triggerMutex.RLock()
+	defer fake.triggerMutex.RUnlock()
+	return fake.triggerArgsForCall[i].arg1
 }
 
 func (fake *InstallationsService) TriggerReturns(result1 api.InstallationsServiceOutput, result2 error) {

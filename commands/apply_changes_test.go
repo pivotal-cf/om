@@ -89,6 +89,7 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(service.TriggerCallCount()).To(Equal(1))
+			Expect(service.TriggerArgsForCall(0)).To(Equal(false))
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
@@ -103,6 +104,35 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(writer.FlushArgsForCall(0)).To(Equal("start of logs"))
 			Expect(writer.FlushArgsForCall(1)).To(Equal("these logs"))
 			Expect(writer.FlushArgsForCall(2)).To(Equal("some other logs"))
+		})
+
+		Context("when passed the ignore-warnings flag", func() {
+			It("applies changes while ignoring warnings", func() {
+				service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
+
+				statusOutputs = []api.InstallationsServiceOutput{
+					{Status: "running"},
+					{Status: "running"},
+					{Status: "succeeded"},
+				}
+
+				statusErrors = []error{nil, nil, nil}
+
+				logsOutputs = []api.InstallationsServiceOutput{
+					{Logs: "start of logs"},
+					{Logs: "these logs"},
+					{Logs: "some other logs"},
+				}
+
+				logsErrors = []error{nil, nil, nil}
+				command := commands.NewApplyChanges(service, writer, logger, 1)
+
+				err := command.Execute([]string{"--ignore-warnings"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.TriggerArgsForCall(0)).To(Equal(true))
+			})
 		})
 
 		It("re-attaches to an ongoing installation", func() {
@@ -381,6 +411,7 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 				ShortDescription: "triggers an install on the Ops Manager targeted",
+				Flags:            command.Options,
 			}))
 		})
 	})

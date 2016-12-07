@@ -69,8 +69,8 @@ func (is InstallationsService) RunningInstallation() (InstallationsServiceOutput
 	return InstallationsServiceOutput{}, nil
 }
 
-func (is InstallationsService) Trigger() (InstallationsServiceOutput, error) {
-	req, err := http.NewRequest("POST", "/api/v0/installations", strings.NewReader(`{"ignore_warnings": true}`))
+func (is InstallationsService) Trigger(ignoreWarnings bool) (InstallationsServiceOutput, error) {
+	req, err := http.NewRequest("POST", "/api/v0/installations", strings.NewReader(fmt.Sprintf(`{"ignore_warnings": %v}`, ignoreWarnings)))
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}

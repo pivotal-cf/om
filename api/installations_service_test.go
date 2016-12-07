@@ -104,7 +104,7 @@ var _ = Describe("InstallationsService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
 			}, nil)
 
-			output, err := is.Trigger()
+			output, err := is.Trigger(false)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output.ID).To(Equal(1))
@@ -116,7 +116,7 @@ var _ = Describe("InstallationsService", func() {
 
 			body, err := ioutil.ReadAll(req.Body)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(body)).To(Equal(`{"ignore_warnings": true}`))
+			Expect(string(body)).To(Equal(`{"ignore_warnings": false}`))
 		})
 
 		Context("when an error occurs", func() {
@@ -127,7 +127,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, errors.New("some error"))
 
-					_, err := is.Trigger()
+					_, err := is.Trigger(false)
 					Expect(err).To(MatchError("could not make api request to installations endpoint: some error"))
 				})
 			})
@@ -139,7 +139,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					_, err := is.Trigger()
+					_, err := is.Trigger(false)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -151,7 +151,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("##################")),
 					}, nil)
 
-					_, err := is.Trigger()
+					_, err := is.Trigger(false)
 					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 				})
 			})
