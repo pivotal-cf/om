@@ -127,6 +127,45 @@ var _ = Describe("AvailableProductsService", func() {
 		})
 	})
 
+	Describe("Trash", func() {
+		It("deletes unused products", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+			}, nil)
+
+			err := service.Trash()
+			Expect(err).NotTo(HaveOccurred())
+
+			req := client.DoArgsForCall(0)
+			Expect(req.URL.Path).To(Equal("/api/v0/available_products"))
+			Expect(req.Method).To(Equal("DELETE"))
+		})
+
+		Context("failure cases", func() {
+			Context("when the client errors before the request", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{}, errors.New("some client error"))
+
+					err := service.Trash()
+					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
+				})
+			})
+
+			Context("when the api returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					}, nil)
+
+					err := service.Trash()
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to available_products endpoint: unexpected response")))
+				})
+			})
+		})
+	})
+
 	Describe("CheckProductAvailability", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {

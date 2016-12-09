@@ -99,6 +99,28 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 	return UploadProductOutput{}, nil
 }
 
+func (ap AvailableProductsService) Trash() error {
+	req, err := http.NewRequest("DELETE", "/api/v0/available_products", nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := ap.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
+	}
+
+	return nil
+}
+
 func (ap AvailableProductsService) CheckProductAvailability(productName string, productVersion string) (bool, error) {
 	avReq, err := http.NewRequest("GET", "/api/v0/available_products", nil)
 	if err != nil {
