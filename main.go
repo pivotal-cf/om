@@ -106,6 +106,7 @@ func main() {
 	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, extractor, availableProductsService, stdout)
+	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(availableProductsService, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, availableProductsService, diagnosticService, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(stagedProductsService, jobsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)

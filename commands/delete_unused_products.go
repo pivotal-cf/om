@@ -14,6 +14,13 @@ func NewDeleteUnusedProducts(productUploader productUploader, logger logger) Del
 	}
 }
 
+func (dup DeleteUnusedProducts) Usage() Usage {
+	return Usage{
+		Description:      "This command deletes unused products in the targeted Ops Manager",
+		ShortDescription: "deletes unused products on the Ops Manager targeted",
+	}
+}
+
 func (dup DeleteUnusedProducts) Execute(args []string) error {
 	dup.logger.Printf("trashing unused products")
 
