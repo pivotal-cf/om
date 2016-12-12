@@ -133,6 +133,7 @@ var _ = Describe("configure-bosh command", func() {
 
 			networkConfiguration := `[{
 				"name": "some-network",
+				"icmp_checks_enabled": true,
 				"service_network": true,
 				"iaas_identifier": "some-iaas-identifier",
 				"subnets": [
@@ -194,6 +195,7 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[2].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[2].Get("_method")).To(Equal("fakemethod"))
 
+			Expect(Forms[3].Get("infrastructure[icmp_checks_enabled]")).To(Equal("1"))
 			Expect(Forms[3].Get("network_collection[networks_attributes][0][name]")).To(Equal("some-network"))
 			Expect(Forms[3].Get("network_collection[networks_attributes][0][service_network]")).To(Equal("1"))
 			Expect(Forms[3].Get("network_collection[networks_attributes][0][subnets][0][iaas_identifier]")).To(Equal("some-iaas-identifier"))

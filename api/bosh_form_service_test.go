@@ -19,10 +19,22 @@ const formDocument = `
 		<form action="/some/action" method="some-method">
 			<input name="_method" value="some-rails" />
 			<input name="authenticity_token" value="some-authenticity" />
-			<input name="availability_zones[availability_zones][][iaas_identifier]" value="do-not-want" \>
-			<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-name-1" \>
-			<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-name-2" \>
+			<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-1" \>
+			<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-2" \>
 			<input name="availability_zones[availability_zones][][guid]" value="also-do-not-want" \>
+			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
+			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
+		</form>
+	</body>
+</html>`
+
+const mistmatchedForm = `
+<html>
+	<body>
+		<form action="/some/action" method="some-method">
+			<input name="_method" value="some-rails" />
+			<input name="authenticity_token" value="some-authenticity" />
+			<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-2" \>
 			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
 			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
 		</form>
@@ -200,6 +212,18 @@ var _ = Describe("BoshFormService", func() {
 
 					_, err := service.AvailabilityZones()
 					Expect(err).To(MatchError("failed during request: whoops"))
+				})
+			})
+
+			Context("when the number of AZ GUIDs does not match the number of AZ Names", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(mistmatchedForm)),
+					}, nil)
+
+					_, err := service.AvailabilityZones()
+					Expect(err).To(MatchError("failed constructing AZ map - mismatched # of AZ names to GUIDs"))
 				})
 			})
 

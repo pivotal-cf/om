@@ -128,55 +128,66 @@ type BoshNetworkForm struct {
 }
 
 func (nc NetworksConfiguration) EncodeValues(key string, v *url.Values) error {
+	var (
+		networkingFields []reflect.Type
+		networkingValues []reflect.Value
+	)
+
 	for index, config := range nc {
-		networkFields := reflect.TypeOf(config)
-		networkValues := reflect.ValueOf(config)
+		networkingFields = append(networkingFields, reflect.TypeOf(config))
+		networkingValues = append(networkingValues, reflect.ValueOf(config))
 
-		numberNetworks := strconv.Itoa(index)
+		numNetworks := strconv.Itoa(index)
 
-		replaceNetworkGuids(networkFields, networkValues, numberNetworks, v)
+		for i, subnet := range config.Subnets {
+			networkingFields = append(networkingFields, reflect.TypeOf(subnet))
+			networkingValues = append(networkingValues, reflect.ValueOf(subnet))
 
-		for _, subnet := range config.Subnets {
-			subnetFields := reflect.TypeOf(subnet)
-			subnetValues := reflect.ValueOf(subnet)
+			numSubnets := strconv.Itoa(i)
 
-			replaceNetworkGuids(subnetFields, subnetValues, numberNetworks, v)
+			assignIndex(networkingFields, networkingValues, numNetworks, numSubnets, v)
 		}
 	}
 
 	return nil
 }
 
-func replaceNetworkGuids(fields reflect.Type, values reflect.Value, numberNetworks string, v *url.Values) {
-	for i := 0; i < values.NumField(); i++ {
-		field := fields.Field(i)
-		value := values.Field(i)
-		tag := field.Tag.Get("url")
+func assignIndex(fields []reflect.Type, values []reflect.Value, numNetworks string, numSubnets string, urlValues *url.Values) {
+	for index, v := range values {
+		for i := 0; i < v.NumField(); i++ {
+			field := fields[index].Field(i)
+			value := v.Field(i)
+			tag := field.Tag.Get("url")
 
-		if tag == "" {
-			continue
-		}
-
-		newTag := strings.Replace(tag, "**subnet**", numberNetworks, -1)
-		finalTag := strings.Replace(newTag, "**network**", numberNetworks, -1)
-
-		switch value.Kind() {
-		case reflect.String:
-			v.Set(finalTag, value.String())
-		case reflect.Bool:
-			boolString := "0"
-			if value.Bool() {
-				boolString = "1"
+			if tag == "" {
+				continue
 			}
-			v.Set(finalTag, boolString)
-		case reflect.Slice:
-			temp := *v
-			temp[finalTag] = value.Interface().([]string)
+
+			newTag := strings.Replace(tag, "**subnet**", numSubnets, -1)
+			finalTag := strings.Replace(newTag, "**network**", numNetworks, -1)
+
+			switch value.Kind() {
+			case reflect.Int:
+				urlValues.Set(finalTag, "0")
+			case reflect.String:
+				urlValues.Set(finalTag, value.String())
+			case reflect.Bool:
+				boolString := "0"
+				if value.Bool() {
+					boolString = "1"
+				}
+				urlValues.Set(finalTag, boolString)
+			case reflect.Slice:
+				temp := *urlValues
+				temp[finalTag] = value.Interface().([]string)
+			}
 		}
 	}
 }
 
 type NetworkConfiguration struct {
+	GUID           int      `url:"network_collection[networks_attributes][**network**][guid]"`
+	ICMP           bool     `url:"infrastructure[icmp_checks_enabled]" json:"icmp_checks_enabled"`
 	Name           string   `url:"network_collection[networks_attributes][**network**][name]" json:"name"`
 	ServiceNetwork bool     `url:"network_collection[networks_attributes][**network**][service_network]" json:"service_network"`
 	IAASIdentifier string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][iaas_identifier]" json:"iaas_identifier"`
