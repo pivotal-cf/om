@@ -1,5 +1,12 @@
 package commands
 
+import (
+	"net/url"
+	"reflect"
+	"strconv"
+	"strings"
+)
+
 type CommonConfiguration struct {
 	AuthenticityToken string `url:"authenticity_token"`
 	Method            string `url:"_method"`
@@ -111,4 +118,76 @@ type ExternalDatabaseOptions struct {
 	Username string `url:"user,omitempty" json:"user"`
 	Password string `url:"password,omitempty" json:"password"`
 	Database string `url:"database,omitempty" json:"database"`
+}
+
+type NetworksConfiguration []NetworkConfiguration
+
+type BoshNetworkForm struct {
+	Networks NetworksConfiguration
+	CommonConfiguration
+}
+
+func (nc NetworksConfiguration) EncodeValues(key string, v *url.Values) error {
+	for index, config := range nc {
+		networkFields := reflect.TypeOf(config)
+		networkValues := reflect.ValueOf(config)
+
+		numberNetworks := strconv.Itoa(index)
+
+		replaceNetworkGuids(networkFields, networkValues, numberNetworks, v)
+
+		for _, subnet := range config.Subnets {
+			subnetFields := reflect.TypeOf(subnet)
+			subnetValues := reflect.ValueOf(subnet)
+
+			replaceNetworkGuids(subnetFields, subnetValues, numberNetworks, v)
+		}
+	}
+
+	return nil
+}
+
+func replaceNetworkGuids(fields reflect.Type, values reflect.Value, numberNetworks string, v *url.Values) {
+	for i := 0; i < values.NumField(); i++ {
+		field := fields.Field(i)
+		value := values.Field(i)
+		tag := field.Tag.Get("url")
+
+		if tag == "" {
+			continue
+		}
+
+		newTag := strings.Replace(tag, "**subnet**", numberNetworks, -1)
+		finalTag := strings.Replace(newTag, "**network**", numberNetworks, -1)
+
+		switch value.Kind() {
+		case reflect.String:
+			v.Set(finalTag, value.String())
+		case reflect.Bool:
+			boolString := "0"
+			if value.Bool() {
+				boolString = "1"
+			}
+			v.Set(finalTag, boolString)
+		case reflect.Slice:
+			temp := *v
+			temp[finalTag] = value.Interface().([]string)
+		}
+	}
+}
+
+type NetworkConfiguration struct {
+	Name           string   `url:"network_collection[networks_attributes][**network**][name]" json:"name"`
+	ServiceNetwork bool     `url:"network_collection[networks_attributes][**network**][service_network]" json:"service_network"`
+	IAASIdentifier string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][iaas_identifier]" json:"iaas_identifier"`
+	Subnets        []Subnet `json:"subnets"`
+}
+
+type Subnet struct {
+	CIDR                  string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][cidr]" json:"cidr"`
+	ReservedIPRanges      string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][reserved_ip_ranges]" json:"reserved_ip_ranges"`
+	DNS                   string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][dns]" json:"dns"`
+	Gateway               string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][gateway]" json:"gateway"`
+	AvailabilityZones     []string `json:"availability_zones,omitempty"`
+	AvailabilityZoneGUIDs []string `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][availability_zone_references][]"`
 }

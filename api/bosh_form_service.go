@@ -10,6 +10,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const availabilityZonesConfigurationPath = "/infrastructure/availability_zones/edit"
+
 type Form struct {
 	Action            string
 	AuthenticityToken string
@@ -95,4 +97,53 @@ func (bs BoshFormService) PostForm(input PostFormInput) error {
 	}
 
 	return nil
+}
+
+func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
+	zones := make(map[string]string)
+
+	req, err := http.NewRequest("GET", availabilityZonesConfigurationPath, nil)
+	if err != nil {
+		return zones, err // cannot test
+	}
+
+	resp, err := bs.client.Do(req)
+	if err != nil {
+		return zones, fmt.Errorf("failed during request: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return zones, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+
+		return zones, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	}
+
+	document, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return zones, err // cannot test
+	}
+
+	azNames := document.Find("form").Find(`input[name*='iaas_identifier'][type=hidden]`).Map(
+		func(i int, s *goquery.Selection) string {
+			v, _ := s.Attr("value")
+			return v
+		},
+	)
+
+	azGuids := document.Find("form").Find(`input[name*='guid'][type=hidden]`).Map(
+		func(i int, s *goquery.Selection) string {
+			v, _ := s.Attr("value")
+			return v
+		},
+	)
+
+	for i, azName := range azNames {
+		zones[azName] = azGuids[i]
+	}
+
+	return zones, nil
 }

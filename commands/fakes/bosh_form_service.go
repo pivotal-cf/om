@@ -25,6 +25,13 @@ type BoshFormService struct {
 	postFormReturns struct {
 		result1 error
 	}
+	AvailabilityZonesStub        func() (map[string]string, error)
+	availabilityZonesMutex       sync.RWMutex
+	availabilityZonesArgsForCall []struct{}
+	availabilityZonesReturns     struct {
+		result1 map[string]string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -96,6 +103,32 @@ func (fake *BoshFormService) PostFormReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *BoshFormService) AvailabilityZones() (map[string]string, error) {
+	fake.availabilityZonesMutex.Lock()
+	fake.availabilityZonesArgsForCall = append(fake.availabilityZonesArgsForCall, struct{}{})
+	fake.recordInvocation("AvailabilityZones", []interface{}{})
+	fake.availabilityZonesMutex.Unlock()
+	if fake.AvailabilityZonesStub != nil {
+		return fake.AvailabilityZonesStub()
+	} else {
+		return fake.availabilityZonesReturns.result1, fake.availabilityZonesReturns.result2
+	}
+}
+
+func (fake *BoshFormService) AvailabilityZonesCallCount() int {
+	fake.availabilityZonesMutex.RLock()
+	defer fake.availabilityZonesMutex.RUnlock()
+	return len(fake.availabilityZonesArgsForCall)
+}
+
+func (fake *BoshFormService) AvailabilityZonesReturns(result1 map[string]string, result2 error) {
+	fake.AvailabilityZonesStub = nil
+	fake.availabilityZonesReturns = struct {
+		result1 map[string]string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *BoshFormService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -103,6 +136,8 @@ func (fake *BoshFormService) Invocations() map[string][][]interface{} {
 	defer fake.getFormMutex.RUnlock()
 	fake.postFormMutex.RLock()
 	defer fake.postFormMutex.RUnlock()
+	fake.availabilityZonesMutex.RLock()
+	defer fake.availabilityZonesMutex.RUnlock()
 	return fake.invocations
 }
 

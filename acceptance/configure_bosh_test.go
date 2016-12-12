@@ -23,7 +23,6 @@ var _ = Describe("configure-bosh command", func() {
 
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
 				w.Header().Set("Content-Type", "application/json")
@@ -48,12 +47,15 @@ var _ = Describe("configure-bosh command", func() {
 					</body>
 				</html>`))
 			case "/infrastructure/director_configuration/edit":
-				http.SetCookie(w, &http.Cookie{
-					Name:  "somecookie",
-					Value: "somevalue",
-					Path:  "/",
-				})
-
+				w.Write([]byte(`<html>
+				<body>
+					<form action="/some-form" method="post">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+					</form>
+					</body>
+				</html>`))
+			case "/infrastructure/networks/edit":
 				w.Write([]byte(`<html>
 				<body>
 					<form action="/some-form" method="post">
@@ -63,27 +65,19 @@ var _ = Describe("configure-bosh command", func() {
 					</body>
 				</html>`))
 			case "/infrastructure/availability_zones/edit":
-				http.SetCookie(w, &http.Cookie{
-					Name:  "somecookie",
-					Value: "somevalue",
-					Path:  "/",
-				})
-
 				w.Write([]byte(`<html>
 				<body>
 					<form action="/some-form" method="post">
 						<input name="_method" value="fakemethod" />
 						<input name="authenticity_token" value="fake_authenticity" />
+						<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-1" \>
+						<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-other-az-2" \>
+						<input name="availability_zones[availability_zones][][guid]" type="hidden" value="my-az-guid1" \>
+						<input name="availability_zones[availability_zones][][guid]" type="hidden" value="my-az-guid2" \>
 					</form>
 					</body>
 				</html>`))
 			case "/infrastructure/security_tokens/edit":
-				http.SetCookie(w, &http.Cookie{
-					Name:  "somecookie",
-					Value: "somevalue",
-					Path:  "/",
-				})
-
 				w.Write([]byte(`<html>
 				<body>
 					<form action="/some-form" method="post">
@@ -137,6 +131,24 @@ var _ = Describe("configure-bosh command", func() {
 				"vm_password_type": "some-vm-password-type"
 			}`
 
+			networkConfiguration := `[{
+				"name": "some-network",
+				"service_network": true,
+				"iaas_identifier": "some-iaas-identifier",
+				"subnets": [
+					{
+						"cidr": "10.0.1.0/24",
+						"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
+						"dns": "8.8.8.8",
+						"gateway": "10.0.1.1",
+						"availability_zones": [
+							"some-az-1",
+							"some-other-az-2"
+						]
+					}
+				]
+			}]`
+
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "fake-username",
@@ -146,7 +158,8 @@ var _ = Describe("configure-bosh command", func() {
 				"--iaas-configuration", iaasConfiguration,
 				"--director-configuration", directorConfiguration,
 				"--security-configuration", securityConfiguration,
-				"--az-configuration", availabilityZonesConfiguration)
+				"--az-configuration", availabilityZonesConfiguration,
+				"--networks-configuration", networkConfiguration)
 		})
 
 		It("configures the bosh tile with the provided bosh configuration", func() {
@@ -157,6 +170,8 @@ var _ = Describe("configure-bosh command", func() {
 
 			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring director options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("configuring availability zones for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("configuring network options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring security options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
 
@@ -176,11 +191,24 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[1].Get("_method")).To(Equal("fakemethod"))
 
 			Expect(Forms[2]["availability_zones[availability_zones][][iaas_identifier]"]).To(Equal([]string{"some-az-1", "some-other-az-2"}))
+			Expect(Forms[2].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[2].Get("_method")).To(Equal("fakemethod"))
 
-			Expect(Forms[3].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
-			Expect(Forms[3].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][name]")).To(Equal("some-network"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][service_network]")).To(Equal("1"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][subnets][0][iaas_identifier]")).To(Equal("some-iaas-identifier"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][subnets][0][cidr]")).To(Equal("10.0.1.0/24"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][subnets][0][reserved_ip_ranges]")).To(Equal("10.0.1.0-10.0.1.4"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][subnets][0][dns]")).To(Equal("8.8.8.8"))
+			Expect(Forms[3].Get("network_collection[networks_attributes][0][subnets][0][gateway]")).To(Equal("10.0.1.1"))
+			Expect(Forms[3]["network_collection[networks_attributes][0][subnets][0][availability_zone_references][]"]).To(ConsistOf([]string{"my-az-guid1", "my-az-guid2"}))
 			Expect(Forms[3].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[3].Get("_method")).To(Equal("fakemethod"))
+
+			Expect(Forms[4].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
+			Expect(Forms[4].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
+			Expect(Forms[4].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[4].Get("_method")).To(Equal("fakemethod"))
 		})
 
 		It("does not configure keys that are not part of input", func() {

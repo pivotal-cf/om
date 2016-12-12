@@ -19,6 +19,12 @@ const formDocument = `
 		<form action="/some/action" method="some-method">
 			<input name="_method" value="some-rails" />
 			<input name="authenticity_token" value="some-authenticity" />
+			<input name="availability_zones[availability_zones][][iaas_identifier]" value="do-not-want" \>
+			<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-name-1" \>
+			<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-name-2" \>
+			<input name="availability_zones[availability_zones][][guid]" value="also-do-not-want" \>
+			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
+			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
 		</form>
 	</body>
 </html>`
@@ -164,6 +170,47 @@ var _ = Describe("BoshFormService", func() {
 					}, nil)
 
 					err := service.PostForm(api.PostFormInput{})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+		})
+	})
+
+	Describe("AvailabilityZones", func() {
+		It("returns a map of availability zone information", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(formDocument)),
+			}, nil)
+
+			azMap, err := service.AvailabilityZones()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(azMap).To(HaveKeyWithValue("some-az-name-1", "some-az-guid-1"))
+			Expect(azMap).To(HaveKeyWithValue("some-az-name-2", "some-az-guid-2"))
+		})
+
+		Context("failure cases", func() {
+			Context("when http client fails", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, errors.New("whoops"))
+
+					_, err := service.AvailabilityZones()
+					Expect(err).To(MatchError("failed during request: whoops"))
+				})
+			})
+
+			Context("when the request responds with a non-200 status", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, nil)
+
+					_, err := service.AvailabilityZones()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

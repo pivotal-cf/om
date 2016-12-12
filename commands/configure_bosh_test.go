@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/go-querystring/query"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -33,6 +34,11 @@ var _ = Describe("ConfigureBosh", func() {
 				RailsMethod:       "the-rails",
 			}, nil)
 
+			service.AvailabilityZonesReturns(map[string]string{
+				"some-az-name":  "guid-1",
+				"some-az-other": "guid-2",
+			}, nil)
+
 			err := command.Execute([]string{
 				"--iaas-configuration",
 				`{
@@ -55,7 +61,25 @@ var _ = Describe("ConfigureBosh", func() {
 						"vm_password_type": "some-vm-password-type"
 				}`,
 				"--az-configuration",
-				`{"availability_zones": [ "some-az-1","some-other-az-2" ] }`})
+				`{"availability_zones": [ "some-az-name","some-az-other" ] }`,
+				"--networks-configuration",
+				`[{
+					"name": "some-network",
+					"service_network": true,
+					"iaas_identifier": "some-iaas-identifier",
+					"subnets": [
+						{
+							"cidr": "10.0.1.0/24",
+							"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
+							"dns": "8.8.8.8",
+							"gateway": "10.0.1.1",
+							"availability_zones": [
+								"some-az-name",
+								"some-az-other"
+							]
+						}
+					]
+				}]`})
 
 			Expect(err).NotTo(HaveOccurred())
 
@@ -69,9 +93,12 @@ var _ = Describe("ConfigureBosh", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring availability zones for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(3)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(4)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(5)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 
 			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
@@ -104,12 +131,23 @@ var _ = Describe("ConfigureBosh", func() {
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				},
-				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-other-az-2",
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-other",
 			}))
 
-			Expect(service.GetFormArgsForCall(3)).To(Equal("/infrastructure/security_tokens/edit"))
+			Expect(service.GetFormArgsForCall(3)).To(Equal("/infrastructure/networks/edit"))
 
 			Expect(service.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-2&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
+			}))
+
+			Expect(service.GetFormArgsForCall(4)).To(Equal("/infrastructure/security_tokens/edit"))
+
+			Expect(service.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
 				Form: api.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
@@ -158,6 +196,54 @@ var _ = Describe("ConfigureBosh", func() {
 					err := command.Execute([]string{"--iaas-configuration", "{}"})
 					Expect(err).To(MatchError("tile failed to configure: NOPE"))
 				})
+			})
+
+			Context("when retrieving the list of availability zones fails", func() {
+				It("returns an error", func() {
+					service.AvailabilityZonesReturns(map[string]string{}, errors.New("FAIL"))
+
+					command := commands.NewConfigureBosh(service, logger)
+
+					err := command.Execute([]string{"--networks-configuration", "[]"})
+					Expect(err).To(MatchError("could not fetch availability zones: FAIL"))
+				})
+			})
+		})
+	})
+
+	Describe("NetworkConfiguration", func() {
+		Describe("EncodeValues", func() {
+			It("turns the network configuration into urlencoded form values", func() {
+				n := commands.BoshNetworkForm{
+					Networks: commands.NetworksConfiguration{
+						{
+							Name:           "foo",
+							ServiceNetwork: true,
+							IAASIdentifier: "something",
+							Subnets: []commands.Subnet{
+								{
+									CIDR:                  "some-cidr",
+									ReservedIPRanges:      "reserved-ips",
+									DNS:                   "some-dns",
+									Gateway:               "some-gateway",
+									AvailabilityZoneGUIDs: []string{"one", "two"},
+								},
+							},
+						},
+					},
+				}
+
+				values, err := query.Values(n)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][name]", []string{"foo"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][service_network]", []string{"1"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][iaas_identifier]", []string{"something"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][cidr]", []string{"some-cidr"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][reserved_ip_ranges]", []string{"reserved-ips"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][dns]", []string{"some-dns"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][gateway]", []string{"some-gateway"}))
+				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][availability_zone_references][]", []string{"one", "two"}))
 			})
 		})
 	})
