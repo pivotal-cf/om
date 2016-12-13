@@ -76,8 +76,9 @@ var _ = Describe("InstallationAssetService", func() {
 				if req.URL.Path == "/api/v0/installation_asset_collection" {
 					time.Sleep(5 * time.Second)
 					return &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("some-installation")),
+						StatusCode:    http.StatusOK,
+						Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
+						ContentLength: 22,
 					}, nil
 				}
 				return nil, nil
@@ -137,6 +138,21 @@ var _ = Describe("InstallationAssetService", func() {
 
 					err := service.Export("fake-dir/fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file")))
+				})
+			})
+
+			Context("when the response length doesn't match the number of bytes copied", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode:    http.StatusOK,
+						Body:          ioutil.NopCloser(strings.NewReader("{}")),
+						ContentLength: 50,
+					}, nil)
+					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+					service := api.NewInstallationAssetService(client, bar, liveWriter)
+
+					err := service.Export(outputFile.Name())
+					Expect(err).To(MatchError(ContainSubstring("invalid response length")))
 				})
 			})
 		})

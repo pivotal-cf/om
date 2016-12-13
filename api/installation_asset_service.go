@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"time"
 )
 
@@ -84,17 +84,21 @@ func (ia InstallationAssetService) Export(outputFile string) error {
 	progressReader := ia.progress.NewBarReader(resp.Body)
 	defer resp.Body.Close()
 
-	respBody, err := ioutil.ReadAll(progressReader)
+	outputFileHandle, err := os.Create(outputFile)
 	if err != nil {
-		return fmt.Errorf("request failed: response cannot be read")
+		return fmt.Errorf("cannot create output file: %s", err)
+	}
+
+	bytesWritten, err := io.Copy(outputFileHandle, progressReader)
+	if err != nil {
+		return fmt.Errorf("cannot write output file: %s", err)
+	}
+
+	if bytesWritten != resp.ContentLength {
+		return fmt.Errorf("invalid response length (expected %d, got %d)", resp.ContentLength, bytesWritten)
 	}
 
 	ia.progress.End()
-
-	err = ioutil.WriteFile(outputFile, respBody, 0644)
-	if err != nil {
-		return fmt.Errorf("request failed: cannot write to output file: %s", err)
-	}
 
 	return nil
 }
