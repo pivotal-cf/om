@@ -6,7 +6,7 @@ _is a mantra, or vibration, that is traditionally chanted_
 
 ## What it is
 
-Magical tool that helps you configure and deploy tiles to an Ops-Manager. 
+Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+ . 
 Currently being developed by RelEng, backlog link is [here](https://www.pivotaltracker.com/epic/show/2982497).
 
 ## Design Goals
