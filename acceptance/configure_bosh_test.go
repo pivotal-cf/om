@@ -14,7 +14,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("configure-bosh command", func() {
+var _ = PDescribe("configure-bosh command", func() {
 	var (
 		server          *httptest.Server
 		receivedCookies []*http.Cookie
