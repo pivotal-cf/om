@@ -21,3 +21,5 @@ Command Arguments:
   -n, --networks-configuration  string  complete network configuration for the bosh director
   -na, --network-assignment     string  choose existing network and availability zone to deploy bosh director into
 ```
+
+The command currently supports [AWS](aws.md) and [GCP](gcp.md).
