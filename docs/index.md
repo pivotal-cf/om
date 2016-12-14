@@ -1,5 +1,5 @@
 # Commands
-* [apply-changes](docs/apply-changes/index.md)
+* [apply-changes](apply-changes/index.md)
 * configure-authentication
 * configure-bosh
 * configure-product
