@@ -1,36 +1,3 @@
-# Om
-
-_is a mantra, or vibration, that is traditionally chanted_
-
-![enhancing your calm](http://i.giphy.com/3o7qDQ5iw1oXyDeJAk.gif)
-
-## What it is
-
-Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+ . 
-Currently being developed by RelEng, backlog link is [here](https://www.pivotaltracker.com/epic/show/2982497).
-
-## Design Goals
-
-- less flakey / faster replacement of [opsmgr](https://github.com/pivotal-cf/opsmgr)
-- single binary that can be run on multiple platforms
-- split environment creation from Ops Manager configuration (these are two tools)
-- no longer rely on specific environment file format
-- fully tested, not using tests to execute browser behavior
-- no capybara
-- [small sharp tool](https://brandur.org/small-sharp-tools)
-- idempotency for all commands
-
-## Original design spec
-
-please note, this can and will change from the final readme below
-
-https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
-
-## Docs
-
-See [here] (docs/index.md) for useful examples and documentation
-
-## Current Commands
 ```
 ॐ
 om helps you interact with an Ops Manager
@@ -45,7 +12,7 @@ Usage: om [options] <command> [<args>]
   -r, --request-timeout      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
 
 Commands:
-  apply-changes             triggers an install on the Ops Manager targeted
+  [apply-changes](docs/apply-changes/index.md)             triggers an install on the Ops Manager targeted
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
   configure-bosh            configures Ops Manager deployed bosh director
   configure-product         configures a staged product
