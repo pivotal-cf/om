@@ -61,6 +61,8 @@ var _ = Describe("configure-bosh command", func() {
 					<form action="/some-form" method="post">
 						<input name="_method" value="fakemethod" />
 						<input name="authenticity_token" value="fake_authenticity" />
+						<input name="network_collection[networks_attributes][][guid]" type="hidden" value="some-network-guid" \>
+						<input name="network_collection[networks_attributes][][name]" value="some-network-name" \>
 					</form>
 					</body>
 				</html>`))
@@ -77,6 +79,19 @@ var _ = Describe("configure-bosh command", func() {
 					</form>
 					</body>
 				</html>`))
+			case "/infrastructure/director/az_and_network_assignment/edit":
+				w.Write([]byte(`<html>
+				<body>
+					<form action="/some-form" method="some-method">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+						<select name="bosh_product[network_reference]" id="bosh_product_network_reference">
+							<option value=""></option>
+							<option value="some-network-guid">some-network</option>
+						</select>
+					</form>
+				</body>
+			</html>`))
 			case "/infrastructure/security_tokens/edit":
 				w.Write([]byte(`<html>
 				<body>
@@ -150,6 +165,11 @@ var _ = Describe("configure-bosh command", func() {
 				]
 			}]`
 
+			networkAssignment := `{
+				  "singleton_availability_zone": "some-az-1",
+					"network": "some-network"
+			}`
+
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "fake-username",
@@ -160,7 +180,8 @@ var _ = Describe("configure-bosh command", func() {
 				"--director-configuration", directorConfiguration,
 				"--security-configuration", securityConfiguration,
 				"--az-configuration", availabilityZonesConfiguration,
-				"--networks-configuration", networkConfiguration)
+				"--networks-configuration", networkConfiguration,
+				"--network-assignment", networkAssignment)
 		})
 
 		It("configures the bosh tile with the provided bosh configuration", func() {
@@ -207,10 +228,15 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[3].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[3].Get("_method")).To(Equal("fakemethod"))
 
-			Expect(Forms[4].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
-			Expect(Forms[4].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
+			Expect(Forms[4].Get("bosh_product[singleton_availability_zone_reference]")).To(Equal("my-az-guid1"))
+			Expect(Forms[4].Get("bosh_product[network_reference]")).To(Equal("some-network-guid"))
 			Expect(Forms[4].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[4].Get("_method")).To(Equal("fakemethod"))
+
+			Expect(Forms[5].Get("security_tokens[trusted_certificates]")).To(Equal("some-trusted-certificates"))
+			Expect(Forms[5].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
+			Expect(Forms[5].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[5].Get("_method")).To(Equal("fakemethod"))
 		})
 
 		It("does not configure keys that are not part of input", func() {

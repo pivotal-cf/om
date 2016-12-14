@@ -77,11 +77,19 @@ type SecurityConfiguration struct {
 	VMPasswordType      string `url:"security_tokens[vm_password_type],omitempty" json:"vm_password_type"`
 }
 
+type NetworkAssignment struct {
+	UserProvidedNetworkName string `json:"network" url:"-"`
+	UserProvidedAZName      string `json:"singleton_availability_zone" url:"-"`
+	NetworkGUID             string `url:"bosh_product[network_reference],omitempty"`
+	AZGUID                  string `url:"bosh_product[singleton_availability_zone_reference],omitempty"`
+}
+
 type BoshConfiguration struct {
 	IaaSConfiguration
 	DirectorConfiguration
 	AvailabilityZonesConfiguration
 	SecurityConfiguration
+	NetworkAssignment
 	CommonConfiguration
 }
 

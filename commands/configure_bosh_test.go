@@ -39,6 +39,11 @@ var _ = Describe("ConfigureBosh", func() {
 				"some-az-other": "guid-2",
 			}, nil)
 
+			service.NetworksReturns(map[string]string{
+				"some-network-name":       "some-network-guid",
+				"some-other-network-name": "some-other-network-guid",
+			}, nil)
+
 			err := command.Execute([]string{
 				"--iaas-configuration",
 				`{
@@ -79,7 +84,10 @@ var _ = Describe("ConfigureBosh", func() {
 							]
 						}
 					]
-				}]`})
+				}]`,
+				"--network-assignment",
+				`{"singleton_availability_zone": "some-az-name", "network": "some-other-network-name"}`,
+			})
 
 			Expect(err).NotTo(HaveOccurred())
 
@@ -96,9 +104,12 @@ var _ = Describe("ConfigureBosh", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(4)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(5)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(6)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 
 			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
@@ -145,9 +156,20 @@ var _ = Describe("ConfigureBosh", func() {
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-2&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
 			}))
 
-			Expect(service.GetFormArgsForCall(4)).To(Equal("/infrastructure/security_tokens/edit"))
+			Expect(service.GetFormArgsForCall(4)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
 			Expect(service.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=guid-1",
+			}))
+
+			Expect(service.GetFormArgsForCall(5)).To(Equal("/infrastructure/security_tokens/edit"))
+
+			Expect(service.PostFormArgsForCall(5)).To(Equal(api.PostFormInput{
 				Form: api.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
@@ -173,7 +195,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 					command := commands.NewConfigureBosh(service, logger)
 
-					err := command.Execute([]string{"--iaas-configuration", "{}"})
+					err := command.Execute([]string{"--iaas-configuration", `{}`})
 					Expect(err).To(MatchError("could not fetch form: meow meow meow"))
 				})
 			})
@@ -193,7 +215,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 					command := commands.NewConfigureBosh(service, logger)
 
-					err := command.Execute([]string{"--iaas-configuration", "{}"})
+					err := command.Execute([]string{"--iaas-configuration", `{}`})
 					Expect(err).To(MatchError("tile failed to configure: NOPE"))
 				})
 			})
@@ -204,7 +226,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 					command := commands.NewConfigureBosh(service, logger)
 
-					err := command.Execute([]string{"--networks-configuration", "[]"})
+					err := command.Execute([]string{"--networks-configuration", `[]`})
 					Expect(err).To(MatchError("could not fetch availability zones: FAIL"))
 				})
 			})

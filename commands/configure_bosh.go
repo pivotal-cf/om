@@ -16,6 +16,7 @@ const (
 	securityConfigurationPath          = "/infrastructure/security_tokens/edit"
 	availabilityZonesConfigurationPath = "/infrastructure/availability_zones/edit"
 	networksConfigurationPath          = "/infrastructure/networks/edit"
+	networkAssignmentPath              = "/infrastructure/director/az_and_network_assignment/edit"
 )
 
 type ConfigureBosh struct {
@@ -27,6 +28,7 @@ type ConfigureBosh struct {
 		SecurityConfiguration          string `short:"s"  long:"security-configuration"  description:"security-specific JSON configuration for the bosh director"`
 		AvailabilityZonesConfiguration string `short:"a"  long:"az-configuration"  description:"availability zones JSON configuration for the bosh director"`
 		NetworksConfiguration          string `short:"n"  long:"networks-configuration"  description:"complete network configuration for the bosh director"`
+		NetworkAssignment              string `short:"na"  long:"network-assignment"  description:"choose existing network and availability zone to deploy bosh director into"`
 	}
 }
 
@@ -35,6 +37,7 @@ type boshFormService interface {
 	GetForm(path string) (api.Form, error)
 	PostForm(api.PostFormInput) error
 	AvailabilityZones() (map[string]string, error)
+	Networks() (map[string]string, error)
 }
 
 func NewConfigureBosh(s boshFormService, l logger) ConfigureBosh {
@@ -49,7 +52,13 @@ func (c ConfigureBosh) Execute(args []string) error {
 
 	if c.Options.IaaSConfiguration != "" {
 		c.logger.Printf("configuring iaas specific options for bosh tile")
-		err = c.configureForm(iaasConfigurationPath, c.Options.IaaSConfiguration)
+
+		config, err := c.configureForm(c.Options.IaaSConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(iaasConfigurationPath, config)
 		if err != nil {
 			return err
 		}
@@ -57,7 +66,13 @@ func (c ConfigureBosh) Execute(args []string) error {
 
 	if c.Options.DirectorConfiguration != "" {
 		c.logger.Printf("configuring director options for bosh tile")
-		err = c.configureForm(directorConfigurationPath, c.Options.DirectorConfiguration)
+
+		config, err := c.configureForm(c.Options.DirectorConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(directorConfigurationPath, config)
 		if err != nil {
 			return err
 		}
@@ -65,7 +80,13 @@ func (c ConfigureBosh) Execute(args []string) error {
 
 	if c.Options.AvailabilityZonesConfiguration != "" {
 		c.logger.Printf("configuring availability zones for bosh tile")
-		err = c.configureForm(availabilityZonesConfigurationPath, c.Options.AvailabilityZonesConfiguration)
+
+		config, err := c.configureForm(c.Options.AvailabilityZonesConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(availabilityZonesConfigurationPath, config)
 		if err != nil {
 			return err
 		}
@@ -83,9 +104,41 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
+	if c.Options.NetworkAssignment != "" {
+		c.logger.Printf("assigning az and networks for bosh tile")
+
+		config, err := c.configureForm(c.Options.NetworkAssignment)
+		if err != nil {
+			return err
+		}
+
+		networks, err := c.service.Networks()
+		if err != nil {
+			return err
+		}
+		config.NetworkGUID = networks[config.UserProvidedNetworkName]
+
+		availabilityZones, err := c.service.AvailabilityZones()
+		if err != nil {
+			return err
+		}
+		config.AZGUID = availabilityZones[config.UserProvidedAZName]
+
+		err = c.postForm(networkAssignmentPath, config)
+		if err != nil {
+			return err
+		}
+	}
+
 	if c.Options.SecurityConfiguration != "" {
 		c.logger.Printf("configuring security options for bosh tile")
-		err = c.configureForm(securityConfigurationPath, c.Options.SecurityConfiguration)
+
+		config, err := c.configureForm(c.Options.SecurityConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(securityConfigurationPath, config)
 		if err != nil {
 			return err
 		}
@@ -95,16 +148,21 @@ func (c ConfigureBosh) Execute(args []string) error {
 	return nil
 }
 
-func (c ConfigureBosh) configureForm(path, configuration string) error {
+func (c ConfigureBosh) configureForm(configuration string) (BoshConfiguration, error) {
+	var initialConfig BoshConfiguration
+
+	err := json.NewDecoder(strings.NewReader(configuration)).Decode(&initialConfig)
+	if err != nil {
+		return BoshConfiguration{}, fmt.Errorf("could not decode json: %s", err)
+	}
+
+	return initialConfig, nil
+}
+
+func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) error {
 	form, err := c.service.GetForm(path)
 	if err != nil {
 		return fmt.Errorf("could not fetch form: %s", err)
-	}
-
-	var initialConfig BoshConfiguration
-	err = json.NewDecoder(strings.NewReader(configuration)).Decode(&initialConfig)
-	if err != nil {
-		return fmt.Errorf("could not decode json: %s", err)
 	}
 
 	initialConfig.AuthenticityToken = form.AuthenticityToken

@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const formDocument = `
+const AZDocument = `
 <html>
 	<body>
 		<form action="/some/action" method="some-method">
@@ -24,6 +24,20 @@ const formDocument = `
 			<input name="availability_zones[availability_zones][][guid]" value="also-do-not-want" \>
 			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
 			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
+		</form>
+	</body>
+</html>`
+
+const NetDocument = `
+<html>
+	<body>
+		<form action="/some/action" method="some-method">
+			<input name="_method" value="some-rails" />
+			<input name="authenticity_token" value="some-authenticity" />
+			<select name="bosh_product[network_reference]" id="bosh_product_network_reference">
+				<option value=""></option>
+				<option value="ed9b4dcf24dad744b1cf">some-net</option>
+			</select>
 		</form>
 	</body>
 </html>`
@@ -56,7 +70,7 @@ var _ = Describe("BoshFormService", func() {
 		It("returns the form details", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(formDocument)),
+				Body:       ioutil.NopCloser(strings.NewReader(AZDocument)),
 			}, nil)
 
 			form, err := service.GetForm("/some/path")
@@ -192,14 +206,19 @@ var _ = Describe("BoshFormService", func() {
 		It("returns a map of availability zone information", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(formDocument)),
+				Body:       ioutil.NopCloser(strings.NewReader(AZDocument)),
 			}, nil)
 
-			azMap, err := service.AvailabilityZones()
+			netMap, err := service.AvailabilityZones()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(azMap).To(HaveKeyWithValue("some-az-name-1", "some-az-guid-1"))
-			Expect(azMap).To(HaveKeyWithValue("some-az-name-2", "some-az-guid-2"))
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/infrastructure/availability_zones/edit"))
+
+			Expect(netMap).To(HaveKeyWithValue("some-az-name-1", "some-az-guid-1"))
+			Expect(netMap).To(HaveKeyWithValue("some-az-name-2", "some-az-guid-2"))
 		})
 
 		Context("failure cases", func() {
@@ -235,6 +254,51 @@ var _ = Describe("BoshFormService", func() {
 					}, nil)
 
 					_, err := service.AvailabilityZones()
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+		})
+	})
+
+	Describe("Networks", func() {
+		It("returns a map of networks", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(NetDocument)),
+			}, nil)
+
+			netMap, err := service.Networks()
+			Expect(err).NotTo(HaveOccurred())
+
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
+
+			Expect(netMap).To(HaveKeyWithValue("some-net", "ed9b4dcf24dad744b1cf"))
+		})
+
+		Context("failure cases", func() {
+			Context("when http client fails", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, errors.New("whoops"))
+
+					_, err := service.Networks()
+					Expect(err).To(MatchError("failed during request: whoops"))
+				})
+			})
+
+			Context("when the request responds with a non-200 status", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, nil)
+
+					_, err := service.Networks()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

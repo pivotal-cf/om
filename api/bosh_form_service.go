@@ -10,7 +10,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const availabilityZonesConfigurationPath = "/infrastructure/availability_zones/edit"
+const (
+	availabilityZonesConfigurationPath = "/infrastructure/availability_zones/edit"
+	networkAssignmentConfigurationPath = "/infrastructure/director/az_and_network_assignment/edit"
+)
 
 type Form struct {
 	Action            string
@@ -150,4 +153,43 @@ func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
 	}
 
 	return zones, nil
+}
+
+func (bs BoshFormService) Networks() (map[string]string, error) {
+	networks := make(map[string]string)
+
+	req, err := http.NewRequest("GET", networkAssignmentConfigurationPath, nil)
+	if err != nil {
+		return networks, err // shall not test
+	}
+
+	resp, err := bs.client.Do(req)
+	if err != nil {
+		return networks, fmt.Errorf("failed during request: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		out, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return networks, fmt.Errorf("request failed: unexpected response: %s", err)
+		}
+		return networks, fmt.Errorf("request failed: unexpected response: %s", out)
+	}
+
+	document, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return networks, err
+	}
+
+	document.Find(`select[id*=network] option:not([value=''])`).Each(
+		func(i int, s *goquery.Selection) {
+			name := s.Text()
+			guid, _ := s.Attr("value")
+
+			networks[name] = guid
+		},
+	)
+
+	return networks, nil
 }
