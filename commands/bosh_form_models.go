@@ -41,18 +41,17 @@ type AWSIaaSConfiguration struct {
 }
 
 type VSphereIaaSConfiguration struct {
-  VCenterHost              string `url:"iaas_configuration[vcenter_host],omitempty" json:"vcenter_host"`
-  VCenterUserName          string `url:"iaas_configuration[vcenter_username],omitempty" json:"vcenter_username"`
-  VCenterPassword          string `url:"iaas_configuration[vcenter_password],omitempty" json:"vcenter_password"`
-  DatacenterName           string `url:"iaas_configuration[datacenter],omitempty" json:"datacenter"`
-  VirtualDiskType          string `url:"iaas_configuration[disk_type],omitempty" json:"disk_type"`
-  EphemeralDatastoreNames  string `url:"iaas_configuration[ephemeral_datastores_string],omitempty" json:"ephemeral_datastores_string"`
-  PersistentDatastoreNames string `url:"iaas_configuration[persistent_datastores_string],omitempty" json:"persistent_datastores_string"`
-  VMFolder                 string `url:"iaas_configuration[bosh_vm_folder],omitempty" json:"bosh_vm_folder"`
-  TemplateFolder           string `url:"iaas_configuration[bosh_template_folder],omitempty" json:"bosh_template_folder"`
-  DiskPathFolder           string `url:"iaas_configuration[bosh_disk_path],omitempty" json:"bosh_disk_path"`
+	VCenterHost              string `url:"iaas_configuration[vcenter_host],omitempty" json:"vcenter_host"`
+	VCenterUserName          string `url:"iaas_configuration[vcenter_username],omitempty" json:"vcenter_username"`
+	VCenterPassword          string `url:"iaas_configuration[vcenter_password],omitempty" json:"vcenter_password"`
+	DatacenterName           string `url:"iaas_configuration[datacenter],omitempty" json:"datacenter"`
+	VirtualDiskType          string `url:"iaas_configuration[disk_type],omitempty" json:"disk_type"`
+	EphemeralDatastoreNames  string `url:"iaas_configuration[ephemeral_datastores_string],omitempty" json:"ephemeral_datastores_string"`
+	PersistentDatastoreNames string `url:"iaas_configuration[persistent_datastores_string],omitempty" json:"persistent_datastores_string"`
+	VMFolder                 string `url:"iaas_configuration[bosh_vm_folder],omitempty" json:"bosh_vm_folder"`
+	TemplateFolder           string `url:"iaas_configuration[bosh_template_folder],omitempty" json:"bosh_template_folder"`
+	DiskPathFolder           string `url:"iaas_configuration[bosh_disk_path],omitempty" json:"bosh_disk_path"`
 }
-
 
 type CommonIaaSConfiguration struct {
 	SSHPrivateKey string `url:"iaas_configuration[ssh_private_key],omitempty" json:"ssh_private_key"`
