@@ -23,6 +23,12 @@ type DiagnosticReport struct {
 	StagedProducts []DiagnosticProduct
 }
 
+type DiagnosticReportUnavailable struct{}
+
+func (du DiagnosticReportUnavailable) Error() string {
+	return "diagnostic report is currently unavailable"
+}
+
 func NewDiagnosticService(client httpClient) DiagnosticService {
 	return DiagnosticService{
 		client: client,
@@ -41,6 +47,10 @@ func (ds DiagnosticService) Report() (DiagnosticReport, error) {
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return DiagnosticReport{}, DiagnosticReportUnavailable{}
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)

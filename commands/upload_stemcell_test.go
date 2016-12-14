@@ -69,7 +69,7 @@ var _ = Describe("UploadStemcell", func() {
 	})
 
 	Context("when the stemcell already exists", func() {
-		It("exists successfully without uploading", func() {
+		It("exits successfully without uploading", func() {
 			submission := formcontent.ContentSubmission{
 				Length:      10,
 				Content:     ioutil.NopCloser(strings.NewReader("")),
@@ -90,6 +90,49 @@ var _ = Describe("UploadStemcell", func() {
 
 			format, v := logger.PrintfArgsForCall(1)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
+		})
+	})
+
+	Context("when the diagnostic report is unavailable", func() {
+		It("uploads the stemcell", func() {
+			submission := formcontent.ContentSubmission{
+				Length:      10,
+				Content:     ioutil.NopCloser(strings.NewReader("")),
+				ContentType: "some content-type",
+			}
+			multipart.FinalizeReturns(submission, nil)
+
+			diagnosticService.ReportReturns(api.DiagnosticReport{}, api.DiagnosticReportUnavailable{})
+
+			command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+
+			err := command.Execute([]string{
+				"--stemcell", "/path/to/stemcell.tgz",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			key, file := multipart.AddFileArgsForCall(0)
+			Expect(key).To(Equal("stemcell[file]"))
+			Expect(file).To(Equal("/path/to/stemcell.tgz"))
+			Expect(stemcellService.UploadArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+				ContentLength: 10,
+				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+			}))
+
+			Expect(multipart.FinalizeCallCount()).To(Equal(1))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
+
+			format, v = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("diagnostic report is currently unavailable"))
+
+			format, v = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+
+			format, v = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
 		})
 	})
 
