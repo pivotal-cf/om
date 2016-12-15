@@ -63,7 +63,12 @@ func (us UploadStemcell) Execute(args []string) error {
 
 	report, err := us.diagnosticService.Report()
 	if err != nil {
-		return fmt.Errorf("failed to get diagnostic report: %s", err)
+		switch err.(type) {
+		case api.DiagnosticReportUnavailable:
+			us.logger.Printf("%s", err)
+		default:
+			return fmt.Errorf("failed to get diagnostic report: %s", err)
+		}
 	}
 
 	for _, stemcell := range report.Stemcells {

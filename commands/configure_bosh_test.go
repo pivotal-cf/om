@@ -68,23 +68,26 @@ var _ = Describe("ConfigureBosh", func() {
 				"--az-configuration",
 				`{"availability_zones": [ "some-az-name","some-az-other" ] }`,
 				"--networks-configuration",
-				`[{
-					"name": "some-network",
-					"service_network": true,
-					"iaas_identifier": "some-iaas-identifier",
-					"subnets": [
-						{
-							"cidr": "10.0.1.0/24",
-							"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
-							"dns": "8.8.8.8",
-							"gateway": "10.0.1.1",
-							"availability_zones": [
-								"some-az-name",
-								"some-az-other"
-							]
-						}
-					]
-				}]`,
+				`{
+					"icmp_checks_enabled": true,
+					"networks": [{
+						"name": "some-network",
+						"service_network": true,
+						"iaas_identifier": "some-iaas-identifier",
+						"subnets": [
+							{
+								"cidr": "10.0.1.0/24",
+								"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
+								"dns": "8.8.8.8",
+								"gateway": "10.0.1.1",
+								"availability_zones": [
+									"some-az-name",
+									"some-az-other"
+								]
+							}
+						]
+					}]
+				}`,
 				"--network-assignment",
 				`{"singleton_availability_zone": "some-az-name", "network": "some-other-network-name"}`,
 			})
@@ -153,7 +156,7 @@ var _ = Describe("ConfigureBosh", func() {
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				},
-				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-2&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-2&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
 			}))
 
 			Expect(service.GetFormArgsForCall(4)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
@@ -226,18 +229,19 @@ var _ = Describe("ConfigureBosh", func() {
 
 					command := commands.NewConfigureBosh(service, logger)
 
-					err := command.Execute([]string{"--networks-configuration", `[]`})
+					err := command.Execute([]string{"--networks-configuration", `{}`})
 					Expect(err).To(MatchError("could not fetch availability zones: FAIL"))
 				})
 			})
 		})
 	})
 
-	Describe("NetworkConfiguration", func() {
+	Describe("NetworksConfiguration", func() {
 		Describe("EncodeValues", func() {
 			It("turns the network configuration into urlencoded form values", func() {
-				n := commands.BoshNetworkForm{
-					Networks: commands.NetworksConfiguration{
+				n := commands.NetworksConfiguration{
+					ICMP: true,
+					Networks: []commands.NetworkConfiguration{
 						{
 							Name:           "foo",
 							ServiceNetwork: true,
@@ -258,6 +262,7 @@ var _ = Describe("ConfigureBosh", func() {
 				values, err := query.Values(n)
 				Expect(err).NotTo(HaveOccurred())
 
+				Expect(values).To(HaveKeyWithValue("infrastructure[icmp_checks_enabled]", []string{"1"}))
 				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][name]", []string{"foo"}))
 				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][service_network]", []string{"1"}))
 				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][iaas_identifier]", []string{"something"}))

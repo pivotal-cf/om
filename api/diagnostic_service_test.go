@@ -84,6 +84,19 @@ var _ = Describe("DiagnosticService", func() {
 		})
 
 		Context("when an error occurs", func() {
+			Context("when the server returns a 500", func() {
+				It("returns a DiagnosticReportUnavailable error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+					}, nil)
+
+					service := api.NewDiagnosticService(client)
+					_, err := service.Report()
+					Expect(err).To(BeAssignableToTypeOf(api.DiagnosticReportUnavailable{}))
+				})
+			})
+
 			Context("when the client fails before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
@@ -97,7 +110,7 @@ var _ = Describe("DiagnosticService", func() {
 			Context("when the server returns a non-2XX status", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
+						StatusCode: http.StatusTeapot,
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 

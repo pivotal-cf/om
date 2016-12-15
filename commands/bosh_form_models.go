@@ -142,20 +142,21 @@ type ExternalDatabaseOptions struct {
 	Database string `url:"database,omitempty" json:"database"`
 }
 
-type NetworksConfiguration []NetworkConfiguration
-
-type BoshNetworkForm struct {
-	Networks NetworksConfiguration
+type NetworksConfiguration struct {
+	ICMP     bool `url:"infrastructure[icmp_checks_enabled],int" json:"icmp_checks_enabled"`
+	Networks Networks
 	CommonConfiguration
 }
 
-func (nc NetworksConfiguration) EncodeValues(key string, v *url.Values) error {
+type Networks []NetworkConfiguration
+
+func (n Networks) EncodeValues(key string, v *url.Values) error {
 	var (
 		networkingFields []reflect.Type
 		networkingValues []reflect.Value
 	)
 
-	for index, config := range nc {
+	for index, config := range n {
 		networkingFields = append(networkingFields, reflect.TypeOf(config))
 		networkingValues = append(networkingValues, reflect.ValueOf(config))
 
@@ -209,7 +210,6 @@ func assignIndex(fields []reflect.Type, values []reflect.Value, numNetworks stri
 
 type NetworkConfiguration struct {
 	GUID           int      `url:"network_collection[networks_attributes][**network**][guid]"`
-	ICMP           bool     `url:"infrastructure[icmp_checks_enabled]" json:"icmp_checks_enabled"`
 	Name           string   `url:"network_collection[networks_attributes][**network**][name]" json:"name"`
 	ServiceNetwork bool     `url:"network_collection[networks_attributes][**network**][service_network]" json:"service_network"`
 	IAASIdentifier string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][iaas_identifier]" json:"iaas_identifier"`

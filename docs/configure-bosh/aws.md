@@ -1,10 +1,12 @@
+&larr; [back to `configure-bosh`](README.md)
+
 # AWS configure-bosh
 
 #### --iaas-configuration
-Note for private key: you will need to replace newlines with "\n"
+**Note for `ssh_private_key`**: You will need to replace newlines with "\n".
+This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "\\n"}' | tr -d '\n'`.
 
-Minimal example:
-
+##### Minimal example
 ```json
 {
   "access_key_id": "my-access-key",
@@ -20,9 +22,9 @@ Minimal example:
 ```
 
 #### --director-configuration
-Note regarding `ntp_servers_string`: We recommend using this NTP server to all PCF users on AWS
+**Note regarding `ntp_servers_string`**: We recommend using this NTP server to all PCF users on AWS
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "ntp_servers_string": "0.amazon.pool.ntp.org"
@@ -31,7 +33,7 @@ Minimal example:
 
 #### --az-configuration
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "availability_zones": ["us-west-1b","us-west-1c"]
@@ -41,7 +43,7 @@ Minimal example:
 #### --security-configuration
 No additional security configuration is strictly required.
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "trusted_certificates": "some-trusted-certificates",

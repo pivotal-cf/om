@@ -146,24 +146,26 @@ var _ = Describe("configure-bosh command", func() {
 				"vm_password_type": "some-vm-password-type"
 			}`
 
-			networkConfiguration := `[{
-				"name": "some-network",
+			networkConfiguration := `{
 				"icmp_checks_enabled": true,
-				"service_network": true,
-				"iaas_identifier": "some-iaas-identifier",
-				"subnets": [
-					{
-						"cidr": "10.0.1.0/24",
-						"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
-						"dns": "8.8.8.8",
-						"gateway": "10.0.1.1",
-						"availability_zones": [
-							"some-az-1",
-							"some-other-az-2"
-						]
-					}
-				]
-			}]`
+				"networks": [{
+					"name": "some-network",
+					"service_network": true,
+					"iaas_identifier": "some-iaas-identifier",
+					"subnets": [
+						{
+							"cidr": "10.0.1.0/24",
+							"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
+							"dns": "8.8.8.8",
+							"gateway": "10.0.1.1",
+							"availability_zones": [
+								"some-az-1",
+								"some-other-az-2"
+							]
+						}
+					]
+				}]
+			}`
 
 			networkAssignment := `{
 				  "singleton_availability_zone": "some-az-1",

@@ -1,10 +1,13 @@
-# GCP configure-bosh
+&larr; [back to `configure-bosh`](README.md)
+
+# GCP-specific inputs for the `configure-bosh` command
 
 #### --iaas-configuration
-Note regarding `auth_json`: You will have likely generated this in order to use our [terraforming-gcp](https://github.com/pivotal-cf/terraforming-gcp/) tooling. To easily format this JSON for use as a string here, use `cat service_account_key.json | jq 'tostring'`.
+**Note regarding `auth_json`**: You will have likely generated this in order to use our [terraforming-gcp](https://github.com/pivotal-cf/terraforming-gcp/) tooling.
+To easily format this JSON for use as a string here, use `cat service_account_key.json | jq 'tostring'`.
+`jq` can be downloaded [here](https://stedolan.github.io/jq/).
 
-Minimal example:
-
+##### Minimal example
 ```json
 {
   "project": "my-foo-project",
@@ -14,9 +17,9 @@ Minimal example:
 ```
 
 #### --director-configuration
-Note regarding `ntp_servers_string`: We recommend using this NTP server to all PCF users on GCP
+**Note regarding `ntp_servers_string`**: We recommend using this NTP server to all PCF users on GCP.
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "ntp_servers_string": "169.254.169.254"
@@ -24,9 +27,9 @@ Minimal example:
 ```
 
 #### --az-configuration
-We tend to use us-central1 because it has these 3 zones to balance across for HA deployments
+We tend to use the "us-central1" region because it has 3 zones to balance across for high-availability deployments.
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "availability_zones": ["us-central1-a","us-central1-b","us-central1-c"]
@@ -36,7 +39,7 @@ Minimal example:
 #### --security-configuration
 No additional security configuration is strictly required.
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "trusted_certificates": "some-trusted-certificates",

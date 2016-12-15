@@ -198,25 +198,20 @@ func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 		return fmt.Errorf("could not fetch availability zones: %s", err)
 	}
 
-	for n, network := range initialConfig {
+	for n, network := range initialConfig.Networks {
 		for s, subnet := range network.Subnets {
 			for _, azName := range subnet.AvailabilityZones {
 				if azGuid, ok := azMap[azName]; ok {
-					initialConfig[n].Subnets[s].AvailabilityZoneGUIDs = append(initialConfig[n].Subnets[s].AvailabilityZoneGUIDs, azGuid)
+					initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs = append(initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs, azGuid)
 				}
 			}
 		}
 	}
 
-	finalConfig := BoshNetworkForm{
-		Networks: initialConfig,
-		CommonConfiguration: CommonConfiguration{
-			AuthenticityToken: form.AuthenticityToken,
-			Method:            form.RailsMethod,
-		},
-	}
+	initialConfig.AuthenticityToken = form.AuthenticityToken
+	initialConfig.Method = form.RailsMethod
 
-	formValues, err := query.Values(finalConfig)
+	formValues, err := query.Values(initialConfig)
 	if err != nil {
 		return err // cannot be tested
 	}
