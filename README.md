@@ -28,7 +28,7 @@ https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
 
 ## Docs
 
-See [here] (docs/index.md) for useful examples and documentation
+See [here] (docs/README.md) for useful examples and documentation
 
 ## Current Commands
 ```
