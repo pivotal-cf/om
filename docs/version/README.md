@@ -1,3 +1,5 @@
+&larr; [back to Commands](../README.md)
+
 # `om version`
 
 The `version` command prints the version of `om` that is installed.

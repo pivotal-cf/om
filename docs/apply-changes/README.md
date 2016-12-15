@@ -1,3 +1,5 @@
+&larr; [back to Commands](../README.md)
+
 # `om apply-changes`
 
 The `apply-changes` command will kick-off an installation on the Ops Manager VM.

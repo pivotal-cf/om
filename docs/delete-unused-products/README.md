@@ -1,3 +1,5 @@
+&larr; [back to Commands](../README.md)
+
 # `om delete-unused-products`
 
 The `delete-unused-products` command will remove any available products that are no longer in use by the Ops Manager.

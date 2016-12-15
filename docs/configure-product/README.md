@@ -1,3 +1,5 @@
+&larr; [back to Commands](../README.md)
+
 # `om configure-product`
 
 The `configure-product` command will configure your product properties, network, and resources on the Ops Manager.

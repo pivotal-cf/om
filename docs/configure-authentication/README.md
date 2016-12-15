@@ -1,3 +1,5 @@
+&larr; [back to Commands](../README.md)
+
 # `om configure-authentication`
 
 The `configure-authentication` command will allow you to setup your user account on the Ops Manager.

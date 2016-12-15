@@ -1,3 +1,5 @@
+&larr; [back to Commands](../README.md)
+
 # `om stage-product`
 
 The `stage-product` command will add or update a product to the Ops Manager installation dashboard.
