@@ -367,4 +367,65 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(ok).To(BeFalse())
 		})
 	})
+
+	Context("vSphere", func() {
+		var command *exec.Cmd
+
+		BeforeEach(func() {
+			iaasConfiguration := `{
+				"vcenter_host": "some-vcenter-host",
+				"vcenter_username": "my-vcenter-username",
+				"vcenter_password": "my-vcenter-password",
+				"datacenter": "some-datacenter-name",
+				"disk_type": "some-virtual-disk-type",
+				"ephemeral_datastores_string": "some-ephemeral-datastores",
+				"persistent_datastores_string": "some-persistent-datastores",
+				"bosh_vm_folder": "some-vm-folder",
+				"bosh_template_folder": "some-template-folder",
+				"bosh_disk_path": "some-disk-path"
+			}`
+
+			command = exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "fake-username",
+				"--password", "fake-password",
+				"--skip-ssl-validation",
+				"configure-bosh",
+				"--iaas-configuration", iaasConfiguration)
+		})
+
+		It("configures the bosh tile with the provided iaas configuration", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
+
+			Expect(Forms[0].Get("iaas_configuration[vcenter_host]")).To(Equal("some-vcenter-host"))
+			Expect(Forms[0].Get("iaas_configuration[vcenter_username]")).To(Equal("my-vcenter-username"))
+			Expect(Forms[0].Get("iaas_configuration[vcenter_password]")).To(Equal("my-vcenter-password"))
+			Expect(Forms[0].Get("iaas_configuration[datacenter]")).To(Equal("some-datacenter-name"))
+			Expect(Forms[0].Get("iaas_configuration[disk_type]")).To(Equal("some-virtual-disk-type"))
+			Expect(Forms[0].Get("iaas_configuration[ephemeral_datastores_string]")).To(Equal("some-ephemeral-datastores"))
+			Expect(Forms[0].Get("iaas_configuration[persistent_datastores_string]")).To(Equal("some-persistent-datastores"))
+			Expect(Forms[0].Get("iaas_configuration[bosh_vm_folder]")).To(Equal("some-vm-folder"))
+			Expect(Forms[0].Get("iaas_configuration[bosh_template_folder]")).To(Equal("some-template-folder"))
+			Expect(Forms[0].Get("iaas_configuration[bosh_disk_path]")).To(Equal("some-disk-path"))
+
+			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+		})
+
+		It("does not configure keys that are not part of input", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
+			Expect(ok).To(BeFalse())
+		})
+	})
 })
