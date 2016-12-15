@@ -1,5 +1,8 @@
-# `curl`
+# `om curl`
 
+The `curl` command will help you make arbitrary API calls against the Ops Manager VM.
+
+## Command Usage
 ```
 ॐ  curl
 This command issues an authenticated API request as defined in the arguments

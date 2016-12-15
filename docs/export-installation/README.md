@@ -1,5 +1,8 @@
-# `export-installation`
+# `om export-installation`
 
+The `export-installation` command will trigger an archive of the existing installation to be downloaded from the Ops Manager.
+
+## Command Usage
 ```
 ॐ  export-installation
 This command will export the current installation of the target Ops Manager.

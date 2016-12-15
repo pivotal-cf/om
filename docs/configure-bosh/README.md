@@ -1,5 +1,9 @@
-# `configure-bosh`
+# `om configure-bosh`
 
+The `configure-bosh` command will allow you to setup your BOSH tile on the OpsManager.
+The command currently supports [AWS](aws.md) and [GCP](gcp.md).
+
+## Command Usage
 ```
 ॐ  configure-bosh
 configures the bosh director that is deployed by the Ops Manager
@@ -21,5 +25,3 @@ Command Arguments:
   -n, --networks-configuration  string  complete network configuration for the bosh director
   -na, --network-assignment     string  choose existing network and availability zone to deploy bosh director into
 ```
-
-The command currently supports [AWS](aws.md) and [GCP](gcp.md).

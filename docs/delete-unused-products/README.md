@@ -1,5 +1,8 @@
-# `delete-unused-products`
+# `om delete-unused-products`
 
+The `delete-unused-products` command will remove any available products that are no longer in use by the Ops Manager.
+
+## Command Usage
 ```
 ॐ  delete-unused-products
 This command deletes unused products in the targeted Ops Manager

@@ -1,5 +1,9 @@
-# `apply-changes`
+# `om apply-changes`
 
+The `apply-changes` command will kick-off an installation on the Ops Manager VM.
+It will then track the installation progress, printing logs as they become available.
+
+## Command Usage
 ```
 ॐ  apply-changes
 This authenticated command kicks off an install of any staged changes on the Ops Manager.

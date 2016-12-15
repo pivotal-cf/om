@@ -1,5 +1,10 @@
-# `import-installation`
+# `om import-installation`
 
+The `import-installation` command will upload an existing installation archive to the Ops Manager.
+This is helpful when upgrading the Ops Manager itself.
+You can download an archive from the Ops Manager by using the [`export-installation` command](../export-installation/README.md).
+
+## Command Usage
 ```
 ॐ  import-installation
 This unauthenticated command attempts to import an installation to the Ops Manager targeted.

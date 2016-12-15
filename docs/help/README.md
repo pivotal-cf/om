@@ -1,5 +1,8 @@
-# `help`
+# `om help`
 
+The `help` command will print out helpful command usage information like what is seen below.
+
+## Command Usage
 ```
 ॐ  help
 This command prints helpful usage information.

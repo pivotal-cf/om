@@ -1,5 +1,8 @@
-# `configure-product`
+# `om configure-product`
 
+The `configure-product` command will configure your product properties, network, and resources on the Ops Manager.
+
+## Command Usage
 ```
 ॐ  configure-product
 This authenticated command configures a staged product

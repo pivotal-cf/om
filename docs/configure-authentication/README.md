@@ -1,5 +1,9 @@
-# `configure-authentication`
+# `om configure-authentication`
 
+The `configure-authentication` command will allow you to setup your user account on the Ops Manager.
+Currently, the command only supports password authentication.
+
+## Command Usage
 ```
 ॐ  configure-authentication
 This unauthenticated command helps setup the authentication mechanism for your Ops Manager.

@@ -1,5 +1,9 @@
-# `upload-stemcell`
+# `om upload-stemcell`
 
+The `upload-stemcell` command will upload a stemcell to the Ops Manager.
+This stemcell will then be available for use by any product specifying that stemcell version.
+
+## Command Usage
 ```
 ॐ  upload-stemcell
 This command will upload a stemcell to the target Ops Manager. If your stemcell already exists that upload will be skipped
