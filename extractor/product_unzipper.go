@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"strings"
-
 	yaml "gopkg.in/yaml.v2"
+	"regexp"
 )
 
 type ProductUnzipper struct{}
@@ -21,7 +20,9 @@ func (u ProductUnzipper) ExtractMetadata(productPath string) (string, string, er
 	defer zipReader.Close()
 
 	for _, file := range zipReader.File {
-		if strings.Contains(file.Name, ".yml") {
+		matched, _ := regexp.MatchString("metadata/.*\\.yml", file.Name)
+
+		if matched {
 			metadataFile, err := file.Open()
 			if err != nil {
 				return "", "", err
