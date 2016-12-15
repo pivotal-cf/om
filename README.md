@@ -4,7 +4,7 @@ _is a mantra, or vibration, that is traditionally chanted_
 
 ![enhancing your calm](http://i.giphy.com/3o7qDQ5iw1oXyDeJAk.gif)
 
-## What it is
+## What is it?
 
 Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+ . 
 Currently being developed by RelEng, backlog link is [here](https://www.pivotaltracker.com/epic/show/2982497).
@@ -20,13 +20,7 @@ Currently being developed by RelEng, backlog link is [here](https://www.pivotalt
 - [small sharp tool](https://brandur.org/small-sharp-tools)
 - idempotency for all commands
 
-## Original design spec
-
-please note, this can and will change from the final readme below
-
-https://gist.github.com/ryanmoran/6cc4cfd33d7830753819139acf0e7c8d
-
-## Docs
+## Documentation
 
 See [here] (docs/README.md) for useful examples and documentation
 
