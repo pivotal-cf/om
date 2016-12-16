@@ -12,6 +12,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const (
+	validYAML = `
+---
+product_version: 1.8.14
+name: some-product`
+)
+
 var _ = Describe("Product Unzipper", func() {
 	var (
 		unzipper    extractor.ProductUnzipper
@@ -35,10 +42,7 @@ var _ = Describe("Product Unzipper", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = io.WriteString(productWriter, `
----
-product_version: 1.8.14
-name: some-product`)
+		_, err = io.WriteString(productWriter, validYAML)
 		Expect(err).NotTo(HaveOccurred())
 
 		err = zipper.Close()
@@ -93,6 +97,7 @@ name: some-product`)
 
 			Context("when the metadata file contains bad YAML", func() {
 				var badProductFile *os.File
+
 				BeforeEach(func() {
 					var err error
 					badProductFile, err = ioutil.TempFile("", "")
@@ -127,10 +132,12 @@ name: some-product`)
 
 			Context("when the metadata file does not contain product name or version", func() {
 				var badProductFile *os.File
+
 				BeforeEach(func() {
 					var err error
 					badProductFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
+
 					stat, err := badProductFile.Stat()
 					Expect(err).NotTo(HaveOccurred())
 
@@ -156,6 +163,42 @@ name: some-product`)
 				It("returns an error", func() {
 					_, _, err := unzipper.ExtractMetadata(badProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("could not extract product metadata: could not find product details in metadata file")))
+				})
+			})
+
+			Context("when the metadata file is in the wrong place", func() {
+				var wrongProductFile *os.File
+
+				BeforeEach(func() {
+					var err error
+					wrongProductFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					stat, err := wrongProductFile.Stat()
+					Expect(err).NotTo(HaveOccurred())
+
+					zipper := zip.NewWriter(wrongProductFile)
+					productWriter, err := zipper.CreateHeader(&zip.FileHeader{
+						Name:               "some-product.yml",
+						UncompressedSize64: uint64(stat.Size()),
+						ModifiedTime:       uint16(stat.ModTime().Unix()),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = io.WriteString(productWriter, validYAML)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = zipper.Close()
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					os.Remove(wrongProductFile.Name())
+				})
+
+				It("returns an error", func() {
+					_, _, err := unzipper.ExtractMetadata(wrongProductFile.Name())
+					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})
 		})
