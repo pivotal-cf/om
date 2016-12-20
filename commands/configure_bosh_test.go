@@ -181,6 +181,140 @@ var _ = Describe("ConfigureBosh", func() {
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
 			}))
 		})
+		It("configures the bosh with no availability zones", func() {
+			command := commands.NewConfigureBosh(service, logger)
+
+			service.GetFormReturns(api.Form{
+				Action:            "form-action",
+				AuthenticityToken: "some-auth-token",
+				RailsMethod:       "the-rails",
+			}, nil)
+
+			service.NetworksReturns(map[string]string{
+				"some-network-name":       "some-network-guid",
+				"some-other-network-name": "some-other-network-guid",
+			}, nil)
+
+			err := command.Execute([]string{
+				"--iaas-configuration",
+				`{
+						"project": "some-project",
+						"default_deployment_tag": "my-vms",
+						"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+			  }`,
+				"--director-configuration",
+				`{
+					  "ntp_servers_string": "some-ntp-servers-string",
+						"metrics_ip": "some-metrics-ip",
+						"hm_pager_duty_options": {
+							"enabled": true
+						}
+					}
+				}`,
+				"--security-configuration",
+				`{
+						"trusted_certificates": "some-trusted-certificates",
+						"vm_password_type": "some-vm-password-type"
+				}`,
+				"--networks-configuration",
+				`{
+					"icmp_checks_enabled": true,
+					"networks": [{
+						"name": "some-network",
+						"service_network": true,
+						"iaas_identifier": "some-iaas-identifier",
+						"subnets": [
+							{
+								"cidr": "10.0.1.0/24",
+								"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
+								"dns": "8.8.8.8",
+								"gateway": "10.0.1.1",
+								"availability_zones": []
+							}
+						]
+					}]
+				}`,
+				"--network-assignment",
+				`{"network": "some-other-network-name"}`,
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+
+			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring iaas specific options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(4)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+
+			format, content = logger.PrintfArgsForCall(5)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
+
+			Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
+
+			Expect(service.PostFormArgsForCall(0)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&iaas_configuration%5Bauth_json%5D=%7B%22some-auth-field%22%3A+%22some-service-key%22%2C%22some-private_key%22%3A+%22some-key%22%7D&iaas_configuration%5Bdefault_deployment_tag%5D=my-vms&iaas_configuration%5Bproject%5D=some-project",
+			}))
+
+			Expect(service.GetFormArgsForCall(1)).To(Equal("/infrastructure/director_configuration/edit"))
+
+			Expect(service.PostFormArgsForCall(1)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
+			}))
+
+			Expect(service.GetFormArgsForCall(2)).To(Equal("/infrastructure/networks/edit"))
+
+			Expect(service.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=null-az&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
+			}))
+
+			Expect(service.GetFormArgsForCall(3)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
+
+			Expect(service.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=null-az",
+			}))
+
+			Expect(service.GetFormArgsForCall(4)).To(Equal("/infrastructure/security_tokens/edit"))
+
+			Expect(service.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
+			}))
+
+			Expect(service.AvailabilityZonesCallCount()).To(Equal(0))
+		})
 
 		Context("error cases", func() {
 			Context("when an invalid flag is passed", func() {
@@ -229,7 +363,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 					command := commands.NewConfigureBosh(service, logger)
 
-					err := command.Execute([]string{"--networks-configuration", `{}`})
+					err := command.Execute([]string{"--az-configuration", `{}`, "--networks-configuration", `{}`})
 					Expect(err).To(MatchError("could not fetch availability zones: FAIL"))
 				})
 			})

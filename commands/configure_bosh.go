@@ -118,11 +118,15 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 		config.NetworkGUID = networks[config.UserProvidedNetworkName]
 
-		availabilityZones, err := c.service.AvailabilityZones()
+		availabilityZones, err := c.AZMap()
 		if err != nil {
 			return err
 		}
-		config.AZGUID = availabilityZones[config.UserProvidedAZName]
+		if azGUID, ok := availabilityZones[config.UserProvidedAZName]; ok {
+			config.AZGUID = azGUID
+		} else {
+			config.AZGUID = "null-az"
+		}
 
 		err = c.postForm(networkAssignmentPath, config)
 		if err != nil {
@@ -181,6 +185,13 @@ func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) er
 	return nil
 }
 
+func (c ConfigureBosh) AZMap() (map[string]string, error) {
+	if c.Options.AvailabilityZonesConfiguration != "" {
+		return c.service.AvailabilityZones()
+	}
+	return map[string]string{}, nil
+}
+
 func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 	form, err := c.service.GetForm(path)
 	if err != nil {
@@ -193,17 +204,21 @@ func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 		return fmt.Errorf("could not decode json: %s", err)
 	}
 
-	azMap, err := c.service.AvailabilityZones()
+	azMap, err := c.AZMap()
 	if err != nil {
 		return fmt.Errorf("could not fetch availability zones: %s", err)
 	}
 
 	for n, network := range initialConfig.Networks {
 		for s, subnet := range network.Subnets {
-			for _, azName := range subnet.AvailabilityZones {
-				if azGuid, ok := azMap[azName]; ok {
-					initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs = append(initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs, azGuid)
+			if len(subnet.AvailabilityZones) > 0 {
+				for _, azName := range subnet.AvailabilityZones {
+					if azGuid, ok := azMap[azName]; ok {
+						initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs = append(initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs, azGuid)
+					}
 				}
+			} else {
+				initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs = append(initialConfig.Networks[n].Subnets[s].AvailabilityZoneGUIDs, "null-az")
 			}
 		}
 	}
