@@ -1,9 +1,13 @@
 &larr; [back to Commands](../README.md)
 
 # `om configure-bosh`
-
 The `configure-bosh` command will allow you to setup your BOSH tile on the OpsManager.
-The command currently supports [AWS](aws.md) and [GCP](gcp.md).
+
+## Supported Infrastructures
+* [AWS](aws.md)
+* [GCP](gcp.md)
+* [Azure](azure.md)
+* [vSphere](vsphere.md)
 
 ## Command Usage
 ```

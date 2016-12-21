@@ -31,6 +31,17 @@ This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "
 }
 ```
 
+#### --security-configuration
+No additional security configuration is strictly required.
+
+##### Minimal example
+```json
+{
+  "trusted_certificates": "some-trusted-certificates",
+  "vm_password_type": "generate"
+}
+```
+
 #### --az-configuration
 
 ##### Minimal example
@@ -40,13 +51,18 @@ This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "
 }
 ```
 
-#### --security-configuration
-No additional security configuration is strictly required.
+#### --networks-configuration
 
 ##### Minimal example
 ```json
 {
-  "trusted_certificates": "some-trusted-certificates",
-  "vm_password_type": "generate"
+}
+```
+
+#### --network-assignment
+
+##### Minimal example
+```json
+{
 }
 ```
