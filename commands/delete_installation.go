@@ -39,6 +39,11 @@ func (ac DeleteInstallation) Execute(args []string) error {
 		return fmt.Errorf("failed to delete installation: %s", err)
 	}
 
+	if installation == (api.InstallationsServiceOutput{}) {
+		ac.logger.Printf("no installation to delete")
+		return nil
+	}
+
 	for {
 		current, err := ac.installationsService.Status(installation.ID)
 		ok, err := checkErr(err)

@@ -176,6 +176,10 @@ func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) 
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusGone {
+		return InstallationsServiceOutput{}, nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)
 		if err != nil {

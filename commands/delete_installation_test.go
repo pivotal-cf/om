@@ -120,6 +120,23 @@ var _ = Describe("DeleteInstallation", func() {
 			Expect(err).To(MatchError("deleting the installation was unsuccessful"))
 		})
 
+		It("handles the case when there is no installation to delete", func() {
+			deleteService.DeleteStub = func() (api.InstallationsServiceOutput, error) {
+				output := api.InstallationsServiceOutput{}
+				return output, nil
+			}
+
+			command := commands.NewDeleteInstallation(deleteService, installationService, writer, logger, 1)
+
+			err := command.Execute([]string{})
+			Expect(err).NotTo(HaveOccurred())
+
+			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to delete the installation on the targeted Ops Manager"))
+			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("no installation to delete"))
+		})
+
 		Context("when there are network errors during status check", func() {
 			It("ignores the temporary network error", func() {
 				deleteService.DeleteStub = func() (api.InstallationsServiceOutput, error) {
