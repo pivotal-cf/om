@@ -91,6 +91,7 @@ func main() {
 	requestService := api.NewRequestService(authedClient)
 	jobsService := api.NewJobsService(authedClient)
 	boshService := api.NewBoshFormService(authedCookieClient)
+	dashboardService := api.NewDashboardService(authedCookieClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -104,6 +105,7 @@ func main() {
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
 	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, stdout)
+	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, extractor, availableProductsService, stdout)
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(availableProductsService, stdout)
