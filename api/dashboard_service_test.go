@@ -116,7 +116,7 @@ var _ = Describe("DashboardService", func() {
 
 			req := client.DoArgsForCall(0)
 			Expect(req.Method).To(Equal("POST"))
-			Expect(req.URL.Path).To(Equal("/install"))
+			Expect(req.URL.Path).To(Equal("/installation"))
 			Expect(req.Header.Get("Content-Type")).To(Equal("application/x-www-form-urlencoded"))
 
 			bodyBytes, err := ioutil.ReadAll(req.Body)

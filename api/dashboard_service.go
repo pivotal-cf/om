@@ -69,7 +69,7 @@ func (bs DashboardService) GetInstallForm() (Form, error) {
 }
 
 func (bs DashboardService) PostInstallForm(input PostFormInput) error {
-	req, err := http.NewRequest("POST", "/install", strings.NewReader(input.EncodedPayload))
+	req, err := http.NewRequest("POST", "/installation", strings.NewReader(input.EncodedPayload))
 	if err != nil {
 		return err
 	}
