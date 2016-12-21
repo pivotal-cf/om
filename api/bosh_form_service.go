@@ -19,7 +19,6 @@ type Form struct {
 	Action            string
 	AuthenticityToken string
 	RailsMethod       string
-	Commit            string
 }
 
 type PostFormInput struct {
