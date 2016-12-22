@@ -129,6 +129,16 @@ var _ = Describe("Curl", func() {
 				})
 			})
 
+			Context("when the request path is not provided", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{
+						"--request", "GET",
+						"--data", `{"some-key": "some-value"}`,
+					})
+					Expect(err).To(MatchError("could not parse curl flags: -path is a required parameter. Please run `om curl --help` for more info."))
+				})
+			})
+
 			Context("when the request service returns an error", func() {
 				It("returns an error", func() {
 					requestService.InvokeReturns(api.RequestServiceInvokeOutput{}, errors.New("some request error"))

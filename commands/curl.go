@@ -2,12 +2,14 @@ package commands
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"encoding/json"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
 )
@@ -36,6 +38,10 @@ func (c Curl) Execute(args []string) error {
 	_, err := flags.Parse(&c.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse curl flags: %s", err)
+	}
+
+	if c.Options.Path == "" {
+		return errors.New("could not parse curl flags: -path is a required parameter. Please run `om curl --help` for more info.")
 	}
 
 	input := api.RequestServiceInvokeInput{
