@@ -83,7 +83,7 @@ var _ = Describe("RevertStagedChanges", func() {
 
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "reverts staged changes on the installation dashboard page in the target Ops Manager",
-				ShortDescription: "reverts staged changes on the Ops Manager",
+				ShortDescription: "reverts staged changes on the Ops Manager targeted",
 			}))
 		})
 	})

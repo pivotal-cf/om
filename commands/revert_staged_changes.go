@@ -51,6 +51,6 @@ func (c RevertStagedChanges) Execute(args []string) error {
 func (c RevertStagedChanges) Usage() Usage {
 	return Usage{
 		Description:      "reverts staged changes on the installation dashboard page in the target Ops Manager",
-		ShortDescription: "reverts staged changes on the Ops Manager",
+		ShortDescription: "reverts staged changes on the Ops Manager targeted",
 	}
 }
