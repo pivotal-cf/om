@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 
@@ -62,6 +63,10 @@ func main() {
 
 	if command == "" {
 		command = "help"
+	}
+
+	if global.Target == "" && command != "help" && command != "version" {
+		stdout.Fatal(errors.New("error: target flag is required. Run `om help` for more info."))
 	}
 
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
