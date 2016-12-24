@@ -24,6 +24,10 @@ type ProductInfo struct {
 
 type UploadProductOutput struct{}
 
+type AvailableProductsOutput struct {
+	ProductsList []ProductInfo
+}
+
 type AvailableProductsService struct {
 	client     httpClient
 	progress   progress
@@ -121,38 +125,47 @@ func (ap AvailableProductsService) Trash() error {
 	return nil
 }
 
-func (ap AvailableProductsService) CheckProductAvailability(productName string, productVersion string) (bool, error) {
+func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
 	avReq, err := http.NewRequest("GET", "/api/v0/available_products", nil)
 	if err != nil {
-		return false, err
+		return AvailableProductsOutput{}, err
 	}
 
 	avResp, err := ap.client.Do(avReq)
 	if err != nil {
-		return false, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
+		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 	defer avResp.Body.Close()
 
 	if avResp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(avResp, true)
 		if err != nil {
-			return false, fmt.Errorf("request failed: unexpected response: %s", err)
+			return AvailableProductsOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
 		}
-		return false, fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
+		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
 	}
 
 	avRespBody, err := ioutil.ReadAll(avResp.Body)
 	if err != nil {
-		return false, err
+		return AvailableProductsOutput{}, err
 	}
 
 	var availableProducts []ProductInfo
 	err = json.Unmarshal(avRespBody, &availableProducts)
 	if err != nil {
-		return false, fmt.Errorf("could not unmarshal available_products response: %s", err)
+		return AvailableProductsOutput{}, fmt.Errorf("could not unmarshal available_products response: %s", err)
 	}
 
-	for _, product := range availableProducts {
+	return AvailableProductsOutput{ProductsList: availableProducts}, nil
+}
+
+func (ap AvailableProductsService) CheckProductAvailability(productName string, productVersion string) (bool, error) {
+	availableProducts, err := ap.List()
+	if err != nil {
+		return false, err
+	}
+
+	for _, product := range availableProducts.ProductsList {
 		if product.Name == productName && product.Version == productVersion {
 			return true, nil
 		}

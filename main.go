@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gosuri/uilive"
+	"github.com/olekukonko/tablewriter"
 
 	"time"
 
@@ -93,6 +94,7 @@ func main() {
 	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil, nil)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
+	tableWriter := tablewriter.NewWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
 	jobsService := api.NewJobsService(authedClient)
 	boshService := api.NewBoshFormService(authedCookieClient)
@@ -121,6 +123,7 @@ func main() {
 	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
+	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, tableWriter, stdout)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
