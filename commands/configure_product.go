@@ -53,6 +53,8 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf("error: product-name is missing. Please see usage for more information.")
 	}
 
+	cp.logger.Printf("configuring product...")
+
 	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "{}" {
 		cp.logger.Printf("Provided properties are empty, nothing to do here")
 		return nil

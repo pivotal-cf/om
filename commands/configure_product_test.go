@@ -74,12 +74,15 @@ var _ = Describe("ConfigureProduct", func() {
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
 
 			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
 
 			format, content = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
+
+			format, content = logger.PrintfArgsForCall(3)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
 		})
 
@@ -106,12 +109,15 @@ var _ = Describe("ConfigureProduct", func() {
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("setting up network"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
 
 			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting up network"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("setting up network"))
 
 			format, content = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting up network"))
+
+			format, content = logger.PrintfArgsForCall(3)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
 		})
 
@@ -189,15 +195,18 @@ var _ = Describe("ConfigureProduct", func() {
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configuration for the following jobs:"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
 
 			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configuration for the following jobs:"))
 
 			format, content = logger.PrintfArgsForCall(2)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
 
 			format, content = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
+
+			format, content = logger.PrintfArgsForCall(4)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
 		})
 
@@ -235,7 +244,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 				Expect(productsService.StagedProductsCallCount()).To(Equal(0))
 
-				format, content := logger.PrintfArgsForCall(0)
+				format, content := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("Provided properties are empty, nothing to do here"))
 			})
 		})
