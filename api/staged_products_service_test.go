@@ -34,6 +34,13 @@ var _ = Describe("ProductsService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 					}
+				case "/api/v0/staged/products":
+					if req.Method == "GET" {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+						}
+					}
 				}
 				return resp, nil
 			}
@@ -48,14 +55,18 @@ var _ = Describe("ProductsService", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(client.DoCallCount()).To(Equal(2))
+			Expect(client.DoCallCount()).To(Equal(3))
 
 			By("checking for deployed products")
 			depReq := client.DoArgsForCall(0)
 			Expect(depReq.URL.Path).To(Equal("/api/v0/deployed/products"))
 
+			By("checking for already staged products")
+			checkStReq := client.DoArgsForCall(1)
+			Expect(checkStReq.URL.Path).To(Equal("/api/v0/staged/products"))
+
 			By("posting to the staged products endpoint with the product name and version")
-			stReq := client.DoArgsForCall(1)
+			stReq := client.DoArgsForCall(2)
 			Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products"))
 			Expect(stReq.Method).To(Equal("POST"))
 			stReqBody, err := ioutil.ReadAll(stReq.Body)
@@ -92,6 +103,13 @@ var _ = Describe("ProductsService", func() {
 									"installation_name":"some-other-deployed-guid"
 								}]`)),
 						}
+					case "/api/v0/staged/products":
+						if req.Method == "GET" {
+							resp = &http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+							}
+						}
 					}
 
 					return resp, nil
@@ -107,15 +125,80 @@ var _ = Describe("ProductsService", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(client.DoCallCount()).To(Equal(2))
+				Expect(client.DoCallCount()).To(Equal(3))
 
 				By("checking for deployed products")
 				depReq := client.DoArgsForCall(0)
 				Expect(depReq.URL.Path).To(Equal("/api/v0/deployed/products"))
 
 				By("posting to the staged products endpoint with the product name and version")
-				stReq := client.DoArgsForCall(1)
+				stReq := client.DoArgsForCall(2)
 				Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products/some-deployed-guid"))
+				Expect(stReq.Method).To(Equal("PUT"))
+				stReqBody, err := ioutil.ReadAll(stReq.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(stReqBody).To(MatchJSON(`{
+					"to_version": "1.1.0"
+				}`))
+			})
+
+		})
+
+		Context("when the same type of product is already staged", func() {
+			BeforeEach(func() {
+				client = &fakes.HttpClient{}
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
+					}
+					switch req.URL.Path {
+					case "/api/v0/staged/products":
+						if req.Method == "GET" {
+							resp = &http.Response{
+								StatusCode: http.StatusOK,
+								Body: ioutil.NopCloser(bytes.NewBufferString(`[
+								{
+									"type":"some-product",
+									"guid": "some-staged-guid"
+								},
+								{
+									"type":"some-other-product",
+									"guid": "some-other-staged-guid"
+								}]`)),
+							}
+						}
+					case "/api/v0/deployed/products":
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+						}
+					}
+
+					return resp, nil
+				}
+			})
+
+			It("makes a request to stage the product to the Ops Manager", func() {
+				service := api.NewStagedProductsService(client)
+
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "some-product",
+					ProductVersion: "1.1.0",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(3))
+
+				By("checking for already staged products")
+				depReq := client.DoArgsForCall(1)
+				Expect(depReq.URL.Path).To(Equal("/api/v0/staged/products"))
+
+				By("posting to the staged products endpoint with the product name and version")
+				stReq := client.DoArgsForCall(2)
+				Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products/some-staged-guid"))
 				Expect(stReq.Method).To(Equal("PUT"))
 				stReqBody, err := ioutil.ReadAll(stReq.Body)
 				Expect(err).NotTo(HaveOccurred())
@@ -136,7 +219,7 @@ var _ = Describe("ProductsService", func() {
 						var err error
 						resp = &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 						}
 						switch req.URL.Path {
 						case "/api/v0/deployed/products":
@@ -166,7 +249,7 @@ var _ = Describe("ProductsService", func() {
 						var err error
 						resp = &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 						}
 						switch req.URL.Path {
 						case "/api/v0/deployed/products":
@@ -198,7 +281,7 @@ var _ = Describe("ProductsService", func() {
 						var err error
 						resp = &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 						}
 						switch req.URL.Path {
 						case "/api/v0/deployed/products":
@@ -222,19 +305,16 @@ var _ = Describe("ProductsService", func() {
 				})
 			})
 
-			Context("when the staged products endpoint returns an error", func() {
+			Context("when a GET to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
 					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						resp = &http.Response{
 							StatusCode: http.StatusOK,
-							Body: ioutil.NopCloser(bytes.NewBufferString(`[{
-								"name": "foo",
-								"product_version": "bar"
-							}]`)),
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 						}
-						if req.URL.Path == "/api/v0/staged/products" {
+						if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
 							return nil, fmt.Errorf("some error")
 						}
 						return resp, nil
@@ -252,19 +332,47 @@ var _ = Describe("ProductsService", func() {
 				})
 			})
 
-			Context("when the staged products endpoint returns a non-200 status code", func() {
+			Context("when a POST/PUT to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
 					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body: ioutil.NopCloser(bytes.NewBufferString(`[{
-								"name": "foo",
-								"product_version": "bar"
-							}]`)),
+						if req.Method == "GET" {
+							resp = &http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+							}
 						}
-						if req.URL.Path == "/api/v0/staged/products" {
+						if req.Method == "POST" && req.URL.Path == "/api/v0/staged/products" {
+							return nil, fmt.Errorf("some error")
+						}
+						return resp, nil
+					}
+				})
+
+				It("returns an error", func() {
+					service := api.NewStagedProductsService(client)
+
+					err := service.Stage(api.StageProductInput{
+						ProductName:    "foo",
+						ProductVersion: "bar",
+					})
+					Expect(err).To(MatchError("could not make POST api request to staged products endpoint: some error"))
+				})
+			})
+
+			Context("when a POST/PUT to the staged products endpoint returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client = &fakes.HttpClient{}
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						var resp *http.Response
+						if req.Method == "GET" {
+							resp = &http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+							}
+						}
+						if req.URL.Path == "/api/v0/staged/products" && req.Method == "POST" {
 							return &http.Response{
 								StatusCode: http.StatusInternalServerError,
 								Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
@@ -280,7 +388,7 @@ var _ = Describe("ProductsService", func() {
 						ProductName:    "foo",
 						ProductVersion: "bar",
 					})
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products endpoint: unexpected response. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.")))
+					Expect(err).To(MatchError(ContainSubstring("could not make POST api request to staged products endpoint: unexpected response.")))
 				})
 			})
 		})
