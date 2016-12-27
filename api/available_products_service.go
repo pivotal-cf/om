@@ -66,9 +66,9 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 			time.Sleep(1 * time.Second)
 		}
 
-		var elapsedTime int
 		ap.liveWriter.Start()
 		liveLog := log.New(ap.liveWriter, "", 0)
+		startTime := time.Now().Round(time.Second)
 
 		for {
 			select {
@@ -77,8 +77,8 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 				return
 			default:
 				time.Sleep(1 * time.Second)
-				elapsedTime++
-				liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+				timeNow := time.Now().Round(time.Second)
+				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", timeNow.Sub(startTime).String())
 			}
 		}
 	}()

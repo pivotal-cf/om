@@ -50,21 +50,19 @@ func (ia InstallationAssetService) Export(outputFile string) error {
 
 	respChan := make(chan error)
 	go func() {
-		var elapsedTime int
-		var liveLog logger
+		ia.liveWriter.Start()
+		liveLog := log.New(ia.liveWriter, "", 0)
+		startTime := time.Now().Round(time.Second)
+
 		for {
 			select {
 			case _ = <-respChan:
 				ia.liveWriter.Stop()
 				return
 			default:
-				if elapsedTime == 0 {
-					ia.liveWriter.Start()
-					liveLog = log.New(ia.liveWriter, "", 0)
-				}
 				time.Sleep(1 * time.Second)
-				elapsedTime++
-				liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+				timeNow := time.Now().Round(time.Second)
+				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", timeNow.Sub(startTime).String())
 			}
 		}
 	}()
@@ -125,9 +123,9 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 			}
 		}
 
-		var elapsedTime int
 		ia.liveWriter.Start()
 		liveLog := log.New(ia.liveWriter, "", 0)
+		startTime := time.Now().Round(time.Second)
 
 		for {
 			select {
@@ -136,8 +134,8 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 				return
 			default:
 				time.Sleep(1 * time.Second)
-				elapsedTime++
-				liveLog.Printf("%ds elapsed, waiting for response from Ops Manager...\r", elapsedTime)
+				timeNow := time.Now().Round(time.Second)
+				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", timeNow.Sub(startTime).String())
 			}
 		}
 	}()
