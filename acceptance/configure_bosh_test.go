@@ -387,13 +387,20 @@ var _ = Describe("configure-bosh command", func() {
 				"bosh_disk_path": "some-disk-path"
 			}`
 
+			availabilityZonesConfiguration := `{
+			  "vsphere_availability_zones": ["some-az-1", "some-other-az-2"],
+				"vsphere_clusters": ["some-cluster-1", "some-other-cluster-2"],
+				"vsphere_resource_pools": ["some-resource-pool-1", "some-other-resource-pool-2"]
+			}`
+
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "fake-username",
 				"--password", "fake-password",
 				"--skip-ssl-validation",
 				"configure-bosh",
-				"--iaas-configuration", iaasConfiguration)
+				"--iaas-configuration", iaasConfiguration,
+				"--az-configuration", availabilityZonesConfiguration)
 		})
 
 		It("configures the bosh tile with the provided iaas configuration", func() {
@@ -418,6 +425,12 @@ var _ = Describe("configure-bosh command", func() {
 
 			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+
+			Expect(Forms[1]["availability_zones[availability_zones][][name]"]).To(Equal([]string{"some-az-1", "some-other-az-2"}))
+			Expect(Forms[1]["availability_zones[availability_zones][][cluster]"]).To(Equal([]string{"some-cluster-1", "some-other-cluster-2"}))
+			Expect(Forms[1]["availability_zones[availability_zones][][resource_pool]"]).To(Equal([]string{"some-resource-pool-1", "some-other-resource-pool-2"}))
+			Expect(Forms[1].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[1].Get("_method")).To(Equal("fakemethod"))
 		})
 
 		It("does not configure keys that are not part of input", func() {
