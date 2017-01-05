@@ -28,6 +28,25 @@ const AZDocument = `
 	</body>
 </html>`
 
+const VsphereAZDocument = `
+<html>
+	<body>
+		<form action="/some/action" method="some-method">
+			<input name="_method" value="some-rails" />
+			<input name="authenticity_token" value="some-authenticity" />
+			<input name="availability_zones[availability_zones][][name]" value="some-az-name-1" \>
+			<input name="availability_zones[availability_zones][][cluster]" value="some-cluster-name-1" \>
+			<input name="availability_zones[availability_zones][][resource_pool]" value="some-resource-pool-name-1" \>
+			<input name="availability_zones[availability_zones][][name]" value="some-az-name-2" \>
+			<input name="availability_zones[availability_zones][][cluster]" value="some-cluster-name-2" \>
+			<input name="availability_zones[availability_zones][][resource_pool]" value="some-resource-pool-name-2" \>
+			<input name="availability_zones[availability_zones][][guid]" value="also-do-not-want" \>
+			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
+			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
+		</form>
+	</body>
+</html>`
+
 const NetDocument = `
 <html>
 	<body>
@@ -207,6 +226,24 @@ var _ = Describe("BoshFormService", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(AZDocument)),
+			}, nil)
+
+			netMap, err := service.AvailabilityZones()
+			Expect(err).NotTo(HaveOccurred())
+
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/infrastructure/availability_zones/edit"))
+
+			Expect(netMap).To(HaveKeyWithValue("some-az-name-1", "some-az-guid-1"))
+			Expect(netMap).To(HaveKeyWithValue("some-az-name-2", "some-az-guid-2"))
+		})
+
+		It("returns a map of vsphere availability zone information", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(VsphereAZDocument)),
 			}, nil)
 
 			netMap, err := service.AvailabilityZones()
