@@ -56,13 +56,18 @@ func NewStagedProductsService(client httpClient) StagedProductsService {
 }
 
 func (p StagedProductsService) Stage(input StageProductInput) error {
-	deployedGuid, err := p.checkDeployedProducts(input.ProductName)
+	deployedGUID, err := p.checkDeployedProducts(input.ProductName)
+	if err != nil {
+		return err
+	}
+
+	stagedGUID, err := p.checkStagedProducts(input.ProductName)
 	if err != nil {
 		return err
 	}
 
 	var stReq *http.Request
-	if deployedGuid == "" {
+	if deployedGUID == "" && stagedGUID == "" {
 		stagedProductBody, err := json.Marshal(input)
 		if err != nil {
 			return err
@@ -72,7 +77,7 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 		if err != nil {
 			return err
 		}
-	} else {
+	} else if deployedGUID != "" {
 		upgradeReq := UpgradeRequest{
 			ToVersion: input.ProductVersion,
 		}
@@ -82,7 +87,21 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 			return err
 		}
 
-		stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", deployedGuid), bytes.NewBuffer(upgradeReqBody))
+		stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", deployedGUID), bytes.NewBuffer(upgradeReqBody))
+		if err != nil {
+			return err
+		}
+	} else if stagedGUID != "" {
+		upgradeReq := UpgradeRequest{
+			ToVersion: input.ProductVersion,
+		}
+
+		upgradeReqBody, err := json.Marshal(upgradeReq)
+		if err != nil {
+			return err
+		}
+
+		stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), bytes.NewBuffer(upgradeReqBody))
 		if err != nil {
 			return err
 		}
@@ -91,7 +110,7 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 	stReq.Header.Set("Content-Type", "application/json")
 	stResp, err := p.client.Do(stReq)
 	if err != nil {
-		return fmt.Errorf("could not make api request to staged products endpoint: %s", err)
+		return fmt.Errorf("could not make %s api request to staged products endpoint: %s", stReq.Method, err)
 	}
 	defer stResp.Body.Close()
 
@@ -100,7 +119,7 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 		if err != nil {
 			return fmt.Errorf("request failed: unexpected response: %s", err)
 		}
-		return fmt.Errorf("could not make api request to staged products endpoint: unexpected response. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.\n%s", out)
+		return fmt.Errorf("could not make %s api request to staged products endpoint: unexpected response. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.\n%s", stReq.Method, out)
 	}
 
 	return nil
@@ -240,6 +259,21 @@ func (p StagedProductsService) checkDeployedProducts(productName string) (string
 
 	for _, product := range deployedProducts {
 		if product.Type == productName {
+			return product.GUID, nil
+		}
+	}
+
+	return "", nil
+}
+
+func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {
+	stagedProductsOutput, err := p.StagedProducts()
+	if err != nil {
+		return "", err
+	}
+
+	for _, product := range stagedProductsOutput.Products {
+		if productName == product.Type {
 			return product.GUID, nil
 		}
 	}

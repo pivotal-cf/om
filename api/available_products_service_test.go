@@ -127,6 +127,70 @@ var _ = Describe("AvailableProductsService", func() {
 		})
 	})
 
+	Describe("List", func() {
+		BeforeEach(func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				if req.URL.Path == "/api/v0/available_products" {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(strings.NewReader(`[{
+						"name": "available-product",
+						"product_version": "available-version"
+					}]`)),
+					}, nil
+				}
+				return nil, nil
+			}
+		})
+
+		It("lists available products", func() {
+			output, err := service.List()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(output.ProductsList).To(ConsistOf(
+				[]api.ProductInfo{
+					api.ProductInfo{
+						Name:    "available-product",
+						Version: "available-version",
+					},
+				}))
+		})
+
+		Describe("errors", func() {
+			Context("the client can't connect to the server", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{}, errors.New("some error"))
+					_, err := service.List()
+					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
+				})
+			})
+
+			Context("when the server won't fetch available products", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+					}, nil)
+
+					_, err := service.List()
+					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
+				})
+			})
+
+			Context("when the response is not JSON", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
+					}, nil)
+
+					_, err := service.List()
+					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
+				})
+			})
+		})
+	})
+
 	Describe("Trash", func() {
 		It("deletes unused products", func() {
 			client.DoReturns(&http.Response{
@@ -204,32 +268,8 @@ var _ = Describe("AvailableProductsService", func() {
 			Context("the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.CheckProductAvailability("unavailable-product", "available-version")
+					_, err := service.CheckProductAvailability("", "")
 					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
-				})
-			})
-
-			Context("when the server won't fetch available products", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
-
-					_, err := service.CheckProductAvailability("unavailable-product", "available-version")
-					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
-				})
-			})
-
-			Context("when the response is not JSON", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
-					}, nil)
-
-					_, err := service.CheckProductAvailability("unavailable-product", "available-version")
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 				})
 			})
 		})

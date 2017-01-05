@@ -24,3 +24,22 @@ Command Arguments:
   -pn, --product-network    string  network properties in JSON format (default: )
   -pr, --product-resources  string  resource configurations in JSON format (default: {})
 ```
+
+### Configuring the `--product-network` on Azure
+The product network on Azure does not include Availability Zones, but the API will still expect them to be provided.
+To satisfy the API, you can submit "null" AZs for the API as is shown here:
+```json
+{
+  "singleton_availability_zone": {
+    "name": "null"
+  },
+  "other_availability_zones": [
+    {
+      "name": "null"
+    }
+  ],
+  "network": {
+    "name": "example-ert-subnet"
+  }
+}
+```

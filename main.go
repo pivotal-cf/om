@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 
 	"github.com/gosuri/uilive"
+	"github.com/olekukonko/tablewriter"
 
 	"time"
 
@@ -64,6 +66,10 @@ func main() {
 		command = "help"
 	}
 
+	if global.Target == "" && command != "help" && command != "version" {
+		stdout.Fatal(errors.New("error: target flag is required. Run `om help` for more info."))
+	}
+
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
@@ -88,9 +94,11 @@ func main() {
 	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil, nil)
 	installationsService := api.NewInstallationsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
+	tableWriter := tablewriter.NewWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
 	jobsService := api.NewJobsService(authedClient)
 	boshService := api.NewBoshFormService(authedCookieClient)
+	dashboardService := api.NewDashboardService(authedCookieClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -104,6 +112,7 @@ func main() {
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
 	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, stdout)
+	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, extractor, availableProductsService, stdout)
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(availableProductsService, stdout)
@@ -114,6 +123,7 @@ func main() {
 	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
+	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, tableWriter, stdout)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

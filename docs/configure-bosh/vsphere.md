@@ -1,10 +1,11 @@
-# vSphere configure-bosh
+&larr; [back to `configure-bosh`](README.md)
+
+# vSphere-specific inputs for the `configure-bosh` command
 
 #### --iaas-configuration
-Note for `disk_type`, the only valid options are 'thick' or 'thin'.
+**Note for `disk_type`**: the only valid options are 'thick' or 'thin'.
 
-Minimal example:
-
+##### Minimal example
 ```json
 {
   "vcenter_host": "some-vcenter-host",
@@ -18,29 +19,49 @@ Minimal example:
   "bosh_template_folder": "some-template-folder",
   "bosh_disk_path": "some-disk-path"
 }
-
 ```
 
 #### --director-configuration
 Change this to a valid internal NTP server address for your organization
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "ntp_servers_string": "10.0.0.1"
 }
 ```
 
-#### --az-configuration
-Not currently available, work in progress
-
 #### --security-configuration
 No additional security configuration is strictly required.
 
-Minimal example:
+##### Minimal example
 ```json
 {
   "trusted_certificates": "some-trusted-certificates",
   "vm_password_type": "generate"
+}
+```
+
+#### --az-configuration
+
+##### Minimal example
+```json
+{
+}
+```
+
+#### --networks-configuration
+
+##### Minimal example
+```json
+{
+}
+```
+
+#### --network-assignment
+
+##### Minimal example
+```json
+{
 }
 ```

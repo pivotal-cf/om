@@ -303,6 +303,22 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
 		})
 
+		It("gracefully quits when there is no installation to delete", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				time.Sleep(1 * time.Second)
+				return &http.Response{
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+					StatusCode: http.StatusGone,
+				}, nil
+			}
+
+			service := api.NewInstallationAssetService(client, nil, nil)
+
+			output, err := service.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal(api.InstallationsServiceOutput{}))
+		})
+
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {

@@ -10,6 +10,7 @@ import (
 type CommonConfiguration struct {
 	AuthenticityToken string `url:"authenticity_token"`
 	Method            string `url:"_method"`
+	Commit            string `url:"commit,omitempty"`
 }
 
 type GCPIaaSConfiguration struct {
