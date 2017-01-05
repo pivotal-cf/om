@@ -136,6 +136,14 @@ func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
 			return v
 		},
 	)
+	if len(azNames) == 0 {
+		azNames = document.Find("form").Find(`input[name*='name']`).Map(
+			func(i int, s *goquery.Selection) string {
+				v, _ := s.Attr("value")
+				return v
+			},
+		)
+	}
 
 	azGuids := document.Find("form").Find(`input[name*='guid'][type=hidden]`).Map(
 		func(i int, s *goquery.Selection) string {

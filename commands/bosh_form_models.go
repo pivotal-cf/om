@@ -84,7 +84,10 @@ type DirectorConfiguration struct {
 }
 
 type AvailabilityZonesConfiguration struct {
-	AvailabilityZones []string `url:"availability_zones[availability_zones][][iaas_identifier],omitempty" json:"availability_zones"`
+	AvailabilityZones       []string `url:"availability_zones[availability_zones][][iaas_identifier],omitempty" json:"availability_zones"`
+	VSphereAvailabilityZone []string `url:"availability_zones[availability_zones][][name],omitempty" json:"vsphere_availability_zones"`
+	VSphereClusters         []string `url:"availability_zones[availability_zones][][cluster],omitempty" json:"vsphere_clusters"`
+	VSphereResourcePools    []string `url:"availability_zones[availability_zones][][resource_pool],omitempty" json:"vsphere_resource_pools"`
 }
 
 type SecurityConfiguration struct {
