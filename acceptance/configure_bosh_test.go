@@ -138,8 +138,10 @@ var _ = Describe("configure-bosh command", func() {
 			}`
 
 			availabilityZonesConfiguration := `{
-			  "availability_zones": ["some-az-1", "some-other-az-2"]
-			}`
+			"availability_zones": [
+			  {"name": "some-az-1"},
+			  {"name": "some-other-az-2"}
+			]}`
 
 			securityConfiguration := `{
 				"trusted_certificates": "some-trusted-certificates",
@@ -387,10 +389,18 @@ var _ = Describe("configure-bosh command", func() {
 				"bosh_disk_path": "some-disk-path"
 			}`
 
-			availabilityZonesConfiguration := `{
-			  "vsphere_availability_zones": ["some-az-1", "some-other-az-2"],
-				"vsphere_clusters": ["some-cluster-1", "some-other-cluster-2"],
-				"vsphere_resource_pools": ["some-resource-pool-1", "some-other-resource-pool-2"]
+			availabilityZonesConfiguration := `{"availability_zones": [
+			    {
+			      "name": "some-az-1",
+			      "cluster": "some-cluster-1",
+			      "resource_pool": "some-resource-pool-1"
+			    },
+			    {
+			      "name": "some-other-az-2",
+			      "cluster": "some-other-cluster-2",
+			      "resource_pool": "some-other-resource-pool-2"
+			    }
+			  ]
 			}`
 
 			command = exec.Command(pathToMain,
