@@ -86,6 +86,16 @@ func (c ConfigureBosh) Execute(args []string) error {
 			return err
 		}
 
+		for _, az := range config.AvailabilityZonesConfiguration.AvailabilityZones {
+			if az.Cluster == "" {
+				config.AvailabilityZonesConfiguration.Names = append(config.AvailabilityZonesConfiguration.Names, az.Name)
+			} else {
+				config.AvailabilityZonesConfiguration.VSphereNames = append(config.AvailabilityZonesConfiguration.VSphereNames, az.Name)
+				config.AvailabilityZonesConfiguration.Clusters = append(config.AvailabilityZonesConfiguration.Clusters, az.Cluster)
+				config.AvailabilityZonesConfiguration.ResourcePools = append(config.AvailabilityZonesConfiguration.ResourcePools, az.ResourcePool)
+			}
+		}
+		config.AvailabilityZonesConfiguration.AvailabilityZones = nil
 		err = c.postForm(availabilityZonesConfigurationPath, config)
 		if err != nil {
 			return err
