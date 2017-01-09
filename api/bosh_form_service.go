@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -48,13 +47,8 @@ func (bs BoshFormService) GetForm(path string) (Form, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return Form{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return Form{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return Form{}, err
 	}
 
 	document, err := goquery.NewDocumentFromReader(resp.Body)
@@ -90,16 +84,7 @@ func (bs BoshFormService) PostForm(input PostFormInput) error {
 		return fmt.Errorf("failed to POST form: %s", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return nil
+	return ValidateStatusOK(resp)
 }
 
 func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
@@ -116,13 +101,8 @@ func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return zones, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return zones, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return zones, err
 	}
 
 	document, err := goquery.NewDocumentFromReader(resp.Body)
@@ -177,12 +157,8 @@ func (bs BoshFormService) Networks() (map[string]string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return networks, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return networks, fmt.Errorf("request failed: unexpected response: %s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return networks, err
 	}
 
 	document, err := goquery.NewDocumentFromReader(resp.Body)

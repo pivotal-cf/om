@@ -173,7 +173,7 @@ var _ = Describe("AvailableProductsService", func() {
 					}, nil)
 
 					_, err := service.List()
-					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
+					Expect(err).To(MatchError(ContainSubstring("request failed")))
 				})
 			})
 
@@ -224,7 +224,7 @@ var _ = Describe("AvailableProductsService", func() {
 					}, nil)
 
 					err := service.Trash()
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to available_products endpoint: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 		})

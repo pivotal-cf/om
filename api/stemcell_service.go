@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 )
 
 type StemcellUploadInput struct {
@@ -50,14 +49,5 @@ func (us UploadStemcellService) Upload(input StemcellUploadInput) (StemcellUploa
 
 	us.progress.End()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return StemcellUploadOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return StemcellUploadOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return StemcellUploadOutput{}, nil
+	return StemcellUploadOutput{}, ValidateStatusOK(resp)
 }

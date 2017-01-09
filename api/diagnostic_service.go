@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 )
 
 type DiagnosticService struct {
@@ -52,13 +51,8 @@ func (ds DiagnosticService) Report() (DiagnosticReport, error) {
 		return DiagnosticReport{}, DiagnosticReportUnavailable{}
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return DiagnosticReport{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return DiagnosticReport{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return DiagnosticReport{}, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)

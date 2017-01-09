@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 )
 
 type StageProductInput struct {
@@ -114,15 +113,7 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 	}
 	defer stResp.Body.Close()
 
-	if stResp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(stResp, true)
-		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return fmt.Errorf("could not make %s api request to staged products endpoint: unexpected response. Please make sure the product you are adding is compatible with everything that is currently staged/deployed.\n%s", stReq.Method, out)
-	}
-
-	return nil
+	return ValidateStatusOK(stResp)
 }
 
 func (p StagedProductsService) StagedProducts() (StagedProductsOutput, error) {
@@ -137,12 +128,8 @@ func (p StagedProductsService) StagedProducts() (StagedProductsOutput, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return StagedProductsOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return StagedProductsOutput{}, fmt.Errorf("could not make api request to staged products endpoint: unexpected response.\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return StagedProductsOutput{}, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
@@ -174,13 +161,7 @@ func (p StagedProductsService) Configure(input ProductsConfigurationInput) error
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			out, err := httputil.DumpResponse(resp, true)
-			if err != nil {
-				return fmt.Errorf("request failed: unexpected response: %s", err)
-			}
-			return fmt.Errorf("could not make api request to staged product properties endpoint: unexpected response.\n%s", out)
-		}
+		return ValidateStatusOK(resp)
 	}
 
 	return nil
@@ -238,12 +219,8 @@ func (p StagedProductsService) checkDeployedProducts(productName string) (string
 	}
 	defer depResp.Body.Close()
 
-	if depResp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(depResp, true)
-		if err != nil {
-			return "", fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return "", fmt.Errorf("could not make api request to deployed products endpoint: unexpected response.\n%s", out)
+	if err = ValidateStatusOK(depResp); err != nil {
+		return "", err
 	}
 
 	depRespBody, err := ioutil.ReadAll(depResp.Body)
