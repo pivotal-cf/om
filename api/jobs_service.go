@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 )
 
 type JobsService struct {
@@ -53,13 +52,8 @@ func (j JobsService) Jobs(productGUID string) (map[string]string, error) {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return nil, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return nil, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return nil, err
 	}
 
 	var jobsOutput struct {
@@ -92,13 +86,8 @@ func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobPrope
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return JobProperties{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return JobProperties{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return JobProperties{}, err
 	}
 
 	content, err := ioutil.ReadAll(resp.Body)
@@ -136,14 +125,5 @@ func (j JobsService) ConfigureJob(productGUID, jobGUID string, jobProperties Job
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return nil
+	return ValidateStatusOK(resp)
 }

@@ -54,7 +54,7 @@ var _ = Describe("SecurityService", func() {
 				}, nil)
 
 				_, err := service.FetchRootCACert()
-				Expect(err).To(MatchError(ContainSubstring("could not make api request: unexpected response")))
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 
 			It("returns error if response fails to unmarshal", func() {

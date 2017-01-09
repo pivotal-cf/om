@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"time"
 )
@@ -148,16 +147,7 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return nil
+	return ValidateStatusOK(resp)
 }
 
 func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) {
@@ -178,13 +168,8 @@ func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) 
 		return InstallationsServiceOutput{}, nil
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
 	}
 
 	var installation struct {

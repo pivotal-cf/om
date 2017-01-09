@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"strings"
@@ -74,16 +73,7 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(response, true)
-		if err != nil {
-			return SetupOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return SetupOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return SetupOutput{}, nil
+	return SetupOutput{}, ValidateStatusOK(response)
 }
 
 const (

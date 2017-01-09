@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -32,13 +31,8 @@ func (bs DashboardService) GetInstallForm() (Form, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return Form{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return Form{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return Form{}, err
 	}
 
 	document, err := goquery.NewDocumentFromReader(resp.Body)
@@ -81,14 +75,5 @@ func (bs DashboardService) PostInstallForm(input PostFormInput) error {
 		return fmt.Errorf("failed to POST form: %s", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return fmt.Errorf("request failed: unexpected response:\n%s", out)
-	}
-
-	return nil
+	return ValidateStatusOK(resp)
 }

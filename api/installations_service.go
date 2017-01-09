@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 )
 
@@ -43,13 +42,8 @@ func (is InstallationsService) RunningInstallation() (InstallationsServiceOutput
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
 	}
 
 	var responseStruct struct {
@@ -84,13 +78,8 @@ func (is InstallationsService) Trigger(ignoreWarnings bool) (InstallationsServic
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
 	}
 
 	var installation struct {
@@ -121,13 +110,8 @@ func (is InstallationsService) Status(id int) (InstallationsServiceOutput, error
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
 	}
 
 	var output struct {
@@ -156,13 +140,8 @@ func (is InstallationsService) Logs(id int) (InstallationsServiceOutput, error) 
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return InstallationsServiceOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
 	}
 
 	var output struct {

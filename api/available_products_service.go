@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"time"
 )
 
@@ -91,13 +90,8 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return UploadProductOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-
-		return UploadProductOutput{}, fmt.Errorf("request failed: unexpected response:\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return UploadProductOutput{}, err
 	}
 
 	return UploadProductOutput{}, nil
@@ -114,15 +108,7 @@ func (ap AvailableProductsService) Trash() error {
 		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
-	}
-
-	return nil
+	return ValidateStatusOK(resp)
 }
 
 func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
@@ -131,27 +117,23 @@ func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
 		return AvailableProductsOutput{}, err
 	}
 
-	avResp, err := ap.client.Do(avReq)
+	resp, err := ap.client.Do(avReq)
 	if err != nil {
 		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
-	defer avResp.Body.Close()
+	defer resp.Body.Close()
 
-	if avResp.StatusCode != http.StatusOK {
-		out, err := httputil.DumpResponse(avResp, true)
-		if err != nil {
-			return AvailableProductsOutput{}, fmt.Errorf("request failed: unexpected response: %s", err)
-		}
-		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: unexpected response.\n%s", out)
+	if err = ValidateStatusOK(resp); err != nil {
+		return AvailableProductsOutput{}, err
 	}
 
-	avRespBody, err := ioutil.ReadAll(avResp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return AvailableProductsOutput{}, err
 	}
 
 	var availableProducts []ProductInfo
-	err = json.Unmarshal(avRespBody, &availableProducts)
+	err = json.Unmarshal(respBody, &availableProducts)
 	if err != nil {
 		return AvailableProductsOutput{}, fmt.Errorf("could not unmarshal available_products response: %s", err)
 	}

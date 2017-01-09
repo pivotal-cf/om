@@ -269,7 +269,7 @@ var _ = Describe("ProductsService", func() {
 						ProductName:    "some-product",
 						ProductVersion: "some-version",
 					})
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to deployed products endpoint: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 
@@ -388,7 +388,7 @@ var _ = Describe("ProductsService", func() {
 						ProductName:    "foo",
 						ProductVersion: "bar",
 					})
-					Expect(err).To(MatchError(ContainSubstring("could not make POST api request to staged products endpoint: unexpected response.")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 		})
@@ -477,7 +477,7 @@ var _ = Describe("ProductsService", func() {
 					service := api.NewStagedProductsService(client)
 
 					_, err := service.StagedProducts()
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products endpoint: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 
@@ -610,7 +610,7 @@ var _ = Describe("ProductsService", func() {
 						GUID:          "foo",
 						Configuration: `{}`,
 					})
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product properties endpoint: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 		})
