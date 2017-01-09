@@ -3,9 +3,9 @@
 # GCP-specific inputs for the `configure-bosh` command
 
 #### --iaas-configuration
-**Note regarding `auth_json`**: You will have likely generated this in order to use our [terraforming-gcp](https://github.com/pivotal-cf/terraforming-gcp/) tooling.
-To easily format this JSON for use as a string here, use `cat service_account_key.json | jq 'tostring'`.
+**Note regarding `auth_json`**: To easily format this JSON for use as a string here, use `cat service_account_key.json | jq 'tostring'`.
 `jq` can be downloaded [here](https://stedolan.github.io/jq/).
+If you have configured your OpsMan VM to have an attached Service Account, then this field is not required.
 
 ##### Minimal example
 ```json

@@ -52,10 +52,59 @@ No additional security configuration is strictly required.
 ```
 
 #### --networks-configuration
+**Note:** Only one availability zone can be specified per network subnet.
 
 ##### Minimal example
 ```json
 {
+  "icmp_checks_enabled": false,
+  "networks": [
+    {
+      "name": "opsman-network",
+      "subnets": [
+        {
+          "iaas_identifier": "vpc-subnet-id-1",
+          "cidr": "10.0.0.0/24",
+          "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
+          "dns": "8.8.8.8",
+          "gateway": "10.0.0.1",
+          "availability_zones": [
+            "us-west-1b",
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ert-network",
+      "iaas_identifier": "vpc-subnet-id-2",
+      "subnets": [
+        {
+          "cidr": "10.0.4.0/22",
+          "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
+          "dns": "8.8.8.8",
+          "gateway": "10.0.4.1",
+          "availability_zones": [
+            "us-west-1b",
+          ]
+        }
+      ]
+    },
+    {
+      "name": "services-network",
+      "iaas_identifier": "vpc-subnet-id-3",
+      "subnets": [
+        {
+          "cidr": "10.0.8.0/22",
+          "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
+          "dns": "8.8.8.8",
+          "gateway": "10.0.8.1",
+          "availability_zones": [
+            "us-west-1b",
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -64,5 +113,7 @@ No additional security configuration is strictly required.
 ##### Minimal example
 ```json
 {
+  "singleton_availability_zone": "us-west-1b",
+  "network": "opsman-network"
 }
 ```

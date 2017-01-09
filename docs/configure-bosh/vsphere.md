@@ -47,6 +47,23 @@ No additional security configuration is strictly required.
 ##### Minimal example
 ```json
 {
+  "availability_zones": [
+    {
+      "name": "az-1",
+      "cluster": "cluster-1",
+      "resource_pool": "pool-1"
+    },
+    {
+      "name": "az-2",
+      "cluster": "cluster-2",
+      "resource_pool": "pool-2"
+    },
+    {
+      "name": "az-3",
+      "cluster": "cluster-3",
+      "resource_pool": "pool-3"
+    },
+  ]
 }
 ```
 
@@ -55,6 +72,63 @@ No additional security configuration is strictly required.
 ##### Minimal example
 ```json
 {
+  "icmp_checks_enabled": false,
+  "networks": [
+    {
+      "name": "opsman-network",
+      "service_network": false,
+      "subnets": [
+        {
+          "iaas_identifier": "vsphere-network-name",
+          "cidr": "10.0.0.0/24",
+          "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
+          "dns": "8.8.8.8",
+          "gateway": "10.0.0.1",
+          "availability_zones": [
+            "az-1",
+            "az-2",
+            "az-3"
+          ]
+        }
+      ]
+    }
+    {
+      "name": "ert-network",
+      "service_network": false,
+      "subnets": [
+        {
+          "iaas_identifier": "vsphere-network-name",
+          "cidr": "10.0.4.0/24",
+          "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
+          "dns": "8.8.8.8",
+          "gateway": "10.0.4.1",
+          "availability_zones": [
+            "az-1",
+            "az-2",
+            "az-3"
+          ]
+        }
+      ]
+    }
+    {
+      "name": "services-network",
+      "service_network": false,
+      "subnets": [
+        {
+          "iaas_identifier": "vsphere-network-name",
+          "cidr": "10.0.8.0/24",
+          "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
+          "dns": "8.8.8.8",
+          "gateway": "10.0.8.1",
+          "availability_zones": [
+            "az-1",
+            "az-2",
+            "az-3"
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -63,5 +137,7 @@ No additional security configuration is strictly required.
 ##### Minimal example
 ```json
 {
+  "singleton_availability_zone": "az-1",
+  "network": "opsman-network"
 }
 ```
