@@ -147,7 +147,12 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 
 	defer resp.Body.Close()
 
-	return ValidateStatusOK(resp)
+	err = ValidateStatusOK(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) {

@@ -73,7 +73,12 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 
 	defer response.Body.Close()
 
-	return SetupOutput{}, ValidateStatusOK(response)
+	err = ValidateStatusOK(response)
+	if err != nil {
+		return SetupOutput{}, err
+	}
+
+	return SetupOutput{}, nil
 }
 
 const (
