@@ -19,13 +19,13 @@ func NewDashboardService(client httpClient) DashboardService {
 	}
 }
 
-func (bs DashboardService) GetInstallForm() (Form, error) {
+func (ds DashboardService) GetInstallForm() (Form, error) {
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		return Form{}, err
 	}
 
-	resp, err := bs.client.Do(req)
+	resp, err := ds.client.Do(req)
 	if err != nil {
 		return Form{}, fmt.Errorf("failed during request: %s", err)
 	}
@@ -62,7 +62,7 @@ func (bs DashboardService) GetInstallForm() (Form, error) {
 	}, nil
 }
 
-func (bs DashboardService) PostInstallForm(input PostFormInput) error {
+func (ds DashboardService) PostInstallForm(input PostFormInput) error {
 	req, err := http.NewRequest("POST", "/installation", strings.NewReader(input.EncodedPayload))
 	if err != nil {
 		return err
@@ -70,10 +70,15 @@ func (bs DashboardService) PostInstallForm(input PostFormInput) error {
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := bs.client.Do(req)
+	resp, err := ds.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to POST form: %s", err)
 	}
 
-	return ValidateStatusOK(resp)
+	err = ValidateStatusOK(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

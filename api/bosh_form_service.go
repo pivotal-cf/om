@@ -84,7 +84,12 @@ func (bs BoshFormService) PostForm(input PostFormInput) error {
 		return fmt.Errorf("failed to POST form: %s", err)
 	}
 
-	return ValidateStatusOK(resp)
+	err = ValidateStatusOK(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {

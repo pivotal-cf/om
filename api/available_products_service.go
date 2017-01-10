@@ -108,7 +108,12 @@ func (ap AvailableProductsService) Trash() error {
 		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 
-	return ValidateStatusOK(resp)
+	err = ValidateStatusOK(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
