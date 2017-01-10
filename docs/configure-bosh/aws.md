@@ -47,7 +47,10 @@ No additional security configuration is strictly required.
 ##### Minimal example
 ```json
 {
-  "availability_zones": ["us-west-1b","us-west-1c"]
+  "availability_zones": [
+    {"name": "us-west-1b"},
+    {"name": "us-west-1c"}
+  ]
 }
 ```
 
