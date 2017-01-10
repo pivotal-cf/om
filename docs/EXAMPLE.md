@@ -7,7 +7,7 @@ details when following this example.
 ## 1. Boot your Ops Manager VM.
 
   This can be done with the existing `opsmgr` tooling.
-  For the purposes of this example we will have an Ops Manager VM located at https://opsman.example.com.
+  For the purposes of this example we will have an Ops Manager VM located at `https://opsman.example.com`.
 
 ## 2. Configure the authentication mechanism for the Ops Manager.
 
