@@ -125,8 +125,7 @@ func (j JobsService) ConfigureJob(productGUID, jobGUID string, jobProperties Job
 
 	defer resp.Body.Close()
 
-	err = ValidateStatusOK(resp)
-	if err != nil {
+	if err = ValidateStatusOK(resp); err != nil {
 		return err
 	}
 

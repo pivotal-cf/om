@@ -113,8 +113,7 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 	}
 	defer stResp.Body.Close()
 
-	err = ValidateStatusOK(stResp)
-	if err != nil {
+	if err = ValidateStatusOK(stResp); err != nil {
 		return err
 	}
 
@@ -166,8 +165,7 @@ func (p StagedProductsService) Configure(input ProductsConfigurationInput) error
 		}
 		defer resp.Body.Close()
 
-		err = ValidateStatusOK(resp)
-		if err != nil {
+		if err = ValidateStatusOK(resp); err != nil {
 			return err
 		}
 	}
