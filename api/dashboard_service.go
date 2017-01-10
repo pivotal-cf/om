@@ -75,8 +75,7 @@ func (ds DashboardService) PostInstallForm(input PostFormInput) error {
 		return fmt.Errorf("failed to POST form: %s", err)
 	}
 
-	err = ValidateStatusOK(resp)
-	if err != nil {
+	if err = ValidateStatusOK(resp); err != nil {
 		return err
 	}
 

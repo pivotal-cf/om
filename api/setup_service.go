@@ -73,8 +73,7 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 
 	defer response.Body.Close()
 
-	err = ValidateStatusOK(response)
-	if err != nil {
+	if err = ValidateStatusOK(response); err != nil {
 		return SetupOutput{}, err
 	}
 
