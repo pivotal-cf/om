@@ -44,9 +44,9 @@ We tend to use the "us-central1" region because it has 3 zones to balance across
 ```json
 {
   "availability_zones": [
-    "us-central1-a",
-    "us-central1-b",
-    "us-central1-c"
+    {"name": "us-central1-a"},
+    {"name": "us-central1-b"},
+    {"name": "us-central1-c"}
   ]
 }
 ```
