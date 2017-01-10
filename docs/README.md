@@ -1,5 +1,6 @@
 # Commands
 * [apply-changes](apply-changes/README.md)
+* [available-products](available-products/README.md)
 * [configure-authentication](configure-authentication/README.md)
 * [configure-bosh](configure-bosh/README.md)
 * [configure-product](configure-product/README.md)
