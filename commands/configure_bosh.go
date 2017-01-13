@@ -132,6 +132,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
+
 		if azGUID, ok := availabilityZones[config.UserProvidedAZName]; ok {
 			config.AZGUID = azGUID
 		} else {
@@ -196,7 +197,7 @@ func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) er
 }
 
 func (c ConfigureBosh) AZMap() (map[string]string, error) {
-	if c.Options.AvailabilityZonesConfiguration != "" {
+	if c.Options.AvailabilityZonesConfiguration != "" || strings.Contains(c.Options.NetworkAssignment, `"singleton_availability_zone"`) {
 		return c.service.AvailabilityZones()
 	}
 	return map[string]string{}, nil
