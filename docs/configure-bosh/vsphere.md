@@ -91,7 +91,7 @@ No additional security configuration is strictly required.
           ]
         }
       ]
-    }
+    },
     {
       "name": "ert-network",
       "service_network": false,
@@ -109,7 +109,7 @@ No additional security configuration is strictly required.
           ]
         }
       ]
-    }
+    },
     {
       "name": "services-network",
       "service_network": false,
