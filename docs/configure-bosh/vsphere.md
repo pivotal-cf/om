@@ -2,6 +2,8 @@
 
 # vSphere-specific inputs for the `configure-bosh` command
 
+:exclamation: The support for this feature is still **alpha**. Please open issues for any problems you experience.
+
 #### --iaas-configuration
 **Note for `disk_type`**: the only valid options are 'thick' or 'thin'.
 
