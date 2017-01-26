@@ -16,7 +16,7 @@ type JobProperties struct {
 	Instances         int          `json:"instances"`
 	PersistentDisk    *Disk        `json:"persistent_disk,omitempty"`
 	InstanceType      InstanceType `json:"instance_type"`
-	InternetConnected bool         `json:"internet_connected"`
+	InternetConnected bool         `json:"internet_connected,omitempty"`
 	LBNames           []string     `json:"elb_names"`
 }
 
