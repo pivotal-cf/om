@@ -154,7 +154,6 @@ var _ = Describe("configure-product command", func() {
         "instance_type": {
           "id": "m1.medium"
         },
-        "internet_connected": false,
         "elb_names": null
       }`))
 	})
