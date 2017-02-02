@@ -196,6 +196,42 @@ var _ = Describe("JobsService", func() {
 			}`))
 		})
 
+		Context("when internet_connected property is false", func() {
+			It("does not include the internet_connected flag in JSON", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+				}, nil)
+
+				service := api.NewJobsService(client)
+
+				err := service.ConfigureJob("some-product-guid", "some-job-guid",
+					api.JobProperties{
+						Instances:         1,
+						PersistentDisk:    &api.Disk{Size: "290"},
+						InstanceType:      api.InstanceType{ID: "number-1"},
+						InternetConnected: false,
+						LBNames:           []string{"something"},
+					})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(1))
+				request := client.DoArgsForCall(0)
+
+				Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
+				Expect("PUT").To(Equal(request.Method))
+				Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
+				reqBytes, err := ioutil.ReadAll(request.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reqBytes).To(MatchJSON(`{
+				"instances": 1,
+				"instance_type": { "id": "number-1" },
+				"persistent_disk": { "size_mb": "290" },
+				"elb_names": ["something"]
+			}`))
+			})
+		})
+
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
