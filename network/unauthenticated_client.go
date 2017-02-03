@@ -19,6 +19,7 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTim
 		target: target,
 		client: &http.Client{
 			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: insecureSkipVerify,
 				},
