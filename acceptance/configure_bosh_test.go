@@ -437,6 +437,73 @@ var _ = Describe("configure-bosh command", func() {
 		})
 	})
 
+	Context("OpenStack", func() {
+		var command *exec.Cmd
+
+		BeforeEach(func() {
+			iaasConfiguration := `{
+				"api_ssl_cert": "os-api-ssl-cert",
+				"disable_dhcp": false,
+				"openstack_domain": "os-domain",
+				"openstack_authentication_url": "https//openstack.com/v2",
+				"ignore_server_availability_zone": true,
+				"openstack_key_pair_name": "os-key-pair",
+				"keystone_version": "v2.0",
+				"openstack_password": "os-password",
+				"openstack_region": "os-region",
+				"openstack_security_group": "os-security-group",
+				"openstack_tenant": "os-tenant",
+				"openstack_username": "os-user",
+				"ssh_private_key": "my-private-ssh-key"
+			}`
+
+			command = exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "fake-username",
+				"--password", "fake-password",
+				"--skip-ssl-validation",
+				"configure-bosh",
+				"--iaas-configuration", iaasConfiguration)
+		})
+
+		It("configures the bosh tile with the provided iaas configuration", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
+
+			Expect(Forms[0].Get("iaas_configuration[api_ssl_cert]")).To(Equal("os-api-ssl-cert"))
+			Expect(Forms[0].Get("iaas_configuration[disable_dhcp]")).To(Equal("false"))
+			Expect(Forms[0].Get("iaas_configuration[domain]")).To(Equal("os-domain"))
+			Expect(Forms[0].Get("iaas_configuration[identity_endpoint]")).To(Equal("https//openstack.com/v2"))
+			Expect(Forms[0].Get("iaas_configuration[ignore_server_availability_zone]")).To(Equal("true"))
+			Expect(Forms[0].Get("iaas_configuration[key_pair_name]")).To(Equal("os-key-pair"))
+			Expect(Forms[0].Get("iaas_configuration[keystone_version]")).To(Equal("v2.0"))
+			Expect(Forms[0].Get("iaas_configuration[password]")).To(Equal("os-password"))
+			Expect(Forms[0].Get("iaas_configuration[region]")).To(Equal("os-region"))
+			Expect(Forms[0].Get("iaas_configuration[security_group]")).To(Equal("os-security-group"))
+			Expect(Forms[0].Get("iaas_configuration[tenant]")).To(Equal("os-tenant"))
+			Expect(Forms[0].Get("iaas_configuration[username]")).To(Equal("os-user"))
+			Expect(Forms[0].Get("iaas_configuration[ssh_private_key]")).To(Equal("my-private-ssh-key"))
+
+			Expect(Forms[0].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[0].Get("_method")).To(Equal("fakemethod"))
+		})
+
+		It("does not configure keys that are not part of input", func() {
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
+			Expect(ok).To(BeFalse())
+		})
+	})
+
 	Context("vSphere", func() {
 		var command *exec.Cmd
 

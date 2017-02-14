@@ -8,6 +8,7 @@ The `configure-bosh` command will allow you to setup your BOSH tile on the OpsMa
 * [GCP](gcp.md)
 * [Azure](azure.md)
 * [vSphere](vsphere.md)
+* [OpenStack](openstack.md)
 
 ## Command Usage
 ```
