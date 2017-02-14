@@ -54,11 +54,27 @@ type VSphereIaaSConfiguration struct {
 	DiskPathFolder           string `url:"iaas_configuration[bosh_disk_path],omitempty" json:"bosh_disk_path"`
 }
 
+type OpenStackIaaSConfiguration struct {
+	APISSLCertificate            string `url:"iaas_configuration[api_ssl_cert],omitempty" json:"api_ssl_cert"`
+	DisableDHCP                  *bool  `url:"iaas_configuration[disable_dhcp],omitempty" json:"disable_dhcp"`
+	OpenStackDomain              string `url:"iaas_configuration[domain],omitempty" json:"openstack_domain"`
+	OpenStackAuthenticationURL   string `url:"iaas_configuration[identity_endpoint],omitempty" json:"openstack_authentication_url"`
+	IgnoreServerAvailabilityZone *bool  `url:"iaas_configuration[ignore_server_availability_zone],omitempty" json:"ignore_server_availability_zone"`
+	OpenStackKeyPairName         string `url:"iaas_configuration[key_pair_name],omitempty" json:"openstack_key_pair_name"`
+	KeyStoneVersion              string `url:"iaas_configuration[keystone_version],omitempty" json:"keystone_version"`
+	OpenStackPassword            string `url:"iaas_configuration[password],omitempty" json:"openstack_password"`
+	OpenStackRegion              string `url:"iaas_configuration[region],omitempty" json:"openstack_region"`
+	OpenStackSecurityGroup       string `url:"iaas_configuration[security_group],omitempty" json:"openstack_security_group"`
+	OpenStackTenant              string `url:"iaas_configuration[tenant],omitempty" json:"openstack_tenant"`
+	OpenStackUserName            string `url:"iaas_configuration[username],omitempty" json:"openstack_username"`
+}
+
 type CommonIaaSConfiguration struct {
 	SSHPrivateKey string `url:"iaas_configuration[ssh_private_key],omitempty" json:"ssh_private_key"`
 }
 
 type IaaSConfiguration struct {
+	OpenStackIaaSConfiguration
 	GCPIaaSConfiguration
 	AzureIaaSConfiguration
 	AWSIaaSConfiguration
