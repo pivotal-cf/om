@@ -39,6 +39,10 @@ func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error)
 		return nil, fmt.Errorf("could not parse target url: %s", err)
 	}
 
+	if targetURL.Host == "" {
+		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
+	}
+
 	request.URL.Scheme = targetURL.Scheme
 	request.URL.Host = targetURL.Host
 
@@ -49,6 +53,10 @@ func (c UnauthenticatedClient) RoundTrip(request *http.Request) (*http.Response,
 	targetURL, err := url.Parse(c.target)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse target url: %s", err)
+	}
+
+	if targetURL.Host == "" {
+		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
 	}
 
 	request.URL.Scheme = targetURL.Scheme

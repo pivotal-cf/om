@@ -181,6 +181,19 @@ var _ = Describe("OAuthClient", func() {
 					Expect(err).To(MatchError("token could not be retrieved from target url: parse %%%/uaa/oauth/token: invalid URL escape \"%%%\""))
 				})
 			})
+
+			Context("when the target url is empty", func() {
+				It("returns an error", func() {
+					client, err := network.NewOAuthClient("", "username", "password", false, false, time.Duration(30)*time.Second)
+					Expect(err).NotTo(HaveOccurred())
+
+					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = client.Do(req)
+					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
+				})
+			})
 		})
 	})
 
@@ -229,6 +242,19 @@ var _ = Describe("OAuthClient", func() {
 
 				_, err = client.RoundTrip(req)
 				Expect(err).To(MatchError("token could not be retrieved from target url: parse %%%/uaa/oauth/token: invalid URL escape \"%%%\""))
+			})
+		})
+
+		Context("when the target url is empty", func() {
+			It("returns an error", func() {
+				client, err := network.NewOAuthClient("", "username", "password", false, false, time.Duration(30)*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.RoundTrip(req)
+				Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
 			})
 		})
 	})

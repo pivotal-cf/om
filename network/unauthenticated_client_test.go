@@ -11,9 +11,10 @@ import (
 
 	"github.com/pivotal-cf/om/network"
 
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"time"
 )
 
 var _ = Describe("UnauthenticatedClient", func() {
@@ -61,6 +62,14 @@ var _ = Describe("UnauthenticatedClient", func() {
 					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second)
 					_, err := client.Do(&http.Request{})
 					Expect(err).To(MatchError("could not parse target url: parse %%%: invalid URL escape \"%%%\""))
+				})
+			})
+
+			Context("when the target url is empty", func() {
+				It("returns an error", func() {
+					client := network.NewUnauthenticatedClient("", false, time.Duration(30)*time.Second)
+					_, err := client.Do(&http.Request{})
+					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
 				})
 			})
 		})
@@ -112,6 +121,14 @@ var _ = Describe("UnauthenticatedClient", func() {
 					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second)
 					_, err := client.RoundTrip(&http.Request{})
 					Expect(err).To(MatchError("could not parse target url: parse %%%: invalid URL escape \"%%%\""))
+				})
+			})
+
+			Context("when the target url is empty", func() {
+				It("returns an error", func() {
+					client := network.NewUnauthenticatedClient("", false, time.Duration(30)*time.Second)
+					_, err := client.RoundTrip(&http.Request{})
+					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
 				})
 			})
 		})

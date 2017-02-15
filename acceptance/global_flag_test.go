@@ -24,18 +24,17 @@ var _ = Describe("global flags", func() {
 	})
 
 	Context("when not provided a target flag", func() {
-		It("returns an error if the command is not help or version", func() {
-			cmd := exec.Command(pathToMain, "-u", "foo", "-p", "bar", "apply-changes")
+		It("does not return an error if the command is help", func() {
+			cmd := exec.Command(pathToMain, "help")
 
 			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(1))
-			Expect(session.Out).Should(gbytes.Say("error: target flag is required. Run `om help` for more info."))
+			Eventually(session).Should(gexec.Exit(0))
 		})
 
-		It("does not return an error if the command is help or version", func() {
-			cmd := exec.Command(pathToMain, "help")
+		It("does not return an error if the command is version", func() {
+			cmd := exec.Command(pathToMain, "version")
 
 			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())

@@ -69,6 +69,10 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool, 
 }
 
 func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
+	if oc.target == "" {
+		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
+	}
+
 	token, err := oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
 	if err != nil {
 		return nil, fmt.Errorf("token could not be retrieved from target url: %s", err)
@@ -93,6 +97,10 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 }
 
 func (oc OAuthClient) RoundTrip(request *http.Request) (*http.Response, error) {
+	if oc.target == "" {
+		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
+	}
+
 	token, err := oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
 	if err != nil {
 		return nil, fmt.Errorf("token could not be retrieved from target url: %s", err)
