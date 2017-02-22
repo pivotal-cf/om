@@ -101,6 +101,38 @@ var _ = Describe("configure-bosh command", func() {
 					</form>
 					</body>
 				</html>`))
+			case "/infrastructure/director/resources/edit":
+				w.Write([]byte(`<html>
+				<body>
+					<form action="/some-form" method="post">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+						<select name="product_resources_form[compilation][vm_type_id]" id="product_resources_form_compilation_vm_type_id">
+							<option value="">Automatic: large.cpu (cpu: 4, ram: 4 GB, disk: 16 GB)</option>
+							<option value="micro">micro (cpu: 1, ram: 1 GB, disk: 8 GB)</option>
+							<option value="micro.cpu">micro.cpu (cpu: 2, ram: 2 GB, disk: 8 GB)</option>
+							<option value="small">small (cpu: 1, ram: 2 GB, disk: 8 GB)</option>
+							<option value="small.disk">small.disk (cpu: 1, ram: 2 GB, disk: 16 GB)</option>
+							<option value="medium">medium (cpu: 2, ram: 4 GB, disk: 8 GB)</option>
+							<option value="medium.mem">medium.mem (cpu: 1, ram: 6 GB, disk: 8 GB)</option>
+							<option value="medium.disk">medium.disk (cpu: 2, ram: 4 GB, disk: 32 GB)</option>
+							<option value="medium.cpu">medium.cpu (cpu: 4, ram: 4 GB, disk: 8 GB)</option>
+							<option value="large">large (cpu: 2, ram: 8 GB, disk: 16 GB)</option>
+							<option value="large.mem">large.mem (cpu: 2, ram: 12 GB, disk: 16 GB)</option>
+							<option value="large.disk">large.disk (cpu: 2, ram: 8 GB, disk: 64 GB)</option>
+							<option value="large.cpu">large.cpu (cpu: 4, ram: 4 GB, disk: 16 GB)</option>
+							<option value="xlarge">xlarge (cpu: 4, ram: 16 GB, disk: 32 GB)</option>
+							<option value="xlarge.mem">xlarge.mem (cpu: 4, ram: 24 GB, disk: 32 GB)</option>
+							<option value="xlarge.disk">xlarge.disk (cpu: 4, ram: 16 GB, disk: 128 GB)</option>
+							<option value="xlarge.cpu">xlarge.cpu (cpu: 8, ram: 8 GB, disk: 32 GB)</option>
+							<option value="2xlarge">2xlarge (cpu: 8, ram: 32 GB, disk: 64 GB)</option>
+							<option value="2xlarge.mem">2xlarge.mem (cpu: 8, ram: 48 GB, disk: 64 GB)</option>
+							<option value="2xlarge.disk">2xlarge.disk (cpu: 8, ram: 32 GB, disk: 256 GB)</option>
+							<option value="2xlarge.cpu">2xlarge.cpu (cpu: 16, ram: 16 GB, disk: 64 GB)</option>
+						</select>
+					</form>
+					</body>
+				</html>`))
 			case "/some-form":
 				receivedCookies = req.Cookies()
 				req.ParseForm()
@@ -174,6 +206,10 @@ var _ = Describe("configure-bosh command", func() {
 					"network": "some-network"
 			}`
 
+			resourceConfig := `{
+				"compilation_vm_type": "m1.medium"
+			}`
+
 			command = exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "fake-username",
@@ -185,10 +221,11 @@ var _ = Describe("configure-bosh command", func() {
 				"--security-configuration", securityConfiguration,
 				"--az-configuration", availabilityZonesConfiguration,
 				"--networks-configuration", networkConfiguration,
-				"--network-assignment", networkAssignment)
+				"--network-assignment", networkAssignment,
+				"--resource-configuration", resourceConfig)
 		})
 
-		It("configures the bosh tile with the provided bosh configuration", func() {
+		FIt("configures the bosh tile with the provided bosh configuration", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -241,6 +278,10 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[5].Get("security_tokens[vm_password_type]")).To(Equal("some-vm-password-type"))
 			Expect(Forms[5].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[5].Get("_method")).To(Equal("fakemethod"))
+
+			Expect(Forms[6].Get("product_resources_form[compilation][vm_type_id]")).To(Equal("m1.medium"))
+			Expect(Forms[6].Get("authenticity_token")).To(Equal("fake_authenticity"))
+			Expect(Forms[6].Get("_method")).To(Equal("fakemethod"))
 		})
 
 		It("does not configure keys that are not part of input", func() {

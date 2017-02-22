@@ -109,12 +109,17 @@ type NetworkAssignment struct {
 	AZGUID                  string `url:"bosh_product[singleton_availability_zone_reference],omitempty"`
 }
 
+type ResourceConfiguration struct {
+	CompilationVMType string `url:"product_resources_form[compilation][vm_type_id],omitempty" json:"compilation_vm_type"`
+}
+
 type BoshConfiguration struct {
 	IaaSConfiguration
 	DirectorConfiguration
 	AvailabilityZonesConfiguration
 	SecurityConfiguration
 	NetworkAssignment
+	ResourceConfiguration
 	CommonConfiguration
 }
 

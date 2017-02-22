@@ -25,14 +25,25 @@ var _ = Describe("ConfigureBosh", func() {
 	})
 
 	Describe("Execute", func() {
-		It("configures the bosh", func() {
-			testBoshConfigurationWithAZs(service, logger, `{"availability_zones": [{"name": "some-az-name"},{"name": "some-az-other"}]}`, "_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-other")
-		})
-		It("configures the bosh for vSphere", func() {
-			testBoshConfigurationWithAZs(service, logger, `{"availability_zones": [{"name": "some-az-name","cluster": "cluster-1","resource_pool": "pool-1"},{"name": "some-az-other", "cluster": "cluster-2","resource_pool": "pool-2"}]}`, "_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Bcluster%5D=cluster-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Bcluster%5D=cluster-2&availability_zones%5Bavailability_zones%5D%5B%5D%5Bname%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Bname%5D=some-az-other&availability_zones%5Bavailability_zones%5D%5B%5D%5Bresource_pool%5D=pool-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Bresource_pool%5D=pool-2")
+		It("configures bosh", func() {
+			testBoshConfigurationWithAZs(
+				service,
+				logger,
+				`{"availability_zones": [{"name": "some-az-name"},{"name": "some-az-other"}]}`,
+				"_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-other",
+			)
 		})
 
-		It("configures the bosh with no availability zones", func() {
+		It("configures bosh for vSphere", func() {
+			testBoshConfigurationWithAZs(
+				service,
+				logger,
+				`{"availability_zones": [{"name": "some-az-name","cluster": "cluster-1","resource_pool": "pool-1"},{"name": "some-az-other", "cluster": "cluster-2","resource_pool": "pool-2"}]}`,
+				"_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Bcluster%5D=cluster-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Bcluster%5D=cluster-2&availability_zones%5Bavailability_zones%5D%5B%5D%5Bname%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Bname%5D=some-az-other&availability_zones%5Bavailability_zones%5D%5B%5D%5Bresource_pool%5D=pool-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Bresource_pool%5D=pool-2",
+			)
+		})
+
+		It("configures bosh with no availability zones", func() {
 			command := commands.NewConfigureBosh(service, logger)
 
 			service.GetFormReturns(api.Form{
@@ -279,6 +290,7 @@ var _ = Describe("ConfigureBosh", func() {
 				Expect(service.AvailabilityZonesCallCount()).To(Equal(1))
 			})
 		})
+
 		Context("error cases", func() {
 			Context("when an invalid flag is passed", func() {
 				It("returns an error", func() {
@@ -386,7 +398,6 @@ var _ = Describe("ConfigureBosh", func() {
 })
 
 func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.Logger, azConfiguration, azEncodedPayload string) {
-
 	command := commands.NewConfigureBosh(service, logger)
 
 	service.GetFormReturns(api.Form{
@@ -451,6 +462,8 @@ func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.
 			}`,
 		"--network-assignment",
 		`{"singleton_availability_zone": "some-az-name", "network": "some-other-network-name"}`,
+		"--resource-configuration",
+		`{"compilation_vm_type": "some-resource-type"}`,
 	})
 
 	Expect(err).NotTo(HaveOccurred())
@@ -474,6 +487,9 @@ func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.
 	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
 
 	format, content = logger.PrintfArgsForCall(6)
+	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring resources for bosh tile"))
+
+	format, content = logger.PrintfArgsForCall(7)
 	Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 
 	Expect(service.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
@@ -540,5 +556,16 @@ func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.
 			RailsMethod:       "the-rails",
 		},
 		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
+	}))
+
+	Expect(service.GetFormArgsForCall(6)).To(Equal("/infrastructure/director/resources/edit"))
+
+	Expect(service.PostFormArgsForCall(6)).To(Equal(api.PostFormInput{
+		Form: api.Form{
+			Action:            "form-action",
+			AuthenticityToken: "some-auth-token",
+			RailsMethod:       "the-rails",
+		},
+		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&product_resources_form%5Bcompilation%5D%5Bvm_type_id%5D=some-resource-type",
 	}))
 }

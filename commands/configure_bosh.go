@@ -17,6 +17,7 @@ const (
 	availabilityZonesConfigurationPath = "/infrastructure/availability_zones/edit"
 	networksConfigurationPath          = "/infrastructure/networks/edit"
 	networkAssignmentPath              = "/infrastructure/director/az_and_network_assignment/edit"
+	resourceConfigurationPath          = "/infrastructure/director/resources/edit"
 )
 
 type ConfigureBosh struct {
@@ -29,6 +30,7 @@ type ConfigureBosh struct {
 		AvailabilityZonesConfiguration string `short:"a"  long:"az-configuration"  description:"availability zones JSON configuration for the bosh director"`
 		NetworksConfiguration          string `short:"n"  long:"networks-configuration"  description:"complete network configuration for the bosh director"`
 		NetworkAssignment              string `short:"na"  long:"network-assignment"  description:"choose existing network and availability zone to deploy bosh director into"`
+		ResourceConfiguration          string `short:"r"  long:"resource-configuration"  description:"configure resources for the bosh director"`
 	}
 }
 
@@ -154,6 +156,20 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 
 		err = c.postForm(securityConfigurationPath, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	if c.Options.ResourceConfiguration != "" {
+		c.logger.Printf("configuring resources for bosh tile")
+
+		config, err := c.configureForm(c.Options.ResourceConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(resourceConfigurationPath, config)
 		if err != nil {
 			return err
 		}
