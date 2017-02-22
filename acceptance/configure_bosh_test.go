@@ -225,7 +225,7 @@ var _ = Describe("configure-bosh command", func() {
 				"--resource-configuration", resourceConfig)
 		})
 
-		FIt("configures the bosh tile with the provided bosh configuration", func() {
+		It("configures the bosh tile with the provided bosh configuration", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
