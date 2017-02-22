@@ -33,6 +33,8 @@ var _ = Describe("delete-installation command", func() {
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+			case "/api/v0/installations":
+				w.Write([]byte(`{}`))
 			case "/api/v0/installation_asset_collection":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {

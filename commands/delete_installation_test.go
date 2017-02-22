@@ -137,6 +137,41 @@ var _ = Describe("DeleteInstallation", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("no installation to delete"))
 		})
 
+		Context("when an installation is already running", func() {
+			It("re-attaches to the installation", func() {
+				installationService.RunningInstallationReturns(api.InstallationsServiceOutput{ID: 311, Status: "running"}, nil)
+
+				statusOutputs = []api.InstallationsServiceOutput{
+					{Status: "running"},
+					{Status: "running"},
+					{Status: "succeeded"},
+				}
+
+				statusErrors = []error{nil, nil, nil}
+
+				logsOutputs = []api.InstallationsServiceOutput{
+					{Logs: "start of logs"},
+					{Logs: "these logs"},
+					{Logs: "some other logs"},
+				}
+
+				logsErrors = []error{nil, nil, nil}
+
+				command := commands.NewDeleteInstallation(deleteService, installationService, writer, logger, 1)
+
+				err := command.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(deleteService.DeleteCallCount()).To(Equal(0))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running deletion...attempting to re-attach"))
+
+				Expect(installationService.StatusArgsForCall(0)).To(Equal(311))
+				Expect(installationService.LogsArgsForCall(0)).To(Equal(311))
+			})
+		})
+
 		Context("when there are network errors during status check", func() {
 			It("ignores the temporary network error", func() {
 				deleteService.DeleteStub = func() (api.InstallationsServiceOutput, error) {

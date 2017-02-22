@@ -32,16 +32,22 @@ func NewDeleteInstallation(deleteService installationAssetDeleterService, instal
 }
 
 func (ac DeleteInstallation) Execute(args []string) error {
-	ac.logger.Printf("attempting to delete the installation on the targeted Ops Manager")
-
-	installation, err := ac.deleteService.Delete()
-	if err != nil {
-		return fmt.Errorf("failed to delete installation: %s", err)
-	}
+	installation, err := ac.installationsService.RunningInstallation()
 
 	if installation == (api.InstallationsServiceOutput{}) {
-		ac.logger.Printf("no installation to delete")
-		return nil
+		ac.logger.Printf("attempting to delete the installation on the targeted Ops Manager")
+
+		installation, err = ac.deleteService.Delete()
+		if err != nil {
+			return fmt.Errorf("failed to delete installation: %s", err)
+		}
+
+		if installation == (api.InstallationsServiceOutput{}) {
+			ac.logger.Printf("no installation to delete")
+			return nil
+		}
+	} else {
+		ac.logger.Printf("found already running deletion...attempting to re-attach")
 	}
 
 	for {
@@ -74,6 +80,8 @@ func (ac DeleteInstallation) Execute(args []string) error {
 
 		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
 	}
+
+	return nil
 }
 
 func (ac DeleteInstallation) Usage() Usage {
