@@ -463,7 +463,26 @@ func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.
 		"--network-assignment",
 		`{"singleton_availability_zone": "some-az-name", "network": "some-other-network-name"}`,
 		"--resource-configuration",
-		`{"compilation_vm_type": "some-resource-type"}`,
+		`{
+			"director": {
+				"instance_type": {
+					"id": "m1.medium"
+				},
+				"persistent_disk": {
+					"size_mb": "20480"
+				},
+				"internet_connected": true,
+				"elb_names": ["my-elb"]
+			},
+			"compilation": {
+				"instances": 1,
+				"instance_type": {
+					"id": "m1.medium"
+				},
+				"internet_connected": true,
+				"elb_names": ["my-elb"]
+			}
+		}`,
 	})
 
 	Expect(err).NotTo(HaveOccurred())
@@ -566,6 +585,6 @@ func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
 		},
-		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&product_resources_form%5Bcompilation%5D%5Bvm_type_id%5D=some-resource-type",
+		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&product_resources_form%5Bcompilation%5D%5Belb_names%5D=my-elb&product_resources_form%5Bcompilation%5D%5Binstances%5D=1&product_resources_form%5Bcompilation%5D%5Binternet_connected%5D=true&product_resources_form%5Bcompilation%5D%5Bvm_type_id%5D=m1.medium&product_resources_form%5Bdirector%5D%5Bdisk_type_id%5D=20480&product_resources_form%5Bdirector%5D%5Belb_names%5D=my-elb&product_resources_form%5Bdirector%5D%5Binternet_connected%5D=true&product_resources_form%5Bdirector%5D%5Bvm_type_id%5D=m1.medium",
 	}))
 }

@@ -207,7 +207,24 @@ var _ = Describe("configure-bosh command", func() {
 			}`
 
 			resourceConfig := `{
-				"compilation_vm_type": "m1.medium"
+				"director": {
+					"instance_type": {
+						"id": "m1.medium"
+					},
+					"persistent_disk": {
+						"size_mb": "20480"
+					},
+					"internet_connected": true,
+					"elb_names": ["my-elb"]
+				},
+				"compilation": {
+					"instances": 1,
+					"instance_type": {
+						"id": "m1.medium"
+					},
+					"internet_connected": true,
+					"elb_names": ["my-elb"]
+				}
 			}`
 
 			command = exec.Command(pathToMain,
@@ -279,7 +296,14 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(Forms[5].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[5].Get("_method")).To(Equal("fakemethod"))
 
+			Expect(Forms[6].Get("product_resources_form[director][vm_type_id]")).To(Equal("m1.medium"))
+			Expect(Forms[6].Get("product_resources_form[director][disk_type_id]")).To(Equal("20480"))
+			Expect(Forms[6].Get("product_resources_form[director][internet_connected]")).To(Equal("true"))
+			Expect(Forms[6].Get("product_resources_form[director][elb_names]")).To(Equal("my-elb"))
+			Expect(Forms[6].Get("product_resources_form[compilation][instances]")).To(Equal("1"))
 			Expect(Forms[6].Get("product_resources_form[compilation][vm_type_id]")).To(Equal("m1.medium"))
+			Expect(Forms[6].Get("product_resources_form[compilation][internet_connected]")).To(Equal("true"))
+			Expect(Forms[6].Get("product_resources_form[compilation][elb_names]")).To(Equal("my-elb"))
 			Expect(Forms[6].Get("authenticity_token")).To(Equal("fake_authenticity"))
 			Expect(Forms[6].Get("_method")).To(Equal("fakemethod"))
 		})

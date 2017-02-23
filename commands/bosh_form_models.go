@@ -110,7 +110,34 @@ type NetworkAssignment struct {
 }
 
 type ResourceConfiguration struct {
-	CompilationVMType string `url:"product_resources_form[compilation][vm_type_id],omitempty" json:"compilation_vm_type"`
+	DirectorResourceConfiguration    `url:",omitempty" json:"director,omitempty"`
+	CompilationResourceConfiguration `url:",omitempty" json:"compilation,omitempty"`
+}
+
+type DirectorResourceConfiguration struct {
+	DirectorInstanceType `url:"" json:"instance_type"`
+	Disk                 `url:"" json:"persistent_disk"`
+	InternetConnected    *bool    `url:"product_resources_form[director][internet_connected],omitempty" json:"internet_connected"`
+	LBNames              []string `url:"product_resources_form[director][elb_names],omitempty" json:"elb_names"`
+}
+
+type DirectorInstanceType struct {
+	ID *string `url:"product_resources_form[director][vm_type_id],omitempty" json:"id"`
+}
+
+type Disk struct {
+	Size *string `url:"product_resources_form[director][disk_type_id],omitempty" json:"size_mb"`
+}
+
+type CompilationResourceConfiguration struct {
+	Instances               *int `url:"product_resources_form[compilation][instances],omitempty" json:"instances"`
+	CompilationInstanceType `url:"" json:"instance_type"`
+	InternetConnected       *bool    `url:"product_resources_form[compilation][internet_connected],omitempty" json:"internet_connected"`
+	LBNames                 []string `url:"product_resources_form[compilation][elb_names],omitempty" json:"elb_names"`
+}
+
+type CompilationInstanceType struct {
+	ID *string `url:"product_resources_form[compilation][vm_type_id],omitempty" json:"id"`
 }
 
 type BoshConfiguration struct {
