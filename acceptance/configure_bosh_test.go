@@ -185,9 +185,9 @@ var _ = Describe("configure-bosh command", func() {
 				"networks": [{
 					"name": "some-network",
 					"service_network": true,
-					"iaas_identifier": "some-iaas-identifier",
 					"subnets": [
 						{
+							"iaas_identifier": "some-iaas-identifier",
 							"cidr": "10.0.1.0/24",
 							"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
 							"dns": "8.8.8.8",

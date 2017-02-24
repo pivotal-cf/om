@@ -84,9 +84,9 @@ var _ = Describe("ConfigureBosh", func() {
 					"networks": [{
 						"name": "some-network",
 						"service_network": true,
-						"iaas_identifier": "some-iaas-identifier",
 						"subnets": [
 							{
+								"iaas_identifier": "some-iaas-identifier",
 								"cidr": "10.0.1.0/24",
 								"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
 								"dns": "8.8.8.8",
@@ -354,9 +354,9 @@ var _ = Describe("ConfigureBosh", func() {
 						{
 							Name:           "foo",
 							ServiceNetwork: true,
-							IAASIdentifier: "something",
 							Subnets: []commands.Subnet{
 								{
+									IAASIdentifier:        "something",
 									CIDR:                  "some-cidr",
 									ReservedIPRanges:      "reserved-ips",
 									DNS:                   "some-dns",
@@ -445,9 +445,9 @@ func testBoshConfigurationWithAZs(service *fakes.BoshFormService, logger *fakes.
 				"networks": [{
 					"name": "some-network",
 					"service_network": true,
-					"iaas_identifier": "some-iaas-identifier",
 					"subnets": [
 						{
+							"iaas_identifier": "some-iaas-identifier",
 							"cidr": "10.0.1.0/24",
 							"reserved_ip_ranges": "10.0.1.0-10.0.1.4",
 							"dns": "8.8.8.8",

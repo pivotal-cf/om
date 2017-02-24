@@ -271,11 +271,11 @@ type NetworkConfiguration struct {
 	GUID           int      `url:"network_collection[networks_attributes][**network**][guid]"`
 	Name           string   `url:"network_collection[networks_attributes][**network**][name]" json:"name"`
 	ServiceNetwork bool     `url:"network_collection[networks_attributes][**network**][service_network]" json:"service_network"`
-	IAASIdentifier string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][iaas_identifier]" json:"iaas_identifier"`
 	Subnets        []Subnet `json:"subnets"`
 }
 
 type Subnet struct {
+	IAASIdentifier        string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][iaas_identifier]" json:"iaas_identifier"`
 	CIDR                  string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][cidr]" json:"cidr"`
 	ReservedIPRanges      string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][reserved_ip_ranges]" json:"reserved_ip_ranges"`
 	DNS                   string   `url:"network_collection[networks_attributes][**network**][subnets][**subnet**][dns]" json:"dns"`
