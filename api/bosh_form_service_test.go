@@ -47,6 +47,26 @@ const VsphereAZDocument = `
 	</body>
 </html>`
 
+const AWSNetworkDocument = `
+<html>
+	<body>
+		<form action="/some/action" method="some-method">
+			<input name="_method" value="some-rails" />
+			<input name="authenticity_token" value="some-authenticity" />
+			<div class="controls">
+			  <label for="network_collection_networks_attributes_0_subnets_0_availability_zone_references_some-guid">
+				  <input id="network_collection_networks_attributes_0_subnets_0_availability_zone_references_some-guid" type="radio" value="some-guid">
+					us-west-1b
+				</label>
+			  <label for="network_collection_networks_attributes_0_subnets_0_availability_zone_references_some-other-guid">
+				  <input id="network_collection_networks_attributes_0_subnets_0_availability_zone_references_some-other-guid" type="radio" value="some-other-guid">
+					us-west-1c
+				</label>
+			</div>
+		</form>
+	</body>
+</html>`
+
 const NetDocument = `
 <html>
 	<body>
@@ -298,21 +318,43 @@ var _ = Describe("BoshFormService", func() {
 	})
 
 	Describe("Networks", func() {
-		It("returns a map of networks", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(NetDocument)),
-			}, nil)
+		Context("when the networks are selectors", func() {
+			It("returns a map of networks", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(NetDocument)),
+				}, nil)
 
-			netMap, err := service.Networks()
-			Expect(err).NotTo(HaveOccurred())
+				netMap, err := service.Networks()
+				Expect(err).NotTo(HaveOccurred())
 
-			req := client.DoArgsForCall(0)
+				req := client.DoArgsForCall(0)
 
-			Expect(req.Method).To(Equal("GET"))
-			Expect(req.URL.Path).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
-			Expect(netMap).To(HaveKeyWithValue("some-net", "ed9b4dcf24dad744b1cf"))
+				Expect(netMap).To(HaveKeyWithValue("some-net", "ed9b4dcf24dad744b1cf"))
+			})
+		})
+
+		Context("when the networks are radio buttons", func() {
+			It("returns a map of networks", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(AWSNetworkDocument)),
+				}, nil)
+
+				netMap, err := service.Networks()
+				Expect(err).NotTo(HaveOccurred())
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
+
+				Expect(netMap).To(HaveKeyWithValue("us-west-1b", "some-guid"))
+				Expect(netMap).To(HaveKeyWithValue("us-west-1c", "some-other-guid"))
+			})
 		})
 
 		Context("failure cases", func() {

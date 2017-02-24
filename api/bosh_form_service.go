@@ -180,5 +180,16 @@ func (bs BoshFormService) Networks() (map[string]string, error) {
 		},
 	)
 
+	if len(networks) == 0 {
+		document.Find(`input[id*=network][type=radio]`).Each(
+			func(i int, s *goquery.Selection) {
+				guid, _ := s.Attr("value")
+				name := strings.TrimSpace(document.Find(fmt.Sprintf("label[for*=%s]", guid)).First().Text())
+
+				networks[name] = guid
+			},
+		)
+	}
+
 	return networks, nil
 }
