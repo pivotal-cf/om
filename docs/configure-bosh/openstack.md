@@ -62,10 +62,10 @@ No additional security configuration is strictly required.
   "networks": [
     {
       "name": "opsman-network",
-      "iaas_identifier": "openstack-network-guid",
       "service_network": false,
       "subnets": [
         {
+          "iaas_identifier": "openstack-network-guid",
           "cidr": "10.0.0.0/24",
           "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
           "dns": "8.8.8.8",

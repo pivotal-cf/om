@@ -61,9 +61,9 @@ In the example configuration below, we have taken a single GCP network and descr
   "networks": [
     {
       "name": "opsman-network",
-      "iaas_identifier": "some-network/opsman-subnet/us-central1",
       "subnets": [
         {
+          "iaas_identifier": "some-network/opsman-subnet/us-central1",
           "cidr": "10.0.0.0/24",
           "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
           "dns": "8.8.8.8",
@@ -78,9 +78,9 @@ In the example configuration below, we have taken a single GCP network and descr
     },
     {
       "name": "ert-network",
-      "iaas_identifier": "some-network/ert-subnet/us-central1",
       "subnets": [
         {
+          "iaas_identifier": "some-network/ert-subnet/us-central1",
           "cidr": "10.0.4.0/22",
           "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
           "dns": "8.8.8.8",
@@ -95,9 +95,9 @@ In the example configuration below, we have taken a single GCP network and descr
     },
     {
       "name": "services-network",
-      "iaas_identifier": "some-network/services-subnet/us-central1",
       "subnets": [
         {
+          "iaas_identifier": "some-network/services-subnet/us-central1",
           "cidr": "10.0.8.0/22",
           "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
           "dns": "8.8.8.8",

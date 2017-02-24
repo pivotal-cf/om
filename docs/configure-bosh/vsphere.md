@@ -78,10 +78,10 @@ No additional security configuration is strictly required.
   "networks": [
     {
       "name": "opsman-network",
-      "iaas_identifier": "vsphere-network-name",
       "service_network": false,
       "subnets": [
         {
+          "iaas_identifier": "vsphere-network-name",
           "cidr": "10.0.0.0/24",
           "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
           "dns": "8.8.8.8",
@@ -96,10 +96,10 @@ No additional security configuration is strictly required.
     },
     {
       "name": "ert-network",
-      "iaas_identifier": "vsphere-network-name",
       "service_network": false,
       "subnets": [
         {
+          "iaas_identifier": "vsphere-network-name",
           "cidr": "10.0.4.0/24",
           "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
           "dns": "8.8.8.8",
@@ -114,10 +114,10 @@ No additional security configuration is strictly required.
     },
     {
       "name": "services-network",
-      "iaas_identifier": "vsphere-network-name",
       "service_network": false,
       "subnets": [
         {
+          "iaas_identifier": "vsphere-network-name",
           "cidr": "10.0.8.0/24",
           "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
           "dns": "8.8.8.8",

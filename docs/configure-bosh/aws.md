@@ -79,9 +79,9 @@ No additional security configuration is strictly required.
     },
     {
       "name": "ert-network",
-      "iaas_identifier": "vpc-subnet-id-2",
       "subnets": [
         {
+          "iaas_identifier": "vpc-subnet-id-2",
           "cidr": "10.0.4.0/22",
           "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
           "dns": "8.8.8.8",
@@ -94,9 +94,9 @@ No additional security configuration is strictly required.
     },
     {
       "name": "services-network",
-      "iaas_identifier": "vpc-subnet-id-3",
       "subnets": [
         {
+          "iaas_identifier": "vpc-subnet-id-3",
           "cidr": "10.0.8.0/22",
           "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
           "dns": "8.8.8.8",

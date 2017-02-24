@@ -51,9 +51,9 @@ Azure does not configure or manage AZs and so this configuration is not required
   "networks": [
     {
       "name": "opsman-network",
-      "iaas_identifier": "some-network/some-opsman-subnet",
       "subnets": [
         {
+          "iaas_identifier": "some-network/some-opsman-subnet",
           "cidr": "10.0.8.0/26",
           "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
           "dns": "8.8.8.8",
@@ -63,9 +63,9 @@ Azure does not configure or manage AZs and so this configuration is not required
     },
     {
       "name": "ert-network",
-      "iaas_identifier": "some-network/some-ert-subnet",
       "subnets": [
         {
+          "iaas_identifier": "some-network/some-ert-subnet",
           "cidr": "10.0.0.0/22",
           "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
           "dns": "8.8.8.8",
@@ -75,9 +75,9 @@ Azure does not configure or manage AZs and so this configuration is not required
     },
     {
       "name": "services-network",
-      "iaas_identifier": "some-network/some-services-subnet",
       "subnets": [
         {
+          "iaas_identifier": "some-network/some-services-subnet",
           "cidr": "10.0.4.0/22",
           "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
           "dns": "8.8.8.8",
