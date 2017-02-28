@@ -46,6 +46,9 @@ var _ = Describe("configure-bosh command", func() {
 					</form>
 					</body>
 				</html>`))
+			case "/api/v0/diagnostic_report":
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{}`))
 			case "/infrastructure/director_configuration/edit":
 				w.Write([]byte(`<html>
 				<body>

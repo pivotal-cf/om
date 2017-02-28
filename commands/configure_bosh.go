@@ -18,12 +18,15 @@ const (
 	networksConfigurationPath          = "/infrastructure/networks/edit"
 	networkAssignmentPath              = "/infrastructure/director/az_and_network_assignment/edit"
 	resourceConfigurationPath          = "/infrastructure/director/resources/edit"
+
+	boshProductName = "p-bosh"
 )
 
 type ConfigureBosh struct {
-	service boshFormService
-	logger  logger
-	Options struct {
+	boshService       boshFormService
+	diagnosticService diagnosticService
+	logger            logger
+	Options           struct {
 		IaaSConfiguration              string `short:"i"  long:"iaas-configuration"  description:"iaas specific JSON configuration for the bosh director"`
 		DirectorConfiguration          string `short:"d"  long:"director-configuration"  description:"director-specific JSON configuration for the bosh director"`
 		SecurityConfiguration          string `short:"s"  long:"security-configuration"  description:"security-specific JSON configuration for the bosh director"`
@@ -42,14 +45,30 @@ type boshFormService interface {
 	Networks() (map[string]string, error)
 }
 
-func NewConfigureBosh(s boshFormService, l logger) ConfigureBosh {
-	return ConfigureBosh{service: s, logger: l}
+func NewConfigureBosh(bs boshFormService, ds diagnosticService, l logger) ConfigureBosh {
+	return ConfigureBosh{
+		boshService:       bs,
+		diagnosticService: ds,
+		logger:            l,
+	}
 }
 
 func (c ConfigureBosh) Execute(args []string) error {
 	_, err := flags.Parse(&c.Options, args)
 	if err != nil {
 		return err
+	}
+
+	report, err := c.diagnosticService.Report()
+	if err != nil {
+		return err
+	}
+
+	for _, deployedProduct := range report.DeployedProducts {
+		if deployedProduct.Name == boshProductName {
+			c.logger.Printf("skipping: detected deployed director - cannot modify network configuration")
+			return nil
+		}
 	}
 
 	if c.Options.IaaSConfiguration != "" {
@@ -124,13 +143,13 @@ func (c ConfigureBosh) Execute(args []string) error {
 			return err
 		}
 
-		networks, err := c.service.Networks()
+		networks, err := c.boshService.Networks()
 		if err != nil {
 			return err
 		}
 		config.NetworkGUID = networks[config.UserProvidedNetworkName]
 
-		availabilityZones, err := c.service.AvailabilityZones()
+		availabilityZones, err := c.boshService.AvailabilityZones()
 		if err != nil {
 			return err
 		}
@@ -193,7 +212,7 @@ func (c ConfigureBosh) configureForm(configuration string) (BoshConfiguration, e
 }
 
 func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) error {
-	form, err := c.service.GetForm(path)
+	form, err := c.boshService.GetForm(path)
 	if err != nil {
 		return fmt.Errorf("could not fetch form: %s", err)
 	}
@@ -206,7 +225,7 @@ func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) er
 		return err // cannot be tested
 	}
 
-	err = c.service.PostForm(api.PostFormInput{Form: form, EncodedPayload: formValues.Encode()})
+	err = c.boshService.PostForm(api.PostFormInput{Form: form, EncodedPayload: formValues.Encode()})
 	if err != nil {
 		return fmt.Errorf("tile failed to configure: %s", err)
 	}
@@ -215,7 +234,7 @@ func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) er
 }
 
 func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
-	form, err := c.service.GetForm(path)
+	form, err := c.boshService.GetForm(path)
 	if err != nil {
 		return fmt.Errorf("could not fetch form: %s", err)
 	}
@@ -226,7 +245,7 @@ func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 		return fmt.Errorf("could not decode json: %s", err)
 	}
 
-	azMap, err := c.service.AvailabilityZones()
+	azMap, err := c.boshService.AvailabilityZones()
 	if err != nil {
 		return fmt.Errorf("could not fetch availability zones: %s", err)
 	}
@@ -253,7 +272,7 @@ func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 		return err // cannot be tested
 	}
 
-	err = c.service.PostForm(api.PostFormInput{Form: form, EncodedPayload: formValues.Encode()})
+	err = c.boshService.PostForm(api.PostFormInput{Form: form, EncodedPayload: formValues.Encode()})
 	if err != nil {
 		return fmt.Errorf("tile failed to configure: %s", err)
 	}

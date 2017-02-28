@@ -81,6 +81,14 @@ var _ = Describe("DiagnosticService", func() {
 					Version: "1.0.1",
 				},
 			}))
+
+			Expect(report.DeployedProducts).To(Equal([]api.DiagnosticProduct{
+				{
+					Name:     "p-bosh",
+					Version:  "1.8.8.0",
+					Stemcell: "light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz",
+				},
+			}))
 		})
 
 		Context("when an error occurs", func() {

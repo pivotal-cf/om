@@ -106,7 +106,7 @@ func main() {
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
-	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, stdout)
+	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, diagnosticService, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, extractor, availableProductsService, stdout)

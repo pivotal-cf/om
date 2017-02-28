@@ -18,8 +18,9 @@ type DiagnosticProduct struct {
 }
 
 type DiagnosticReport struct {
-	Stemcells      []string
-	StagedProducts []DiagnosticProduct
+	Stemcells        []string
+	StagedProducts   []DiagnosticProduct
+	DeployedProducts []DiagnosticProduct
 }
 
 type DiagnosticReportUnavailable struct{}
@@ -63,7 +64,8 @@ func (ds DiagnosticService) Report() (DiagnosticReport, error) {
 	var apiResponse *struct {
 		DiagnosticReport
 		AddedProducts struct {
-			StagedProducts []DiagnosticProduct `json:"staged"`
+			StagedProducts   []DiagnosticProduct `json:"staged"`
+			DeployedProducts []DiagnosticProduct `json:"deployed"`
 		} `json:"added_products"`
 	}
 
@@ -74,7 +76,8 @@ func (ds DiagnosticService) Report() (DiagnosticReport, error) {
 	}
 
 	return DiagnosticReport{
-		Stemcells:      apiResponse.Stemcells,
-		StagedProducts: apiResponse.AddedProducts.StagedProducts,
+		Stemcells:        apiResponse.Stemcells,
+		StagedProducts:   apiResponse.AddedProducts.StagedProducts,
+		DeployedProducts: apiResponse.AddedProducts.DeployedProducts,
 	}, nil
 }
