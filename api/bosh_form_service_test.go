@@ -19,11 +19,25 @@ const AZDocument = `
 		<form action="/some/action" method="some-method">
 			<input name="_method" value="some-rails" />
 			<input name="authenticity_token" value="some-authenticity" />
+			<div class="content">
+				<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-1" \>
+				<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-2" \>
+			</div>
 			<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-1" \>
 			<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-2" \>
 			<input name="availability_zones[availability_zones][][guid]" value="also-do-not-want" \>
 			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
 			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
+		</form>
+	</body>
+</html>`
+
+const NoAZDocument = `
+<html>
+	<body>
+		<form action="/some/action" method="some-method">
+			<input name="_method" value="some-rails" />
+			<input name="authenticity_token" value="some-authenticity" />
 		</form>
 	</body>
 </html>`
@@ -278,6 +292,19 @@ var _ = Describe("BoshFormService", func() {
 			Expect(netMap).To(HaveKeyWithValue("some-az-name-2", "some-az-guid-2"))
 		})
 
+		Context("when there are no AZs", func() {
+			It("returns successfully", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(NoAZDocument)),
+				}, nil)
+
+				azMap, err := service.AvailabilityZones()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(azMap).To(BeEmpty())
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when http client fails", func() {
 				It("returns an error", func() {
@@ -288,18 +315,6 @@ var _ = Describe("BoshFormService", func() {
 
 					_, err := service.AvailabilityZones()
 					Expect(err).To(MatchError("failed during request: whoops"))
-				})
-			})
-
-			Context("when the number of AZ GUIDs does not match the number of AZ Names", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(mistmatchedForm)),
-					}, nil)
-
-					_, err := service.AvailabilityZones()
-					Expect(err).To(MatchError("failed constructing AZ map - mismatched # of AZ names to GUIDs"))
 				})
 			})
 

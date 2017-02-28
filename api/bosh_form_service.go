@@ -114,7 +114,7 @@ func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
 		return zones, err // cannot test
 	}
 
-	azNames := document.Find("form").Find(`input[name*='iaas_identifier']`).Map(
+	azNames := document.Find("form .content").Find(`input[name*='iaas_identifier']`).Map(
 		func(i int, s *goquery.Selection) string {
 			v, _ := s.Attr("value")
 			return v
@@ -136,10 +136,6 @@ func (bs BoshFormService) AvailabilityZones() (map[string]string, error) {
 			return v
 		},
 	)
-
-	if len(azGuids) != len(azNames) {
-		return zones, fmt.Errorf("failed constructing AZ map - mismatched # of AZ names to GUIDs")
-	}
 
 	for i, azName := range azNames {
 		zones[azName] = azGuids[i]

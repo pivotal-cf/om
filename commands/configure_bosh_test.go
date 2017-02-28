@@ -174,8 +174,6 @@ var _ = Describe("ConfigureBosh", func() {
 				},
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
 			}))
-
-			Expect(service.AvailabilityZonesCallCount()).To(Equal(0))
 		})
 
 		Context("when a network already exists", func() {

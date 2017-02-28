@@ -130,14 +130,16 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 		config.NetworkGUID = networks[config.UserProvidedNetworkName]
 
-		availabilityZones, err := c.AZMap()
+		availabilityZones, err := c.service.AvailabilityZones()
 		if err != nil {
 			return err
 		}
 
 		if azGUID, ok := availabilityZones[config.UserProvidedAZName]; ok {
 			config.AZGUID = azGUID
-		} else {
+		}
+
+		if len(availabilityZones) == 0 {
 			config.AZGUID = "null-az"
 		}
 
@@ -212,13 +214,6 @@ func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) er
 	return nil
 }
 
-func (c ConfigureBosh) AZMap() (map[string]string, error) {
-	if c.Options.AvailabilityZonesConfiguration != "" || strings.Contains(c.Options.NetworkAssignment, `"singleton_availability_zone"`) {
-		return c.service.AvailabilityZones()
-	}
-	return map[string]string{}, nil
-}
-
 func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 	form, err := c.service.GetForm(path)
 	if err != nil {
@@ -231,7 +226,7 @@ func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 		return fmt.Errorf("could not decode json: %s", err)
 	}
 
-	azMap, err := c.AZMap()
+	azMap, err := c.service.AvailabilityZones()
 	if err != nil {
 		return fmt.Errorf("could not fetch availability zones: %s", err)
 	}

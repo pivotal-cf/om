@@ -72,8 +72,10 @@ var _ = Describe("configure-bosh command", func() {
 					<form action="/some-form" method="post">
 						<input name="_method" value="fakemethod" />
 						<input name="authenticity_token" value="fake_authenticity" />
-						<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-1" \>
-						<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-other-az-2" \>
+						<div class="content">
+							<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-az-1" \>
+							<input name="availability_zones[availability_zones][][iaas_identifier]" type="hidden" value="some-other-az-2" \>
+						</div>
 						<input name="availability_zones[availability_zones][][guid]" type="hidden" value="my-az-guid1" \>
 						<input name="availability_zones[availability_zones][][guid]" type="hidden" value="my-az-guid2" \>
 					</form>
