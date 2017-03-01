@@ -140,21 +140,27 @@ var _ = Describe("ConfigureProduct", func() {
 				if productGUID == "some-product-guid" {
 					switch jobGUID {
 					case "a-guid":
-						return api.JobProperties{
+						apiReturn := api.JobProperties{
 							Instances:         0,
 							PersistentDisk:    &api.Disk{Size: "000"},
 							InstanceType:      api.InstanceType{ID: "t2.micro"},
-							InternetConnected: false,
+							InternetConnected: new(bool),
 							LBNames:           []string{"pre-existing-1"},
-						}, nil
+						}
+
+						return apiReturn, nil
 					case "a-different-guid":
-						return api.JobProperties{
+						apiReturn := api.JobProperties{
 							Instances:         2,
-							PersistentDisk:    &api.Disk{Size: "000"},
-							InstanceType:      api.InstanceType{ID: "t2.micro"},
-							InternetConnected: true,
+							PersistentDisk:    &api.Disk{Size: "20480"},
+							InstanceType:      api.InstanceType{ID: "m1.medium"},
+							InternetConnected: new(bool),
 							LBNames:           []string{"pre-existing-2"},
-						}, nil
+						}
+
+						*apiReturn.InternetConnected = true
+
+						return apiReturn, nil
 					default:
 						return api.JobProperties{}, nil
 					}
@@ -175,24 +181,34 @@ var _ = Describe("ConfigureProduct", func() {
 			argProductGUID, argJobGUID, argProperties := jobsService.ConfigureJobArgsForCall(0)
 			Expect(argProductGUID).To(Equal("some-product-guid"))
 			Expect(argJobGUID).To(Equal("a-guid"))
-			Expect(argProperties).To(Equal(api.JobProperties{
+
+			jobProperties := api.JobProperties{
 				Instances:         1,
 				PersistentDisk:    &api.Disk{Size: "20480"},
 				InstanceType:      api.InstanceType{ID: "m1.medium"},
-				InternetConnected: true,
+				InternetConnected: new(bool),
 				LBNames:           []string{"some-lb"},
-			}))
+			}
+
+			*jobProperties.InternetConnected = true
+
+			Expect(argProperties).To(Equal(jobProperties))
 
 			argProductGUID, argJobGUID, argProperties = jobsService.ConfigureJobArgsForCall(1)
 			Expect(argProductGUID).To(Equal("some-product-guid"))
 			Expect(argJobGUID).To(Equal("a-different-guid"))
-			Expect(argProperties).To(Equal(api.JobProperties{
+
+			jobProperties = api.JobProperties{
 				Instances:         2,
 				PersistentDisk:    &api.Disk{Size: "20480"},
 				InstanceType:      api.InstanceType{ID: "m1.medium"},
-				InternetConnected: true,
+				InternetConnected: new(bool),
 				LBNames:           []string{"pre-existing-2"},
-			}))
+			}
+
+			*jobProperties.InternetConnected = true
+
+			Expect(argProperties).To(Equal(jobProperties))
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
