@@ -38,6 +38,13 @@ var _ = Describe("upload-stemcell command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
+				req.ParseForm()
+
+				if req.PostForm.Get("password") == "" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
 				responseString = `{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
@@ -78,12 +85,12 @@ var _ = Describe("upload-stemcell command", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
-			"--password", "some-password",
 			"--skip-ssl-validation",
 			"upload-stemcell",
 			"--stemcell", content.Name(),
 		)
 
+		command.Env = append(command.Env, "OM_PASSWORD=pass")
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 

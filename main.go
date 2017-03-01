@@ -65,6 +65,10 @@ func main() {
 		command = "help"
 	}
 
+	if global.Password == "" {
+		global.Password = os.Getenv("OM_PASSWORD")
+	}
+
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
