@@ -14,6 +14,7 @@ type Bar struct {
 func NewBar() Bar {
 	bar := pb.New(0)
 	bar.SetUnits(pb.U_BYTES)
+	bar.Width = 80
 	bar.Output = os.Stdout
 	return Bar{bar}
 }
