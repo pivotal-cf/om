@@ -92,6 +92,7 @@ func main() {
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)
 	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil, nil)
 	installationsService := api.NewInstallationsService(authedClient)
+	errandsService := api.NewErrandsService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
@@ -123,6 +124,7 @@ func main() {
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
 	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, tableWriter, stdout)
+	commandSet["errands"] = commands.NewErrands(tableWriter, errandsService, stagedProductsService)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

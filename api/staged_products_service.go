@@ -17,6 +17,10 @@ type StagedProductsOutput struct {
 	Products []StagedProduct
 }
 
+type StagedProductsFindOutput struct {
+	Product StagedProduct
+}
+
 type StagedProduct struct {
 	GUID string
 	Type string
@@ -262,4 +266,25 @@ func (p StagedProductsService) checkStagedProducts(productName string) (string, 
 	}
 
 	return "", nil
+}
+
+func (p StagedProductsService) Find(productName string) (StagedProductsFindOutput, error) {
+	productsOutput, err := p.StagedProducts()
+	if err != nil {
+		return StagedProductsFindOutput{}, err
+	}
+
+	var foundProduct StagedProduct
+	for _, product := range productsOutput.Products {
+		if product.Type == productName {
+			foundProduct = product
+			break
+		}
+	}
+
+	if (foundProduct == StagedProduct{}) {
+		return StagedProductsFindOutput{}, fmt.Errorf("could not find product %q", productName)
+	}
+
+	return StagedProductsFindOutput{Product: foundProduct}, nil
 }
