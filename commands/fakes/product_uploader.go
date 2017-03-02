@@ -17,6 +17,10 @@ type ProductUploader struct {
 		result1 api.UploadProductOutput
 		result2 error
 	}
+	uploadReturnsOnCall map[int]struct {
+		result1 api.UploadProductOutput
+		result2 error
+	}
 	CheckProductAvailabilityStub        func(string, string) (bool, error)
 	checkProductAvailabilityMutex       sync.RWMutex
 	checkProductAvailabilityArgsForCall []struct {
@@ -27,10 +31,17 @@ type ProductUploader struct {
 		result1 bool
 		result2 error
 	}
+	checkProductAvailabilityReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	TrashStub        func() error
 	trashMutex       sync.RWMutex
 	trashArgsForCall []struct{}
 	trashReturns     struct {
+		result1 error
+	}
+	trashReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -39,6 +50,7 @@ type ProductUploader struct {
 
 func (fake *ProductUploader) Upload(arg1 api.UploadProductInput) (api.UploadProductOutput, error) {
 	fake.uploadMutex.Lock()
+	ret, specificReturn := fake.uploadReturnsOnCall[len(fake.uploadArgsForCall)]
 	fake.uploadArgsForCall = append(fake.uploadArgsForCall, struct {
 		arg1 api.UploadProductInput
 	}{arg1})
@@ -46,9 +58,11 @@ func (fake *ProductUploader) Upload(arg1 api.UploadProductInput) (api.UploadProd
 	fake.uploadMutex.Unlock()
 	if fake.UploadStub != nil {
 		return fake.UploadStub(arg1)
-	} else {
-		return fake.uploadReturns.result1, fake.uploadReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.uploadReturns.result1, fake.uploadReturns.result2
 }
 
 func (fake *ProductUploader) UploadCallCount() int {
@@ -71,8 +85,23 @@ func (fake *ProductUploader) UploadReturns(result1 api.UploadProductOutput, resu
 	}{result1, result2}
 }
 
+func (fake *ProductUploader) UploadReturnsOnCall(i int, result1 api.UploadProductOutput, result2 error) {
+	fake.UploadStub = nil
+	if fake.uploadReturnsOnCall == nil {
+		fake.uploadReturnsOnCall = make(map[int]struct {
+			result1 api.UploadProductOutput
+			result2 error
+		})
+	}
+	fake.uploadReturnsOnCall[i] = struct {
+		result1 api.UploadProductOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *ProductUploader) CheckProductAvailability(arg1 string, arg2 string) (bool, error) {
 	fake.checkProductAvailabilityMutex.Lock()
+	ret, specificReturn := fake.checkProductAvailabilityReturnsOnCall[len(fake.checkProductAvailabilityArgsForCall)]
 	fake.checkProductAvailabilityArgsForCall = append(fake.checkProductAvailabilityArgsForCall, struct {
 		arg1 string
 		arg2 string
@@ -81,9 +110,11 @@ func (fake *ProductUploader) CheckProductAvailability(arg1 string, arg2 string) 
 	fake.checkProductAvailabilityMutex.Unlock()
 	if fake.CheckProductAvailabilityStub != nil {
 		return fake.CheckProductAvailabilityStub(arg1, arg2)
-	} else {
-		return fake.checkProductAvailabilityReturns.result1, fake.checkProductAvailabilityReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.checkProductAvailabilityReturns.result1, fake.checkProductAvailabilityReturns.result2
 }
 
 func (fake *ProductUploader) CheckProductAvailabilityCallCount() int {
@@ -106,16 +137,33 @@ func (fake *ProductUploader) CheckProductAvailabilityReturns(result1 bool, resul
 	}{result1, result2}
 }
 
+func (fake *ProductUploader) CheckProductAvailabilityReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.CheckProductAvailabilityStub = nil
+	if fake.checkProductAvailabilityReturnsOnCall == nil {
+		fake.checkProductAvailabilityReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.checkProductAvailabilityReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *ProductUploader) Trash() error {
 	fake.trashMutex.Lock()
+	ret, specificReturn := fake.trashReturnsOnCall[len(fake.trashArgsForCall)]
 	fake.trashArgsForCall = append(fake.trashArgsForCall, struct{}{})
 	fake.recordInvocation("Trash", []interface{}{})
 	fake.trashMutex.Unlock()
 	if fake.TrashStub != nil {
 		return fake.TrashStub()
-	} else {
-		return fake.trashReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.trashReturns.result1
 }
 
 func (fake *ProductUploader) TrashCallCount() int {
@@ -127,6 +175,18 @@ func (fake *ProductUploader) TrashCallCount() int {
 func (fake *ProductUploader) TrashReturns(result1 error) {
 	fake.TrashStub = nil
 	fake.trashReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ProductUploader) TrashReturnsOnCall(i int, result1 error) {
+	fake.TrashStub = nil
+	if fake.trashReturnsOnCall == nil {
+		fake.trashReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.trashReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }

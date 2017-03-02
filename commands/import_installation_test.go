@@ -37,12 +37,17 @@ var _ = Describe("ImportInstallation", func() {
 		}
 		multipart.FinalizeReturns(submission, nil)
 		setupService = &fakes.SetupService{}
-		setupService.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
+
+		eaOutputs := []api.EnsureAvailabilityOutput{
 			{Status: api.EnsureAvailabilityStatusUnstarted},
 			{Status: api.EnsureAvailabilityStatusPending},
 			{Status: api.EnsureAvailabilityStatusPending},
 			{Status: api.EnsureAvailabilityStatusPending},
 			{Status: api.EnsureAvailabilityStatusComplete},
+		}
+
+		setupService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+			return eaOutputs[setupService.EnsureAvailabilityCallCount()-1], nil
 		}
 
 		command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
@@ -52,7 +57,7 @@ var _ = Describe("ImportInstallation", func() {
 			"--decryption-passphrase", "some-passphrase",
 		})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(setupService.EnsureAvailabilityCall.CallCount).To(Equal(5))
+		Expect(setupService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("installation[file]"))
@@ -83,9 +88,10 @@ var _ = Describe("ImportInstallation", func() {
 	Context("when the Ops Manager is already configured", func() {
 		It("returns an error", func() {
 			setupService = &fakes.SetupService{}
-			setupService.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
-				{Status: api.EnsureAvailabilityStatusComplete},
-			}
+			setupService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
+				Status: api.EnsureAvailabilityStatusComplete,
+			}, nil)
+
 			command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
 
 			err := command.Execute([]string{
@@ -93,7 +99,7 @@ var _ = Describe("ImportInstallation", func() {
 				"--decryption-passphrase", "some-passphrase",
 			})
 			Expect(err).To(MatchError(ContainSubstring("cannot import installation to an Ops Manager that is already configured")))
-			Expect(setupService.EnsureAvailabilityCall.CallCount).To(Equal(1))
+			Expect(setupService.EnsureAvailabilityCallCount()).To(Equal(1))
 		})
 	})
 
@@ -117,8 +123,7 @@ var _ = Describe("ImportInstallation", func() {
 		Context("when the ensure_availability endpoint returns an error", func() {
 			It("returns an error", func() {
 				setupService = &fakes.SetupService{}
-				setupService.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{}
-				setupService.EnsureAvailabilityCall.Returns.Errors = []error{errors.New("some error")}
+				setupService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
 				command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
 				err := command.Execute([]string{"--installation", "/some/path", "--decryption-passphrase", "some-passphrase"})
 				Expect(err).To(MatchError("could not check Ops Manager status: some error"))
@@ -128,9 +133,9 @@ var _ = Describe("ImportInstallation", func() {
 		Context("when the file cannot be opened", func() {
 			It("returns an error", func() {
 				setupService = &fakes.SetupService{}
-				setupService.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
-					{Status: api.EnsureAvailabilityStatusUnstarted},
-				}
+				setupService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusUnstarted,
+				}, nil)
 				command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
@@ -142,9 +147,9 @@ var _ = Describe("ImportInstallation", func() {
 		Context("when the installation cannot be imported", func() {
 			It("returns and error", func() {
 				setupService = &fakes.SetupService{}
-				setupService.EnsureAvailabilityCall.Returns.Outputs = []api.EnsureAvailabilityOutput{
-					{Status: api.EnsureAvailabilityStatusUnstarted},
-				}
+				setupService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
+					Status: api.EnsureAvailabilityStatusUnstarted,
+				}, nil)
 				command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
 				installationService.ImportReturns(errors.New("some installation error"))
 

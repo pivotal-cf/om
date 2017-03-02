@@ -16,12 +16,16 @@ type InstallationAssetImporterService struct {
 	importReturns struct {
 		result1 error
 	}
+	importReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *InstallationAssetImporterService) Import(arg1 api.ImportInstallationInput) error {
 	fake.importMutex.Lock()
+	ret, specificReturn := fake.importReturnsOnCall[len(fake.importArgsForCall)]
 	fake.importArgsForCall = append(fake.importArgsForCall, struct {
 		arg1 api.ImportInstallationInput
 	}{arg1})
@@ -29,9 +33,11 @@ func (fake *InstallationAssetImporterService) Import(arg1 api.ImportInstallation
 	fake.importMutex.Unlock()
 	if fake.ImportStub != nil {
 		return fake.ImportStub(arg1)
-	} else {
-		return fake.importReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.importReturns.result1
 }
 
 func (fake *InstallationAssetImporterService) ImportCallCount() int {
@@ -49,6 +55,18 @@ func (fake *InstallationAssetImporterService) ImportArgsForCall(i int) api.Impor
 func (fake *InstallationAssetImporterService) ImportReturns(result1 error) {
 	fake.ImportStub = nil
 	fake.importReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *InstallationAssetImporterService) ImportReturnsOnCall(i int, result1 error) {
+	fake.ImportStub = nil
+	if fake.importReturnsOnCall == nil {
+		fake.importReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.importReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }

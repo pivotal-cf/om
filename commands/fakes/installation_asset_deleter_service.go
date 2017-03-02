@@ -15,20 +15,27 @@ type InstallationAssetDeleterService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
+	deleteReturnsOnCall map[int]struct {
+		result1 api.InstallationsServiceOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *InstallationAssetDeleterService) Delete() (api.InstallationsServiceOutput, error) {
 	fake.deleteMutex.Lock()
+	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct{}{})
 	fake.recordInvocation("Delete", []interface{}{})
 	fake.deleteMutex.Unlock()
 	if fake.DeleteStub != nil {
 		return fake.DeleteStub()
-	} else {
-		return fake.deleteReturns.result1, fake.deleteReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.deleteReturns.result1, fake.deleteReturns.result2
 }
 
 func (fake *InstallationAssetDeleterService) DeleteCallCount() int {
@@ -40,6 +47,20 @@ func (fake *InstallationAssetDeleterService) DeleteCallCount() int {
 func (fake *InstallationAssetDeleterService) DeleteReturns(result1 api.InstallationsServiceOutput, result2 error) {
 	fake.DeleteStub = nil
 	fake.deleteReturns = struct {
+		result1 api.InstallationsServiceOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *InstallationAssetDeleterService) DeleteReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
+	fake.DeleteStub = nil
+	if fake.deleteReturnsOnCall == nil {
+		fake.deleteReturnsOnCall = make(map[int]struct {
+			result1 api.InstallationsServiceOutput
+			result2 error
+		})
+	}
+	fake.deleteReturnsOnCall[i] = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}

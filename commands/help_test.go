@@ -64,10 +64,10 @@ var _ = Describe("Help", func() {
 		Context("when no command name is given", func() {
 			It("prints the global usage to the output", func() {
 				bake := &fakes.Command{}
-				bake.UsageCall.Returns.Usage = commands.Usage{ShortDescription: "bakes you a cake"}
+				bake.UsageReturns(commands.Usage{ShortDescription: "bakes you a cake"})
 
 				clean := &fakes.Command{}
-				clean.UsageCall.Returns.Usage = commands.Usage{ShortDescription: "cleans up after baking"}
+				clean.UsageReturns(commands.Usage{ShortDescription: "cleans up after baking"})
 
 				help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{
 					"bake":  bake,
@@ -83,7 +83,7 @@ var _ = Describe("Help", func() {
 		Context("when a command name is given", func() {
 			It("prints the usage for that command", func() {
 				bake := &fakes.Command{}
-				bake.UsageCall.Returns.Usage = commands.Usage{
+				bake.UsageReturns(commands.Usage{
 					Description:      "This command will help you bake a cake.",
 					ShortDescription: "bakes you a cake",
 					Flags: struct {
@@ -91,7 +91,7 @@ var _ = Describe("Help", func() {
 						Butter int `short:"b" long:"butter" description:"sticks of butter"`
 						Lemon  int `short:"l" long:"lemon"  description:"teaspoons of lemon juice"`
 					}{},
-				}
+				})
 
 				help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
 				err := help.Execute([]string{"bake"})
@@ -111,11 +111,11 @@ var _ = Describe("Help", func() {
 			Context("when the command flags cannot be determined", func() {
 				It("returns an error", func() {
 					bake := &fakes.Command{}
-					bake.UsageCall.Returns.Usage = commands.Usage{
+					bake.UsageReturns(commands.Usage{
 						Description:      "This command will help you bake a cake.",
 						ShortDescription: "bakes you a cake",
 						Flags:            func() {},
-					}
+					})
 
 					help := commands.NewHelp(output, flags, commands.Set{"bake": bake})
 					err := help.Execute([]string{"bake"})
@@ -126,10 +126,10 @@ var _ = Describe("Help", func() {
 			Context("when there are no flags", func() {
 				It("prints the usage of a flag-less command", func() {
 					bake := &fakes.Command{}
-					bake.UsageCall.Returns.Usage = commands.Usage{
+					bake.UsageReturns(commands.Usage{
 						Description:      "This command will help you bake a cake.",
 						ShortDescription: "bakes you a cake",
-					}
+					})
 
 					help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
 					err := help.Execute([]string{"bake"})
@@ -143,11 +143,11 @@ var _ = Describe("Help", func() {
 			Context("when there is an empty flag object", func() {
 				It("prints the usage of a flag-less command", func() {
 					bake := &fakes.Command{}
-					bake.UsageCall.Returns.Usage = commands.Usage{
+					bake.UsageReturns(commands.Usage{
 						Description:      "This command will help you bake a cake.",
 						ShortDescription: "bakes you a cake",
 						Flags:            struct{}{},
-					}
+					})
 
 					help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
 					err := help.Execute([]string{"bake"})

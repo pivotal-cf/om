@@ -17,12 +17,17 @@ type RequestService struct {
 		result1 api.RequestServiceInvokeOutput
 		result2 error
 	}
+	invokeReturnsOnCall map[int]struct {
+		result1 api.RequestServiceInvokeOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *RequestService) Invoke(arg1 api.RequestServiceInvokeInput) (api.RequestServiceInvokeOutput, error) {
 	fake.invokeMutex.Lock()
+	ret, specificReturn := fake.invokeReturnsOnCall[len(fake.invokeArgsForCall)]
 	fake.invokeArgsForCall = append(fake.invokeArgsForCall, struct {
 		arg1 api.RequestServiceInvokeInput
 	}{arg1})
@@ -30,9 +35,11 @@ func (fake *RequestService) Invoke(arg1 api.RequestServiceInvokeInput) (api.Requ
 	fake.invokeMutex.Unlock()
 	if fake.InvokeStub != nil {
 		return fake.InvokeStub(arg1)
-	} else {
-		return fake.invokeReturns.result1, fake.invokeReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.invokeReturns.result1, fake.invokeReturns.result2
 }
 
 func (fake *RequestService) InvokeCallCount() int {
@@ -50,6 +57,20 @@ func (fake *RequestService) InvokeArgsForCall(i int) api.RequestServiceInvokeInp
 func (fake *RequestService) InvokeReturns(result1 api.RequestServiceInvokeOutput, result2 error) {
 	fake.InvokeStub = nil
 	fake.invokeReturns = struct {
+		result1 api.RequestServiceInvokeOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *RequestService) InvokeReturnsOnCall(i int, result1 api.RequestServiceInvokeOutput, result2 error) {
+	fake.InvokeStub = nil
+	if fake.invokeReturnsOnCall == nil {
+		fake.invokeReturnsOnCall = make(map[int]struct {
+			result1 api.RequestServiceInvokeOutput
+			result2 error
+		})
+	}
+	fake.invokeReturnsOnCall[i] = struct {
 		result1 api.RequestServiceInvokeOutput
 		result2 error
 	}{result1, result2}

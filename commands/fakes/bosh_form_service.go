@@ -17,6 +17,10 @@ type BoshFormService struct {
 		result1 api.Form
 		result2 error
 	}
+	getFormReturnsOnCall map[int]struct {
+		result1 api.Form
+		result2 error
+	}
 	PostFormStub        func(api.PostFormInput) error
 	postFormMutex       sync.RWMutex
 	postFormArgsForCall []struct {
@@ -25,10 +29,17 @@ type BoshFormService struct {
 	postFormReturns struct {
 		result1 error
 	}
+	postFormReturnsOnCall map[int]struct {
+		result1 error
+	}
 	AvailabilityZonesStub        func() (map[string]string, error)
 	availabilityZonesMutex       sync.RWMutex
 	availabilityZonesArgsForCall []struct{}
 	availabilityZonesReturns     struct {
+		result1 map[string]string
+		result2 error
+	}
+	availabilityZonesReturnsOnCall map[int]struct {
 		result1 map[string]string
 		result2 error
 	}
@@ -39,12 +50,17 @@ type BoshFormService struct {
 		result1 map[string]string
 		result2 error
 	}
+	networksReturnsOnCall map[int]struct {
+		result1 map[string]string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *BoshFormService) GetForm(path string) (api.Form, error) {
 	fake.getFormMutex.Lock()
+	ret, specificReturn := fake.getFormReturnsOnCall[len(fake.getFormArgsForCall)]
 	fake.getFormArgsForCall = append(fake.getFormArgsForCall, struct {
 		path string
 	}{path})
@@ -52,9 +68,11 @@ func (fake *BoshFormService) GetForm(path string) (api.Form, error) {
 	fake.getFormMutex.Unlock()
 	if fake.GetFormStub != nil {
 		return fake.GetFormStub(path)
-	} else {
-		return fake.getFormReturns.result1, fake.getFormReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.getFormReturns.result1, fake.getFormReturns.result2
 }
 
 func (fake *BoshFormService) GetFormCallCount() int {
@@ -77,8 +95,23 @@ func (fake *BoshFormService) GetFormReturns(result1 api.Form, result2 error) {
 	}{result1, result2}
 }
 
+func (fake *BoshFormService) GetFormReturnsOnCall(i int, result1 api.Form, result2 error) {
+	fake.GetFormStub = nil
+	if fake.getFormReturnsOnCall == nil {
+		fake.getFormReturnsOnCall = make(map[int]struct {
+			result1 api.Form
+			result2 error
+		})
+	}
+	fake.getFormReturnsOnCall[i] = struct {
+		result1 api.Form
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *BoshFormService) PostForm(arg1 api.PostFormInput) error {
 	fake.postFormMutex.Lock()
+	ret, specificReturn := fake.postFormReturnsOnCall[len(fake.postFormArgsForCall)]
 	fake.postFormArgsForCall = append(fake.postFormArgsForCall, struct {
 		arg1 api.PostFormInput
 	}{arg1})
@@ -86,9 +119,11 @@ func (fake *BoshFormService) PostForm(arg1 api.PostFormInput) error {
 	fake.postFormMutex.Unlock()
 	if fake.PostFormStub != nil {
 		return fake.PostFormStub(arg1)
-	} else {
-		return fake.postFormReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.postFormReturns.result1
 }
 
 func (fake *BoshFormService) PostFormCallCount() int {
@@ -110,16 +145,31 @@ func (fake *BoshFormService) PostFormReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *BoshFormService) PostFormReturnsOnCall(i int, result1 error) {
+	fake.PostFormStub = nil
+	if fake.postFormReturnsOnCall == nil {
+		fake.postFormReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.postFormReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *BoshFormService) AvailabilityZones() (map[string]string, error) {
 	fake.availabilityZonesMutex.Lock()
+	ret, specificReturn := fake.availabilityZonesReturnsOnCall[len(fake.availabilityZonesArgsForCall)]
 	fake.availabilityZonesArgsForCall = append(fake.availabilityZonesArgsForCall, struct{}{})
 	fake.recordInvocation("AvailabilityZones", []interface{}{})
 	fake.availabilityZonesMutex.Unlock()
 	if fake.AvailabilityZonesStub != nil {
 		return fake.AvailabilityZonesStub()
-	} else {
-		return fake.availabilityZonesReturns.result1, fake.availabilityZonesReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.availabilityZonesReturns.result1, fake.availabilityZonesReturns.result2
 }
 
 func (fake *BoshFormService) AvailabilityZonesCallCount() int {
@@ -136,16 +186,33 @@ func (fake *BoshFormService) AvailabilityZonesReturns(result1 map[string]string,
 	}{result1, result2}
 }
 
+func (fake *BoshFormService) AvailabilityZonesReturnsOnCall(i int, result1 map[string]string, result2 error) {
+	fake.AvailabilityZonesStub = nil
+	if fake.availabilityZonesReturnsOnCall == nil {
+		fake.availabilityZonesReturnsOnCall = make(map[int]struct {
+			result1 map[string]string
+			result2 error
+		})
+	}
+	fake.availabilityZonesReturnsOnCall[i] = struct {
+		result1 map[string]string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *BoshFormService) Networks() (map[string]string, error) {
 	fake.networksMutex.Lock()
+	ret, specificReturn := fake.networksReturnsOnCall[len(fake.networksArgsForCall)]
 	fake.networksArgsForCall = append(fake.networksArgsForCall, struct{}{})
 	fake.recordInvocation("Networks", []interface{}{})
 	fake.networksMutex.Unlock()
 	if fake.NetworksStub != nil {
 		return fake.NetworksStub()
-	} else {
-		return fake.networksReturns.result1, fake.networksReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.networksReturns.result1, fake.networksReturns.result2
 }
 
 func (fake *BoshFormService) NetworksCallCount() int {
@@ -157,6 +224,20 @@ func (fake *BoshFormService) NetworksCallCount() int {
 func (fake *BoshFormService) NetworksReturns(result1 map[string]string, result2 error) {
 	fake.NetworksStub = nil
 	fake.networksReturns = struct {
+		result1 map[string]string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *BoshFormService) NetworksReturnsOnCall(i int, result1 map[string]string, result2 error) {
+	fake.NetworksStub = nil
+	if fake.networksReturnsOnCall == nil {
+		fake.networksReturnsOnCall = make(map[int]struct {
+			result1 map[string]string
+			result2 error
+		})
+	}
+	fake.networksReturnsOnCall[i] = struct {
 		result1 map[string]string
 		result2 error
 	}{result1, result2}

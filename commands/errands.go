@@ -57,6 +57,7 @@ func (e Errands) Execute(args []string) error {
 	}
 
 	e.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled"})
+
 	for _, errand := range errandsOutput.Errands {
 		e.tableWriter.Append([]string{errand.Name, strconv.FormatBool(errand.PostDeploy)})
 	}

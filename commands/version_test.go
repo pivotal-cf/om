@@ -5,11 +5,16 @@ import (
 	"errors"
 
 	"github.com/pivotal-cf/om/commands"
-	"github.com/pivotal-cf/om/commands/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+type badWriter struct{}
+
+func (bw badWriter) Write([]byte) (int, error) {
+	return 0, errors.New("failed to write")
+}
 
 var _ = Describe("Version", func() {
 	Describe("Execute", func() {
@@ -26,10 +31,8 @@ var _ = Describe("Version", func() {
 		Context("failure cases", func() {
 			Context("when the output cannot be written to", func() {
 				It("returns an error", func() {
-					output := &fakes.Writer{}
-					output.WriteCall.Returns.Error = errors.New("failed to write")
 
-					version := commands.NewVersion("v1.2.3", output)
+					version := commands.NewVersion("v1.2.3", badWriter{})
 
 					err := version.Execute([]string{})
 					Expect(err).To(MatchError("could not print version: failed to write"))

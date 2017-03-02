@@ -15,20 +15,27 @@ type DiagnosticService struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
+	reportReturnsOnCall map[int]struct {
+		result1 api.DiagnosticReport
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *DiagnosticService) Report() (api.DiagnosticReport, error) {
 	fake.reportMutex.Lock()
+	ret, specificReturn := fake.reportReturnsOnCall[len(fake.reportArgsForCall)]
 	fake.reportArgsForCall = append(fake.reportArgsForCall, struct{}{})
 	fake.recordInvocation("Report", []interface{}{})
 	fake.reportMutex.Unlock()
 	if fake.ReportStub != nil {
 		return fake.ReportStub()
-	} else {
-		return fake.reportReturns.result1, fake.reportReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.reportReturns.result1, fake.reportReturns.result2
 }
 
 func (fake *DiagnosticService) ReportCallCount() int {
@@ -40,6 +47,20 @@ func (fake *DiagnosticService) ReportCallCount() int {
 func (fake *DiagnosticService) ReportReturns(result1 api.DiagnosticReport, result2 error) {
 	fake.ReportStub = nil
 	fake.reportReturns = struct {
+		result1 api.DiagnosticReport
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *DiagnosticService) ReportReturnsOnCall(i int, result1 api.DiagnosticReport, result2 error) {
+	fake.ReportStub = nil
+	if fake.reportReturnsOnCall == nil {
+		fake.reportReturnsOnCall = make(map[int]struct {
+			result1 api.DiagnosticReport
+			result2 error
+		})
+	}
+	fake.reportReturnsOnCall[i] = struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}{result1, result2}

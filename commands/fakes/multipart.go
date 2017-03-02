@@ -15,6 +15,10 @@ type Multipart struct {
 		result1 formcontent.ContentSubmission
 		result2 error
 	}
+	finalizeReturnsOnCall map[int]struct {
+		result1 formcontent.ContentSubmission
+		result2 error
+	}
 	AddFileStub        func(key, path string) error
 	addFileMutex       sync.RWMutex
 	addFileArgsForCall []struct {
@@ -22,6 +26,9 @@ type Multipart struct {
 		path string
 	}
 	addFileReturns struct {
+		result1 error
+	}
+	addFileReturnsOnCall map[int]struct {
 		result1 error
 	}
 	AddFieldStub        func(key, value string) error
@@ -33,20 +40,26 @@ type Multipart struct {
 	addFieldReturns struct {
 		result1 error
 	}
+	addFieldReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *Multipart) Finalize() (formcontent.ContentSubmission, error) {
 	fake.finalizeMutex.Lock()
+	ret, specificReturn := fake.finalizeReturnsOnCall[len(fake.finalizeArgsForCall)]
 	fake.finalizeArgsForCall = append(fake.finalizeArgsForCall, struct{}{})
 	fake.recordInvocation("Finalize", []interface{}{})
 	fake.finalizeMutex.Unlock()
 	if fake.FinalizeStub != nil {
 		return fake.FinalizeStub()
-	} else {
-		return fake.finalizeReturns.result1, fake.finalizeReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.finalizeReturns.result1, fake.finalizeReturns.result2
 }
 
 func (fake *Multipart) FinalizeCallCount() int {
@@ -63,8 +76,23 @@ func (fake *Multipart) FinalizeReturns(result1 formcontent.ContentSubmission, re
 	}{result1, result2}
 }
 
+func (fake *Multipart) FinalizeReturnsOnCall(i int, result1 formcontent.ContentSubmission, result2 error) {
+	fake.FinalizeStub = nil
+	if fake.finalizeReturnsOnCall == nil {
+		fake.finalizeReturnsOnCall = make(map[int]struct {
+			result1 formcontent.ContentSubmission
+			result2 error
+		})
+	}
+	fake.finalizeReturnsOnCall[i] = struct {
+		result1 formcontent.ContentSubmission
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *Multipart) AddFile(key string, path string) error {
 	fake.addFileMutex.Lock()
+	ret, specificReturn := fake.addFileReturnsOnCall[len(fake.addFileArgsForCall)]
 	fake.addFileArgsForCall = append(fake.addFileArgsForCall, struct {
 		key  string
 		path string
@@ -73,9 +101,11 @@ func (fake *Multipart) AddFile(key string, path string) error {
 	fake.addFileMutex.Unlock()
 	if fake.AddFileStub != nil {
 		return fake.AddFileStub(key, path)
-	} else {
-		return fake.addFileReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.addFileReturns.result1
 }
 
 func (fake *Multipart) AddFileCallCount() int {
@@ -97,8 +127,21 @@ func (fake *Multipart) AddFileReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *Multipart) AddFileReturnsOnCall(i int, result1 error) {
+	fake.AddFileStub = nil
+	if fake.addFileReturnsOnCall == nil {
+		fake.addFileReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addFileReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *Multipart) AddField(key string, value string) error {
 	fake.addFieldMutex.Lock()
+	ret, specificReturn := fake.addFieldReturnsOnCall[len(fake.addFieldArgsForCall)]
 	fake.addFieldArgsForCall = append(fake.addFieldArgsForCall, struct {
 		key   string
 		value string
@@ -107,9 +150,11 @@ func (fake *Multipart) AddField(key string, value string) error {
 	fake.addFieldMutex.Unlock()
 	if fake.AddFieldStub != nil {
 		return fake.AddFieldStub(key, value)
-	} else {
-		return fake.addFieldReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.addFieldReturns.result1
 }
 
 func (fake *Multipart) AddFieldCallCount() int {
@@ -127,6 +172,18 @@ func (fake *Multipart) AddFieldArgsForCall(i int) (string, string) {
 func (fake *Multipart) AddFieldReturns(result1 error) {
 	fake.AddFieldStub = nil
 	fake.addFieldReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *Multipart) AddFieldReturnsOnCall(i int, result1 error) {
+	fake.AddFieldStub = nil
+	if fake.addFieldReturnsOnCall == nil {
+		fake.addFieldReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addFieldReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }

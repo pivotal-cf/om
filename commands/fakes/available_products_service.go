@@ -15,20 +15,27 @@ type AvailableProductsService struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}
+	listReturnsOnCall map[int]struct {
+		result1 api.AvailableProductsOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *AvailableProductsService) List() (api.AvailableProductsOutput, error) {
 	fake.listMutex.Lock()
+	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
 	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
 	fake.recordInvocation("List", []interface{}{})
 	fake.listMutex.Unlock()
 	if fake.ListStub != nil {
 		return fake.ListStub()
-	} else {
-		return fake.listReturns.result1, fake.listReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.listReturns.result1, fake.listReturns.result2
 }
 
 func (fake *AvailableProductsService) ListCallCount() int {
@@ -40,6 +47,20 @@ func (fake *AvailableProductsService) ListCallCount() int {
 func (fake *AvailableProductsService) ListReturns(result1 api.AvailableProductsOutput, result2 error) {
 	fake.ListStub = nil
 	fake.listReturns = struct {
+		result1 api.AvailableProductsOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *AvailableProductsService) ListReturnsOnCall(i int, result1 api.AvailableProductsOutput, result2 error) {
+	fake.ListStub = nil
+	if fake.listReturnsOnCall == nil {
+		fake.listReturnsOnCall = make(map[int]struct {
+			result1 api.AvailableProductsOutput
+			result2 error
+		})
+	}
+	fake.listReturnsOnCall[i] = struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}{result1, result2}

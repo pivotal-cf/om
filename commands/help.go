@@ -44,13 +44,6 @@ func NewHelp(output io.Writer, flags string, commands Set) Help {
 	}
 }
 
-func (h Help) Usage() Usage {
-	return Usage{
-		Description:      "This command prints helpful usage information.",
-		ShortDescription: "prints this usage information",
-	}
-}
-
 func (h Help) Execute(args []string) error {
 	var globalFlags []string
 	for _, flag := range strings.Split(h.flags, "\n") {
@@ -78,6 +71,13 @@ func (h Help) Execute(args []string) error {
 	}
 
 	return nil
+}
+
+func (h Help) Usage() Usage {
+	return Usage{
+		Description:      "This command prints helpful usage information.",
+		ShortDescription: "prints this usage information",
+	}
 }
 
 func (h Help) buildGlobalContext() TemplateContext {

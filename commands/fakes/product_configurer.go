@@ -15,6 +15,10 @@ type ProductConfigurer struct {
 		result1 api.StagedProductsOutput
 		result2 error
 	}
+	stagedProductsReturnsOnCall map[int]struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}
 	ConfigureStub        func(api.ProductsConfigurationInput) error
 	configureMutex       sync.RWMutex
 	configureArgsForCall []struct {
@@ -23,20 +27,26 @@ type ProductConfigurer struct {
 	configureReturns struct {
 		result1 error
 	}
+	configureReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *ProductConfigurer) StagedProducts() (api.StagedProductsOutput, error) {
 	fake.stagedProductsMutex.Lock()
+	ret, specificReturn := fake.stagedProductsReturnsOnCall[len(fake.stagedProductsArgsForCall)]
 	fake.stagedProductsArgsForCall = append(fake.stagedProductsArgsForCall, struct{}{})
 	fake.recordInvocation("StagedProducts", []interface{}{})
 	fake.stagedProductsMutex.Unlock()
 	if fake.StagedProductsStub != nil {
 		return fake.StagedProductsStub()
-	} else {
-		return fake.stagedProductsReturns.result1, fake.stagedProductsReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.stagedProductsReturns.result1, fake.stagedProductsReturns.result2
 }
 
 func (fake *ProductConfigurer) StagedProductsCallCount() int {
@@ -53,8 +63,23 @@ func (fake *ProductConfigurer) StagedProductsReturns(result1 api.StagedProductsO
 	}{result1, result2}
 }
 
+func (fake *ProductConfigurer) StagedProductsReturnsOnCall(i int, result1 api.StagedProductsOutput, result2 error) {
+	fake.StagedProductsStub = nil
+	if fake.stagedProductsReturnsOnCall == nil {
+		fake.stagedProductsReturnsOnCall = make(map[int]struct {
+			result1 api.StagedProductsOutput
+			result2 error
+		})
+	}
+	fake.stagedProductsReturnsOnCall[i] = struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *ProductConfigurer) Configure(arg1 api.ProductsConfigurationInput) error {
 	fake.configureMutex.Lock()
+	ret, specificReturn := fake.configureReturnsOnCall[len(fake.configureArgsForCall)]
 	fake.configureArgsForCall = append(fake.configureArgsForCall, struct {
 		arg1 api.ProductsConfigurationInput
 	}{arg1})
@@ -62,9 +87,11 @@ func (fake *ProductConfigurer) Configure(arg1 api.ProductsConfigurationInput) er
 	fake.configureMutex.Unlock()
 	if fake.ConfigureStub != nil {
 		return fake.ConfigureStub(arg1)
-	} else {
-		return fake.configureReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.configureReturns.result1
 }
 
 func (fake *ProductConfigurer) ConfigureCallCount() int {
@@ -82,6 +109,18 @@ func (fake *ProductConfigurer) ConfigureArgsForCall(i int) api.ProductsConfigura
 func (fake *ProductConfigurer) ConfigureReturns(result1 error) {
 	fake.ConfigureStub = nil
 	fake.configureReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ProductConfigurer) ConfigureReturnsOnCall(i int, result1 error) {
+	fake.ConfigureStub = nil
+	if fake.configureReturnsOnCall == nil {
+		fake.configureReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.configureReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }

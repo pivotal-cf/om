@@ -22,7 +22,7 @@ var _ = Describe("Set", func() {
 			err := commandSet.Execute("my-command", []string{"--arg-1", "--arg-2"})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(command.ExecuteCall.Receives.Args).To(Equal([]string{"--arg-1", "--arg-2"}))
+			Expect(command.ExecuteArgsForCall(0)).To(Equal([]string{"--arg-1", "--arg-2"}))
 		})
 
 		Context("when the given command does not exist", func() {
@@ -38,7 +38,7 @@ var _ = Describe("Set", func() {
 			Context("when the command execution errors", func() {
 				It("returns an error", func() {
 					command := &fakes.Command{}
-					command.ExecuteCall.Returns.Error = errors.New("failed to execute")
+					command.ExecuteReturns(errors.New("failed to execute"))
 
 					commandSet := commands.Set{
 						"erroring-command": command,
@@ -63,8 +63,8 @@ var _ = Describe("Set", func() {
 				err := commandSet.Execute("my-command", []string{"--arg-1", "--help", "--arg-2"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(command.ExecuteCall.Receives.Args).To(BeNil())
-				Expect(helpCommand.ExecuteCall.Receives.Args).To(Equal([]string{"my-command"}))
+				Expect(command.ExecuteCallCount()).To(Equal(0))
+				Expect(helpCommand.ExecuteArgsForCall(0)).To(Equal([]string{"my-command"}))
 			})
 		})
 
@@ -81,8 +81,8 @@ var _ = Describe("Set", func() {
 				err := commandSet.Execute("my-command", []string{"--arg-1", "-h", "--arg-2"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(command.ExecuteCall.Receives.Args).To(BeNil())
-				Expect(helpCommand.ExecuteCall.Receives.Args).To(Equal([]string{"my-command"}))
+				Expect(command.ExecuteCallCount()).To(Equal(0))
+				Expect(helpCommand.ExecuteArgsForCall(0)).To(Equal([]string{"my-command"}))
 			})
 		})
 
@@ -99,8 +99,8 @@ var _ = Describe("Set", func() {
 				err := commandSet.Execute("my-command", []string{"--arg-1", "-help", "--arg-2"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(command.ExecuteCall.Receives.Args).To(BeNil())
-				Expect(helpCommand.ExecuteCall.Receives.Args).To(Equal([]string{"my-command"}))
+				Expect(command.ExecuteCallCount()).To(Equal(0))
+				Expect(helpCommand.ExecuteArgsForCall(0)).To(Equal([]string{"my-command"}))
 			})
 		})
 	})
@@ -108,7 +108,7 @@ var _ = Describe("Set", func() {
 	Describe("Usage", func() {
 		It("returns the usage information for the given command", func() {
 			command := &fakes.Command{}
-			command.UsageCall.Returns.Usage = commands.Usage{Description: "my-command description"}
+			command.UsageReturns(commands.Usage{Description: "my-command description"})
 
 			commandSet := commands.Set{
 				"my-command": command,

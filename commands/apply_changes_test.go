@@ -59,7 +59,6 @@ var _ = Describe("ApplyChanges", func() {
 			logsCount++
 			return output, err
 		}
-
 	})
 
 	Describe("Execute", func() {

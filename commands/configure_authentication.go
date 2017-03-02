@@ -8,6 +8,7 @@ import (
 	"github.com/pivotal-cf/om/flags"
 )
 
+//go:generate counterfeiter -o ./fakes/setup_service.go --fake-name SetupService . setupService
 type setupService interface {
 	Setup(api.SetupInput) (api.SetupOutput, error)
 	EnsureAvailability(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
@@ -27,14 +28,6 @@ func NewConfigureAuthentication(service setupService, logger logger) ConfigureAu
 	return ConfigureAuthentication{
 		service: service,
 		logger:  logger,
-	}
-}
-
-func (ca ConfigureAuthentication) Usage() Usage {
-	return Usage{
-		Description:      "This unauthenticated command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
-		ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
-		Flags:            ca.Options,
 	}
 }
 
@@ -83,4 +76,12 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 	ca.logger.Printf("configuration complete")
 
 	return nil
+}
+
+func (ca ConfigureAuthentication) Usage() Usage {
+	return Usage{
+		Description:      "This unauthenticated command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
+		ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
+		Flags:            ca.Options,
+	}
 }
