@@ -6,9 +6,19 @@
 **Note for `ssh_private_key`**: You will need to replace newlines with "\n".
 This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "\\n"}' | tr -d '\n'`.
 
+Sometimes the above method doesn't properly interpret `\n` as the newline character,
+and this will cause om to fail silently when you do `om configure-bosh --iaas-configuration ...`
+
+If that happens to you, given that Ops Manager is a Ruby app, you might have better luck with the method below:
+
+`ruby -e "puts File.read('/path/to/private-key.pem').inspect"`
+
+
+``
+
 ##### Minimal example
 ```json
-{ 
+{
   "openstack_authentication_url": "http://openstack.example.com:5000/v2",
   "openstack_username": "admin",
   "openstack_password": "s3cret",
