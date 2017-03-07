@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
@@ -73,9 +74,9 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
 	}
 
-	token, err := oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
+	token, err := retrieveTokenWithRetry(oc.oauthConfig, oc.context, oc.username, oc.password)
 	if err != nil {
-		return nil, fmt.Errorf("token could not be retrieved from target url: %s", err)
+		return nil, err
 	}
 
 	client := oc.oauthConfig.Client(oc.context, token)
@@ -93,29 +94,53 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	request.URL.Scheme = targetURL.Scheme
 	request.URL.Host = targetURL.Host
 
-	return client.Do(request)
+	return httpResponseWithRetry(client, request)
 }
 
-func (oc OAuthClient) RoundTrip(request *http.Request) (*http.Response, error) {
-	if oc.target == "" {
-		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
+func retrieveTokenWithRetry(config *oauth2.Config, ctx context.Context, username, password string) (*oauth2.Token, error) {
+retry:
+	token, err := config.PasswordCredentialsToken(ctx, username, password)
+	if canRetry(err) {
+		goto retry
 	}
 
-	token, err := oc.oauthConfig.PasswordCredentialsToken(oc.context, oc.username, oc.password)
 	if err != nil {
 		return nil, fmt.Errorf("token could not be retrieved from target url: %s", err)
 	}
 
-	client := oc.oauthConfig.Client(oc.context, token)
-	client.Timeout = oc.timeout
+	return token, err
+}
 
-	targetURL, err := url.Parse(oc.target)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse target url: %s", err)
+func httpResponseWithRetry(client *http.Client, request *http.Request) (*http.Response, error) {
+retry:
+	resp, err := client.Do(request)
+	if client.Timeout == 0 {
+		if canRetry(err) {
+			goto retry
+		}
 	}
 
-	request.URL.Scheme = targetURL.Scheme
-	request.URL.Host = targetURL.Host
+	if err != nil {
+		return nil, err
+	}
 
-	return client.Transport.RoundTrip(request)
+	return resp, nil
+}
+
+func canRetry(err error) bool {
+	if err != nil {
+		if ne, ok := err.(net.Error); ok {
+			if ne.Temporary() {
+				return true
+			}
+		}
+
+		if err == io.EOF {
+			return true
+		}
+
+		return false
+	}
+
+	return false
 }

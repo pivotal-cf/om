@@ -16,12 +16,7 @@ type HttpClient struct {
 		result1 *http.Response
 		result2 error
 	}
-	RoundTripStub        func(*http.Request) (*http.Response, error)
-	roundTripMutex       sync.RWMutex
-	roundTripArgsForCall []struct {
-		arg1 *http.Request
-	}
-	roundTripReturns struct {
+	doReturnsOnCall map[int]struct {
 		result1 *http.Response
 		result2 error
 	}
@@ -31,6 +26,7 @@ type HttpClient struct {
 
 func (fake *HttpClient) Do(arg1 *http.Request) (*http.Response, error) {
 	fake.doMutex.Lock()
+	ret, specificReturn := fake.doReturnsOnCall[len(fake.doArgsForCall)]
 	fake.doArgsForCall = append(fake.doArgsForCall, struct {
 		arg1 *http.Request
 	}{arg1})
@@ -38,9 +34,11 @@ func (fake *HttpClient) Do(arg1 *http.Request) (*http.Response, error) {
 	fake.doMutex.Unlock()
 	if fake.DoStub != nil {
 		return fake.DoStub(arg1)
-	} else {
-		return fake.doReturns.result1, fake.doReturns.result2
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.doReturns.result1, fake.doReturns.result2
 }
 
 func (fake *HttpClient) DoCallCount() int {
@@ -63,35 +61,15 @@ func (fake *HttpClient) DoReturns(result1 *http.Response, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *HttpClient) RoundTrip(arg1 *http.Request) (*http.Response, error) {
-	fake.roundTripMutex.Lock()
-	fake.roundTripArgsForCall = append(fake.roundTripArgsForCall, struct {
-		arg1 *http.Request
-	}{arg1})
-	fake.recordInvocation("RoundTrip", []interface{}{arg1})
-	fake.roundTripMutex.Unlock()
-	if fake.RoundTripStub != nil {
-		return fake.RoundTripStub(arg1)
-	} else {
-		return fake.roundTripReturns.result1, fake.roundTripReturns.result2
+func (fake *HttpClient) DoReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.DoStub = nil
+	if fake.doReturnsOnCall == nil {
+		fake.doReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
 	}
-}
-
-func (fake *HttpClient) RoundTripCallCount() int {
-	fake.roundTripMutex.RLock()
-	defer fake.roundTripMutex.RUnlock()
-	return len(fake.roundTripArgsForCall)
-}
-
-func (fake *HttpClient) RoundTripArgsForCall(i int) *http.Request {
-	fake.roundTripMutex.RLock()
-	defer fake.roundTripMutex.RUnlock()
-	return fake.roundTripArgsForCall[i].arg1
-}
-
-func (fake *HttpClient) RoundTripReturns(result1 *http.Response, result2 error) {
-	fake.RoundTripStub = nil
-	fake.roundTripReturns = struct {
+	fake.doReturnsOnCall[i] = struct {
 		result1 *http.Response
 		result2 error
 	}{result1, result2}
@@ -102,8 +80,6 @@ func (fake *HttpClient) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.doMutex.RLock()
 	defer fake.doMutex.RUnlock()
-	fake.roundTripMutex.RLock()
-	defer fake.roundTripMutex.RUnlock()
 	return fake.invocations
 }
 

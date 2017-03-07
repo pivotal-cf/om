@@ -105,6 +105,7 @@ var _ = Describe("export-installation command", func() {
 				Eventually(session.Out, 5).Should(gbytes.Say("cannot create output file:"))
 			})
 		})
+
 		Context("when the request takes longer than specified timeout", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,

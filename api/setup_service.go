@@ -98,7 +98,7 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 		return EnsureAvailabilityOutput{}, err
 	}
 
-	response, err := ss.client.RoundTrip(request)
+	response, err := ss.client.Do(request)
 	if err != nil {
 		return EnsureAvailabilityOutput{}, fmt.Errorf("could not make request round trip: %s", err)
 	}

@@ -100,7 +100,7 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the availability endpoint returns an unexpected status code", func() {
 			It("returns unknown status", func() {
-				client.RoundTripReturns(&http.Response{
+				client.DoReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
@@ -117,7 +117,7 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the availability endpoint returns an OK status with an unexpected body", func() {
 			It("returns unknown status", func() {
-				client.RoundTripReturns(&http.Response{
+				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader("some body")),
 				}, nil)
@@ -134,7 +134,7 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the availability endpoint returns a found status with an unexpected location header", func() {
 			It("returns unknown status", func() {
-				client.RoundTripReturns(&http.Response{
+				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/something/else"},
@@ -154,7 +154,7 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the authentication mechanism has not been setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
-				client.RoundTripReturns(&http.Response{
+				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/setup"},
@@ -174,7 +174,7 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the authentication mechanism is currently being setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
-				client.RoundTripReturns(&http.Response{
+				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
 				}, nil)
@@ -191,7 +191,7 @@ var _ = Describe("SetupService", func() {
 
 		Context("when the authentication mechanism is completely setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
-				client.RoundTripReturns(&http.Response{
+				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
 						"Location": []string{"https://some-opsman/auth/cloudfoundry"},
@@ -212,7 +212,7 @@ var _ = Describe("SetupService", func() {
 		Context("failure cases", func() {
 			Context("when the request fails", func() {
 				It("returns an error", func() {
-					client.RoundTripReturns(&http.Response{}, errors.New("failed to make round trip"))
+					client.DoReturns(&http.Response{}, errors.New("failed to make round trip"))
 
 					service := api.NewSetupService(client)
 
@@ -223,7 +223,7 @@ var _ = Describe("SetupService", func() {
 
 			Context("when the location header cannot be parsed", func() {
 				It("returns an error", func() {
-					client.RoundTripReturns(&http.Response{
+					client.DoReturns(&http.Response{
 						StatusCode: http.StatusFound,
 						Header: http.Header{
 							"Location": []string{"%%%%%%"},

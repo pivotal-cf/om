@@ -20,6 +20,9 @@ type Progress struct {
 	newBarReaderReturns struct {
 		result1 io.Reader
 	}
+	newBarReaderReturnsOnCall map[int]struct {
+		result1 io.Reader
+	}
 	KickoffStub         func()
 	kickoffMutex        sync.RWMutex
 	kickoffArgsForCall  []struct{}
@@ -32,10 +35,16 @@ type Progress struct {
 	getTotalReturns     struct {
 		result1 int64
 	}
+	getTotalReturnsOnCall map[int]struct {
+		result1 int64
+	}
 	GetCurrentStub        func() int64
 	getCurrentMutex       sync.RWMutex
 	getCurrentArgsForCall []struct{}
 	getCurrentReturns     struct {
+		result1 int64
+	}
+	getCurrentReturnsOnCall map[int]struct {
 		result1 int64
 	}
 	invocations      map[string][][]interface{}
@@ -68,6 +77,7 @@ func (fake *Progress) SetTotalArgsForCall(i int) int64 {
 
 func (fake *Progress) NewBarReader(arg1 io.Reader) io.Reader {
 	fake.newBarReaderMutex.Lock()
+	ret, specificReturn := fake.newBarReaderReturnsOnCall[len(fake.newBarReaderArgsForCall)]
 	fake.newBarReaderArgsForCall = append(fake.newBarReaderArgsForCall, struct {
 		arg1 io.Reader
 	}{arg1})
@@ -75,9 +85,11 @@ func (fake *Progress) NewBarReader(arg1 io.Reader) io.Reader {
 	fake.newBarReaderMutex.Unlock()
 	if fake.NewBarReaderStub != nil {
 		return fake.NewBarReaderStub(arg1)
-	} else {
-		return fake.newBarReaderReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.newBarReaderReturns.result1
 }
 
 func (fake *Progress) NewBarReaderCallCount() int {
@@ -95,6 +107,18 @@ func (fake *Progress) NewBarReaderArgsForCall(i int) io.Reader {
 func (fake *Progress) NewBarReaderReturns(result1 io.Reader) {
 	fake.NewBarReaderStub = nil
 	fake.newBarReaderReturns = struct {
+		result1 io.Reader
+	}{result1}
+}
+
+func (fake *Progress) NewBarReaderReturnsOnCall(i int, result1 io.Reader) {
+	fake.NewBarReaderStub = nil
+	if fake.newBarReaderReturnsOnCall == nil {
+		fake.newBarReaderReturnsOnCall = make(map[int]struct {
+			result1 io.Reader
+		})
+	}
+	fake.newBarReaderReturnsOnCall[i] = struct {
 		result1 io.Reader
 	}{result1}
 }
@@ -133,14 +157,17 @@ func (fake *Progress) EndCallCount() int {
 
 func (fake *Progress) GetTotal() int64 {
 	fake.getTotalMutex.Lock()
+	ret, specificReturn := fake.getTotalReturnsOnCall[len(fake.getTotalArgsForCall)]
 	fake.getTotalArgsForCall = append(fake.getTotalArgsForCall, struct{}{})
 	fake.recordInvocation("GetTotal", []interface{}{})
 	fake.getTotalMutex.Unlock()
 	if fake.GetTotalStub != nil {
 		return fake.GetTotalStub()
-	} else {
-		return fake.getTotalReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.getTotalReturns.result1
 }
 
 func (fake *Progress) GetTotalCallCount() int {
@@ -156,16 +183,31 @@ func (fake *Progress) GetTotalReturns(result1 int64) {
 	}{result1}
 }
 
+func (fake *Progress) GetTotalReturnsOnCall(i int, result1 int64) {
+	fake.GetTotalStub = nil
+	if fake.getTotalReturnsOnCall == nil {
+		fake.getTotalReturnsOnCall = make(map[int]struct {
+			result1 int64
+		})
+	}
+	fake.getTotalReturnsOnCall[i] = struct {
+		result1 int64
+	}{result1}
+}
+
 func (fake *Progress) GetCurrent() int64 {
 	fake.getCurrentMutex.Lock()
+	ret, specificReturn := fake.getCurrentReturnsOnCall[len(fake.getCurrentArgsForCall)]
 	fake.getCurrentArgsForCall = append(fake.getCurrentArgsForCall, struct{}{})
 	fake.recordInvocation("GetCurrent", []interface{}{})
 	fake.getCurrentMutex.Unlock()
 	if fake.GetCurrentStub != nil {
 		return fake.GetCurrentStub()
-	} else {
-		return fake.getCurrentReturns.result1
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.getCurrentReturns.result1
 }
 
 func (fake *Progress) GetCurrentCallCount() int {
@@ -177,6 +219,18 @@ func (fake *Progress) GetCurrentCallCount() int {
 func (fake *Progress) GetCurrentReturns(result1 int64) {
 	fake.GetCurrentStub = nil
 	fake.getCurrentReturns = struct {
+		result1 int64
+	}{result1}
+}
+
+func (fake *Progress) GetCurrentReturnsOnCall(i int, result1 int64) {
+	fake.GetCurrentStub = nil
+	if fake.getCurrentReturnsOnCall == nil {
+		fake.getCurrentReturnsOnCall = make(map[int]struct {
+			result1 int64
+		})
+	}
+	fake.getCurrentReturnsOnCall[i] = struct {
 		result1 int64
 	}{result1}
 }
