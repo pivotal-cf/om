@@ -61,7 +61,8 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("installation failed to trigger: %s", err)
 		}
 	} else {
-		ac.logger.Printf("found already running installation...re-attaching")
+		startedAtFormatted := installation.StartedAt.Format(time.UnixDate)
+		ac.logger.Printf("found already running installation...re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
 	}
 
 	for {

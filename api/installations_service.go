@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
@@ -18,9 +19,10 @@ type InstallationsService struct {
 }
 
 type InstallationsServiceOutput struct {
-	ID     int
-	Status string
-	Logs   string
+	ID        int
+	Status    string
+	Logs      string
+	StartedAt time.Time `json:"started_at"`
 }
 
 func NewInstallationsService(client httpClient) InstallationsService {

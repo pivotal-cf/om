@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -135,7 +136,13 @@ var _ = Describe("ApplyChanges", func() {
 		})
 
 		It("re-attaches to an ongoing installation", func() {
-			service.RunningInstallationReturns(api.InstallationsServiceOutput{ID: 200, Status: "running"}, nil)
+			installationStartedAt := time.Date(2017, time.February, 25, 02, 31, 1, 0, time.UTC)
+
+			service.RunningInstallationReturns(api.InstallationsServiceOutput{
+				ID:        200,
+				Status:    "running",
+				StartedAt: installationStartedAt,
+			}, nil)
 
 			statusOutputs = []api.InstallationsServiceOutput{
 				{Status: "running"},
@@ -161,7 +168,7 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(service.TriggerCallCount()).To(Equal(0))
 
 			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
 
 			Expect(service.StatusArgsForCall(0)).To(Equal(200))
 			Expect(service.LogsArgsForCall(0)).To(Equal(200))

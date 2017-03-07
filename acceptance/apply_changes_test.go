@@ -28,19 +28,33 @@ var _ = Describe("apply-changes command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
+				username := req.FormValue("username")
+
+				if username == "some-username" {
+					w.Write([]byte(`{
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+					}`))
+				} else {
+					w.Write([]byte(`{
+						"access_token": "some-running-install-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+					}`))
+				}
 			case "/api/v0/installations":
 				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
+				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
 
-				w.Write([]byte(`{ "install": { "id": 42 } }`))
+				if auth == "Bearer some-running-install-opsman-token" {
+					w.Write([]byte(`{ "installations": [ { "id": 42, "status": "running", "started_at": "2017-03-02T06:50:32.370Z" } ] }`))
+				} else {
+					w.Write([]byte(`{ "install": { "id": 42 } }`))
+				}
 			case "/api/v0/installations/42":
 				if installationsStatusCallCount == 3 {
 					w.Write([]byte(`{ "status": "succeeded" }`))
@@ -85,4 +99,28 @@ var _ = Describe("apply-changes command", func() {
 		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
 		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
 	})
+
+	It("successfully re-attaches to an existing deploying", func() {
+		command := exec.Command(pathToMain,
+			"--target", server.URL,
+			"--username", "some-username",
+			"--username", "some-running-install-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"apply-changes")
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session, "40s").Should(gexec.Exit(0))
+
+		Expect(installationsStatusCallCount).To(Equal(3))
+		Expect(installationsStatusCallCount).To(Equal(3))
+
+		Expect(session.Out).To(gbytes.Say(`found already running installation...re-attaching \(Installation ID: 42, Started: Thu Mar  2 06:50:32 UTC 2017\)`))
+		Expect(session.Out).To(gbytes.Say("something logged for call #0"))
+		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
+		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
+	})
+
 })
