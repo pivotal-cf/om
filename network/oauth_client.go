@@ -26,7 +26,7 @@ type OAuthClient struct {
 	timeout       time.Duration
 }
 
-func NewOAuthClient(target, username, password string, client_id, client_secret string, insecureSkipVerify bool, includeCookies bool, requestTimeout time.Duration) (OAuthClient, error) {
+func NewOAuthClient(target, username, password string, clientID, clientSecret string, insecureSkipVerify bool, includeCookies bool, requestTimeout time.Duration) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
@@ -36,8 +36,8 @@ func NewOAuthClient(target, username, password string, client_id, client_secret 
 	}
 
 	confCC := &clientcredentials.Config{
-		ClientID:     client_id,
-		ClientSecret: client_secret,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
 		TokenURL:     fmt.Sprintf("%s/uaa/oauth/token", target),
 	}
 
