@@ -3,8 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"io"
-	"net"
 	"time"
 
 	"github.com/pivotal-cf/om/api"
@@ -67,52 +65,28 @@ func (ac ApplyChanges) Execute(args []string) error {
 
 	for {
 		current, err := ac.installationsService.Status(installation.ID)
-		ok, err := checkErr(err)
 		if err != nil {
 			return fmt.Errorf("installation failed to get status: %s", err)
 		}
 
-		if ok {
-			install, err := ac.installationsService.Logs(installation.ID)
-			ok, err = checkErr(err)
-			if err != nil {
-				return fmt.Errorf("installation failed to get logs: %s", err)
-			}
+		install, err := ac.installationsService.Logs(installation.ID)
+		if err != nil {
+			return fmt.Errorf("installation failed to get logs: %s", err)
+		}
 
-			if ok {
-				err = ac.logWriter.Flush(install.Logs)
-				if err != nil {
-					return fmt.Errorf("installation failed to flush logs: %s", err)
-				}
+		err = ac.logWriter.Flush(install.Logs)
+		if err != nil {
+			return fmt.Errorf("installation failed to flush logs: %s", err)
+		}
 
-				if current.Status == api.StatusSucceeded {
-					return nil
-				} else if current.Status == api.StatusFailed {
-					return errors.New("installation was unsuccessful")
-				}
-			}
+		if current.Status == api.StatusSucceeded {
+			return nil
+		} else if current.Status == api.StatusFailed {
+			return errors.New("installation was unsuccessful")
 		}
 
 		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
 	}
-}
-
-func checkErr(err error) (bool, error) {
-	if err != nil {
-		if ne, ok := err.(net.Error); ok {
-			if ne.Temporary() {
-				return false, nil
-			}
-		}
-
-		if err == io.EOF {
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	return true, nil
 }
 
 func (ac ApplyChanges) Usage() Usage {

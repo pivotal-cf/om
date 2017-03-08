@@ -94,7 +94,12 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	request.URL.Scheme = targetURL.Scheme
 	request.URL.Host = targetURL.Host
 
-	return httpResponseWithRetry(client, request)
+	// we only want to retry non-modifying actions
+	if request.Method == "GET" {
+		return httpResponseWithRetry(client, request)
+	}
+
+	return client.Do(request)
 }
 
 func retrieveTokenWithRetry(config *oauth2.Config, ctx context.Context, username, password string) (*oauth2.Token, error) {
