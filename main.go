@@ -32,6 +32,8 @@ func main() {
 		Version           bool   `short:"v" long:"version"             description:"prints the om release version"                        default:"false"`
 		Help              bool   `short:"h" long:"help"                description:"prints this usage information"                        default:"false"`
 		Target            string `short:"t" long:"target"              description:"location of the Ops Manager VM"`
+		ClientID          string `short:"c" long:"client-id"           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
+		ClientSecret      string `short:"s" long:"client-secret"       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
 		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
 		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
@@ -73,12 +75,12 @@ func main() {
 
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
 
-	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, false, requestTimeout)
+	authedClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
 
-	authedCookieClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.SkipSSLValidation, true, requestTimeout)
+	authedCookieClient, err := network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, true, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
