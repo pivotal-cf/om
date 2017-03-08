@@ -16,6 +16,8 @@ Usage: om [options] <command> [<args>]
   -v, --version              bool    prints the om release version (default: false)
   -h, --help                 bool    prints this usage information (default: false)
   -t, --target               string  location of the Ops Manager VM
+  -c, --client-id            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
+  -s, --client-secret        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
   -u, --username             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   -p, --password             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
   -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
@@ -49,6 +51,8 @@ Usage: om [options] configure-authentication [<args>]
   -v, --version              bool    prints the om release version (default: false)
   -h, --help                 bool    prints this usage information (default: false)
   -t, --target               string  location of the Ops Manager VM
+  -c, --client-id            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
+  -s, --client-secret        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
   -u, --username             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   -p, --password             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
   -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
