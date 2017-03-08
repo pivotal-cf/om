@@ -76,5 +76,6 @@ access token validity (seconds):  43200
 refresh token validity (seconds):  43200
 redirect uri (list):
 autoapprove (list):
-signup redirect url (url):```
+signup redirect url (url):
+```
 
