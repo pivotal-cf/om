@@ -120,6 +120,7 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 				ia.progress.End()
 				break
 			}
+			time.Sleep(1 * time.Second)
 		}
 
 		ia.liveWriter.Start()
