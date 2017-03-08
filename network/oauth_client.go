@@ -12,25 +12,33 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 type OAuthClient struct {
-	oauthConfig *oauth2.Config
-	jar         *cookiejar.Jar
-	context     context.Context
-	username    string
-	password    string
-	target      string
-	timeout     time.Duration
+	oauthConfig   *oauth2.Config
+	oauthConfigCC *clientcredentials.Config
+	jar           *cookiejar.Jar
+	context       context.Context
+	username      string
+	password      string
+	target        string
+	timeout       time.Duration
 }
 
-func NewOAuthClient(target, username, password string, insecureSkipVerify bool, includeCookies bool, requestTimeout time.Duration) (OAuthClient, error) {
+func NewOAuthClient(target, username, password string, client_id, client_secret string, insecureSkipVerify bool, includeCookies bool, requestTimeout time.Duration) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
 		Endpoint: oauth2.Endpoint{
 			TokenURL: fmt.Sprintf("%s/uaa/oauth/token", target),
 		},
+	}
+
+	confCC := &clientcredentials.Config{
+		ClientID:     client_id,
+		ClientSecret: client_secret,
+		TokenURL:     fmt.Sprintf("%s/uaa/oauth/token", target),
 	}
 
 	httpclient := &http.Client{
@@ -59,13 +67,14 @@ func NewOAuthClient(target, username, password string, insecureSkipVerify bool, 
 	insecureContext = context.WithValue(insecureContext, oauth2.HTTPClient, httpclient)
 
 	return OAuthClient{
-		oauthConfig: conf,
-		jar:         jar,
-		context:     insecureContext,
-		username:    username,
-		password:    password,
-		target:      target,
-		timeout:     requestTimeout,
+		oauthConfig:   conf,
+		oauthConfigCC: confCC,
+		jar:           jar,
+		context:       insecureContext,
+		username:      username,
+		password:      password,
+		target:        target,
+		timeout:       requestTimeout,
 	}, nil
 }
 
@@ -74,12 +83,20 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
 	}
 
-	token, err := retrieveTokenWithRetry(oc.oauthConfig, oc.context, oc.username, oc.password)
-	if err != nil {
-		return nil, err
+	var client *http.Client
+
+	if oc.oauthConfigCC.ClientID != "" {
+		client = oc.oauthConfigCC.Client(oc.context)
+	} else {
+
+		token, err := retrieveTokenWithRetry(oc.oauthConfig, oc.context, oc.username, oc.password)
+		if err != nil {
+			return nil, err
+		}
+
+		client = oc.oauthConfig.Client(oc.context, token)
 	}
 
-	client := oc.oauthConfig.Client(oc.context, token)
 	client.Timeout = oc.timeout
 
 	if oc.jar != nil {
