@@ -83,7 +83,7 @@ func (c Curl) Execute(args []string) error {
 		}
 	}
 
-	c.stdout.Printf(string(body))
+	c.stdout.Println(string(body))
 
 	return nil
 }

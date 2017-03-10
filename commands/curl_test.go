@@ -45,7 +45,7 @@ var _ = Describe("Curl", func() {
 					"Content-Type":   []string{"application/json"},
 					"Accept":         []string{"text/plain"},
 				},
-				Body: strings.NewReader(`{"some-response-key": "some-response-value"}`),
+				Body: strings.NewReader(`{"some-response-key": "%some-response-value"}`),
 			}, nil)
 
 			err := command.Execute([]string{
@@ -62,11 +62,10 @@ var _ = Describe("Curl", func() {
 			data, err := ioutil.ReadAll(input.Data)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(data)).To(Equal(`{"some-key": "some-value"}`))
+			content := stdout.PrintlnArgsForCall(0)
+			Expect(fmt.Sprint(content...)).To(MatchJSON(`{"some-response-key": "%some-response-value"}`))
 
-			format, content := stdout.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(MatchJSON(`{"some-response-key": "some-response-value"}`))
-
-			format, content = stderr.PrintfArgsForCall(0)
+			format, content := stderr.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 418 I'm a teapot"))
 
 			format, content = stderr.PrintfArgsForCall(1)
@@ -92,8 +91,8 @@ var _ = Describe("Curl", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					format, content := stdout.PrintfArgsForCall(0)
-					Expect(fmt.Sprintf(format, content...)).To(Equal("{\n  \"some-response-key\": \"some-response-value\"\n}"))
+					content := stdout.PrintlnArgsForCall(0)
+					Expect(fmt.Sprint(content...)).To(Equal("{\n  \"some-response-key\": \"some-response-value\"\n}"))
 				})
 			})
 
@@ -115,8 +114,8 @@ var _ = Describe("Curl", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					format, content := stdout.PrintfArgsForCall(0)
-					Expect(fmt.Sprintf(format, content...)).To(Equal(`{"some-response-key": "some-response-value"}`))
+					content := stdout.PrintlnArgsForCall(0)
+					Expect(fmt.Sprint(content...)).To(Equal(`{"some-response-key": "some-response-value"}`))
 				})
 			})
 		})
