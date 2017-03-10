@@ -293,6 +293,78 @@ var _ = Describe("ConfigureBosh", func() {
 			})
 		})
 
+		Context("when the iaas is azure", func() {
+			It("does not attempt to get the availability zones", func() {
+				command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+
+				boshService.GetFormReturns(api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				}, nil)
+
+				diagnosticService.ReportReturns(api.DiagnosticReport{
+					InfrastructureType: "azure",
+				}, nil)
+
+				boshService.NetworksReturns(map[string]string{
+					"some-network-name":       "some-network-guid",
+					"some-other-network-name": "some-other-network-guid",
+				}, nil)
+
+				err := command.Execute([]string{
+					"--iaas-configuration",
+					`{
+						"project": "some-project",
+						"default_deployment_tag": "my-vms",
+						"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+			  }`,
+					"--director-configuration",
+					`{
+					  "ntp_servers_string": "some-ntp-servers-string",
+						"metrics_ip": "some-metrics-ip",
+						"hm_pager_duty_options": {
+							"enabled": true
+						}
+					}
+				}`,
+					"--security-configuration",
+					`{
+						"trusted_certificates": "some-trusted-certificates",
+						"vm_password_type": "some-vm-password-type"
+				}`,
+					"--network-assignment",
+					`{
+						"singleton_availability_zone": "some-az-name",
+					  "network": "some-other-network-name"
+					}`,
+					"--networks-configuration",
+					`{
+						"icmp_checks_enabled": false,
+						"networks": [
+							{
+								"name": "opsman-network",
+								"subnets": [
+									{
+										"iaas_identifier": "vpc-subnet-id-1",
+										"cidr": "10.0.0.0/24",
+										"reserved_ip_ranges": "10.0.0.0-10.0.0.4",
+										"dns": "8.8.8.8",
+										"gateway": "10.0.0.1",
+										"availability_zones": ["some-az1"]
+									}
+								]
+							}
+							]
+						}`,
+				})
+
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(boshService.AvailabilityZonesCallCount()).To(Equal(0))
+			})
+		})
+
 		Context("when the network is configured and deployed", func() {
 			It("ignores all network changes", func() {
 				command := commands.NewConfigureBosh(boshService, diagnosticService, logger)

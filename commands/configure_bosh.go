@@ -129,7 +129,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 			panic(err)
 		}
 
-		err = c.configureNetworkForm(networksConfigurationPath, c.Options.NetworksConfiguration)
+		err = c.configureNetworkForm(networksConfigurationPath, c.Options.NetworksConfiguration, report)
 		if err != nil {
 			return err
 		}
@@ -149,9 +149,12 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 		config.NetworkGUID = networks[config.UserProvidedNetworkName]
 
-		availabilityZones, err := c.boshService.AvailabilityZones()
-		if err != nil {
-			return err
+		var availabilityZones map[string]string
+		if report.InfrastructureType != "azure" {
+			availabilityZones, err = c.boshService.AvailabilityZones()
+			if err != nil {
+				return err
+			}
 		}
 
 		if azGUID, ok := availabilityZones[config.UserProvidedAZName]; ok {
@@ -233,7 +236,7 @@ func (c ConfigureBosh) postForm(path string, initialConfig BoshConfiguration) er
 	return nil
 }
 
-func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
+func (c ConfigureBosh) configureNetworkForm(path string, configuration string, report api.DiagnosticReport) error {
 	form, err := c.boshService.GetForm(path)
 	if err != nil {
 		return fmt.Errorf("could not fetch form: %s", err)
@@ -245,9 +248,12 @@ func (c ConfigureBosh) configureNetworkForm(path, configuration string) error {
 		return fmt.Errorf("could not decode json: %s", err)
 	}
 
-	azMap, err := c.boshService.AvailabilityZones()
-	if err != nil {
-		return fmt.Errorf("could not fetch availability zones: %s", err)
+	var azMap map[string]string
+	if report.InfrastructureType != "azure" {
+		azMap, err = c.boshService.AvailabilityZones()
+		if err != nil {
+			return fmt.Errorf("could not fetch availability zones: %s", err)
+		}
 	}
 
 	for n, network := range initialConfig.Networks {

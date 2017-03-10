@@ -18,9 +18,10 @@ type DiagnosticProduct struct {
 }
 
 type DiagnosticReport struct {
-	Stemcells        []string
-	StagedProducts   []DiagnosticProduct
-	DeployedProducts []DiagnosticProduct
+	InfrastructureType string `json:"infrastructure_type"`
+	Stemcells          []string
+	StagedProducts     []DiagnosticProduct
+	DeployedProducts   []DiagnosticProduct
 }
 
 type DiagnosticReportUnavailable struct{}
@@ -76,8 +77,9 @@ func (ds DiagnosticService) Report() (DiagnosticReport, error) {
 	}
 
 	return DiagnosticReport{
-		Stemcells:        apiResponse.Stemcells,
-		StagedProducts:   apiResponse.AddedProducts.StagedProducts,
-		DeployedProducts: apiResponse.AddedProducts.DeployedProducts,
+		InfrastructureType: apiResponse.DiagnosticReport.InfrastructureType,
+		Stemcells:          apiResponse.Stemcells,
+		StagedProducts:     apiResponse.AddedProducts.StagedProducts,
+		DeployedProducts:   apiResponse.AddedProducts.DeployedProducts,
 	}, nil
 }

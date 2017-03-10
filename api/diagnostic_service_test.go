@@ -14,6 +14,7 @@ import (
 )
 
 const report = `{
+  "infrastructure_type": "azure",
   "stemcells": ["light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"],
   "added_products": {
     "deployed": [
@@ -64,6 +65,7 @@ var _ = Describe("DiagnosticService", func() {
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.Path).To(Equal("/api/v0/diagnostic_report"))
 
+			Expect(report.InfrastructureType).To(Equal("azure"))
 			Expect(report.Stemcells).To(Equal([]string{"light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"}))
 			Expect(report.StagedProducts).To(Equal([]api.DiagnosticProduct{
 				{
