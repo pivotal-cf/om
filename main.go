@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/url"
 	"os"
 
 	"github.com/gosuri/uilive"
@@ -69,6 +70,17 @@ func main() {
 
 	if global.Password == "" {
 		global.Password = os.Getenv("OM_PASSWORD")
+	}
+
+	parsedURL, err := url.Parse(global.Target)
+	if err != nil {
+		stdout.Fatal(err)
+	}
+
+	if parsedURL.Scheme == "" {
+		stdout.Printf("Provided target has no scheme, assuming https")
+		parsedURL.Scheme = "https"
+		global.Target = parsedURL.String()
 	}
 
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
