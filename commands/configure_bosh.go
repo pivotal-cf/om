@@ -58,19 +58,6 @@ func (c ConfigureBosh) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-
-	report, err := c.diagnosticService.Report()
-	if err != nil {
-		return err
-	}
-
-	for _, deployedProduct := range report.DeployedProducts {
-		if deployedProduct.Name == boshProductName {
-			c.logger.Printf("skipping: detected deployed director - cannot modify network configuration")
-			return nil
-		}
-	}
-
 	if c.Options.IaaSConfiguration != "" {
 		c.logger.Printf("configuring iaas specific options for bosh tile")
 
@@ -96,6 +83,18 @@ func (c ConfigureBosh) Execute(args []string) error {
 		err = c.postForm(directorConfigurationPath, config)
 		if err != nil {
 			return err
+		}
+	}
+
+	report, err := c.diagnosticService.Report()
+	if err != nil {
+		return err
+	}
+
+	for _, deployedProduct := range report.DeployedProducts {
+		if deployedProduct.Name == boshProductName {
+			c.logger.Printf("skipping network configuration: detected deployed director - cannot modify network")
+			return nil
 		}
 	}
 

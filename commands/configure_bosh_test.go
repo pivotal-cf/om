@@ -449,10 +449,12 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(boshService.GetFormCallCount()).To(Equal(0))
+				Expect(boshService.GetFormCallCount()).To(Equal(2))
+				Expect(boshService.AvailabilityZonesCallCount()).To(Equal(0))
+				Expect(boshService.NetworksCallCount()).To(Equal(0))
 
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("skipping: detected deployed director - cannot modify network configuration"))
+				format, content := logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("skipping network configuration: detected deployed director - cannot modify network"))
 			})
 
 			Context("when error occurs", func() {
