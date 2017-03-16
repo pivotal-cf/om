@@ -22,7 +22,7 @@ Currently being developed by RelEng, backlog link is [here](https://www.pivotalt
 
 ## Documentation
 
-See [here] (docs/README.md) for useful examples and documentation
+See [here](docs/README.md) for useful examples and documentation
 
 ## Current Commands
 ```
