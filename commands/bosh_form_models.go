@@ -257,8 +257,8 @@ func assignIndex(fields []reflect.Type, values []reflect.Value, numNetworks stri
 				boolString := "0"
 				if value.Bool() {
 					boolString = "1"
+					urlValues.Set(finalTag, boolString)
 				}
-				urlValues.Set(finalTag, boolString)
 			case reflect.Slice:
 				temp := *urlValues
 				temp[finalTag] = value.Interface().([]string)

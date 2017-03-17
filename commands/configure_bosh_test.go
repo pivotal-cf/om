@@ -564,6 +564,32 @@ var _ = Describe("ConfigureBosh", func() {
 				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][gateway]", []string{"some-gateway"}))
 				Expect(values).To(HaveKeyWithValue("network_collection[networks_attributes][0][subnets][0][availability_zone_references][]", []string{"one", "two"}))
 			})
+
+			It("does not submit service network when false", func() {
+				n := commands.NetworksConfiguration{
+					ICMP: true,
+					Networks: []commands.NetworkConfiguration{
+						{
+							Name: "foo",
+							Subnets: []commands.Subnet{
+								{
+									IAASIdentifier:        "something",
+									CIDR:                  "some-cidr",
+									ReservedIPRanges:      "reserved-ips",
+									DNS:                   "some-dns",
+									Gateway:               "some-gateway",
+									AvailabilityZoneGUIDs: []string{"one", "two"},
+								},
+							},
+						},
+					},
+				}
+
+				values, err := query.Values(n)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(values).NotTo(HaveKey("network_collection[networks_attributes][0][service_network]"))
+			})
 		})
 	})
 
