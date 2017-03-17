@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"net/url"
 	"strings"
 
 	"github.com/pivotal-cf/om/network"
@@ -54,6 +55,33 @@ var _ = Describe("UnauthenticatedClient", func() {
 			body, err = ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(body)).To(Equal("request"))
+		})
+
+		Context("when passing a url with no scheme", func() {
+			It("defaults to HTTPS", func() {
+				server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					w.WriteHeader(http.StatusTeapot)
+					w.Write([]byte("response"))
+				}))
+
+				noScheme, err := url.Parse(server.URL)
+				Expect(err).NotTo(HaveOccurred())
+
+				noScheme.Scheme = ""
+				finalURL := noScheme.String()
+
+				client := network.NewUnauthenticatedClient(finalURL, true, time.Duration(30)*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				request, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				response, err := client.Do(request)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(response).NotTo(BeNil())
+				Expect(response.StatusCode).To(Equal(http.StatusTeapot))
+			})
 		})
 
 		Context("failure cases", func() {

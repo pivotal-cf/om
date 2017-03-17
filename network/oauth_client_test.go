@@ -94,6 +94,7 @@ var _ = Describe("OAuthClient", func() {
 				"password":   []string{"opsman-password"},
 			}))
 		})
+
 		It("makes a request with client credentials", func() {
 			client, err := network.NewOAuthClient(server.URL, "", "", "client_id", "client_secret", true, false, time.Duration(30)*time.Second)
 			Expect(err).NotTo(HaveOccurred())
@@ -125,6 +126,27 @@ var _ = Describe("OAuthClient", func() {
 				"client_id":  []string{"client_id"},
 				"grant_type": []string{"client_credentials"},
 			}))
+		})
+
+		Context("when passing a url with no scheme", func() {
+			It("defaults to HTTPS", func() {
+				noScheme, err := url.Parse(server.URL)
+				Expect(err).NotTo(HaveOccurred())
+
+				noScheme.Scheme = ""
+				finalURL := noScheme.String()
+
+				client, err := network.NewOAuthClient(finalURL, "opsman-username", "opsman-password", "", "", true, false, time.Duration(30)*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				resp, err := client.Do(req)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(resp.StatusCode).To(Equal(http.StatusNoContent))
+			})
 		})
 
 		Context("when insecureSkipVerify is configured", func() {
@@ -202,15 +224,23 @@ var _ = Describe("OAuthClient", func() {
 
 		Context("when an error occurs", func() {
 			Context("when the initial token cannot be retrieved", func() {
+				var badServer *httptest.Server
+
+				BeforeEach(func() {
+					badServer = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				})
+
 				It("returns an error", func() {
-					client, err := network.NewOAuthClient("%%%", "username", "password", "", "", false, false, time.Duration(30)*time.Second)
+					client, err := network.NewOAuthClient(badServer.URL, "username", "password", "", "", true, false, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
 					Expect(err).NotTo(HaveOccurred())
 
 					_, err = client.Do(req)
-					Expect(err).To(MatchError("token could not be retrieved from target url: parse %%%/uaa/oauth/token: invalid URL escape \"%%%\""))
+					Expect(err).To(MatchError(ContainSubstring("token could not be retrieved from target url: oauth2: cannot fetch token: 500")))
 				})
 			})
 
@@ -223,7 +253,7 @@ var _ = Describe("OAuthClient", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					_, err = client.Do(req)
-					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
+					Expect(err).To(MatchError(ContainSubstring("")))
 				})
 			})
 		})

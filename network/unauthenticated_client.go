@@ -43,6 +43,10 @@ func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error)
 		return nil, fmt.Errorf("could not parse target url: %s", err)
 	}
 
+	if targetURL.Scheme == "" {
+		targetURL.Scheme = "https"
+	}
+
 	if targetURL.Host == "" {
 		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
 	}
