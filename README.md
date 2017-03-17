@@ -26,7 +26,6 @@ See [here](docs/README.md) for useful examples and documentation
 
 ## Current Commands
 ```
-Provided target has no scheme, assuming https
 ॐ
 om helps you interact with an Ops Manager
 
