@@ -301,6 +301,11 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(request.Method).To(Equal("DELETE"))
 			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
 			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			body, err := ioutil.ReadAll(request.Body)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(string(body)).To(Equal(`{"errands": {}}`))
 		})
 
 		It("gracefully quits when there is no installation to delete", func() {
