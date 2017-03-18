@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -156,7 +157,7 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 }
 
 func (ia InstallationAssetService) Delete() (InstallationsServiceOutput, error) {
-	req, err := http.NewRequest("DELETE", "/api/v0/installation_asset_collection", nil)
+	req, err := http.NewRequest("DELETE", "/api/v0/installation_asset_collection", bytes.NewBuffer([]byte(`{"errands": {}}`)))
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}
