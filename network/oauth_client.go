@@ -91,6 +91,13 @@ func (oc OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		targetURL.Scheme = "https"
 	}
 
+	// if scheme is missing when parse you clobber the host
+	// when setting the Path value below.
+	targetURL, err = url.Parse(targetURL.String())
+	if err != nil {
+		return nil, fmt.Errorf("could not parse target url: %s", err)
+	}
+
 	targetURL.Path = "/uaa/oauth/token"
 	oc.oauthConfigCC.TokenURL = targetURL.String()
 	oc.oauthConfig.Endpoint.TokenURL = targetURL.String()
