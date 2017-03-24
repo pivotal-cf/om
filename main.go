@@ -71,6 +71,10 @@ func main() {
 		global.Password = os.Getenv("OM_PASSWORD")
 	}
 
+	if global.ClientSecret == "" {
+		global.ClientSecret = os.Getenv("OM_CLIENT_SECRET")
+	}
+
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 
 	unauthenticatedClient := network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
