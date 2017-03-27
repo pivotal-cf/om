@@ -30,17 +30,22 @@ var _ = Describe("ErrandsService", func() {
 				path = req.URL.Path
 
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{"errands":[{"post_deploy":true,"name":"first-errand"},{"post_deploy":false,"name":"second-errand"}]}`)),
+					Body: ioutil.NopCloser(strings.NewReader(`{"errands":[{"post_deploy":true,"name":"first-errand"},{"post_deploy":false,"name":"second-errand"},{"pre_delete":true,"name":"third-errand"}]}`)),
 				}, nil
 			}
 
 			output, err := service.List("some-product-id")
 			Expect(err).NotTo(HaveOccurred())
 
+			firstErrandPostDeploy := true
+			secondErrandPostDeploy := false
+			thirdErrandPreDelete := true
+
 			Expect(output).To(Equal(api.ErrandsListOutput{
 				Errands: []api.Errand{
-					{Name: "first-errand", PostDeploy: true},
-					{Name: "second-errand", PostDeploy: false},
+					{Name: "first-errand", PostDeploy: &firstErrandPostDeploy},
+					{Name: "second-errand", PostDeploy: &secondErrandPostDeploy},
+					{Name: "third-errand", PreDelete: &thirdErrandPreDelete},
 				},
 			}))
 

@@ -28,10 +28,15 @@ var _ = Describe("Errands", func() {
 
 	Describe("Execute", func() {
 		It("lists the available products", func() {
+			firstErrandPostDeploy := true
+			secondErrandPostDeploy := false
+			thirdErrandPreDelete := true
+
 			errandsService.ListReturns(api.ErrandsListOutput{
 				Errands: []api.Errand{
-					{Name: "first-errand", PostDeploy: true},
-					{Name: "second-errand", PostDeploy: false},
+					{Name: "first-errand", PostDeploy: &firstErrandPostDeploy},
+					{Name: "second-errand", PostDeploy: &secondErrandPostDeploy},
+					{Name: "third-errand", PreDelete: &thirdErrandPreDelete},
 				},
 			}, nil)
 
@@ -52,11 +57,12 @@ var _ = Describe("Errands", func() {
 			Expect(errandsService.ListArgsForCall(0)).To(Equal("some-product-id"))
 
 			Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled"}))
+			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
 
-			Expect(tableWriter.AppendCallCount()).To(Equal(2))
-			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "true"}))
-			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"second-errand", "false"}))
+			Expect(tableWriter.AppendCallCount()).To(Equal(3))
+			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "true", ""}))
+			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"second-errand", "false", ""}))
+			Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{"third-errand", "", "true"}))
 
 			Expect(tableWriter.RenderCallCount()).To(Equal(1))
 		})

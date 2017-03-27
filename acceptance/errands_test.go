@@ -18,12 +18,13 @@ var _ = Describe("errands command", func() {
 		server *httptest.Server
 	)
 
-	const tableOutput = `+---------------+---------------------+
-|     NAME      | POST DEPLOY ENABLED |
-+---------------+---------------------+
-| some-errand-1 | true                |
-| some-errand-2 | false               |
-+---------------+---------------------+
+	const tableOutput = `+---------------+---------------------+--------------------+
+|     NAME      | POST DEPLOY ENABLED | PRE DELETE ENABLED |
++---------------+---------------------+--------------------+
+| some-errand-1 | true                | true               |
+| some-errand-2 | false               | false              |
+| some-errand-3 |                     | true               |
++---------------+---------------------+--------------------+
 `
 
 	BeforeEach(func() {
@@ -47,8 +48,9 @@ var _ = Describe("errands command", func() {
 			case "/api/v0/staged/products/some-product-guid/errands":
 				w.Write([]byte(`{
 					"errands": [
-						{"post_deploy":true,"name":"some-errand-1"},
-						{"post_deploy": false, "name": "some-errand-2"}
+						{"post_deploy": true, "pre_delete": true, "name": "some-errand-1"},
+						{"post_deploy": false, "pre_delete": false, "name": "some-errand-2"},
+						{"pre_delete": true, "name": "some-errand-3"}
 					]
 				}`))
 			default:
