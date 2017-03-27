@@ -28,15 +28,11 @@ var _ = Describe("Errands", func() {
 
 	Describe("Execute", func() {
 		It("lists the available products", func() {
-			firstErrandPostDeploy := true
-			secondErrandPostDeploy := false
-			thirdErrandPreDelete := true
-
 			errandsService.ListReturns(api.ErrandsListOutput{
 				Errands: []api.Errand{
-					{Name: "first-errand", PostDeploy: &firstErrandPostDeploy},
-					{Name: "second-errand", PostDeploy: &secondErrandPostDeploy},
-					{Name: "third-errand", PreDelete: &thirdErrandPreDelete},
+					{Name: "first-errand", PostDeploy: "true"},
+					{Name: "second-errand", PostDeploy: "false"},
+					{Name: "third-errand", PreDelete: "true"},
 				},
 			}, nil)
 

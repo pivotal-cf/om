@@ -8,8 +8,8 @@ import (
 
 type Errand struct {
 	Name       string `json:"name"`
-	PostDeploy *bool  `json:"post_deploy,omitempty"`
-	PreDelete  *bool  `json:"pre_delete,omitempty"`
+	PostDeploy string `json:"post_deploy,omitempty"`
+	PreDelete  string `json:"pre_delete,omitempty"`
 }
 
 type ErrandsListOutput struct {
