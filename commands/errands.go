@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/flags"
@@ -58,7 +59,13 @@ func (e Errands) Execute(args []string) error {
 	e.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"})
 
 	for _, errand := range errandsOutput.Errands {
-		e.tableWriter.Append([]string{errand.Name, errand.PostDeploy, errand.PreDelete})
+		var preDelete string
+		if errand.PreDelete == nil {
+			preDelete = ""
+		} else {
+			preDelete = strconv.FormatBool(*errand.PreDelete)
+		}
+		e.tableWriter.Append([]string{errand.Name, errand.PostDeploy, preDelete})
 	}
 
 	e.tableWriter.Render()

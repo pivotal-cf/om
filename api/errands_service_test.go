@@ -34,7 +34,7 @@ var _ = Describe("ErrandsService", func() {
 						"errands": [
 								{"post_deploy":"true","name":"first-errand"},
 								{"post_deploy":"false","name":"second-errand"},
-								{"pre_delete":"true","name":"third-errand"}
+								{"pre_delete":true,"name":"third-errand"}
 							]
 						}`)),
 				}, nil
@@ -43,11 +43,12 @@ var _ = Describe("ErrandsService", func() {
 			output, err := service.List("some-product-id")
 			Expect(err).NotTo(HaveOccurred())
 
+			thirdErrandPreDelete := true
 			Expect(output).To(Equal(api.ErrandsListOutput{
 				Errands: []api.Errand{
 					{Name: "first-errand", PostDeploy: "true"},
 					{Name: "second-errand", PostDeploy: "false"},
-					{Name: "third-errand", PreDelete: "true"},
+					{Name: "third-errand", PreDelete: &thirdErrandPreDelete},
 				},
 			}))
 
