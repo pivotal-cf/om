@@ -77,5 +77,6 @@ func (e Errands) Usage() Usage {
 	return Usage{
 		Description:      "This authenticated command lists all errands for a product.",
 		ShortDescription: "list errands for a product",
+		Flags:            e.Options,
 	}
 }

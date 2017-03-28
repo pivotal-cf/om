@@ -104,6 +104,7 @@ var _ = Describe("Errands", func() {
 			Expect(command.Usage()).To(Equal(commands.Usage{
 				Description:      "This authenticated command lists all errands for a product.",
 				ShortDescription: "list errands for a product",
+				Flags:            command.Options,
 			}))
 		})
 	})
