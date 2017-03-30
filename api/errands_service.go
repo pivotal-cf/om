@@ -10,9 +10,9 @@ import (
 var readAll = ioutil.ReadAll
 
 type Errand struct {
-	Name       string `json:"name"`
-	PostDeploy string `json:"post_deploy,omitempty"`
-	PreDelete  *bool  `json:"pre_delete,omitempty"`
+	Name       string      `json:"name"`
+	PostDeploy interface{} `json:"post_deploy,omitempty"`
+	PreDelete  *bool       `json:"pre_delete,omitempty"`
 }
 
 type ErrandsListOutput struct {

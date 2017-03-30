@@ -65,6 +65,60 @@ var _ = Describe("Errands", func() {
 			Expect(tableWriter.RenderCallCount()).To(Equal(1))
 		})
 
+		Context("post deploy state types", func() {
+			Context("when post deploy state is a string", func() {
+				It("lists the available products", func() {
+					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{
+						Product: api.StagedProduct{
+							Type: "some-product-name",
+							GUID: "some-product-id",
+						},
+					}, nil)
+
+					errandsService.ListReturns(api.ErrandsListOutput{
+						Errands: []api.Errand{
+							{Name: "first-errand", PostDeploy: "when-changed"},
+						},
+					}, nil)
+
+					err := command.Execute([]string{"--product-name", "some-product-name"})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
+					Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
+
+					Expect(tableWriter.AppendCallCount()).To(Equal(1))
+					Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "when-changed", ""}))
+				})
+			})
+
+			Context("when post deploy state is a boolean", func() {
+				It("lists the available products", func() {
+					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{
+						Product: api.StagedProduct{
+							Type: "some-product-name",
+							GUID: "some-product-id",
+						},
+					}, nil)
+
+					errandsService.ListReturns(api.ErrandsListOutput{
+						Errands: []api.Errand{
+							{Name: "first-errand", PostDeploy: true},
+						},
+					}, nil)
+
+					err := command.Execute([]string{"--product-name", "some-product-name"})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
+					Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
+
+					Expect(tableWriter.AppendCallCount()).To(Equal(1))
+					Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "true", ""}))
+				})
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when an unknown flag is passed", func() {
 				It("returns an error", func() {
