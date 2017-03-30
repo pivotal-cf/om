@@ -21,6 +21,19 @@ type ErrandsService struct {
 		result1 api.ErrandsListOutput
 		result2 error
 	}
+	SetStateStub        func(guid string, postDeployState string, preDeleteState string) error
+	setStateMutex       sync.RWMutex
+	setStateArgsForCall []struct {
+		guid            string
+		postDeployState string
+		preDeleteState  string
+	}
+	setStateReturns struct {
+		result1 error
+	}
+	setStateReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -76,11 +89,63 @@ func (fake *ErrandsService) ListReturnsOnCall(i int, result1 api.ErrandsListOutp
 	}{result1, result2}
 }
 
+func (fake *ErrandsService) SetState(guid string, postDeployState string, preDeleteState string) error {
+	fake.setStateMutex.Lock()
+	ret, specificReturn := fake.setStateReturnsOnCall[len(fake.setStateArgsForCall)]
+	fake.setStateArgsForCall = append(fake.setStateArgsForCall, struct {
+		guid            string
+		postDeployState string
+		preDeleteState  string
+	}{guid, postDeployState, preDeleteState})
+	fake.recordInvocation("SetState", []interface{}{guid, postDeployState, preDeleteState})
+	fake.setStateMutex.Unlock()
+	if fake.SetStateStub != nil {
+		return fake.SetStateStub(guid, postDeployState, preDeleteState)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.setStateReturns.result1
+}
+
+func (fake *ErrandsService) SetStateCallCount() int {
+	fake.setStateMutex.RLock()
+	defer fake.setStateMutex.RUnlock()
+	return len(fake.setStateArgsForCall)
+}
+
+func (fake *ErrandsService) SetStateArgsForCall(i int) (string, string, string) {
+	fake.setStateMutex.RLock()
+	defer fake.setStateMutex.RUnlock()
+	return fake.setStateArgsForCall[i].guid, fake.setStateArgsForCall[i].postDeployState, fake.setStateArgsForCall[i].preDeleteState
+}
+
+func (fake *ErrandsService) SetStateReturns(result1 error) {
+	fake.SetStateStub = nil
+	fake.setStateReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ErrandsService) SetStateReturnsOnCall(i int, result1 error) {
+	fake.SetStateStub = nil
+	if fake.setStateReturnsOnCall == nil {
+		fake.setStateReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.setStateReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ErrandsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
+	fake.setStateMutex.RLock()
+	defer fake.setStateMutex.RUnlock()
 	return fake.invocations
 }
 

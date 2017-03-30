@@ -131,6 +131,7 @@ func main() {
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
 	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, tableWriter, stdout)
 	commandSet["errands"] = commands.NewErrands(tableWriter, errandsService, stagedProductsService)
+	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

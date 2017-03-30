@@ -37,6 +37,7 @@ Commands:
   help                      prints this usage information
   import-installation       imports a given installation to the Ops Manager targeted
   revert-staged-changes     reverts staged changes on the Ops Manager targeted
+  set-errand-state          sets state for a product's errand
   stage-product             stages a given product in the Ops Manager targeted
   upload-product            uploads a given product to the Ops Manager targeted
   upload-stemcell           uploads a given stemcell to the Ops Manager targeted

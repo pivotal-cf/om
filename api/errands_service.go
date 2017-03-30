@@ -3,8 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
+
+var readAll = ioutil.ReadAll
 
 type Errand struct {
 	Name       string `json:"name"`
@@ -22,6 +25,30 @@ type ErrandsService struct {
 
 func NewErrandsService(client httpClient) ErrandsService {
 	return ErrandsService{Client: client}
+}
+
+func (es ErrandsService) SetState(productID, postDeployState, preDeleteState string) error {
+	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
+	req, err := http.NewRequest("PUT", path, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := es.Client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		rawBody, err := readAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("failed to set errand state: %d %s", resp.StatusCode, string(rawBody))
+	}
+
+	return nil
 }
 
 func (es ErrandsService) List(productID string) (ErrandsListOutput, error) {

@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -21,6 +22,79 @@ var _ = Describe("ErrandsService", func() {
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 		service = api.NewErrandsService(client)
+	})
+
+	Describe("SetState", func() {
+		It("sets state for a product's errands", func() {
+			var path, method string
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				path = req.URL.Path
+				method = req.Method
+
+				return &http.Response{StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader("{}")),
+				}, nil
+			}
+
+			err := service.SetState("some-product-id", "when-changed", "false")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
+			Expect(method).To(Equal("PUT"))
+		})
+
+		Context("failure cases", func() {
+			Context("when ops manager returns a not-OK response code", func() {
+				It("returns an error", func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						return &http.Response{StatusCode: http.StatusTeapot,
+							Body: ioutil.NopCloser(strings.NewReader("I'm a teapot")),
+						}, nil
+					}
+
+					err := service.SetState("some-product-id", "when-changed", "false")
+					Expect(err).To(MatchError("failed to set errand state: 418 I'm a teapot"))
+				})
+			})
+
+			Context("when the product ID cannot be URL encoded", func() {
+				It("returns an error", func() {
+					err := service.SetState("%%%", "true", "false")
+					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
+				})
+			})
+
+			Context("when the client cannot make a request", func() {
+				It("returns an error", func() {
+					client.DoReturns(nil, errors.New("client do errored"))
+
+					err := service.SetState("some-product-id", "true", "false")
+					Expect(err).To(MatchError("client do errored"))
+				})
+			})
+
+			Context("when the response body cannot be read", func() {
+				BeforeEach(func() {
+					api.SetReadAll(func(_ io.Reader) ([]byte, error) {
+						return nil, errors.New("failed to read body")
+					})
+				})
+
+				AfterEach(func() {
+					api.ResetReadAll()
+				})
+
+				It("returns an error", func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						return &http.Response{StatusCode: http.StatusTeapot,
+							Body: nil,
+						}, nil
+					}
+
+					err := service.SetState("some-product-id", "true", "false")
+					Expect(err).To(MatchError(ContainSubstring("failed to read body")))
+				})
+			})
+		})
 	})
 
 	Describe("List", func() {
