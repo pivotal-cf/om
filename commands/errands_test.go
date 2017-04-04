@@ -33,6 +33,8 @@ var _ = Describe("Errands", func() {
 					{Name: "first-errand", PostDeploy: "true"},
 					{Name: "second-errand", PostDeploy: "false"},
 					{Name: "third-errand", PreDelete: true},
+					{Name: "will-not-appear", PreDelete: nil},
+					{Name: "also-bad", PostDeploy: nil},
 				},
 			}, nil)
 
@@ -55,10 +57,12 @@ var _ = Describe("Errands", func() {
 			Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
 			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
 
-			Expect(tableWriter.AppendCallCount()).To(Equal(3))
+			Expect(tableWriter.AppendCallCount()).To(Equal(5))
 			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "true", ""}))
 			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"second-errand", "false", ""}))
 			Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{"third-errand", "", "true"}))
+			Expect(tableWriter.AppendArgsForCall(3)).To(Equal([]string{"will-not-appear", "", ""}))
+			Expect(tableWriter.AppendArgsForCall(4)).To(Equal([]string{"also-bad", "", ""}))
 
 			Expect(tableWriter.RenderCallCount()).To(Equal(1))
 		})

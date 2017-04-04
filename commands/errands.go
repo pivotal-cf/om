@@ -62,24 +62,18 @@ func (e Errands) Execute(args []string) error {
 	for _, errand := range errandsOutput.Errands {
 		var postDeploy, preDelete string
 
-		if errand.PreDelete != nil {
-			switch p := errand.PreDelete.(type) {
-			case string:
-				preDelete = p
-			case bool:
-				preDelete = strconv.FormatBool(p)
-			}
-		} else {
-			preDelete = ""
+		switch p := errand.PreDelete.(type) {
+		case string:
+			preDelete = p
+		case bool:
+			preDelete = strconv.FormatBool(p)
 		}
 
-		if errand.PostDeploy != nil {
-			switch p := errand.PostDeploy.(type) {
-			case string:
-				postDeploy = p
-			case bool:
-				postDeploy = strconv.FormatBool(p)
-			}
+		switch p := errand.PostDeploy.(type) {
+		case string:
+			postDeploy = p
+		case bool:
+			postDeploy = strconv.FormatBool(p)
 		}
 
 		e.tableWriter.Append([]string{errand.Name, postDeploy, preDelete})
