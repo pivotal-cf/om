@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,7 +13,7 @@ var readAll = ioutil.ReadAll
 type Errand struct {
 	Name       string      `json:"name"`
 	PostDeploy interface{} `json:"post_deploy,omitempty"`
-	PreDelete  *bool       `json:"pre_delete,omitempty"`
+	PreDelete  interface{} `json:"pre_delete,omitempty"`
 }
 
 type ErrandsListOutput struct {
@@ -27,12 +28,30 @@ func NewErrandsService(client httpClient) ErrandsService {
 	return ErrandsService{Client: client}
 }
 
-func (es ErrandsService) SetState(productID, postDeployState, preDeleteState string) error {
+func (es ErrandsService) SetState(productID, errandName, postDeployState, preDeleteState string) error {
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
-	req, err := http.NewRequest("PUT", path, nil)
+
+	errandsListOutput := ErrandsListOutput{
+		Errands: []Errand{
+			Errand{
+				Name:       errandName,
+				PostDeploy: postDeployState,
+				PreDelete:  preDeleteState,
+			},
+		},
+	}
+
+	payload, err := json.Marshal(errandsListOutput)
+	if err != nil {
+		return err // not tested
+	}
+
+	req, err := http.NewRequest("PUT", path, bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}
+
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := es.Client.Do(req)
 	if err != nil {

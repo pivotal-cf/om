@@ -21,10 +21,11 @@ type ErrandsService struct {
 		result1 api.ErrandsListOutput
 		result2 error
 	}
-	SetStateStub        func(guid string, postDeployState string, preDeleteState string) error
+	SetStateStub        func(productID, errandName, postDeployState, preDeleteState string) error
 	setStateMutex       sync.RWMutex
 	setStateArgsForCall []struct {
-		guid            string
+		productID       string
+		errandName      string
 		postDeployState string
 		preDeleteState  string
 	}
@@ -89,18 +90,19 @@ func (fake *ErrandsService) ListReturnsOnCall(i int, result1 api.ErrandsListOutp
 	}{result1, result2}
 }
 
-func (fake *ErrandsService) SetState(guid string, postDeployState string, preDeleteState string) error {
+func (fake *ErrandsService) SetState(productID string, errandName string, postDeployState string, preDeleteState string) error {
 	fake.setStateMutex.Lock()
 	ret, specificReturn := fake.setStateReturnsOnCall[len(fake.setStateArgsForCall)]
 	fake.setStateArgsForCall = append(fake.setStateArgsForCall, struct {
-		guid            string
+		productID       string
+		errandName      string
 		postDeployState string
 		preDeleteState  string
-	}{guid, postDeployState, preDeleteState})
-	fake.recordInvocation("SetState", []interface{}{guid, postDeployState, preDeleteState})
+	}{productID, errandName, postDeployState, preDeleteState})
+	fake.recordInvocation("SetState", []interface{}{productID, errandName, postDeployState, preDeleteState})
 	fake.setStateMutex.Unlock()
 	if fake.SetStateStub != nil {
-		return fake.SetStateStub(guid, postDeployState, preDeleteState)
+		return fake.SetStateStub(productID, errandName, postDeployState, preDeleteState)
 	}
 	if specificReturn {
 		return ret.result1
@@ -114,10 +116,10 @@ func (fake *ErrandsService) SetStateCallCount() int {
 	return len(fake.setStateArgsForCall)
 }
 
-func (fake *ErrandsService) SetStateArgsForCall(i int) (string, string, string) {
+func (fake *ErrandsService) SetStateArgsForCall(i int) (string, string, string, string) {
 	fake.setStateMutex.RLock()
 	defer fake.setStateMutex.RUnlock()
-	return fake.setStateArgsForCall[i].guid, fake.setStateArgsForCall[i].postDeployState, fake.setStateArgsForCall[i].preDeleteState
+	return fake.setStateArgsForCall[i].productID, fake.setStateArgsForCall[i].errandName, fake.setStateArgsForCall[i].postDeployState, fake.setStateArgsForCall[i].preDeleteState
 }
 
 func (fake *ErrandsService) SetStateReturns(result1 error) {

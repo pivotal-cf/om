@@ -27,19 +27,36 @@ var _ = Describe("ErrandsService", func() {
 	Describe("SetState", func() {
 		It("sets state for a product's errands", func() {
 			var path, method string
+			var header http.Header
+			var body io.Reader
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				path = req.URL.Path
 				method = req.Method
+				body = req.Body
+				header = req.Header
 
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader("{}")),
 				}, nil
 			}
 
-			err := service.SetState("some-product-id", "when-changed", "false")
+			err := service.SetState("some-product-id", "some-errand", "when-changed", "false")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
 			Expect(method).To(Equal("PUT"))
+			Expect(header.Get("Content-Type")).To(Equal("application/json"))
+
+			bodyBytes, err := ioutil.ReadAll(body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(bodyBytes)).To(MatchJSON(`{
+				"errands": [
+            {
+              "name": "some-errand",
+              "post_deploy": "when-changed",
+              "pre_delete": "false"
+            }
+					]
+			}`))
 		})
 
 		Context("failure cases", func() {
@@ -51,14 +68,14 @@ var _ = Describe("ErrandsService", func() {
 						}, nil
 					}
 
-					err := service.SetState("some-product-id", "when-changed", "false")
+					err := service.SetState("some-product-id", "some-errand", "when-changed", "false")
 					Expect(err).To(MatchError("failed to set errand state: 418 I'm a teapot"))
 				})
 			})
 
 			Context("when the product ID cannot be URL encoded", func() {
 				It("returns an error", func() {
-					err := service.SetState("%%%", "true", "false")
+					err := service.SetState("%%%", "some-errand", "true", "false")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
@@ -67,7 +84,7 @@ var _ = Describe("ErrandsService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					err := service.SetState("some-product-id", "true", "false")
+					err := service.SetState("some-product-id", "some-errand", "true", "false")
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -90,7 +107,7 @@ var _ = Describe("ErrandsService", func() {
 						}, nil
 					}
 
-					err := service.SetState("some-product-id", "true", "false")
+					err := service.SetState("some-product-id", "some-errand", "true", "false")
 					Expect(err).To(MatchError(ContainSubstring("failed to read body")))
 				})
 			})
@@ -108,7 +125,7 @@ var _ = Describe("ErrandsService", func() {
 						"errands": [
 								{"post_deploy":"true","name":"first-errand"},
 								{"post_deploy":"false","name":"second-errand"},
-								{"pre_delete":true,"name":"third-errand"}
+								{"pre_delete":"true","name":"third-errand"}
 							]
 						}`)),
 				}, nil
@@ -117,14 +134,12 @@ var _ = Describe("ErrandsService", func() {
 			output, err := service.List("some-product-id")
 			Expect(err).NotTo(HaveOccurred())
 
-			thirdErrandPreDelete := true
-			Expect(output).To(Equal(api.ErrandsListOutput{
-				Errands: []api.Errand{
-					{Name: "first-errand", PostDeploy: "true"},
-					{Name: "second-errand", PostDeploy: "false"},
-					{Name: "third-errand", PreDelete: &thirdErrandPreDelete},
-				},
-			}))
+			Expect(output.Errands).To(ConsistOf([]api.Errand{
+				{Name: "first-errand", PostDeploy: "true"},
+				{Name: "second-errand", PostDeploy: "false"},
+				{Name: "third-errand", PreDelete: "true"},
+			},
+			))
 
 			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
 		})

@@ -17,7 +17,7 @@ type stagedProductsFinder interface {
 //go:generate counterfeiter -o ./fakes/errands_service.go --fake-name ErrandsService . errandsService
 type errandsService interface {
 	List(productID string) (api.ErrandsListOutput, error)
-	SetState(productID string, postDeployState string, preDeleteState string) error
+	SetState(productID, errandName, postDeployState, preDeleteState string) error
 }
 
 type Errands struct {
@@ -62,10 +62,15 @@ func (e Errands) Execute(args []string) error {
 	for _, errand := range errandsOutput.Errands {
 		var postDeploy, preDelete string
 
-		if errand.PreDelete == nil {
-			preDelete = ""
+		if errand.PreDelete != nil {
+			switch p := errand.PreDelete.(type) {
+			case string:
+				preDelete = p
+			case bool:
+				preDelete = strconv.FormatBool(p)
+			}
 		} else {
-			preDelete = strconv.FormatBool(*errand.PreDelete)
+			preDelete = ""
 		}
 
 		if errand.PostDeploy != nil {

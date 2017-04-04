@@ -44,9 +44,10 @@ var _ = Describe("Set errand state", func() {
 
 			Expect(errandsService.SetStateCallCount()).To(Equal(1))
 
-			productGUID, postDeployState, preDeleteState := errandsService.SetStateArgsForCall(0)
+			productGUID, errandName, postDeployState, preDeleteState := errandsService.SetStateArgsForCall(0)
 
 			Expect(productGUID).To(Equal("some-product-guid"))
+			Expect(errandName).To(Equal("some-errand"))
 			Expect(postDeployState).To(Equal("true"))
 			Expect(preDeleteState).To(Equal("false"))
 		})
@@ -63,14 +64,16 @@ var _ = Describe("Set errand state", func() {
 
 			Expect(errandsService.SetStateCallCount()).To(Equal(1))
 
-			productGUID, postDeployState, preDeleteState := errandsService.SetStateArgsForCall(0)
+			productGUID, errandName, postDeployState, preDeleteState := errandsService.SetStateArgsForCall(0)
 
 			Expect(productGUID).To(Equal("some-product-guid"))
+			Expect(errandName).To(Equal("some-errand"))
 			Expect(postDeployState).To(Equal(desiredPostDeploy))
 			Expect(preDeleteState).To(Equal(desiredPreDelete))
 		},
 			Entry("when only post deploy is given", "when-changed", "", "when-changed", ""),
 			Entry("when only pre delete is given", "", "disabled", "", "false"),
+			Entry("when default states are desired", "default", "default", "default", "default"),
 		)
 
 		Context("failures", func() {
@@ -98,8 +101,23 @@ var _ = Describe("Set errand state", func() {
 				It("returns an error", func() {
 					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
 
-					err := command.Execute([]string{"--product-name", "some-product"})
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+						"--errand-name", "some-errand",
+					})
 					Expect(err).To(MatchError("failed to find staged product \"some-product\": there was an error"))
+				})
+			})
+
+			Context("when no errand name is passed", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{
+						"--product-name", "some-product-name",
+						"--errand-name", "",
+						"--post-deploy-state", "enabled",
+					})
+
+					Expect(err).To(MatchError("error: errand-name is missing. Please see usage for more information."))
 				})
 			})
 
@@ -107,7 +125,10 @@ var _ = Describe("Set errand state", func() {
 				It("returns an error", func() {
 					errandsService.SetStateReturns(errors.New("there was an error"))
 
-					err := command.Execute([]string{"--product-name", "some-product"})
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+						"--errand-name", "some-errand",
+					})
 					Expect(err).To(MatchError("failed to set errand state: there was an error"))
 				})
 			})

@@ -23,6 +23,7 @@ var userToOMInputs = map[string]string{
 	"enabled":      "true",
 	"disabled":     "false",
 	"when-changed": "when-changed",
+	"default":      "default",
 }
 
 func NewSetErrandState(errandsService errandsService, stagedProductsFinder stagedProductsFinder) SetErrandState {
@@ -40,6 +41,10 @@ func (s SetErrandState) Execute(args []string) error {
 
 	if s.Options.ProductName == "" {
 		return errors.New("error: product-name is missing. Please see usage for more information.")
+	}
+
+	if s.Options.ErrandName == "" {
+		return errors.New("error: errand-name is missing. Please see usage for more information.")
 	}
 
 	findOutput, err := s.stagedProductsFinder.Find(s.Options.ProductName)
@@ -73,7 +78,7 @@ func (s SetErrandState) Execute(args []string) error {
 		return errors.New(strings.Join(errs, ", "))
 	}
 
-	err = s.errandsService.SetState(findOutput.Product.GUID, postDeployState, preDeleteState)
+	err = s.errandsService.SetState(findOutput.Product.GUID, s.Options.ErrandName, postDeployState, preDeleteState)
 	if err != nil {
 		return fmt.Errorf("failed to set errand state: %s", err)
 	}
