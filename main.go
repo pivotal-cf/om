@@ -133,6 +133,7 @@ func main() {
 	commandSet["errands"] = commands.NewErrands(tableWriter, errandsService, stagedProductsService)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
 	commandSet["staged-products"] = commands.NewStagedProducts(tableWriter, diagnosticService)
+	commandSet["deployed-products"] = commands.NewDeployedProducts(tableWriter, diagnosticService)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

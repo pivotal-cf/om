@@ -32,6 +32,7 @@ Commands:
   curl                      issues an authenticated API request
   delete-installation       deletes all the products on the Ops Manager targeted
   delete-unused-products    deletes unused products on the Ops Manager targeted
+  deployed-products         lists deployed products
   errands                   list errands for a product
   export-installation       exports the installation of the target Ops Manager
   help                      prints this usage information
