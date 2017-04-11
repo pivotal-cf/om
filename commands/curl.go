@@ -27,6 +27,7 @@ type Curl struct {
 		Path   string `short:"p" long:"path"    description:"path to api endpoint"`
 		Method string `short:"x" long:"request" description:"http verb" default:"GET"`
 		Data   string `short:"d" long:"data"    description:"api request payload"`
+		Silent bool   `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
 	}
 }
 
@@ -55,7 +56,11 @@ func (c Curl) Execute(args []string) error {
 		return fmt.Errorf("failed to make api request: %s", err)
 	}
 
-	c.stderr.Printf("Status: %d %s", output.StatusCode, http.StatusText(output.StatusCode))
+	writeHeadersToStderr := !c.Options.Silent || output.StatusCode >= 400
+
+	if writeHeadersToStderr {
+		c.stderr.Printf("Status: %d %s", output.StatusCode, http.StatusText(output.StatusCode))
+	}
 
 	headers := bytes.NewBuffer([]byte{})
 	err = output.Headers.Write(headers)
@@ -63,7 +68,9 @@ func (c Curl) Execute(args []string) error {
 		return fmt.Errorf("failed to write api response headers: %s", err)
 	}
 
-	c.stderr.Printf(headers.String())
+	if writeHeadersToStderr {
+		c.stderr.Printf(headers.String())
+	}
 
 	body, err := ioutil.ReadAll(output.Body)
 	if err != nil {
