@@ -39,7 +39,7 @@ var _ = Describe("Curl", func() {
 
 		It("executes the API call", func() {
 			requestService.InvokeReturns(api.RequestServiceInvokeOutput{
-				StatusCode: http.StatusTeapot,
+				StatusCode: http.StatusOK,
 				Headers: http.Header{
 					"Content-Length": []string{"33"},
 					"Content-Type":   []string{"application/json"},
@@ -66,10 +66,73 @@ var _ = Describe("Curl", func() {
 			Expect(fmt.Sprint(content...)).To(MatchJSON(`{"some-response-key": "%some-response-value"}`))
 
 			format, content := stderr.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 418 I'm a teapot"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 200 OK"))
 
 			format, content = stderr.PrintfArgsForCall(1)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Accept: text/plain\r\nContent-Length: 33\r\nContent-Type: application/json\r\n"))
+		})
+
+		Context("when --silent is specified", func() {
+			It("does not write anything to stderr if the status is 200", func() {
+				requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+					StatusCode: http.StatusOK,
+					Headers: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: strings.NewReader("{}"),
+				}, nil)
+
+				err := command.Execute([]string{
+					"--path", "/api/v0/some/path",
+					"--request", "GET",
+					"--silent",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(stderr.Invocations()).To(BeEmpty())
+			})
+
+			It("does not write anything to stderr if the status is 201", func() {
+				requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+					StatusCode: http.StatusCreated,
+					Headers: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: strings.NewReader("{}"),
+				}, nil)
+
+				err := command.Execute([]string{
+					"--path", "/api/v0/some/path",
+					"--request", "POST",
+					"--silent",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(stderr.Invocations()).To(HaveLen(0))
+			})
+
+			It("still writes response headers to stderr if the status is 404", func() {
+				requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+					StatusCode: http.StatusNotFound,
+					Headers: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: strings.NewReader("{}"),
+				}, nil)
+
+				err := command.Execute([]string{
+					"--path", "/api/v0/some/path",
+					"--request", "GET",
+					"--silent",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				format, content := stderr.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 404 Not Found"))
+
+				format, content = stderr.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("Content-Type: application/json\r\n"))
+			})
 		})
 
 		Describe("pretty printing", func() {
