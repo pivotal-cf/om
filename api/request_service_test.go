@@ -35,9 +35,10 @@ var _ = Describe("RequestService", func() {
 			}, nil)
 
 			output, err := service.Invoke(api.RequestServiceInvokeInput{
-				Method: "PUT",
-				Path:   "/api/v0/api/endpoint",
-				Data:   strings.NewReader("some-request-body"),
+				Method:      "PUT",
+				Path:        "/api/v0/api/endpoint",
+				Data:        strings.NewReader("some-request-body"),
+				ContentType: "application/json",
 			})
 			Expect(err).NotTo(HaveOccurred())
 

@@ -7,9 +7,10 @@ import (
 )
 
 type RequestServiceInvokeInput struct {
-	Path   string
-	Method string
-	Data   io.Reader
+	Path        string
+	Method      string
+	Data        io.Reader
+	ContentType string
 }
 
 type RequestServiceInvokeOutput struct {
@@ -32,7 +33,7 @@ func (rs RequestService) Invoke(input RequestServiceInvokeInput) (RequestService
 		return RequestServiceInvokeOutput{}, fmt.Errorf("failed constructing request: %s", err)
 	}
 
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", input.ContentType)
 	response, err := rs.client.Do(request)
 	if err != nil {
 		return RequestServiceInvokeOutput{}, fmt.Errorf("failed submitting request: %s", err)
