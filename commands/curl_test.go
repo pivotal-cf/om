@@ -58,6 +58,7 @@ var _ = Describe("Curl", func() {
 			input := requestService.InvokeArgsForCall(0)
 			Expect(input.Path).To(Equal("/api/v0/some/path"))
 			Expect(input.Method).To(Equal("POST"))
+			Expect(input.ContentType).To(Equal("application/json"))
 
 			data, err := ioutil.ReadAll(input.Data)
 			Expect(err).NotTo(HaveOccurred())
@@ -132,6 +133,33 @@ var _ = Describe("Curl", func() {
 
 				format, content = stderr.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("Content-Type: application/json\r\n"))
+			})
+		})
+
+		Context("When a custom content-type is passed in", func() {
+			It("executes the API call with the given content type", func() {
+				requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+					StatusCode: http.StatusTeapot,
+					Headers: http.Header{
+						"Content-Length": []string{"33"},
+						"Content-Type":   []string{"application/json"},
+						"Accept":         []string{"text/plain"},
+					},
+					Body: strings.NewReader(`{"some-response-key": "%some-response-value"}`),
+				}, nil)
+
+				err := command.Execute([]string{
+					"--path", "/api/v0/some/path",
+					"--request", "POST",
+					"--data", `some_key=some_value`,
+					"--content-type", "application/x-www-form-urlencoded",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				input := requestService.InvokeArgsForCall(0)
+				Expect(input.Path).To(Equal("/api/v0/some/path"))
+				Expect(input.Method).To(Equal("POST"))
+				Expect(input.ContentType).To(Equal("application/x-www-form-urlencoded"))
 			})
 		})
 

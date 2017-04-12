@@ -24,10 +24,11 @@ type Curl struct {
 	stdout         logger
 	stderr         logger
 	Options        struct {
-		Path   string `short:"p" long:"path"    description:"path to api endpoint"`
-		Method string `short:"x" long:"request" description:"http verb" default:"GET"`
-		Data   string `short:"d" long:"data"    description:"api request payload"`
-		Silent bool   `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
+		Path        string `short:"p" long:"path"    description:"path to api endpoint"`
+		Method      string `short:"x" long:"request" description:"http verb" default:"GET"`
+		Data        string `short:"d" long:"data"    description:"api request payload"`
+		Silent      bool   `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
+		ContentType string `short:"c" long:"content-type" description:"content type of payload" default:"application/json"`
 	}
 }
 
@@ -46,9 +47,10 @@ func (c Curl) Execute(args []string) error {
 	}
 
 	input := api.RequestServiceInvokeInput{
-		Path:   c.Options.Path,
-		Method: c.Options.Method,
-		Data:   strings.NewReader(c.Options.Data),
+		Path:        c.Options.Path,
+		Method:      c.Options.Method,
+		Data:        strings.NewReader(c.Options.Data),
+		ContentType: c.Options.ContentType,
 	}
 
 	output, err := c.requestService.Invoke(input)
