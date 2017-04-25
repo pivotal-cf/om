@@ -6,8 +6,20 @@ import (
 	"io/ioutil"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
+
+type StringSlice []string
+
+func (ss *StringSlice) String() string {
+	return fmt.Sprintf("%s", *ss)
+}
+
+func (ss *StringSlice) Set(item string) error {
+	*ss = append(*ss, item)
+	return nil
+}
 
 func Parse(receiver interface{}, args []string) ([]string, error) {
 	set := flag.NewFlagSet("", flag.ContinueOnError)
@@ -21,6 +33,7 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 
 	v := ptr.Elem()
 	t := v.Type()
+
 	if t.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("unexpected pointer to non-struct type %s", t.Kind())
 	}
@@ -34,13 +47,11 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 			if err != nil {
 				return nil, err
 			}
-
 		case reflect.Float64:
 			err := parseFloat64(set, v.Field(i), field.Tag)
 			if err != nil {
 				return nil, err
 			}
-
 		case reflect.Int64:
 			if t.Field(i).Type == reflect.TypeOf(time.Duration(0)) {
 				err := parseDuration(set, v.Field(i), field.Tag)
@@ -53,28 +64,28 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 					return nil, err
 				}
 			}
-
 		case reflect.Int:
 			err := parseInt(set, v.Field(i), field.Tag)
 			if err != nil {
 				return nil, err
 			}
-
 		case reflect.String:
 			parseString(set, v.Field(i), field.Tag)
-
 		case reflect.Uint64:
 			err := parseUint64(set, v.Field(i), field.Tag)
 			if err != nil {
 				return nil, err
 			}
-
 		case reflect.Uint:
 			err := parseUint(set, v.Field(i), field.Tag)
 			if err != nil {
 				return nil, err
 			}
-
+		case reflect.Slice:
+			err := parseSlice(set, v.Field(i), field.Tag)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			return nil, fmt.Errorf("unexpected flag receiver field type %s", field.Type.Kind())
 		}
@@ -86,6 +97,28 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 	}
 
 	return set.Args(), nil
+}
+
+func parseSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) error {
+	collection := field.Addr().Interface().(*StringSlice)
+
+	defaultSlice, ok := tags.Lookup("default")
+	if ok {
+		separated := strings.Split(defaultSlice, ",")
+		*collection = append(*collection, separated...)
+	}
+
+	short, ok := tags.Lookup("short")
+	if ok {
+		set.Var(collection, short, "")
+	}
+
+	long, ok := tags.Lookup("long")
+	if ok {
+		set.Var(collection, long, "")
+	}
+
+	return nil
 }
 
 func parseBool(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) error {

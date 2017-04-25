@@ -62,6 +62,47 @@ var _ = Describe("Parse", func() {
 		})
 	})
 
+	Context("slice flags", func() {
+		It("parses short name flags", func() {
+			var set struct {
+				First  flags.StringSlice `short:"1"`
+				Second flags.StringSlice `short:"2"`
+			}
+			args, err := flags.Parse(&set, []string{"-1", "test", "-1", "another-test", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(ConsistOf(flags.StringSlice{"test", "another-test"}))
+			Expect(set.Second).To(BeEmpty())
+		})
+
+		It("parses long name flags", func() {
+			var set struct {
+				First  flags.StringSlice `long:"first"`
+				Second flags.StringSlice `long:"second"`
+			}
+			args, err := flags.Parse(&set, []string{"--second", "test", "--second", "different-test", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(BeEmpty())
+			Expect(set.Second).To(ConsistOf(flags.StringSlice{"test", "different-test"}))
+		})
+
+		It("allows for setting a default value", func() {
+			var set struct {
+				First  flags.StringSlice `long:"first" default:"yes,no"`
+				Second flags.StringSlice `long:"second"`
+			}
+			args, err := flags.Parse(&set, []string{"--second", "what", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(ConsistOf(flags.StringSlice{"yes", "no"}))
+			Expect(set.Second).To(ConsistOf(flags.StringSlice{"what"}))
+		})
+	})
+
 	Context("float64 flags", func() {
 		It("parses short name flags", func() {
 			var set struct {
