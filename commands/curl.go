@@ -24,11 +24,11 @@ type Curl struct {
 	stdout         logger
 	stderr         logger
 	Options        struct {
-		Path        string `short:"p" long:"path"    description:"path to api endpoint"`
-		Method      string `short:"x" long:"request" description:"http verb" default:"GET"`
-		Data        string `short:"d" long:"data"    description:"api request payload"`
-		Silent      bool   `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
-		ContentType string `short:"c" long:"content-type" description:"content type of payload" default:"application/json"`
+		Path    string            `short:"p" long:"path"    description:"path to api endpoint"`
+		Method  string            `short:"x" long:"request" description:"http verb" default:"GET"`
+		Data    string            `short:"d" long:"data"    description:"api request payload"`
+		Silent  bool              `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
+		Headers flags.StringSlice `short:"H" long:"header"  description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
 	}
 }
 
@@ -46,11 +46,18 @@ func (c Curl) Execute(args []string) error {
 		return errors.New("could not parse curl flags: -path is a required parameter. Please run `om curl --help` for more info.")
 	}
 
+	requestHeaders := make(http.Header)
+
+	for _, h := range c.Options.Headers {
+		split := strings.Split(h, " ")
+		requestHeaders.Set(strings.TrimSuffix(split[0], ":"), split[1])
+	}
+
 	input := api.RequestServiceInvokeInput{
-		Path:        c.Options.Path,
-		Method:      c.Options.Method,
-		Data:        strings.NewReader(c.Options.Data),
-		ContentType: c.Options.ContentType,
+		Path:    c.Options.Path,
+		Method:  c.Options.Method,
+		Data:    strings.NewReader(c.Options.Data),
+		Headers: requestHeaders,
 	}
 
 	output, err := c.requestService.Invoke(input)

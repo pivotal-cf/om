@@ -58,7 +58,7 @@ var _ = Describe("Curl", func() {
 			input := requestService.InvokeArgsForCall(0)
 			Expect(input.Path).To(Equal("/api/v0/some/path"))
 			Expect(input.Method).To(Equal("POST"))
-			Expect(input.ContentType).To(Equal("application/json"))
+			Expect(input.Headers).To(HaveKeyWithValue("Content-Type", []string{"application/json"}))
 
 			data, err := ioutil.ReadAll(input.Data)
 			Expect(err).NotTo(HaveOccurred())
@@ -152,14 +152,14 @@ var _ = Describe("Curl", func() {
 					"--path", "/api/v0/some/path",
 					"--request", "POST",
 					"--data", `some_key=some_value`,
-					"--content-type", "application/x-www-form-urlencoded",
+					"--header", "Content-Type: application/x-www-form-urlencoded",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
 				input := requestService.InvokeArgsForCall(0)
 				Expect(input.Path).To(Equal("/api/v0/some/path"))
 				Expect(input.Method).To(Equal("POST"))
-				Expect(input.ContentType).To(Equal("application/x-www-form-urlencoded"))
+				Expect(input.Headers).To(HaveKeyWithValue("Content-Type", []string{"application/x-www-form-urlencoded"}))
 			})
 		})
 
