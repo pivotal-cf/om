@@ -58,6 +58,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
+
 	if c.Options.IaaSConfiguration != "" {
 		c.logger.Printf("configuring iaas specific options for bosh tile")
 
