@@ -48,6 +48,7 @@ Commands:
   configure-product         configures a staged product
   curl                      issues an authenticated API request
   delete-installation       deletes all the products on the Ops Manager targeted
+  delete-product            deletes a product from the Ops Manager
   delete-unused-products    deletes unused products on the Ops Manager targeted
   deployed-products         lists deployed products
   errands                   list errands for a product
