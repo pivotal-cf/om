@@ -45,5 +45,6 @@ func (dp DeleteProduct) Usage() Usage {
 	return Usage{
 		Description:      "This command deletes the named product from the targeted Ops Manager",
 		ShortDescription: "deletes a product from the Ops Manager",
+		Flags:            dp.Options,
 	}
 }

@@ -55,6 +55,7 @@ var _ = Describe("DeleteProduct", func() {
 			Expect(usage).To(Equal(commands.Usage{
 				Description:      "This command deletes the named product from the targeted Ops Manager",
 				ShortDescription: "deletes a product from the Ops Manager",
+				Flags:            command.Options,
 			}))
 		})
 	})
