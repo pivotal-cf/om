@@ -21,7 +21,6 @@ type UploadProduct struct {
 type productUploader interface {
 	Upload(api.UploadProductInput) (api.UploadProductOutput, error)
 	CheckProductAvailability(string, string) (bool, error)
-	Trash() error
 }
 
 //go:generate counterfeiter -o ./fakes/extractor.go --fake-name Extractor . extractor

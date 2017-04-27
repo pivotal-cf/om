@@ -191,59 +191,15 @@ var _ = Describe("AvailableProductsService", func() {
 		})
 	})
 
-	Describe("Trash", func() {
-		It("deletes unused products", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-			}, nil)
-
-			err := service.Trash()
-			Expect(err).NotTo(HaveOccurred())
-
-			req := client.DoArgsForCall(0)
-			Expect(req.URL.Path).To(Equal("/api/v0/available_products"))
-			Expect(req.Method).To(Equal("DELETE"))
-		})
-
-		Context("failure cases", func() {
-			Context("when the client errors before the request", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some client error"))
-
-					err := service.Trash()
-					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
-				})
-			})
-
-			Context("when the api returns a non-200 status code", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
-					}, nil)
-
-					err := service.Trash()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
-			})
-		})
-	})
-
 	Describe("CheckProductAvailability", func() {
 		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				if req.URL.Path == "/api/v0/available_products" {
-					return &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader(`[{
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body: ioutil.NopCloser(strings.NewReader(`[{
 						"name": "available-product",
 						"product_version": "available-version"
 					}]`)),
-					}, nil
-				}
-				return nil, nil
-			}
+			}, nil)
 		})
 
 		Context("when the product is available", func() {
@@ -264,12 +220,70 @@ var _ = Describe("AvailableProductsService", func() {
 			})
 		})
 
-		Describe("errors", func() {
-			Context("the client can't connect to the server", func() {
+		Context("When an error occurs", func() {
+			Context("when the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
 					_, err := service.CheckProductAvailability("", "")
 					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
+				})
+			})
+		})
+	})
+
+	Describe("Delete", func() {
+		It("deletes a named product / version", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+			}, nil)
+
+			err := service.Delete(api.AvailableProductsInput{
+				ProductName:    "some-product",
+				ProductVersion: "1.2.3-build.4",
+			}, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+
+			request := client.DoArgsForCall(0)
+			Expect(request.Method).To(Equal("DELETE"))
+			Expect(request.URL.Path).To(Equal("/api/v0/available_products"))
+			Expect(request.URL.RawQuery).To(Equal("product_name=some-product&version=1.2.3-build.4"))
+		})
+
+		Context("when the all flag is provided", func() {
+			It("does not provide a product query to DELETE", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+				}, nil)
+
+				err := service.Delete(api.AvailableProductsInput{}, true)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(1))
+
+				req := client.DoArgsForCall(0)
+				Expect(req.Method).To(Equal("DELETE"))
+				Expect(req.URL.Path).To(Equal("/api/v0/available_products"))
+				Expect(req.URL.RawQuery).To(Equal(""))
+			})
+		})
+
+		Context("when an error occurs", func() {
+			Context("when a non-200 status code is returned", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+					}, nil)
+
+					err := service.Delete(api.AvailableProductsInput{
+						ProductName:    "some-product",
+						ProductVersion: "1.2.3-build.4",
+					}, false)
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
 				})
 			})
 		})

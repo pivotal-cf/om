@@ -8,10 +8,11 @@ import (
 )
 
 type ProductDeleter struct {
-	DeleteStub        func(api.AvailableProductsInput) error
+	DeleteStub        func(input api.AvailableProductsInput, deleteAll bool) error
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
-		arg1 api.AvailableProductsInput
+		input     api.AvailableProductsInput
+		deleteAll bool
 	}
 	deleteReturns struct {
 		result1 error
@@ -23,16 +24,17 @@ type ProductDeleter struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductDeleter) Delete(arg1 api.AvailableProductsInput) error {
+func (fake *ProductDeleter) Delete(input api.AvailableProductsInput, deleteAll bool) error {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
-		arg1 api.AvailableProductsInput
-	}{arg1})
-	fake.recordInvocation("Delete", []interface{}{arg1})
+		input     api.AvailableProductsInput
+		deleteAll bool
+	}{input, deleteAll})
+	fake.recordInvocation("Delete", []interface{}{input, deleteAll})
 	fake.deleteMutex.Unlock()
 	if fake.DeleteStub != nil {
-		return fake.DeleteStub(arg1)
+		return fake.DeleteStub(input, deleteAll)
 	}
 	if specificReturn {
 		return ret.result1
@@ -46,10 +48,10 @@ func (fake *ProductDeleter) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *ProductDeleter) DeleteArgsForCall(i int) api.AvailableProductsInput {
+func (fake *ProductDeleter) DeleteArgsForCall(i int) (api.AvailableProductsInput, bool) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
-	return fake.deleteArgsForCall[i].arg1
+	return fake.deleteArgsForCall[i].input, fake.deleteArgsForCall[i].deleteAll
 }
 
 func (fake *ProductDeleter) DeleteReturns(result1 error) {

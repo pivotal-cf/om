@@ -35,15 +35,6 @@ type ProductUploader struct {
 		result1 bool
 		result2 error
 	}
-	TrashStub        func() error
-	trashMutex       sync.RWMutex
-	trashArgsForCall []struct{}
-	trashReturns     struct {
-		result1 error
-	}
-	trashReturnsOnCall map[int]struct {
-		result1 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -151,46 +142,6 @@ func (fake *ProductUploader) CheckProductAvailabilityReturnsOnCall(i int, result
 	}{result1, result2}
 }
 
-func (fake *ProductUploader) Trash() error {
-	fake.trashMutex.Lock()
-	ret, specificReturn := fake.trashReturnsOnCall[len(fake.trashArgsForCall)]
-	fake.trashArgsForCall = append(fake.trashArgsForCall, struct{}{})
-	fake.recordInvocation("Trash", []interface{}{})
-	fake.trashMutex.Unlock()
-	if fake.TrashStub != nil {
-		return fake.TrashStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.trashReturns.result1
-}
-
-func (fake *ProductUploader) TrashCallCount() int {
-	fake.trashMutex.RLock()
-	defer fake.trashMutex.RUnlock()
-	return len(fake.trashArgsForCall)
-}
-
-func (fake *ProductUploader) TrashReturns(result1 error) {
-	fake.TrashStub = nil
-	fake.trashReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *ProductUploader) TrashReturnsOnCall(i int, result1 error) {
-	fake.TrashStub = nil
-	if fake.trashReturnsOnCall == nil {
-		fake.trashReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.trashReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *ProductUploader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -198,8 +149,6 @@ func (fake *ProductUploader) Invocations() map[string][][]interface{} {
 	defer fake.uploadMutex.RUnlock()
 	fake.checkProductAvailabilityMutex.RLock()
 	defer fake.checkProductAvailabilityMutex.RUnlock()
-	fake.trashMutex.RLock()
-	defer fake.trashMutex.RUnlock()
 	return fake.invocations
 }
 

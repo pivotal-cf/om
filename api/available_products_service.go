@@ -7,8 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 )
+
+const availableProductsEndpoint = "/api/v0/available_products"
 
 type UploadProductInput struct {
 	ContentLength int64
@@ -25,6 +28,11 @@ type UploadProductOutput struct{}
 
 type AvailableProductsOutput struct {
 	ProductsList []ProductInfo
+}
+
+type AvailableProductsInput struct {
+	ProductName    string
+	ProductVersion string
 }
 
 type AvailableProductsService struct {
@@ -45,7 +53,7 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 	ap.progress.SetTotal(input.ContentLength)
 	body := ap.progress.NewBarReader(input.Product)
 
-	req, err := http.NewRequest("POST", "/api/v0/available_products", body)
+	req, err := http.NewRequest("POST", availableProductsEndpoint, body)
 	if err != nil {
 		return UploadProductOutput{}, err
 	}
@@ -97,26 +105,8 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 	return UploadProductOutput{}, nil
 }
 
-func (ap AvailableProductsService) Trash() error {
-	req, err := http.NewRequest("DELETE", "/api/v0/available_products", nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := ap.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
-	}
-
-	if err = ValidateStatusOK(resp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
-	avReq, err := http.NewRequest("GET", "/api/v0/available_products", nil)
+	avReq, err := http.NewRequest("GET", availableProductsEndpoint, nil)
 	if err != nil {
 		return AvailableProductsOutput{}, err
 	}
@@ -158,4 +148,29 @@ func (ap AvailableProductsService) CheckProductAvailability(productName string, 
 	}
 
 	return false, nil
+}
+
+func (ap AvailableProductsService) Delete(input AvailableProductsInput, all bool) error {
+	req, err := http.NewRequest("DELETE", availableProductsEndpoint, nil)
+
+	if !all {
+		query := url.Values{}
+		query.Add("product_name", input.ProductName)
+		query.Add("version", input.ProductVersion)
+
+		req.URL.RawQuery = query.Encode()
+	}
+
+	resp, err := ap.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
+	}
+
+	defer resp.Body.Close()
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
 }
