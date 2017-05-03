@@ -99,6 +99,7 @@ func main() {
 	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil, nil)
 	installationsService := api.NewInstallationsService(authedClient)
 	errandsService := api.NewErrandsService(authedClient)
+	pendingChangesService := api.NewPendingChangesService(authedClient)
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
 	requestService := api.NewRequestService(authedClient)
@@ -135,6 +136,7 @@ func main() {
 	commandSet["staged-products"] = commands.NewStagedProducts(tableWriter, diagnosticService)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(tableWriter, diagnosticService)
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
+	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

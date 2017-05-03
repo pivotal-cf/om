@@ -38,6 +38,7 @@ Commands:
   export-installation       exports the installation of the target Ops Manager
   help                      prints this usage information
   import-installation       imports a given installation to the Ops Manager targeted
+  pending-changes           lists pending changes
   revert-staged-changes     reverts staged changes on the Ops Manager targeted
   set-errand-state          sets state for a product's errand
   stage-product             stages a given product in the Ops Manager targeted
