@@ -394,6 +394,146 @@ var _ = Describe("ProductsService", func() {
 		})
 	})
 
+	Describe("Unstage", func() {
+		var (
+			client *fakes.HttpClient
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+
+				switch req.URL.Path {
+				case "/api/v0/staged/products":
+					if req.Method == "GET" {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
+						}
+					}
+				case "/api/v0/staged/products/some-product-guid":
+					if req.Method == "DELETE" {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`{"component": {"guid": "some-product-guid"}}`)),
+						}
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("makes a request to unstage the product from the Ops Manager", func() {
+			service := api.NewStagedProductsService(client)
+
+			err := service.Unstage(api.UnstageProductInput{
+				ProductName: "some-product",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(2))
+
+			By("checking for already staged products")
+			checkStReq := client.DoArgsForCall(0)
+			Expect(checkStReq.URL.Path).To(Equal("/api/v0/staged/products"))
+
+			By("deleting from the set of staged products")
+			deleteReq := client.DoArgsForCall(1)
+			Expect(deleteReq.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid"))
+			Expect(deleteReq.Method).To(Equal("DELETE"))
+			_, err = ioutil.ReadAll(deleteReq.Body)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		Context("when the product is not staged", func() {
+			BeforeEach(func() {
+				client = &fakes.HttpClient{}
+
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+					if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-other-product-guid","type":"some-other-product"}]`)),
+						}
+					}
+					return resp, nil
+				}
+			})
+
+			It("returns an error", func() {
+				service := api.NewStagedProductsService(client)
+
+				err := service.Unstage(api.UnstageProductInput{
+					ProductName: "some-product",
+				})
+				Expect(err).To(MatchError("product is not staged: some-product"))
+			})
+		})
+
+		Context("when a GET to the staged products endpoint returns an error", func() {
+			BeforeEach(func() {
+				client = &fakes.HttpClient{}
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+					}
+					if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
+						return nil, fmt.Errorf("some error")
+					}
+					return resp, nil
+				}
+			})
+
+			It("returns an error", func() {
+				service := api.NewStagedProductsService(client)
+
+				err := service.Unstage(api.UnstageProductInput{
+					ProductName: "some-product",
+				})
+				Expect(err).To(MatchError("could not make api request to staged products endpoint: some error"))
+			})
+		})
+
+		Context("when a DELETE to the staged products endpoint returns an error", func() {
+			BeforeEach(func() {
+
+				client = &fakes.HttpClient{}
+
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+
+					switch req.URL.Path {
+					case "/api/v0/staged/products":
+						if req.Method == "GET" {
+							resp = &http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
+							}
+						}
+					case "/api/v0/staged/products/some-product-guid":
+						if req.Method == "DELETE" {
+							return nil, fmt.Errorf("some error")
+						}
+					}
+					return resp, nil
+				}
+			})
+
+			It("returns an error", func() {
+				service := api.NewStagedProductsService(client)
+
+				err := service.Unstage(api.UnstageProductInput{
+					ProductName: "some-product",
+				})
+				Expect(err).To(MatchError("could not make DELETE api request to staged products endpoint: some error"))
+			})
+		})
+	})
+
 	Describe("StagedProducts", func() {
 		var (
 			client *fakes.HttpClient

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type StageProductInput struct {
@@ -24,6 +25,10 @@ type StagedProductsFindOutput struct {
 type StagedProduct struct {
 	GUID string
 	Type string
+}
+
+type UnstageProductInput struct {
+	ProductName string `json:"name"`
 }
 
 type ProductsConfigurationInput struct {
@@ -118,6 +123,33 @@ func (p StagedProductsService) Stage(input StageProductInput) error {
 	defer stResp.Body.Close()
 
 	if err = ValidateStatusOK(stResp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p StagedProductsService) Unstage(input UnstageProductInput) error {
+	stagedGUID, err := p.checkStagedProducts(input.ProductName)
+	if err != nil {
+		return err
+	}
+
+	if len(stagedGUID) == 0 {
+		return fmt.Errorf("product is not staged: %s", input.ProductName)
+	}
+
+	var req *http.Request
+	req, err = http.NewRequest("DELETE", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), strings.NewReader("{}"))
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not make %s api request to staged products endpoint: %s", req.Method, err)
+	}
+	defer resp.Body.Close()
+
+	if err = ValidateStatusOK(resp); err != nil {
 		return err
 	}
 
