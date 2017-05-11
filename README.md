@@ -2,8 +2,6 @@
 
 _is a mantra, or vibration, that is traditionally chanted_
 
-![enhancing your calm](http://i.giphy.com/3o7qDQ5iw1oXyDeJAk.gif)
-
 ## What is it?
 
 Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+ . 
