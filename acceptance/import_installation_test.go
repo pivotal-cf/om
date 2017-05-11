@@ -185,5 +185,27 @@ var _ = Describe("import-installation command", func() {
 				Eventually(session.Out, 5).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
+
+		Context("when server is not available", func() {
+			server_nonlistening := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				var responseString string
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(responseString))
+			}))
+			It("should return appropriate error", func() {
+				command := exec.Command(pathToMain,
+					"--target", server_nonlistening.URL,
+					"--skip-ssl-validation",
+					"import-installation",
+					"--installation", content.Name(),
+					"--decryption-passphrase", "fake-passphrase",
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Out, 5).ShouldNot(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
+			})
+		})
 	})
 })
