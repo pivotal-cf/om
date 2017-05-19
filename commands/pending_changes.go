@@ -32,6 +32,9 @@ func (pc PendingChanges) Execute(args []string) error {
 	pc.tableWriter.SetHeader([]string{"PRODUCT", "ACTION", "ERRANDS"})
 
 	for _, change := range output.ChangeList {
+		if len(change.Errands) == 0 {
+			pc.tableWriter.Append([]string{change.Product, change.Action, ""})
+		}
 		for i, errand := range change.Errands {
 			if i == 0 {
 				pc.tableWriter.Append([]string{change.Product, change.Action, errand.Name})

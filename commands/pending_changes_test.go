@@ -42,6 +42,11 @@ var _ = Describe("PendingChanges", func() {
 						},
 					},
 				},
+				{
+					Product: "some-product-without-errand",
+					Action:  "install",
+					Errands: []api.Errand{},
+				},
 			},
 		}, nil)
 
@@ -51,9 +56,10 @@ var _ = Describe("PendingChanges", func() {
 		Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
 		Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"PRODUCT", "ACTION", "ERRANDS"}))
 
-		Expect(tableWriter.AppendCallCount()).To(Equal(2))
+		Expect(tableWriter.AppendCallCount()).To(Equal(3))
 		Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-product", "update", "some-errand"}))
 		Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"", "", "some-errand-2"}))
+		Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{"some-product-without-errand", "install", ""}))
 	})
 
 	Context("failure cases", func() {
