@@ -13,7 +13,7 @@ type JobsService struct {
 }
 
 type JobProperties struct {
-	Instances         int          `json:"instances"`
+	Instances         interface{}  `json:"instances"`
 	PersistentDisk    *Disk        `json:"persistent_disk,omitempty"`
 	InstanceType      InstanceType `json:"instance_type"`
 	InternetConnected *bool        `json:"internet_connected,omitempty"`

@@ -105,7 +105,7 @@ var _ = Describe("JobsService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(client.DoCallCount()).To(Equal(1))
 			jobProperties := api.JobProperties{
-				Instances:         1,
+				Instances:         float64(1),
 				PersistentDisk:    &api.Disk{Size: "290"},
 				InstanceType:      api.InstanceType{ID: "number-1"},
 				InternetConnected: new(bool),

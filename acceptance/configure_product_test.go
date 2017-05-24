@@ -32,6 +32,11 @@ const resourceConfigJSON = `
 	  "instances": 1,
 		"persistent_disk": { "size_mb": "20480" },
     "instance_type": { "id": "m1.medium" }
+  },
+  "some-other-job": {
+	  "instances": "automatic",
+		"persistent_disk": { "size_mb": "20480" },
+    "instance_type": { "id": "m1.medium" }
   }
 }`
 
@@ -42,8 +47,8 @@ var _ = Describe("configure-product command", func() {
 		productPropertiesBody   []byte
 		productNetworkMethod    string
 		productNetworkBody      []byte
-		resourceConfigMethod    string
-		resourceConfigBody      []byte
+		resourceConfigMethod    []string
+		resourceConfigBody      [][]byte
 	)
 
 	BeforeEach(func() {
@@ -80,6 +85,10 @@ var _ = Describe("configure-product command", func() {
 					  {
 							"name": "some-job",
 							"guid": "the-right-guid"
+						},
+					  {
+							"name": "some-other-job",
+							"guid": "just-a-guid"
 						}
 					]
 				}`))
@@ -97,11 +106,14 @@ var _ = Describe("configure-product command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				w.Write([]byte(`{}`))
+			case "/api/v0/staged/products/some-product-guid/jobs/just-a-guid/resource_config":
+				fallthrough
 			case "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config":
-				var err error
-				resourceConfigMethod = req.Method
-				resourceConfigBody, err = ioutil.ReadAll(req.Body)
+				resourceConfigMethod = append(resourceConfigMethod, req.Method)
+				body, err := ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
+
+				resourceConfigBody = append(resourceConfigBody, body)
 
 				w.Write([]byte(`{}`))
 			default:
@@ -145,9 +157,21 @@ var _ = Describe("configure-product command", func() {
 		Expect(productNetworkMethod).To(Equal("PUT"))
 		Expect(productNetworkBody).To(MatchJSON(fmt.Sprintf(`{"networks_and_azs": %s}`, productNetworkJSON)))
 
-		Expect(resourceConfigMethod).To(Equal("PUT"))
-		Expect(resourceConfigBody).To(MatchJSON(`{
+		Expect(resourceConfigMethod[1]).To(Equal("PUT"))
+		Expect(resourceConfigBody[1]).To(MatchJSON(`{
         "instances": 1,
+        "persistent_disk": {
+          "size_mb": "20480"
+        },
+        "instance_type": {
+          "id": "m1.medium"
+        },
+        "elb_names": null
+      }`))
+
+		Expect(resourceConfigMethod[3]).To(Equal("PUT"))
+		Expect(resourceConfigBody[3]).To(MatchJSON(`{
+        "instances": "automatic",
         "persistent_disk": {
           "size_mb": "20480"
         },

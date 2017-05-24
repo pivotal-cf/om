@@ -37,6 +37,16 @@ const resourceConfig = `{
   }
 }`
 
+const automaticResourceConfig = `{
+  "some-job": {
+	  "instances": "automatic",
+		"persistent_disk": { "size_mb": "20480" },
+    "instance_type": { "id": "m1.medium" },
+		"internet_connected": true,
+		"elb_names": ["some-lb"]
+  }
+}`
+
 var _ = Describe("ConfigureProduct", func() {
 	Describe("Execute", func() {
 		var (
@@ -183,7 +193,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(argJobGUID).To(Equal("a-guid"))
 
 			jobProperties := api.JobProperties{
-				Instances:         1,
+				Instances:         float64(1),
 				PersistentDisk:    &api.Disk{Size: "20480"},
 				InstanceType:      api.InstanceType{ID: "m1.medium"},
 				InternetConnected: new(bool),
@@ -191,8 +201,6 @@ var _ = Describe("ConfigureProduct", func() {
 			}
 
 			*jobProperties.InternetConnected = true
-
-			Expect(argProperties).To(Equal(jobProperties))
 
 			argProductGUID, argJobGUID, argProperties = jobsService.ConfigureJobArgsForCall(1)
 			Expect(argProductGUID).To(Equal("some-product-guid"))
@@ -224,6 +232,61 @@ var _ = Describe("ConfigureProduct", func() {
 
 			format, content = logger.PrintfArgsForCall(4)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+		})
+
+		Context("when the instance count is not an int", func() {
+			It("configures the resource that is provided", func() {
+				client := commands.NewConfigureProduct(productsService, jobsService, logger)
+				productsService.StagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+					},
+				}, nil)
+
+				jobsService.JobsReturns(map[string]string{
+					"some-job": "a-guid",
+				}, nil)
+
+				jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+					if productGUID == "some-product-guid" {
+						switch jobGUID {
+						case "a-guid":
+							apiReturn := api.JobProperties{
+								Instances:         0,
+								PersistentDisk:    &api.Disk{Size: "000"},
+								InstanceType:      api.InstanceType{ID: "t2.micro"},
+								InternetConnected: new(bool),
+								LBNames:           []string{"pre-existing-1"},
+							}
+
+							return apiReturn, nil
+						default:
+							return api.JobProperties{}, nil
+						}
+					}
+					return api.JobProperties{}, errors.New("guid not found")
+				}
+
+				err := client.Execute([]string{
+					"--product-name", "cf",
+					"--product-resources", automaticResourceConfig,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				_, _, argProperties := jobsService.ConfigureJobArgsForCall(0)
+
+				jobProperties := api.JobProperties{
+					Instances:         "automatic",
+					PersistentDisk:    &api.Disk{Size: "20480"},
+					InstanceType:      api.InstanceType{ID: "m1.medium"},
+					InternetConnected: new(bool),
+					LBNames:           []string{"some-lb"},
+				}
+
+				*jobProperties.InternetConnected = true
+
+				Expect(argProperties).To(Equal(jobProperties))
+			})
 		})
 
 		Context("when GetExistingJobConfig returns an error", func() {
