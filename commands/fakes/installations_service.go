@@ -58,6 +58,17 @@ type InstallationsService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
+	ListInstallationsStub        func() ([]api.InstallationsServiceOutput, error)
+	listInstallationsMutex       sync.RWMutex
+	listInstallationsArgsForCall []struct{}
+	listInstallationsReturns     struct {
+		result1 []api.InstallationsServiceOutput
+		result2 error
+	}
+	listInstallationsReturnsOnCall map[int]struct {
+		result1 []api.InstallationsServiceOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -258,6 +269,49 @@ func (fake *InstallationsService) RunningInstallationReturnsOnCall(i int, result
 	}{result1, result2}
 }
 
+func (fake *InstallationsService) ListInstallations() ([]api.InstallationsServiceOutput, error) {
+	fake.listInstallationsMutex.Lock()
+	ret, specificReturn := fake.listInstallationsReturnsOnCall[len(fake.listInstallationsArgsForCall)]
+	fake.listInstallationsArgsForCall = append(fake.listInstallationsArgsForCall, struct{}{})
+	fake.recordInvocation("ListInstallations", []interface{}{})
+	fake.listInstallationsMutex.Unlock()
+	if fake.ListInstallationsStub != nil {
+		return fake.ListInstallationsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.listInstallationsReturns.result1, fake.listInstallationsReturns.result2
+}
+
+func (fake *InstallationsService) ListInstallationsCallCount() int {
+	fake.listInstallationsMutex.RLock()
+	defer fake.listInstallationsMutex.RUnlock()
+	return len(fake.listInstallationsArgsForCall)
+}
+
+func (fake *InstallationsService) ListInstallationsReturns(result1 []api.InstallationsServiceOutput, result2 error) {
+	fake.ListInstallationsStub = nil
+	fake.listInstallationsReturns = struct {
+		result1 []api.InstallationsServiceOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *InstallationsService) ListInstallationsReturnsOnCall(i int, result1 []api.InstallationsServiceOutput, result2 error) {
+	fake.ListInstallationsStub = nil
+	if fake.listInstallationsReturnsOnCall == nil {
+		fake.listInstallationsReturnsOnCall = make(map[int]struct {
+			result1 []api.InstallationsServiceOutput
+			result2 error
+		})
+	}
+	fake.listInstallationsReturnsOnCall[i] = struct {
+		result1 []api.InstallationsServiceOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *InstallationsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -269,6 +323,8 @@ func (fake *InstallationsService) Invocations() map[string][][]interface{} {
 	defer fake.logsMutex.RUnlock()
 	fake.runningInstallationMutex.RLock()
 	defer fake.runningInstallationMutex.RUnlock()
+	fake.listInstallationsMutex.RLock()
+	defer fake.listInstallationsMutex.RUnlock()
 	return fake.invocations
 }
 

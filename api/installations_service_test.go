@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/api/fakes"
@@ -12,6 +13,16 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func parseTime(timeString string) time.Time {
+	timeValue, err := time.Parse(time.RFC3339, timeString)
+
+	if err != nil {
+		return time.Time{}
+	}
+
+	return timeValue
+}
 
 var _ = Describe("InstallationsService", func() {
 	var (
@@ -23,7 +34,7 @@ var _ = Describe("InstallationsService", func() {
 		is = api.NewInstallationsService(client)
 	})
 
-	Describe("RunningInstallation", func() {
+	Describe("ListInstallations", func() {
 		It("fetches the guid of any running installation on the Ops Manager", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -31,13 +42,77 @@ var _ = Describe("InstallationsService", func() {
 					"installations": [
 						{
 							"user_name": "admin",
+							"finished_at": "2017-05-24T23:55:56.106Z",
+							"started_at": "2017-05-24T23:38:37.316Z",
+							"status": "running",
+							"id": 3
+						},
+						{
+							"user_name": "admin",
+							"finished_at": "2017-05-24T23:55:56.106Z",
+							"started_at": "2017-05-24T23:38:37.316Z",
+							"status": "failed",
+							"id": 5
+						},
+						{
+							"user_name": "admin",
+							"finished_at": "2017-05-24T23:55:56.106Z",
+							"started_at": "2017-05-24T23:38:37.316Z",
+							"status": "succeeded",
+							"id": 2
+						}
+					]
+				}`))}, nil)
+
+			output, err := is.ListInstallations()
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal([]api.InstallationsServiceOutput{
+				{
+					ID:         3,
+					UserName:   "admin",
+					Status:     "running",
+					StartedAt:  parseTime("2017-05-24T23:38:37.316Z"),
+					FinishedAt: parseTime("2017-05-24T23:55:56.106Z"),
+				},
+				{
+					ID:         5,
+					UserName:   "admin",
+					Status:     "failed",
+					StartedAt:  parseTime("2017-05-24T23:38:37.316Z"),
+					FinishedAt: parseTime("2017-05-24T23:55:56.106Z"),
+				},
+				{
+					ID:         2,
+					UserName:   "admin",
+					Status:     "succeeded",
+					StartedAt:  parseTime("2017-05-24T23:38:37.316Z"),
+					FinishedAt: parseTime("2017-05-24T23:55:56.106Z"),
+				},
+			}))
+
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+		})
+
+	})
+
+	Describe("RunningInstallation", func() {
+		It("fetches the guid of any running installation on the Ops Manager", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body: ioutil.NopCloser(strings.NewReader(`{
+					"installations": [
+						{
 							"finished_at": null,
 							"status": "running",
 							"id": 3
 						},
 						{
 							"user_name": "admin",
-							"finished_at": "sometime",
+							"finished_at": "2017-05-24T23:55:56.106Z",
 							"status": "succeeded",
 							"id": 2
 						}
@@ -48,8 +123,9 @@ var _ = Describe("InstallationsService", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(api.InstallationsServiceOutput{
-				ID:     3,
-				Status: "running",
+				ID:         3,
+				Status:     "running",
+				FinishedAt: parseTime(""),
 			}))
 
 			req := client.DoArgsForCall(0)

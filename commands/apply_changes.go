@@ -25,6 +25,7 @@ type installationsService interface {
 	Status(id int) (api.InstallationsServiceOutput, error)
 	Logs(id int) (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
+	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
