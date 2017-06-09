@@ -25,13 +25,14 @@ type AzureIaaSConfiguration struct {
 }
 
 type AWSIaaSConfiguration struct {
-	AccessKeyID     string `url:"iaas_configuration[access_key_id],omitempty" json:"access_key_id"`
-	SecretAccessKey string `url:"iaas_configuration[secret_access_key],omitempty" json:"secret_access_key"`
-	VpcID           string `url:"iaas_configuration[vpc_id],omitempty" json:"vpc_id"`
-	SecurityGroup   string `url:"iaas_configuration[security_group],omitempty" json:"security_group"`
-	KeyPairName     string `url:"iaas_configuration[key_pair_name],omitempty" json:"key_pair_name"`
-	Region          string `url:"iaas_configuration[region],omitempty" json:"region"`
-	Encrypted       *bool  `url:"iaas_configuration[encrypted],omitempty" json:"encrypted"`
+	AccessKeyID        string `url:"iaas_configuration[access_key_id],omitempty" json:"access_key_id"`
+	SecretAccessKey    string `url:"iaas_configuration[secret_access_key],omitempty" json:"secret_access_key"`
+	IAMInstanceProfile string `url:"iaas_configuration[iam_instance_profile],omitempty" json:"iam_instance_profile"`
+	VpcID              string `url:"iaas_configuration[vpc_id],omitempty" json:"vpc_id"`
+	SecurityGroup      string `url:"iaas_configuration[security_group],omitempty" json:"security_group"`
+	KeyPairName        string `url:"iaas_configuration[key_pair_name],omitempty" json:"key_pair_name"`
+	Region             string `url:"iaas_configuration[region],omitempty" json:"region"`
+	Encrypted          *bool  `url:"iaas_configuration[encrypted],omitempty" json:"encrypted"`
 }
 
 type VSphereIaaSConfiguration struct {
