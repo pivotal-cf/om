@@ -20,6 +20,7 @@ var _ = Describe("installations command", func() {
 +----+-------------+-----------+--------------------------+--------------------------+
 |  1 | some-user   | succeeded | 2017-05-24T23:38:37.316Z | 2017-05-24T23:55:56.106Z |
 |  2 | some-user-2 | failed    | 2017-05-24T23:38:37.316Z | 2017-05-24T23:55:56.106Z |
+|  3 | some-user-3 | running   | 2017-05-24T23:38:37.316Z |                          |
 +----+-------------+-----------+--------------------------+--------------------------+
 `
 
@@ -44,6 +45,13 @@ var _ = Describe("installations command", func() {
 				      "started_at": "2017-05-24T23:38:37.316Z",
 				      "status": "failed",
 				      "id": 2
+				    },
+				    {
+				      "user_name": "some-user-3",
+				      "finished_at": null,
+				      "started_at": "2017-05-24T23:38:37.316Z",
+				      "status": "running",
+				      "id": 3
 				    }
 				  ]
 				}`))
@@ -76,5 +84,4 @@ var _ = Describe("installations command", func() {
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
-
 })

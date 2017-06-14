@@ -14,11 +14,14 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func parseTime(timeString string) time.Time {
-	timeValue, err := time.Parse(time.RFC3339, timeString)
+func parseTime(timeString interface{}) time.Time {
+	if timeString == nil {
+		return time.Time{}
+	}
+	timeValue, err := time.Parse(time.RFC3339, timeString.(string))
 
 	if err != nil {
-		return time.Time{}
+		Expect(err).NotTo(HaveOccurred())
 	}
 
 	return timeValue
@@ -42,7 +45,7 @@ var _ = Describe("InstallationsService", func() {
 					"installations": [
 						{
 							"user_name": "admin",
-							"finished_at": "2017-05-24T23:55:56.106Z",
+							"finished_at": null,
 							"started_at": "2017-05-24T23:38:37.316Z",
 							"status": "running",
 							"id": 3
@@ -73,7 +76,7 @@ var _ = Describe("InstallationsService", func() {
 					UserName:   "admin",
 					Status:     "running",
 					StartedAt:  parseTime("2017-05-24T23:38:37.316Z"),
-					FinishedAt: parseTime("2017-05-24T23:55:56.106Z"),
+					FinishedAt: parseTime(nil),
 				},
 				{
 					ID:         5,
@@ -96,7 +99,6 @@ var _ = Describe("InstallationsService", func() {
 			Expect(req.Method).To(Equal("GET"))
 			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 		})
-
 	})
 
 	Describe("RunningInstallation", func() {
@@ -125,7 +127,7 @@ var _ = Describe("InstallationsService", func() {
 			Expect(output).To(Equal(api.InstallationsServiceOutput{
 				ID:         3,
 				Status:     "running",
-				FinishedAt: parseTime(""),
+				FinishedAt: parseTime(nil),
 			}))
 
 			req := client.DoArgsForCall(0)

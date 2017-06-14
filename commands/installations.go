@@ -26,13 +26,19 @@ func NewInstallations(incomingService installationsService, tableWriter tableWri
 func (i Installations) Execute(args []string) error {
 	installationsOutput, err := i.service.ListInstallations()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	i.tableWriter.SetHeader([]string{"ID", "User", "Status", "Started At", "Finished At"})
 
 	for _, installation := range installationsOutput {
-		i.tableWriter.Append([]string{strconv.Itoa(installation.ID), installation.UserName, installation.Status, installation.StartedAt.Format(time.RFC3339Nano), installation.FinishedAt.Format(time.RFC3339Nano)})
+		finishedTime := ""
+
+		if (installation.FinishedAt != time.Time{}) {
+			finishedTime = installation.FinishedAt.Format(time.RFC3339Nano)
+		}
+
+		i.tableWriter.Append([]string{strconv.Itoa(installation.ID), installation.UserName, installation.Status, installation.StartedAt.Format(time.RFC3339Nano), finishedTime})
 	}
 
 	i.tableWriter.Render()

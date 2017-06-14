@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"errors"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -63,6 +64,17 @@ var _ = Describe("Installations", func() {
 			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"2", "some-user2", "failed", "2017-05-25T23:38:37.316Z", "2017-05-25T23:39:37.316Z"}))
 
 			Expect(tableWriter.RenderCallCount()).To(Equal(1))
+		})
+
+		Context("Failure cases", func() {
+			Context("when the api fails to list installations", func() {
+				It("returns an error", func() {
+					fakeInstallationsService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
+
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("failed to retrieve installations"))
+				})
+			})
 		})
 	})
 
