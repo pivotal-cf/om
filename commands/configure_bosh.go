@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -85,6 +86,10 @@ func (c ConfigureBosh) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if c.Options.IaaSConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the flag instead")
 	}
 
 	report, err := c.diagnosticService.Report()

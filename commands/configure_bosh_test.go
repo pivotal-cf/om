@@ -480,6 +480,15 @@ var _ = Describe("ConfigureBosh", func() {
 				})
 			})
 
+			Context("when an empty JSON objet is provided to --iaas-configuration flag", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+
+					err := command.Execute([]string{"--iaas-configuration", "{}"})
+					Expect(err).To(MatchError("empty JSON object provided, please omit the flag instead"))
+				})
+			})
+
 			Context("when the form can't be fetched", func() {
 				It("returns an error", func() {
 					boshService.GetFormReturns(api.Form{}, errors.New("meow meow meow"))
