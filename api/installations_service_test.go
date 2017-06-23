@@ -14,9 +14,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func parseTime(timeString interface{}) time.Time {
+func parseTime(timeString interface{}) *time.Time {
 	if timeString == nil {
-		return time.Time{}
+		return nil
 	}
 	timeValue, err := time.Parse(time.RFC3339, timeString.(string))
 
@@ -24,7 +24,7 @@ func parseTime(timeString interface{}) time.Time {
 		Expect(err).NotTo(HaveOccurred())
 	}
 
-	return timeValue
+	return &timeValue
 }
 
 var _ = Describe("InstallationsService", func() {

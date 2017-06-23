@@ -22,9 +22,9 @@ type InstallationsServiceOutput struct {
 	ID         int
 	Status     string
 	Logs       string
-	StartedAt  time.Time `json:"started_at"`
-	FinishedAt time.Time `json:"finished_at"`
-	UserName   string    `json:"user_name"`
+	StartedAt  *time.Time `json:"started_at"`
+	FinishedAt *time.Time `json:"finished_at"`
+	UserName   string     `json:"user_name"`
 }
 
 func NewInstallationsService(client httpClient) InstallationsService {

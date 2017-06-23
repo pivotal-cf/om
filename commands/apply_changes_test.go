@@ -140,7 +140,7 @@ var _ = Describe("ApplyChanges", func() {
 			service.RunningInstallationReturns(api.InstallationsServiceOutput{
 				ID:        200,
 				Status:    "running",
-				StartedAt: installationStartedAt,
+				StartedAt: &installationStartedAt,
 			}, nil)
 
 			statusOutputs = []api.InstallationsServiceOutput{

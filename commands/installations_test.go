@@ -11,14 +11,14 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 )
 
-func parseTime(timeString string) time.Time {
+func parseTime(timeString string) *time.Time {
 	timeValue, err := time.Parse(time.RFC3339, timeString)
 
 	if err != nil {
-		return time.Time{}
+		return nil
 	}
 
-	return timeValue
+	return &timeValue
 }
 
 var _ = Describe("Installations", func() {

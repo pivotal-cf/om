@@ -34,7 +34,7 @@ func (i Installations) Execute(args []string) error {
 	for _, installation := range installationsOutput {
 		finishedTime := ""
 
-		if (installation.FinishedAt != time.Time{}) {
+		if installation.FinishedAt != nil {
 			finishedTime = installation.FinishedAt.Format(time.RFC3339Nano)
 		}
 
