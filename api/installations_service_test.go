@@ -136,6 +136,91 @@ var _ = Describe("InstallationsService", func() {
 			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 		})
 
+		Context("when there are no installations", func() {
+			It("returns a zero value installation", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(`{
+					"installations": []}`))}, nil)
+
+				output, err := is.RunningInstallation()
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.InstallationsServiceOutput{}))
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+			})
+		})
+
+		Context("when there is no running installation", func() {
+			It("returns a zero value installation", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(`{
+					"installations": [
+						{
+							"user_name": "admin",
+							"finished_at": "2017-05-25T00:10:00.303Z",
+							"status": "succeeded",
+							"id": 3
+						},
+						{
+							"user_name": "admin",
+							"finished_at": "2017-05-24T23:55:56.106Z",
+							"status": "succeeded",
+							"id": 2
+						}
+					]
+				}`))}, nil)
+
+				output, err := is.RunningInstallation()
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.InstallationsServiceOutput{}))
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+
+			})
+		})
+
+		Context("when only an earlier installation is listed in the running state", func() {
+			It("does not consider the earlier installation to be running", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(`{
+					"installations": [
+						{
+							"finished_at": null,
+							"status": "succeeded",
+							"id": 3
+						},
+						{
+							"user_name": "admin",
+							"finished_at": "2017-07-05T00:39:32.123Z",
+							"status": "running",
+							"id": 2
+						}
+					]
+				}`))}, nil)
+
+				output, err := is.RunningInstallation()
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output).To(Equal(api.InstallationsServiceOutput{}))
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+			})
+		})
+
 		Context("error cases", func() {
 			Context("when the client has an error during the request", func() {
 				It("returns an error", func() {
