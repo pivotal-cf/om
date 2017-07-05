@@ -38,7 +38,7 @@ var _ = Describe("InstallationsService", func() {
 	})
 
 	Describe("ListInstallations", func() {
-		It("fetches the guid of any running installation on the Ops Manager", func() {
+		It("lists the installations on the Ops Manager", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body: ioutil.NopCloser(strings.NewReader(`{
@@ -102,7 +102,7 @@ var _ = Describe("InstallationsService", func() {
 	})
 
 	Describe("RunningInstallation", func() {
-		It("fetches the guid of any running installation on the Ops Manager", func() {
+		It("returns only the running installation on the Ops Manager", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body: ioutil.NopCloser(strings.NewReader(`{
