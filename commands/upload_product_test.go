@@ -98,6 +98,14 @@ var _ = Describe("UploadProduct", func() {
 			})
 		})
 
+		Context("when the product flag is not provided", func() {
+			It("returns an error", func() {
+				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
+				err := command.Execute([]string{})
+				Expect(err).To(MatchError("error: product is missing. Please see usage for more information."))
+			})
+		})
+
 		Context("when extracting the product metadata returns an error", func() {
 			It("returns an error", func() {
 				extractor.ExtractMetadataReturns("", "", errors.New("some error"))

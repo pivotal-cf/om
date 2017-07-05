@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/om/api"
@@ -49,6 +50,10 @@ func (up UploadProduct) Execute(args []string) error {
 	_, err := flags.Parse(&up.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
+	}
+
+	if up.Options.Product == "" {
+		return errors.New("error: product is missing. Please see usage for more information.")
 	}
 
 	productName, productVersion, err := up.extractor.ExtractMetadata(up.Options.Product)
