@@ -60,6 +60,11 @@ func (c ConfigureBosh) Execute(args []string) error {
 		return err
 	}
 
+	err = c.validateNoOptionsAreEmptyJSON()
+	if err != nil {
+		return err
+	}
+
 	if c.Options.IaaSConfiguration != "" {
 		c.logger.Printf("configuring iaas specific options for bosh tile")
 
@@ -86,10 +91,6 @@ func (c ConfigureBosh) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if c.Options.IaaSConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the flag instead")
 	}
 
 	report, err := c.diagnosticService.Report()
@@ -205,6 +206,31 @@ func (c ConfigureBosh) Execute(args []string) error {
 	}
 
 	c.logger.Printf("finished configuring bosh tile")
+	return nil
+}
+
+func (c ConfigureBosh) validateNoOptionsAreEmptyJSON() error {
+	if c.Options.AvailabilityZonesConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the --az-configuration flag instead")
+	}
+	if c.Options.DirectorConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the --director-configuration flag instead")
+	}
+	if c.Options.IaaSConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the --iaas-configuration flag instead")
+	}
+	if c.Options.NetworkAssignment == "{}" {
+		return errors.New("empty JSON object provided, please omit the --network-assignment flag instead")
+	}
+	if c.Options.NetworksConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the --networks-configuration flag instead")
+	}
+	if c.Options.ResourceConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the --resource-configuration flag instead")
+	}
+	if c.Options.SecurityConfiguration == "{}" {
+		return errors.New("empty JSON object provided, please omit the --security-configuration flag instead")
+	}
 	return nil
 }
 
