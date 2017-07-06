@@ -463,7 +463,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 						diagnosticService.ReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
-						err := command.Execute([]string{})
+						err := command.Execute([]string{"--az-configuration", `{"some": "configuration"}`})
 						Expect(err).To(MatchError("beep boop"))
 					})
 				})
@@ -471,6 +471,20 @@ var _ = Describe("ConfigureBosh", func() {
 		})
 
 		Context("error cases", func() {
+			Context("when no configuration flags are passed", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("at least one configuration flag must be provided. Please see usage for more information."))
+				})
+			})
+			Context("when an unrecognized argument is passed", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+					err := command.Execute([]string{"not-a-flag", "another-argument"})
+					Expect(err).To(MatchError("unrecognized argument(s): [not-a-flag another-argument]. Please see usage for more information."))
+				})
+			})
 			Context("when an invalid flag is passed", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)

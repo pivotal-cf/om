@@ -55,9 +55,18 @@ func NewConfigureBosh(bs boshFormService, ds diagnosticService, l logger) Config
 }
 
 func (c ConfigureBosh) Execute(args []string) error {
-	_, err := flags.Parse(&c.Options, args)
+
+	if len(args) == 0 {
+		return errors.New("at least one configuration flag must be provided. Please see usage for more information.")
+	}
+
+	nonFlagArgs, err := flags.Parse(&c.Options, args)
 	if err != nil {
 		return err
+	}
+
+	if len(nonFlagArgs) != 0 {
+		return fmt.Errorf("unrecognized argument(s): %v. Please see usage for more information.", nonFlagArgs)
 	}
 
 	err = c.validateNoOptionsAreEmptyJSON()
