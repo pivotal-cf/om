@@ -112,13 +112,13 @@ var _ = Describe("ConfigureBosh", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(2)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(3)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(4)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
 
 			format, content = logger.PrintfArgsForCall(5)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
@@ -145,9 +145,20 @@ var _ = Describe("ConfigureBosh", func() {
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
 			}))
 
-			Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/networks/edit"))
+			Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
 
 			Expect(boshService.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
+				Form: api.Form{
+					Action:            "form-action",
+					AuthenticityToken: "some-auth-token",
+					RailsMethod:       "the-rails",
+				},
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
+			}))
+
+			Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/networks/edit"))
+
+			Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
 				Form: api.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
@@ -156,18 +167,7 @@ var _ = Describe("ConfigureBosh", func() {
 				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=null-az&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
 			}))
 
-			Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
-
-			Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
-				Form: api.Form{
-					Action:            "form-action",
-					AuthenticityToken: "some-auth-token",
-					RailsMethod:       "the-rails",
-				},
-				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=null-az",
-			}))
-
-			Expect(boshService.GetFormArgsForCall(4)).To(Equal("/infrastructure/security_tokens/edit"))
+			Expect(boshService.GetFormArgsForCall(4)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
 			Expect(boshService.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
 				Form: api.Form{
@@ -175,7 +175,7 @@ var _ = Describe("ConfigureBosh", func() {
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				},
-				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=null-az",
 			}))
 		})
 
@@ -236,10 +236,10 @@ var _ = Describe("ConfigureBosh", func() {
 				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
 
 				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
 
 				format, content = logger.PrintfArgsForCall(3)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
 
 				format, content = logger.PrintfArgsForCall(4)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
@@ -266,7 +266,7 @@ var _ = Describe("ConfigureBosh", func() {
 					EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
 				}))
 
-				Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
+				Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
 
 				Expect(boshService.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
 					Form: api.Form{
@@ -274,10 +274,10 @@ var _ = Describe("ConfigureBosh", func() {
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",
 					},
-					EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=guid-1",
+					EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
 				}))
 
-				Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/security_tokens/edit"))
+				Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
 				Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
 					Form: api.Form{
@@ -285,7 +285,7 @@ var _ = Describe("ConfigureBosh", func() {
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",
 					},
-					EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
+					EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=guid-1",
 				}))
 
 				Expect(boshService.AvailabilityZonesCallCount()).To(Equal(1))
@@ -448,11 +448,11 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(boshService.GetFormCallCount()).To(Equal(2))
+				Expect(boshService.GetFormCallCount()).To(Equal(3))
 				Expect(boshService.AvailabilityZonesCallCount()).To(Equal(0))
 				Expect(boshService.NetworksCallCount()).To(Equal(0))
 
-				format, content := logger.PrintfArgsForCall(2)
+				format, content := logger.PrintfArgsForCall(3)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("skipping network configuration: detected deployed director - cannot modify network"))
 			})
 
@@ -646,19 +646,19 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring director options for bosh tile"))
 
 	format, content = logger.PrintfArgsForCall(2)
-	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring availability zones for bosh tile"))
-
-	format, content = logger.PrintfArgsForCall(3)
-	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
-
-	format, content = logger.PrintfArgsForCall(4)
-	Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
-
-	format, content = logger.PrintfArgsForCall(5)
 	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring security options for bosh tile"))
 
-	format, content = logger.PrintfArgsForCall(6)
+	format, content = logger.PrintfArgsForCall(3)
 	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring resources for bosh tile"))
+
+	format, content = logger.PrintfArgsForCall(4)
+	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring availability zones for bosh tile"))
+
+	format, content = logger.PrintfArgsForCall(5)
+	Expect(fmt.Sprintf(format, content...)).To(Equal("configuring network options for bosh tile"))
+
+	format, content = logger.PrintfArgsForCall(6)
+	Expect(fmt.Sprintf(format, content...)).To(Equal("assigning az and networks for bosh tile"))
 
 	format, content = logger.PrintfArgsForCall(7)
 	Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
@@ -685,42 +685,9 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
 	}))
 
-	Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/availability_zones/edit"))
+	Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
 
 	Expect(boshService.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
-		Form: api.Form{
-			Action:            "form-action",
-			AuthenticityToken: "some-auth-token",
-			RailsMethod:       "the-rails",
-		},
-		EncodedPayload: azEncodedPayload,
-	}))
-
-	Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/networks/edit"))
-
-	Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
-		Form: api.Form{
-			Action:            "form-action",
-			AuthenticityToken: "some-auth-token",
-			RailsMethod:       "the-rails",
-		},
-		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-2&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
-	}))
-
-	Expect(boshService.GetFormArgsForCall(4)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
-
-	Expect(boshService.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
-		Form: api.Form{
-			Action:            "form-action",
-			AuthenticityToken: "some-auth-token",
-			RailsMethod:       "the-rails",
-		},
-		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=guid-1",
-	}))
-
-	Expect(boshService.GetFormArgsForCall(5)).To(Equal("/infrastructure/security_tokens/edit"))
-
-	Expect(boshService.PostFormArgsForCall(5)).To(Equal(api.PostFormInput{
 		Form: api.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
@@ -729,7 +696,40 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&security_tokens%5Btrusted_certificates%5D=some-trusted-certificates&security_tokens%5Bvm_password_type%5D=some-vm-password-type",
 	}))
 
-	Expect(boshService.GetFormArgsForCall(6)).To(Equal("/infrastructure/director/resources/edit"))
+	Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/director/resources/edit"))
+
+	Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
+		Form: api.Form{
+			Action:            "form-action",
+			AuthenticityToken: "some-auth-token",
+			RailsMethod:       "the-rails",
+		},
+		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&product_resources_form%5Bcompilation%5D%5Belb_names%5D=my-elb&product_resources_form%5Bcompilation%5D%5Binstances%5D=1&product_resources_form%5Bcompilation%5D%5Binternet_connected%5D=true&product_resources_form%5Bcompilation%5D%5Bvm_type_id%5D=m1.medium&product_resources_form%5Bdirector%5D%5Bdisk_type_id%5D=20480&product_resources_form%5Bdirector%5D%5Belb_names%5D=my-elb&product_resources_form%5Bdirector%5D%5Binternet_connected%5D=true&product_resources_form%5Bdirector%5D%5Bvm_type_id%5D=m1.medium",
+	}))
+
+	Expect(boshService.GetFormArgsForCall(4)).To(Equal("/infrastructure/availability_zones/edit"))
+
+	Expect(boshService.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
+		Form: api.Form{
+			Action:            "form-action",
+			AuthenticityToken: "some-auth-token",
+			RailsMethod:       "the-rails",
+		},
+		EncodedPayload: azEncodedPayload,
+	}))
+
+	Expect(boshService.GetFormArgsForCall(5)).To(Equal("/infrastructure/networks/edit"))
+
+	Expect(boshService.PostFormArgsForCall(5)).To(Equal(api.PostFormInput{
+		Form: api.Form{
+			Action:            "form-action",
+			AuthenticityToken: "some-auth-token",
+			RailsMethod:       "the-rails",
+		},
+		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&infrastructure%5Bicmp_checks_enabled%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bguid%5D=0&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bname%5D=some-network&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bservice_network%5D=1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bavailability_zone_references%5D%5B%5D=guid-2&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bcidr%5D=10.0.1.0%2F24&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bdns%5D=8.8.8.8&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Bgateway%5D=10.0.1.1&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Biaas_identifier%5D=some-iaas-identifier&network_collection%5Bnetworks_attributes%5D%5B0%5D%5Bsubnets%5D%5B0%5D%5Breserved_ip_ranges%5D=10.0.1.0-10.0.1.4",
+	}))
+
+	Expect(boshService.GetFormArgsForCall(6)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
 	Expect(boshService.PostFormArgsForCall(6)).To(Equal(api.PostFormInput{
 		Form: api.Form{
@@ -737,6 +737,6 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
 		},
-		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&product_resources_form%5Bcompilation%5D%5Belb_names%5D=my-elb&product_resources_form%5Bcompilation%5D%5Binstances%5D=1&product_resources_form%5Bcompilation%5D%5Binternet_connected%5D=true&product_resources_form%5Bcompilation%5D%5Bvm_type_id%5D=m1.medium&product_resources_form%5Bdirector%5D%5Bdisk_type_id%5D=20480&product_resources_form%5Bdirector%5D%5Belb_names%5D=my-elb&product_resources_form%5Bdirector%5D%5Binternet_connected%5D=true&product_resources_form%5Bdirector%5D%5Bvm_type_id%5D=m1.medium",
+		EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&bosh_product%5Bnetwork_reference%5D=some-other-network-guid&bosh_product%5Bsingleton_availability_zone_reference%5D=guid-1",
 	}))
 }
