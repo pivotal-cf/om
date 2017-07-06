@@ -139,6 +139,7 @@ func main() {
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
 	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)
 	commandSet["installations"] = commands.NewInstallations(installationsService, tableWriter)
+	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
