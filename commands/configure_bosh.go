@@ -107,6 +107,34 @@ func (c ConfigureBosh) Execute(args []string) error {
 		return err
 	}
 
+	if c.Options.SecurityConfiguration != "" {
+		c.logger.Printf("configuring security options for bosh tile")
+
+		config, err := c.configureForm(c.Options.SecurityConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(securityConfigurationPath, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	if c.Options.ResourceConfiguration != "" {
+		c.logger.Printf("configuring resources for bosh tile")
+
+		config, err := c.configureForm(c.Options.ResourceConfiguration)
+		if err != nil {
+			return err
+		}
+
+		err = c.postForm(resourceConfigurationPath, config)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, deployedProduct := range report.DeployedProducts {
 		if deployedProduct.Name == boshProductName {
 			c.logger.Printf("skipping network configuration: detected deployed director - cannot modify network")
@@ -181,34 +209,6 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 
 		err = c.postForm(networkAssignmentPath, config)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.Options.SecurityConfiguration != "" {
-		c.logger.Printf("configuring security options for bosh tile")
-
-		config, err := c.configureForm(c.Options.SecurityConfiguration)
-		if err != nil {
-			return err
-		}
-
-		err = c.postForm(securityConfigurationPath, config)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.Options.ResourceConfiguration != "" {
-		c.logger.Printf("configuring resources for bosh tile")
-
-		config, err := c.configureForm(c.Options.ResourceConfiguration)
-		if err != nil {
-			return err
-		}
-
-		err = c.postForm(resourceConfigurationPath, config)
 		if err != nil {
 			return err
 		}
