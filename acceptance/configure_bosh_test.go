@@ -256,6 +256,7 @@ var _ = Describe("configure-bosh command", func() {
 			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring director options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring security options for bosh tile"))
+			Expect(session.Out).To(gbytes.Say("configuring resources for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring availability zones for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("configuring network options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
