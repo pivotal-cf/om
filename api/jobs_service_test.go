@@ -117,6 +117,68 @@ var _ = Describe("JobsService", func() {
 			Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
 		})
 
+		Context("with nsx", func() {
+			It("fetches the resource config for a given job including nsx properties", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(`{
+						"instances": 1,
+						"instance_type": { "id": "number-1" },
+						"persistent_disk": { "size_mb": "290" },
+						"internet_connected": true,
+						"elb_names": ["something"],
+						"nsx_security_groups":["sg1", "sg2"],
+						"nsx_lbs": [
+							{
+								"edge_name": "edge-1",
+								"pool_name": "pool-1",
+								"security_group": "sg-1",
+								"port": "5000"
+							},
+							{
+								"edge_name": "edge-2",
+								"pool_name": "pool-2",
+								"security_group": "sg-2",
+								"port": "5000"
+							}
+						]
+					}`)),
+				}, nil)
+
+				service := api.NewJobsService(client)
+				job, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.DoCallCount()).To(Equal(1))
+				jobProperties := api.JobProperties{
+					Instances:         float64(1),
+					PersistentDisk:    &api.Disk{Size: "290"},
+					InstanceType:      api.InstanceType{ID: "number-1"},
+					InternetConnected: new(bool),
+					LBNames:           []string{"something"},
+					NSXSecurityGroups: []string{"sg1", "sg2"},
+					NSXLBS: []api.NSXLB{
+						api.NSXLB{
+							EdgeName:      "edge-1",
+							PoolName:      "pool-1",
+							SecurityGroup: "sg-1",
+							Port:          "5000",
+						},
+						api.NSXLB{
+							EdgeName:      "edge-2",
+							PoolName:      "pool-2",
+							SecurityGroup: "sg-2",
+							Port:          "5000",
+						},
+					},
+				}
+				*jobProperties.InternetConnected = true
+				Expect(job).To(Equal(jobProperties))
+				request := client.DoArgsForCall(0)
+				Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when the resource config endpoint returns an error", func() {
 				It("returns an error", func() {
