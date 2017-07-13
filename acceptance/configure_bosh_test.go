@@ -590,5 +590,48 @@ var _ = Describe("configure-bosh command", func() {
 			_, ok := Forms[0]["iaas_configuration[subscription_id]"]
 			Expect(ok).To(BeFalse())
 		})
+
+		Context("when adding nsx properties", func() {
+			BeforeEach(func() {
+				iaasConfiguration := `{
+					"vcenter_host": "some-vcenter-host",
+					"vcenter_username": "my-vcenter-username",
+					"vcenter_password": "my-vcenter-password",
+					"datacenter": "some-datacenter-name",
+					"disk_type": "some-virtual-disk-type",
+					"ephemeral_datastores_string": "some-ephemeral-datastores",
+					"persistent_datastores_string": "some-persistent-datastores",
+					"bosh_vm_folder": "some-vm-folder",
+					"bosh_template_folder": "some-template-folder",
+					"bosh_disk_path": "some-disk-path",
+					"nsx_networking_enabled": true,
+					"nsx_address": "some-nsx-address",
+					"nsx_password": "some-password",
+					"nsx_username": "some-username",
+					"nsx_ca_certificate": "some-nsx-ca-certificate"
+				}`
+
+				command = exec.Command(pathToMain,
+					"--target", server.URL,
+					"--username", "fake-username",
+					"--password", "fake-password",
+					"--skip-ssl-validation",
+					"configure-bosh",
+					"--iaas-configuration", iaasConfiguration)
+			})
+
+			It("configures the bosh tile with additional nsx properties", func() {
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session).Should(gexec.Exit(0))
+
+				Expect(Forms[0].Get("iaas_configuration[nsx_networking_enabled]")).To(Equal("true"))
+				Expect(Forms[0].Get("iaas_configuration[nsx_address]")).To(Equal("some-nsx-address"))
+				Expect(Forms[0].Get("iaas_configuration[nsx_password]")).To(Equal("some-password"))
+				Expect(Forms[0].Get("iaas_configuration[nsx_username]")).To(Equal("some-username"))
+				Expect(Forms[0].Get("iaas_configuration[nsx_ca_certificate]")).To(Equal("some-nsx-ca-certificate"))
+			})
+		})
 	})
 })

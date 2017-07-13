@@ -23,6 +23,27 @@
 }
 ```
 
+##### NSX Example
+```json
+{
+  "vcenter_host": "some-vcenter-host",
+  "vcenter_username": "my-vcenter-username",
+  "vcenter_password": "my-vcenter-password",
+  "datacenter": "some-datacenter-name",
+  "disk_type": "some-virtual-disk-type",
+  "ephemeral_datastores_string": "some,ephemeral,datastores",
+  "persistent_datastores_string": "some,persistent,datastores",
+  "bosh_vm_folder": "some-vm-folder",
+  "bosh_template_folder": "some-template-folder",
+  "bosh_disk_path": "some-disk-path",
+  "nsx_networking_enabled": true,
+  "nsx_address": "some-nsx-address",
+  "nsx_password": "some-password",
+  "nsx_username": "some-username",
+  "nsx_ca_certificate": "some-ca-certificate"
+}
+```
+
 #### --director-configuration
 Change this to a valid internal NTP server address for your organization
 
