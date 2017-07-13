@@ -26,6 +26,29 @@ const productNetworkJSON = `{
   "network": {"name": "network-one"}
 }`
 
+const nsxResourceConfigJSON = `
+{
+  "some-job": {
+    "instances": 1,
+    "persistent_disk": { "size_mb": "20480" },
+    "instance_type": { "id": "m1.medium" },
+    "nsx_security_groups":["sg1", "sg2"],
+    "nsx_lbs": [
+    {
+      "edge_name": "edge-1",
+      "pool_name": "pool-1",
+      "security_group": "sg-1",
+      "port": "5000"
+    },
+    {
+      "edge_name": "edge-2",
+      "pool_name": "pool-2",
+      "security_group": "sg-2",
+      "port": "5000"
+    }]
+  }
+}`
+
 const resourceConfigJSON = `
 {
   "some-job": {
@@ -130,6 +153,11 @@ var _ = Describe("configure-product command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		resourceConfigMethod = []string{}
+		resourceConfigBody = [][]byte{}
+	})
+
 	It("successfully configures any product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
@@ -180,5 +208,51 @@ var _ = Describe("configure-product command", func() {
         },
         "elb_names": null
       }`))
+	})
+
+	It("successfully configures a product on nsx", func() {
+		command := exec.Command(pathToMain,
+			"--target", server.URL,
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"configure-product",
+			"--product-name", "cf",
+			"--product-properties", propertiesJSON,
+			"--product-network", productNetworkJSON,
+			"--product-resources", nsxResourceConfigJSON,
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+
+		Expect(resourceConfigMethod[1]).To(Equal("PUT"))
+		Expect(resourceConfigBody[1]).To(MatchJSON(`{
+			"instances": 1,
+			"persistent_disk": {
+				"size_mb": "20480"
+			},
+			"instance_type": {
+				"id": "m1.medium"
+			},
+			"elb_names": null,
+			"nsx_security_groups":["sg1", "sg2"],
+			"nsx_lbs": [
+				{
+					"edge_name": "edge-1",
+					"pool_name": "pool-1",
+					"security_group": "sg-1",
+					"port": "5000"
+				},
+				{
+					"edge_name": "edge-2",
+					"pool_name": "pool-2",
+					"security_group": "sg-2",
+					"port": "5000"
+				}
+			]
+		}`))
 	})
 })
