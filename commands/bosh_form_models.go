@@ -46,6 +46,11 @@ type VSphereIaaSConfiguration struct {
 	VMFolder                 string `url:"iaas_configuration[bosh_vm_folder],omitempty" json:"bosh_vm_folder"`
 	TemplateFolder           string `url:"iaas_configuration[bosh_template_folder],omitempty" json:"bosh_template_folder"`
 	DiskPathFolder           string `url:"iaas_configuration[bosh_disk_path],omitempty" json:"bosh_disk_path"`
+	NSXNetworkingEnabled     *bool  `url:"iaas_configuration[nsx_networking_enabled],omitempty" json:"nsx_networking_enabled"`
+	NSXAddress               string `url:"iaas_configuration[nsx_address],omitempty" json:"nsx_address"`
+	NSXPassword              string `url:"iaas_configuration[nsx_password],omitempty" json:"nsx_password"`
+	NSXUsername              string `url:"iaas_configuration[nsx_username],omitempty" json:"nsx_username"`
+	NSXCACertificate         string `url:"iaas_configuration[nsx_ca_certificate],omitempty" json:"nsx_ca_certificate"`
 }
 
 type OpenStackIaaSConfiguration struct {
