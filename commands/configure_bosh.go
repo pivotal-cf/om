@@ -69,12 +69,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		return fmt.Errorf("unrecognized argument(s): %v. Please see usage for more information.", nonFlagArgs)
 	}
 
-	err = c.validateNoOptionsAreEmptyJSON()
-	if err != nil {
-		return err
-	}
-
-	if c.Options.IaaSConfiguration != "" {
+	if c.Options.IaaSConfiguration != "" && c.Options.IaaSConfiguration != "{}" {
 		c.logger.Printf("configuring iaas specific options for bosh tile")
 
 		config, err := c.configureForm(c.Options.IaaSConfiguration)
@@ -88,7 +83,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
-	if c.Options.DirectorConfiguration != "" {
+	if c.Options.DirectorConfiguration != "" && c.Options.DirectorConfiguration != "{}" {
 		c.logger.Printf("configuring director options for bosh tile")
 
 		config, err := c.configureForm(c.Options.DirectorConfiguration)
@@ -107,7 +102,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		return err
 	}
 
-	if c.Options.SecurityConfiguration != "" {
+	if c.Options.SecurityConfiguration != "" && c.Options.SecurityConfiguration != "{}" {
 		c.logger.Printf("configuring security options for bosh tile")
 
 		config, err := c.configureForm(c.Options.SecurityConfiguration)
@@ -121,7 +116,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
-	if c.Options.ResourceConfiguration != "" {
+	if c.Options.ResourceConfiguration != "" && c.Options.ResourceConfiguration != "{}" {
 		c.logger.Printf("configuring resources for bosh tile")
 
 		config, err := c.configureForm(c.Options.ResourceConfiguration)
@@ -142,7 +137,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
-	if c.Options.AvailabilityZonesConfiguration != "" {
+	if c.Options.AvailabilityZonesConfiguration != "" && c.Options.AvailabilityZonesConfiguration != "{}" {
 		c.logger.Printf("configuring availability zones for bosh tile")
 
 		config, err := c.configureForm(c.Options.AvailabilityZonesConfiguration)
@@ -166,7 +161,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
-	if c.Options.NetworksConfiguration != "" {
+	if c.Options.NetworksConfiguration != "" && c.Options.NetworksConfiguration != "{}" {
 		c.logger.Printf("configuring network options for bosh tile")
 		if err != nil {
 			panic(err)
@@ -178,7 +173,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
-	if c.Options.NetworkAssignment != "" {
+	if c.Options.NetworkAssignment != "" && c.Options.NetworkAssignment != "{}" {
 		c.logger.Printf("assigning az and networks for bosh tile")
 
 		config, err := c.configureForm(c.Options.NetworkAssignment)
@@ -215,31 +210,6 @@ func (c ConfigureBosh) Execute(args []string) error {
 	}
 
 	c.logger.Printf("finished configuring bosh tile")
-	return nil
-}
-
-func (c ConfigureBosh) validateNoOptionsAreEmptyJSON() error {
-	if c.Options.AvailabilityZonesConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the --az-configuration flag instead")
-	}
-	if c.Options.DirectorConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the --director-configuration flag instead")
-	}
-	if c.Options.IaaSConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the --iaas-configuration flag instead")
-	}
-	if c.Options.NetworkAssignment == "{}" {
-		return errors.New("empty JSON object provided, please omit the --network-assignment flag instead")
-	}
-	if c.Options.NetworksConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the --networks-configuration flag instead")
-	}
-	if c.Options.ResourceConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the --resource-configuration flag instead")
-	}
-	if c.Options.SecurityConfiguration == "{}" {
-		return errors.New("empty JSON object provided, please omit the --security-configuration flag instead")
-	}
 	return nil
 }
 

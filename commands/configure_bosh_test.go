@@ -468,6 +468,64 @@ var _ = Describe("ConfigureBosh", func() {
 					})
 				})
 			})
+
+			Context("when an empty JSON object is provided", func() {
+				AfterEach(func() {
+					Expect(boshService.PostFormCallCount()).To(Equal(0), "should not post")
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
+				})
+				Context("to the --az-configuration flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--az-configuration", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+				Context("to the --director-configuration flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--director-configuration", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+				Context("to the --iaas-configuration flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--iaas-configuration", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+				Context("to the --network-assignment flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--network-assignment", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+				Context("to the --networks-configuration flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--networks-configuration", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+				Context("to the --resource-configuration flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--resource-configuration", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+				Context("to the --security-configuration flag", func() {
+					It("is ignored", func() {
+						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
+						err := command.Execute([]string{"--security-configuration", "{}"})
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+			})
 		})
 
 		Context("error cases", func() {
@@ -490,61 +548,6 @@ var _ = Describe("ConfigureBosh", func() {
 					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
 					err := command.Execute([]string{"--not-a-real-flag"})
 					Expect(err).To(MatchError("flag provided but not defined: -not-a-real-flag"))
-				})
-			})
-
-			Context("when an empty JSON object is provided", func() {
-				AfterEach(func() {
-					Expect(boshService.PostFormCallCount()).To(Equal(0), "should not post")
-				})
-				Context("to the --az-configuration flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--az-configuration", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --az-configuration flag instead"))
-					})
-				})
-				Context("to the --director-configuration flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--director-configuration", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --director-configuration flag instead"))
-					})
-				})
-				Context("to the --iaas-configuration flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--iaas-configuration", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --iaas-configuration flag instead"))
-					})
-				})
-				Context("to the --network-assignment flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--network-assignment", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --network-assignment flag instead"))
-					})
-				})
-				Context("to the --networks-configuration flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--networks-configuration", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --networks-configuration flag instead"))
-					})
-				})
-				Context("to the --resource-configuration flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--resource-configuration", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --resource-configuration flag instead"))
-					})
-				})
-				Context("to the --security-configuration flag", func() {
-					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-						err := command.Execute([]string{"--security-configuration", "{}"})
-						Expect(err).To(MatchError("empty JSON object provided, please omit the --security-configuration flag instead"))
-					})
 				})
 			})
 
