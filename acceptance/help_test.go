@@ -29,6 +29,7 @@ Commands:
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
   configure-bosh            configures Ops Manager deployed bosh director
   configure-product         configures a staged product
+  credential-references     list credential references for a deployed product
   curl                      issues an authenticated API request
   delete-installation       deletes all the products on the Ops Manager targeted
   delete-product            deletes a product from the Ops Manager
