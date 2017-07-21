@@ -59,7 +59,7 @@ var _ = Describe("credential references command", func() {
 		}))
 	})
 
-	FIt("lists the credential references belonging to the deployed product", func() {
+	It("lists the credential references belonging to the deployed product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",

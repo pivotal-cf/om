@@ -29,7 +29,7 @@ var _ = Describe("CredentialReferencesService", func() {
 		service = api.NewCredentialReferencesService(client, bar, liveWriter)
 	})
 
-	FDescribe("List", func() {
+	Describe("List", func() {
 
 		It("lists credential references", func() {
 			var path string
