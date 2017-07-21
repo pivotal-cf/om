@@ -41,12 +41,6 @@ type StagedProductsService struct {
 	client httpClient
 }
 
-type DeployedProductInfo struct {
-	Type             string
-	GUID             string
-	InstallationName string `json:"installation_name"`
-}
-
 type UpgradeRequest struct {
 	ToVersion string `json:"to_version"`
 }
@@ -63,12 +57,7 @@ func NewStagedProductsService(client httpClient) StagedProductsService {
 	}
 }
 
-func (p StagedProductsService) Stage(input StageProductInput) error {
-	deployedGUID, err := p.checkDeployedProducts(input.ProductName)
-	if err != nil {
-		return err
-	}
-
+func (p StagedProductsService) Stage(input StageProductInput, deployedGUID string) error {
 	stagedGUID, err := p.checkStagedProducts(input.ProductName)
 	if err != nil {
 		return err
@@ -247,42 +236,6 @@ func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request,
 	}
 
 	return reqList, nil
-}
-
-func (p StagedProductsService) checkDeployedProducts(productName string) (string, error) {
-	depReq, err := http.NewRequest("GET", "/api/v0/deployed/products", nil)
-	if err != nil {
-		return "", err
-	}
-
-	depResp, err := p.client.Do(depReq)
-	if err != nil {
-		return "", fmt.Errorf("could not make api request to deployed products endpoint: %s", err)
-	}
-	defer depResp.Body.Close()
-
-	if err = ValidateStatusOK(depResp); err != nil {
-		return "", err
-	}
-
-	depRespBody, err := ioutil.ReadAll(depResp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var deployedProducts []DeployedProductInfo
-	err = json.Unmarshal(depRespBody, &deployedProducts)
-	if err != nil {
-		return "", err
-	}
-
-	for _, product := range deployedProducts {
-		if product.Type == productName {
-			return product.GUID, nil
-		}
-	}
-
-	return "", nil
 }
 
 func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {

@@ -11,6 +11,7 @@ import (
 type StageProduct struct {
 	logger                   logger
 	stagedProductsService    productStager
+	deployedProductsService  deployedProductsLister
 	availableProductsService availableProductChecker
 	diagnosticService        diagnosticService
 	Options                  struct {
@@ -21,7 +22,12 @@ type StageProduct struct {
 
 //go:generate counterfeiter -o ./fakes/product_stager.go --fake-name ProductStager . productStager
 type productStager interface {
-	Stage(api.StageProductInput) error
+	Stage(api.StageProductInput, string) error
+}
+
+//go:generate counterfeiter -o ./fakes/deployed_products_lister.go --fake-name DeployedProductsLister . deployedProductsLister
+type deployedProductsLister interface {
+	DeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/available_product_checker.go --fake-name AvailableProductChecker . availableProductChecker
@@ -29,10 +35,11 @@ type availableProductChecker interface {
 	CheckProductAvailability(productName string, productVersion string) (bool, error)
 }
 
-func NewStageProduct(productStager productStager, availableProductChecker availableProductChecker, diagnosticService diagnosticService, logger logger) StageProduct {
+func NewStageProduct(productStager productStager, deployedProductsService deployedProductsLister, availableProductChecker availableProductChecker, diagnosticService diagnosticService, logger logger) StageProduct {
 	return StageProduct{
 		logger:                   logger,
 		stagedProductsService:    productStager,
+		deployedProductsService:  deployedProductsService,
 		availableProductsService: availableProductChecker,
 		diagnosticService:        diagnosticService,
 	}
@@ -57,6 +64,15 @@ func (sp StageProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to stage product: %s", err)
 	}
 
+	deployedProductGUID := ""
+	deployedProducts, _ := sp.deployedProductsService.DeployedProducts()
+	for _, deployedProduct := range deployedProducts {
+		if deployedProduct.Type == sp.Options.Product {
+			deployedProductGUID = deployedProduct.GUID
+			break
+		}
+	}
+
 	for _, stagedProduct := range diagnosticReport.StagedProducts {
 		if stagedProduct.Name == sp.Options.Product && stagedProduct.Version == sp.Options.Version {
 			sp.logger.Printf("%s %s is already staged", sp.Options.Product, sp.Options.Version)
@@ -78,7 +94,7 @@ func (sp StageProduct) Execute(args []string) error {
 	err = sp.stagedProductsService.Stage(api.StageProductInput{
 		ProductName:    sp.Options.Product,
 		ProductVersion: sp.Options.Version,
-	})
+	}, deployedProductGUID)
 	if err != nil {
 		return fmt.Errorf("failed to stage product: %s", err)
 	}

@@ -8,10 +8,11 @@ import (
 )
 
 type ProductStager struct {
-	StageStub        func(api.StageProductInput) error
+	StageStub        func(api.StageProductInput, string) error
 	stageMutex       sync.RWMutex
 	stageArgsForCall []struct {
 		arg1 api.StageProductInput
+		arg2 string
 	}
 	stageReturns struct {
 		result1 error
@@ -23,16 +24,17 @@ type ProductStager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductStager) Stage(arg1 api.StageProductInput) error {
+func (fake *ProductStager) Stage(arg1 api.StageProductInput, arg2 string) error {
 	fake.stageMutex.Lock()
 	ret, specificReturn := fake.stageReturnsOnCall[len(fake.stageArgsForCall)]
 	fake.stageArgsForCall = append(fake.stageArgsForCall, struct {
 		arg1 api.StageProductInput
-	}{arg1})
-	fake.recordInvocation("Stage", []interface{}{arg1})
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("Stage", []interface{}{arg1, arg2})
 	fake.stageMutex.Unlock()
 	if fake.StageStub != nil {
-		return fake.StageStub(arg1)
+		return fake.StageStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -46,10 +48,10 @@ func (fake *ProductStager) StageCallCount() int {
 	return len(fake.stageArgsForCall)
 }
 
-func (fake *ProductStager) StageArgsForCall(i int) api.StageProductInput {
+func (fake *ProductStager) StageArgsForCall(i int) (api.StageProductInput, string) {
 	fake.stageMutex.RLock()
 	defer fake.stageMutex.RUnlock()
-	return fake.stageArgsForCall[i].arg1
+	return fake.stageArgsForCall[i].arg1, fake.stageArgsForCall[i].arg2
 }
 
 func (fake *ProductStager) StageReturns(result1 error) {
