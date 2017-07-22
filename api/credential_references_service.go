@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-// const availableProductsEndpoint = "/api/v0/available_products"
-
 type CredentialReferencesOutput struct {
 	Credentials []string `json:"credentials"`
 }
