@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/om/api"
@@ -66,18 +67,34 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	cs.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
-	var header []string
-	var credential []string
 
-	for k, v := range output.Credential.Value {
-		header = append(header, k)
-		credential = append(credential, v)
-	}
+	header, credential := sortMap(output.Credential.Value)
+
 	cs.tableWriter.SetHeader(header)
 	cs.tableWriter.Append(credential)
 	cs.tableWriter.Render()
 
 	return nil
+}
+
+func sortMap(cm map[string]string) ([]string, []string) {
+	var header []string
+	var credential []string
+
+	key := make([]string, len(cm))
+	i := 0
+
+	for k, _ := range cm {
+		key[i] = k
+		i++
+	}
+	sort.Strings(key)
+	for i := 0; i < len(key); i++ {
+		header = append(header, key[i])
+		credential = append(credential, cm[key[i]])
+	}
+
+	return header, credential
 }
 
 func (cs Credentials) Usage() Usage {

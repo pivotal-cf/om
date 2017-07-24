@@ -33,15 +33,15 @@ var _ = Describe("Credentials", func() {
 				}}, nil)
 		})
 
-		It("fetches the credential", func() {
+		It("fetches the credential alphabetically", func() {
 			command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
 
 			csService.FetchReturns(api.CredentialOutput{
 				Credential: api.Credential{
 					Type: "simple_credentials",
 					Value: map[string]string{
-						"identity": "some-identity",
 						"password": "some-password",
+						"identity": "some-identity",
 					},
 				},
 			}, nil)
