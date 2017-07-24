@@ -18,9 +18,12 @@ type ConfigureAuthentication struct {
 	service setupService
 	logger  logger
 	Options struct {
-		Username             string `short:"u"  long:"username"              description:"admin username"`
-		Password             string `short:"p"  long:"password"              description:"admin password"`
-		DecryptionPassphrase string `short:"dp" long:"decryption-passphrase" description:"passphrase used to encrypt the installation"`
+		Username             string `short:"u"    long:"username"              description:"admin username"`
+		Password             string `short:"p"    long:"password"              description:"admin password"`
+		DecryptionPassphrase string `short:"dp"   long:"decryption-passphrase" description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL         string `short:"hpu"  long:"http-proxy-url"        description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL        string `short:"hspu" long:"https-proxy-url"       description:"proxy for outbound HTTPS network traffic"`
+		NoProxy              string `short:"np"   long:"no-proxy"              description:"comma-separated list of hosts that do not go through the proxy"`
 	}
 }
 
@@ -59,6 +62,9 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 		AdminPasswordConfirmation:        ca.Options.Password,
 		DecryptionPassphrase:             ca.Options.DecryptionPassphrase,
 		DecryptionPassphraseConfirmation: ca.Options.DecryptionPassphrase,
+		HTTPProxyURL:                     ca.Options.HTTPProxyURL,
+		HTTPSProxyURL:                    ca.Options.HTTPSProxyURL,
+		NoProxy:                          ca.Options.NoProxy,
 		EULAAccepted:                     true,
 	})
 	if err != nil {
