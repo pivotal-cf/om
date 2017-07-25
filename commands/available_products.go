@@ -23,6 +23,7 @@ type tableWriter interface {
 	SetAlignment(int)
 	Render()
 	SetAutoFormatHeaders(bool)
+	SetAutoWrapText(bool)
 }
 
 func NewAvailableProducts(apService availableProductsService, tableWriter tableWriter, logger logger) AvailableProducts {

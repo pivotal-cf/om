@@ -59,6 +59,9 @@ var _ = Describe("Credentials", func() {
 				Expect(tableWriter.SetAutoFormatHeadersArgsForCall(0)).To(Equal(false))
 				Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"identity", "password"}))
 
+				Expect(tableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
+				Expect(tableWriter.SetAutoWrapTextArgsForCall(0)).To(Equal(false))
+
 				Expect(tableWriter.AppendCallCount()).To(Equal(1))
 				Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-identity", "some-password"}))
 

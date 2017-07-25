@@ -18,13 +18,15 @@ var _ = Describe("credentials command", func() {
 		server *httptest.Server
 	)
 
-	const tableOutput = `+-----------------------+
-|  some-credential-key  |
-+-----------------------+
-| some-credential-value |
-+-----------------------+
+	const tableOutput = `+--------------------------------+
+|      some-credential-key       |
++--------------------------------+
+| some-credential-value          |
+| newline                        |
+| another-line                   |
+| another-line                   |
++--------------------------------+
 `
-
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -48,7 +50,7 @@ var _ = Describe("credentials command", func() {
 					"credential": {
 						"type": "some-credential-type",
 						"value": {
-							"some-credential-key": "some-credential-value"
+							"some-credential-key": "some-credential-value\nnewline\nanother-line\nanother-line"
 						}
 					}
 				}`))
@@ -94,7 +96,7 @@ var _ = Describe("credentials command", func() {
 
 		Eventually(session).Should(gexec.Exit(0))
 
-		Expect(string(session.Out.Contents())).To(Equal("some-credential-value\n"))
+		Expect(string(session.Out.Contents())).To(Equal("some-credential-value\nnewline\nanother-line\nanother-line\n"))
 	})
 
 })

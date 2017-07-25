@@ -29,6 +29,11 @@ type TableWriter struct {
 	setAutoFormatHeadersArgsForCall []struct {
 		arg1 bool
 	}
+	SetAutoWrapTextStub        func(bool)
+	setAutoWrapTextMutex       sync.RWMutex
+	setAutoWrapTextArgsForCall []struct {
+		arg1 bool
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -155,6 +160,30 @@ func (fake *TableWriter) SetAutoFormatHeadersArgsForCall(i int) bool {
 	return fake.setAutoFormatHeadersArgsForCall[i].arg1
 }
 
+func (fake *TableWriter) SetAutoWrapText(arg1 bool) {
+	fake.setAutoWrapTextMutex.Lock()
+	fake.setAutoWrapTextArgsForCall = append(fake.setAutoWrapTextArgsForCall, struct {
+		arg1 bool
+	}{arg1})
+	fake.recordInvocation("SetAutoWrapText", []interface{}{arg1})
+	fake.setAutoWrapTextMutex.Unlock()
+	if fake.SetAutoWrapTextStub != nil {
+		fake.SetAutoWrapTextStub(arg1)
+	}
+}
+
+func (fake *TableWriter) SetAutoWrapTextCallCount() int {
+	fake.setAutoWrapTextMutex.RLock()
+	defer fake.setAutoWrapTextMutex.RUnlock()
+	return len(fake.setAutoWrapTextArgsForCall)
+}
+
+func (fake *TableWriter) SetAutoWrapTextArgsForCall(i int) bool {
+	fake.setAutoWrapTextMutex.RLock()
+	defer fake.setAutoWrapTextMutex.RUnlock()
+	return fake.setAutoWrapTextArgsForCall[i].arg1
+}
+
 func (fake *TableWriter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -168,6 +197,8 @@ func (fake *TableWriter) Invocations() map[string][][]interface{} {
 	defer fake.renderMutex.RUnlock()
 	fake.setAutoFormatHeadersMutex.RLock()
 	defer fake.setAutoFormatHeadersMutex.RUnlock()
+	fake.setAutoWrapTextMutex.RLock()
+	defer fake.setAutoWrapTextMutex.RUnlock()
 	return fake.invocations
 }
 

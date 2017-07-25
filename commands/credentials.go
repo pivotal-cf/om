@@ -77,6 +77,7 @@ func (cs Credentials) Execute(args []string) error {
 
 		cs.tableWriter.SetAutoFormatHeaders(false)
 		cs.tableWriter.SetHeader(header)
+		cs.tableWriter.SetAutoWrapText(false)
 		cs.tableWriter.Append(credential)
 		cs.tableWriter.Render()
 	} else {
