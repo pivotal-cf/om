@@ -21,11 +21,16 @@ type TableWriter struct {
 	setAlignmentArgsForCall []struct {
 		arg1 int
 	}
-	RenderStub        func()
-	renderMutex       sync.RWMutex
-	renderArgsForCall []struct{}
-	invocations       map[string][][]interface{}
-	invocationsMutex  sync.RWMutex
+	RenderStub                      func()
+	renderMutex                     sync.RWMutex
+	renderArgsForCall               []struct{}
+	SetAutoFormatHeadersStub        func(bool)
+	setAutoFormatHeadersMutex       sync.RWMutex
+	setAutoFormatHeadersArgsForCall []struct {
+		arg1 bool
+	}
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
 }
 
 func (fake *TableWriter) SetHeader(arg1 []string) {
@@ -126,6 +131,30 @@ func (fake *TableWriter) RenderCallCount() int {
 	return len(fake.renderArgsForCall)
 }
 
+func (fake *TableWriter) SetAutoFormatHeaders(arg1 bool) {
+	fake.setAutoFormatHeadersMutex.Lock()
+	fake.setAutoFormatHeadersArgsForCall = append(fake.setAutoFormatHeadersArgsForCall, struct {
+		arg1 bool
+	}{arg1})
+	fake.recordInvocation("SetAutoFormatHeaders", []interface{}{arg1})
+	fake.setAutoFormatHeadersMutex.Unlock()
+	if fake.SetAutoFormatHeadersStub != nil {
+		fake.SetAutoFormatHeadersStub(arg1)
+	}
+}
+
+func (fake *TableWriter) SetAutoFormatHeadersCallCount() int {
+	fake.setAutoFormatHeadersMutex.RLock()
+	defer fake.setAutoFormatHeadersMutex.RUnlock()
+	return len(fake.setAutoFormatHeadersArgsForCall)
+}
+
+func (fake *TableWriter) SetAutoFormatHeadersArgsForCall(i int) bool {
+	fake.setAutoFormatHeadersMutex.RLock()
+	defer fake.setAutoFormatHeadersMutex.RUnlock()
+	return fake.setAutoFormatHeadersArgsForCall[i].arg1
+}
+
 func (fake *TableWriter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -137,6 +166,8 @@ func (fake *TableWriter) Invocations() map[string][][]interface{} {
 	defer fake.setAlignmentMutex.RUnlock()
 	fake.renderMutex.RLock()
 	defer fake.renderMutex.RUnlock()
+	fake.setAutoFormatHeadersMutex.RLock()
+	defer fake.setAutoFormatHeadersMutex.RUnlock()
 	return fake.invocations
 }
 

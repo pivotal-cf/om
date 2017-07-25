@@ -75,6 +75,7 @@ func (cs Credentials) Execute(args []string) error {
 
 		header, credential := sortMap(output.Credential.Value)
 
+		cs.tableWriter.SetAutoFormatHeaders(false)
 		cs.tableWriter.SetHeader(header)
 		cs.tableWriter.Append(credential)
 		cs.tableWriter.Render()

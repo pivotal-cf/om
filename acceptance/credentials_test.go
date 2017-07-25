@@ -19,7 +19,7 @@ var _ = Describe("credentials command", func() {
 	)
 
 	const tableOutput = `+-----------------------+
-|  SOME-CREDENTIAL-KEY  |
+|  some-credential-key  |
 +-----------------------+
 | some-credential-value |
 +-----------------------+
