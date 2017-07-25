@@ -65,12 +65,15 @@ func (sp StageProduct) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, _ := sp.deployedProductsService.DeployedProducts()
+	deployedProducts, err := sp.deployedProductsService.DeployedProducts()
 	for _, deployedProduct := range deployedProducts {
 		if deployedProduct.Type == sp.Options.Product {
 			deployedProductGUID = deployedProduct.GUID
 			break
 		}
+	}
+	if err != nil {
+		return fmt.Errorf("failed to stage product: %s", err)
 	}
 
 	for _, stagedProduct := range diagnosticReport.StagedProducts {

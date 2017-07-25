@@ -220,6 +220,26 @@ var _ = Describe("StageProduct", func() {
 				Expect(err).To(MatchError("failed to stage product: bad diagnostic report"))
 			})
 		})
+
+		Context("when the deployed products cannot be fetched", func() {
+			BeforeEach(func() {
+				deployedProductsService.DeployedProductsReturns(
+					[]api.DeployedProductOutput{},
+					errors.New("could not fetch deployed products"))
+			})
+
+			It("returns an error", func() {
+				command := commands.NewStageProduct(
+					stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, logger)
+
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--product-version", "some-version",
+				})
+				Expect(err).To(MatchError(ContainSubstring("failed to stage product: could not fetch deployed products")))
+			})
+		})
+
 	})
 
 	Describe("Usage", func() {
