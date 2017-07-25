@@ -39,7 +39,10 @@ func (cr CredentialReferences) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, _ := cr.lister.DeployedProducts()
+	deployedProducts, err := cr.lister.DeployedProducts()
+	if err != nil {
+		return fmt.Errorf("failed to list credential references: %s", err)
+	}
 	for _, deployedProduct := range deployedProducts {
 		if deployedProduct.Type == cr.Options.Product {
 			deployedProductGUID = deployedProduct.GUID
@@ -53,7 +56,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 
 	output, err := cr.service.List(deployedProductGUID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list credential references: %s", err)
 	}
 
 	if len(output.Credentials) == 0 {
