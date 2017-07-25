@@ -76,7 +76,11 @@ func (cs Credentials) Execute(args []string) error {
 		cs.tableWriter.Append(credential)
 		cs.tableWriter.Render()
 	} else {
-		cs.logger.Println(output.Credential.Value[cs.Options.CredentialField])
+		if value, ok := output.Credential.Value[cs.Options.CredentialField]; ok {
+			cs.logger.Println(value)
+		} else {
+			return fmt.Errorf("credential field %q not found", cs.Options.CredentialField)
+		}
 	}
 
 	return nil
