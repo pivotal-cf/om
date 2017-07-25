@@ -60,7 +60,7 @@ var _ = Describe("credentials command", func() {
 		}))
 	})
 
-	It("fetch a credential of a deployed product", func() {
+	It("fetches a credential of a deployed product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
@@ -77,4 +77,24 @@ var _ = Describe("credentials command", func() {
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
+
+	It("outputs a specific credential value of a deployed product", func() {
+		command := exec.Command(pathToMain,
+			"--target", server.URL,
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"credentials",
+			"--product-name", "some-product",
+			"--credential-reference", "some-credential",
+			"--credential-field", "some-credential-key")
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+
+		Expect(string(session.Out.Contents())).To(Equal("some-credential-value\n"))
+	})
+
 })

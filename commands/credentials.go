@@ -18,6 +18,7 @@ type Credentials struct {
 	Options     struct {
 		Product             string `short:"p"  long:"product-name"  description:"name of deployed product"`
 		CredentialReference string `short:"c"  long:"credential-reference"  description:"name of credential reference"`
+		CredentialField     string `short:"f"  long:"credential-field"  description:"single credential field to output"`
 	}
 }
 
@@ -66,13 +67,17 @@ func (cs Credentials) Execute(args []string) error {
 		return fmt.Errorf("failed to fetch credential for: %s", cs.Options.CredentialReference)
 	}
 
-	cs.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+	if cs.Options.CredentialField == "" {
+		cs.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
 
-	header, credential := sortMap(output.Credential.Value)
+		header, credential := sortMap(output.Credential.Value)
 
-	cs.tableWriter.SetHeader(header)
-	cs.tableWriter.Append(credential)
-	cs.tableWriter.Render()
+		cs.tableWriter.SetHeader(header)
+		cs.tableWriter.Append(credential)
+		cs.tableWriter.Render()
+	} else {
+		cs.logger.Println(output.Credential.Value[cs.Options.CredentialField])
+	}
 
 	return nil
 }

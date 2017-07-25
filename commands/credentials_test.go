@@ -33,7 +33,7 @@ var _ = Describe("Credentials", func() {
 				}}, nil)
 		})
 
-		It("fetches the credential alphabetically", func() {
+		It("outputs the credentials alphabetically", func() {
 			command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
 
 			csService.FetchReturns(api.CredentialOutput{
@@ -58,6 +58,29 @@ var _ = Describe("Credentials", func() {
 			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-identity", "some-password"}))
 
 			Expect(tableWriter.RenderCallCount()).To(Equal(1))
+		})
+
+		It("outputs an individual credential value", func() {
+			command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+
+			csService.FetchReturns(api.CredentialOutput{
+				Credential: api.Credential{
+					Type: "simple_credentials",
+					Value: map[string]string{
+						"password": "some-password",
+						"identity": "some-identity",
+					},
+				},
+			}, nil)
+
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--credential-reference", ".properties.some-credentials",
+				"--credential-field", "password",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			Expect(logger.PrintlnArgsForCall(0)[0]).To(Equal("some-password"))
 		})
 
 		Context("when the credential reference cannot be found", func() {
