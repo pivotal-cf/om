@@ -1,6 +1,8 @@
 package commands_test
 
 import (
+	"errors"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -29,7 +31,7 @@ var _ = Describe("Credentials", func() {
 			dpLister.DeployedProductsReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-product",
-					GUID: "other-deployed-product-guid",
+					GUID: "some-deployed-product-guid",
 				}}, nil)
 		})
 
@@ -73,7 +75,65 @@ var _ = Describe("Credentials", func() {
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
-					Expect(err).To(MatchError(ContainSubstring("failed to fetch credential")))
+					Expect(err).To(MatchError(ContainSubstring(`failed to fetch credential for "some-credential"`)))
+				})
+			})
+
+			Context("when the credentials cannot be fetched", func() {
+				It("returns an error", func() {
+					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+
+					csService.FetchReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
+
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+						"--credential-reference", "some-credential",
+					})
+					Expect(err).To(MatchError(ContainSubstring(`failed to fetch credential for "some-credential": could not fetch credentials`)))
+
+					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
+					Expect(tableWriter.AppendCallCount()).To(Equal(0))
+					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+				})
+			})
+
+			Context("when the deployed products cannot be fetched", func() {
+				It("returns an error", func() {
+					dpLister.DeployedProductsReturns(
+						[]api.DeployedProductOutput{},
+						errors.New("could not fetch deployed products"))
+
+					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+						"--credential-reference", "some-credential",
+					})
+					Expect(err).To(MatchError(ContainSubstring("failed to fetch credential: could not fetch deployed products")))
+
+					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
+					Expect(tableWriter.AppendCallCount()).To(Equal(0))
+					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+				})
+			})
+
+			Context("when the product has not been deployed", func() {
+				It("returns an error", func() {
+					dpLister.DeployedProductsReturns([]api.DeployedProductOutput{
+						api.DeployedProductOutput{
+							Type: "some-other-product",
+							GUID: "some-other-deployed-product-guid",
+						}}, nil)
+
+					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+						"--credential-reference", "some-credential",
+					})
+					Expect(err).To(MatchError(ContainSubstring(`failed to fetch credential: "some-product" is not deployed`)))
+
+					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
+					Expect(tableWriter.AppendCallCount()).To(Equal(0))
+					Expect(tableWriter.RenderCallCount()).To(Equal(0))
 				})
 			})
 		})

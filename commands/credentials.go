@@ -46,7 +46,10 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, _ := cs.lister.DeployedProducts()
+	deployedProducts, err := cs.lister.DeployedProducts()
+	if err != nil {
+		return fmt.Errorf("failed to fetch credential: %s", err)
+	}
 	for _, deployedProduct := range deployedProducts {
 		if deployedProduct.Type == cs.Options.Product {
 			deployedProductGUID = deployedProduct.GUID
@@ -55,16 +58,16 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	if deployedProductGUID == "" {
-		return fmt.Errorf("failed to list credential references: %s is not deployed", cs.Options.Product)
+		return fmt.Errorf("failed to fetch credential: %q is not deployed", cs.Options.Product)
 	}
 
 	output, err := cs.service.Fetch(deployedProductGUID, cs.Options.CredentialReference)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to fetch credential for %q: %s", cs.Options.CredentialReference, err)
 	}
 
 	if len(output.Credential.Value) == 0 {
-		return fmt.Errorf("failed to fetch credential for: %s", cs.Options.CredentialReference)
+		return fmt.Errorf("failed to fetch credential for %q", cs.Options.CredentialReference)
 	}
 
 	if cs.Options.CredentialField == "" {
