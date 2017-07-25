@@ -46,9 +46,9 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 			DecryptionPassphrase             string `json:"decryption_passphrase"`
 			DecryptionPassphraseConfirmation string `json:"decryption_passphrase_confirmation"`
 			EULAAccepted                     string `json:"eula_accepted"`
-			HTTPProxyURL                     string `json:"http_proxy"`
-			HTTPSProxyURL                    string `json:"https_proxy"`
-			NoProxy                          string `json:"no_proxy"`
+			HTTPProxyURL                     string `json:"http_proxy,omitempty"`
+			HTTPSProxyURL                    string `json:"https_proxy,omitempty"`
+			NoProxy                          string `json:"no_proxy,omitempty"`
 		} `json:"setup"`
 	}
 
