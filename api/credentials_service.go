@@ -17,16 +17,14 @@ type Credential struct {
 }
 
 type CredentialsService struct {
-	client     httpClient
-	progress   progress
-	liveWriter liveWriter
+	client   httpClient
+	progress progress
 }
 
-func NewCredentialsService(client httpClient, progress progress, liveWriter liveWriter) CredentialsService {
+func NewCredentialsService(client httpClient, progress progress) CredentialsService {
 	return CredentialsService{
-		client:     client,
-		progress:   progress,
-		liveWriter: liveWriter,
+		client:   client,
+		progress: progress,
 	}
 }
 

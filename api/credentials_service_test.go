@@ -15,18 +15,16 @@ import (
 
 var _ = Describe("CredentialsService", func() {
 	var (
-		client     *fakes.HttpClient
-		bar        *fakes.Progress
-		liveWriter *fakes.LiveWriter
-		service    api.CredentialsService
+		client  *fakes.HttpClient
+		bar     *fakes.Progress
+		service api.CredentialsService
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		liveWriter = &fakes.LiveWriter{}
 		bar = &fakes.Progress{}
 
-		service = api.NewCredentialsService(client, bar, liveWriter)
+		service = api.NewCredentialsService(client, bar)
 	})
 
 	Describe("Fetch", func() {

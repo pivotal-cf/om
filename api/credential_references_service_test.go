@@ -15,18 +15,16 @@ import (
 
 var _ = Describe("CredentialReferencesService", func() {
 	var (
-		client     *fakes.HttpClient
-		bar        *fakes.Progress
-		liveWriter *fakes.LiveWriter
-		service    api.CredentialReferencesService
+		client  *fakes.HttpClient
+		bar     *fakes.Progress
+		service api.CredentialReferencesService
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		liveWriter = &fakes.LiveWriter{}
 		bar = &fakes.Progress{}
 
-		service = api.NewCredentialReferencesService(client, bar, liveWriter)
+		service = api.NewCredentialReferencesService(client, bar)
 	})
 
 	Describe("List", func() {
