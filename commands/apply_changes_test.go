@@ -88,7 +88,10 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(service.TriggerCallCount()).To(Equal(1))
-			Expect(service.TriggerArgsForCall(0)).To(Equal(false))
+
+			ignoreWarnings, deployProducts := service.TriggerArgsForCall(0)
+			Expect(ignoreWarnings).To(Equal(false))
+			Expect(deployProducts).To(Equal(true))
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
@@ -130,7 +133,38 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--ignore-warnings"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(service.TriggerArgsForCall(0)).To(Equal(true))
+				ignoreWarnings, _ := service.TriggerArgsForCall(0)
+				Expect(ignoreWarnings).To(Equal(true))
+			})
+		})
+
+		Context("when passed the skip-deploy-products flag", func() {
+			It("applies changes while not deploying products", func() {
+				service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
+
+				statusOutputs = []api.InstallationsServiceOutput{
+					{Status: "running"},
+					{Status: "running"},
+					{Status: "succeeded"},
+				}
+
+				statusErrors = []error{nil, nil, nil}
+
+				logsOutputs = []api.InstallationsServiceOutput{
+					{Logs: "start of logs"},
+					{Logs: "these logs"},
+					{Logs: "some other logs"},
+				}
+
+				logsErrors = []error{nil, nil, nil}
+				command := commands.NewApplyChanges(service, writer, logger, 1)
+
+				err := command.Execute([]string{"--skip-deploy-products"})
+				Expect(err).NotTo(HaveOccurred())
+
+				_, deployProducts := service.TriggerArgsForCall(0)
+				Expect(deployProducts).To(Equal(false))
 			})
 		})
 

@@ -261,25 +261,50 @@ var _ = Describe("InstallationsService", func() {
 	})
 
 	Describe("Trigger", func() {
-		It("triggers an installation on an Ops Manager", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
-			}, nil)
+		Context("When deploying all products", func() {
+			It("triggers an installation on an Ops Manager, deploying all products", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
+				}, nil)
 
-			output, err := is.Trigger(false)
+				output, err := is.Trigger(false, true)
 
-			Expect(err).NotTo(HaveOccurred())
-			Expect(output.ID).To(Equal(1))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
 
-			req := client.DoArgsForCall(0)
+				req := client.DoArgsForCall(0)
 
-			Expect(req.Method).To(Equal("POST"))
-			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 
-			body, err := ioutil.ReadAll(req.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(body)).To(Equal(`{"ignore_warnings": "false"}`))
+				body, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":"all"}`))
+			})
+		})
+
+		Context("When deploying no products", func() {
+			It("triggers an installation on an Ops Manager, deploying no products", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
+				}, nil)
+
+				output, err := is.Trigger(false, false)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+
+				body, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":"none"}`))
+			})
 		})
 
 		Context("when an error occurs", func() {
@@ -290,7 +315,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, errors.New("some error"))
 
-					_, err := is.Trigger(false)
+					_, err := is.Trigger(false, true)
 					Expect(err).To(MatchError("could not make api request to installations endpoint: some error"))
 				})
 			})
@@ -302,7 +327,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					_, err := is.Trigger(false)
+					_, err := is.Trigger(false, true)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -314,7 +339,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("##################")),
 					}, nil)
 
-					_, err := is.Trigger(false)
+					_, err := is.Trigger(false, true)
 					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 				})
 			})

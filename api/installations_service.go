@@ -1,10 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -61,10 +61,24 @@ func (is InstallationsService) ListInstallations() ([]InstallationsServiceOutput
 	return responseStruct.Installations, nil
 }
 
-func (is InstallationsService) Trigger(ignoreWarnings bool) (InstallationsServiceOutput, error) {
-	ignore := fmt.Sprintf(`{"ignore_warnings": "%t"}`, ignoreWarnings)
+func (is InstallationsService) Trigger(ignoreWarnings bool, deployProducts bool) (InstallationsServiceOutput, error) {
+	deployProductsVal := "none"
+	if deployProducts {
+		deployProductsVal = "all"
+	}
 
-	req, err := http.NewRequest("POST", "/api/v0/installations", strings.NewReader(ignore))
+	data, err := json.Marshal(&struct {
+		IgnoreWarnings string `json:"ignore_warnings"`
+		DeployProducts string `json:"deploy_products"`
+	}{
+		IgnoreWarnings: fmt.Sprintf("%t", ignoreWarnings),
+		DeployProducts: deployProductsVal,
+	})
+	if err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
+	req, err := http.NewRequest("POST", "/api/v0/installations", bytes.NewReader(data))
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}
