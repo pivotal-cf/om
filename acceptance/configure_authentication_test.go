@@ -26,6 +26,9 @@ var _ = Describe("configure-authentication command", func() {
 				Passphrase             string `json:"decryption_passphrase"`
 				PassphraseConfirmation string `json:"decryption_passphrase_confirmation"`
 				EULAAccepted           string `json:"eula_accepted"`
+				HTTPProxy              string `json:"http_proxy"`
+				HTTPSProxy             string `json:"https_proxy"`
+				NoProxy                string `json:"no_proxy"`
 			} `json:"setup"`
 		}
 		var ensureAvailabilityCallCount int
@@ -65,6 +68,9 @@ var _ = Describe("configure-authentication command", func() {
 			"--username", "username",
 			"--password", "password",
 			"--decryption-passphrase", "passphrase",
+			"--http-proxy-url", "http://http-proxy.com",
+			"--https-proxy-url", "http://https-proxy.com",
+			"--no-proxy", "10.10.10.10,11.11.11.11",
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -79,6 +85,9 @@ var _ = Describe("configure-authentication command", func() {
 		Expect(auth.Setup.Passphrase).To(Equal("passphrase"))
 		Expect(auth.Setup.PassphraseConfirmation).To(Equal("passphrase"))
 		Expect(auth.Setup.EULAAccepted).To(Equal("true"))
+		Expect(auth.Setup.HTTPProxy).To(Equal("http://http-proxy.com"))
+		Expect(auth.Setup.HTTPSProxy).To(Equal("http://https-proxy.com"))
+		Expect(auth.Setup.NoProxy).To(Equal("10.10.10.10,11.11.11.11"))
 
 		Expect(ensureAvailabilityCallCount).To(Equal(3))
 

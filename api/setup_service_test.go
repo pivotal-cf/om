@@ -37,6 +37,9 @@ var _ = Describe("SetupService", func() {
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase-confirmation",
 				EULAAccepted:                     true,
+				HTTPProxyURL:                     "http://http-proxy.com",
+				HTTPSProxyURL:                    "http://https-proxy.com",
+				NoProxy:                          "10.10.10.10,11.11.11.11",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(api.SetupOutput{}))
@@ -57,7 +60,10 @@ var _ = Describe("SetupService", func() {
 					"admin_password_confirmation": "some-password-confirmation",
 					"decryption_passphrase": "some-passphrase",
 					"decryption_passphrase_confirmation":"some-passphrase-confirmation",
-					"eula_accepted": "true"
+					"eula_accepted": "true",
+					"http_proxy": "http://http-proxy.com",
+					"https_proxy": "http://https-proxy.com",
+					"no_proxy": "10.10.10.10,11.11.11.11"
 				}
 			}`))
 		})

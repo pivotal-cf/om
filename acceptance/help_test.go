@@ -72,6 +72,9 @@ Command Arguments:
   -u, --username                string  admin username
   -p, --password                string  admin password
   -dp, --decryption-passphrase  string  passphrase used to encrypt the installation
+  --http-proxy-url              string  proxy for outbound HTTP network traffic
+  --https-proxy-url             string  proxy for outbound HTTPS network traffic
+  --no-proxy                    string  comma-separated list of hosts that do not go through the proxy
 `
 
 var _ = Describe("help", func() {
