@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -38,7 +39,13 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTim
 }
 
 func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error) {
-	targetURL, err := url.Parse(c.target)
+
+	candidateURL := c.target
+	if !strings.Contains(candidateURL, "//") {
+		candidateURL = fmt.Sprintf("//%s", candidateURL)
+	}
+
+	targetURL, err := url.Parse(candidateURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse target url: %s", err)
 	}
