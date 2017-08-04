@@ -24,6 +24,19 @@ Currently being developed by RelEng, backlog link is [here](https://www.pivotalt
 
 See [here](docs/README.md) for useful examples and documentation
 
+## Installation
+
+To install `om` go to [Releases](https://github.com/pivotal-cf/om/releases)
+
+Additionally, you can install `om` via `apt-get` from [Stark and Wayne's](https://www.starkandwayne.com/) apt-get repo:
+```
+wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
+echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
+apt-get update
+
+apt-get install om
+```
+
 ## Current Commands
 ```
 ॐ
