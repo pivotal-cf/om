@@ -20,5 +20,6 @@ Usage: om [options] apply-changes [<args>]
   -r, --request-timeout      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
 
 Command Arguments:
-  -i, --ignore-warnings  bool  ignore issues reported by Ops Manager when applying changes
+  -i, --ignore-warnings         bool  ignore issues reported by Ops Manager when applying changes
+  -sdp, --skip-deploy-products  bool  skip deploying products when applying changes - just update the director
 ```
