@@ -101,6 +101,10 @@ func (c Curl) Execute(args []string) error {
 
 	c.stdout.Println(string(body))
 
+	if output.StatusCode >= 400 {
+		return fmt.Errorf("server responded with an error")
+	}
+
 	return nil
 }
 

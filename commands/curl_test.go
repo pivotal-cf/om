@@ -126,7 +126,7 @@ var _ = Describe("Curl", func() {
 					"--request", "GET",
 					"--silent",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).To(MatchError("server responded with an error"))
 
 				format, content := stderr.PrintfArgsForCall(0)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 404 Not Found"))
@@ -139,7 +139,6 @@ var _ = Describe("Curl", func() {
 		Context("When a custom content-type is passed in", func() {
 			It("executes the API call with the given content type", func() {
 				requestService.InvokeReturns(api.RequestServiceInvokeOutput{
-					StatusCode: http.StatusTeapot,
 					Headers: http.Header{
 						"Content-Length": []string{"33"},
 						"Content-Type":   []string{"application/json"},
@@ -167,7 +166,6 @@ var _ = Describe("Curl", func() {
 			Context("when the response type is JSON", func() {
 				It("pretty prints the response body", func() {
 					requestService.InvokeReturns(api.RequestServiceInvokeOutput{
-						StatusCode: http.StatusTeapot,
 						Headers: http.Header{
 							"Content-Length": []string{"33"},
 							"Content-Type":   []string{"application/json; charset=utf-8"},
@@ -190,7 +188,6 @@ var _ = Describe("Curl", func() {
 			Context("when the response type is not JSON", func() {
 				It("doesn't format the response body", func() {
 					requestService.InvokeReturns(api.RequestServiceInvokeOutput{
-						StatusCode: http.StatusTeapot,
 						Headers: http.Header{
 							"Content-Length": []string{"33"},
 							"Content-Type":   []string{"text/plain; charset=utf-8"},
@@ -252,6 +249,22 @@ var _ = Describe("Curl", func() {
 						"--data", `{"some-key": "some-value"}`,
 					})
 					Expect(err).To(MatchError("failed to read api response body: failed to read"))
+				})
+			})
+
+			Context("when the response code is 400 or higher", func() {
+				It("returns an error", func() {
+					requestService.InvokeReturns(api.RequestServiceInvokeOutput{
+						StatusCode: 401,
+						Body:       strings.NewReader(`{"some-response-key": "some-response-value"}`),
+					}, nil)
+
+					err := command.Execute([]string{
+						"--path", "/api/v0/some/path",
+						"--request", "POST",
+						"--data", `{"some-key": "some-value"}`,
+					})
+					Expect(err).To(MatchError("server responded with an error"))
 				})
 			})
 		})
