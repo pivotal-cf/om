@@ -44,6 +44,10 @@ var _ = Describe("revert-staged-changes command", func() {
 						<input name="_method" value="fakemethod2" />
 						<input name="authenticity_token" value="fake_authenticity2" />
 					</form>
+					<form action="/installation" method="post">
+						<input name="_method" value="fakemethod" />
+						<input name="authenticity_token" value="fake_authenticity" />
+					</form>
 					<form action="/install" method="post">
 						<input name="_method" value="fakemethod" />
 						<input name="authenticity_token" value="fake_authenticity" />
