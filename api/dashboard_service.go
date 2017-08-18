@@ -19,7 +19,35 @@ func NewDashboardService(client httpClient) DashboardService {
 	}
 }
 
+func (ds DashboardService) GetRevertForm() (Form, error) {
+	return ds.getForm("/installation")
+}
+
 func (ds DashboardService) GetInstallForm() (Form, error) {
+	return ds.getForm("/install")
+}
+
+func (ds DashboardService) PostInstallForm(input PostFormInput) error {
+	req, err := http.NewRequest("POST", "/installation", strings.NewReader(input.EncodedPayload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := ds.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to POST form: %s", err)
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ds DashboardService) getForm(formURL string) (Form, error) {
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		return Form{}, err
@@ -44,8 +72,8 @@ func (ds DashboardService) GetInstallForm() (Form, error) {
 	var tokenFound, methodFound bool
 	document.Find("form").Each(func(index int, sel *goquery.Selection) {
 		formAction, _ := sel.Attr("action")
-		if formAction == "/install" {
-			action = "/install"
+		if formAction == formURL {
+			action = formURL
 			authenticityToken, tokenFound = sel.Find(`input[name="authenticity_token"]`).Attr("value")
 			railsMethod, methodFound = sel.Find(`input[name="_method"]`).Attr("value")
 		}
@@ -60,24 +88,5 @@ func (ds DashboardService) GetInstallForm() (Form, error) {
 		AuthenticityToken: authenticityToken,
 		RailsMethod:       railsMethod,
 	}, nil
-}
 
-func (ds DashboardService) PostInstallForm(input PostFormInput) error {
-	req, err := http.NewRequest("POST", "/installation", strings.NewReader(input.EncodedPayload))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := ds.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to POST form: %s", err)
-	}
-
-	if err = ValidateStatusOK(resp); err != nil {
-		return err
-	}
-
-	return nil
 }

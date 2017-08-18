@@ -20,6 +20,10 @@ const dashboardForms = `
 			<input name="_method" value="some-rails1" />
 			<input name="authenticity_token" value="some-authenticity1" />
 		</form>
+		<form action="/installation" method="some-method">
+			<input name="_method" value="delete" />
+			<input name="authenticity_token" value="revert-authenticity-token" />
+		</form>
 		<form action="/install" method="some-method">
 			<input name="_method" value="some-rails2" />
 			<input name="authenticity_token" value="some-authenticity2" />
@@ -36,6 +40,67 @@ var _ = Describe("DashboardService", func() {
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 		service = api.NewDashboardService(client)
+	})
+
+	Describe("GetRevertForm", func() {
+		It("returns the form details", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(dashboardForms)),
+			}, nil)
+
+			form, err := service.GetRevertForm()
+			Expect(err).NotTo(HaveOccurred())
+
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/"))
+
+			Expect(form).To(Equal(api.Form{
+				Action:            "/installation",
+				AuthenticityToken: "revert-authenticity-token",
+				RailsMethod:       "delete",
+			}))
+		})
+
+		Context("when an error occurs", func() {
+			Context("when http client fails", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, errors.New("whoops"))
+
+					_, err := service.GetRevertForm()
+					Expect(err).To(MatchError("failed during request: whoops"))
+				})
+			})
+
+			Context("when authenticity token cannot be found", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, nil)
+
+					_, err := service.GetRevertForm()
+					Expect(err).To(MatchError("could not find the form authenticity token"))
+				})
+			})
+
+			Context("when the response status is non-200", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, nil)
+
+					_, err := service.GetRevertForm()
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+		})
 	})
 
 	Describe("GetInstallForm", func() {

@@ -27,8 +27,8 @@ var _ = Describe("RevertStagedChanges", func() {
 		It("reverts staged changes on the targeted OpsMan", func() {
 			command := commands.NewRevertStagedChanges(service, logger)
 
-			service.GetInstallFormReturns(api.Form{
-				Action:            "/install",
+			service.GetRevertFormReturns(api.Form{
+				Action:            "/installation",
 				AuthenticityToken: "some-auth-token",
 				RailsMethod:       "the-rails",
 			}, nil)
@@ -39,7 +39,7 @@ var _ = Describe("RevertStagedChanges", func() {
 
 			Expect(service.PostInstallFormArgsForCall(0)).To(Equal(api.PostFormInput{
 				Form: api.Form{
-					Action:            "/install",
+					Action:            "/installation",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				},
@@ -55,7 +55,7 @@ var _ = Describe("RevertStagedChanges", func() {
 		Context("error cases", func() {
 			Context("when the form can't be fetched", func() {
 				It("returns an error", func() {
-					service.GetInstallFormReturns(api.Form{}, errors.New("meow meow meow"))
+					service.GetRevertFormReturns(api.Form{}, errors.New("meow meow meow"))
 
 					command := commands.NewRevertStagedChanges(service, logger)
 
