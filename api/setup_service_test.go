@@ -105,7 +105,7 @@ var _ = Describe("SetupService", func() {
 		})
 
 		Context("when the availability endpoint returns an unexpected status code", func() {
-			It("returns unknown status", func() {
+			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader("")),
@@ -113,16 +113,13 @@ var _ = Describe("SetupService", func() {
 
 				service := api.NewSetupService(client)
 
-				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
-					Status: api.EnsureAvailabilityStatusUnknown,
-				}))
+				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).To(MatchError("Unexpected response code: 418 I'm a teapot"))
 			})
 		})
 
 		Context("when the availability endpoint returns an OK status with an unexpected body", func() {
-			It("returns unknown status", func() {
+			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader("some body")),
@@ -130,16 +127,13 @@ var _ = Describe("SetupService", func() {
 
 				service := api.NewSetupService(client)
 
-				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
-					Status: api.EnsureAvailabilityStatusUnknown,
-				}))
+				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).To(MatchError("Received OK with an unexpected body: some body"))
 			})
 		})
 
 		Context("when the availability endpoint returns a found status with an unexpected location header", func() {
-			It("returns unknown status", func() {
+			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
 					Header: http.Header{
@@ -150,11 +144,8 @@ var _ = Describe("SetupService", func() {
 
 				service := api.NewSetupService(client)
 
-				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
-					Status: api.EnsureAvailabilityStatusUnknown,
-				}))
+				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
+				Expect(err).To(MatchError("Unexpected redirect location: /something/else"))
 			})
 		})
 

@@ -126,6 +126,8 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 			status = EnsureAvailabilityStatusUnstarted
 		} else if location.Path == "/auth/cloudfoundry" {
 			status = EnsureAvailabilityStatusComplete
+		} else {
+			return EnsureAvailabilityOutput{}, fmt.Errorf("Unexpected redirect location: %s", location.Path)
 		}
 
 	case response.StatusCode == http.StatusOK:
@@ -136,7 +138,12 @@ func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (Ensure
 
 		if strings.Contains(string(respBody), "Waiting for authentication system to start...") {
 			status = EnsureAvailabilityStatusPending
+		} else {
+			return EnsureAvailabilityOutput{}, fmt.Errorf("Received OK with an unexpected body: %s", string(respBody))
 		}
+
+	default:
+		return EnsureAvailabilityOutput{}, fmt.Errorf("Unexpected response code: %d %s", response.StatusCode, http.StatusText(response.StatusCode))
 	}
 
 	return EnsureAvailabilityOutput{Status: status}, nil
