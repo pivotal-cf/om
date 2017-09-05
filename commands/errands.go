@@ -17,7 +17,7 @@ type stagedProductsFinder interface {
 //go:generate counterfeiter -o ./fakes/errands_service.go --fake-name ErrandsService . errandsService
 type errandsService interface {
 	List(productID string) (api.ErrandsListOutput, error)
-	SetState(productID, errandName, postDeployState, preDeleteState string) error
+	SetState(productID, errandName string, postDeployState, preDeleteState interface{}) error
 }
 
 type Errands struct {

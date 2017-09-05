@@ -28,7 +28,7 @@ func NewErrandsService(client httpClient) ErrandsService {
 	return ErrandsService{Client: client}
 }
 
-func (es ErrandsService) SetState(productID, errandName, postDeployState, preDeleteState string) error {
+func (es ErrandsService) SetState(productID string, errandName string, postDeployState interface{}, preDeleteState interface{}) error {
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
 
 	errandsListOutput := ErrandsListOutput{

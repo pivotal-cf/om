@@ -21,13 +21,13 @@ type ErrandsService struct {
 		result1 api.ErrandsListOutput
 		result2 error
 	}
-	SetStateStub        func(productID, errandName, postDeployState, preDeleteState string) error
+	SetStateStub        func(productID, errandName string, postDeployState, preDeleteState interface{}) error
 	setStateMutex       sync.RWMutex
 	setStateArgsForCall []struct {
 		productID       string
 		errandName      string
-		postDeployState string
-		preDeleteState  string
+		postDeployState interface{}
+		preDeleteState  interface{}
 	}
 	setStateReturns struct {
 		result1 error
@@ -90,14 +90,14 @@ func (fake *ErrandsService) ListReturnsOnCall(i int, result1 api.ErrandsListOutp
 	}{result1, result2}
 }
 
-func (fake *ErrandsService) SetState(productID string, errandName string, postDeployState string, preDeleteState string) error {
+func (fake *ErrandsService) SetState(productID string, errandName string, postDeployState interface{}, preDeleteState interface{}) error {
 	fake.setStateMutex.Lock()
 	ret, specificReturn := fake.setStateReturnsOnCall[len(fake.setStateArgsForCall)]
 	fake.setStateArgsForCall = append(fake.setStateArgsForCall, struct {
 		productID       string
 		errandName      string
-		postDeployState string
-		preDeleteState  string
+		postDeployState interface{}
+		preDeleteState  interface{}
 	}{productID, errandName, postDeployState, preDeleteState})
 	fake.recordInvocation("SetState", []interface{}{productID, errandName, postDeployState, preDeleteState})
 	fake.setStateMutex.Unlock()
@@ -116,7 +116,7 @@ func (fake *ErrandsService) SetStateCallCount() int {
 	return len(fake.setStateArgsForCall)
 }
 
-func (fake *ErrandsService) SetStateArgsForCall(i int) (string, string, string, string) {
+func (fake *ErrandsService) SetStateArgsForCall(i int) (string, string, interface{}, interface{}) {
 	fake.setStateMutex.RLock()
 	defer fake.setStateMutex.RUnlock()
 	return fake.setStateArgsForCall[i].productID, fake.setStateArgsForCall[i].errandName, fake.setStateArgsForCall[i].postDeployState, fake.setStateArgsForCall[i].preDeleteState

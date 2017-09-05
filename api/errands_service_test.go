@@ -40,7 +40,7 @@ var _ = Describe("ErrandsService", func() {
 				}, nil
 			}
 
-			err := service.SetState("some-product-id", "some-errand", "when-changed", "false")
+			err := service.SetState("some-product-id", "some-errand", "when-changed", false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
 			Expect(method).To(Equal("PUT"))
@@ -53,7 +53,7 @@ var _ = Describe("ErrandsService", func() {
             {
               "name": "some-errand",
               "post_deploy": "when-changed",
-              "pre_delete": "false"
+              "pre_delete": false
             }
 					]
 			}`))
