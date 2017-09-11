@@ -19,9 +19,9 @@ type SetErrandState struct {
 	}
 }
 
-var userToOMInputs = map[string]string{
-	"enabled":      "true",
-	"disabled":     "false",
+var userToOMInputs = map[string]interface{}{
+	"enabled":      true,
+	"disabled":     false,
 	"when-changed": "when-changed",
 	"default":      "default",
 }
@@ -53,7 +53,8 @@ func (s SetErrandState) Execute(args []string) error {
 	}
 
 	var (
-		postDeployState string
+		preDeleteState  interface{}
+		postDeployState interface{}
 		errs            []string
 	)
 
@@ -65,7 +66,6 @@ func (s SetErrandState) Execute(args []string) error {
 		}
 	}
 
-	var preDeleteState string
 	if s.Options.PreDeleteState != "" {
 		var ok bool
 		preDeleteState, ok = userToOMInputs[s.Options.PreDeleteState]

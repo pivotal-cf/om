@@ -48,11 +48,11 @@ var _ = Describe("Set errand state", func() {
 
 			Expect(productGUID).To(Equal("some-product-guid"))
 			Expect(errandName).To(Equal("some-errand"))
-			Expect(postDeployState).To(Equal("true"))
-			Expect(preDeleteState).To(Equal("false"))
+			Expect(postDeployState).To(BeTrue())
+			Expect(preDeleteState).To(BeFalse())
 		})
 
-		DescribeTable("when user sets one state", func(postDeploy, preDelete, desiredPostDeploy, desiredPreDelete string) {
+		DescribeTable("when user sets one state", func(postDeploy, preDelete string, desiredPostDeploy, desiredPreDelete interface{}) {
 			err := command.Execute([]string{
 				"--product-name", "some-product-name",
 				"--errand-name", "some-errand",
@@ -68,11 +68,21 @@ var _ = Describe("Set errand state", func() {
 
 			Expect(productGUID).To(Equal("some-product-guid"))
 			Expect(errandName).To(Equal("some-errand"))
-			Expect(postDeployState).To(Equal(desiredPostDeploy))
-			Expect(preDeleteState).To(Equal(desiredPreDelete))
+
+			if desiredPostDeploy != nil {
+				Expect(postDeployState).To(Equal(desiredPostDeploy))
+			} else {
+				Expect(postDeployState).To(BeNil())
+			}
+
+			if desiredPreDelete != nil {
+				Expect(preDeleteState).To(Equal(desiredPreDelete))
+			} else {
+				Expect(preDeleteState).To(BeNil())
+			}
 		},
-			Entry("when only post deploy is given", "when-changed", "", "when-changed", ""),
-			Entry("when only pre delete is given", "", "disabled", "", "false"),
+			Entry("when only post deploy is given", "when-changed", "", "when-changed", nil),
+			Entry("when only pre delete is given", "", "disabled", nil, false),
 			Entry("when default states are desired", "default", "default", "default", "default"),
 		)
 
