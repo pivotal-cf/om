@@ -1,8 +1,9 @@
 package commands_test
 
 import (
-    "fmt"
+	"fmt"
 
+	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
@@ -10,11 +11,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("Certificate Authorities", func() {
+var _ = Describe("Certificate Authorities", func() {
 	var (
-		certificateAuthorities commands.CertificateAuthorities
+		certificateAuthorities            commands.CertificateAuthorities
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
-		fakeTableWriter *fakes.TableWriter
+		fakeTableWriter                   *fakes.TableWriter
 	)
 
 	BeforeEach(func() {
@@ -28,41 +29,41 @@ var _ = FDescribe("Certificate Authorities", func() {
 			err := certificateAuthorities.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthoritiesService.CertificateAuthoritiesCallCount()).To(Equal(1))
+			Expect(fakeCertificateAuthoritiesService.ListCallCount()).To(Equal(1))
 		})
 
 		Context("when request for certificate authorities fails", func() {
 			It("returns an error", func() {
-				fakeCertificateAuthoritiesService.CertificateAuthoritiesReturns(
-					[]commands.CA{},
+				fakeCertificateAuthoritiesService.ListReturns(
+					api.CertificateAuthoritiesServiceOutput{},
 					fmt.Errorf("could not get certificate authorities"),
 				)
 
 				err := certificateAuthorities.Execute([]string{})
 				Expect(err).To(MatchError("could not get certificate authorities"))
-
 			})
-
 		})
 
-		It("prints the certificate authorities to a table", func () {
-			fakeCertificateAuthoritiesService.CertificateAuthoritiesReturns(
-				[]commands.CA{
-					{
-						GUID: "some-guid",
-						Issuer: "Pivotal",
-						CreatedOn: "2017-01-09",
-						ExpiresOn: "2021-01-09",
-						Active: true,
-						CertPEM: "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
-					},
-					{
-						GUID: "other-guid",
-						Issuer: "Customer",
-						CreatedOn: "2017-01-10",
-						ExpiresOn: "2021-01-10",
-						Active: false,
-						CertPEM: "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI....",					
+		It("prints the certificate authorities to a table", func() {
+			fakeCertificateAuthoritiesService.ListReturns(
+				api.CertificateAuthoritiesServiceOutput{
+					CAs: []api.CA{
+						{
+							GUID:      "some-guid",
+							Issuer:    "Pivotal",
+							CreatedOn: "2017-01-09",
+							ExpiresOn: "2021-01-09",
+							Active:    true,
+							CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
+						},
+						{
+							GUID:      "other-guid",
+							Issuer:    "Customer",
+							CreatedOn: "2017-01-10",
+							ExpiresOn: "2021-01-10",
+							Active:    false,
+							CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI....",
+						},
 					},
 				},
 				nil,
@@ -82,4 +83,14 @@ var _ = FDescribe("Certificate Authorities", func() {
 		})
 	})
 
+	Describe("Usage", func() {
+		It("returns usage", func() {
+			usage := certificateAuthorities.Usage()
+
+			Expect(usage).To(Equal(commands.Usage{
+				Description:      "lists certificates managed by Ops Manager",
+				ShortDescription: "lists certificates managed by Ops Manager",
+			}))
+		})
+	})
 })

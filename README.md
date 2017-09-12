@@ -56,6 +56,7 @@ Usage: om [options] <command> [<args>]
 Commands:
   apply-changes             triggers an install on the Ops Manager targeted
   available-products        list available products
+  certificate-authorities   lists certificates managed by Ops Manager
   configure-authentication  configures Ops Manager with an internal userstore and admin user account
   configure-bosh            configures Ops Manager deployed bosh director
   configure-product         configures a staged product

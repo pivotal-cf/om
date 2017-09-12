@@ -2,45 +2,46 @@ package commands
 
 import (
 	"strconv"
+
+	"github.com/pivotal-cf/om/api"
 )
 
 type CertificateAuthorities struct {
 	cas certificateAuthoritiesService
-	tw tableWriter
-}
-
-type CA struct {
-	GUID string
-	Issuer string
-	CreatedOn string
-	ExpiresOn string
-	Active bool
-	CertPEM string
+	tw  tableWriter
 }
 
 type certificateAuthoritiesService interface {
-	CertificateAuthorities() ([]CA, error)
+	List() (api.CertificateAuthoritiesServiceOutput, error)
 }
 
 func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthoritiesService, tableWriter tableWriter) CertificateAuthorities {
 	return CertificateAuthorities{
 		cas: certificateAuthoritiesService,
-		tw: tableWriter,
+		tw:  tableWriter,
 	}
 }
 
 func (c CertificateAuthorities) Execute(_ []string) error {
-	cas, err := c.cas.CertificateAuthorities()
+	casOutput, err := c.cas.List()
 	if err != nil {
 		return err
 	}
 
 	c.tw.SetHeader([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"})
 
-	for _, values := range cas {
+	for _, values := range casOutput.CAs {
 		c.tw.Append([]string{values.GUID, values.Issuer, strconv.FormatBool(values.Active), values.CreatedOn, values.ExpiresOn, values.CertPEM})
 	}
+
 	c.tw.Render()
-	
+
 	return nil
+}
+
+func (c CertificateAuthorities) Usage() Usage {
+	return Usage{
+		Description:      "lists certificates managed by Ops Manager",
+		ShortDescription: "lists certificates managed by Ops Manager",
+	}
 }
