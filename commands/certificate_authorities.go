@@ -28,6 +28,7 @@ func (c CertificateAuthorities) Execute(_ []string) error {
 		return err
 	}
 
+	c.tw.SetAutoWrapText(false)
 	c.tw.SetHeader([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"})
 
 	for _, values := range casOutput.CAs {

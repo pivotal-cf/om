@@ -72,6 +72,9 @@ var _ = Describe("Certificate Authorities", func() {
 			err := certificateAuthorities.Execute([]string{})
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
+
 			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
 			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"}))
 
