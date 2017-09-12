@@ -147,6 +147,7 @@ func main() {
 	commandSet["installations"] = commands.NewInstallations(installationsService, tableWriter)
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, tableWriter)
+	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

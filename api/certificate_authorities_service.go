@@ -48,3 +48,24 @@ func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesServiceOutp
 
 	return output, nil
 }
+
+func (c CertificateAuthoritiesService) Generate() (CA, error) {
+	var output CA
+
+	req, err := http.NewRequest("POST", "/api/v0/certificate_authorities/generate", nil)
+	if err != nil {
+		return CA{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return CA{}, err
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&output)
+	if err != nil {
+		return CA{}, err
+	}
+
+	return output, nil
+}

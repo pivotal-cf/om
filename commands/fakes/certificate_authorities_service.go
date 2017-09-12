@@ -15,6 +15,13 @@ type CertificateAuthoritiesService struct {
 		result1 api.CertificateAuthoritiesServiceOutput
 		result2 error
 	}
+	GenerateStub        func() (api.CA, error)
+	generateMutex       sync.RWMutex
+	generateArgsForCall []struct{}
+	generateReturns     struct {
+		result1 api.CA
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -45,11 +52,39 @@ func (fake *CertificateAuthoritiesService) ListReturns(result1 api.CertificateAu
 	}{result1, result2}
 }
 
+func (fake *CertificateAuthoritiesService) Generate() (api.CA, error) {
+	fake.generateMutex.Lock()
+	fake.generateArgsForCall = append(fake.generateArgsForCall, struct{}{})
+	fake.recordInvocation("Generate", []interface{}{})
+	fake.generateMutex.Unlock()
+	if fake.GenerateStub != nil {
+		return fake.GenerateStub()
+	} else {
+		return fake.generateReturns.result1, fake.generateReturns.result2
+	}
+}
+
+func (fake *CertificateAuthoritiesService) GenerateCallCount() int {
+	fake.generateMutex.RLock()
+	defer fake.generateMutex.RUnlock()
+	return len(fake.generateArgsForCall)
+}
+
+func (fake *CertificateAuthoritiesService) GenerateReturns(result1 api.CA, result2 error) {
+	fake.GenerateStub = nil
+	fake.generateReturns = struct {
+		result1 api.CA
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *CertificateAuthoritiesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
+	fake.generateMutex.RLock()
+	defer fake.generateMutex.RUnlock()
 	return fake.invocations
 }
 

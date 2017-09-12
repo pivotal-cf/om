@@ -13,6 +13,7 @@ type CertificateAuthorities struct {
 
 type certificateAuthoritiesService interface {
 	List() (api.CertificateAuthoritiesServiceOutput, error)
+	Generate() (api.CA, error)
 }
 
 func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthoritiesService, tableWriter tableWriter) CertificateAuthorities {
