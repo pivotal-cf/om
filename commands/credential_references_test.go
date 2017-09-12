@@ -35,12 +35,13 @@ var _ = Describe("CredentialReferences", func() {
 				}}, nil)
 		})
 
-		It("lists the credential references", func() {
+		It("lists the credential references in alphabetical order", func() {
 			command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
 
 			crService.ListReturns(api.CredentialReferencesOutput{
 				Credentials: []string{
 					".properties.some-credentials",
+					".our-job.some-other-credential",
 					".my-job.some-credentials",
 				},
 			}, nil)
@@ -52,9 +53,10 @@ var _ = Describe("CredentialReferences", func() {
 
 			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Credentials"}))
 
-			Expect(tableWriter.AppendCallCount()).To(Equal(2))
-			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{".properties.some-credentials"}))
-			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{".my-job.some-credentials"}))
+			Expect(tableWriter.AppendCallCount()).To(Equal(3))
+			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{".my-job.some-credentials"}))
+			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{".our-job.some-other-credential"}))
+			Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{".properties.some-credentials"}))
 
 			Expect(tableWriter.RenderCallCount()).To(Equal(1))
 		})

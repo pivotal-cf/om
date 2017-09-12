@@ -21,8 +21,8 @@ var _ = Describe("credential references command", func() {
 	const tableOutput = `+------------------------------+
 |         CREDENTIALS          |
 +------------------------------+
-| .properties.some-credentials |
 | .my-job.some-credentials     |
+| .properties.some-credentials |
 +------------------------------+
 `
 

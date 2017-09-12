@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/om/api"
@@ -55,6 +56,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 	}
 
 	output, err := cr.service.List(deployedProductGUID)
+	sort.Strings(output.Credentials)
 	if err != nil {
 		return fmt.Errorf("failed to list credential references: %s", err)
 	}
