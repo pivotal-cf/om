@@ -145,6 +145,7 @@ func main() {
 	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)
 	commandSet["installations"] = commands.NewInstallations(installationsService, tableWriter)
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
+	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities()
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
