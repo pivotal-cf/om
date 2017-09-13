@@ -152,6 +152,17 @@ For the current configuration of your product, you can `curl` the API to retriev
 
 ### Configuring the `--product-resources`
 
+```json
+{
+  "job-name": {
+    "instances": "automatic",
+    "instance_type": {"id": "automatic"},
+    "persistent_disk": {"size_mb": "automatic"}
+  }
+}
+```
+
+
 #### Example JSON:
 ```json
 {
