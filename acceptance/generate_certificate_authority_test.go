@@ -15,7 +15,7 @@ import (
 var _ = Describe("generate certificate authority", func() {
 	var server *httptest.Server
 	const output = `+----------------------+-------------+--------+------------+------------+------------------------------------------------------------------+
-|          ID          |   ISSUER    | ACTIVE | CREATED ON | EXPIRED ON |                          CERTICATE PEM                           |
+|          ID          |   ISSUER    | ACTIVE | CREATED ON | EXPIRES ON |                          CERTICATE PEM                           |
 +----------------------+-------------+--------+------------+------------+------------------------------------------------------------------+
 | f7bc18f34f2a7a9403c3 | some-issuer | true   | 2017-01-19 | 2021-01-19 | -----BEGIN CERTIFICATE-----                                      |
 |                      |             |        |            |            | MIIC+zCCAeOgAwIBAgIBADANBgkqhkiG9w0BAQsFADAfMQswCQYDVQQGEwJVUzEQ |

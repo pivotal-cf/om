@@ -18,7 +18,7 @@ func (g GenerateCertificateAuthority) Execute(_ []string) error {
 	}
 
 	g.tableWriter.SetAutoWrapText(false)
-	g.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"})
+	g.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
 	g.tableWriter.Append([]string{ca.GUID, ca.Issuer, strconv.FormatBool(ca.Active), ca.CreatedOn, ca.ExpiresOn, ca.CertPEM})
 	g.tableWriter.Render()
 	return nil

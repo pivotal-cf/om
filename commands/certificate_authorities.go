@@ -32,7 +32,7 @@ func (c CertificateAuthorities) Execute(_ []string) error {
 	}
 
 	c.tw.SetAutoWrapText(false)
-	c.tw.SetHeader([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"})
+	c.tw.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
 
 	for _, values := range casOutput.CAs {
 		c.tw.Append([]string{values.GUID, values.Issuer, strconv.FormatBool(values.Active), values.CreatedOn, values.ExpiresOn, values.CertPEM})

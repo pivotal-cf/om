@@ -76,7 +76,7 @@ var _ = Describe("Certificate Authorities", func() {
 			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
 
 			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"}))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"}))
 
 			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
 			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-guid", "Pivotal", "true", "2017-01-09", "2021-01-09", "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI...."}))

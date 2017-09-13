@@ -42,7 +42,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
 
 			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expired on", "certicate pem"}))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"}))
 
 			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
 			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some GUID", "some Issuer",

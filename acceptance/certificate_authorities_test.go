@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("certificate-authorities", func() {
 	const expectedOutput = `+------------+----------+--------+------------+------------+------------------------------------------------------------------+
-|     ID     |  ISSUER  | ACTIVE | CREATED ON | EXPIRED ON |                          CERTICATE PEM                           |
+|     ID     |  ISSUER  | ACTIVE | CREATED ON | EXPIRES ON |                          CERTICATE PEM                           |
 +------------+----------+--------+------------+------------+------------------------------------------------------------------+
 | some-guid  | Pivotal  | true   | 2017-01-09 | 2021-01-09 | -----BEGIN CERTIFICATE-----                                      |
 |            |          |        |            |            | MIIC+aCCAeOgAwIBAgIBADANBgkqhkiG9w0BAQsFADAfMQswCQYDVQQGEwJVUzEQ |
