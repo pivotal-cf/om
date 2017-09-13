@@ -11,9 +11,11 @@ type CertificateAuthorities struct {
 	tw  tableWriter
 }
 
+//go:generate counterfeiter -o ./fakes/certificate_authorities_service.go --fake-name CertificateAuthoritiesService . certificateAuthoritiesService
 type certificateAuthoritiesService interface {
 	List() (api.CertificateAuthoritiesServiceOutput, error)
 	Generate() (api.CA, error)
+	Create(api.CertificateAuthorityBody) (api.CA, error)
 }
 
 func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthoritiesService, tableWriter tableWriter) CertificateAuthorities {
