@@ -22,7 +22,12 @@ Currently being developed by RelEng, backlog link is [here](https://www.pivotalt
 
 ## Documentation
 
-See [here](docs/README.md) for useful examples and documentation
+See [here](docs/README.md) for useful examples and documentation.
+
+Some commands such as `configure-product` accept arguments as JSON. Please refer
+to the Ops Manager API documentation for examples of the fields that can be
+provided. The Ops Manager API documentation is available at
+`https://pcf.your-ops-manager.example.com/docs`
 
 ## Installation
 
