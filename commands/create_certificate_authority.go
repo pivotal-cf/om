@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/pivotal-cf/om/api"
@@ -23,7 +25,15 @@ func NewCreateCertificateAuthority(service certificateAuthoritiesService, tableW
 func (c CreateCertificateAuthority) Execute(args []string) error {
 	_, err := flags.Parse(&c.Options, args)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not parse create-certificate-authority flags: %s", err)
+	}
+
+	if c.Options.CertPem == "" {
+		return errors.New("error: certificate-pem is missing. Please see usage for more information.")
+	}
+
+	if c.Options.PrivateKey == "" {
+		return errors.New("error: private-key-pem is missing. Please see usage for more information.")
 	}
 
 	ca, err := c.service.Create(api.CertificateAuthorityBody{
