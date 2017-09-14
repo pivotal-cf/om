@@ -29,6 +29,10 @@ func (c RevertStagedChanges) Execute(args []string) error {
 		return fmt.Errorf("could not fetch form: %s", err)
 	}
 
+	if form == (api.Form{}) {
+		return nil
+	}
+
 	var formConfig CommonConfiguration
 	formConfig.AuthenticityToken = form.AuthenticityToken
 	formConfig.Method = "delete"

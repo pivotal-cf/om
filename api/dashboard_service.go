@@ -24,7 +24,17 @@ func (ds DashboardService) GetRevertForm() (Form, error) {
 }
 
 func (ds DashboardService) GetInstallForm() (Form, error) {
-	return ds.getForm("/install")
+	form, err := ds.getForm("/install")
+
+	if err != nil {
+		return form, err
+	}
+
+	if form == (Form{}) {
+		return form, errors.New("could not find the install form")
+	}
+
+	return form, nil
 }
 
 func (ds DashboardService) PostInstallForm(input PostFormInput) error {
@@ -69,15 +79,24 @@ func (ds DashboardService) getForm(formURL string) (Form, error) {
 	}
 
 	var action, authenticityToken, railsMethod string
-	var tokenFound, methodFound bool
+	var formFound, tokenFound, methodFound bool
 	document.Find("form").Each(func(index int, sel *goquery.Selection) {
 		formAction, _ := sel.Attr("action")
 		if formAction == formURL {
+			formFound = true
 			action = formURL
 			authenticityToken, tokenFound = sel.Find(`input[name="authenticity_token"]`).Attr("value")
 			railsMethod, methodFound = sel.Find(`input[name="_method"]`).Attr("value")
 		}
 	})
+
+	if !formFound {
+		return Form{}, nil
+	}
+
+	if !methodFound {
+		return Form{}, errors.New("could not find the form method")
+	}
 
 	if !tokenFound {
 		return Form{}, errors.New("could not find the form authenticity token")

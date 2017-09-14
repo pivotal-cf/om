@@ -64,6 +64,18 @@ var _ = Describe("DashboardService", func() {
 			}))
 		})
 
+		Context("when the form does not exist", func() {
+			It("returns an empty form", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("")),
+				}, nil)
+				form, err := service.GetRevertForm()
+				Expect(err).To(Not(HaveOccurred()))
+				Expect(form).To(Equal(api.Form{}))
+			})
+		})
+
 		Context("when an error occurs", func() {
 			Context("when http client fails", func() {
 				It("returns an error", func() {
@@ -77,15 +89,27 @@ var _ = Describe("DashboardService", func() {
 				})
 			})
 
-			Context("when authenticity token cannot be found", func() {
+			Context("when the authenticity token cannot be found", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
+						Body:       ioutil.NopCloser(strings.NewReader(`<form action="/installation"><input name="_method" value="post"/></form>`)),
 					}, nil)
 
 					_, err := service.GetRevertForm()
 					Expect(err).To(MatchError("could not find the form authenticity token"))
+				})
+			})
+
+			Context("when the form method cannot be found", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`<form action="/installation"><input name="authenticity_token" /></form>`)),
+					}, nil)
+
+					_, err := service.GetRevertForm()
+					Expect(err).To(MatchError("could not find the form method"))
 				})
 			})
 
@@ -126,6 +150,17 @@ var _ = Describe("DashboardService", func() {
 		})
 
 		Context("when an error occurs", func() {
+			Context("when the form does not exist", func() {
+				It("returns an empty form", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader("")),
+					}, nil)
+					_, err := service.GetInstallForm()
+					Expect(err).To(MatchError(ContainSubstring("could not find the install form")))
+				})
+			})
+
 			Context("when http client fails", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
@@ -142,7 +177,7 @@ var _ = Describe("DashboardService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
+						Body:       ioutil.NopCloser(strings.NewReader(`<form action="/install"><input name="_method" value="post"/></form>`)),
 					}, nil)
 
 					_, err := service.GetInstallForm()

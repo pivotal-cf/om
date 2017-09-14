@@ -52,6 +52,16 @@ var _ = Describe("RevertStagedChanges", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("done"))
 		})
 
+		Context("when there are no staged changes to revert", func() {
+			It("returns without error", func() {
+				command := commands.NewRevertStagedChanges(service, logger)
+				service.GetRevertFormReturns(api.Form{}, nil)
+				err := command.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(service.PostInstallFormCallCount()).To(Equal(0))
+			})
+		})
+
 		Context("error cases", func() {
 			Context("when the form can't be fetched", func() {
 				It("returns an error", func() {
@@ -66,6 +76,12 @@ var _ = Describe("RevertStagedChanges", func() {
 
 			Context("when the form can't be posted", func() {
 				It("returns an error", func() {
+					service.GetRevertFormReturns(api.Form{
+						Action:            "/installation",
+						AuthenticityToken: "some-auth-token",
+						RailsMethod:       "the-rails",
+					}, nil)
+
 					service.PostInstallFormReturns(errors.New("meow meow meow"))
 
 					command := commands.NewRevertStagedChanges(service, logger)
