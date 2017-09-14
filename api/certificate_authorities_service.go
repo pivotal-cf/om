@@ -10,7 +10,12 @@ type CertificateAuthoritiesService struct {
 	client httpClient
 }
 
-type CertificateAuthoritiesServiceOutput struct {
+type CertificateAuthorityInput struct {
+	CertPem       string `json:"cert_pem"`
+	PrivateKeyPem string `json:"private_key_pem"`
+}
+
+type CertificateAuthoritiesOutput struct {
 	CAs []CA `json:"certificate_authorities"`
 }
 
@@ -23,19 +28,14 @@ type CA struct {
 	CertPEM   string `json:"cert_pem"`
 }
 
-type CertificateAuthorityBody struct {
-	CertPem       string `json:"cert_pem"`
-	PrivateKeyPem string `json:"private_key_pem"`
-}
-
 func NewCertificateAuthoritiesService(client httpClient) CertificateAuthoritiesService {
 	return CertificateAuthoritiesService{
 		client: client,
 	}
 }
 
-func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesServiceOutput, error) {
-	var output CertificateAuthoritiesServiceOutput
+func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesOutput, error) {
+	var output CertificateAuthoritiesOutput
 
 	req, err := http.NewRequest("GET", "/api/v0/certificate_authorities", nil)
 	if err != nil {
@@ -76,7 +76,7 @@ func (c CertificateAuthoritiesService) Generate() (CA, error) {
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) Create(certBody CertificateAuthorityBody) (CA, error) {
+func (c CertificateAuthoritiesService) Create(certBody CertificateAuthorityInput) (CA, error) {
 	var output CA
 
 	body, err := json.Marshal(certBody)

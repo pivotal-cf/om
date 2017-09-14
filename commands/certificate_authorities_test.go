@@ -35,7 +35,7 @@ var _ = Describe("Certificate Authorities", func() {
 		Context("when request for certificate authorities fails", func() {
 			It("returns an error", func() {
 				fakeCertificateAuthoritiesService.ListReturns(
-					api.CertificateAuthoritiesServiceOutput{},
+					api.CertificateAuthoritiesOutput{},
 					fmt.Errorf("could not get certificate authorities"),
 				)
 
@@ -46,7 +46,7 @@ var _ = Describe("Certificate Authorities", func() {
 
 		It("prints the certificate authorities to a table", func() {
 			fakeCertificateAuthoritiesService.ListReturns(
-				api.CertificateAuthoritiesServiceOutput{
+				api.CertificateAuthoritiesOutput{
 					CAs: []api.CA{
 						{
 							GUID:      "some-guid",

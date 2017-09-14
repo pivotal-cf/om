@@ -36,7 +36,7 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 		return errors.New("error: private-key-pem is missing. Please see usage for more information.")
 	}
 
-	ca, err := c.service.Create(api.CertificateAuthorityBody{
+	ca, err := c.service.Create(api.CertificateAuthorityInput{
 		CertPem:       c.Options.CertPem,
 		PrivateKeyPem: c.Options.PrivateKey,
 	})

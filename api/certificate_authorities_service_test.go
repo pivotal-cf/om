@@ -191,7 +191,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			ca, err := service.Create(api.CertificateAuthorityBody{
+			ca, err := service.Create(api.CertificateAuthorityInput{
 				CertPem:       certPem,
 				PrivateKeyPem: privateKey,
 			})
@@ -223,7 +223,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.Create(api.CertificateAuthorityBody{
+					_, err := service.Create(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})
@@ -238,7 +238,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 						}, nil
 					}
 
-					_, err := service.Create(api.CertificateAuthorityBody{
+					_, err := service.Create(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})
@@ -262,7 +262,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 				It("returns an error", func() {
 					service := api.NewCertificateAuthoritiesService(client)
-					_, err := service.Create(api.CertificateAuthorityBody{
+					_, err := service.Create(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})

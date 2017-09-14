@@ -32,7 +32,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakeCertificateAuthorityService.CreateCallCount()).To(Equal(1))
-			Expect(fakeCertificateAuthorityService.CreateArgsForCall(0)).To(Equal(api.CertificateAuthorityBody{
+			Expect(fakeCertificateAuthorityService.CreateArgsForCall(0)).To(Equal(api.CertificateAuthorityInput{
 				CertPem:       "some CertPem",
 				PrivateKeyPem: "some PrivateKey",
 			}))
