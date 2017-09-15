@@ -59,6 +59,7 @@ Usage: om [options] <command> [<args>]
   -r, --request-timeout      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
 
 Commands:
+  activate-certificate-authority  activates a certificate authority on the Ops Manager
   apply-changes                   triggers an install on the Ops Manager targeted
   available-products              list available products
   certificate-authorities         lists certificates managed by Ops Manager
