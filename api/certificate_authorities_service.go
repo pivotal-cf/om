@@ -3,11 +3,16 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 type CertificateAuthoritiesService struct {
 	client httpClient
+}
+
+type ActivateCertificateAuthorityInput struct {
+	GUID string
 }
 
 type CertificateAuthorityInput struct {
@@ -105,4 +110,26 @@ func (c CertificateAuthoritiesService) Create(certBody CertificateAuthorityInput
 	}
 
 	return output, nil
+}
+
+func (c CertificateAuthoritiesService) Activate(input ActivateCertificateAuthorityInput) error {
+
+	path := fmt.Sprintf("/api/v0/certificate_authorities/%s/activate", input.GUID)
+
+	req, err := http.NewRequest("POST", path, bytes.NewReader([]byte{'{', '}'}))
+	if err != nil {
+		return err // not tested
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -177,7 +177,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 			privateKey = "some-key"
 		})
 
-		It("creates certificate authority", func() {
+		It("creates a certificate authority", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader(`{
@@ -206,6 +206,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				CertPEM:   "some-cert",
 			}))
 
+			Expect(client.DoCallCount()).To(Equal(1))
 			request := client.DoArgsForCall(0)
 			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
@@ -272,4 +273,69 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 		})
 	})
+
+	Describe("Activate", func() {
+		It("activates a certificate authority", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				return &http.Response{StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader("{}")),
+				}, nil
+			}
+
+			err := service.Activate(api.ActivateCertificateAuthorityInput{
+				GUID: "some-certificate-authority-guid",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(client.DoCallCount()).To(Equal(1))
+			request := client.DoArgsForCall(0)
+			body, err := ioutil.ReadAll(request.Body)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(request.Method).To(Equal("POST"))
+
+			contentType := request.Header.Get("Content-Type")
+			Expect(contentType).To(Equal("application/json"))
+
+			Expect(request.URL.Path).To(Equal("/api/v0/certificate_authorities/some-certificate-authority-guid/activate"))
+			Expect(string(body)).To(MatchJSON("{}"))
+		})
+		Context("failure cases", func() {
+			Context("when the client cannot make a request", func() {
+				It("returns an error", func() {
+					client.DoReturns(nil, errors.New("client do errored"))
+
+					err := service.Activate(api.ActivateCertificateAuthorityInput{
+						GUID: "some-certificate-authority-guid",
+					})
+					Expect(err).To(MatchError("client do errored"))
+				})
+			})
+			Context("when Ops Manager returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client = &fakes.HttpClient{}
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						var resp *http.Response
+						if req.URL.Path == "/api/v0/certificate_authorities/some-certificate-authority-guid/activate" &&
+							req.Method == "POST" {
+							return &http.Response{
+								StatusCode: http.StatusInternalServerError,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+							}, nil
+						}
+						return resp, nil
+					}
+				})
+
+				It("returns an error", func() {
+					service := api.NewCertificateAuthoritiesService(client)
+					err := service.Activate(api.ActivateCertificateAuthorityInput{
+						GUID: "some-certificate-authority-guid",
+					})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+		})
+	})
+
 })
