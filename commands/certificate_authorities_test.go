@@ -14,12 +14,12 @@ import (
 var _ = Describe("Certificate Authorities", func() {
 	var (
 		certificateAuthorities            commands.CertificateAuthorities
-		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
+		fakeCertificateAuthoritiesService *fakes.CertificateAuthorityLister
 		fakeTableWriter                   *fakes.TableWriter
 	)
 
 	BeforeEach(func() {
-		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
+		fakeCertificateAuthoritiesService = &fakes.CertificateAuthorityLister{}
 		fakeTableWriter = &fakes.TableWriter{}
 		certificateAuthorities = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakeTableWriter)
 	})

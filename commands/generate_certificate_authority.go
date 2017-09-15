@@ -1,13 +1,22 @@
 package commands
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/pivotal-cf/om/api"
+)
 
 type GenerateCertificateAuthority struct {
-	service     certificateAuthoritiesService
+	service     certificateAuthorityGenerator
 	tableWriter tableWriter
 }
 
-func NewGenerateCertificateAuthority(service certificateAuthoritiesService, tableWriter tableWriter) GenerateCertificateAuthority {
+//go:generate counterfeiter -o ./fakes/certificate_authority_generator.go --fake-name CertificateAuthorityGenerator . certificateAuthorityGenerator
+type certificateAuthorityGenerator interface {
+	Generate() (api.CA, error)
+}
+
+func NewGenerateCertificateAuthority(service certificateAuthorityGenerator, tableWriter tableWriter) GenerateCertificateAuthority {
 	return GenerateCertificateAuthority{service: service, tableWriter: tableWriter}
 }
 

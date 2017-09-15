@@ -10,7 +10,7 @@ import (
 )
 
 type CreateCertificateAuthority struct {
-	service     certificateAuthoritiesService
+	service     certificateAuthorityCreator
 	tableWriter tableWriter
 	Options     struct {
 		CertPem    string `long:"certificate-pem"  description:"certificate"`
@@ -18,7 +18,12 @@ type CreateCertificateAuthority struct {
 	}
 }
 
-func NewCreateCertificateAuthority(service certificateAuthoritiesService, tableWriter tableWriter) CreateCertificateAuthority {
+//go:generate counterfeiter -o ./fakes/certificate_authority_creator.go --fake-name CertificateAuthorityCreator . certificateAuthorityCreator
+type certificateAuthorityCreator interface {
+	Create(api.CertificateAuthorityInput) (api.CA, error)
+}
+
+func NewCreateCertificateAuthority(service certificateAuthorityCreator, tableWriter tableWriter) CreateCertificateAuthority {
 	return CreateCertificateAuthority{service: service, tableWriter: tableWriter}
 }
 

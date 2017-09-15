@@ -7,18 +7,16 @@ import (
 )
 
 type CertificateAuthorities struct {
-	cas certificateAuthoritiesService
+	cas certificateAuthorityLister
 	tw  tableWriter
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_authorities_service.go --fake-name CertificateAuthoritiesService . certificateAuthoritiesService
-type certificateAuthoritiesService interface {
+//go:generate counterfeiter -o ./fakes/certificate_authority_lister.go --fake-name CertificateAuthorityLister . certificateAuthorityLister
+type certificateAuthorityLister interface {
 	List() (api.CertificateAuthoritiesOutput, error)
-	Generate() (api.CA, error)
-	Create(api.CertificateAuthorityInput) (api.CA, error)
 }
 
-func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthoritiesService, tableWriter tableWriter) CertificateAuthorities {
+func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthorityLister, tableWriter tableWriter) CertificateAuthorities {
 	return CertificateAuthorities{
 		cas: certificateAuthoritiesService,
 		tw:  tableWriter,

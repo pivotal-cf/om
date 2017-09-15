@@ -13,13 +13,13 @@ import (
 var _ = Describe("GenerateCertificateAuthority", func() {
 	var (
 		fakeTableWriter                 *fakes.TableWriter
-		fakeCertificateAuthorityService *fakes.CertificateAuthoritiesService
+		fakeCertificateAuthorityService *fakes.CertificateAuthorityGenerator
 		command                         commands.GenerateCertificateAuthority
 	)
 
 	BeforeEach(func() {
 		fakeTableWriter = &fakes.TableWriter{}
-		fakeCertificateAuthorityService = &fakes.CertificateAuthoritiesService{}
+		fakeCertificateAuthorityService = &fakes.CertificateAuthorityGenerator{}
 		command = commands.NewGenerateCertificateAuthority(fakeCertificateAuthorityService, fakeTableWriter)
 	})
 
