@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/formcontent"
@@ -45,8 +46,8 @@ func NewUploadStemcell(multipart multipart, stemcellService stemcellService, dia
 	}
 }
 
-func (us UploadStemcell) Usage() Usage {
-	return Usage{
+func (us UploadStemcell) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This command will upload a stemcell to the target Ops Manager. If your stemcell already exists that upload will be skipped",
 		ShortDescription: "uploads a given stemcell to the Ops Manager targeted",
 		Flags:            us.Options,

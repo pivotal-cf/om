@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -111,8 +112,8 @@ func sortMap(cm map[string]string) ([]string, []string) {
 	return header, credential
 }
 
-func (cs Credentials) Usage() Usage {
-	return Usage{
+func (cs Credentials) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command fetches credentials for deployed products.",
 		ShortDescription: "fetch credentials for a deployed product",
 		Flags:            cs.Options,

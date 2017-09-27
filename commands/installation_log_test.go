@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -70,7 +71,7 @@ var _ = Describe("InstallationLog", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewInstallationLog(nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This authenticated command retrieves the logs for a given installation.",
 				ShortDescription: "output installation logs",
 				Flags:            command.Options,

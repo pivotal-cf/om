@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 )
 
@@ -41,8 +42,8 @@ func (i InstallationLog) Execute(args []string) error {
 	return nil
 }
 
-func (i InstallationLog) Usage() Usage {
-	return Usage{
+func (i InstallationLog) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command retrieves the logs for a given installation.",
 		ShortDescription: "output installation logs",
 		Flags:            i.Options,

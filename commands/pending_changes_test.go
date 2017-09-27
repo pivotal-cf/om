@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -78,7 +79,7 @@ var _ = Describe("PendingChanges", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewPendingChanges(nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This authenticated command lists all pending changes.",
 				ShortDescription: "lists pending changes",
 			}))

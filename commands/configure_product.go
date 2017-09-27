@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -147,8 +148,8 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	return nil
 }
 
-func (cp ConfigureProduct) Usage() Usage {
-	return Usage{
+func (cp ConfigureProduct) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command configures a staged product",
 		ShortDescription: "configures a staged product",
 		Flags:            cp.Options,

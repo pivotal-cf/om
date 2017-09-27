@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-querystring/query"
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -53,8 +54,8 @@ func (c RevertStagedChanges) Execute(args []string) error {
 	return nil
 }
 
-func (c RevertStagedChanges) Usage() Usage {
-	return Usage{
+func (c RevertStagedChanges) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "reverts staged changes on the installation dashboard page in the target Ops Manager",
 		ShortDescription: "reverts staged changes on the Ops Manager targeted",
 	}

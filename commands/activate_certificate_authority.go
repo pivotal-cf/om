@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -49,8 +50,8 @@ func (a ActivateCertificateAuthority) Execute(args []string) error {
 	return nil
 }
 
-func (a ActivateCertificateAuthority) Usage() Usage {
-	return Usage{
+func (a ActivateCertificateAuthority) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command activates an existing certificate authority on the Ops Manager",
 		ShortDescription: "activates a certificate authority on the Ops Manager",
 		Flags:            a.Options,

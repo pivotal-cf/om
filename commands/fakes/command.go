@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotal-cf/om/commands"
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 )
 
 type Command struct {
@@ -19,14 +19,14 @@ type Command struct {
 	executeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UsageStub        func() commands.Usage
+	UsageStub        func() jhandacommands.Usage
 	usageMutex       sync.RWMutex
 	usageArgsForCall []struct{}
 	usageReturns     struct {
-		result1 commands.Usage
+		result1 jhandacommands.Usage
 	}
 	usageReturnsOnCall map[int]struct {
-		result1 commands.Usage
+		result1 jhandacommands.Usage
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -85,7 +85,7 @@ func (fake *Command) ExecuteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *Command) Usage() commands.Usage {
+func (fake *Command) Usage() jhandacommands.Usage {
 	fake.usageMutex.Lock()
 	ret, specificReturn := fake.usageReturnsOnCall[len(fake.usageArgsForCall)]
 	fake.usageArgsForCall = append(fake.usageArgsForCall, struct{}{})
@@ -106,22 +106,22 @@ func (fake *Command) UsageCallCount() int {
 	return len(fake.usageArgsForCall)
 }
 
-func (fake *Command) UsageReturns(result1 commands.Usage) {
+func (fake *Command) UsageReturns(result1 jhandacommands.Usage) {
 	fake.UsageStub = nil
 	fake.usageReturns = struct {
-		result1 commands.Usage
+		result1 jhandacommands.Usage
 	}{result1}
 }
 
-func (fake *Command) UsageReturnsOnCall(i int, result1 commands.Usage) {
+func (fake *Command) UsageReturnsOnCall(i int, result1 jhandacommands.Usage) {
 	fake.UsageStub = nil
 	if fake.usageReturnsOnCall == nil {
 		fake.usageReturnsOnCall = make(map[int]struct {
-			result1 commands.Usage
+			result1 jhandacommands.Usage
 		})
 	}
 	fake.usageReturnsOnCall[i] = struct {
-		result1 commands.Usage
+		result1 jhandacommands.Usage
 	}{result1}
 }
 
@@ -151,4 +151,4 @@ func (fake *Command) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.Command = new(Command)
+var _ jhandacommands.Command = new(Command)

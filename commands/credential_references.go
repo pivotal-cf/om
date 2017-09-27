@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -78,8 +79,8 @@ func (cr CredentialReferences) Execute(args []string) error {
 	return nil
 }
 
-func (cr CredentialReferences) Usage() Usage {
-	return Usage{
+func (cr CredentialReferences) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command lists credential references for deployed products.",
 		ShortDescription: "list credential references for a deployed product",
 		Flags:            cr.Options,

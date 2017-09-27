@@ -10,6 +10,7 @@ import (
 
 	"encoding/json"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -108,8 +109,8 @@ func (c Curl) Execute(args []string) error {
 	return nil
 }
 
-func (c Curl) Usage() Usage {
-	return Usage{
+func (c Curl) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This command issues an authenticated API request as defined in the arguments",
 		ShortDescription: "issues an authenticated API request",
 		Flags:            c.Options,

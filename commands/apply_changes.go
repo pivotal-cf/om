@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -92,8 +93,8 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 }
 
-func (ac ApplyChanges) Usage() Usage {
-	return Usage{
+func (ac ApplyChanges) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 		ShortDescription: "triggers an install on the Ops Manager targeted",
 		Flags:            ac.Options,

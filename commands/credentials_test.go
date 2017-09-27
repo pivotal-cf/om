@@ -3,6 +3,7 @@ package commands_test
 import (
 	"errors"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -189,7 +190,7 @@ var _ = Describe("Credentials", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewCredentials(nil, nil, nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This authenticated command fetches credentials for deployed products.",
 				ShortDescription: "fetch credentials for a deployed product",
 				Flags:            command.Options,

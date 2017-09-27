@@ -1,6 +1,10 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pivotal-cf/jhanda/commands"
+)
 
 type DeployedProducts struct {
 	tableWriter       tableWriter
@@ -33,8 +37,8 @@ func (dp DeployedProducts) Execute(args []string) error {
 	return nil
 }
 
-func (dp DeployedProducts) Usage() Usage {
-	return Usage{
+func (dp DeployedProducts) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command lists all deployed products.",
 		ShortDescription: "lists deployed products",
 	}

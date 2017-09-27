@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
@@ -74,7 +75,7 @@ var _ = Describe("ExportInstallation", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewExportInstallation(nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This command will export the current installation of the target Ops Manager.",
 				ShortDescription: "exports the installation of the target Ops Manager",
 				Flags:            command.Options,

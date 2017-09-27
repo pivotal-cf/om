@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -56,8 +57,8 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 	return nil
 }
 
-func (c CreateCertificateAuthority) Usage() Usage {
-	return Usage{
+func (c CreateCertificateAuthority) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command creates a certificate authority on the Ops Manager with the given cert and key",
 		ShortDescription: "creates a certificate authority on the Ops Manager",
 		Flags:            c.Options,

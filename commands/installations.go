@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -46,8 +47,8 @@ func (i Installations) Execute(args []string) error {
 	return nil
 }
 
-func (i Installations) Usage() Usage {
-	return Usage{
+func (i Installations) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command lists all recent installation events.",
 		ShortDescription: "list recent installation events",
 	}

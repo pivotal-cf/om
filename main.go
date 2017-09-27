@@ -9,6 +9,7 @@ import (
 
 	"time"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -118,7 +119,7 @@ func main() {
 
 	extractor := extractor.ProductUnzipper{}
 
-	commandSet := commands.Set{}
+	commandSet := jhandacommands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)

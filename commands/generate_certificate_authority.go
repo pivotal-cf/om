@@ -3,6 +3,7 @@ package commands
 import (
 	"strconv"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -33,8 +34,8 @@ func (g GenerateCertificateAuthority) Execute(_ []string) error {
 	return nil
 }
 
-func (g GenerateCertificateAuthority) Usage() Usage {
-	return Usage{
+func (g GenerateCertificateAuthority) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command generates a certificate authority on the Ops Manager",
 		ShortDescription: "generates a certificate authority on the Opsman",
 	}

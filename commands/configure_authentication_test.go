@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -176,7 +177,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewConfigureAuthentication(nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This unauthenticated command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
 				ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
 				Flags:            command.Options,

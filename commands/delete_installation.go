@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -76,8 +77,8 @@ func (ac DeleteInstallation) Execute(args []string) error {
 	}
 }
 
-func (ac DeleteInstallation) Usage() Usage {
-	return Usage{
+func (ac DeleteInstallation) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command deletes all the products installed on the targeted Ops Manager.",
 		ShortDescription: "deletes all the products on the Ops Manager targeted",
 	}

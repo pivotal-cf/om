@@ -3,6 +3,7 @@ package commands
 import (
 	"strconv"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -41,8 +42,8 @@ func (c CertificateAuthorities) Execute(_ []string) error {
 	return nil
 }
 
-func (c CertificateAuthorities) Usage() Usage {
-	return Usage{
+func (c CertificateAuthorities) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "lists certificates managed by Ops Manager",
 		ShortDescription: "lists certificates managed by Ops Manager",
 	}

@@ -1,6 +1,10 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pivotal-cf/jhanda/commands"
+)
 
 type StagedProducts struct {
 	tableWriter       tableWriter
@@ -32,8 +36,8 @@ func (sp StagedProducts) Execute(args []string) error {
 	return nil
 }
 
-func (sp StagedProducts) Usage() Usage {
-	return Usage{
+func (sp StagedProducts) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command lists all staged products.",
 		ShortDescription: "lists staged products",
 	}

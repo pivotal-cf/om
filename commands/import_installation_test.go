@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -162,7 +163,7 @@ var _ = Describe("ImportInstallation", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewImportInstallation(nil, nil, nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
 				ShortDescription: "imports a given installation to the Ops Manager targeted",
 				Flags:            command.Options,

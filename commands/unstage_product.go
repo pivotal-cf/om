@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -53,8 +54,8 @@ func (up UnstageProduct) Execute(args []string) error {
 	return nil
 }
 
-func (up UnstageProduct) Usage() Usage {
-	return Usage{
+func (up UnstageProduct) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This command attempts to unstage a product from the Ops Manager",
 		ShortDescription: "unstages a given product from the Ops Manager targeted",
 		Flags:            up.Options,

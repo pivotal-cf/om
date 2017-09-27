@@ -3,6 +3,7 @@ package commands_test
 import (
 	"errors"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -52,7 +53,7 @@ var _ = Describe("DeleteProduct", func() {
 	Describe("Usage", func() {
 		It("returns the usage", func() {
 			usage := command.Usage()
-			Expect(usage).To(Equal(commands.Usage{
+			Expect(usage).To(Equal(jhandacommands.Usage{
 				Description:      "This command deletes the named product from the targeted Ops Manager",
 				ShortDescription: "deletes a product from the Ops Manager",
 				Flags:            command.Options,

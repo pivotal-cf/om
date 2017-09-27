@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -247,7 +248,7 @@ var _ = Describe("DeleteInstallation", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewDeleteInstallation(nil, nil, nil, nil, 1)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This authenticated command deletes all the products installed on the targeted Ops Manager.",
 				ShortDescription: "deletes all the products on the Ops Manager targeted",
 			}))

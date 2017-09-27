@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 )
 
@@ -27,8 +28,8 @@ func NewExportInstallation(installationAssetExporterService installationAssetExp
 	}
 }
 
-func (ei ExportInstallation) Usage() Usage {
-	return Usage{
+func (ei ExportInstallation) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This command will export the current installation of the target Ops Manager.",
 		ShortDescription: "exports the installation of the target Ops Manager",
 		Flags:            ei.Options,

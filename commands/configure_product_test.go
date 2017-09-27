@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -430,7 +431,7 @@ var _ = Describe("ConfigureProduct", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewConfigureProduct(nil, nil, nil)
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "This authenticated command configures a staged product",
 				ShortDescription: "configures a staged product",
 				Flags:            command.Options,

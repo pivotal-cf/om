@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	jhandacommands "github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -97,7 +98,7 @@ var _ = Describe("RevertStagedChanges", func() {
 		It("returns the usage for the command", func() {
 			command := commands.NewRevertStagedChanges(nil, nil)
 
-			Expect(command.Usage()).To(Equal(commands.Usage{
+			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
 				Description:      "reverts staged changes on the installation dashboard page in the target Ops Manager",
 				ShortDescription: "reverts staged changes on the Ops Manager targeted",
 			}))

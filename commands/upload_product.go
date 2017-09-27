@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
@@ -38,8 +39,8 @@ func NewUploadProduct(multipart multipart, extractor extractor, productUploader 
 	}
 }
 
-func (up UploadProduct) Usage() Usage {
-	return Usage{
+func (up UploadProduct) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This command attempts to upload a product to the Ops Manager",
 		ShortDescription: "uploads a given product to the Ops Manager targeted",
 		Flags:            up.Options,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 )
 
@@ -86,8 +87,8 @@ func (s SetErrandState) Execute(args []string) error {
 	return nil
 }
 
-func (s SetErrandState) Usage() Usage {
-	return Usage{
+func (s SetErrandState) Usage() commands.Usage {
+	return commands.Usage{
 		Description:      "This authenticated command sets the state of a product's errand.",
 		ShortDescription: "sets state for a product's errand",
 		Flags:            s.Options,
