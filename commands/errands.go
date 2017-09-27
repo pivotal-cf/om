@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/flags"
 )
 
 //go:generate counterfeiter -o ./fakes/staged_products_finder.go --fake-name StagedProductsFinder . stagedProductsFinder

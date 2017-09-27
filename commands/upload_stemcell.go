@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 )
 

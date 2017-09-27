@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/google/go-querystring/query"
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/flags"
 )
 
 const (

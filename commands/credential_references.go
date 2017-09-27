@@ -6,8 +6,8 @@ import (
 	"sort"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/flags"
 )
 
 type CredentialReferences struct {

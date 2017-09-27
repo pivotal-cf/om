@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/flags"
 )
 
 type ActivateCertificateAuthority struct {

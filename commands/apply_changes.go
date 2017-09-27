@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/flags"
 )
 
 type ApplyChanges struct {

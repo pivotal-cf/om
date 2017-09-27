@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pivotal-cf/om/flags"
+	"github.com/pivotal-cf/jhanda/flags"
 )
 
 type SetErrandState struct {

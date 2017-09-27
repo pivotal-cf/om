@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pivotal-cf/om/flags"
+	"github.com/pivotal-cf/jhanda/flags"
 )
 
 const tmpl = `{{.Title}}

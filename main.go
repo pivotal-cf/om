@@ -9,10 +9,10 @@ import (
 
 	"time"
 
+	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/pivotal-cf/om/flags"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/progress"

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/om/flags"
+	"github.com/pivotal-cf/jhanda/flags"
 )
 
 type ExportInstallation struct {
