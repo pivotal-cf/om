@@ -123,6 +123,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 		cp.logger.Printf("applying resource configuration for the following jobs:")
 		for _, name := range names {
+			cp.logger.Printf("\t%s", name)
 			jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, jobs[name])
 			if err != nil {
 				return fmt.Errorf("could not fetch existing job configuration: %s", err)
@@ -134,7 +135,6 @@ func (cp ConfigureProduct) Execute(args []string) error {
 			}
 
 			if !reflect.DeepEqual(jobProperties, api.JobProperties{}) {
-				cp.logger.Printf("\t%s", name)
 				err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
 				if err != nil {
 					return fmt.Errorf("failed to configure resources: %s", err)
