@@ -15,6 +15,10 @@ type ActivateCertificateAuthorityInput struct {
 	GUID string
 }
 
+type DeleteCertificateAuthorityInput struct {
+	GUID string
+}
+
 type CertificateAuthorityInput struct {
 	CertPem       string `json:"cert_pem"`
 	PrivateKeyPem string `json:"private_key_pem"`
@@ -117,6 +121,28 @@ func (c CertificateAuthoritiesService) Activate(input ActivateCertificateAuthori
 	path := fmt.Sprintf("/api/v0/certificate_authorities/%s/activate", input.GUID)
 
 	req, err := http.NewRequest("POST", path, bytes.NewReader([]byte{'{', '}'}))
+	if err != nil {
+		return err // not tested
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c CertificateAuthoritiesService) Delete(input DeleteCertificateAuthorityInput) error {
+
+	path := fmt.Sprintf("/api/v0/certificate_authorities/%s", input.GUID)
+
+	req, err := http.NewRequest("DELETE", path, nil)
 	if err != nil {
 		return err // not tested
 	}

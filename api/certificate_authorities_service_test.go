@@ -338,4 +338,67 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 		})
 	})
 
+	Describe("Delete", func() {
+		It("deletes a certificate authority", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				return &http.Response{StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader("{}")),
+				}, nil
+			}
+
+			err := service.Delete(api.DeleteCertificateAuthorityInput{
+				GUID: "some-certificate-authority-guid",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(client.DoCallCount()).To(Equal(1))
+			request := client.DoArgsForCall(0)
+
+			Expect(request.Body).To(BeNil())
+
+			Expect(request.Method).To(Equal("DELETE"))
+
+			contentType := request.Header.Get("Content-Type")
+			Expect(contentType).To(Equal("application/json"))
+
+			Expect(request.URL.Path).To(Equal("/api/v0/certificate_authorities/some-certificate-authority-guid"))
+		})
+		Context("failure cases", func() {
+			Context("when the client cannot make a request", func() {
+				It("returns an error", func() {
+					client.DoReturns(nil, errors.New("client do errored"))
+
+					err := service.Delete(api.DeleteCertificateAuthorityInput{
+						GUID: "some-certificate-authority-guid",
+					})
+					Expect(err).To(MatchError("client do errored"))
+				})
+			})
+			Context("when Ops Manager returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client = &fakes.HttpClient{}
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						var resp *http.Response
+						if req.URL.Path == "/api/v0/certificate_authorities/some-certificate-authority-guid" &&
+							req.Method == "DELETE" {
+							return &http.Response{
+								StatusCode: http.StatusInternalServerError,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+							}, nil
+						}
+						return resp, nil
+					}
+				})
+
+				It("returns an error", func() {
+					service := api.NewCertificateAuthoritiesService(client)
+					err := service.Delete(api.DeleteCertificateAuthorityInput{
+						GUID: "some-certificate-authority-guid",
+					})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+		})
+	})
+
 })

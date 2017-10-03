@@ -35,6 +35,7 @@ Commands:
   credential-references           list credential references for a deployed product
   credentials                     fetch credentials for a deployed product
   curl                            issues an authenticated API request
+  delete-certificate-authority    deletes a certificate authority on the Ops Manager
   delete-installation             deletes all the products on the Ops Manager targeted
   delete-product                  deletes a product from the Ops Manager
   delete-unused-products          deletes unused products on the Ops Manager targeted
