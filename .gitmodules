@@ -1,3 +1,0 @@
-[submodule "vendor/github.com/pivotal-cf/jhanda"]
-	path = vendor/github.com/pivotal-cf/jhanda
-	url = https://github.com/pivotal-cf/jhanda.git
