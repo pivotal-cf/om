@@ -323,6 +323,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/pivotal-cf/jhanda",
+			"repository": "https://github.com/pivotal-cf/jhanda",
+			"vcs": "git",
+			"revision": "761df67923f5a1bf654ea2d661f52e17c4fb2fc4",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "go4.org/syncutil/singleflight",
 			"repository": "https://github.com/camlistore/go4",
 			"vcs": "git",
