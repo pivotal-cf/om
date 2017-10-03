@@ -9,17 +9,6 @@ _is a mantra, or vibration, that is traditionally chanted_
 Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+ . 
 Currently being developed by RelEng, backlog link is [here](https://www.pivotaltracker.com/epic/show/2982497).
 
-## Design Goals
-
-- less flakey / faster replacement of [opsmgr](https://github.com/pivotal-cf/opsmgr)
-- single binary that can be run on multiple platforms
-- split environment creation from Ops Manager configuration (these are two tools)
-- no longer rely on specific environment file format
-- fully tested, not using tests to execute browser behavior
-- no capybara
-- [small sharp tool](https://brandur.org/small-sharp-tools)
-- idempotency for all commands
-
 ## Documentation
 
 See [here](docs/README.md) for useful examples and documentation.
