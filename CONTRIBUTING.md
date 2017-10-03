@@ -14,12 +14,12 @@
 ## Vendoring
 
 The project currently checks in all vendored dependencies. Our vendoring tool of choice
-at present is [gvt](https://github.com/FiloSottile/gvt)
+at present is [dep](https://github.com/golang/dep) which is rapidly becoming the standard.
 
-Adding a dependency is relatively straightforward (first make sure you have the gvt binary):
+Adding a dependency is relatively straightforward (first make sure you have the dep binary):
 
 ```go
-  gvt fetch github.com/some-user/some-repo
+  dep ensure -add github.com/some-user/some-dep
 ```
 
 Check in both the manifest changes and the file additions in the vendor directory.
