@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cheggaaa/pb"
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 type Bar struct {
