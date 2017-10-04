@@ -34,6 +34,7 @@ var _ = Describe("certificate-authorities", func() {
 |            |          |        |            |            | aBQOgsx7b33RuR+CTNqThXY9k8d7/7ba4KVdd4gP8ynFgwvnDQOjcJZ6Go5QY5HA |
 |            |          |        |            |            | R+OgIzs3PFW8pAYcvWrXKR0rE8fL5o9qg                                |
 |            |          |        |            |            | -----END CERTIFICATE-----                                        |
+|            |          |        |            |            |                                                                  |
 | other-guid | Customer | false  | 2017-01-10 | 2021-01-10 | -----BEGIN CERTIFICATE-----                                      |
 |            |          |        |            |            | MIIC+bCCAeOgAwIBAgIBADANBgkqhkiG9w0BAQsFADAfMQswCQYDVQQGEwJVUzEQ |
 |            |          |        |            |            | MA4GA1UECgwHUGl2b3RhbDAeFw0xNzAxMTgyMTQyMjVaFw0yMTAxMTkyMTQyMjVa |
@@ -52,6 +53,7 @@ var _ = Describe("certificate-authorities", func() {
 |            |          |        |            |            | aBQOgsx7b33RuR+CTNqThXY9k8d7/7ba4KVdd4gP8ynFgwvnDQOjcJZ6Go5QY5HA |
 |            |          |        |            |            | R+OgIzs3PFW8pAYcvWrXKR0rE8fL5o9qgTyjmO+5yyyvWIYrKPqqIUIvMCdNr84= |
 |            |          |        |            |            | -----END CERTIFICATE-----                                        |
+|            |          |        |            |            |                                                                  |
 +------------+----------+--------+------------+------------+------------------------------------------------------------------+
 `
 

@@ -35,6 +35,7 @@ var _ = Describe("generate certificate authority", func() {
 |                      |             |        |            |            | aBQOgsx7b33RuR+CTNqThXY9k8d7/7ba4KVdd4gP8ynFgwvnDQOjcJZ6Go5QY5HA |
 |                      |             |        |            |            | R+OgIzs3PFW8pAYcvWrXKR0rE8fL5o9qgTyjmO+5yyyvWIYrKPqqIUIvMCdNr84= |
 |                      |             |        |            |            | -----END CERTIFICATE-----                                        |
+|                      |             |        |            |            |                                                                  |
 +----------------------+-------------+--------+------------+------------+------------------------------------------------------------------+
 `
 
