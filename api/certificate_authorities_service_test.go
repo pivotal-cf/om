@@ -103,8 +103,9 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 			})
 		})
 	})
-	Describe("Generate", func() {
-		It("generate certificate authority", func() {
+
+	Describe("Regenerate", func() {
+		It("regenerates certificate authority", func() {
 			var (
 				path   string
 				method string
@@ -114,31 +115,15 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				method = req.Method
 
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{
-						"guid": "some-guid",
-						"issuer": "some-issuer",
-						"created_on": "2017-01-09",
-						"expires_on": "2021-01-09",
-						"active": true,
-						"cert_pem": "some-cert-pem"
-					}`)),
+					Body: ioutil.NopCloser(strings.NewReader("{}")),
 				}, nil
 			}
 
-			ca, err := service.Generate()
+			err := service.Regenerate()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(ca).To(Equal(api.CA{
-				GUID:      "some-guid",
-				Issuer:    "some-issuer",
-				CreatedOn: "2017-01-09",
-				ExpiresOn: "2021-01-09",
-				Active:    true,
-				CertPEM:   "some-cert-pem",
-			}))
-
 			Expect(method).To(Equal("POST"))
-			Expect(path).To(Equal("/api/v0/certificate_authorities/generate"))
+			Expect(path).To(Equal("/api/v0/certificate_authorities/active/regenerate"))
 		})
 
 		Context("failure cases", func() {
@@ -146,23 +131,33 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.Generate()
+					err := service.Regenerate()
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
-			Context("when the response body cannot be parsed", func() {
-				It("returns an error", func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						return &http.Response{StatusCode: http.StatusOK,
-							Body: ioutil.NopCloser(strings.NewReader(`%%%%`)),
-						}, nil
-					}
 
-					_, err := service.Generate()
-					Expect(err).To(MatchError(ContainSubstring("invalid character")))
+			Context("when Ops Manager returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client = &fakes.HttpClient{}
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						var resp *http.Response
+						if req.URL.Path == "/api/v0/certificate_authorities/active/regenerate" &&
+							req.Method == "POST" {
+							return &http.Response{
+								StatusCode: http.StatusInternalServerError,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+							}, nil
+						}
+						return resp, nil
+					}
+				})
+
+				It("returns an error", func() {
+					service := api.NewCertificateAuthoritiesService(client)
+					err := service.Regenerate()
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
-
 		})
 	})
 

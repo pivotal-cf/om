@@ -64,6 +64,24 @@ func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesOutput, err
 	return output, nil
 }
 
+func (c CertificateAuthoritiesService) Regenerate() error {
+	req, err := http.NewRequest("POST", "/api/v0/certificate_authorities/active/regenerate", nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c CertificateAuthoritiesService) Generate() (CA, error) {
 	var output CA
 
