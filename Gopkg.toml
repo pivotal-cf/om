@@ -50,8 +50,8 @@
   name = "github.com/pivotal-cf/jhanda"
 
 [[constraint]]
-  branch = "master"
   name = "golang.org/x/oauth2"
+  revision = "314dd2c0bf3ebd592ec0d20847d27e79d0dbe8dd"
 
 [[constraint]]
   branch = "v2"

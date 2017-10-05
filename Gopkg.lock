@@ -70,14 +70,13 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","html","html/atom","html/charset"]
+  packages = ["context","html","html/atom","html/charset"]
   revision = "0a9397675ba34b2845f758fe3cd68828369c6517"
 
 [[projects]]
-  branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","clientcredentials","internal"]
-  revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
+  revision = "314dd2c0bf3ebd592ec0d20847d27e79d0dbe8dd"
 
 [[projects]]
   branch = "master"
@@ -112,6 +111,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8b95023d67c2984095d9e35b2f8a7ec7c11d37798f19aa9037bc64d35f440e31"
+  inputs-digest = "33781c35ae6177d437b47e0deff1a68361860f7d533d5d69900da3ad02178139"
   solver-name = "gps-cdcl"
   solver-version = 1
