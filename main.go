@@ -111,6 +111,7 @@ func main() {
 	boshService := api.NewBoshFormService(authedCookieClient)
 	dashboardService := api.NewDashboardService(authedCookieClient)
 	certificateAuthoritiesService := api.NewCertificateAuthoritiesService(authedClient)
+	certificatesService := api.NewCertificatesService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -148,6 +149,7 @@ func main() {
 	commandSet["installations"] = commands.NewInstallations(installationsService, tableWriter)
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, tableWriter)
+	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
 	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 	commandSet["regenerate-certificate-authority"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, tableWriter)
