@@ -20,6 +20,7 @@ type JobProperties struct {
 	LBNames           []string     `json:"elb_names"`
 	NSXSecurityGroups []string     `json:"nsx_security_groups,omitempty"`
 	NSXLBS            []NSXLB      `json:"nsx_lbs,omitempty"`
+	FloatingIPs       string       `json:"floating_ips,omitempty"`
 }
 
 type NSXLB struct {

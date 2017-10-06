@@ -117,6 +117,38 @@ var _ = Describe("JobsService", func() {
 			Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
 		})
 
+		Context("with floating ips", func() {
+			It("fetches the resource config for a given job including floating ips", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(`{
+						"instances": 1,
+						"instance_type": { "id": "number-1" },
+						"persistent_disk": { "size_mb": "290" },
+						"internet_connected": true,
+						"floating_ips": "some-floating-ip"
+					}`)),
+				}, nil)
+
+				service := api.NewJobsService(client)
+				job, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.DoCallCount()).To(Equal(1))
+				jobProperties := api.JobProperties{
+					Instances:         float64(1),
+					PersistentDisk:    &api.Disk{Size: "290"},
+					InstanceType:      api.InstanceType{ID: "number-1"},
+					InternetConnected: new(bool),
+					FloatingIPs:       "some-floating-ip",
+				}
+				*jobProperties.InternetConnected = true
+				Expect(job).To(Equal(jobProperties))
+				request := client.DoArgsForCall(0)
+				Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+			})
+		})
+
 		Context("with nsx", func() {
 			It("fetches the resource config for a given job including nsx properties", func() {
 				client.DoReturns(&http.Response{
@@ -294,6 +326,45 @@ var _ = Describe("JobsService", func() {
 				"internet_connected": false,
 				"persistent_disk": { "size_mb": "290" },
 				"elb_names": ["something"]
+			}`))
+			})
+		})
+
+		Context("when floating_ips is specified", func() {
+			It("passes the value to the flag in the JSON request", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+				}, nil)
+
+				service := api.NewJobsService(client)
+
+				err := service.ConfigureJob("some-product-guid", "some-job-guid",
+					api.JobProperties{
+						Instances:         1,
+						PersistentDisk:    &api.Disk{Size: "290"},
+						InstanceType:      api.InstanceType{ID: "number-1"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"something"},
+						FloatingIPs:       "fl.oa.ting.ip",
+					})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(1))
+				request := client.DoArgsForCall(0)
+
+				Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
+				Expect("PUT").To(Equal(request.Method))
+				Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
+				reqBytes, err := ioutil.ReadAll(request.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reqBytes).To(MatchJSON(`{
+				"instances": 1,
+				"instance_type": { "id": "number-1" },
+				"internet_connected": false,
+				"persistent_disk": { "size_mb": "290" },
+				"elb_names": ["something"],
+				"floating_ips": "fl.oa.ting.ip"
 			}`))
 			})
 		})
