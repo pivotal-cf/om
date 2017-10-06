@@ -66,6 +66,7 @@ Commands:
   deployed-products                 lists deployed products
   errands                           list errands for a product
   export-installation               exports the installation of the target Ops Manager
+  generate-certificate              generates a new certificate signed by Ops Manager's root CA
   generate-certificate-authority    generates a certificate authority on the Opsman
   help                              prints this usage information
   import-installation               imports a given installation to the Ops Manager targeted
