@@ -141,7 +141,7 @@ var _ = Describe("unstage-product command", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
-			Eventually(session.Out).Should(gbytes.Say("product is not staged: cf"))
+			Eventually(session.Err).Should(gbytes.Say("product is not staged: cf"))
 		})
 	})
 })

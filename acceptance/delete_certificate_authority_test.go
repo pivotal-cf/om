@@ -74,7 +74,7 @@ var _ = Describe("delete certificate authority", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
-			Expect(string(session.Out.Contents())).To(ContainSubstring("Certificate with specified guid not found"))
+			Expect(string(session.Err.Contents())).To(ContainSubstring("Certificate with specified guid not found"))
 		})
 	})
 
@@ -93,7 +93,7 @@ var _ = Describe("delete certificate authority", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
-			Expect(string(session.Out.Contents())).To(ContainSubstring("Active certificates cannot be deleted"))
+			Expect(string(session.Err.Contents())).To(ContainSubstring("Active certificates cannot be deleted"))
 		})
 	})
 })

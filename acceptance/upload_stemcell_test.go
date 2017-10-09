@@ -184,7 +184,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("failed to load stemcell: file provided has no content"))
+				Eventually(session.Err).Should(gbytes.Say("failed to load stemcell: file provided has no content"))
 			})
 		})
 
@@ -208,7 +208,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say(`no such file or directory`))
+				Eventually(session.Err).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
 	})

@@ -18,6 +18,6 @@ var _ = Describe("unknown command", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(1))
-		Expect(session.Out).Should(gbytes.Say("unknown command: banana"))
+		Expect(session.Err).Should(gbytes.Say("unknown command: banana"))
 	})
 })

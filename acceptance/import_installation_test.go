@@ -127,7 +127,7 @@ var _ = Describe("import-installation command", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(1))
-			Eventually(session.Out, 5).Should(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
+			Eventually(session.Err, 5).Should(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
 		})
 	})
 
@@ -159,7 +159,7 @@ var _ = Describe("import-installation command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(1))
-				Eventually(session.Out, 5).Should(gbytes.Say("failed to load installation: file provided has no content"))
+				Eventually(session.Err, 5).Should(gbytes.Say("failed to load installation: file provided has no content"))
 			})
 		})
 
@@ -182,7 +182,7 @@ var _ = Describe("import-installation command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(1))
-				Eventually(session.Out, 5).Should(gbytes.Say(`no such file or directory`))
+				Eventually(session.Err, 5).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
 	})

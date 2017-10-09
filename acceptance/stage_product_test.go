@@ -386,7 +386,7 @@ var _ = Describe("stage-product command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
-				Eventually(session.Out).Should(gbytes.Say("cannot find product bosh 2.0"))
+				Eventually(session.Err).Should(gbytes.Say("cannot find product bosh 2.0"))
 			})
 		})
 	})

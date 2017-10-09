@@ -102,7 +102,7 @@ var _ = Describe("export-installation command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(1))
-				Eventually(session.Out, 5).Should(gbytes.Say("cannot create output file:"))
+				Eventually(session.Err, 5).Should(gbytes.Say("cannot create output file:"))
 			})
 		})
 
@@ -122,7 +122,7 @@ var _ = Describe("export-installation command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session, 3).Should(gexec.Exit(1))
-				Eventually(session.Out, 3).Should(gbytes.Say(`.*request canceled \(Client\.Timeout exceeded while awaiting headers\)`))
+				Eventually(session.Err, 3).Should(gbytes.Say(`.*request canceled \(Client\.Timeout exceeded while awaiting headers\)`))
 			})
 		})
 	})

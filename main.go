@@ -158,6 +158,6 @@ func main() {
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 }
