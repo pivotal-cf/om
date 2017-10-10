@@ -151,7 +151,7 @@ func main() {
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, tableWriter)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
 	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, tableWriter)
-	commandSet["regenerate-certificate-authority"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)
+	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(certificateAuthoritiesService, stdout)

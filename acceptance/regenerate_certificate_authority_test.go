@@ -42,7 +42,7 @@ var _ = Describe("regenerate certificate authority", func() {
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
-			"regenerate-certificate-authority",
+			"regenerate-certificates",
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
