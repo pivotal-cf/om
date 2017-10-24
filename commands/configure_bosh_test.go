@@ -72,6 +72,7 @@ var _ = Describe("ConfigureBosh", func() {
 				`{
 					  "ntp_servers_string": "some-ntp-servers-string",
 						"metrics_ip": "some-metrics-ip",
+						"opentsdb_ip": "some-hmforwarder-ip",
 						"hm_pager_duty_options": {
 							"enabled": true
 						}
@@ -143,7 +144,7 @@ var _ = Describe("ConfigureBosh", func() {
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				},
-				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string",
+				EncodedPayload: "_method=the-rails&authenticity_token=some-auth-token&director_configuration%5Bhm_pager_duty_options%5D%5Benabled%5D=true&director_configuration%5Bmetrics_ip%5D=some-metrics-ip&director_configuration%5Bntp_servers_string%5D=some-ntp-servers-string&director_configuration%5Bopentsdb_ip%5D=some-hmforwarder-ip",
 			}))
 
 			Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
