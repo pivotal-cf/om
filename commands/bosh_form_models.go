@@ -84,6 +84,7 @@ type IaaSConfiguration struct {
 type DirectorConfiguration struct {
 	NTPServers                string                  `url:"director_configuration[ntp_servers_string],omitempty" json:"ntp_servers_string"`
 	MetricsIP                 string                  `url:"director_configuration[metrics_ip],omitempty" json:"metrics_ip"`
+	HMForwarderIP             string                  `url:"director_configuration[opentsdb_ip],omitempty" json:"opentsdb_ip"`
 	EnableVMResurrectorPlugin *bool                   `url:"director_configuration[resurrector_enabled],omitempty" json:"resurrector_enabled"`
 	EnablePostDeployScripts   *bool                   `url:"director_configuration[post_deploy_enabled],omitempty" json:"post_deploy_enabled"`
 	RecreateAllVMs            *bool                   `url:"director_configuration[bosh_recreate_on_next_deploy],omitempty" json:"bosh_recreate_on_next_deploy"`
