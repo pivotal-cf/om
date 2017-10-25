@@ -30,6 +30,7 @@ Commands:
   certificate-authorities         lists certificates managed by Ops Manager
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
   configure-bosh                  configures Ops Manager deployed bosh director
+  configure-director              configures the director
   configure-product               configures a staged product
   create-certificate-authority    creates a certificate authority on the Ops Manager
   credential-references           list credential references for a deployed product

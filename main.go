@@ -112,6 +112,7 @@ func main() {
 	dashboardService := api.NewDashboardService(authedCookieClient)
 	certificateAuthoritiesService := api.NewCertificateAuthoritiesService(authedClient)
 	certificatesService := api.NewCertificatesService(authedClient)
+	directorService := api.NewDirectorService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -155,6 +156,7 @@ func main() {
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(certificateAuthoritiesService, stdout)
+	commandSet["configure-director"] = commands.NewConfigureDirector(directorService)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
