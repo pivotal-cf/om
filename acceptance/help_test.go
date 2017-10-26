@@ -13,15 +13,15 @@ const GLOBAL_USAGE = `ॐ
 om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
-  -v, --version              bool    prints the om release version (default: false)
-  -h, --help                 bool    prints this usage information (default: false)
-  -t, --target               string  location of the Ops Manager VM
-  -c, --client-id            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
-  -s, --client-secret        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  -u, --username             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
-  -p, --password             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
-  -r, --request-timeout      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --version, -v              bool    prints the om release version (default: false)
+  --help, -h                 bool    prints this usage information (default: false)
+  --target, -t               string  location of the Ops Manager VM
+  --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
+  --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
+  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
+  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
+  --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
 
 Commands:
   activate-certificate-authority  activates a certificate authority on the Ops Manager
@@ -66,20 +66,20 @@ This unauthenticated command helps setup the authentication mechanism for your O
 The "internal" userstore mechanism is the only currently supported option.
 
 Usage: om [options] configure-authentication [<args>]
-  -v, --version              bool    prints the om release version (default: false)
-  -h, --help                 bool    prints this usage information (default: false)
-  -t, --target               string  location of the Ops Manager VM
-  -c, --client-id            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
-  -s, --client-secret        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  -u, --username             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
-  -p, --password             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
-  -r, --request-timeout      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --version, -v              bool    prints the om release version (default: false)
+  --help, -h                 bool    prints this usage information (default: false)
+  --target, -t               string  location of the Ops Manager VM
+  --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
+  --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
+  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
+  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
+  --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
 
 Command Arguments:
-  -u, --username                string  admin username
-  -p, --password                string  admin password
-  -dp, --decryption-passphrase  string  passphrase used to encrypt the installation
+  --username, -u                string  admin username
+  --password, -p                string  admin password
+  --decryption-passphrase, -dp  string  passphrase used to encrypt the installation
   --http-proxy-url              string  proxy for outbound HTTP network traffic
   --https-proxy-url             string  proxy for outbound HTTPS network traffic
   --no-proxy                    string  comma-separated list of hosts that do not go through the proxy

@@ -12,15 +12,15 @@ import (
 var _ = Describe("Usage", func() {
 	It("returns a formatted version of the flag set usage", func() {
 		usage, err := flags.Usage(struct {
-			First  bool   `short:"1" long:"first"                 description:"the first flag"`
-			Second bool   `short:"2" long:"second" default:"true" description:"the second flag"`
-			Third  string `          long:"third"                 description:"the third flag"`
+			First  bool              `short:"1" long:"first"                 description:"the first flag"`
+			Second flags.StringSlice `short:"2" long:"second" default:"true" description:"the second flag"`
+			Third  string            `          long:"third"                 description:"the third flag"`
 		}{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(usage).To(Equal(strings.TrimSpace(`
--1, --first   bool    the first flag
--2, --second  bool    the second flag (default: true)
---third       string  the third flag
+--first, -1   bool               the first flag
+--second, -2  string (variadic)  the second flag (default: true)
+--third       string             the third flag
 `)))
 	})
 

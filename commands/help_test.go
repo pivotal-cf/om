@@ -17,8 +17,8 @@ const (
 om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
-  -?, --query     asks a question
-  -!, --surprise  gives you a present
+  --query, -?     asks a question
+  --surprise, -!  gives you a present
 
 Commands:
   bake   bakes you a cake
@@ -29,21 +29,21 @@ Commands:
 This command will help you bake a cake.
 
 Usage: om [options] bake [<args>]
-  -?, --query     asks a question
-  -!, --surprise  gives you a present
+  --query, -?     asks a question
+  --surprise, -!  gives you a present
 
 Command Arguments:
-  -f, --flour   int  cups of flour
-  -b, --butter  int  sticks of butter
-  -l, --lemon   int  teaspoons of lemon juice
+  --flour, -f   int             cups of flour
+  --butter, -b  int (variadic)  sticks of butter
+  --lemon, -l   int             teaspoons of lemon juice
 `
 
 	FLAGLESS_USAGE = `ॐ  bake
 This command will help you bake a cake.
 
 Usage: om [options] bake
-  -?, --query     asks a question
-  -!, --surprise  gives you a present
+  --query, -?     asks a question
+  --surprise, -!  gives you a present
 `
 )
 
@@ -56,8 +56,8 @@ var _ = Describe("Help", func() {
 	BeforeEach(func() {
 		output = bytes.NewBuffer([]byte{})
 		flags = strings.TrimSpace(`
--?, --query     asks a question
--!, --surprise  gives you a present
+--query, -?     asks a question
+--surprise, -!  gives you a present
 `)
 	})
 
@@ -88,9 +88,9 @@ var _ = Describe("Help", func() {
 					Description:      "This command will help you bake a cake.",
 					ShortDescription: "bakes you a cake",
 					Flags: struct {
-						Flour  int `short:"f" long:"flour"  description:"cups of flour"`
-						Butter int `short:"b" long:"butter" description:"sticks of butter"`
-						Lemon  int `short:"l" long:"lemon"  description:"teaspoons of lemon juice"`
+						Flour  int   `short:"f" long:"flour"  description:"cups of flour"`
+						Butter []int `short:"b" long:"butter" description:"sticks of butter"`
+						Lemon  int   `short:"l" long:"lemon"  description:"teaspoons of lemon juice"`
 					}{},
 				})
 
