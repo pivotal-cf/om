@@ -8,7 +8,7 @@ This stemcell will then be available for use by any product specifying that stem
 ## Command Usage
 ```
 ॐ  upload-stemcell
-This command will upload a stemcell to the target Ops Manager. If your stemcell already exists that upload will be skipped
+This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped
 
 Usage: om [options] upload-stemcell [<args>]
   -v, --version              bool    prints the om release version (default: false)
@@ -21,4 +21,5 @@ Usage: om [options] upload-stemcell [<args>]
 
 Command Arguments:
   -s, --stemcell  string  path to stemcell
+  -f, --force     string  upload stemcell even if it already exists on the target Ops Manager
 ```
