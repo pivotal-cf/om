@@ -70,27 +70,69 @@ var _ = Describe("UploadStemcell", func() {
 	})
 
 	Context("when the stemcell already exists", func() {
-		It("exits successfully without uploading", func() {
-			submission := formcontent.ContentSubmission{
-				Length:      10,
-				Content:     ioutil.NopCloser(strings.NewReader("")),
-				ContentType: "some content-type",
-			}
-			multipart.FinalizeReturns(submission, nil)
+		Context("and force is not specified", func() {
+			It("exits successfully without uploading", func() {
+				submission := formcontent.ContentSubmission{
+					Length:      10,
+					Content:     ioutil.NopCloser(strings.NewReader("")),
+					ContentType: "some content-type",
+				}
+				multipart.FinalizeReturns(submission, nil)
 
-			diagnosticService.ReportReturns(api.DiagnosticReport{
-				Stemcells: []string{"stemcell.tgz"},
-			}, nil)
+				diagnosticService.ReportReturns(api.DiagnosticReport{
+					Stemcells: []string{"stemcell.tgz"},
+				}, nil)
 
-			command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
 
-			err := command.Execute([]string{
-				"--stemcell", "/path/to/stemcell.tgz",
+				err := command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				format, v := logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
 			})
-			Expect(err).NotTo(HaveOccurred())
+		})
 
-			format, v := logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
+		Context("and force is specified", func() {
+			It("uploads the stemcell", func() {
+				submission := formcontent.ContentSubmission{
+					Length:      10,
+					Content:     ioutil.NopCloser(strings.NewReader("")),
+					ContentType: "some content-type",
+				}
+				multipart.FinalizeReturns(submission, nil)
+
+				diagnosticService.ReportReturns(api.DiagnosticReport{
+					Stemcells: []string{"stemcell.tgz"},
+				}, nil)
+
+				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+
+				err := command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+					"--force",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				key, file := multipart.AddFileArgsForCall(0)
+				Expect(key).To(Equal("stemcell[file]"))
+				Expect(file).To(Equal("/path/to/stemcell.tgz"))
+				Expect(stemcellService.UploadArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+					ContentLength: 10,
+					Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
+				}))
+
+				Expect(multipart.FinalizeCallCount()).To(Equal(1))
+
+				format, v := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+
+				format, v = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+			})
 		})
 	})
 
@@ -181,7 +223,7 @@ var _ = Describe("UploadStemcell", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewUploadStemcell(nil, nil, nil, nil)
 			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
-				Description:      "This command will upload a stemcell to the target Ops Manager. If your stemcell already exists that upload will be skipped",
+				Description:      "This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped",
 				ShortDescription: "uploads a given stemcell to the Ops Manager targeted",
 				Flags:            command.Options,
 			}))

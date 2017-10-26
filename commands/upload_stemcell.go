@@ -17,6 +17,7 @@ type UploadStemcell struct {
 	diagnosticService diagnosticService
 	Options           struct {
 		Stemcell string `short:"s"  long:"stemcell"  description:"path to stemcell"`
+		Force    bool   `short:"f"  long:"force"  description:"upload stemcell even if it already exists on the target Ops Manager"`
 	}
 }
 
@@ -48,7 +49,7 @@ func NewUploadStemcell(multipart multipart, stemcellService stemcellService, dia
 
 func (us UploadStemcell) Usage() commands.Usage {
 	return commands.Usage{
-		Description:      "This command will upload a stemcell to the target Ops Manager. If your stemcell already exists that upload will be skipped",
+		Description:      "This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped",
 		ShortDescription: "uploads a given stemcell to the Ops Manager targeted",
 		Flags:            us.Options,
 	}
@@ -60,22 +61,23 @@ func (us UploadStemcell) Execute(args []string) error {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
 	}
 
-	us.logger.Printf("processing stemcell")
-
-	report, err := us.diagnosticService.Report()
-	if err != nil {
-		switch err.(type) {
-		case api.DiagnosticReportUnavailable:
-			us.logger.Printf("%s", err)
-		default:
-			return fmt.Errorf("failed to get diagnostic report: %s", err)
+	if !us.Options.Force {
+		us.logger.Printf("processing stemcell")
+		report, err := us.diagnosticService.Report()
+		if err != nil {
+			switch err.(type) {
+			case api.DiagnosticReportUnavailable:
+				us.logger.Printf("%s", err)
+			default:
+				return fmt.Errorf("failed to get diagnostic report: %s", err)
+			}
 		}
-	}
 
-	for _, stemcell := range report.Stemcells {
-		if stemcell == filepath.Base(us.Options.Stemcell) {
-			us.logger.Printf("stemcell has already been uploaded")
-			return nil
+		for _, stemcell := range report.Stemcells {
+			if stemcell == filepath.Base(us.Options.Stemcell) {
+				us.logger.Printf("stemcell has already been uploaded")
+				return nil
+			}
 		}
 	}
 
