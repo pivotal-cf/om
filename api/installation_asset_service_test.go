@@ -103,7 +103,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(liveWriter.StopCallCount()).To(Equal(1))
 		})
 
-		Context("when the polling interval is specified", func() {
+		Context("when the polling interval is greater than 1", func() {
 			It("prints logs at the interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					if req.URL.Path == "/api/v0/installation_asset_collection" {
