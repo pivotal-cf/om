@@ -28,12 +28,15 @@ var _ = Describe("ExportInstallation", func() {
 
 		err := command.Execute([]string{
 			"--output-file", "/path/to/output.zip",
+			"--polling-interval", "48",
 		})
 		Expect(err).NotTo(HaveOccurred())
 
 		By("calling export on the installation service")
 		Expect(installationService.ExportCallCount()).To(Equal(1))
-		Expect(installationService.ExportArgsForCall(0)).To(Equal("/path/to/output.zip"))
+		outputFile, pollingInterval := installationService.ExportArgsForCall(0)
+		Expect(outputFile).To(Equal("/path/to/output.zip"))
+		Expect(pollingInterval).To(Equal(48))
 
 		By("printing correct log messages")
 		Expect(logger.PrintfCallCount()).To(Equal(2))

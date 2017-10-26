@@ -6,10 +6,11 @@ import (
 )
 
 type InstallationAssetExporterService struct {
-	ExportStub        func(string) error
+	ExportStub        func(outputFile string, pollingInterval int) error
 	exportMutex       sync.RWMutex
 	exportArgsForCall []struct {
-		arg1 string
+		outputFile      string
+		pollingInterval int
 	}
 	exportReturns struct {
 		result1 error
@@ -21,16 +22,17 @@ type InstallationAssetExporterService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *InstallationAssetExporterService) Export(arg1 string) error {
+func (fake *InstallationAssetExporterService) Export(outputFile string, pollingInterval int) error {
 	fake.exportMutex.Lock()
 	ret, specificReturn := fake.exportReturnsOnCall[len(fake.exportArgsForCall)]
 	fake.exportArgsForCall = append(fake.exportArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("Export", []interface{}{arg1})
+		outputFile      string
+		pollingInterval int
+	}{outputFile, pollingInterval})
+	fake.recordInvocation("Export", []interface{}{outputFile, pollingInterval})
 	fake.exportMutex.Unlock()
 	if fake.ExportStub != nil {
-		return fake.ExportStub(arg1)
+		return fake.ExportStub(outputFile, pollingInterval)
 	}
 	if specificReturn {
 		return ret.result1
@@ -44,10 +46,10 @@ func (fake *InstallationAssetExporterService) ExportCallCount() int {
 	return len(fake.exportArgsForCall)
 }
 
-func (fake *InstallationAssetExporterService) ExportArgsForCall(i int) string {
+func (fake *InstallationAssetExporterService) ExportArgsForCall(i int) (string, int) {
 	fake.exportMutex.RLock()
 	defer fake.exportMutex.RUnlock()
-	return fake.exportArgsForCall[i].arg1
+	return fake.exportArgsForCall[i].outputFile, fake.exportArgsForCall[i].pollingInterval
 }
 
 func (fake *InstallationAssetExporterService) ExportReturns(result1 error) {

@@ -12,13 +12,14 @@ type ExportInstallation struct {
 	logger                           logger
 	installationAssetExporterService installationAssetExporterService
 	Options                          struct {
-		OutputFile string `short:"o"  long:"output-file"  description:"output path to write installation to"`
+		OutputFile      string `short:"o"  long:"output-file"      description:"output path to write installation to"`
+		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval at which to print status" default:"1"`
 	}
 }
 
 //go:generate counterfeiter -o ./fakes/installation_asset_exporter_service.go --fake-name InstallationAssetExporterService . installationAssetExporterService
 type installationAssetExporterService interface {
-	Export(string) error
+	Export(outputFile string, pollingInterval int) error
 }
 
 func NewExportInstallation(installationAssetExporterService installationAssetExporterService, logger logger) ExportInstallation {
@@ -48,7 +49,7 @@ func (ei ExportInstallation) Execute(args []string) error {
 
 	ei.logger.Printf("exporting installation")
 
-	err = ei.installationAssetExporterService.Export(ei.Options.OutputFile)
+	err = ei.installationAssetExporterService.Export(ei.Options.OutputFile, ei.Options.PollingInterval)
 	if err != nil {
 		return fmt.Errorf("failed to export installation: %s", err)
 	}

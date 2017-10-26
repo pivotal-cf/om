@@ -42,33 +42,27 @@ func NewInstallationAssetService(client httpClient, progress progress, liveWrite
 	}
 }
 
-func (ia InstallationAssetService) Export(outputFile string) error {
+func (ia InstallationAssetService) Export(outputFile string, pollingInterval int) error {
 	req, err := http.NewRequest("GET", "/api/v0/installation_asset_collection", nil)
 	if err != nil {
 		return err
 	}
 
-	respChan := make(chan error)
+	ticker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
+	ia.liveWriter.Start()
 	go func() {
-		ia.liveWriter.Start()
 		liveLog := log.New(ia.liveWriter, "", 0)
 		startTime := time.Now().Round(time.Second)
 
-		for {
-			select {
-			case _ = <-respChan:
-				ia.liveWriter.Stop()
-				return
-			default:
-				time.Sleep(1 * time.Second)
-				timeNow := time.Now().Round(time.Second)
-				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", timeNow.Sub(startTime).String())
-			}
+		for now := range ticker.C {
+			liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
 		}
 	}()
 
 	resp, err := ia.client.Do(req)
-	respChan <- err
+	ticker.Stop()
+	ia.liveWriter.Stop()
+
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
