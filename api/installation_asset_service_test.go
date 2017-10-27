@@ -155,16 +155,14 @@ var _ = Describe("InstallationAssetService", func() {
 
 					By("exiting when the export is finished")
 					var (
-						done bool
-						err  error
+						err error
 					)
-					go func() {
-						err = service.Export(outputFile.Name(), 20)
-						done = true
-					}()
-					Eventually(func() bool {
-						return done
-					}, 3*time.Second).Should(BeTrue())
+					errChan := make(chan error)
+					outputFileName := outputFile.Name()
+					go func(outputFileName string) {
+						errChan <- service.Export(outputFileName, 20)
+					}(outputFileName)
+					Eventually(errChan, 3*time.Second).Should(Receive(&err))
 					Expect(err).ToNot(HaveOccurred())
 
 					By("starting the live log writer")
