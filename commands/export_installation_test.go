@@ -28,7 +28,6 @@ var _ = Describe("ExportInstallation", func() {
 
 		err := command.Execute([]string{
 			"--output-file", "/path/to/output.zip",
-			"--polling-interval", "48",
 		})
 		Expect(err).NotTo(HaveOccurred())
 
@@ -36,7 +35,7 @@ var _ = Describe("ExportInstallation", func() {
 		Expect(installationService.ExportCallCount()).To(Equal(1))
 		outputFile, pollingInterval := installationService.ExportArgsForCall(0)
 		Expect(outputFile).To(Equal("/path/to/output.zip"))
-		Expect(pollingInterval).To(Equal(48))
+		Expect(pollingInterval).To(Equal(1))
 
 		By("printing correct log messages")
 		Expect(logger.PrintfCallCount()).To(Equal(2))
@@ -45,6 +44,23 @@ var _ = Describe("ExportInstallation", func() {
 
 		format, v = logger.PrintfArgsForCall(1)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished exporting installation"))
+	})
+
+	Context("when polling interval is specified", func() {
+		It("passes the value to the installation service", func() {
+			command := commands.NewExportInstallation(installationService, logger)
+
+			err := command.Execute([]string{
+				"--output-file", "/path/to/output.zip",
+				"--polling-interval", "48",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(installationService.ExportCallCount()).To(Equal(1))
+			outputFile, pollingInterval := installationService.ExportArgsForCall(0)
+			Expect(outputFile).To(Equal("/path/to/output.zip"))
+			Expect(pollingInterval).To(Equal(48))
+		})
 	})
 
 	Context("failure cases", func() {
