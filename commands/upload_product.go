@@ -14,7 +14,8 @@ type UploadProduct struct {
 	logger          logger
 	productsService productUploader
 	Options         struct {
-		Product string `short:"p"  long:"product"  description:"path to product"`
+		Product         string `short:"p"  long:"product"  description:"path to product"`
+		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval at which to print status" default:"1"`
 	}
 	extractor extractor
 }
@@ -86,9 +87,10 @@ func (up UploadProduct) Execute(args []string) error {
 	up.logger.Printf("beginning product upload to Ops Manager")
 
 	_, err = up.productsService.Upload(api.UploadProductInput{
-		ContentLength: submission.Length,
-		Product:       submission.Content,
-		ContentType:   submission.ContentType,
+		ContentLength:   submission.Length,
+		Product:         submission.Content,
+		ContentType:     submission.ContentType,
+		PollingInterval: up.Options.PollingInterval,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to upload product: %s", err)

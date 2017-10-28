@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -34,6 +33,11 @@ var _ = Describe("AvailableProductsService", func() {
 	Describe("Upload", func() {
 		It("makes a request to upload the product to the Ops Manager", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				body, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(string(body)).To(Equal("some other content"))
+
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader("{}")),
 				}, nil
@@ -42,9 +46,10 @@ var _ = Describe("AvailableProductsService", func() {
 			bar.NewBarReaderReturns(strings.NewReader("some other content"))
 
 			output, err := service.Upload(api.UploadProductInput{
-				ContentLength: 10,
-				Product:       strings.NewReader("some content"),
-				ContentType:   "some content-type",
+				ContentLength:   10,
+				Product:         strings.NewReader("some content"),
+				ContentType:     "some content-type",
+				PollingInterval: 1,
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(api.UploadProductOutput{}))
@@ -54,11 +59,6 @@ var _ = Describe("AvailableProductsService", func() {
 			Expect(request.URL.Path).To(Equal("/api/v0/available_products"))
 			Expect(request.ContentLength).To(Equal(int64(10)))
 			Expect(request.Header.Get("Content-Type")).To(Equal("some content-type"))
-
-			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(string(body)).To(Equal("some other content"))
 
 			newReaderContent, err := ioutil.ReadAll(bar.NewBarReaderArgsForCall(0))
 			Expect(err).NotTo(HaveOccurred())
@@ -84,9 +84,10 @@ var _ = Describe("AvailableProductsService", func() {
 			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
 
 			_, err := service.Upload(api.UploadProductInput{
-				ContentLength: 10,
-				Product:       strings.NewReader("some content"),
-				ContentType:   "some content-type",
+				ContentLength:   10,
+				Product:         strings.NewReader("some content"),
+				ContentType:     "some content-type",
+				PollingInterval: 1,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -94,21 +95,95 @@ var _ = Describe("AvailableProductsService", func() {
 			Expect(liveWriter.StartCallCount()).To(Equal(1))
 
 			By("writing to the live log writer")
-			Expect(liveWriter.WriteCallCount()).To(Equal(5))
-			for i := 0; i < 5; i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
+			for i := 0; i < liveWriter.WriteCallCount(); i++ {
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
 			}
 
 			By("flushing the live log writer")
 			Expect(liveWriter.StopCallCount()).To(Equal(1))
 		})
 
+		Context("when the polling interval is greater than 1", func() {
+			It("logs at the correct interval", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.URL.Path == "/api/v0/available_products" {
+						time.Sleep(5 * time.Second)
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader("some-installation")),
+						}, nil
+					}
+					return nil, nil
+				}
+
+				bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+
+				_, err := service.Upload(api.UploadProductInput{
+					ContentLength:   10,
+					Product:         strings.NewReader("some content"),
+					ContentType:     "some content-type",
+					PollingInterval: 2,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				By("starting the live log writer")
+				Expect(liveWriter.StartCallCount()).To(Equal(1))
+
+				By("writing to the live log writer")
+				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
+				for i := 0; i < liveWriter.WriteCallCount(); i++ {
+					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
+				}
+
+				By("flushing the live log writer")
+				Expect(liveWriter.StopCallCount()).To(Equal(1))
+
+			})
+		})
+
+		Context("when the polling interval is greater than the time it takes upload the product", func() {
+			It("logs at the correct interval", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.URL.Path == "/api/v0/available_products" {
+						time.Sleep(1 * time.Second)
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader("some-installation")),
+						}, nil
+					}
+					return nil, nil
+				}
+
+				bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+
+				_, err := service.Upload(api.UploadProductInput{
+					ContentLength:   10,
+					Product:         strings.NewReader("some content"),
+					ContentType:     "some content-type",
+					PollingInterval: 20,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				By("starting the live log writer")
+				Expect(liveWriter.StartCallCount()).To(Equal(1))
+
+				By("writing to the live log writer")
+				Expect(liveWriter.WriteCallCount()).To(Equal(0))
+
+				By("flushing the live log writer")
+				Expect(liveWriter.StopCallCount()).To(Equal(1))
+			})
+		})
+
 		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+			Context("when the client errors performing the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
 
-					_, err := service.Upload(api.UploadProductInput{})
+					_, err := service.Upload(api.UploadProductInput{
+						PollingInterval: 1,
+					})
 					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
 				})
 			})
@@ -120,7 +195,9 @@ var _ = Describe("AvailableProductsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 
-					_, err := service.Upload(api.UploadProductInput{})
+					_, err := service.Upload(api.UploadProductInput{
+						PollingInterval: 1,
+					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

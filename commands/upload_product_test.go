@@ -50,9 +50,10 @@ var _ = Describe("UploadProduct", func() {
 		Expect(key).To(Equal("product[file]"))
 		Expect(file).To(Equal("/path/to/some-product.tgz"))
 		Expect(productsService.UploadArgsForCall(0)).To(Equal(api.UploadProductInput{
-			ContentLength: 10,
-			Product:       ioutil.NopCloser(strings.NewReader("")),
-			ContentType:   "some content-type",
+			ContentLength:   10,
+			Product:         ioutil.NopCloser(strings.NewReader("")),
+			ContentType:     "some content-type",
+			PollingInterval: 1,
 		}))
 
 		Expect(multipart.FinalizeCallCount()).To(Equal(1))
@@ -65,6 +66,18 @@ var _ = Describe("UploadProduct", func() {
 
 		format, v = logger.PrintfArgsForCall(2)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+	})
+
+	Context("when the polling interval is provided", func() {
+		It("passes the value to the products service", func() {
+			command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
+			err := command.Execute([]string{
+				"--product", "/path/to/some-product.tgz",
+				"--polling-interval", "48",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(productsService.UploadArgsForCall(0).PollingInterval).To(Equal(48))
+		})
 	})
 
 	Context("when the same product is already present", func() {

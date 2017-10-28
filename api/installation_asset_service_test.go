@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -94,9 +93,9 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(liveWriter.StartCallCount()).To(Equal(1))
 
 			By("writing to the live log writer")
-			Expect(liveWriter.WriteCallCount()).To(Equal(5))
-			for i := 0; i < 5; i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
+			for i := 0; i < liveWriter.WriteCallCount(); i++ {
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
 			}
 
 			By("flushing the live log writer")
@@ -127,9 +126,9 @@ var _ = Describe("InstallationAssetService", func() {
 				Expect(liveWriter.StartCallCount()).To(Equal(1))
 
 				By("writing to the live log writer")
-				Expect(liveWriter.WriteCallCount()).To(Equal(3))
-				for argCall, time := 0, 2; argCall < 3; argCall, time = argCall+1, time+2 {
-					Expect(string(liveWriter.WriteArgsForCall(argCall))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", time)))
+				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 3, 1))
+				for i := 0; i < liveWriter.WriteCallCount(); i++ {
+					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
 				}
 
 				By("flushing the live log writer")
@@ -173,7 +172,6 @@ var _ = Describe("InstallationAssetService", func() {
 
 					By("flushing the live log writer")
 					Expect(liveWriter.StopCallCount()).To(Equal(1))
-
 				})
 			})
 		})
@@ -310,9 +308,10 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(liveWriter.StartCallCount()).To(Equal(1))
 
 			By("writing to the live log writer")
-			Expect(liveWriter.WriteCallCount()).To(Equal(5))
-			for i := 0; i < 5; i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
+			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
+
+			for i := 0; i < liveWriter.WriteCallCount(); i++ {
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
 			}
 
 			By("flushing the live log writer")
