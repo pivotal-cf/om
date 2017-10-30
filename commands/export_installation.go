@@ -13,7 +13,7 @@ type ExportInstallation struct {
 	installationAssetExporterService installationAssetExporterService
 	Options                          struct {
 		OutputFile      string `short:"o"  long:"output-file"      description:"output path to write installation to"`
-		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval at which to print status" default:"1"`
+		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 

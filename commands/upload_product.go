@@ -15,7 +15,7 @@ type UploadProduct struct {
 	productsService productUploader
 	Options         struct {
 		Product         string `short:"p"  long:"product"  description:"path to product"`
-		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval at which to print status" default:"1"`
+		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
 	}
 	extractor extractor
 }
