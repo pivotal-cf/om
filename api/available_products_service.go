@@ -62,18 +62,16 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	ap.progress.Kickoff()
-
-	ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
-	ap.liveWriter.Start()
-
-	doneChan := make(chan bool, 1)
+	requestComplete := make(chan bool)
+	progressComplete := make(chan bool)
 
 	go func() {
+		ap.progress.Kickoff()
+		ap.liveWriter.Start()
+
 		for {
 			if ap.progress.GetCurrent() == ap.progress.GetTotal() {
 				ap.progress.End()
-				doneChan <- true
 				break
 			}
 
@@ -82,17 +80,23 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 
 		liveLog := log.New(ap.liveWriter, "", 0)
 		startTime := time.Now().Round(time.Second)
+		ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
 
-		for now := range ticker.C {
-			liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
+		for {
+			select {
+			case <-requestComplete:
+				ticker.Stop()
+				ap.liveWriter.Stop()
+				progressComplete <- true
+			case now := <-ticker.C:
+				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
+			}
 		}
 	}()
 
 	resp, err := ap.client.Do(req)
-	<-doneChan
-
-	ticker.Stop()
-	ap.liveWriter.Stop()
+	requestComplete <- true
+	<-progressComplete
 
 	if err != nil {
 		return UploadProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
