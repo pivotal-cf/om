@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -64,7 +65,7 @@ var _ = Describe("AvailableProductsService", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(string(newReaderContent)).To(Equal("some content"))
-			Expect(bar.SetTotalArgsForCall(0)).To(BeNumerically("==", 10))
+			Expect(bar.SetTotalArgsForCall(0)).To(Equal(int64(10)))
 			Expect(bar.KickoffCallCount()).To(Equal(1))
 			Expect(bar.EndCallCount()).To(Equal(1))
 		})
@@ -97,7 +98,7 @@ var _ = Describe("AvailableProductsService", func() {
 			By("writing to the live log writer")
 			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
 			for i := 0; i < liveWriter.WriteCallCount(); i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
 			}
 
 			By("flushing the live log writer")
@@ -132,8 +133,9 @@ var _ = Describe("AvailableProductsService", func() {
 
 				By("writing to the live log writer")
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
+
 				for i := 0; i < liveWriter.WriteCallCount(); i++ {
-					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
+					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", 2*(i+1))))
 				}
 
 				By("flushing the live log writer")
