@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -96,7 +97,7 @@ var _ = Describe("InstallationAssetService", func() {
 			By("writing to the live log writer")
 			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
 			for i := 0; i < liveWriter.WriteCallCount(); i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
 			}
 
 			By("flushing the live log writer")
@@ -130,7 +131,7 @@ var _ = Describe("InstallationAssetService", func() {
 				By("writing to the live log writer")
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 3, 1))
 				for i := 0; i < liveWriter.WriteCallCount(); i++ {
-					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
+					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", 2*(i+1))))
 				}
 
 				By("flushing the live log writer")
@@ -313,7 +314,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
 
 			for i := 0; i < liveWriter.WriteCallCount(); i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring("s elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
 			}
 
 			By("flushing the live log writer")
