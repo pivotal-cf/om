@@ -48,20 +48,31 @@ func (ia InstallationAssetService) Export(outputFile string, pollingInterval int
 		return err
 	}
 
-	ticker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
-	ia.liveWriter.Start()
+	requestComplete := make(chan bool)
+	progressComplete := make(chan bool)
+
 	go func() {
+		ia.liveWriter.Start()
+
 		liveLog := log.New(ia.liveWriter, "", 0)
 		startTime := time.Now().Round(time.Second)
+		ticker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
 
-		for now := range ticker.C {
-			liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
+		for {
+			select {
+			case <-requestComplete:
+				ticker.Stop()
+				ia.liveWriter.Stop()
+				progressComplete <- true
+			case now := <-ticker.C:
+				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
+			}
 		}
 	}()
 
 	resp, err := ia.client.Do(req)
-	ticker.Stop()
-	ia.liveWriter.Stop()
+	requestComplete <- true
+	<-progressComplete
 
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
