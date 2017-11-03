@@ -12,8 +12,8 @@ type ExportInstallation struct {
 	logger                           logger
 	installationAssetExporterService installationAssetExporterService
 	Options                          struct {
-		OutputFile      string `short:"o"  long:"output-file"      description:"output path to write installation to"`
-		PollingInterval int    `short:"i"  long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
+		OutputFile      string `short:"o"   long:"output-file"      description:"output path to write installation to"`
+		PollingInterval int    `short:"pi"  long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 
