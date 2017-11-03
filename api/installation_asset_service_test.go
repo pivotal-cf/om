@@ -86,7 +86,8 @@ var _ = Describe("InstallationAssetService", func() {
 			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
 			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
-			err := service.Export(outputFile.Name(), 1)
+			pollingInterval := 1
+			err := service.Export(outputFile.Name(), pollingInterval)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("starting the live log writer")
@@ -119,7 +120,8 @@ var _ = Describe("InstallationAssetService", func() {
 				bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
 				service := api.NewInstallationAssetService(client, bar, liveWriter)
 
-				err := service.Export(outputFile.Name(), 2)
+				pollingInterval := 2
+				err := service.Export(outputFile.Name(), pollingInterval)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("starting the live log writer")
