@@ -71,9 +71,10 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
 		Expect(installationService.ImportArgsForCall(0)).To(Equal(api.ImportInstallationInput{
-			ContentLength: 10,
-			Installation:  ioutil.NopCloser(strings.NewReader("")),
-			ContentType:   "some content-type",
+			ContentLength:   10,
+			Installation:    ioutil.NopCloser(strings.NewReader("")),
+			ContentType:     "some content-type",
+			PollingInterval: 1,
 		}))
 
 		format, v := logger.PrintfArgsForCall(0)
@@ -84,6 +85,43 @@ var _ = Describe("ImportInstallation", func() {
 
 		format, v = logger.PrintfArgsForCall(2)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
+	})
+
+	Context("when polling interval is specified", func() {
+		It("passes the value to the installation service", func() {
+			submission := formcontent.ContentSubmission{
+				Length:      10,
+				Content:     ioutil.NopCloser(strings.NewReader("")),
+				ContentType: "some content-type",
+			}
+			multipart.FinalizeReturns(submission, nil)
+			setupService = &fakes.SetupService{}
+
+			eaOutputs := []api.EnsureAvailabilityOutput{
+				{Status: api.EnsureAvailabilityStatusUnstarted},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusComplete},
+			}
+
+			setupService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				return eaOutputs[setupService.EnsureAvailabilityCallCount()-1], nil
+			}
+
+			command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
+
+			err := command.Execute([]string{
+				"--installation", "/path/to/some-installation",
+				"--decryption-passphrase", "some-passphrase",
+				"--polling-interval", "48",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(installationService.ImportCallCount()).To(Equal(1))
+			input := installationService.ImportArgsForCall(0)
+			Expect(input.PollingInterval).To(Equal(48))
+		})
 	})
 
 	Context("when the Ops Manager is already configured", func() {

@@ -15,8 +15,9 @@ type ImportInstallation struct {
 	installationAssetImporterService installationAssetImporterService
 	setupService                     setupService
 	Options                          struct {
-		Installation string `short:"i"  long:"installation"  description:"path to installation."`
-		Passphrase   string `short:"dp" long:"decryption-passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
+		Installation    string `short:"i"  long:"installation"  description:"path to installation."`
+		Passphrase      string `short:"dp" long:"decryption-passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
+		PollingInterval int    `short:"pi" long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 
@@ -81,9 +82,10 @@ func (ii ImportInstallation) Execute(args []string) error {
 	ii.logger.Printf("beginning installation import to Ops Manager")
 
 	err = ii.installationAssetImporterService.Import(api.ImportInstallationInput{
-		ContentLength: submission.Length,
-		Installation:  submission.Content,
-		ContentType:   submission.ContentType,
+		ContentLength:   submission.Length,
+		Installation:    submission.Content,
+		ContentType:     submission.ContentType,
+		PollingInterval: ii.Options.PollingInterval,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to import installation: %s", err)

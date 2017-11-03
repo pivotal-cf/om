@@ -12,9 +12,10 @@ import (
 )
 
 type ImportInstallationInput struct {
-	ContentLength int64
-	Installation  io.Reader
-	ContentType   string
+	ContentLength   int64
+	Installation    io.Reader
+	ContentType     string
+	PollingInterval int
 }
 
 type InstallationAssetService struct {
@@ -118,36 +119,42 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	ia.progress.Kickoff()
-	respChan := make(chan error)
+	requestComplete := make(chan bool)
+	progressComplete := make(chan bool)
+
 	go func() {
+		ia.progress.Kickoff()
+		ia.liveWriter.Start()
+
 		for {
 			if ia.progress.GetCurrent() == ia.progress.GetTotal() {
 				ia.progress.End()
 				break
 			}
-			time.Sleep(1 * time.Second)
+
+			time.Sleep(time.Second)
 		}
 
-		ia.liveWriter.Start()
 		liveLog := log.New(ia.liveWriter, "", 0)
 		startTime := time.Now().Round(time.Second)
+		ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
 
 		for {
 			select {
-			case _ = <-respChan:
+			case <-requestComplete:
+				ticker.Stop()
 				ia.liveWriter.Stop()
-				return
-			default:
-				time.Sleep(1 * time.Second)
-				timeNow := time.Now().Round(time.Second)
-				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", timeNow.Sub(startTime).String())
+				progressComplete <- true
+			case now := <-ticker.C:
+				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
 			}
 		}
 	}()
 
 	resp, err := ia.client.Do(req)
-	respChan <- err
+	requestComplete <- true
+	<-progressComplete
+
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
