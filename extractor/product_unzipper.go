@@ -4,8 +4,8 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	yaml "gopkg.in/yaml.v2"
+	"io/ioutil"
 	"regexp"
 )
 
