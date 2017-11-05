@@ -68,8 +68,16 @@ func main() {
 		command = "help"
 	}
 
+	if global.Username == "" {
+		global.Username = os.Getenv("OM_USERNAME")
+	}
+
 	if global.Password == "" {
 		global.Password = os.Getenv("OM_PASSWORD")
+	}
+
+	if global.ClientID == "" {
+		global.ClientID = os.Getenv("OM_CLIENT_ID")
 	}
 
 	if global.ClientSecret == "" {

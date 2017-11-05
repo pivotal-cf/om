@@ -12,17 +12,17 @@ import (
 )
 
 var _ = Describe("env var creds", func() {
-	It("authenticates with OM_PASSWORD env var", func() {
+	It("authenticates with OM_USERNAME and OM_PASSWORD env vars", func() {
 		server := testServer(true)
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
-			"--username", "some-username",
 			"--skip-ssl-validation",
 			"curl",
 			"-p", "/api/v0/available_products",
 		)
-		command.Env = append(command.Env, "OM_PASSWORD=some-env-provided-pass")
+		command.Env = append(command.Env, "OM_USERNAME=some-env-provided-username")
+		command.Env = append(command.Env, "OM_PASSWORD=some-env-provided-password")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
@@ -31,7 +31,7 @@ var _ = Describe("env var creds", func() {
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 	})
 
-	It("authenticates with OM_CLIENT_SECRET env var", func() {
+	It("authenticates with OM_CLIENT_ID and OM_CLIENT_SECRET env vars", func() {
 		server := testServer(false)
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
@@ -40,6 +40,7 @@ var _ = Describe("env var creds", func() {
 			"curl",
 			"-p", "/api/v0/available_products",
 		)
+		command.Env = append(command.Env, "OM_CLIENT_ID=some-client-id")
 		command.Env = append(command.Env, "OM_CLIENT_SECRET=shhh-secret")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -59,7 +60,7 @@ func testServer(useUsernamePasswordAuth bool) *httptest.Server {
 			req.ParseForm()
 
 			if useUsernamePasswordAuth {
-				if req.PostForm.Get("username") != "some-username" || req.PostForm.Get("password") != "some-env-provided-pass" {
+				if req.PostForm.Get("username") != "some-env-provided-username" || req.PostForm.Get("password") != "some-env-provided-password" {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
