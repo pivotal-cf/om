@@ -26,6 +26,9 @@ var _ = Describe("ConfigureDirector", func() {
 				`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(directorService.NetworkAndAZCallCount()).To(Equal(1))
+
+			jsonBody := directorService.NetworkAndAZArgsForCall(0)
+			Expect(jsonBody).To(Equal(`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`))
 		})
 
 		Context("failure cases", func() {
