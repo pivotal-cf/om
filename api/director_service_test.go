@@ -62,4 +62,44 @@ var _ = Describe("DirectorService", func() {
 		})
 	})
 
+	Describe("Properties", func() {
+		It("assigns director configuration properties", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+			err := ds.Properties(`{"some-key": "some-value"}`)
+
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+		})
+
+		Context("failure cases", func() {
+			It("returns an error when the http status is non-200", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusTeapot,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+				err := ds.Properties(`{"some-key": "some-value"}`)
+
+				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
+			})
+
+			It("returns an error when the api endpoint fails", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusTeapot,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+
+				err := ds.Properties(`{"some-key": "some-value"}`)
+
+				Expect(err).To(MatchError("could not make api request to director properties: api endpoint failed"))
+			})
+		})
+	})
 })

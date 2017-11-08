@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/http/httputil"
 	"os/exec"
+	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,6 +18,7 @@ var _ = Describe("configure-director command", func() {
 	var (
 		server             *httptest.Server
 		networkAzCallCount int
+		directorConfigurationBody string
 	)
 
 	BeforeEach(func() {
@@ -48,6 +50,12 @@ var _ = Describe("configure-director command", func() {
 				}
 				networkAzCallCount++
 				w.Write([]byte(`{}`))
+			case "/api/v0/staged/director/properties":
+				w.Write([]byte(`{}`))
+				slices, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				directorConfigurationBody = string(slices)
+
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -63,8 +71,17 @@ var _ = Describe("configure-director command", func() {
 			"--password", "some-password",
 			"--skip-ssl-validation",
 			"configure-director",
-			"--network-assignment",
-			`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`)
+			"--network-assignment", `{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`,
+			"--director-configuration",
+			`{
+				"director_configuration": {
+					"ntp_servers_string": "us.example.org, time.something.com",
+					"resurrector_enabled": false,
+					"director_hostname": "foo.example.com",
+					"max_threads": 5
+				}
+			 }`,
+		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
