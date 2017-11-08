@@ -2,7 +2,6 @@ package commands_test
 
 import (
 	"errors"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -25,142 +24,55 @@ var _ = Describe("ConfigureDirector", func() {
 
 	Describe("Execute", func() {
 
-		Context("when the network-assignment and director-configuration flags are both provided", func() {
-			It("configures the director with both network-assignment and director-configuration", func() {
-				err := command.Execute([]string{"--network-assignment",
-					`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`, "--director-configuration", `{
-					"director_configuration": {
-						"ntp_servers_string": "us.example.org, time.something.com",
-						"resurrector_enabled": false,
-						"director_hostname": "foo.example.com",
-						"max_threads": 5
-					}
-				 }`})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(directorService.NetworkAndAZCallCount()).To(Equal(1))
-
-				jsonBody := directorService.NetworkAndAZArgsForCall(0)
-				Expect(jsonBody).To(Equal(`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`))
-
-				Expect(directorService.PropertiesCallCount()).To(Equal(1))
-
-				jsonBody = directorService.PropertiesArgsForCall(0)
-				Expect(jsonBody).To(Equal(`{
-					"director_configuration": {
-						"ntp_servers_string": "us.example.org, time.something.com",
-						"resurrector_enabled": false,
-						"director_hostname": "foo.example.com",
-						"max_threads": 5
-					}
-				 }`))
+		It("configures the director", func() {
+			err := command.Execute([]string{
+				"--network-assignment", "some-network-assignment",
+				"--director-configuration", "some-director-configuration",
+				"--iaas-configuration", "some-iaas-configuration",
 			})
-		})
-
-		Context("when the director-configuration and iaas-configuration flags are both provided", func() {
-			It("configures the director with both director-configuration and iaas-configuration", func() {
-				err := command.Execute([]string{"--director-configuration", `{
-						"director_configuration": {
-							"ntp_servers_string": "us.example.org, time.something.com",
-							"resurrector_enabled": false,
-							"director_hostname": "foo.example.com",
-							"max_threads": 5
-						}
-					}`,
-					"--iaas-configuration",
-					`{
-							"iaas_configuration": {
-								"project": "some-project",
-								"default_deployment_tag": "my-vms",
-								"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-							}
-						 }`,
-				})
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(directorService.PropertiesCallCount()).To(Equal(2))
-
-				jsonBody := directorService.PropertiesArgsForCall(0)
-				Expect(jsonBody).To(MatchJSON(`{
-					"director_configuration": {
-						"ntp_servers_string": "us.example.org, time.something.com",
-						"resurrector_enabled": false,
-						"director_hostname": "foo.example.com",
-						"max_threads": 5
-					}
-				 }`))
-
-				jsonBody = directorService.PropertiesArgsForCall(1)
-				Expect(jsonBody).To(MatchJSON(`{
-          "iaas_configuration": {
-						"project": "some-project",
-						"default_deployment_tag": "my-vms",
-						"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-          }
-				}`))
-			})
-		})
-
-		It("configures the director without director-configuration properties", func() {
-			err := command.Execute([]string{"--network-assignment",
-				`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`})
 			Expect(err).NotTo(HaveOccurred())
+
 			Expect(directorService.NetworkAndAZCallCount()).To(Equal(1))
+			Expect(directorService.NetworkAndAZArgsForCall(0)).To(Equal("some-network-assignment"))
 
-			jsonBody := directorService.NetworkAndAZArgsForCall(0)
-			Expect(jsonBody).To(Equal(`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`))
-
-			Expect(directorService.PropertiesCallCount()).To(Equal(0))
+			Expect(directorService.PropertiesCallCount()).To(Equal(2))
+			Expect(directorService.PropertiesArgsForCall(0)).To(Equal("some-director-configuration"))
+			Expect(directorService.PropertiesArgsForCall(1)).To(Equal("some-iaas-configuration"))
 		})
 
-		It("configures the director without network assignment", func() {
-			err := command.Execute([]string{"--director-configuration", `{
-				"director_configuration": {
-					"ntp_servers_string": "us.example.org, time.something.com",
-					"resurrector_enabled": false,
-					"director_hostname": "foo.example.com",
-					"max_threads": 5
-				}
-			 }`})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(directorService.PropertiesCallCount()).To(Equal(1))
-
-			jsonBody := directorService.PropertiesArgsForCall(0)
-			Expect(jsonBody).To(Equal(`{
-				"director_configuration": {
-					"ntp_servers_string": "us.example.org, time.something.com",
-					"resurrector_enabled": false,
-					"director_hostname": "foo.example.com",
-					"max_threads": 5
-				}
-			 }`))
-
-			Expect(directorService.NetworkAndAZCallCount()).To(Equal(0))
+		Context("when the iaas-configuration flag is not provided", func() {
+			It("only calls the properties function once", func() {
+				err := command.Execute([]string{
+					"--network-assignment", "some-network-assignment",
+					"--director-configuration", "some-director-configuration",
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(directorService.PropertiesCallCount()).To(Equal(1))
+				Expect(directorService.PropertiesArgsForCall(0)).To(Equal("some-director-configuration"))
+			})
 		})
 
-		It("configures the director with just IAAS settings", func() {
-			err := command.Execute([]string{"--iaas-configuration", `{
-				"iaas_configuration": {
-					"project": "some-project",
-					"default_deployment_tag": "my-vms",
-					"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-				}
-			 }`})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(directorService.PropertiesCallCount()).To(Equal(1))
+		Context("when the network-assignment flag is not provided", func() {
+			It("calls the network_and_az function once", func() {
+				err := command.Execute([]string{
+					"--iaas-configuration", "some-iaas-configuration",
+					"--director-configuration", "some-director-configuration",
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(directorService.NetworkAndAZCallCount()).To(Equal(0))
+			})
+		})
 
-			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring iaas specific options for bosh tile"))
-
-			jsonBody := directorService.PropertiesArgsForCall(0)
-			Expect(jsonBody).To(Equal(`{
-				"iaas_configuration": {
-					"project": "some-project",
-					"default_deployment_tag": "my-vms",
-					"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-				}
-			 }`))
-
-			Expect(directorService.NetworkAndAZCallCount()).To(Equal(0))
+		Context("when the director-configuration flag is not provided", func() {
+			It("calls the properties function once", func() {
+				err := command.Execute([]string{
+					"--iaas-configuration", "some-iaas-configuration",
+					"--network-assignment", "some-network-assignment",
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(directorService.PropertiesCallCount()).To(Equal(1))
+				Expect(directorService.PropertiesArgsForCall(0)).To(Equal("some-iaas-configuration"))
+			})
 		})
 
 		Context("failure cases", func() {
@@ -171,8 +83,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			It("returns an error when the director service fails", func() {
 				directorService.NetworkAndAZReturns(errors.New("director service failed"))
-				err := command.Execute([]string{"--network-assignment",
-					`{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`})
+				err := command.Execute([]string{"--network-assignment", `{}`})
 				Expect(err).To(MatchError("network and AZs couldn't be applied: director service failed"))
 			})
 
