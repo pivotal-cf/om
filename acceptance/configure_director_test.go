@@ -2,11 +2,11 @@ package acceptance
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
 	"os/exec"
-	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,9 +16,10 @@ import (
 
 var _ = Describe("configure-director command", func() {
 	var (
-		server             *httptest.Server
-		networkAzCallCount int
-		directorConfigurationBody string
+		server                      *httptest.Server
+		networkAzCallCount          int
+		propertiesCallCount         int
+		directorConfigurationBodies []string
 	)
 
 	BeforeEach(func() {
@@ -54,7 +55,8 @@ var _ = Describe("configure-director command", func() {
 				w.Write([]byte(`{}`))
 				slices, err := ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
-				directorConfigurationBody = string(slices)
+				propertiesCallCount++
+				directorConfigurationBodies = append(directorConfigurationBodies, string(slices))
 
 			default:
 				out, err := httputil.DumpRequest(req, true)
@@ -71,6 +73,14 @@ var _ = Describe("configure-director command", func() {
 			"--password", "some-password",
 			"--skip-ssl-validation",
 			"configure-director",
+			"--iaas-configuration",
+			`{
+				"iaas_configuration": {
+					"project": "some-project",
+					"default_deployment_tag": "my-vms",
+					"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+				}
+			}`,
 			"--network-assignment", `{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`,
 			"--director-configuration",
 			`{
@@ -89,6 +99,23 @@ var _ = Describe("configure-director command", func() {
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
 		Expect(networkAzCallCount).To(Equal(1))
+		Expect(propertiesCallCount).To(Equal(2))
+
+		Expect(directorConfigurationBodies[0]).To(MatchJSON(`{
+		"director_configuration": {
+			"ntp_servers_string": "us.example.org, time.something.com",
+			"resurrector_enabled": false,
+			"director_hostname": "foo.example.com",
+			"max_threads": 5
+		}
+	 }`))
+		Expect(directorConfigurationBodies[1]).To(MatchJSON(`{
+		 "iaas_configuration": {
+			 "project": "some-project",
+			 "default_deployment_tag": "my-vms",
+			 "auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+		 }
+	 }`))
 
 		Expect(session.Out).To(gbytes.Say(""))
 	})

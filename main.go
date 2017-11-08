@@ -164,7 +164,7 @@ func main() {
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(certificateAuthoritiesService, stdout)
-	commandSet["configure-director"] = commands.NewConfigureDirector(directorService)
+	commandSet["configure-director"] = commands.NewConfigureDirector(directorService, stdout)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
