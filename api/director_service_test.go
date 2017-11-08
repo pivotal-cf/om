@@ -32,6 +32,7 @@ var _ = Describe("DirectorService", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(client.DoCallCount()).To(Equal(1))
 			req := client.DoArgsForCall(0)
 
 			Expect(req.Method).To(Equal("PUT"))
