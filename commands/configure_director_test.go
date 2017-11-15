@@ -26,8 +26,13 @@ var _ = Describe("ConfigureDirector", func() {
 
 	Describe("Execute", func() {
 		It("configures the director", func() {
+			networkAssignmentJSON := `{
+				"network": {"name": "network"},
+				"singleton_availability_zone": {"name": "singleton"}
+			}`
+
 			err := command.Execute([]string{
-				"--network-assignment", `{"network": {"name": "network"}, "singleton_availability_zone": {"name": "singleton"}}`,
+				"--network-assignment", networkAssignmentJSON,
 				"--director-configuration", `{"some-director-assignment": "director"}`,
 				"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
 				"--security-configuration", `{"some-security-assignment": "security"}`,
@@ -36,10 +41,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Expect(directorService.NetworkAndAZCallCount()).To(Equal(1))
 			Expect(directorService.NetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
-				NetworkAZ: api.NetworkAndAZFields{
-					Network:     map[string]string{"name": "network"},
-					SingletonAZ: map[string]string{"name": "singleton"},
-				},
+				NetworkAZ: json.RawMessage(networkAssignmentJSON),
 			}))
 
 			Expect(directorService.PropertiesCallCount()).To(Equal(1))
@@ -58,8 +60,13 @@ var _ = Describe("ConfigureDirector", func() {
 
 		Context("when the iaas-configuration flag is not provided", func() {
 			It("only calls the properties function once", func() {
+				networkAssignmentJSON := `{
+					"network": {"name": "network"},
+					"singleton_availability_zone": {"name": "singleton"}
+				}`
+
 				err := command.Execute([]string{
-					"--network-assignment", `{"network": {"some-network-assignment": "network"}, "singleton_availability_zone": {"name": "singleton"}}`,
+					"--network-assignment", networkAssignmentJSON,
 					"--director-configuration", `{"some-director-assignment": "director"}`,
 				})
 				Expect(err).NotTo(HaveOccurred())

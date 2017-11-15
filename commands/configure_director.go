@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
@@ -38,15 +37,11 @@ func (c ConfigureDirector) Execute(args []string) error {
 	}
 
 	if c.Options.NetworkAssignment != "" {
-		var networkFields api.NetworkAndAZFields
-		err = json.NewDecoder(strings.NewReader(c.Options.NetworkAssignment)).Decode(&networkFields)
-		if err != nil {
-			return err //not tested
-		}
-
 		c.logger.Printf("started configuring network assignment options for bosh tile")
 
-		err = c.service.NetworkAndAZ(api.NetworkAndAZConfiguration{NetworkAZ: networkFields})
+		err = c.service.NetworkAndAZ(api.NetworkAndAZConfiguration{
+			NetworkAZ: json.RawMessage(c.Options.NetworkAssignment),
+		})
 		if err != nil {
 			return fmt.Errorf("network and AZs could not be applied: %s", err)
 		}

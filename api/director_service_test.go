@@ -30,10 +30,11 @@ var _ = Describe("DirectorService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
 			err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{
-				NetworkAZ: api.NetworkAndAZFields{
-					Network:     map[string]string{"name": "network_name"},
-					SingletonAZ: map[string]string{"name": "availability_zone_name"},
-				}})
+				NetworkAZ: json.RawMessage(`{
+					"network": {"name": "network_name"},
+					"singleton_availability_zone": {"name": "availability_zone_name"}
+				}`),
+			})
 
 			Expect(err).NotTo(HaveOccurred())
 
@@ -55,7 +56,7 @@ var _ = Describe("DirectorService", func() {
 					 "name": "availability_zone_name"
 				   }
 				}
-			  }`))
+			}`))
 		})
 
 		Context("failure cases", func() {
@@ -65,7 +66,6 @@ var _ = Describe("DirectorService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
 				err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{})
-
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
 

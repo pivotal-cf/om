@@ -18,12 +18,7 @@ type DirectorConfiguration struct {
 }
 
 type NetworkAndAZConfiguration struct {
-	NetworkAZ NetworkAndAZFields `json:"network_and_az,omitempty"`
-}
-
-type NetworkAndAZFields struct {
-	Network     map[string]string `json:"network,omitempty"`
-	SingletonAZ map[string]string `json:"singleton_availability_zone,omitempty"`
+	NetworkAZ json.RawMessage `json:"network_and_az,omitempty"`
 }
 
 func NewDirectorService(client httpClient) DirectorService {
