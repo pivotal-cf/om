@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -58,7 +57,6 @@ var _ = Describe("import-installation command", func() {
 				installation = req.MultipartForm.File["installation[file]"][0].Filename
 				passphrase = req.MultipartForm.Value["passphrase"][0]
 				responseString = "{}"
-				time.Sleep(2 * time.Second)
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
