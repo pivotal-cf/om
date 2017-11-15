@@ -18,10 +18,10 @@ var _ = Describe("configure-director command", func() {
 		server                       *httptest.Server
 		networkAZCallCount           int
 		propertiesCallCount          int
-		directorConfigurationBody    []byte
 		networkAZConfigurationBody   []byte
-		directorConfigurationMethod  string
+		directorPropertiesBody       []byte
 		networkAZConfigurationMethod string
+		directorPropertiesMethod     string
 	)
 
 	BeforeEach(func() {
@@ -61,12 +61,18 @@ var _ = Describe("configure-director command", func() {
 
 				w.Write([]byte(`{}`))
 			case "/api/v0/staged/director/properties":
-				propertiesCallCount++
+				auth := req.Header.Get("Authorization")
+				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
 
 				var err error
-				directorConfigurationBody, err = ioutil.ReadAll(req.Body)
+				directorPropertiesBody, err = ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
-				directorConfigurationMethod = req.Method
+				directorPropertiesMethod = req.Method
+
+				propertiesCallCount++
 
 				w.Write([]byte(`{}`))
 			default:
@@ -90,7 +96,11 @@ var _ = Describe("configure-director command", func() {
 				"default_deployment_tag": "my-vms",
 				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			}`,
-			"--network-assignment", `{"network": { "name": "some-network"},"singleton_availability_zone": {"name": "some-az"}}`,
+			"--network-assignment",
+			`{
+				"network": { "name": "some-network"},
+				"singleton_availability_zone": {"name": "some-az"}
+			}`,
 			"--director-configuration",
 			`{
 				"ntp_servers_string": "us.example.org, time.something.com",
@@ -98,8 +108,14 @@ var _ = Describe("configure-director command", func() {
 				"director_hostname": "foo.example.com",
 				"max_threads": 5
 			 }`,
-			"--security-configuration", `{"trusted_certificates": "some-certificate", "generate_vm_passwords": true}`,
-			"--syslog-configuration", `{"syslogconfig": "awesome"}`,
+			"--security-configuration",
+			`{
+				"trusted_certificates": "some-certificate",
+				"generate_vm_passwords": true
+			}`,
+			"--syslog-configuration", `{
+				"syslogconfig": "awesome"
+			}`,
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -110,19 +126,19 @@ var _ = Describe("configure-director command", func() {
 		Expect(networkAZCallCount).To(Equal(1))
 		Expect(networkAZConfigurationMethod).To(Equal("PUT"))
 		Expect(networkAZConfigurationBody).To(MatchJSON(`{
-          "network_and_az": {
-             "network": {
-               "name": "some-network"
-             },
-             "singleton_availability_zone": {
-               "name": "some-az"
-             }
-          }
-        }`))
+			"network_and_az": {
+				 "network": {
+					 "name": "some-network"
+				 },
+				 "singleton_availability_zone": {
+					 "name": "some-az"
+				 }
+			}
+		}`))
 
 		Expect(propertiesCallCount).To(Equal(1))
-		Expect(directorConfigurationMethod).To(Equal("PUT"))
-		Expect(directorConfigurationBody).To(MatchJSON(`{
+		Expect(directorPropertiesMethod).To(Equal("PUT"))
+		Expect(directorPropertiesBody).To(MatchJSON(`{
 			"iaas_configuration": {
 				"project": "some-project",
 				"default_deployment_tag": "my-vms",
