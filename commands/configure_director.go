@@ -17,7 +17,7 @@ type ConfigureDirector struct {
 		DirectorConfiguration string `short:"d" long:"director-configuration" description:"properties for director configuration"`
 		IAASConfiguration     string `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
 		SecurityConfiguration string `short:"s" long:"security-configuration" decription:"security configuration properties for directory"`
-		SyslogConfiguration   string `short:"l" long:"syslog-configuration" decription:"security configuration properties for directory"`
+		SyslogConfiguration   string `short:"l" long:"syslog-configuration" decription:"syslog configuration properties for directory"`
 	}
 }
 
