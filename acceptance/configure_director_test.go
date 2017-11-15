@@ -10,16 +10,18 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("configure-director command", func() {
 	var (
-		server                      *httptest.Server
-		networkAzCallCount          int
-		propertiesCallCount         int
-		directorConfigurationBodies []string
+		server                       *httptest.Server
+		networkAZCallCount           int
+		propertiesCallCount          int
+		directorConfigurationBody    []byte
+		networkAZConfigurationBody   []byte
+		directorConfigurationMethod  string
+		networkAZConfigurationMethod string
 	)
 
 	BeforeEach(func() {
@@ -49,15 +51,24 @@ var _ = Describe("configure-director command", func() {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
-				networkAzCallCount++
+
+				var err error
+				networkAZConfigurationBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				networkAZConfigurationMethod = req.Method
+
+				networkAZCallCount++
+
 				w.Write([]byte(`{}`))
 			case "/api/v0/staged/director/properties":
-				w.Write([]byte(`{}`))
-				slices, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
 				propertiesCallCount++
-				directorConfigurationBodies = append(directorConfigurationBodies, string(slices))
 
+				var err error
+				directorConfigurationBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				directorConfigurationMethod = req.Method
+
+				w.Write([]byte(`{}`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -75,22 +86,19 @@ var _ = Describe("configure-director command", func() {
 			"configure-director",
 			"--iaas-configuration",
 			`{
-				"iaas_configuration": {
-					"project": "some-project",
-					"default_deployment_tag": "my-vms",
-					"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-				}
+				"project": "some-project",
+				"default_deployment_tag": "my-vms",
+				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			}`,
-			"--network-assignment", `{"network_and_az": {"network": { "name": "network_name"},"singleton_availability_zone": {"name": "availability_zone_name"}}}`,
+			"--network-assignment", `{"network": { "name": "some-network"},"singleton_availability_zone": {"name": "some-az"}}`,
 			"--director-configuration",
 			`{
-				"director_configuration": {
-					"ntp_servers_string": "us.example.org, time.something.com",
-					"resurrector_enabled": false,
-					"director_hostname": "foo.example.com",
-					"max_threads": 5
-				}
+				"ntp_servers_string": "us.example.org, time.something.com",
+				"resurrector_enabled": false,
+				"director_hostname": "foo.example.com",
+				"max_threads": 5
 			 }`,
+			"--security-configuration", `{"trusted_certificates": "some-certificate", "generate_vm_passwords": true}`,
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -98,26 +106,37 @@ var _ = Describe("configure-director command", func() {
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
-		Expect(networkAzCallCount).To(Equal(1))
-		Expect(propertiesCallCount).To(Equal(2))
+		Expect(networkAZCallCount).To(Equal(1))
+		Expect(networkAZConfigurationMethod).To(Equal("PUT"))
+		Expect(networkAZConfigurationBody).To(MatchJSON(`{
+          "network_and_az": {
+             "network": {
+               "name": "some-network"
+             },
+             "singleton_availability_zone": {
+               "name": "some-az"
+             }
+          }
+        }`))
 
-		Expect(directorConfigurationBodies[0]).To(MatchJSON(`{
+		Expect(propertiesCallCount).To(Equal(1))
+		Expect(directorConfigurationMethod).To(Equal("PUT"))
+		Expect(directorConfigurationBody).To(MatchJSON(`{
+		"iaas_configuration": {
+		  "project": "some-project",
+		  "default_deployment_tag": "my-vms",
+		  "auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+		},
 		"director_configuration": {
 			"ntp_servers_string": "us.example.org, time.something.com",
 			"resurrector_enabled": false,
 			"director_hostname": "foo.example.com",
 			"max_threads": 5
+		},
+		"security_configuration": {
+			"trusted_certificates": "some-certificate",
+			"generate_vm_passwords": true
 		}
 	 }`))
-		Expect(directorConfigurationBodies[1]).To(MatchJSON(`{
-		 "iaas_configuration": {
-			 "project": "some-project",
-			 "default_deployment_tag": "my-vms",
-			 "auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-		 }
-	 }`))
-
-		Expect(session.Out).To(gbytes.Say(""))
 	})
-
 })
