@@ -19,6 +19,17 @@ type DirectorService struct {
 	networkAndAZReturnsOnCall map[int]struct {
 		result1 error
 	}
+	AZConfigurationStub        func(api.AZConfiguration) error
+	aZConfigurationMutex       sync.RWMutex
+	aZConfigurationArgsForCall []struct {
+		arg1 api.AZConfiguration
+	}
+	aZConfigurationReturns struct {
+		result1 error
+	}
+	aZConfigurationReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PropertiesStub        func(api.DirectorProperties) error
 	propertiesMutex       sync.RWMutex
 	propertiesArgsForCall []struct {
@@ -82,6 +93,54 @@ func (fake *DirectorService) NetworkAndAZReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *DirectorService) AZConfiguration(arg1 api.AZConfiguration) error {
+	fake.aZConfigurationMutex.Lock()
+	ret, specificReturn := fake.aZConfigurationReturnsOnCall[len(fake.aZConfigurationArgsForCall)]
+	fake.aZConfigurationArgsForCall = append(fake.aZConfigurationArgsForCall, struct {
+		arg1 api.AZConfiguration
+	}{arg1})
+	fake.recordInvocation("AZConfiguration", []interface{}{arg1})
+	fake.aZConfigurationMutex.Unlock()
+	if fake.AZConfigurationStub != nil {
+		return fake.AZConfigurationStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.aZConfigurationReturns.result1
+}
+
+func (fake *DirectorService) AZConfigurationCallCount() int {
+	fake.aZConfigurationMutex.RLock()
+	defer fake.aZConfigurationMutex.RUnlock()
+	return len(fake.aZConfigurationArgsForCall)
+}
+
+func (fake *DirectorService) AZConfigurationArgsForCall(i int) api.AZConfiguration {
+	fake.aZConfigurationMutex.RLock()
+	defer fake.aZConfigurationMutex.RUnlock()
+	return fake.aZConfigurationArgsForCall[i].arg1
+}
+
+func (fake *DirectorService) AZConfigurationReturns(result1 error) {
+	fake.AZConfigurationStub = nil
+	fake.aZConfigurationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *DirectorService) AZConfigurationReturnsOnCall(i int, result1 error) {
+	fake.AZConfigurationStub = nil
+	if fake.aZConfigurationReturnsOnCall == nil {
+		fake.aZConfigurationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.aZConfigurationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *DirectorService) Properties(arg1 api.DirectorProperties) error {
 	fake.propertiesMutex.Lock()
 	ret, specificReturn := fake.propertiesReturnsOnCall[len(fake.propertiesArgsForCall)]
@@ -135,6 +194,8 @@ func (fake *DirectorService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.networkAndAZMutex.RLock()
 	defer fake.networkAndAZMutex.RUnlock()
+	fake.aZConfigurationMutex.RLock()
+	defer fake.aZConfigurationMutex.RUnlock()
 	fake.propertiesMutex.RLock()
 	defer fake.propertiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

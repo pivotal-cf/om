@@ -14,6 +14,7 @@ type ConfigureDirector struct {
 	logger  logger
 	Options struct {
 		NetworkAssignment     string `short:"n" long:"network-assignment" description:"assigns networks and AZs"`
+		AZConfiguration       string `short:"a" long:"az-configuration" description:"configures network availability zones"`
 		DirectorConfiguration string `short:"d" long:"director-configuration" description:"properties for director configuration"`
 		IAASConfiguration     string `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
 		SecurityConfiguration string `short:"s" long:"security-configuration" decription:"security configuration properties for directory"`
@@ -25,6 +26,7 @@ type ConfigureDirector struct {
 
 type directorService interface {
 	NetworkAndAZ(api.NetworkAndAZConfiguration) error
+	AZConfiguration(api.AZConfiguration) error
 	Properties(api.DirectorProperties) error
 }
 
@@ -38,6 +40,19 @@ func (c ConfigureDirector) Execute(args []string) error {
 		return fmt.Errorf("could not parse configure-director flags: %s", err)
 	}
 
+	if c.Options.AZConfiguration != "" {
+		c.logger.Printf("started configuring availability zone options for bosh tile")
+
+		err = c.service.AZConfiguration(api.AZConfiguration{
+			AvailabilityZones: json.RawMessage(c.Options.AZConfiguration),
+		})
+		if err != nil {
+			return fmt.Errorf("availability zones configuration could not be applied: %s", err)
+		}
+
+		c.logger.Printf("finished configuring availability zone options for bosh tile")
+	}
+
 	if c.Options.NetworkAssignment != "" {
 		c.logger.Printf("started configuring network assignment options for bosh tile")
 
@@ -47,9 +62,9 @@ func (c ConfigureDirector) Execute(args []string) error {
 		if err != nil {
 			return fmt.Errorf("network and AZs could not be applied: %s", err)
 		}
-	}
 
-	c.logger.Printf("finished configuring network assignment options for bosh tile")
+		c.logger.Printf("finished configuring network assignment options for bosh tile")
+	}
 
 	c.logger.Printf("started configuring director options for bosh tile")
 

@@ -33,6 +33,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			err := command.Execute([]string{
 				"--network-assignment", networkAssignmentJSON,
+				"--az-configuration", `[{"some-az-assignment": "az"}]`,
 				"--director-configuration", `{"some-director-assignment": "director"}`,
 				"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
 				"--security-configuration", `{"some-security-assignment": "security"}`,
@@ -45,6 +46,11 @@ var _ = Describe("ConfigureDirector", func() {
 				NetworkAZ: json.RawMessage(networkAssignmentJSON),
 			}))
 
+			Expect(directorService.AZConfigurationCallCount()).To(Equal(1))
+			Expect(directorService.AZConfigurationArgsForCall(0)).To(Equal(api.AZConfiguration{
+				AvailabilityZones: json.RawMessage(`[{"some-az-assignment": "az"}]`),
+			}))
+
 			Expect(directorService.PropertiesCallCount()).To(Equal(1))
 			Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 				DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
@@ -53,11 +59,13 @@ var _ = Describe("ConfigureDirector", func() {
 				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment": "syslog"}`),
 			}))
 
-			Expect(logger.PrintfCallCount()).To(Equal(4))
-			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring network assignment options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring network assignment options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring director options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring director options for bosh tile"))
+			Expect(logger.PrintfCallCount()).To(Equal(6))
+			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring availability zone options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring availability zone options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring network assignment options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring network assignment options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(4)).To(Equal("started configuring director options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring director options for bosh tile"))
 		})
 
 		Context("when no director configuration flags are provided", func() {
@@ -65,6 +73,7 @@ var _ = Describe("ConfigureDirector", func() {
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(directorService.NetworkAndAZCallCount()).To(Equal(0))
+				Expect(directorService.AZConfigurationCallCount()).To(Equal(0))
 				Expect(directorService.PropertiesCallCount()).To(Equal(1))
 				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(``),
@@ -96,6 +105,14 @@ var _ = Describe("ConfigureDirector", func() {
 					directorService.PropertiesReturns(errors.New("properties end point failed"))
 					err := command.Execute([]string{"--director-configuration", `{}`})
 					Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
+				})
+			})
+
+			Context("when configuring availability_zones fails", func() {
+				It("returns an error", func() {
+					directorService.AZConfigurationReturns(errors.New("az endpoint failed"))
+					err := command.Execute([]string{"--az-configuration", `{}`})
+					Expect(err).To(MatchError("availability zones configuration could not be applied: az endpoint failed"))
 				})
 			})
 		})

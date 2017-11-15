@@ -18,17 +18,18 @@ var _ = Describe("DirectorService", func() {
 		client          *fakes.HttpClient
 		directorService api.DirectorService
 	)
+
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 		directorService = api.NewDirectorService(client)
+
+		client.DoReturns(&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 	})
 
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
-
 			err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{
 				NetworkAZ: json.RawMessage(`{
 					"network": {"name": "network_name"},
@@ -76,17 +77,13 @@ var _ = Describe("DirectorService", func() {
 
 				err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{})
 
-				Expect(err).To(MatchError("could not make api request to network and AZ endpoint: api endpoint failed"))
+				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/network_and_az: api endpoint failed"))
 			})
 		})
 	})
 
 	Describe("Properties", func() {
 		It("assigns director configuration properties", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
-
 			err := directorService.Properties(api.DirectorProperties{
 				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 				DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
@@ -115,10 +112,6 @@ var _ = Describe("DirectorService", func() {
 
 		Context("when some of the configurations are empty", func() {
 			It("returns only configurations that are populated", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
-
 				err := directorService.Properties(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 					DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
@@ -160,7 +153,52 @@ var _ = Describe("DirectorService", func() {
 
 				err := directorService.Properties(api.DirectorProperties{})
 
-				Expect(err).To(MatchError("could not make api request to director properties: api endpoint failed"))
+				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/properties: api endpoint failed"))
+			})
+		})
+	})
+
+	Describe("AZConfiguration", func() {
+		It("configures availability zones", func() {
+			err := directorService.AZConfiguration(api.AZConfiguration{
+				AvailabilityZones: json.RawMessage(`[{"az_name": "1"}]`),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+				"availability_zones": [
+					{"az_name": "1"}
+				]
+			}`))
+		})
+
+		Context("failure cases", func() {
+			It("returns an error when the http status is non-200", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusInternalServerError,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+				err := directorService.AZConfiguration(api.AZConfiguration{})
+				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+			})
+
+			It("returns an error when the api endpoint fails", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+
+				err := directorService.AZConfiguration(api.AZConfiguration{})
+
+				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})
 		})
 	})

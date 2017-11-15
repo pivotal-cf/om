@@ -17,10 +17,13 @@ var _ = Describe("configure-director command", func() {
 	var (
 		server                       *httptest.Server
 		networkAZCallCount           int
+		azCallCount                  int
 		propertiesCallCount          int
 		networkAZConfigurationBody   []byte
+		azConfigurationBody          []byte
 		directorPropertiesBody       []byte
 		networkAZConfigurationMethod string
+		azConfigurationMethod        string
 		directorPropertiesMethod     string
 	)
 
@@ -45,10 +48,30 @@ var _ = Describe("configure-director command", func() {
 						"expires_in": 3600
 					}`))
 				}
+			case "/api/v0/staged/director/availability_zones":
+				auth := req.Header.Get("Authorization")
+				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				var err error
+				azConfigurationBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				azConfigurationMethod = req.Method
+
+				azCallCount++
+
+				w.Write([]byte(`{}`))
 			case "/api/v0/staged/director/network_and_az":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
 					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				if azCallCount == 0 {
+					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
 
@@ -96,6 +119,8 @@ var _ = Describe("configure-director command", func() {
 				"default_deployment_tag": "my-vms",
 				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			}`,
+			"--az-configuration",
+			`[ {"az_property": "value"} ]`,
 			"--network-assignment",
 			`{
 				"network": { "name": "some-network"},
@@ -134,6 +159,12 @@ var _ = Describe("configure-director command", func() {
 					 "name": "some-az"
 				 }
 			}
+		}`))
+
+		Expect(azCallCount).To(Equal(1))
+		Expect(azConfigurationMethod).To(Equal("PUT"))
+		Expect(azConfigurationBody).To(MatchJSON(`{
+			"availability_zones": [{"az_property": "value"}]
 		}`))
 
 		Expect(propertiesCallCount).To(Equal(1))
