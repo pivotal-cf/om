@@ -23,7 +23,7 @@ type ConfigureDirector struct {
 //go:generate counterfeiter -o ./fakes/director_service.go --fake-name DirectorService . directorService
 type directorService interface {
 	NetworkAndAZ(api.NetworkAndAZConfiguration) error
-	Properties(api.DirectorConfiguration) error
+	Properties(api.DirectorProperties) error
 }
 
 func NewConfigureDirector(service directorService, logger logger) ConfigureDirector {
@@ -51,7 +51,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 
 	c.logger.Printf("started configuring director options for bosh tile")
 
-	err = c.service.Properties(api.DirectorConfiguration{
+	err = c.service.Properties(api.DirectorProperties{
 		DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
 		IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
 		SecurityConfiguration: json.RawMessage(c.Options.SecurityConfiguration),

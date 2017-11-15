@@ -19,10 +19,10 @@ type DirectorService struct {
 	networkAndAZReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PropertiesStub        func(api.DirectorConfiguration) error
+	PropertiesStub        func(api.DirectorProperties) error
 	propertiesMutex       sync.RWMutex
 	propertiesArgsForCall []struct {
-		arg1 api.DirectorConfiguration
+		arg1 api.DirectorProperties
 	}
 	propertiesReturns struct {
 		result1 error
@@ -82,11 +82,11 @@ func (fake *DirectorService) NetworkAndAZReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *DirectorService) Properties(arg1 api.DirectorConfiguration) error {
+func (fake *DirectorService) Properties(arg1 api.DirectorProperties) error {
 	fake.propertiesMutex.Lock()
 	ret, specificReturn := fake.propertiesReturnsOnCall[len(fake.propertiesArgsForCall)]
 	fake.propertiesArgsForCall = append(fake.propertiesArgsForCall, struct {
-		arg1 api.DirectorConfiguration
+		arg1 api.DirectorProperties
 	}{arg1})
 	fake.recordInvocation("Properties", []interface{}{arg1})
 	fake.propertiesMutex.Unlock()
@@ -105,7 +105,7 @@ func (fake *DirectorService) PropertiesCallCount() int {
 	return len(fake.propertiesArgsForCall)
 }
 
-func (fake *DirectorService) PropertiesArgsForCall(i int) api.DirectorConfiguration {
+func (fake *DirectorService) PropertiesArgsForCall(i int) api.DirectorProperties {
 	fake.propertiesMutex.RLock()
 	defer fake.propertiesMutex.RUnlock()
 	return fake.propertiesArgsForCall[i].arg1

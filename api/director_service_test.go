@@ -87,7 +87,7 @@ var _ = Describe("DirectorService", func() {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-			err := directorService.Properties(api.DirectorConfiguration{
+			err := directorService.Properties(api.DirectorProperties{
 				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 				DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				SecurityConfiguration: json.RawMessage(`{"hello": "goodbye"}`),
@@ -117,7 +117,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.Properties(api.DirectorConfiguration{
+				err := directorService.Properties(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 					DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				})
@@ -146,7 +146,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.Properties(api.DirectorConfiguration{})
+				err := directorService.Properties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
@@ -156,7 +156,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.Properties(api.DirectorConfiguration{})
+				err := directorService.Properties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError("could not make api request to director properties: api endpoint failed"))
 			})

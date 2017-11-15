@@ -45,7 +45,7 @@ var _ = Describe("ConfigureDirector", func() {
 			}))
 
 			Expect(directorService.PropertiesCallCount()).To(Equal(1))
-			Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorConfiguration{
+			Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 				DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
 				IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment": "iaas"}`),
 				SecurityConfiguration: json.RawMessage(`{"some-security-assignment": "security"}`),
@@ -71,7 +71,7 @@ var _ = Describe("ConfigureDirector", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(directorService.PropertiesCallCount()).To(Equal(1))
-				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorConfiguration{
+				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(``),
 					DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
 					SecurityConfiguration: json.RawMessage(``),
@@ -98,7 +98,7 @@ var _ = Describe("ConfigureDirector", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(directorService.PropertiesCallCount()).To(Equal(1))
-				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorConfiguration{
+				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 					DirectorConfiguration: json.RawMessage(``),
 					IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment": "iaas"}`),
 					SecurityConfiguration: json.RawMessage(``),

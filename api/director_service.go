@@ -11,7 +11,7 @@ type DirectorService struct {
 	client httpClient
 }
 
-type DirectorConfiguration struct {
+type DirectorProperties struct {
 	IAASConfiguration     json.RawMessage `json:"iaas_configuration,omitempty"`
 	DirectorConfiguration json.RawMessage `json:"director_configuration,omitempty"`
 	SecurityConfiguration json.RawMessage `json:"security_configuration,omitempty"`
@@ -48,7 +48,7 @@ func (d DirectorService) NetworkAndAZ(input NetworkAndAZConfiguration) error {
 	return ValidateStatusOK(resp)
 }
 
-func (d DirectorService) Properties(input DirectorConfiguration) error {
+func (d DirectorService) Properties(input DirectorProperties) error {
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("could not make json: %s", err)
