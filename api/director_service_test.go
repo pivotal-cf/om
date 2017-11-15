@@ -91,6 +91,7 @@ var _ = Describe("DirectorService", func() {
 				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 				DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				SecurityConfiguration: json.RawMessage(`{"hello": "goodbye"}`),
+				SyslogConfiguration:   json.RawMessage(`{"imsyslog": "yep"}`),
 			})
 
 			Expect(err).NotTo(HaveOccurred())
@@ -107,7 +108,8 @@ var _ = Describe("DirectorService", func() {
 			Expect(jsonBody).To(MatchJSON(`{
 				"iaas_configuration": {"prop": "other", "value": "one"},
 				"director_configuration": {"prop": "blah", "value": "nothing"},
-				"security_configuration": {"hello": "goodbye"}
+				"security_configuration": {"hello": "goodbye"},
+				"syslog_configuration":{"imsyslog": "yep"}
 			}`))
 		})
 

@@ -99,6 +99,7 @@ var _ = Describe("configure-director command", func() {
 				"max_threads": 5
 			 }`,
 			"--security-configuration", `{"trusted_certificates": "some-certificate", "generate_vm_passwords": true}`,
+			"--syslog-configuration", `{"syslogconfig": "awesome"}`,
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -122,21 +123,24 @@ var _ = Describe("configure-director command", func() {
 		Expect(propertiesCallCount).To(Equal(1))
 		Expect(directorConfigurationMethod).To(Equal("PUT"))
 		Expect(directorConfigurationBody).To(MatchJSON(`{
-		"iaas_configuration": {
-		  "project": "some-project",
-		  "default_deployment_tag": "my-vms",
-		  "auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-		},
-		"director_configuration": {
-			"ntp_servers_string": "us.example.org, time.something.com",
-			"resurrector_enabled": false,
-			"director_hostname": "foo.example.com",
-			"max_threads": 5
-		},
-		"security_configuration": {
-			"trusted_certificates": "some-certificate",
-			"generate_vm_passwords": true
-		}
-	 }`))
+			"iaas_configuration": {
+				"project": "some-project",
+				"default_deployment_tag": "my-vms",
+				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+			},
+			"director_configuration": {
+				"ntp_servers_string": "us.example.org, time.something.com",
+				"resurrector_enabled": false,
+				"director_hostname": "foo.example.com",
+				"max_threads": 5
+			},
+			"security_configuration": {
+				"trusted_certificates": "some-certificate",
+				"generate_vm_passwords": true
+			},
+			"syslog_configuration": {
+				"syslogconfig": "awesome"
+			}
+	  }`))
 	})
 })

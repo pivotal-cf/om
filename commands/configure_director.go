@@ -17,10 +17,12 @@ type ConfigureDirector struct {
 		DirectorConfiguration string `short:"d" long:"director-configuration" description:"properties for director configuration"`
 		IAASConfiguration     string `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
 		SecurityConfiguration string `short:"s" long:"security-configuration" decription:"security configuration properties for directory"`
+		SyslogConfiguration   string `short:"l" long:"syslog-configuration" decription:"security configuration properties for directory"`
 	}
 }
 
 //go:generate counterfeiter -o ./fakes/director_service.go --fake-name DirectorService . directorService
+
 type directorService interface {
 	NetworkAndAZ(api.NetworkAndAZConfiguration) error
 	Properties(api.DirectorProperties) error
@@ -55,6 +57,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 		DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
 		IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
 		SecurityConfiguration: json.RawMessage(c.Options.SecurityConfiguration),
+		SyslogConfiguration:   json.RawMessage(c.Options.SyslogConfiguration),
 	})
 	if err != nil {
 		return fmt.Errorf("properties could not be applied: %s", err)

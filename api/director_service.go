@@ -15,6 +15,7 @@ type DirectorProperties struct {
 	IAASConfiguration     json.RawMessage `json:"iaas_configuration,omitempty"`
 	DirectorConfiguration json.RawMessage `json:"director_configuration,omitempty"`
 	SecurityConfiguration json.RawMessage `json:"security_configuration,omitempty"`
+	SyslogConfiguration   json.RawMessage `json:"syslog_configuration,omitempty"`
 }
 
 type NetworkAndAZConfiguration struct {

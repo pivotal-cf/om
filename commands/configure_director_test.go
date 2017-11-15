@@ -36,6 +36,7 @@ var _ = Describe("ConfigureDirector", func() {
 				"--director-configuration", `{"some-director-assignment": "director"}`,
 				"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
 				"--security-configuration", `{"some-security-assignment": "security"}`,
+				"--syslog-configuration", `{"some-syslog-assignment": "syslog"}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -49,6 +50,7 @@ var _ = Describe("ConfigureDirector", func() {
 				DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
 				IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment": "iaas"}`),
 				SecurityConfiguration: json.RawMessage(`{"some-security-assignment": "security"}`),
+				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment": "syslog"}`),
 			}))
 
 			Expect(logger.PrintfCallCount()).To(Equal(4))
@@ -58,50 +60,17 @@ var _ = Describe("ConfigureDirector", func() {
 			Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring director options for bosh tile"))
 		})
 
-		Context("when the iaas-configuration flag is not provided", func() {
+		Context("when no director configuration flags are provided", func() {
 			It("only calls the properties function once", func() {
-				networkAssignmentJSON := `{
-					"network": {"name": "network"},
-					"singleton_availability_zone": {"name": "singleton"}
-				}`
-
-				err := command.Execute([]string{
-					"--network-assignment", networkAssignmentJSON,
-					"--director-configuration", `{"some-director-assignment": "director"}`,
-				})
+				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
+				Expect(directorService.NetworkAndAZCallCount()).To(Equal(0))
 				Expect(directorService.PropertiesCallCount()).To(Equal(1))
 				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(``),
-					DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
-					SecurityConfiguration: json.RawMessage(``),
-				}))
-			})
-		})
-
-		Context("when the network-assignment flag is not provided", func() {
-			It("does not make a call to configure networks and AZs", func() {
-				err := command.Execute([]string{
-					"--director-configuration", `{"some-director-assignment": "director"}`,
-					"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
-				})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(directorService.NetworkAndAZCallCount()).To(Equal(0))
-			})
-		})
-
-		Context("when the director-configuration flag is not provided", func() {
-			It("calls the properties function once", func() {
-				err := command.Execute([]string{
-					"--network-assignment", `{"network": {"some-network-assignment": "network"}, "singleton_availability_zone": {"name": "singleton"}}`,
-					"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
-				})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(directorService.PropertiesCallCount()).To(Equal(1))
-				Expect(directorService.PropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 					DirectorConfiguration: json.RawMessage(``),
-					IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment": "iaas"}`),
 					SecurityConfiguration: json.RawMessage(``),
+					SyslogConfiguration:   json.RawMessage(``),
 				}))
 			})
 		})
