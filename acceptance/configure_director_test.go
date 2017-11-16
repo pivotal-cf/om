@@ -15,16 +15,20 @@ import (
 
 var _ = Describe("configure-director command", func() {
 	var (
-		server                       *httptest.Server
-		networkAZCallCount           int
-		azCallCount                  int
-		propertiesCallCount          int
-		networkAZConfigurationBody   []byte
-		azConfigurationBody          []byte
-		directorPropertiesBody       []byte
-		networkAZConfigurationMethod string
-		azConfigurationMethod        string
-		directorPropertiesMethod     string
+		azCallCount                    int
+		azConfigurationBody            []byte
+		azConfigurationMethod          string
+		directorPropertiesBody         []byte
+		directorPropertiesCallCount    int
+		directorPropertiesMethod       string
+		networkAZCallCount             int
+		networkAZConfigurationBody     []byte
+		networkAZConfigurationMethod   string
+		networksConfigurationBody      []byte
+		networksConfigurationCallCount int
+		networksConfigurationMethod    string
+
+		server *httptest.Server
 	)
 
 	BeforeEach(func() {
@@ -63,6 +67,22 @@ var _ = Describe("configure-director command", func() {
 				azCallCount++
 
 				w.Write([]byte(`{}`))
+
+			case "/api/v0/staged/director/networks":
+				auth := req.Header.Get("Authorization")
+				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				var err error
+				networksConfigurationBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				networksConfigurationMethod = req.Method
+
+				networksConfigurationCallCount++
+
+				w.Write([]byte(`{}`))
 			case "/api/v0/staged/director/network_and_az":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
@@ -70,7 +90,7 @@ var _ = Describe("configure-director command", func() {
 					return
 				}
 
-				if azCallCount == 0 {
+				if azCallCount == 0 || networksConfigurationCallCount == 0 {
 					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
@@ -95,7 +115,7 @@ var _ = Describe("configure-director command", func() {
 				Expect(err).NotTo(HaveOccurred())
 				directorPropertiesMethod = req.Method
 
-				propertiesCallCount++
+				directorPropertiesCallCount++
 
 				w.Write([]byte(`{}`))
 			default:
@@ -121,6 +141,11 @@ var _ = Describe("configure-director command", func() {
 			}`,
 			"--az-configuration",
 			`[ {"az_property": "value"} ]`,
+			"--networks-configuration",
+			`{
+				"networks": [{"network": "network-1"}],
+				"top-level": "the-top"
+			}`,
 			"--network-assignment",
 			`{
 				"network": { "name": "some-network"},
@@ -148,6 +173,19 @@ var _ = Describe("configure-director command", func() {
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
+		Expect(azCallCount).To(Equal(1))
+		Expect(azConfigurationMethod).To(Equal("PUT"))
+		Expect(azConfigurationBody).To(MatchJSON(`{
+			"availability_zones": [{"az_property": "value"}]
+		}`))
+
+		Expect(networksConfigurationCallCount).To(Equal(1))
+		Expect(networksConfigurationMethod).To(Equal("PUT"))
+		Expect(networksConfigurationBody).To(MatchJSON(`{
+			"networks": [{"network": "network-1"}],
+			"top-level": "the-top"
+		}`))
+
 		Expect(networkAZCallCount).To(Equal(1))
 		Expect(networkAZConfigurationMethod).To(Equal("PUT"))
 		Expect(networkAZConfigurationBody).To(MatchJSON(`{
@@ -161,13 +199,7 @@ var _ = Describe("configure-director command", func() {
 			}
 		}`))
 
-		Expect(azCallCount).To(Equal(1))
-		Expect(azConfigurationMethod).To(Equal("PUT"))
-		Expect(azConfigurationBody).To(MatchJSON(`{
-			"availability_zones": [{"az_property": "value"}]
-		}`))
-
-		Expect(propertiesCallCount).To(Equal(1))
+		Expect(directorPropertiesCallCount).To(Equal(1))
 		Expect(directorPropertiesMethod).To(Equal("PUT"))
 		Expect(directorPropertiesBody).To(MatchJSON(`{
 			"iaas_configuration": {

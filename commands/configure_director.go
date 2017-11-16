@@ -13,8 +13,9 @@ type ConfigureDirector struct {
 	service directorService
 	logger  logger
 	Options struct {
-		NetworkAssignment     string `short:"n" long:"network-assignment" description:"assigns networks and AZs"`
 		AZConfiguration       string `short:"a" long:"az-configuration" description:"configures network availability zones"`
+		NetworksConfiguration string `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
+		NetworkAssignment     string `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
 		DirectorConfiguration string `short:"d" long:"director-configuration" description:"properties for director configuration"`
 		IAASConfiguration     string `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
 		SecurityConfiguration string `short:"s" long:"security-configuration" decription:"security configuration properties for directory"`
@@ -25,8 +26,9 @@ type ConfigureDirector struct {
 //go:generate counterfeiter -o ./fakes/director_service.go --fake-name DirectorService . directorService
 
 type directorService interface {
-	NetworkAndAZ(api.NetworkAndAZConfiguration) error
 	AZConfiguration(api.AZConfiguration) error
+	NetworksConfiguration(json.RawMessage) error
+	NetworkAndAZ(api.NetworkAndAZConfiguration) error
 	Properties(api.DirectorProperties) error
 }
 
@@ -51,6 +53,17 @@ func (c ConfigureDirector) Execute(args []string) error {
 		}
 
 		c.logger.Printf("finished configuring availability zone options for bosh tile")
+	}
+
+	if c.Options.NetworksConfiguration != "" {
+		c.logger.Printf("started configuring network options for bosh tile")
+
+		err = c.service.NetworksConfiguration(json.RawMessage(c.Options.NetworksConfiguration))
+		if err != nil {
+			return fmt.Errorf("networks configuration could not be applied: %s", err)
+		}
+
+		c.logger.Printf("finished configuring network options for bosh tile")
 	}
 
 	if c.Options.NetworkAssignment != "" {

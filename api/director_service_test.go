@@ -28,6 +28,93 @@ var _ = Describe("DirectorService", func() {
 			Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 	})
 
+	Describe("AZConfiguration", func() {
+		It("configures availability zones", func() {
+			err := directorService.AZConfiguration(api.AZConfiguration{
+				AvailabilityZones: json.RawMessage(`[{"az_name": "1"}]`),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+				"availability_zones": [
+					{"az_name": "1"}
+				]
+			}`))
+		})
+
+		Context("failure cases", func() {
+			It("returns an error when the http status is non-200", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusInternalServerError,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+				err := directorService.AZConfiguration(api.AZConfiguration{})
+				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+			})
+
+			It("returns an error when the api endpoint fails", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+
+				err := directorService.AZConfiguration(api.AZConfiguration{})
+
+				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
+			})
+		})
+	})
+
+	Describe("NetworksConfiguration", func() {
+		It("configures networks", func() {
+			err := directorService.NetworksConfiguration(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+				"networks": [
+					{"network_property": "yup"}
+				]
+			}`))
+		})
+
+		Context("failure cases", func() {
+			It("returns an error when the http status is non-200", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusInternalServerError,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+				err := directorService.NetworksConfiguration(json.RawMessage("{}"))
+				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+			})
+
+			It("returns an error when the api endpoint fails", func() {
+				client.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+
+				err := directorService.NetworksConfiguration(json.RawMessage("{}"))
+				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/networks: api endpoint failed"))
+			})
+		})
+	})
+
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
 			err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{
@@ -154,51 +241,6 @@ var _ = Describe("DirectorService", func() {
 				err := directorService.Properties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/properties: api endpoint failed"))
-			})
-		})
-	})
-
-	Describe("AZConfiguration", func() {
-		It("configures availability zones", func() {
-			err := directorService.AZConfiguration(api.AZConfiguration{
-				AvailabilityZones: json.RawMessage(`[{"az_name": "1"}]`),
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
-
-			Expect(req.Method).To(Equal("PUT"))
-			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
-			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-			jsonBody, err := ioutil.ReadAll(req.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(jsonBody).To(MatchJSON(`{
-				"availability_zones": [
-					{"az_name": "1"}
-				]
-			}`))
-		})
-
-		Context("failure cases", func() {
-			It("returns an error when the http status is non-200", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusInternalServerError,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
-
-				err := directorService.AZConfiguration(api.AZConfiguration{})
-				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
-			})
-
-			It("returns an error when the api endpoint fails", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
-
-				err := directorService.AZConfiguration(api.AZConfiguration{})
-
-				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})
 		})
 	})

@@ -2,23 +2,13 @@
 package fakes
 
 import (
+	"encoding/json"
 	"sync"
 
 	"github.com/pivotal-cf/om/api"
 )
 
 type DirectorService struct {
-	NetworkAndAZStub        func(api.NetworkAndAZConfiguration) error
-	networkAndAZMutex       sync.RWMutex
-	networkAndAZArgsForCall []struct {
-		arg1 api.NetworkAndAZConfiguration
-	}
-	networkAndAZReturns struct {
-		result1 error
-	}
-	networkAndAZReturnsOnCall map[int]struct {
-		result1 error
-	}
 	AZConfigurationStub        func(api.AZConfiguration) error
 	aZConfigurationMutex       sync.RWMutex
 	aZConfigurationArgsForCall []struct {
@@ -28,6 +18,28 @@ type DirectorService struct {
 		result1 error
 	}
 	aZConfigurationReturnsOnCall map[int]struct {
+		result1 error
+	}
+	NetworksConfigurationStub        func(json.RawMessage) error
+	networksConfigurationMutex       sync.RWMutex
+	networksConfigurationArgsForCall []struct {
+		arg1 json.RawMessage
+	}
+	networksConfigurationReturns struct {
+		result1 error
+	}
+	networksConfigurationReturnsOnCall map[int]struct {
+		result1 error
+	}
+	NetworkAndAZStub        func(api.NetworkAndAZConfiguration) error
+	networkAndAZMutex       sync.RWMutex
+	networkAndAZArgsForCall []struct {
+		arg1 api.NetworkAndAZConfiguration
+	}
+	networkAndAZReturns struct {
+		result1 error
+	}
+	networkAndAZReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PropertiesStub        func(api.DirectorProperties) error
@@ -43,54 +55,6 @@ type DirectorService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *DirectorService) NetworkAndAZ(arg1 api.NetworkAndAZConfiguration) error {
-	fake.networkAndAZMutex.Lock()
-	ret, specificReturn := fake.networkAndAZReturnsOnCall[len(fake.networkAndAZArgsForCall)]
-	fake.networkAndAZArgsForCall = append(fake.networkAndAZArgsForCall, struct {
-		arg1 api.NetworkAndAZConfiguration
-	}{arg1})
-	fake.recordInvocation("NetworkAndAZ", []interface{}{arg1})
-	fake.networkAndAZMutex.Unlock()
-	if fake.NetworkAndAZStub != nil {
-		return fake.NetworkAndAZStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.networkAndAZReturns.result1
-}
-
-func (fake *DirectorService) NetworkAndAZCallCount() int {
-	fake.networkAndAZMutex.RLock()
-	defer fake.networkAndAZMutex.RUnlock()
-	return len(fake.networkAndAZArgsForCall)
-}
-
-func (fake *DirectorService) NetworkAndAZArgsForCall(i int) api.NetworkAndAZConfiguration {
-	fake.networkAndAZMutex.RLock()
-	defer fake.networkAndAZMutex.RUnlock()
-	return fake.networkAndAZArgsForCall[i].arg1
-}
-
-func (fake *DirectorService) NetworkAndAZReturns(result1 error) {
-	fake.NetworkAndAZStub = nil
-	fake.networkAndAZReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *DirectorService) NetworkAndAZReturnsOnCall(i int, result1 error) {
-	fake.NetworkAndAZStub = nil
-	if fake.networkAndAZReturnsOnCall == nil {
-		fake.networkAndAZReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.networkAndAZReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
 }
 
 func (fake *DirectorService) AZConfiguration(arg1 api.AZConfiguration) error {
@@ -137,6 +101,102 @@ func (fake *DirectorService) AZConfigurationReturnsOnCall(i int, result1 error) 
 		})
 	}
 	fake.aZConfigurationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *DirectorService) NetworksConfiguration(arg1 json.RawMessage) error {
+	fake.networksConfigurationMutex.Lock()
+	ret, specificReturn := fake.networksConfigurationReturnsOnCall[len(fake.networksConfigurationArgsForCall)]
+	fake.networksConfigurationArgsForCall = append(fake.networksConfigurationArgsForCall, struct {
+		arg1 json.RawMessage
+	}{arg1})
+	fake.recordInvocation("NetworksConfiguration", []interface{}{arg1})
+	fake.networksConfigurationMutex.Unlock()
+	if fake.NetworksConfigurationStub != nil {
+		return fake.NetworksConfigurationStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.networksConfigurationReturns.result1
+}
+
+func (fake *DirectorService) NetworksConfigurationCallCount() int {
+	fake.networksConfigurationMutex.RLock()
+	defer fake.networksConfigurationMutex.RUnlock()
+	return len(fake.networksConfigurationArgsForCall)
+}
+
+func (fake *DirectorService) NetworksConfigurationArgsForCall(i int) json.RawMessage {
+	fake.networksConfigurationMutex.RLock()
+	defer fake.networksConfigurationMutex.RUnlock()
+	return fake.networksConfigurationArgsForCall[i].arg1
+}
+
+func (fake *DirectorService) NetworksConfigurationReturns(result1 error) {
+	fake.NetworksConfigurationStub = nil
+	fake.networksConfigurationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *DirectorService) NetworksConfigurationReturnsOnCall(i int, result1 error) {
+	fake.NetworksConfigurationStub = nil
+	if fake.networksConfigurationReturnsOnCall == nil {
+		fake.networksConfigurationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.networksConfigurationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *DirectorService) NetworkAndAZ(arg1 api.NetworkAndAZConfiguration) error {
+	fake.networkAndAZMutex.Lock()
+	ret, specificReturn := fake.networkAndAZReturnsOnCall[len(fake.networkAndAZArgsForCall)]
+	fake.networkAndAZArgsForCall = append(fake.networkAndAZArgsForCall, struct {
+		arg1 api.NetworkAndAZConfiguration
+	}{arg1})
+	fake.recordInvocation("NetworkAndAZ", []interface{}{arg1})
+	fake.networkAndAZMutex.Unlock()
+	if fake.NetworkAndAZStub != nil {
+		return fake.NetworkAndAZStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.networkAndAZReturns.result1
+}
+
+func (fake *DirectorService) NetworkAndAZCallCount() int {
+	fake.networkAndAZMutex.RLock()
+	defer fake.networkAndAZMutex.RUnlock()
+	return len(fake.networkAndAZArgsForCall)
+}
+
+func (fake *DirectorService) NetworkAndAZArgsForCall(i int) api.NetworkAndAZConfiguration {
+	fake.networkAndAZMutex.RLock()
+	defer fake.networkAndAZMutex.RUnlock()
+	return fake.networkAndAZArgsForCall[i].arg1
+}
+
+func (fake *DirectorService) NetworkAndAZReturns(result1 error) {
+	fake.NetworkAndAZStub = nil
+	fake.networkAndAZReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *DirectorService) NetworkAndAZReturnsOnCall(i int, result1 error) {
+	fake.NetworkAndAZStub = nil
+	if fake.networkAndAZReturnsOnCall == nil {
+		fake.networkAndAZReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.networkAndAZReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -192,10 +252,12 @@ func (fake *DirectorService) PropertiesReturnsOnCall(i int, result1 error) {
 func (fake *DirectorService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.networkAndAZMutex.RLock()
-	defer fake.networkAndAZMutex.RUnlock()
 	fake.aZConfigurationMutex.RLock()
 	defer fake.aZConfigurationMutex.RUnlock()
+	fake.networksConfigurationMutex.RLock()
+	defer fake.networksConfigurationMutex.RUnlock()
+	fake.networkAndAZMutex.RLock()
+	defer fake.networkAndAZMutex.RUnlock()
 	fake.propertiesMutex.RLock()
 	defer fake.propertiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
