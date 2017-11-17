@@ -65,7 +65,7 @@
   branch = "master"
   name = "github.com/pivotal-cf/jhanda"
   packages = ["commands","flags"]
-  revision = "b3cc23e97665c2ed08df165981aec07b98c3ee91"
+  revision = "cd0b97dd71705dd3128a50060d46a8e48d3c96e4"
 
 [[projects]]
   branch = "master"

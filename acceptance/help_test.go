@@ -13,15 +13,15 @@ const GLOBAL_USAGE = `ॐ
 om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
-  --version, -v              bool    prints the om release version (default: false)
-  --help, -h                 bool    prints this usage information (default: false)
-  --target, -t               string  location of the Ops Manager VM
   --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --help, -h                 bool    prints this usage information (default: false)
   --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
   --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
+  --target, -t               string  location of the Ops Manager VM
+  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --version, -v              bool    prints the om release version (default: false)
 
 Commands:
   activate-certificate-authority  activates a certificate authority on the Ops Manager
@@ -66,23 +66,23 @@ This unauthenticated command helps setup the authentication mechanism for your O
 The "internal" userstore mechanism is the only currently supported option.
 
 Usage: om [options] configure-authentication [<args>]
-  --version, -v              bool    prints the om release version (default: false)
-  --help, -h                 bool    prints this usage information (default: false)
-  --target, -t               string  location of the Ops Manager VM
   --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --help, -h                 bool    prints this usage information (default: false)
   --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
   --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
+  --target, -t               string  location of the Ops Manager VM
+  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --version, -v              bool    prints the om release version (default: false)
 
 Command Arguments:
-  --username, -u                string  admin username
-  --password, -p                string  admin password
   --decryption-passphrase, -dp  string  passphrase used to encrypt the installation
   --http-proxy-url              string  proxy for outbound HTTP network traffic
   --https-proxy-url             string  proxy for outbound HTTPS network traffic
   --no-proxy                    string  comma-separated list of hosts that do not go through the proxy
+  --password, -p                string  admin password
+  --username, -u                string  admin username
 `
 
 var _ = Describe("help", func() {

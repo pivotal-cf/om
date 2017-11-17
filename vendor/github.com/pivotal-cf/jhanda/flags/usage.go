@@ -3,6 +3,7 @@ package flags
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -14,7 +15,6 @@ func Usage(receiver interface{}) (string, error) {
 	}
 
 	var fields []reflect.StructField
-
 	for i := 0; i < t.NumField(); i++ {
 		fields = append(fields, t.Field(i))
 	}
@@ -79,6 +79,8 @@ func Usage(receiver interface{}) (string, error) {
 			usage[i] = fmt.Sprintf("%s (default: %s)", usage[i], defaultValue)
 		}
 	}
+
+	sort.Strings(usage)
 
 	return strings.Join(usage, "\n"), nil
 }

@@ -33,8 +33,8 @@ Usage: om [options] bake [<args>]
   --surprise, -!  gives you a present
 
 Command Arguments:
-  --flour, -f   int             cups of flour
   --butter, -b  int (variadic)  sticks of butter
+  --flour, -f   int             cups of flour
   --lemon, -l   int             teaspoons of lemon juice
 `
 
