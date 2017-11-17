@@ -37,15 +37,15 @@ apt-get install om
 om helps you interact with an Ops Manager
 
 Usage: om [options] <command> [<args>]
-  --version, -v              bool    prints the om release version (default: false)
-  --help, -h                 bool    prints this usage information (default: false)
-  --target, -t               string  location of the Ops Manager VM
   --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --help, -h                 bool    prints this usage information (default: false)
   --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
   --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
+  --target, -t               string  location of the Ops Manager VM
+  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
+  --version, -v              bool    prints the om release version (default: false)
 
 Commands:
   activate-certificate-authority  activates a certificate authority on the Ops Manager
