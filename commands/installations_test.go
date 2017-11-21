@@ -10,6 +10,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/models"
 )
 
 func parseTime(timeString string) *time.Time {
@@ -26,13 +27,13 @@ var _ = Describe("Installations", func() {
 	var (
 		command                  commands.Installations
 		fakeInstallationsService *fakes.InstallationsService
-		tableWriter              *fakes.TableWriter
+		fakePresenter            *fakes.Presenter
 	)
 
 	BeforeEach(func() {
-		tableWriter = &fakes.TableWriter{}
+		fakePresenter = &fakes.Presenter{}
 		fakeInstallationsService = &fakes.InstallationsService{}
-		command = commands.NewInstallations(fakeInstallationsService, tableWriter)
+		command = commands.NewInstallations(fakeInstallationsService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -46,25 +47,33 @@ var _ = Describe("Installations", func() {
 					FinishedAt: parseTime("2017-05-24T23:39:37.316Z"),
 				},
 				{
-					ID:         2,
-					UserName:   "some-user2",
-					Status:     "failed",
-					StartedAt:  parseTime("2017-05-25T23:38:37.316Z"),
-					FinishedAt: parseTime("2017-05-25T23:39:37.316Z"),
+					ID:        2,
+					UserName:  "some-user2",
+					Status:    "failed",
+					StartedAt: parseTime("2017-05-25T23:38:37.316Z"),
 				},
 			}, nil)
 
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"ID", "User", "Status", "Started At", "Finished At"}))
-
-			Expect(tableWriter.AppendCallCount()).To(Equal(2))
-			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"1", "some-user", "succeeded", "2017-05-24T23:38:37.316Z", "2017-05-24T23:39:37.316Z"}))
-			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"2", "some-user2", "failed", "2017-05-25T23:38:37.316Z", "2017-05-25T23:39:37.316Z"}))
-
-			Expect(tableWriter.RenderCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentInstallationsCallCount()).To(Equal(1))
+			installations := fakePresenter.PresentInstallationsArgsForCall(0)
+			Expect(installations).To(ConsistOf(
+				models.Installation{
+					Id:         "1",
+					User:       "some-user",
+					Status:     "succeeded",
+					StartedAt:  "2017-05-24T23:38:37.316Z",
+					FinishedAt: "2017-05-24T23:39:37.316Z",
+				},
+				models.Installation{
+					Id:         "2",
+					User:       "some-user2",
+					Status:     "failed",
+					StartedAt:  "2017-05-25T23:38:37.316Z",
+					FinishedAt: "",
+				}))
 		})
 
 		Context("Failure cases", func() {

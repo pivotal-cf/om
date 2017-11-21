@@ -16,6 +16,7 @@ import (
 	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
+	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
 )
 
@@ -129,6 +130,8 @@ func main() {
 
 	extractor := extractor.ProductUnzipper{}
 
+	presenter := presenters.NewTablePresenter(tableWriter)
+
 	commandSet := jhandacommands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
@@ -155,7 +158,7 @@ func main() {
 	commandSet["deployed-products"] = commands.NewDeployedProducts(tableWriter, diagnosticService)
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
 	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)
-	commandSet["installations"] = commands.NewInstallations(installationsService, tableWriter)
+	commandSet["installations"] = commands.NewInstallations(installationsService, presenter)
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, tableWriter)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)

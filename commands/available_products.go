@@ -13,11 +13,13 @@ type AvailableProducts struct {
 }
 
 //go:generate counterfeiter -o ./fakes/available_products_service.go --fake-name AvailableProductsService . availableProductsService
+
 type availableProductsService interface {
 	List() (api.AvailableProductsOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
+
 type tableWriter interface {
 	SetHeader([]string)
 	Append([]string)
