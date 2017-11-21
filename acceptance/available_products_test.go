@@ -27,6 +27,17 @@ var _ = Describe("available-products command", func() {
 +--------------+---------+
 `
 
+	const jsonOutput = `[
+	{
+		"name": "some-product",
+		"version": "1.2.3"
+	},
+	{
+		"name": "p-redis",
+		"version": "1.7.2"
+	}
+]`
+
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -68,6 +79,25 @@ var _ = Describe("available-products command", func() {
 		Eventually(session).Should(gexec.Exit(0))
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
+	})
+
+	Context("when the json format is requested", func() {
+		It("lists the available products in json", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--format", "json",
+				"--skip-ssl-validation",
+				"available-products")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
 	})
 
 	Context("when there are no available products to list", func() {

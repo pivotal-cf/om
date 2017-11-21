@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"strconv"
-	"time"
-
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
@@ -11,14 +8,14 @@ import (
 
 type Installations struct {
 	service   installationsService
-	presenter presenter
+	presenter Presenter
 }
 
 func (i Installations) ListInstallations() (api.InstallationsServiceOutput, error) {
 	return api.InstallationsServiceOutput{}, nil
 }
 
-func NewInstallations(incomingService installationsService, presenter presenter) Installations {
+func NewInstallations(incomingService installationsService, presenter Presenter) Installations {
 	return Installations{
 		service:   incomingService,
 		presenter: presenter,
@@ -33,18 +30,12 @@ func (i Installations) Execute(args []string) error {
 
 	installations := []models.Installation{}
 	for _, installation := range installationsOutput {
-		finishedTime := ""
-
-		if installation.FinishedAt != nil {
-			finishedTime = installation.FinishedAt.Format(time.RFC3339Nano)
-		}
-
 		installations = append(installations, models.Installation{
-			Id:         strconv.Itoa(installation.ID),
+			Id:         installation.ID,
 			User:       installation.UserName,
 			Status:     installation.Status,
-			StartedAt:  installation.StartedAt.Format(time.RFC3339Nano),
-			FinishedAt: finishedTime,
+			StartedAt:  installation.StartedAt,
+			FinishedAt: installation.FinishedAt,
 		})
 	}
 

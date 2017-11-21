@@ -1,6 +1,9 @@
 package presenters
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/om/models"
 )
@@ -30,12 +33,21 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 	t.tableWriter.SetHeader([]string{"ID", "User", "Status", "Started At", "Finished At"})
 
 	for _, installation := range installations {
+		var startedAt, finishedAt string
+		if installation.StartedAt != nil {
+			startedAt = installation.StartedAt.Format(time.RFC3339Nano)
+		}
+
+		if installation.FinishedAt != nil {
+			finishedAt = installation.FinishedAt.Format(time.RFC3339Nano)
+		}
+
 		t.tableWriter.Append([]string{
-			installation.Id,
+			strconv.Itoa(installation.Id),
 			installation.User,
 			installation.Status,
-			installation.StartedAt,
-			installation.FinishedAt,
+			startedAt,
+			finishedAt,
 		})
 	}
 

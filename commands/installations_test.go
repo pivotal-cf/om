@@ -61,18 +61,17 @@ var _ = Describe("Installations", func() {
 			installations := fakePresenter.PresentInstallationsArgsForCall(0)
 			Expect(installations).To(ConsistOf(
 				models.Installation{
-					Id:         "1",
+					Id:         1,
 					User:       "some-user",
 					Status:     "succeeded",
-					StartedAt:  "2017-05-24T23:38:37.316Z",
-					FinishedAt: "2017-05-24T23:39:37.316Z",
+					StartedAt:  parseTime("2017-05-24T23:38:37.316Z"),
+					FinishedAt: parseTime("2017-05-24T23:39:37.316Z"),
 				},
 				models.Installation{
-					Id:         "2",
-					User:       "some-user2",
-					Status:     "failed",
-					StartedAt:  "2017-05-25T23:38:37.316Z",
-					FinishedAt: "",
+					Id:        2,
+					User:      "some-user2",
+					Status:    "failed",
+					StartedAt: parseTime("2017-05-25T23:38:37.316Z"),
 				}))
 		})
 

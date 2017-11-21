@@ -8,7 +8,7 @@ import (
 
 type AvailableProducts struct {
 	service   availableProductsService
-	presenter presenter
+	presenter Presenter
 	logger    logger
 }
 
@@ -18,7 +18,7 @@ type availableProductsService interface {
 	List() (api.AvailableProductsOutput, error)
 }
 
-func NewAvailableProducts(apService availableProductsService, presenter presenter, logger logger) AvailableProducts {
+func NewAvailableProducts(apService availableProductsService, presenter Presenter, logger logger) AvailableProducts {
 	return AvailableProducts{service: apService, presenter: presenter, logger: logger}
 }
 

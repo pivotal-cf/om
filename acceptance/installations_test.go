@@ -24,6 +24,30 @@ var _ = Describe("installations command", func() {
 +----+-------------+-----------+--------------------------+--------------------------+
 `
 
+	const jsonOutput = `[
+	{
+		"user": "some-user",
+		"finished_at": "2017-05-24T23:55:56.106Z",
+		"started_at": "2017-05-24T23:38:37.316Z",
+		"status": "succeeded",
+		"id": 1
+	},
+	{
+		"user": "some-user-2",
+		"finished_at": "2017-05-24T23:55:56.106Z",
+		"started_at": "2017-05-24T23:38:37.316Z",
+		"status": "failed",
+		"id": 2
+	},
+	{
+		"user": "some-user-3",
+		"started_at": "2017-05-24T23:38:37.316Z",
+		"status": "running",
+		"id": 3
+	}
+]
+`
+
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -83,5 +107,23 @@ var _ = Describe("installations command", func() {
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
+	})
+
+	Context("when the --format flag is provided with json", func() {
+		It("displays a list of recent installation events in json", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"--format", "json",
+				"installations")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(session, "40s").Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
 	})
 })

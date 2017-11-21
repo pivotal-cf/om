@@ -1,6 +1,9 @@
 package presenters_test
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/olekukonko/tablewriter"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,13 +27,16 @@ var _ = Describe("TablePresenter", func() {
 		var installations []models.Installation
 
 		BeforeEach(func() {
+			startedAt := time.Now().Add(1 * time.Hour)
+			finishedAt := time.Now().Add(2 * time.Hour)
+
 			installations = []models.Installation{
 				{
-					Id:         "some-id",
+					Id:         1,
 					User:       "some-user",
 					Status:     "some-status",
-					StartedAt:  "some-started-at",
-					FinishedAt: "some-finished-at",
+					StartedAt:  &startedAt,
+					FinishedAt: &finishedAt,
 				},
 			}
 		})
@@ -45,11 +51,11 @@ var _ = Describe("TablePresenter", func() {
 			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
 			values := fakeTableWriter.AppendArgsForCall(0)
 			Expect(values).To(Equal([]string{
-				installations[0].Id,
+				strconv.Itoa(installations[0].Id),
 				installations[0].User,
 				installations[0].Status,
-				installations[0].StartedAt,
-				installations[0].FinishedAt,
+				installations[0].StartedAt.Format(time.RFC3339Nano),
+				installations[0].FinishedAt.Format(time.RFC3339Nano),
 			}))
 
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
