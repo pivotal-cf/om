@@ -33,7 +33,7 @@ func (ap AvailableProducts) Execute(args []string) error {
 		return nil
 	}
 
-	products := []models.Product{}
+	var products []models.Product
 	for _, product := range output.ProductsList {
 		products = append(products, models.Product{
 			Name:    product.Name,

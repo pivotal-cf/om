@@ -8,6 +8,7 @@ import (
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/models"
 )
 
 //go:generate counterfeiter -o ./fakes/staged_products_finder.go --fake-name StagedProductsFinder . stagedProductsFinder
@@ -22,7 +23,7 @@ type errandsService interface {
 }
 
 type Errands struct {
-	tableWriter          tableWriter
+	presenter            Presenter
 	errandsService       errandsService
 	stagedProductsFinder stagedProductsFinder
 	Options              struct {
@@ -30,9 +31,9 @@ type Errands struct {
 	}
 }
 
-func NewErrands(tableWriter tableWriter, errandsService errandsService, stagedProductsFinder stagedProductsFinder) Errands {
+func NewErrands(presenter Presenter, errandsService errandsService, stagedProductsFinder stagedProductsFinder) Errands {
 	return Errands{
-		tableWriter:          tableWriter,
+		presenter:            presenter,
 		errandsService:       errandsService,
 		stagedProductsFinder: stagedProductsFinder,
 	}
@@ -58,31 +59,29 @@ func (e Errands) Execute(args []string) error {
 		return fmt.Errorf("failed to list errands: %s", err)
 	}
 
-	e.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"})
-
+	var errands []models.Errand
 	for _, errand := range errandsOutput.Errands {
-		var postDeploy, preDelete string
-
-		switch p := errand.PreDelete.(type) {
-		case string:
-			preDelete = p
-		case bool:
-			preDelete = strconv.FormatBool(p)
-		}
-
-		switch p := errand.PostDeploy.(type) {
-		case string:
-			postDeploy = p
-		case bool:
-			postDeploy = strconv.FormatBool(p)
-		}
-
-		e.tableWriter.Append([]string{errand.Name, postDeploy, preDelete})
+		errands = append(errands, models.Errand{
+			Name:              errand.Name,
+			PostDeployEnabled: boolStringFromType(errand.PostDeploy),
+			PreDeleteEnabled:  boolStringFromType(errand.PreDelete),
+		})
 	}
 
-	e.tableWriter.Render()
+	e.presenter.PresentErrands(errands)
 
 	return nil
+}
+
+func boolStringFromType(object interface{}) string {
+	switch p := object.(type) {
+	case string:
+		return p
+	case bool:
+		return strconv.FormatBool(p)
+	default:
+		return ""
+	}
 }
 
 func (e Errands) Usage() commands.Usage {

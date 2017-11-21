@@ -28,6 +28,14 @@ var _ = Describe("errands command", func() {
 +---------------+---------------------+--------------------+
 `
 
+	const jsonOutput = `[
+	{"name": "some-errand-1", "post_deploy_enabled": "true", "pre_delete_enabled": "true"},
+	{"name": "some-errand-2", "post_deploy_enabled": "false", "pre_delete_enabled": "false"},
+	{"name": "some-errand-3", "pre_delete_enabled": "true"},
+	{"name": "some-errand-4", "post_deploy_enabled": "when-changed"}
+]
+`
+
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -78,5 +86,25 @@ var _ = Describe("errands command", func() {
 		Eventually(session).Should(gexec.Exit(0))
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
+	})
+
+	Context("when json format is requested", func() {
+		It("lists the errands belonging to the product in json", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"--format", "json",
+				"errands",
+				"--product-name", "some-product")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
 	})
 })

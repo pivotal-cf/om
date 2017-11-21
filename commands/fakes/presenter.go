@@ -4,51 +4,28 @@ package fakes
 import (
 	"sync"
 
+	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/models"
 )
 
 type Presenter struct {
-	PresentInstallationsStub        func([]models.Installation)
-	presentInstallationsMutex       sync.RWMutex
-	presentInstallationsArgsForCall []struct {
-		arg1 []models.Installation
-	}
 	PresentAvailableProductsStub        func([]models.Product)
 	presentAvailableProductsMutex       sync.RWMutex
 	presentAvailableProductsArgsForCall []struct {
 		arg1 []models.Product
 	}
+	PresentErrandsStub        func([]models.Errand)
+	presentErrandsMutex       sync.RWMutex
+	presentErrandsArgsForCall []struct {
+		arg1 []models.Errand
+	}
+	PresentInstallationsStub        func([]models.Installation)
+	presentInstallationsMutex       sync.RWMutex
+	presentInstallationsArgsForCall []struct {
+		arg1 []models.Installation
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *Presenter) PresentInstallations(arg1 []models.Installation) {
-	var arg1Copy []models.Installation
-	if arg1 != nil {
-		arg1Copy = make([]models.Installation, len(arg1))
-		copy(arg1Copy, arg1)
-	}
-	fake.presentInstallationsMutex.Lock()
-	fake.presentInstallationsArgsForCall = append(fake.presentInstallationsArgsForCall, struct {
-		arg1 []models.Installation
-	}{arg1Copy})
-	fake.recordInvocation("PresentInstallations", []interface{}{arg1Copy})
-	fake.presentInstallationsMutex.Unlock()
-	if fake.PresentInstallationsStub != nil {
-		fake.PresentInstallationsStub(arg1)
-	}
-}
-
-func (fake *Presenter) PresentInstallationsCallCount() int {
-	fake.presentInstallationsMutex.RLock()
-	defer fake.presentInstallationsMutex.RUnlock()
-	return len(fake.presentInstallationsArgsForCall)
-}
-
-func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installation {
-	fake.presentInstallationsMutex.RLock()
-	defer fake.presentInstallationsMutex.RUnlock()
-	return fake.presentInstallationsArgsForCall[i].arg1
 }
 
 func (fake *Presenter) PresentAvailableProducts(arg1 []models.Product) {
@@ -80,13 +57,73 @@ func (fake *Presenter) PresentAvailableProductsArgsForCall(i int) []models.Produ
 	return fake.presentAvailableProductsArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentErrands(arg1 []models.Errand) {
+	var arg1Copy []models.Errand
+	if arg1 != nil {
+		arg1Copy = make([]models.Errand, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentErrandsMutex.Lock()
+	fake.presentErrandsArgsForCall = append(fake.presentErrandsArgsForCall, struct {
+		arg1 []models.Errand
+	}{arg1Copy})
+	fake.recordInvocation("PresentErrands", []interface{}{arg1Copy})
+	fake.presentErrandsMutex.Unlock()
+	if fake.PresentErrandsStub != nil {
+		fake.PresentErrandsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentErrandsCallCount() int {
+	fake.presentErrandsMutex.RLock()
+	defer fake.presentErrandsMutex.RUnlock()
+	return len(fake.presentErrandsArgsForCall)
+}
+
+func (fake *Presenter) PresentErrandsArgsForCall(i int) []models.Errand {
+	fake.presentErrandsMutex.RLock()
+	defer fake.presentErrandsMutex.RUnlock()
+	return fake.presentErrandsArgsForCall[i].arg1
+}
+
+func (fake *Presenter) PresentInstallations(arg1 []models.Installation) {
+	var arg1Copy []models.Installation
+	if arg1 != nil {
+		arg1Copy = make([]models.Installation, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentInstallationsMutex.Lock()
+	fake.presentInstallationsArgsForCall = append(fake.presentInstallationsArgsForCall, struct {
+		arg1 []models.Installation
+	}{arg1Copy})
+	fake.recordInvocation("PresentInstallations", []interface{}{arg1Copy})
+	fake.presentInstallationsMutex.Unlock()
+	if fake.PresentInstallationsStub != nil {
+		fake.PresentInstallationsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentInstallationsCallCount() int {
+	fake.presentInstallationsMutex.RLock()
+	defer fake.presentInstallationsMutex.RUnlock()
+	return len(fake.presentInstallationsArgsForCall)
+}
+
+func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installation {
+	fake.presentInstallationsMutex.RLock()
+	defer fake.presentInstallationsMutex.RUnlock()
+	return fake.presentInstallationsArgsForCall[i].arg1
+}
+
 func (fake *Presenter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.presentInstallationsMutex.RLock()
-	defer fake.presentInstallationsMutex.RUnlock()
 	fake.presentAvailableProductsMutex.RLock()
 	defer fake.presentAvailableProductsMutex.RUnlock()
+	fake.presentErrandsMutex.RLock()
+	defer fake.presentErrandsMutex.RUnlock()
+	fake.presentInstallationsMutex.RLock()
+	defer fake.presentInstallationsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -105,3 +142,5 @@ func (fake *Presenter) recordInvocation(key string, args []interface{}) {
 	}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
+
+var _ commands.Presenter = new(Presenter)

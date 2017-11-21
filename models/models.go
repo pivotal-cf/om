@@ -14,3 +14,9 @@ type Product struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 }
+
+type Errand struct {
+	Name              string `json:"name"`
+	PostDeployEnabled string `json:"post_deploy_enabled,omitempty"`
+	PreDeleteEnabled  string `json:"pre_delete_enabled,omitempty"`
+}

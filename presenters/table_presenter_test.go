@@ -23,6 +23,65 @@ var _ = Describe("TablePresenter", func() {
 		tablePresenter = presenters.NewTablePresenter(fakeTableWriter)
 	})
 
+	Describe("PresentAvailableProducts", func() {
+		var products []models.Product
+
+		BeforeEach(func() {
+			products = []models.Product{
+				{Name: "some-name", Version: "some-version"},
+				{Name: "some-other-name", Version: "some-other-version"},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentAvailableProducts(products)
+
+			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Name", "Version"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
+
+			values := fakeTableWriter.AppendArgsForCall(0)
+			Expect(values).To(Equal([]string{"some-name", "some-version"}))
+			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{"some-other-name", "some-other-version"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
+
+	Describe("PresentErrands", func() {
+		var errands []models.Errand
+
+		BeforeEach(func() {
+			errands = []models.Errand{
+				{Name: "errand-1", PostDeployEnabled: "post-deploy-1", PreDeleteEnabled: "pre-delete-1"},
+				{Name: "errand-2", PostDeployEnabled: "post-deploy-2", PreDeleteEnabled: "pre-delete-2"},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentErrands(errands)
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
+
+			values := fakeTableWriter.AppendArgsForCall(0)
+			Expect(values).To(Equal([]string{errands[0].Name, errands[0].PostDeployEnabled, errands[0].PreDeleteEnabled}))
+			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{errands[1].Name, errands[1].PostDeployEnabled, errands[1].PreDeleteEnabled}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
+
 	Describe("PresentInstallations", func() {
 		var installations []models.Installation
 
@@ -77,37 +136,6 @@ var _ = Describe("TablePresenter", func() {
 
 				Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 			})
-		})
-	})
-
-	Describe("PresentAvailableProducts", func() {
-		var products []models.Product
-
-		BeforeEach(func() {
-			products = []models.Product{
-				{Name: "some-name", Version: "some-version"},
-				{Name: "some-other-name", Version: "some-other-version"},
-			}
-		})
-
-		It("creates a table", func() {
-			tablePresenter.PresentAvailableProducts(products)
-
-			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))
-
-			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
-			headers := fakeTableWriter.SetHeaderArgsForCall(0)
-			Expect(headers).To(Equal([]string{"Name", "Version"}))
-
-			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
-
-			values := fakeTableWriter.AppendArgsForCall(0)
-			Expect(values).To(Equal([]string{"some-name", "some-version"}))
-			values = fakeTableWriter.AppendArgsForCall(1)
-			Expect(values).To(Equal([]string{"some-other-name", "some-other-version"}))
-
-			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
 	})
 })

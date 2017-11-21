@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/models"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,17 +15,17 @@ import (
 
 var _ = Describe("Errands", func() {
 	var (
-		tableWriter          *fakes.TableWriter
+		fakePresenter        *fakes.Presenter
 		stagedProductsFinder *fakes.StagedProductsFinder
 		errandsService       *fakes.ErrandsService
 		command              commands.Errands
 	)
 
 	BeforeEach(func() {
-		tableWriter = &fakes.TableWriter{}
+		fakePresenter = &fakes.Presenter{}
 		stagedProductsFinder = &fakes.StagedProductsFinder{}
 		errandsService = &fakes.ErrandsService{}
-		command = commands.NewErrands(tableWriter, errandsService, stagedProductsFinder)
+		command = commands.NewErrands(fakePresenter, errandsService, stagedProductsFinder)
 	})
 
 	Describe("Execute", func() {
@@ -55,71 +56,15 @@ var _ = Describe("Errands", func() {
 			Expect(errandsService.ListCallCount()).To(Equal(1))
 			Expect(errandsService.ListArgsForCall(0)).To(Equal("some-product-id"))
 
-			Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
-
-			Expect(tableWriter.AppendCallCount()).To(Equal(5))
-			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "true", ""}))
-			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"second-errand", "false", ""}))
-			Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{"third-errand", "", "true"}))
-			Expect(tableWriter.AppendArgsForCall(3)).To(Equal([]string{"will-not-appear", "", ""}))
-			Expect(tableWriter.AppendArgsForCall(4)).To(Equal([]string{"also-bad", "", ""}))
-
-			Expect(tableWriter.RenderCallCount()).To(Equal(1))
-		})
-
-		Context("post deploy state types", func() {
-			Context("when post deploy state is a string", func() {
-				It("lists the available products", func() {
-					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{
-						Product: api.StagedProduct{
-							Type: "some-product-name",
-							GUID: "some-product-id",
-						},
-					}, nil)
-
-					errandsService.ListReturns(api.ErrandsListOutput{
-						Errands: []api.Errand{
-							{Name: "first-errand", PostDeploy: "when-changed"},
-						},
-					}, nil)
-
-					err := command.Execute([]string{"--product-name", "some-product-name"})
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-					Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
-
-					Expect(tableWriter.AppendCallCount()).To(Equal(1))
-					Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "when-changed", ""}))
-				})
-			})
-
-			Context("when post deploy state is a boolean", func() {
-				It("lists the available products", func() {
-					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{
-						Product: api.StagedProduct{
-							Type: "some-product-name",
-							GUID: "some-product-id",
-						},
-					}, nil)
-
-					errandsService.ListReturns(api.ErrandsListOutput{
-						Errands: []api.Errand{
-							{Name: "first-errand", PostDeploy: true},
-						},
-					}, nil)
-
-					err := command.Execute([]string{"--product-name", "some-product-name"})
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-					Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"}))
-
-					Expect(tableWriter.AppendCallCount()).To(Equal(1))
-					Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-errand", "true", ""}))
-				})
-			})
+			Expect(fakePresenter.PresentErrandsCallCount()).To(Equal(1))
+			errands := fakePresenter.PresentErrandsArgsForCall(0)
+			Expect(errands).To(ConsistOf(
+				models.Errand{Name: "first-errand", PostDeployEnabled: "true"},
+				models.Errand{Name: "second-errand", PostDeployEnabled: "false"},
+				models.Errand{Name: "third-errand", PreDeleteEnabled: "true"},
+				models.Errand{Name: "will-not-appear"},
+				models.Errand{Name: "also-bad"},
+			))
 		})
 
 		Context("failure cases", func() {

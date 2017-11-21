@@ -28,7 +28,7 @@ func (i Installations) Execute(args []string) error {
 		return err
 	}
 
-	installations := []models.Installation{}
+	var installations []models.Installation
 	for _, installation := range installationsOutput {
 		installations = append(installations, models.Installation{
 			Id:         installation.ID,

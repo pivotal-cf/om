@@ -29,6 +29,27 @@ func NewTablePresenter(tableWriter tableWriter) TablePresenter {
 	}
 }
 
+func (t TablePresenter) PresentAvailableProducts(products []models.Product) {
+	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+	t.tableWriter.SetHeader([]string{"Name", "Version"})
+
+	for _, product := range products {
+		t.tableWriter.Append([]string{product.Name, product.Version})
+	}
+
+	t.tableWriter.Render()
+}
+
+func (t TablePresenter) PresentErrands(errands []models.Errand) {
+	t.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"})
+
+	for _, errand := range errands {
+		t.tableWriter.Append([]string{errand.Name, errand.PostDeployEnabled, errand.PreDeleteEnabled})
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentInstallations(installations []models.Installation) {
 	t.tableWriter.SetHeader([]string{"ID", "User", "Status", "Started At", "Finished At"})
 
@@ -49,17 +70,6 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 			startedAt,
 			finishedAt,
 		})
-	}
-
-	t.tableWriter.Render()
-}
-
-func (t TablePresenter) PresentAvailableProducts(products []models.Product) {
-	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
-	t.tableWriter.SetHeader([]string{"Name", "Version"})
-
-	for _, product := range products {
-		t.tableWriter.Append([]string{product.Name, product.Version})
 	}
 
 	t.tableWriter.Render()

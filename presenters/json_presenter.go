@@ -17,12 +17,17 @@ func NewJSONPresenter(stdout io.Writer) JSONPresenter {
 	}
 }
 
-func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&installations)
-}
-
 func (j JSONPresenter) PresentAvailableProducts(products []models.Product) {
 	encoder := json.NewEncoder(j.stdout)
 	encoder.Encode(&products)
+}
+
+func (j JSONPresenter) PresentErrands(errands []models.Errand) {
+	encoder := json.NewEncoder(j.stdout)
+	encoder.Encode(&errands)
+}
+
+func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
+	encoder := json.NewEncoder(j.stdout)
+	encoder.Encode(&installations)
 }
