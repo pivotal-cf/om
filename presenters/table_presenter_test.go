@@ -1,6 +1,7 @@
 package presenters_test
 
 import (
+	"github.com/olekukonko/tablewriter"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -70,6 +71,37 @@ var _ = Describe("TablePresenter", func() {
 
 				Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 			})
+		})
+	})
+
+	Describe("PresentAvailableProducts", func() {
+		var products []models.Product
+
+		BeforeEach(func() {
+			products = []models.Product{
+				{Name: "some-name", Version: "some-version"},
+				{Name: "some-other-name", Version: "some-other-version"},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentAvailableProducts(products)
+
+			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Name", "Version"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
+
+			values := fakeTableWriter.AppendArgsForCall(0)
+			Expect(values).To(Equal([]string{"some-name", "some-version"}))
+			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{"some-other-name", "some-other-version"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
 	})
 })

@@ -9,12 +9,6 @@ import (
 	"github.com/pivotal-cf/om/models"
 )
 
-//go:generate counterfeiter -o ./fakes/presenter.go --fake-name Presenter . presenter
-
-type presenter interface {
-	PresentInstallations([]models.Installation)
-}
-
 type Installations struct {
 	service   installationsService
 	presenter presenter

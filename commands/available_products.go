@@ -1,15 +1,15 @@
 package commands
 
 import (
-	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/models"
 )
 
 type AvailableProducts struct {
-	service     availableProductsService
-	tableWriter tableWriter
-	logger      logger
+	service   availableProductsService
+	presenter presenter
+	logger    logger
 }
 
 //go:generate counterfeiter -o ./fakes/available_products_service.go --fake-name AvailableProductsService . availableProductsService
@@ -18,19 +18,8 @@ type availableProductsService interface {
 	List() (api.AvailableProductsOutput, error)
 }
 
-//go:generate counterfeiter -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
-
-type tableWriter interface {
-	SetHeader([]string)
-	Append([]string)
-	SetAlignment(int)
-	Render()
-	SetAutoFormatHeaders(bool)
-	SetAutoWrapText(bool)
-}
-
-func NewAvailableProducts(apService availableProductsService, tableWriter tableWriter, logger logger) AvailableProducts {
-	return AvailableProducts{service: apService, tableWriter: tableWriter, logger: logger}
+func NewAvailableProducts(apService availableProductsService, presenter presenter, logger logger) AvailableProducts {
+	return AvailableProducts{service: apService, presenter: presenter, logger: logger}
 }
 
 func (ap AvailableProducts) Execute(args []string) error {
@@ -44,14 +33,15 @@ func (ap AvailableProducts) Execute(args []string) error {
 		return nil
 	}
 
-	ap.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
-	ap.tableWriter.SetHeader([]string{"Name", "Version"})
-
+	products := []models.Product{}
 	for _, product := range output.ProductsList {
-		ap.tableWriter.Append([]string{product.Name, product.Version})
+		products = append(products, models.Product{
+			Name:    product.Name,
+			Version: product.Version,
+		})
 	}
 
-	ap.tableWriter.Render()
+	ap.presenter.PresentAvailableProducts(products)
 
 	return nil
 }

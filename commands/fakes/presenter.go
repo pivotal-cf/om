@@ -13,6 +13,11 @@ type Presenter struct {
 	presentInstallationsArgsForCall []struct {
 		arg1 []models.Installation
 	}
+	PresentAvailableProductsStub        func([]models.Product)
+	presentAvailableProductsMutex       sync.RWMutex
+	presentAvailableProductsArgsForCall []struct {
+		arg1 []models.Product
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -46,11 +51,42 @@ func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installat
 	return fake.presentInstallationsArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentAvailableProducts(arg1 []models.Product) {
+	var arg1Copy []models.Product
+	if arg1 != nil {
+		arg1Copy = make([]models.Product, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentAvailableProductsMutex.Lock()
+	fake.presentAvailableProductsArgsForCall = append(fake.presentAvailableProductsArgsForCall, struct {
+		arg1 []models.Product
+	}{arg1Copy})
+	fake.recordInvocation("PresentAvailableProducts", []interface{}{arg1Copy})
+	fake.presentAvailableProductsMutex.Unlock()
+	if fake.PresentAvailableProductsStub != nil {
+		fake.PresentAvailableProductsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentAvailableProductsCallCount() int {
+	fake.presentAvailableProductsMutex.RLock()
+	defer fake.presentAvailableProductsMutex.RUnlock()
+	return len(fake.presentAvailableProductsArgsForCall)
+}
+
+func (fake *Presenter) PresentAvailableProductsArgsForCall(i int) []models.Product {
+	fake.presentAvailableProductsMutex.RLock()
+	defer fake.presentAvailableProductsMutex.RUnlock()
+	return fake.presentAvailableProductsArgsForCall[i].arg1
+}
+
 func (fake *Presenter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
+	fake.presentAvailableProductsMutex.RLock()
+	defer fake.presentAvailableProductsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

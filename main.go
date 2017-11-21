@@ -149,7 +149,7 @@ func main() {
 	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
-	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, tableWriter, stdout)
+	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, presenter, stdout)
 	commandSet["errands"] = commands.NewErrands(tableWriter, errandsService, stagedProductsService)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
 	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, tableWriter, stdout)

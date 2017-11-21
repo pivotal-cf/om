@@ -7,3 +7,8 @@ type Installation struct {
 	StartedAt  string
 	FinishedAt string
 }
+
+type Product struct {
+	Name    string
+	Version string
+}

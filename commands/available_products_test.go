@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/models"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,20 +15,20 @@ import (
 
 var _ = Describe("AvailableProducts", func() {
 	var (
-		apService   *fakes.AvailableProductsService
-		tableWriter *fakes.TableWriter
-		logger      *fakes.Logger
+		apService     *fakes.AvailableProductsService
+		fakePresenter *fakes.Presenter
+		logger        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		apService = &fakes.AvailableProductsService{}
-		tableWriter = &fakes.TableWriter{}
+		fakePresenter = &fakes.Presenter{}
 		logger = &fakes.Logger{}
 	})
 
 	Describe("Execute", func() {
 		It("lists the available products", func() {
-			command := commands.NewAvailableProducts(apService, tableWriter, logger)
+			command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
 			apService.ListReturns(api.AvailableProductsOutput{
 				ProductsList: []api.ProductInfo{
@@ -45,35 +46,37 @@ var _ = Describe("AvailableProducts", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Version"}))
-
-			Expect(tableWriter.AppendCallCount()).To(Equal(2))
-			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"first-product", "1.2.3"}))
-			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"second-product", "4.5.6"}))
-
-			Expect(tableWriter.RenderCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentAvailableProductsCallCount()).To(Equal(1))
+			products := fakePresenter.PresentAvailableProductsArgsForCall(0)
+			Expect(products).To(ConsistOf(
+				models.Product{
+					Name:    "first-product",
+					Version: "1.2.3",
+				},
+				models.Product{
+					Name:    "second-product",
+					Version: "4.5.6",
+				},
+			))
 		})
 
 		Context("when there are no products to list", func() {
 			It("prints a helpful message instead of a table", func() {
-				command := commands.NewAvailableProducts(apService, tableWriter, logger)
+				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
 				apService.ListReturns(api.AvailableProductsOutput{}, nil)
 
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-				Expect(tableWriter.AppendCallCount()).To(Equal(0))
-				Expect(tableWriter.RenderCallCount()).To(Equal(0))
-
 				Expect(logger.PrintfArgsForCall(0)).To(Equal("no available products found"))
+				Expect(fakePresenter.PresentAvailableProductsCallCount()).To(Equal(0))
 			})
 		})
 
 		Context("error cases", func() {
 			It("returns the error", func() {
-				command := commands.NewAvailableProducts(apService, tableWriter, logger)
+				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
 				apService.ListReturns(api.AvailableProductsOutput{}, errors.New("blargh"))
 

@@ -1,6 +1,9 @@
 package presenters
 
-import "github.com/pivotal-cf/om/models"
+import (
+	"github.com/olekukonko/tablewriter"
+	"github.com/pivotal-cf/om/models"
+)
 
 //go:generate counterfeiter -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
 
@@ -34,6 +37,17 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 			installation.StartedAt,
 			installation.FinishedAt,
 		})
+	}
+
+	t.tableWriter.Render()
+}
+
+func (t TablePresenter) PresentAvailableProducts(products []models.Product) {
+	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+	t.tableWriter.SetHeader([]string{"Name", "Version"})
+
+	for _, product := range products {
+		t.tableWriter.Append([]string{product.Name, product.Version})
 	}
 
 	t.tableWriter.Render()
