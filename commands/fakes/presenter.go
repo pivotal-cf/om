@@ -14,6 +14,11 @@ type Presenter struct {
 	presentAvailableProductsArgsForCall []struct {
 		arg1 []models.Product
 	}
+	PresentCredentialsStub        func([]string)
+	presentCredentialsMutex       sync.RWMutex
+	presentCredentialsArgsForCall []struct {
+		arg1 []string
+	}
 	PresentErrandsStub        func([]models.Errand)
 	presentErrandsMutex       sync.RWMutex
 	presentErrandsArgsForCall []struct {
@@ -55,6 +60,35 @@ func (fake *Presenter) PresentAvailableProductsArgsForCall(i int) []models.Produ
 	fake.presentAvailableProductsMutex.RLock()
 	defer fake.presentAvailableProductsMutex.RUnlock()
 	return fake.presentAvailableProductsArgsForCall[i].arg1
+}
+
+func (fake *Presenter) PresentCredentials(arg1 []string) {
+	var arg1Copy []string
+	if arg1 != nil {
+		arg1Copy = make([]string, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentCredentialsMutex.Lock()
+	fake.presentCredentialsArgsForCall = append(fake.presentCredentialsArgsForCall, struct {
+		arg1 []string
+	}{arg1Copy})
+	fake.recordInvocation("PresentCredentials", []interface{}{arg1Copy})
+	fake.presentCredentialsMutex.Unlock()
+	if fake.PresentCredentialsStub != nil {
+		fake.PresentCredentialsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentCredentialsCallCount() int {
+	fake.presentCredentialsMutex.RLock()
+	defer fake.presentCredentialsMutex.RUnlock()
+	return len(fake.presentCredentialsArgsForCall)
+}
+
+func (fake *Presenter) PresentCredentialsArgsForCall(i int) []string {
+	fake.presentCredentialsMutex.RLock()
+	defer fake.presentCredentialsMutex.RUnlock()
+	return fake.presentCredentialsArgsForCall[i].arg1
 }
 
 func (fake *Presenter) PresentErrands(arg1 []models.Errand) {
@@ -120,6 +154,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.presentAvailableProductsMutex.RLock()
 	defer fake.presentAvailableProductsMutex.RUnlock()
+	fake.presentCredentialsMutex.RLock()
+	defer fake.presentCredentialsMutex.RUnlock()
 	fake.presentErrandsMutex.RLock()
 	defer fake.presentErrandsMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()

@@ -54,6 +54,36 @@ var _ = Describe("TablePresenter", func() {
 		})
 	})
 
+	Describe("PresentCredentials", func() {
+		var credentials []string
+
+		BeforeEach(func() {
+			credentials = []string{"cred-1", "cred-2", "cred-3"}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentCredentials(credentials)
+
+			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Credentials"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(3))
+
+			values := fakeTableWriter.AppendArgsForCall(0)
+			Expect(values).To(Equal([]string{"cred-1"}))
+			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{"cred-2"}))
+			values = fakeTableWriter.AppendArgsForCall(2)
+			Expect(values).To(Equal([]string{"cred-3"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
+
 	Describe("PresentErrands", func() {
 		var errands []models.Errand
 

@@ -40,6 +40,17 @@ func (t TablePresenter) PresentAvailableProducts(products []models.Product) {
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentCredentials(credentials []string) {
+	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+	t.tableWriter.SetHeader([]string{"Credentials"})
+
+	for _, credential := range credentials {
+		t.tableWriter.Append([]string{credential})
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentErrands(errands []models.Errand) {
 	t.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"})
 

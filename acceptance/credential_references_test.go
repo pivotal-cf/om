@@ -26,6 +26,11 @@ var _ = Describe("credential references command", func() {
 +------------------------------+
 `
 
+	const jsonOutput = `[
+    ".my-job.some-credentials",
+    ".properties.some-credentials"
+]`
+
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -74,5 +79,25 @@ var _ = Describe("credential references command", func() {
 		Eventually(session).Should(gexec.Exit(0))
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
+	})
+
+	Context("when json formatting is requested", func() {
+		It("lists the credential references belonging to the deployed product in json", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"--format", "json",
+				"credential-references",
+				"--product-name", "some-product")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
 	})
 })

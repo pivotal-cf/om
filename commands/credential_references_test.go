@@ -14,16 +14,16 @@ import (
 
 var _ = Describe("CredentialReferences", func() {
 	var (
-		crService   *fakes.CredentialReferencesService
-		dpLister    *fakes.DeployedProductsLister
-		tableWriter *fakes.TableWriter
-		logger      *fakes.Logger
+		crService     *fakes.CredentialReferencesService
+		dpLister      *fakes.DeployedProductsLister
+		fakePresenter *fakes.Presenter
+		logger        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		crService = &fakes.CredentialReferencesService{}
 		dpLister = &fakes.DeployedProductsLister{}
-		tableWriter = &fakes.TableWriter{}
+		fakePresenter = &fakes.Presenter{}
 		logger = &fakes.Logger{}
 	})
 
@@ -37,7 +37,7 @@ var _ = Describe("CredentialReferences", func() {
 		})
 
 		It("lists the credential references in alphabetical order", func() {
-			command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+			command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
 			crService.ListReturns(api.CredentialReferencesOutput{
 				Credentials: []string{
@@ -52,20 +52,18 @@ var _ = Describe("CredentialReferences", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Credentials"}))
-
-			Expect(tableWriter.AppendCallCount()).To(Equal(3))
-			Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{".my-job.some-credentials"}))
-			Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{".our-job.some-other-credential"}))
-			Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{".properties.some-credentials"}))
-
-			Expect(tableWriter.RenderCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentCredentialsArgsForCall(0)).To(ConsistOf(
+				".my-job.some-credentials",
+				".our-job.some-other-credential",
+				".properties.some-credentials",
+			))
 		})
 
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse credential-references flags: flag provided but not defined: -badflag"))
 				})
@@ -73,7 +71,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when the product-name flag is not provided", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
 				})
@@ -85,7 +83,7 @@ var _ = Describe("CredentialReferences", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -96,7 +94,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when there are no credential references to list", func() {
 				It("prints a helpful message instead of a table", func() {
-					command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
 					crService.ListReturns(api.CredentialReferencesOutput{}, nil)
 
@@ -105,9 +103,7 @@ var _ = Describe("CredentialReferences", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-					Expect(tableWriter.AppendCallCount()).To(Equal(0))
-					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
 
 					Expect(logger.PrintfArgsForCall(0)).To(Equal("no credential references found"))
 				})
@@ -115,7 +111,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when the credential references cannot be fetched", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
 					crService.ListReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
 
@@ -124,9 +120,7 @@ var _ = Describe("CredentialReferences", func() {
 					})
 					Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch credential references")))
 
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-					Expect(tableWriter.AppendCallCount()).To(Equal(0))
-					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
 				})
 			})
 
@@ -136,18 +130,15 @@ var _ = Describe("CredentialReferences", func() {
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 
-					command := commands.NewCredentialReferences(crService, dpLister, tableWriter, logger)
+					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 					err := command.Execute([]string{
 						"--product-name", "some-product",
 					})
 					Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch deployed products")))
 
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-					Expect(tableWriter.AppendCallCount()).To(Equal(0))
-					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
 				})
 			})
-
 		})
 	})
 

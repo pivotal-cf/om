@@ -22,6 +22,11 @@ func (j JSONPresenter) PresentAvailableProducts(products []models.Product) {
 	encoder.Encode(&products)
 }
 
+func (j JSONPresenter) PresentCredentials(credentials []string) {
+	encoder := json.NewEncoder(j.stdout)
+	encoder.Encode(&credentials)
+}
+
 func (j JSONPresenter) PresentErrands(errands []models.Errand) {
 	encoder := json.NewEncoder(j.stdout)
 	encoder.Encode(&errands)

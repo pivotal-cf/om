@@ -5,18 +5,17 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
 
 type CredentialReferences struct {
-	service     credentialReferencesService
-	lister      deployedProductsLister
-	tableWriter tableWriter
-	logger      logger
-	Options     struct {
+	service   credentialReferencesService
+	lister    deployedProductsLister
+	presenter Presenter
+	logger    logger
+	Options   struct {
 		Product string `short:"p"  long:"product-name"  description:"name of deployed product"`
 	}
 }
@@ -26,8 +25,8 @@ type credentialReferencesService interface {
 	List(deployedProductGUID string) (api.CredentialReferencesOutput, error)
 }
 
-func NewCredentialReferences(crService credentialReferencesService, dpLister deployedProductsLister, tableWriter tableWriter, logger logger) CredentialReferences {
-	return CredentialReferences{service: crService, lister: dpLister, tableWriter: tableWriter, logger: logger}
+func NewCredentialReferences(crService credentialReferencesService, dpLister deployedProductsLister, presenter Presenter, logger logger) CredentialReferences {
+	return CredentialReferences{service: crService, lister: dpLister, presenter: presenter, logger: logger}
 }
 
 func (cr CredentialReferences) Execute(args []string) error {
@@ -67,14 +66,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 		return nil
 	}
 
-	cr.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
-	cr.tableWriter.SetHeader([]string{"Credentials"})
-
-	for _, credential := range output.Credentials {
-		cr.tableWriter.Append([]string{credential})
-	}
-
-	cr.tableWriter.Render()
+	cr.presenter.PresentCredentials(output.Credentials)
 
 	return nil
 }

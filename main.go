@@ -161,7 +161,7 @@ func main() {
 	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, presenter, stdout)
 	commandSet["errands"] = commands.NewErrands(presenter, errandsService, stagedProductsService)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
-	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, tableWriter, stdout)
+	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, presenter, stdout)
 	commandSet["credentials"] = commands.NewCredentials(credentialsService, deployedProductsService, tableWriter, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(tableWriter, diagnosticService)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(tableWriter, diagnosticService)
