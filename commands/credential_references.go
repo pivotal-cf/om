@@ -66,7 +66,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 		return nil
 	}
 
-	cr.presenter.PresentCredentials(output.Credentials)
+	cr.presenter.PresentCredentialReferences(output.Credentials)
 
 	return nil
 }

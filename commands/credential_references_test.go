@@ -52,8 +52,8 @@ var _ = Describe("CredentialReferences", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(1))
-			Expect(fakePresenter.PresentCredentialsArgsForCall(0)).To(ConsistOf(
+			Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentCredentialReferencesArgsForCall(0)).To(ConsistOf(
 				".my-job.some-credentials",
 				".our-job.some-other-credential",
 				".properties.some-credentials",
@@ -103,7 +103,7 @@ var _ = Describe("CredentialReferences", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 
 					Expect(logger.PrintfArgsForCall(0)).To(Equal("no credential references found"))
 				})
@@ -120,7 +120,7 @@ var _ = Describe("CredentialReferences", func() {
 					})
 					Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch credential references")))
 
-					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 				})
 			})
 
@@ -136,7 +136,7 @@ var _ = Describe("CredentialReferences", func() {
 					})
 					Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch deployed products")))
 
-					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 				})
 			})
 		})

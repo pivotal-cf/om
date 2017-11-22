@@ -40,11 +40,11 @@ func (t TablePresenter) PresentAvailableProducts(products []models.Product) {
 	t.tableWriter.Render()
 }
 
-func (t TablePresenter) PresentCredentials(credentials []string) {
+func (t TablePresenter) PresentCredentialReferences(credential_references []string) {
 	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
 	t.tableWriter.SetHeader([]string{"Credentials"})
 
-	for _, credential := range credentials {
+	for _, credential := range credential_references {
 		t.tableWriter.Append([]string{credential})
 	}
 

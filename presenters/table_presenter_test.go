@@ -54,7 +54,7 @@ var _ = Describe("TablePresenter", func() {
 		})
 	})
 
-	Describe("PresentCredentials", func() {
+	Describe("PresentCredentialReferences", func() {
 		var credentials []string
 
 		BeforeEach(func() {
@@ -62,7 +62,7 @@ var _ = Describe("TablePresenter", func() {
 		})
 
 		It("creates a table", func() {
-			tablePresenter.PresentCredentials(credentials)
+			tablePresenter.PresentCredentialReferences(credentials)
 
 			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
 			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))

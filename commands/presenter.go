@@ -6,7 +6,7 @@ import "github.com/pivotal-cf/om/models"
 
 type Presenter interface {
 	PresentAvailableProducts([]models.Product)
-	PresentCredentials([]string)
+	PresentCredentialReferences([]string)
 	PresentErrands([]models.Errand)
 	PresentInstallations([]models.Installation)
 }
