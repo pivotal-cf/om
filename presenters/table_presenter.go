@@ -1,6 +1,7 @@
 package presenters
 
 import (
+	"sort"
 	"strconv"
 	"time"
 
@@ -51,6 +52,18 @@ func (t TablePresenter) PresentCredentialReferences(credential_references []stri
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentCredentials(credentials map[string]string) {
+	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+
+	header, credential := sortCredentialMap(credentials)
+
+	t.tableWriter.SetAutoFormatHeaders(false)
+	t.tableWriter.SetHeader(header)
+	t.tableWriter.SetAutoWrapText(false)
+	t.tableWriter.Append(credential)
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentErrands(errands []models.Errand) {
 	t.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"})
 
@@ -84,4 +97,24 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 	}
 
 	t.tableWriter.Render()
+}
+
+func sortCredentialMap(cm map[string]string) ([]string, []string) {
+	var header []string
+	var credential []string
+
+	key := make([]string, len(cm))
+	i := 0
+
+	for k, _ := range cm {
+		key[i] = k
+		i++
+	}
+	sort.Strings(key)
+	for i := 0; i < len(key); i++ {
+		header = append(header, key[i])
+		credential = append(credential, cm[key[i]])
+	}
+
+	return header, credential
 }

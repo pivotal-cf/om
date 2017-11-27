@@ -19,6 +19,11 @@ type Presenter struct {
 	presentCredentialReferencesArgsForCall []struct {
 		arg1 []string
 	}
+	PresentCredentialsStub        func(map[string]string)
+	presentCredentialsMutex       sync.RWMutex
+	presentCredentialsArgsForCall []struct {
+		arg1 map[string]string
+	}
 	PresentErrandsStub        func([]models.Errand)
 	presentErrandsMutex       sync.RWMutex
 	presentErrandsArgsForCall []struct {
@@ -91,6 +96,30 @@ func (fake *Presenter) PresentCredentialReferencesArgsForCall(i int) []string {
 	return fake.presentCredentialReferencesArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentCredentials(arg1 map[string]string) {
+	fake.presentCredentialsMutex.Lock()
+	fake.presentCredentialsArgsForCall = append(fake.presentCredentialsArgsForCall, struct {
+		arg1 map[string]string
+	}{arg1})
+	fake.recordInvocation("PresentCredentials", []interface{}{arg1})
+	fake.presentCredentialsMutex.Unlock()
+	if fake.PresentCredentialsStub != nil {
+		fake.PresentCredentialsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentCredentialsCallCount() int {
+	fake.presentCredentialsMutex.RLock()
+	defer fake.presentCredentialsMutex.RUnlock()
+	return len(fake.presentCredentialsArgsForCall)
+}
+
+func (fake *Presenter) PresentCredentialsArgsForCall(i int) map[string]string {
+	fake.presentCredentialsMutex.RLock()
+	defer fake.presentCredentialsMutex.RUnlock()
+	return fake.presentCredentialsArgsForCall[i].arg1
+}
+
 func (fake *Presenter) PresentErrands(arg1 []models.Errand) {
 	var arg1Copy []models.Errand
 	if arg1 != nil {
@@ -156,6 +185,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentAvailableProductsMutex.RUnlock()
 	fake.presentCredentialReferencesMutex.RLock()
 	defer fake.presentCredentialReferencesMutex.RUnlock()
+	fake.presentCredentialsMutex.RLock()
+	defer fake.presentCredentialsMutex.RUnlock()
 	fake.presentErrandsMutex.RLock()
 	defer fake.presentErrandsMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()

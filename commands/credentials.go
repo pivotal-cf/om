@@ -3,20 +3,18 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"sort"
 
-	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 )
 
 type Credentials struct {
-	service     credentialsService
-	lister      deployedProductsLister
-	tableWriter tableWriter
-	logger      logger
-	Options     struct {
+	service   credentialsService
+	lister    deployedProductsLister
+	presenter Presenter
+	logger    logger
+	Options   struct {
 		Product             string `short:"p"  long:"product-name"  description:"name of deployed product"`
 		CredentialReference string `short:"c"  long:"credential-reference"  description:"name of credential reference"`
 		CredentialField     string `short:"f"  long:"credential-field"  description:"single credential field to output"`
@@ -28,8 +26,8 @@ type credentialsService interface {
 	Fetch(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
 }
 
-func NewCredentials(csService credentialsService, dpLister deployedProductsLister, tableWriter tableWriter, logger logger) Credentials {
-	return Credentials{service: csService, lister: dpLister, tableWriter: tableWriter, logger: logger}
+func NewCredentials(csService credentialsService, dpLister deployedProductsLister, presenter Presenter, logger logger) Credentials {
+	return Credentials{service: csService, lister: dpLister, presenter: presenter, logger: logger}
 }
 
 func (cs Credentials) Execute(args []string) error {
@@ -72,15 +70,7 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	if cs.Options.CredentialField == "" {
-		cs.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
-
-		header, credential := sortMap(output.Credential.Value)
-
-		cs.tableWriter.SetAutoFormatHeaders(false)
-		cs.tableWriter.SetHeader(header)
-		cs.tableWriter.SetAutoWrapText(false)
-		cs.tableWriter.Append(credential)
-		cs.tableWriter.Render()
+		cs.presenter.PresentCredentials(output.Credential.Value)
 	} else {
 		if value, ok := output.Credential.Value[cs.Options.CredentialField]; ok {
 			cs.logger.Println(value)
@@ -90,26 +80,6 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func sortMap(cm map[string]string) ([]string, []string) {
-	var header []string
-	var credential []string
-
-	key := make([]string, len(cm))
-	i := 0
-
-	for k, _ := range cm {
-		key[i] = k
-		i++
-	}
-	sort.Strings(key)
-	for i := 0; i < len(key); i++ {
-		header = append(header, key[i])
-		credential = append(credential, cm[key[i]])
-	}
-
-	return header, credential
 }
 
 func (cs Credentials) Usage() commands.Usage {

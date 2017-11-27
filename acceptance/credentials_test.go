@@ -27,6 +27,11 @@ var _ = Describe("credentials command", func() {
 | another-line                   |
 +--------------------------------+
 `
+
+	const jsonOutput = `{
+		"some-credential-key": "some-credential-value\nnewline\nanother-line\nanother-line"
+	}`
+
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -80,6 +85,27 @@ var _ = Describe("credentials command", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
+	Context("when json formatting is requested", func() {
+		It("lists credentials of a deployed product", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"--format", "json",
+				"credentials",
+				"--product-name", "some-product",
+				"--credential-reference", "some-credential")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
+	})
+
 	It("outputs a specific credential value of a deployed product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
@@ -98,5 +124,4 @@ var _ = Describe("credentials command", func() {
 
 		Expect(string(session.Out.Contents())).To(Equal("some-credential-value\nnewline\nanother-line\nanother-line\n"))
 	})
-
 })

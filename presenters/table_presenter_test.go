@@ -54,6 +54,30 @@ var _ = Describe("TablePresenter", func() {
 		})
 	})
 
+	Describe("PresentCredentials", func() {
+		var credentials map[string]string
+
+		BeforeEach(func() {
+			credentials = map[string]string{"identity": "some-identity", "password": "some-password"}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentCredentials(credentials)
+
+			Expect(fakeTableWriter.SetAutoFormatHeadersCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAutoFormatHeadersArgsForCall(0)).To(Equal(false))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"identity", "password"}))
+
+			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(Equal(false))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-identity", "some-password"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
+
 	Describe("PresentCredentialReferences", func() {
 		var credentials []string
 

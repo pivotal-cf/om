@@ -14,16 +14,16 @@ import (
 
 var _ = Describe("Credentials", func() {
 	var (
-		csService   *fakes.CredentialsService
-		dpLister    *fakes.DeployedProductsLister
-		tableWriter *fakes.TableWriter
-		logger      *fakes.Logger
+		csService     *fakes.CredentialsService
+		dpLister      *fakes.DeployedProductsLister
+		fakePresenter *fakes.Presenter
+		logger        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		csService = &fakes.CredentialsService{}
 		dpLister = &fakes.DeployedProductsLister{}
-		tableWriter = &fakes.TableWriter{}
+		fakePresenter = &fakes.Presenter{}
 		logger = &fakes.Logger{}
 	})
 
@@ -38,7 +38,7 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting all values for a credential", func() {
 			It("outputs the credentials alphabetically", func() {
-				command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+				command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
 				csService.FetchReturns(api.CredentialOutput{
 					Credential: api.Credential{
@@ -56,17 +56,14 @@ var _ = Describe("Credentials", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(tableWriter.SetAutoFormatHeadersCallCount()).To(Equal(1))
-				Expect(tableWriter.SetAutoFormatHeadersArgsForCall(0)).To(Equal(false))
-				Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"identity", "password"}))
+				Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(1))
+				Expect(fakePresenter.PresentCredentialsArgsForCall(0)).To(Equal(
 
-				Expect(tableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
-				Expect(tableWriter.SetAutoWrapTextArgsForCall(0)).To(Equal(false))
-
-				Expect(tableWriter.AppendCallCount()).To(Equal(1))
-				Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-identity", "some-password"}))
-
-				Expect(tableWriter.RenderCallCount()).To(Equal(1))
+					map[string]string{
+						"password": "some-password",
+						"identity": "some-identity",
+					},
+				))
 			})
 
 			Context("when the credential reference cannot be found", func() {
@@ -75,7 +72,7 @@ var _ = Describe("Credentials", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -87,7 +84,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credentials cannot be fetched", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
 					csService.FetchReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
 
@@ -97,9 +94,7 @@ var _ = Describe("Credentials", func() {
 					})
 					Expect(err).To(MatchError(ContainSubstring(`failed to fetch credential for "some-credential": could not fetch credentials`)))
 
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-					Expect(tableWriter.AppendCallCount()).To(Equal(0))
-					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
 				})
 			})
 
@@ -109,16 +104,14 @@ var _ = Describe("Credentials", func() {
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 
-					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 					err := command.Execute([]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
 					Expect(err).To(MatchError(ContainSubstring("failed to fetch credential: could not fetch deployed products")))
 
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-					Expect(tableWriter.AppendCallCount()).To(Equal(0))
-					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
 				})
 			})
 
@@ -130,16 +123,14 @@ var _ = Describe("Credentials", func() {
 							GUID: "some-other-deployed-product-guid",
 						}}, nil)
 
-					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 					err := command.Execute([]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
 					Expect(err).To(MatchError(ContainSubstring(`failed to fetch credential: "some-product" is not deployed`)))
 
-					Expect(tableWriter.SetHeaderCallCount()).To(Equal(0))
-					Expect(tableWriter.AppendCallCount()).To(Equal(0))
-					Expect(tableWriter.RenderCallCount()).To(Equal(0))
+					Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(0))
 				})
 			})
 		})
@@ -155,10 +146,10 @@ var _ = Describe("Credentials", func() {
 						},
 					},
 				}, nil)
-
 			})
+
 			It("outputs the credential value only", func() {
-				command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+				command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -172,7 +163,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credential field cannot be found", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, tableWriter, logger)
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
