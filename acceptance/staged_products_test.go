@@ -23,6 +23,11 @@ var _ = Describe("staged-products command", func() {
 +----------------+------------------+
 `
 
+	const jsonOutput = `[
+		{"name":"acme-product-1","version":"1.13.0-build.100"},
+		{"name":"acme-product-2","version":"1.8.9-build.1"}
+	]`
+
 	BeforeEach(func() {
 		diagnosticReport := []byte(`{
 			"added_products": {
@@ -73,5 +78,24 @@ var _ = Describe("staged-products command", func() {
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
+	})
+
+	Context("when json format is requested", func() {
+		It("lists the staged products on Ops Manager", func() {
+			command := exec.Command(pathToMain,
+				"--format", "json",
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"staged-products",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
 	})
 })

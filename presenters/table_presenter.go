@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 )
 
@@ -94,6 +95,16 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 			startedAt,
 			finishedAt,
 		})
+	}
+
+	t.tableWriter.Render()
+}
+
+func (t TablePresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
+	t.tableWriter.SetHeader([]string{"Name", "Version"})
+
+	for _, product := range stagedProducts {
+		t.tableWriter.Append([]string{product.Name, product.Version})
 	}
 
 	t.tableWriter.Render()

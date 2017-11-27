@@ -1,6 +1,9 @@
 package commands
 
-import "github.com/pivotal-cf/om/models"
+import (
+	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/models"
+)
 
 //go:generate counterfeiter -o ./fakes/presenter.go --fake-name Presenter . Presenter
 
@@ -10,4 +13,5 @@ type Presenter interface {
 	PresentCredentials(map[string]string)
 	PresentErrands([]models.Errand)
 	PresentInstallations([]models.Installation)
+	PresentStagedProducts([]api.DiagnosticProduct)
 }

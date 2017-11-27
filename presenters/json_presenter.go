@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 )
 
@@ -40,4 +41,9 @@ func (j JSONPresenter) PresentErrands(errands []models.Errand) {
 func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
 	encoder := json.NewEncoder(j.stdout)
 	encoder.Encode(&installations)
+}
+
+func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
+	encoder := json.NewEncoder(j.stdout)
+	encoder.Encode(&stagedProducts)
 }

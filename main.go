@@ -163,7 +163,7 @@ func main() {
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
 	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, presenter, stdout)
 	commandSet["credentials"] = commands.NewCredentials(credentialsService, deployedProductsService, presenter, stdout)
-	commandSet["staged-products"] = commands.NewStagedProducts(tableWriter, diagnosticService)
+	commandSet["staged-products"] = commands.NewStagedProducts(presenter, diagnosticService)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(tableWriter, diagnosticService)
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
 	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)

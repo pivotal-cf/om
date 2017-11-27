@@ -13,29 +13,30 @@ import (
 
 var _ = Describe("StagedProducts", func() {
 	var (
-		tableWriter       *fakes.TableWriter
+		presenter         *fakes.Presenter
 		diagnosticService *fakes.DiagnosticService
 		command           commands.StagedProducts
 	)
 
 	BeforeEach(func() {
-		tableWriter = &fakes.TableWriter{}
+		presenter = &fakes.Presenter{}
 		diagnosticService = &fakes.DiagnosticService{}
-		command = commands.NewStagedProducts(tableWriter, diagnosticService)
+		command = commands.NewStagedProducts(presenter, diagnosticService)
 	})
 
 	It("lists the staged products", func() {
-		diagnosticService.ReportReturns(api.DiagnosticReport{
-			StagedProducts: []api.DiagnosticProduct{
-				{
-					Name:    "some-product",
-					Version: "some-version",
-				},
-				{
-					Name:    "acme-product",
-					Version: "version-infinity",
-				},
+		stagedProducts := []api.DiagnosticProduct{
+			{
+				Name:    "some-product",
+				Version: "some-version",
 			},
+			{
+				Name:    "acme-product",
+				Version: "version-infinity",
+			},
+		}
+		diagnosticService.ReportReturns(api.DiagnosticReport{
+			StagedProducts: stagedProducts,
 		}, nil)
 
 		err := command.Execute([]string{})
@@ -43,12 +44,8 @@ var _ = Describe("StagedProducts", func() {
 
 		Expect(diagnosticService.ReportCallCount()).To(Equal(1))
 
-		Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-		Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Version"}))
-
-		Expect(tableWriter.AppendCallCount()).To(Equal(2))
-		Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-product", "some-version"}))
-		Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"acme-product", "version-infinity"}))
+		Expect(presenter.PresentStagedProductsCallCount()).To(Equal(1))
+		Expect(presenter.PresentStagedProductsArgsForCall(0)).To(Equal(stagedProducts))
 	})
 
 	Context("failure cases", func() {

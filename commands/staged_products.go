@@ -7,13 +7,13 @@ import (
 )
 
 type StagedProducts struct {
-	tableWriter       tableWriter
+	presenter         Presenter
 	diagnosticService diagnosticService
 }
 
-func NewStagedProducts(tableWriter tableWriter, diagnosticService diagnosticService) StagedProducts {
+func NewStagedProducts(presenter Presenter, diagnosticService diagnosticService) StagedProducts {
 	return StagedProducts{
-		tableWriter:       tableWriter,
+		presenter:         presenter,
 		diagnosticService: diagnosticService,
 	}
 }
@@ -26,13 +26,7 @@ func (sp StagedProducts) Execute(args []string) error {
 
 	stagedProducts := diagnosticReport.StagedProducts
 
-	sp.tableWriter.SetHeader([]string{"Name", "Version"})
-
-	for _, product := range stagedProducts {
-		sp.tableWriter.Append([]string{product.Name, product.Version})
-	}
-
-	sp.tableWriter.Render()
+	sp.presenter.PresentStagedProducts(stagedProducts)
 	return nil
 }
 

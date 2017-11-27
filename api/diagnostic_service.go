@@ -12,9 +12,9 @@ type DiagnosticService struct {
 }
 
 type DiagnosticProduct struct {
-	Name     string
-	Version  string
-	Stemcell string
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Stemcell string `json:"stemcell,omitempty"`
 }
 
 type DiagnosticReport struct {

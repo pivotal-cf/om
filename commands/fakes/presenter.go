@@ -4,6 +4,7 @@ package fakes
 import (
 	"sync"
 
+	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/models"
 )
@@ -33,6 +34,11 @@ type Presenter struct {
 	presentInstallationsMutex       sync.RWMutex
 	presentInstallationsArgsForCall []struct {
 		arg1 []models.Installation
+	}
+	PresentStagedProductsStub        func([]api.DiagnosticProduct)
+	presentStagedProductsMutex       sync.RWMutex
+	presentStagedProductsArgsForCall []struct {
+		arg1 []api.DiagnosticProduct
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -178,6 +184,35 @@ func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installat
 	return fake.presentInstallationsArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentStagedProducts(arg1 []api.DiagnosticProduct) {
+	var arg1Copy []api.DiagnosticProduct
+	if arg1 != nil {
+		arg1Copy = make([]api.DiagnosticProduct, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentStagedProductsMutex.Lock()
+	fake.presentStagedProductsArgsForCall = append(fake.presentStagedProductsArgsForCall, struct {
+		arg1 []api.DiagnosticProduct
+	}{arg1Copy})
+	fake.recordInvocation("PresentStagedProducts", []interface{}{arg1Copy})
+	fake.presentStagedProductsMutex.Unlock()
+	if fake.PresentStagedProductsStub != nil {
+		fake.PresentStagedProductsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentStagedProductsCallCount() int {
+	fake.presentStagedProductsMutex.RLock()
+	defer fake.presentStagedProductsMutex.RUnlock()
+	return len(fake.presentStagedProductsArgsForCall)
+}
+
+func (fake *Presenter) PresentStagedProductsArgsForCall(i int) []api.DiagnosticProduct {
+	fake.presentStagedProductsMutex.RLock()
+	defer fake.presentStagedProductsMutex.RUnlock()
+	return fake.presentStagedProductsArgsForCall[i].arg1
+}
+
 func (fake *Presenter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -191,6 +226,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentErrandsMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
+	fake.presentStagedProductsMutex.RLock()
+	defer fake.presentStagedProductsMutex.RUnlock()
 	return fake.invocations
 }
 
