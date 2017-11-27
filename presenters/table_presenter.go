@@ -65,6 +65,16 @@ func (t TablePresenter) PresentCredentials(credentials map[string]string) {
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentDeployedProducts(deployedProducts []api.DiagnosticProduct) {
+	t.tableWriter.SetHeader([]string{"Name", "Version"})
+
+	for _, product := range deployedProducts {
+		t.tableWriter.Append([]string{product.Name, product.Version})
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentErrands(errands []models.Errand) {
 	t.tableWriter.SetHeader([]string{"Name", "Post Deploy Enabled", "Pre Delete Enabled"})
 

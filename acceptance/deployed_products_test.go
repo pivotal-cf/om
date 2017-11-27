@@ -23,6 +23,11 @@ var _ = Describe("deployed-products command", func() {
 +----------------+------------------+
 `
 
+	const jsonOutput = `[
+		{"name":"acme-product-1","version":"1.13.0-build.100"},
+		{"name":"acme-product-2","version":"1.8.0"}
+	]`
+
 	BeforeEach(func() {
 		diagnosticReport := []byte(`{
 			"added_products": {
@@ -73,5 +78,24 @@ var _ = Describe("deployed-products command", func() {
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
+	})
+
+	Context("when json format is requested", func() {
+		It("lists the deployed products in JSON format", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"--format", "json",
+				"deployed-products",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
 	})
 })

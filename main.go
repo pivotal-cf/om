@@ -164,7 +164,7 @@ func main() {
 	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, presenter, stdout)
 	commandSet["credentials"] = commands.NewCredentials(credentialsService, deployedProductsService, presenter, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, diagnosticService)
-	commandSet["deployed-products"] = commands.NewDeployedProducts(tableWriter, diagnosticService)
+	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, diagnosticService)
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
 	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)
 	commandSet["installations"] = commands.NewInstallations(installationsService, presenter)

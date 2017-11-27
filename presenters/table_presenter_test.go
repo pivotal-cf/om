@@ -221,4 +221,32 @@ var _ = Describe("TablePresenter", func() {
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
 	})
+
+	Describe("PresentDeployedProducts", func() {
+		var deployedProducts []api.DiagnosticProduct
+		BeforeEach(func() {
+			deployedProducts = []api.DiagnosticProduct{
+				{
+					Name:    "some-product",
+					Version: "some-version",
+				},
+				{
+					Name:    "acme-product",
+					Version: "version-infinity",
+				},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentDeployedProducts(deployedProducts)
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"Name", "Version"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-product", "some-version"}))
+			Expect(fakeTableWriter.AppendArgsForCall(1)).To(Equal([]string{"acme-product", "version-infinity"}))
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
 })

@@ -25,6 +25,11 @@ type Presenter struct {
 	presentCredentialsArgsForCall []struct {
 		arg1 map[string]string
 	}
+	PresentDeployedProductsStub        func([]api.DiagnosticProduct)
+	presentDeployedProductsMutex       sync.RWMutex
+	presentDeployedProductsArgsForCall []struct {
+		arg1 []api.DiagnosticProduct
+	}
 	PresentErrandsStub        func([]models.Errand)
 	presentErrandsMutex       sync.RWMutex
 	presentErrandsArgsForCall []struct {
@@ -126,6 +131,35 @@ func (fake *Presenter) PresentCredentialsArgsForCall(i int) map[string]string {
 	return fake.presentCredentialsArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentDeployedProducts(arg1 []api.DiagnosticProduct) {
+	var arg1Copy []api.DiagnosticProduct
+	if arg1 != nil {
+		arg1Copy = make([]api.DiagnosticProduct, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentDeployedProductsMutex.Lock()
+	fake.presentDeployedProductsArgsForCall = append(fake.presentDeployedProductsArgsForCall, struct {
+		arg1 []api.DiagnosticProduct
+	}{arg1Copy})
+	fake.recordInvocation("PresentDeployedProducts", []interface{}{arg1Copy})
+	fake.presentDeployedProductsMutex.Unlock()
+	if fake.PresentDeployedProductsStub != nil {
+		fake.PresentDeployedProductsStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentDeployedProductsCallCount() int {
+	fake.presentDeployedProductsMutex.RLock()
+	defer fake.presentDeployedProductsMutex.RUnlock()
+	return len(fake.presentDeployedProductsArgsForCall)
+}
+
+func (fake *Presenter) PresentDeployedProductsArgsForCall(i int) []api.DiagnosticProduct {
+	fake.presentDeployedProductsMutex.RLock()
+	defer fake.presentDeployedProductsMutex.RUnlock()
+	return fake.presentDeployedProductsArgsForCall[i].arg1
+}
+
 func (fake *Presenter) PresentErrands(arg1 []models.Errand) {
 	var arg1Copy []models.Errand
 	if arg1 != nil {
@@ -222,6 +256,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentCredentialReferencesMutex.RUnlock()
 	fake.presentCredentialsMutex.RLock()
 	defer fake.presentCredentialsMutex.RUnlock()
+	fake.presentDeployedProductsMutex.RLock()
+	defer fake.presentDeployedProductsMutex.RUnlock()
 	fake.presentErrandsMutex.RLock()
 	defer fake.presentErrandsMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
