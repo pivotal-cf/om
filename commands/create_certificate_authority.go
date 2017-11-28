@@ -3,7 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
@@ -11,9 +10,9 @@ import (
 )
 
 type CreateCertificateAuthority struct {
-	service     certificateAuthorityCreator
-	tableWriter tableWriter
-	Options     struct {
+	service   certificateAuthorityCreator
+	presenter Presenter
+	Options   struct {
 		CertPem    string `long:"certificate-pem"  description:"certificate"`
 		PrivateKey string `long:"private-key-pem"  description:"private key"`
 	}
@@ -24,8 +23,8 @@ type certificateAuthorityCreator interface {
 	Create(api.CertificateAuthorityInput) (api.CA, error)
 }
 
-func NewCreateCertificateAuthority(service certificateAuthorityCreator, tableWriter tableWriter) CreateCertificateAuthority {
-	return CreateCertificateAuthority{service: service, tableWriter: tableWriter}
+func NewCreateCertificateAuthority(service certificateAuthorityCreator, presenter Presenter) CreateCertificateAuthority {
+	return CreateCertificateAuthority{service: service, presenter: presenter}
 }
 
 func (c CreateCertificateAuthority) Execute(args []string) error {
@@ -50,10 +49,8 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 		return err
 	}
 
-	c.tableWriter.SetAutoWrapText(false)
-	c.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
-	c.tableWriter.Append([]string{ca.GUID, ca.Issuer, strconv.FormatBool(ca.Active), ca.CreatedOn, ca.ExpiresOn, ca.CertPEM})
-	c.tableWriter.Render()
+	c.presenter.PresentGeneratedCertificateAuthority(ca)
+
 	return nil
 }
 
