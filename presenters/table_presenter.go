@@ -53,11 +53,11 @@ func (t TablePresenter) PresentCertificateAuthorities(certificateAuthorities []a
 	t.tableWriter.Render()
 }
 
-func (t TablePresenter) PresentCredentialReferences(credential_references []string) {
+func (t TablePresenter) PresentCredentialReferences(credentialReferences []string) {
 	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
 	t.tableWriter.SetHeader([]string{"Credentials"})
 
-	for _, credential := range credential_references {
+	for _, credential := range credentialReferences {
 		t.tableWriter.Append([]string{credential})
 	}
 
