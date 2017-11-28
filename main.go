@@ -171,7 +171,7 @@ func main() {
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, presenter)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
-	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, tableWriter)
+	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, presenter)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(certificateAuthoritiesService, stdout)

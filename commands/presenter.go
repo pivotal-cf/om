@@ -9,12 +9,13 @@ import (
 
 type Presenter interface {
 	PresentAvailableProducts([]models.Product)
+	PresentCertificateAuthorities([]api.CA)
 	PresentCredentialReferences([]string)
 	PresentCredentials(map[string]string)
 	PresentDeployedProducts([]api.DiagnosticProduct)
 	PresentErrands([]models.Errand)
+	PresentGeneratedCertificateAuthority(api.CA)
 	PresentInstallations([]models.Installation)
 	PresentPendingChanges([]api.ProductChange)
 	PresentStagedProducts([]api.DiagnosticProduct)
-	PresentCertificateAuthorities([]api.CA)
 }

@@ -13,15 +13,15 @@ import (
 
 var _ = Describe("GenerateCertificateAuthority", func() {
 	var (
-		fakeTableWriter                 *fakes.TableWriter
+		fakePresenter                   *fakes.Presenter
 		fakeCertificateAuthorityService *fakes.CertificateAuthorityGenerator
 		command                         commands.GenerateCertificateAuthority
 	)
 
 	BeforeEach(func() {
-		fakeTableWriter = &fakes.TableWriter{}
+		fakePresenter = &fakes.Presenter{}
 		fakeCertificateAuthorityService = &fakes.CertificateAuthorityGenerator{}
-		command = commands.NewGenerateCertificateAuthority(fakeCertificateAuthorityService, fakeTableWriter)
+		command = commands.NewGenerateCertificateAuthority(fakeCertificateAuthorityService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -33,23 +33,22 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 		})
 
 		It("prints a table containing the certificate authority that was generated", func() {
-			fakeCertificateAuthorityService.GenerateReturns(api.CA{GUID: "some GUID", Issuer: "some Issuer",
-				CreatedOn: "2017-09-12", ExpiresOn: "2018-09-12", Active: true, CertPEM: "some CertPem"}, nil)
+			certificateAuthority := api.CA{
+				GUID:      "some GUID",
+				Issuer:    "some Issuer",
+				CreatedOn: "2017-09-12",
+				ExpiresOn: "2018-09-12",
+				Active:    true,
+				CertPEM:   "some CertPem",
+			}
+
+			fakeCertificateAuthorityService.GenerateReturns(certificateAuthority, nil)
 
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
-
-			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"}))
-
-			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some GUID", "some Issuer",
-				"true", "2017-09-12", "2018-09-12", "some CertPem"}))
-
-			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentGeneratedCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentGeneratedCertificateAuthorityArgsForCall(0)).To(Equal(certificateAuthority))
 
 		})
 

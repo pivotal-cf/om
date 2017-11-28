@@ -15,6 +15,11 @@ type Presenter struct {
 	presentAvailableProductsArgsForCall []struct {
 		arg1 []models.Product
 	}
+	PresentCertificateAuthoritiesStub        func([]api.CA)
+	presentCertificateAuthoritiesMutex       sync.RWMutex
+	presentCertificateAuthoritiesArgsForCall []struct {
+		arg1 []api.CA
+	}
 	PresentCredentialReferencesStub        func([]string)
 	presentCredentialReferencesMutex       sync.RWMutex
 	presentCredentialReferencesArgsForCall []struct {
@@ -35,6 +40,11 @@ type Presenter struct {
 	presentErrandsArgsForCall []struct {
 		arg1 []models.Errand
 	}
+	PresentGeneratedCertificateAuthorityStub        func(api.CA)
+	presentGeneratedCertificateAuthorityMutex       sync.RWMutex
+	presentGeneratedCertificateAuthorityArgsForCall []struct {
+		arg1 api.CA
+	}
 	PresentInstallationsStub        func([]models.Installation)
 	presentInstallationsMutex       sync.RWMutex
 	presentInstallationsArgsForCall []struct {
@@ -49,11 +59,6 @@ type Presenter struct {
 	presentStagedProductsMutex       sync.RWMutex
 	presentStagedProductsArgsForCall []struct {
 		arg1 []api.DiagnosticProduct
-	}
-	PresentCertificateAuthoritiesStub        func([]api.CA)
-	presentCertificateAuthoritiesMutex       sync.RWMutex
-	presentCertificateAuthoritiesArgsForCall []struct {
-		arg1 []api.CA
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -86,6 +91,35 @@ func (fake *Presenter) PresentAvailableProductsArgsForCall(i int) []models.Produ
 	fake.presentAvailableProductsMutex.RLock()
 	defer fake.presentAvailableProductsMutex.RUnlock()
 	return fake.presentAvailableProductsArgsForCall[i].arg1
+}
+
+func (fake *Presenter) PresentCertificateAuthorities(arg1 []api.CA) {
+	var arg1Copy []api.CA
+	if arg1 != nil {
+		arg1Copy = make([]api.CA, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentCertificateAuthoritiesMutex.Lock()
+	fake.presentCertificateAuthoritiesArgsForCall = append(fake.presentCertificateAuthoritiesArgsForCall, struct {
+		arg1 []api.CA
+	}{arg1Copy})
+	fake.recordInvocation("PresentCertificateAuthorities", []interface{}{arg1Copy})
+	fake.presentCertificateAuthoritiesMutex.Unlock()
+	if fake.PresentCertificateAuthoritiesStub != nil {
+		fake.PresentCertificateAuthoritiesStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentCertificateAuthoritiesCallCount() int {
+	fake.presentCertificateAuthoritiesMutex.RLock()
+	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
+	return len(fake.presentCertificateAuthoritiesArgsForCall)
+}
+
+func (fake *Presenter) PresentCertificateAuthoritiesArgsForCall(i int) []api.CA {
+	fake.presentCertificateAuthoritiesMutex.RLock()
+	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
+	return fake.presentCertificateAuthoritiesArgsForCall[i].arg1
 }
 
 func (fake *Presenter) PresentCredentialReferences(arg1 []string) {
@@ -199,6 +233,30 @@ func (fake *Presenter) PresentErrandsArgsForCall(i int) []models.Errand {
 	return fake.presentErrandsArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentGeneratedCertificateAuthority(arg1 api.CA) {
+	fake.presentGeneratedCertificateAuthorityMutex.Lock()
+	fake.presentGeneratedCertificateAuthorityArgsForCall = append(fake.presentGeneratedCertificateAuthorityArgsForCall, struct {
+		arg1 api.CA
+	}{arg1})
+	fake.recordInvocation("PresentGeneratedCertificateAuthority", []interface{}{arg1})
+	fake.presentGeneratedCertificateAuthorityMutex.Unlock()
+	if fake.PresentGeneratedCertificateAuthorityStub != nil {
+		fake.PresentGeneratedCertificateAuthorityStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentGeneratedCertificateAuthorityCallCount() int {
+	fake.presentGeneratedCertificateAuthorityMutex.RLock()
+	defer fake.presentGeneratedCertificateAuthorityMutex.RUnlock()
+	return len(fake.presentGeneratedCertificateAuthorityArgsForCall)
+}
+
+func (fake *Presenter) PresentGeneratedCertificateAuthorityArgsForCall(i int) api.CA {
+	fake.presentGeneratedCertificateAuthorityMutex.RLock()
+	defer fake.presentGeneratedCertificateAuthorityMutex.RUnlock()
+	return fake.presentGeneratedCertificateAuthorityArgsForCall[i].arg1
+}
+
 func (fake *Presenter) PresentInstallations(arg1 []models.Installation) {
 	var arg1Copy []models.Installation
 	if arg1 != nil {
@@ -286,40 +344,13 @@ func (fake *Presenter) PresentStagedProductsArgsForCall(i int) []api.DiagnosticP
 	return fake.presentStagedProductsArgsForCall[i].arg1
 }
 
-func (fake *Presenter) PresentCertificateAuthorities(arg1 []api.CA) {
-	var arg1Copy []api.CA
-	if arg1 != nil {
-		arg1Copy = make([]api.CA, len(arg1))
-		copy(arg1Copy, arg1)
-	}
-	fake.presentCertificateAuthoritiesMutex.Lock()
-	fake.presentCertificateAuthoritiesArgsForCall = append(fake.presentCertificateAuthoritiesArgsForCall, struct {
-		arg1 []api.CA
-	}{arg1Copy})
-	fake.recordInvocation("PresentCertificateAuthorities", []interface{}{arg1Copy})
-	fake.presentCertificateAuthoritiesMutex.Unlock()
-	if fake.PresentCertificateAuthoritiesStub != nil {
-		fake.PresentCertificateAuthoritiesStub(arg1)
-	}
-}
-
-func (fake *Presenter) PresentCertificateAuthoritiesCallCount() int {
-	fake.presentCertificateAuthoritiesMutex.RLock()
-	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
-	return len(fake.presentCertificateAuthoritiesArgsForCall)
-}
-
-func (fake *Presenter) PresentCertificateAuthoritiesArgsForCall(i int) []api.CA {
-	fake.presentCertificateAuthoritiesMutex.RLock()
-	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
-	return fake.presentCertificateAuthoritiesArgsForCall[i].arg1
-}
-
 func (fake *Presenter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.presentAvailableProductsMutex.RLock()
 	defer fake.presentAvailableProductsMutex.RUnlock()
+	fake.presentCertificateAuthoritiesMutex.RLock()
+	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
 	fake.presentCredentialReferencesMutex.RLock()
 	defer fake.presentCredentialReferencesMutex.RUnlock()
 	fake.presentCredentialsMutex.RLock()
@@ -328,14 +359,14 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentDeployedProductsMutex.RUnlock()
 	fake.presentErrandsMutex.RLock()
 	defer fake.presentErrandsMutex.RUnlock()
+	fake.presentGeneratedCertificateAuthorityMutex.RLock()
+	defer fake.presentGeneratedCertificateAuthorityMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
 	fake.presentPendingChangesMutex.RLock()
 	defer fake.presentPendingChangesMutex.RUnlock()
 	fake.presentStagedProductsMutex.RLock()
 	defer fake.presentStagedProductsMutex.RUnlock()
-	fake.presentCertificateAuthoritiesMutex.RLock()
-	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
 	return fake.invocations
 }
 

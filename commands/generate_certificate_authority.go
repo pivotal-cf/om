@@ -1,15 +1,13 @@
 package commands
 
 import (
-	"strconv"
-
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
 type GenerateCertificateAuthority struct {
-	service     certificateAuthorityGenerator
-	tableWriter tableWriter
+	service   certificateAuthorityGenerator
+	presenter Presenter
 }
 
 //go:generate counterfeiter -o ./fakes/certificate_authority_generator.go --fake-name CertificateAuthorityGenerator . certificateAuthorityGenerator
@@ -17,20 +15,18 @@ type certificateAuthorityGenerator interface {
 	Generate() (api.CA, error)
 }
 
-func NewGenerateCertificateAuthority(service certificateAuthorityGenerator, tableWriter tableWriter) GenerateCertificateAuthority {
-	return GenerateCertificateAuthority{service: service, tableWriter: tableWriter}
+func NewGenerateCertificateAuthority(service certificateAuthorityGenerator, presenter Presenter) GenerateCertificateAuthority {
+	return GenerateCertificateAuthority{service: service, presenter: presenter}
 }
 
 func (g GenerateCertificateAuthority) Execute(_ []string) error {
-	ca, err := g.service.Generate()
+	certificateAuthority, err := g.service.Generate()
 	if err != nil {
 		return err
 	}
 
-	g.tableWriter.SetAutoWrapText(false)
-	g.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
-	g.tableWriter.Append([]string{ca.GUID, ca.Issuer, strconv.FormatBool(ca.Active), ca.CreatedOn, ca.ExpiresOn, ca.CertPEM})
-	g.tableWriter.Render()
+	g.presenter.PresentGeneratedCertificateAuthority(certificateAuthority)
+
 	return nil
 }
 
