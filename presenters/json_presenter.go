@@ -19,7 +19,9 @@ func NewJSONPresenter(stdout io.Writer) JSONPresenter {
 }
 
 func (j JSONPresenter) PresentAvailableProducts(products []models.Product) {
-	j.encodeJSON(&products)
+	j.encodeJSON(&map[string][]models.Product{
+		"available_products": products,
+	})
 }
 
 func (j JSONPresenter) PresentCertificateAuthorities(certificateAuthorities []api.CA) {
@@ -29,19 +31,27 @@ func (j JSONPresenter) PresentCertificateAuthorities(certificateAuthorities []ap
 }
 
 func (j JSONPresenter) PresentCredentialReferences(credentialReferences []string) {
-	j.encodeJSON(&credentialReferences)
+	j.encodeJSON(&map[string][]string{
+		"credential_references": credentialReferences,
+	})
 }
 
 func (j JSONPresenter) PresentCredentials(credentials map[string]string) {
-	j.encodeJSON(&credentials)
+	j.encodeJSON(&map[string]map[string]string{
+		"credential": credentials,
+	})
 }
 
 func (j JSONPresenter) PresentDeployedProducts(deployedProducts []api.DiagnosticProduct) {
-	j.encodeJSON(&deployedProducts)
+	j.encodeJSON(&map[string][]api.DiagnosticProduct{
+		"deployed_products": deployedProducts,
+	})
 }
 
 func (j JSONPresenter) PresentErrands(errands []models.Errand) {
-	j.encodeJSON(&errands)
+	j.encodeJSON(&map[string][]models.Errand{
+		"errands": errands,
+	})
 }
 
 func (j JSONPresenter) PresentCertificateAuthority(certificateAuthority api.CA) {
@@ -51,15 +61,21 @@ func (j JSONPresenter) PresentCertificateAuthority(certificateAuthority api.CA) 
 }
 
 func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
-	j.encodeJSON(&installations)
+	j.encodeJSON(&map[string][]models.Installation{
+		"installations": installations,
+	})
 }
 
 func (j JSONPresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
-	j.encodeJSON(&pendingChanges)
+	j.encodeJSON(&map[string][]api.ProductChange{
+		"pending_changes": pendingChanges,
+	})
 }
 
 func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
-	j.encodeJSON(&stagedProducts)
+	j.encodeJSON(&map[string][]api.DiagnosticProduct{
+		"staged_products": stagedProducts,
+	})
 }
 
 func (j JSONPresenter) encodeJSON(v interface{}) {

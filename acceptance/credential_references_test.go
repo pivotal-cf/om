@@ -26,10 +26,12 @@ var _ = Describe("credential references command", func() {
 +------------------------------+
 `
 
-	const jsonOutput = `[
+	const jsonOutput = `{
+		"credential_references": [
     ".my-job.some-credentials",
     ".properties.some-credentials"
-]`
+	]
+	}`
 
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
