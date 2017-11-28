@@ -19,56 +19,50 @@ func NewJSONPresenter(stdout io.Writer) JSONPresenter {
 }
 
 func (j JSONPresenter) PresentAvailableProducts(products []models.Product) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&products)
+	j.encodeJSON(&products)
 }
 
 func (j JSONPresenter) PresentCertificateAuthorities(certificateAuthorities []api.CA) {
-	encoder := json.NewEncoder(j.stdout)
-	certificateAuthoritiesObject := map[string][]api.CA{
+	j.encodeJSON(&map[string][]api.CA{
 		"certificate_authorities": certificateAuthorities,
-	}
-	encoder.Encode(&certificateAuthoritiesObject)
+	})
 }
 
-func (j JSONPresenter) PresentCredentialReferences(credentials []string) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&credentials)
+func (j JSONPresenter) PresentCredentialReferences(credentialReferences []string) {
+	j.encodeJSON(&credentialReferences)
 }
 
 func (j JSONPresenter) PresentCredentials(credentials map[string]string) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&credentials)
+	j.encodeJSON(&credentials)
 }
 
 func (j JSONPresenter) PresentDeployedProducts(deployedProducts []api.DiagnosticProduct) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&deployedProducts)
+	j.encodeJSON(&deployedProducts)
 }
 
 func (j JSONPresenter) PresentErrands(errands []models.Errand) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&errands)
+	j.encodeJSON(&errands)
 }
 
 func (j JSONPresenter) PresentCertificateAuthority(certificateAuthority api.CA) {
-	encoder := json.NewEncoder(j.stdout)
-	var certificateAuthorityObject = map[string]api.CA{}
-	certificateAuthorityObject["certificate_authority"] = certificateAuthority
-	encoder.Encode(&certificateAuthorityObject)
+	j.encodeJSON(&map[string]api.CA{
+		"certificate_authority": certificateAuthority,
+	})
 }
 
 func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&installations)
+	j.encodeJSON(&installations)
 }
 
 func (j JSONPresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&pendingChanges)
+	j.encodeJSON(&pendingChanges)
 }
 
 func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
+	j.encodeJSON(&stagedProducts)
+}
+
+func (j JSONPresenter) encodeJSON(v interface{}) {
 	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&stagedProducts)
+	encoder.Encode(&v)
 }
