@@ -7,12 +7,13 @@ import (
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type Credentials struct {
 	service   credentialsService
 	lister    deployedProductsLister
-	presenter Presenter
+	presenter presenters.Presenter
 	logger    logger
 	Options   struct {
 		Product             string `short:"p"  long:"product-name"  description:"name of deployed product"`
@@ -26,7 +27,7 @@ type credentialsService interface {
 	Fetch(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
 }
 
-func NewCredentials(csService credentialsService, dpLister deployedProductsLister, presenter Presenter, logger logger) Credentials {
+func NewCredentials(csService credentialsService, dpLister deployedProductsLister, presenter presenters.Presenter, logger logger) Credentials {
 	return Credentials{service: csService, lister: dpLister, presenter: presenter, logger: logger}
 }
 

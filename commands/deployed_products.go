@@ -4,14 +4,15 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type DeployedProducts struct {
-	presenter         Presenter
+	presenter         presenters.Presenter
 	diagnosticService diagnosticService
 }
 
-func NewDeployedProducts(presenter Presenter, diagnosticService diagnosticService) DeployedProducts {
+func NewDeployedProducts(presenter presenters.Presenter, diagnosticService diagnosticService) DeployedProducts {
 	return DeployedProducts{
 		presenter:         presenter,
 		diagnosticService: diagnosticService,

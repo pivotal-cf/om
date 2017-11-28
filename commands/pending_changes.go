@@ -5,11 +5,12 @@ import (
 
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type PendingChanges struct {
 	service   pendingChangesService
-	presenter Presenter
+	presenter presenters.Presenter
 }
 
 //go:generate counterfeiter -o ./fakes/pending_changes_service.go --fake-name PendingChangesService . pendingChangesService
@@ -17,7 +18,7 @@ type pendingChangesService interface {
 	List() (api.PendingChangesOutput, error)
 }
 
-func NewPendingChanges(presenter Presenter, service pendingChangesService) PendingChanges {
+func NewPendingChanges(presenter presenters.Presenter, service pendingChangesService) PendingChanges {
 	return PendingChanges{
 		service:   service,
 		presenter: presenter,

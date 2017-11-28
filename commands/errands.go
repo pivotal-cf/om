@@ -9,6 +9,7 @@ import (
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 //go:generate counterfeiter -o ./fakes/staged_products_finder.go --fake-name StagedProductsFinder . stagedProductsFinder
@@ -23,7 +24,7 @@ type errandsService interface {
 }
 
 type Errands struct {
-	presenter            Presenter
+	presenter            presenters.Presenter
 	errandsService       errandsService
 	stagedProductsFinder stagedProductsFinder
 	Options              struct {
@@ -31,7 +32,7 @@ type Errands struct {
 	}
 }
 
-func NewErrands(presenter Presenter, errandsService errandsService, stagedProductsFinder stagedProductsFinder) Errands {
+func NewErrands(presenter presenters.Presenter, errandsService errandsService, stagedProductsFinder stagedProductsFinder) Errands {
 	return Errands{
 		presenter:            presenter,
 		errandsService:       errandsService,

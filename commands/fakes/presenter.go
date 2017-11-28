@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/models"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type Presenter struct {
@@ -382,4 +382,4 @@ func (fake *Presenter) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.Presenter = new(Presenter)
+var _ presenters.Presenter = new(Presenter)

@@ -3,11 +3,12 @@ package commands
 import (
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type CertificateAuthorities struct {
 	cas       certificateAuthorityLister
-	presenter Presenter
+	presenter presenters.Presenter
 }
 
 //go:generate counterfeiter -o ./fakes/certificate_authority_lister.go --fake-name CertificateAuthorityLister . certificateAuthorityLister
@@ -15,7 +16,7 @@ type certificateAuthorityLister interface {
 	List() (api.CertificateAuthoritiesOutput, error)
 }
 
-func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthorityLister, presenter Presenter) CertificateAuthorities {
+func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthorityLister, presenter presenters.Presenter) CertificateAuthorities {
 	return CertificateAuthorities{
 		cas:       certificateAuthoritiesService,
 		presenter: presenter,

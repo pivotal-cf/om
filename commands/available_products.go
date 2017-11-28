@@ -4,11 +4,12 @@ import (
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type AvailableProducts struct {
 	service   availableProductsService
-	presenter Presenter
+	presenter presenters.Presenter
 	logger    logger
 }
 
@@ -18,7 +19,7 @@ type availableProductsService interface {
 	List() (api.AvailableProductsOutput, error)
 }
 
-func NewAvailableProducts(apService availableProductsService, presenter Presenter, logger logger) AvailableProducts {
+func NewAvailableProducts(apService availableProductsService, presenter presenters.Presenter, logger logger) AvailableProducts {
 	return AvailableProducts{service: apService, presenter: presenter, logger: logger}
 }
 

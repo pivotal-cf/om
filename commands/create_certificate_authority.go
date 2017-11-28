@@ -7,11 +7,12 @@ import (
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/jhanda/flags"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type CreateCertificateAuthority struct {
 	service   certificateAuthorityCreator
-	presenter Presenter
+	presenter presenters.Presenter
 	Options   struct {
 		CertPem    string `long:"certificate-pem"  description:"certificate"`
 		PrivateKey string `long:"private-key-pem"  description:"private key"`
@@ -23,7 +24,7 @@ type certificateAuthorityCreator interface {
 	Create(api.CertificateAuthorityInput) (api.CA, error)
 }
 
-func NewCreateCertificateAuthority(service certificateAuthorityCreator, presenter Presenter) CreateCertificateAuthority {
+func NewCreateCertificateAuthority(service certificateAuthorityCreator, presenter presenters.Presenter) CreateCertificateAuthority {
 	return CreateCertificateAuthority{service: service, presenter: presenter}
 }
 

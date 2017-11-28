@@ -4,18 +4,19 @@ import (
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type Installations struct {
 	service   installationsService
-	presenter Presenter
+	presenter presenters.Presenter
 }
 
 func (i Installations) ListInstallations() (api.InstallationsServiceOutput, error) {
 	return api.InstallationsServiceOutput{}, nil
 }
 
-func NewInstallations(incomingService installationsService, presenter Presenter) Installations {
+func NewInstallations(incomingService installationsService, presenter presenters.Presenter) Installations {
 	return Installations{
 		service:   incomingService,
 		presenter: presenter,

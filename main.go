@@ -131,7 +131,7 @@ func main() {
 
 	extractor := extractor.ProductUnzipper{}
 
-	var presenter commands.Presenter
+	var presenter presenters.Presenter
 	switch global.Format {
 	case "table":
 		presenter = presenters.NewTablePresenter(tableWriter)
