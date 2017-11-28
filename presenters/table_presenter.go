@@ -110,6 +110,25 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
+	t.tableWriter.SetHeader([]string{"PRODUCT", "ACTION", "ERRANDS"})
+
+	for _, change := range pendingChanges {
+		if len(change.Errands) == 0 {
+			t.tableWriter.Append([]string{change.Product, change.Action, ""})
+		}
+		for i, errand := range change.Errands {
+			if i == 0 {
+				t.tableWriter.Append([]string{change.Product, change.Action, errand.Name})
+			} else {
+				t.tableWriter.Append([]string{"", "", errand.Name})
+			}
+		}
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
 	t.tableWriter.SetHeader([]string{"Name", "Version"})
 

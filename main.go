@@ -166,7 +166,7 @@ func main() {
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, diagnosticService)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, diagnosticService)
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
-	commandSet["pending-changes"] = commands.NewPendingChanges(tableWriter, pendingChangesService)
+	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, pendingChangesService)
 	commandSet["installations"] = commands.NewInstallations(installationsService, presenter)
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, tableWriter)

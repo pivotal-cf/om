@@ -14,5 +14,6 @@ type Presenter interface {
 	PresentDeployedProducts([]api.DiagnosticProduct)
 	PresentErrands([]models.Errand)
 	PresentInstallations([]models.Installation)
+	PresentPendingChanges([]api.ProductChange)
 	PresentStagedProducts([]api.DiagnosticProduct)
 }

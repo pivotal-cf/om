@@ -8,8 +8,8 @@ import (
 )
 
 type PendingChanges struct {
-	service     pendingChangesService
-	tableWriter tableWriter
+	service   pendingChangesService
+	presenter Presenter
 }
 
 //go:generate counterfeiter -o ./fakes/pending_changes_service.go --fake-name PendingChangesService . pendingChangesService
@@ -17,10 +17,10 @@ type pendingChangesService interface {
 	List() (api.PendingChangesOutput, error)
 }
 
-func NewPendingChanges(tableWriter tableWriter, service pendingChangesService) PendingChanges {
+func NewPendingChanges(presenter Presenter, service pendingChangesService) PendingChanges {
 	return PendingChanges{
-		service:     service,
-		tableWriter: tableWriter,
+		service:   service,
+		presenter: presenter,
 	}
 }
 
@@ -30,22 +30,7 @@ func (pc PendingChanges) Execute(args []string) error {
 		return fmt.Errorf("failed to retrieve pending changes %s", err)
 	}
 
-	pc.tableWriter.SetHeader([]string{"PRODUCT", "ACTION", "ERRANDS"})
-
-	for _, change := range output.ChangeList {
-		if len(change.Errands) == 0 {
-			pc.tableWriter.Append([]string{change.Product, change.Action, ""})
-		}
-		for i, errand := range change.Errands {
-			if i == 0 {
-				pc.tableWriter.Append([]string{change.Product, change.Action, errand.Name})
-			} else {
-				pc.tableWriter.Append([]string{"", "", errand.Name})
-			}
-		}
-	}
-
-	pc.tableWriter.Render()
+	pc.presenter.PresentPendingChanges(output.ChangeList)
 	return nil
 }
 

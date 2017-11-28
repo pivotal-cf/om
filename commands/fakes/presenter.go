@@ -40,6 +40,11 @@ type Presenter struct {
 	presentInstallationsArgsForCall []struct {
 		arg1 []models.Installation
 	}
+	PresentPendingChangesStub        func([]api.ProductChange)
+	presentPendingChangesMutex       sync.RWMutex
+	presentPendingChangesArgsForCall []struct {
+		arg1 []api.ProductChange
+	}
 	PresentStagedProductsStub        func([]api.DiagnosticProduct)
 	presentStagedProductsMutex       sync.RWMutex
 	presentStagedProductsArgsForCall []struct {
@@ -218,6 +223,35 @@ func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installat
 	return fake.presentInstallationsArgsForCall[i].arg1
 }
 
+func (fake *Presenter) PresentPendingChanges(arg1 []api.ProductChange) {
+	var arg1Copy []api.ProductChange
+	if arg1 != nil {
+		arg1Copy = make([]api.ProductChange, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentPendingChangesMutex.Lock()
+	fake.presentPendingChangesArgsForCall = append(fake.presentPendingChangesArgsForCall, struct {
+		arg1 []api.ProductChange
+	}{arg1Copy})
+	fake.recordInvocation("PresentPendingChanges", []interface{}{arg1Copy})
+	fake.presentPendingChangesMutex.Unlock()
+	if fake.PresentPendingChangesStub != nil {
+		fake.PresentPendingChangesStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentPendingChangesCallCount() int {
+	fake.presentPendingChangesMutex.RLock()
+	defer fake.presentPendingChangesMutex.RUnlock()
+	return len(fake.presentPendingChangesArgsForCall)
+}
+
+func (fake *Presenter) PresentPendingChangesArgsForCall(i int) []api.ProductChange {
+	fake.presentPendingChangesMutex.RLock()
+	defer fake.presentPendingChangesMutex.RUnlock()
+	return fake.presentPendingChangesArgsForCall[i].arg1
+}
+
 func (fake *Presenter) PresentStagedProducts(arg1 []api.DiagnosticProduct) {
 	var arg1Copy []api.DiagnosticProduct
 	if arg1 != nil {
@@ -262,6 +296,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentErrandsMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
+	fake.presentPendingChangesMutex.RLock()
+	defer fake.presentPendingChangesMutex.RUnlock()
 	fake.presentStagedProductsMutex.RLock()
 	defer fake.presentStagedProductsMutex.RUnlock()
 	return fake.invocations

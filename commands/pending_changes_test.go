@@ -13,15 +13,15 @@ import (
 
 var _ = Describe("PendingChanges", func() {
 	var (
-		tableWriter *fakes.TableWriter
-		pcService   *fakes.PendingChangesService
-		command     commands.PendingChanges
+		presenter *fakes.Presenter
+		pcService *fakes.PendingChangesService
+		command   commands.PendingChanges
 	)
 
 	BeforeEach(func() {
-		tableWriter = &fakes.TableWriter{}
+		presenter = &fakes.Presenter{}
 		pcService = &fakes.PendingChangesService{}
-		command = commands.NewPendingChanges(tableWriter, pcService)
+		command = commands.NewPendingChanges(presenter, pcService)
 	})
 
 	It("lists the pending changes", func() {
@@ -54,19 +54,13 @@ var _ = Describe("PendingChanges", func() {
 		err := command.Execute([]string{})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(tableWriter.SetHeaderCallCount()).To(Equal(1))
-		Expect(tableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"PRODUCT", "ACTION", "ERRANDS"}))
-
-		Expect(tableWriter.AppendCallCount()).To(Equal(3))
-		Expect(tableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-product", "update", "some-errand"}))
-		Expect(tableWriter.AppendArgsForCall(1)).To(Equal([]string{"", "", "some-errand-2"}))
-		Expect(tableWriter.AppendArgsForCall(2)).To(Equal([]string{"some-product-without-errand", "install", ""}))
+		Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 	})
 
 	Context("failure cases", func() {
 		Context("when fetching the pending changes fails", func() {
 			It("returns an error", func() {
-				command := commands.NewPendingChanges(tableWriter, pcService)
+				command := commands.NewPendingChanges(presenter, pcService)
 
 				pcService.ListReturns(api.PendingChangesOutput{}, errors.New("beep boop"))
 

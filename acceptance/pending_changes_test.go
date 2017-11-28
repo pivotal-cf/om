@@ -28,6 +28,29 @@ var _ = Describe("pending_changes command", func() {
 +----------------+---------+--------------------+
 `
 
+	const jsonOutput = `[{
+		"guid": "some-product-1",
+		"errands": [
+			{"post_deploy": "true", "pre_delete": true, "name": "smoke-tests"},
+			{"post_deploy": "false", "pre_delete": false, "name": "deploy-autoscaling"}
+		],
+		"action": "update"
+	},
+	{
+		"guid": "some-product-2",
+		"errands": [
+			{"post_deploy": "when-changed", "name": "deploy-broker"}
+		],
+		"action": "install"
+	},
+	{
+		"guid": "some-product-3",
+		"errands": [
+			{"post_deploy": "when-changed", "name": "delete-broker"}
+		],
+		"action": "delete"
+	}]`
+
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -87,4 +110,24 @@ var _ = Describe("pending_changes command", func() {
 
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
+
+	Context("when JSON format is requrested", func() {
+		It("lists the pending changes in JSON format", func() {
+			command := exec.Command(pathToMain,
+				"--format", "json",
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"pending-changes")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+		})
+	})
+
 })

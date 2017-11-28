@@ -194,6 +194,47 @@ var _ = Describe("TablePresenter", func() {
 		})
 	})
 
+	Describe("PresentPendingChanges", func() {
+		var pendingChanges []api.ProductChange
+		BeforeEach(func() {
+			pendingChanges = []api.ProductChange{
+				{
+					Product: "some-product",
+					Action:  "update",
+					Errands: []api.Errand{
+						{
+							Name:       "some-errand",
+							PostDeploy: "on",
+							PreDelete:  "false",
+						},
+						{
+							Name:       "some-errand-2",
+							PostDeploy: "when-change",
+							PreDelete:  "false",
+						},
+					},
+				},
+				{
+					Product: "some-product-without-errand",
+					Action:  "install",
+					Errands: []api.Errand{},
+				},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentPendingChanges(pendingChanges)
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"PRODUCT", "ACTION", "ERRANDS"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(3))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-product", "update", "some-errand"}))
+			Expect(fakeTableWriter.AppendArgsForCall(1)).To(Equal([]string{"", "", "some-errand-2"}))
+			Expect(fakeTableWriter.AppendArgsForCall(2)).To(Equal([]string{"some-product-without-errand", "install", ""}))
+		})
+	})
+
 	Describe("PresentStagedProducts", func() {
 		var stagedProducts []api.DiagnosticProduct
 		BeforeEach(func() {

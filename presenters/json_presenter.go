@@ -48,6 +48,11 @@ func (j JSONPresenter) PresentInstallations(installations []models.Installation)
 	encoder.Encode(&installations)
 }
 
+func (j JSONPresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
+	encoder := json.NewEncoder(j.stdout)
+	encoder.Encode(&pendingChanges)
+}
+
 func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
 	encoder := json.NewEncoder(j.stdout)
 	encoder.Encode(&stagedProducts)
