@@ -16,4 +16,5 @@ type Presenter interface {
 	PresentInstallations([]models.Installation)
 	PresentPendingChanges([]api.ProductChange)
 	PresentStagedProducts([]api.DiagnosticProduct)
+	PresentCertificateAuthorities([]api.CA)
 }

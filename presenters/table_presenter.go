@@ -42,6 +42,17 @@ func (t TablePresenter) PresentAvailableProducts(products []models.Product) {
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentCertificateAuthorities(certificateAuthorities []api.CA) {
+	t.tableWriter.SetAutoWrapText(false)
+	t.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
+
+	for _, values := range certificateAuthorities {
+		t.tableWriter.Append([]string{values.GUID, values.Issuer, strconv.FormatBool(values.Active), values.CreatedOn, values.ExpiresOn, values.CertPEM})
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentCredentialReferences(credential_references []string) {
 	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
 	t.tableWriter.SetHeader([]string{"Credentials"})

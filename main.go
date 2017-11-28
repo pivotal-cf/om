@@ -169,7 +169,7 @@ func main() {
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, pendingChangesService)
 	commandSet["installations"] = commands.NewInstallations(installationsService, presenter)
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
-	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, tableWriter)
+	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, presenter)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
 	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, tableWriter)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)

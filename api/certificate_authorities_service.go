@@ -29,11 +29,11 @@ type CertificateAuthoritiesOutput struct {
 }
 
 type CA struct {
-	GUID      string
-	Issuer    string
+	GUID      string `json:"guid"`
+	Issuer    string `json:"issuer"`
 	CreatedOn string `json:"created_on"`
 	ExpiresOn string `json:"expires_on"`
-	Active    bool
+	Active    bool   `json:"active"`
 	CertPEM   string `json:"cert_pem"`
 }
 

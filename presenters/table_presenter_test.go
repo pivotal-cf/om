@@ -290,4 +290,44 @@ var _ = Describe("TablePresenter", func() {
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
 	})
+
+	Describe("PresentCertificateAuthorities", func() {
+		var certificateAuthorities []api.CA
+		BeforeEach(func() {
+			certificateAuthorities = []api.CA{
+				{
+					GUID:      "some-guid",
+					Issuer:    "Pivotal",
+					CreatedOn: "2017-01-09",
+					ExpiresOn: "2021-01-09",
+					Active:    true,
+					CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
+				},
+				{
+					GUID:      "other-guid",
+					Issuer:    "Customer",
+					CreatedOn: "2017-01-10",
+					ExpiresOn: "2021-01-10",
+					Active:    false,
+					CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI....",
+				},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentCertificateAuthorities(certificateAuthorities)
+
+			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-guid", "Pivotal", "true", "2017-01-09", "2021-01-09", "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI...."}))
+			Expect(fakeTableWriter.AppendArgsForCall(1)).To(Equal([]string{"other-guid", "Customer", "false", "2017-01-10", "2021-01-10", "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI...."}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
 })

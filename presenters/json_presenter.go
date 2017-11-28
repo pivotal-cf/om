@@ -23,6 +23,14 @@ func (j JSONPresenter) PresentAvailableProducts(products []models.Product) {
 	encoder.Encode(&products)
 }
 
+func (j JSONPresenter) PresentCertificateAuthorities(certificateAuthorities []api.CA) {
+	encoder := json.NewEncoder(j.stdout)
+	certificateAuthoritiesObject := map[string][]api.CA{
+		"certificate_authorities": certificateAuthorities,
+	}
+	encoder.Encode(&certificateAuthoritiesObject)
+}
+
 func (j JSONPresenter) PresentCredentialReferences(credentials []string) {
 	encoder := json.NewEncoder(j.stdout)
 	encoder.Encode(&credentials)

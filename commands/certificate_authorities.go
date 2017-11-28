@@ -1,15 +1,13 @@
 package commands
 
 import (
-	"strconv"
-
 	"github.com/pivotal-cf/jhanda/commands"
 	"github.com/pivotal-cf/om/api"
 )
 
 type CertificateAuthorities struct {
-	cas certificateAuthorityLister
-	tw  tableWriter
+	cas       certificateAuthorityLister
+	presenter Presenter
 }
 
 //go:generate counterfeiter -o ./fakes/certificate_authority_lister.go --fake-name CertificateAuthorityLister . certificateAuthorityLister
@@ -17,10 +15,10 @@ type certificateAuthorityLister interface {
 	List() (api.CertificateAuthoritiesOutput, error)
 }
 
-func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthorityLister, tableWriter tableWriter) CertificateAuthorities {
+func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthorityLister, presenter Presenter) CertificateAuthorities {
 	return CertificateAuthorities{
-		cas: certificateAuthoritiesService,
-		tw:  tableWriter,
+		cas:       certificateAuthoritiesService,
+		presenter: presenter,
 	}
 }
 
@@ -30,14 +28,7 @@ func (c CertificateAuthorities) Execute(_ []string) error {
 		return err
 	}
 
-	c.tw.SetAutoWrapText(false)
-	c.tw.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
-
-	for _, values := range casOutput.CAs {
-		c.tw.Append([]string{values.GUID, values.Issuer, strconv.FormatBool(values.Active), values.CreatedOn, values.ExpiresOn, values.CertPEM})
-	}
-
-	c.tw.Render()
+	c.presenter.PresentCertificateAuthorities(casOutput.CAs)
 
 	return nil
 }

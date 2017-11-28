@@ -16,13 +16,13 @@ var _ = Describe("Certificate Authorities", func() {
 	var (
 		certificateAuthorities            commands.CertificateAuthorities
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthorityLister
-		fakeTableWriter                   *fakes.TableWriter
+		fakePresenter                     *fakes.Presenter
 	)
 
 	BeforeEach(func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthorityLister{}
-		fakeTableWriter = &fakes.TableWriter{}
-		certificateAuthorities = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakeTableWriter)
+		fakePresenter = &fakes.Presenter{}
+		certificateAuthorities = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -46,44 +46,35 @@ var _ = Describe("Certificate Authorities", func() {
 		})
 
 		It("prints the certificate authorities to a table", func() {
-			fakeCertificateAuthoritiesService.ListReturns(
-				api.CertificateAuthoritiesOutput{
-					CAs: []api.CA{
-						{
-							GUID:      "some-guid",
-							Issuer:    "Pivotal",
-							CreatedOn: "2017-01-09",
-							ExpiresOn: "2021-01-09",
-							Active:    true,
-							CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
-						},
-						{
-							GUID:      "other-guid",
-							Issuer:    "Customer",
-							CreatedOn: "2017-01-10",
-							ExpiresOn: "2021-01-10",
-							Active:    false,
-							CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI....",
-						},
-					},
+			certificateAuthoritiesOutput := []api.CA{
+				{
+					GUID:      "some-guid",
+					Issuer:    "Pivotal",
+					CreatedOn: "2017-01-09",
+					ExpiresOn: "2021-01-09",
+					Active:    true,
+					CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
 				},
+				{
+					GUID:      "other-guid",
+					Issuer:    "Customer",
+					CreatedOn: "2017-01-10",
+					ExpiresOn: "2021-01-10",
+					Active:    false,
+					CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI....",
+				},
+			}
+
+			fakeCertificateAuthoritiesService.ListReturns(
+				api.CertificateAuthoritiesOutput{certificateAuthoritiesOutput},
 				nil,
 			)
 
 			err := certificateAuthorities.Execute([]string{})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
-
-			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
-			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"}))
-
-			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
-			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-guid", "Pivotal", "true", "2017-01-09", "2021-01-09", "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI...."}))
-			Expect(fakeTableWriter.AppendArgsForCall(1)).To(Equal([]string{"other-guid", "Customer", "false", "2017-01-10", "2021-01-10", "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI...."}))
-
-			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentCertificateAuthoritiesCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentCertificateAuthoritiesArgsForCall(0)).To(Equal(certificateAuthoritiesOutput))
 		})
 	})
 
