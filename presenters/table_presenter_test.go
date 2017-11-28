@@ -137,7 +137,7 @@ var _ = Describe("TablePresenter", func() {
 		})
 	})
 
-	Describe("PresentGeneratedCertificateAuthority", func() {
+	Describe("PresentCertificateAuthority", func() {
 		var certificateAuthority api.CA
 
 		BeforeEach(func() {
@@ -152,7 +152,7 @@ var _ = Describe("TablePresenter", func() {
 		})
 
 		It("creates a table", func() {
-			tablePresenter.PresentGeneratedCertificateAuthority(certificateAuthority)
+			tablePresenter.PresentCertificateAuthority(certificateAuthority)
 			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
 			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
 

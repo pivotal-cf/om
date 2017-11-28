@@ -14,7 +14,7 @@ type Presenter interface {
 	PresentCredentials(map[string]string)
 	PresentDeployedProducts([]api.DiagnosticProduct)
 	PresentErrands([]models.Errand)
-	PresentGeneratedCertificateAuthority(api.CA)
+	PresentCertificateAuthority(api.CA)
 	PresentInstallations([]models.Installation)
 	PresentPendingChanges([]api.ProductChange)
 	PresentStagedProducts([]api.DiagnosticProduct)

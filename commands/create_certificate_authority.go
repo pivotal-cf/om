@@ -49,7 +49,7 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 		return err
 	}
 
-	c.presenter.PresentGeneratedCertificateAuthority(ca)
+	c.presenter.PresentCertificateAuthority(ca)
 
 	return nil
 }

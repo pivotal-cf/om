@@ -57,8 +57,8 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakePresenter.PresentGeneratedCertificateAuthorityCallCount()).To(Equal(1))
-			Expect(fakePresenter.PresentGeneratedCertificateAuthorityArgsForCall(0)).To(Equal(ca))
+			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(ca))
 		})
 
 		Context("failure cases", func() {

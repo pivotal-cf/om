@@ -25,7 +25,7 @@ func (g GenerateCertificateAuthority) Execute(_ []string) error {
 		return err
 	}
 
-	g.presenter.PresentGeneratedCertificateAuthority(certificateAuthority)
+	g.presenter.PresentCertificateAuthority(certificateAuthority)
 
 	return nil
 }

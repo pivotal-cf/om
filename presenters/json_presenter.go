@@ -51,7 +51,7 @@ func (j JSONPresenter) PresentErrands(errands []models.Errand) {
 	encoder.Encode(&errands)
 }
 
-func (j JSONPresenter) PresentGeneratedCertificateAuthority(certificateAuthority api.CA) {
+func (j JSONPresenter) PresentCertificateAuthority(certificateAuthority api.CA) {
 	encoder := json.NewEncoder(j.stdout)
 	var certificateAuthorityObject = map[string]api.CA{}
 	certificateAuthorityObject["certificate_authority"] = certificateAuthority

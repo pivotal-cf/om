@@ -96,7 +96,7 @@ func (t TablePresenter) PresentErrands(errands []models.Errand) {
 	t.tableWriter.Render()
 }
 
-func (t TablePresenter) PresentGeneratedCertificateAuthority(certificateAuthority api.CA) {
+func (t TablePresenter) PresentCertificateAuthority(certificateAuthority api.CA) {
 	t.tableWriter.SetAutoWrapText(false)
 	t.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem"})
 	t.tableWriter.Append([]string{certificateAuthority.GUID,
