@@ -31,16 +31,16 @@ func main() {
 	stderr := log.New(os.Stderr, "", 0)
 
 	var global struct {
-		ClientID          string `short:"c" long:"client-id"           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
-		ClientSecret      string `short:"s" long:"client-secret"       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
-		Format            string `short:"f" long:"format"              description:"output format"                                        default:"table"`
-		Help              bool   `short:"h" long:"help"                description:"prints this usage information"                        default:"false"`
-		Password          string `short:"p" long:"password"            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
-		RequestTimeout    int    `short:"r" long:"request-timeout"     description:"timeout in seconds for HTTP requests to Ops Manager" default:"1800"`
-		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" description:"skip ssl certificate validation during http requests" default:"false"`
-		Target            string `short:"t" long:"target"              description:"location of the Ops Manager VM"`
-		Username          string `short:"u" long:"username"            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
-		Version           bool   `short:"v" long:"version"             description:"prints the om release version"                        default:"false"`
+		ClientID          string `short:"c" long:"client-id"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
+		ClientSecret      string `short:"s" long:"client-secret"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
+		Format            string `short:"f" long:"format"              default:"table" description:"Format to print as (options: table,json)"`
+		Help              bool   `short:"h" long:"help"                default:"false" description:"prints this usage information"`
+		Password          string `short:"p" long:"password"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
+		RequestTimeout    int    `short:"r" long:"request-timeout"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
+		SkipSSLValidation bool   `short:"k" long:"skip-ssl-validation" default:"false" description:"skip ssl certificate validation during http requests"`
+		Target            string `short:"t" long:"target"                              description:"location of the Ops Manager VM"`
+		Username          string `short:"u" long:"username"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
+		Version           bool   `short:"v" long:"version"             default:"false" description:"prints the om release version"`
 	}
 
 	args, err := flags.Parse(&global, os.Args[1:])
