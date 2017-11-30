@@ -79,6 +79,6 @@ func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProd
 }
 
 func (j JSONPresenter) encodeJSON(v interface{}) {
-	encoder := json.NewEncoder(j.stdout)
-	encoder.Encode(&v)
+	b, _ := json.MarshalIndent(&v, "", "  ")
+	j.stdout.Write(b)
 }
