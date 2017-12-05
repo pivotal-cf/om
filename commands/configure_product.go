@@ -19,7 +19,7 @@ type ConfigureProduct struct {
 		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
 		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format" default:""`
 		NetworkProperties string `short:"pn" long:"product-network" description:"network properties in JSON format" default:""`
-		ProductResources  string `short:"pr" long:"product-resources" description:"resource configurations in JSON format" default:"{}"`
+		ProductResources  string `short:"pr" long:"product-resources" description:"resource configurations in JSON format" default:""`
 	}
 }
 
@@ -56,7 +56,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	cp.logger.Printf("configuring product...")
 
-	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "{}" {
+	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "" {
 		cp.logger.Printf("Provided properties are empty, nothing to do here")
 		return nil
 	}
@@ -102,7 +102,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		cp.logger.Printf("finished setting up network")
 	}
 
-	if cp.Options.ProductResources != "{}" {
+	if cp.Options.ProductResources != "" {
 		var userProvidedConfig map[string]json.RawMessage
 		err = json.Unmarshal([]byte(cp.Options.ProductResources), &userProvidedConfig)
 		if err != nil {
