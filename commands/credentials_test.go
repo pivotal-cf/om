@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,14 +17,14 @@ var _ = Describe("Credentials", func() {
 	var (
 		csService     *fakes.CredentialsService
 		dpLister      *fakes.DeployedProductsLister
-		fakePresenter *fakes.Presenter
+		fakePresenter *presenterfakes.Presenter
 		logger        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		csService = &fakes.CredentialsService{}
 		dpLister = &fakes.DeployedProductsLister{}
-		fakePresenter = &fakes.Presenter{}
+		fakePresenter = &presenterfakes.Presenter{}
 		logger = &fakes.Logger{}
 	})
 

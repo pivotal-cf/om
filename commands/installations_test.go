@@ -11,6 +11,7 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/models"
+	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 )
 
 func parseTime(timeString string) *time.Time {
@@ -27,11 +28,11 @@ var _ = Describe("Installations", func() {
 	var (
 		command                  commands.Installations
 		fakeInstallationsService *fakes.InstallationsService
-		fakePresenter            *fakes.Presenter
+		fakePresenter            *presenterfakes.Presenter
 	)
 
 	BeforeEach(func() {
-		fakePresenter = &fakes.Presenter{}
+		fakePresenter = &presenterfakes.Presenter{}
 		fakeInstallationsService = &fakes.InstallationsService{}
 		command = commands.NewInstallations(fakeInstallationsService, fakePresenter)
 	})

@@ -10,17 +10,18 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 )
 
 var _ = Describe("DeployedProducts", func() {
 	var (
-		presenter         *fakes.Presenter
+		presenter         *presenterfakes.Presenter
 		diagnosticService *fakes.DiagnosticService
 		command           commands.DeployedProducts
 	)
 
 	BeforeEach(func() {
-		presenter = &fakes.Presenter{}
+		presenter = &presenterfakes.Presenter{}
 		diagnosticService = &fakes.DiagnosticService{}
 		command = commands.NewDeployedProducts(presenter, diagnosticService)
 	})

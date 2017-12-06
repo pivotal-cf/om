@@ -7,7 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-type CertificateAuthorityLister struct {
+type CertificateAuthoritiesService struct {
 	ListStub        func() (api.CertificateAuthoritiesOutput, error)
 	listMutex       sync.RWMutex
 	listArgsForCall []struct{}
@@ -23,7 +23,7 @@ type CertificateAuthorityLister struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateAuthorityLister) List() (api.CertificateAuthoritiesOutput, error) {
+func (fake *CertificateAuthoritiesService) List() (api.CertificateAuthoritiesOutput, error) {
 	fake.listMutex.Lock()
 	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
 	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
@@ -38,13 +38,13 @@ func (fake *CertificateAuthorityLister) List() (api.CertificateAuthoritiesOutput
 	return fake.listReturns.result1, fake.listReturns.result2
 }
 
-func (fake *CertificateAuthorityLister) ListCallCount() int {
+func (fake *CertificateAuthoritiesService) ListCallCount() int {
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	return len(fake.listArgsForCall)
 }
 
-func (fake *CertificateAuthorityLister) ListReturns(result1 api.CertificateAuthoritiesOutput, result2 error) {
+func (fake *CertificateAuthoritiesService) ListReturns(result1 api.CertificateAuthoritiesOutput, result2 error) {
 	fake.ListStub = nil
 	fake.listReturns = struct {
 		result1 api.CertificateAuthoritiesOutput
@@ -52,7 +52,7 @@ func (fake *CertificateAuthorityLister) ListReturns(result1 api.CertificateAutho
 	}{result1, result2}
 }
 
-func (fake *CertificateAuthorityLister) ListReturnsOnCall(i int, result1 api.CertificateAuthoritiesOutput, result2 error) {
+func (fake *CertificateAuthoritiesService) ListReturnsOnCall(i int, result1 api.CertificateAuthoritiesOutput, result2 error) {
 	fake.ListStub = nil
 	if fake.listReturnsOnCall == nil {
 		fake.listReturnsOnCall = make(map[int]struct {
@@ -66,7 +66,7 @@ func (fake *CertificateAuthorityLister) ListReturnsOnCall(i int, result1 api.Cer
 	}{result1, result2}
 }
 
-func (fake *CertificateAuthorityLister) Invocations() map[string][][]interface{} {
+func (fake *CertificateAuthoritiesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.listMutex.RLock()
@@ -78,7 +78,7 @@ func (fake *CertificateAuthorityLister) Invocations() map[string][][]interface{}
 	return copiedInvocations
 }
 
-func (fake *CertificateAuthorityLister) recordInvocation(key string, args []interface{}) {
+func (fake *CertificateAuthoritiesService) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {

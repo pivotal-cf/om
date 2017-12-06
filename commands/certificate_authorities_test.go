@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,13 +16,13 @@ import (
 var _ = Describe("Certificate Authorities", func() {
 	var (
 		certificateAuthorities            commands.CertificateAuthorities
-		fakeCertificateAuthoritiesService *fakes.CertificateAuthorityLister
-		fakePresenter                     *fakes.Presenter
+		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
+		fakePresenter                     *presenterfakes.Presenter
 	)
 
 	BeforeEach(func() {
-		fakeCertificateAuthoritiesService = &fakes.CertificateAuthorityLister{}
-		fakePresenter = &fakes.Presenter{}
+		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
+		fakePresenter = &presenterfakes.Presenter{}
 		certificateAuthorities = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakePresenter)
 	})
 

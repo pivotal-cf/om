@@ -9,17 +9,18 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 )
 
 var _ = Describe("PendingChanges", func() {
 	var (
-		presenter *fakes.Presenter
+		presenter *presenterfakes.Presenter
 		pcService *fakes.PendingChangesService
 		command   commands.PendingChanges
 	)
 
 	BeforeEach(func() {
-		presenter = &fakes.Presenter{}
+		presenter = &presenterfakes.Presenter{}
 		pcService = &fakes.PendingChangesService{}
 		command = commands.NewPendingChanges(presenter, pcService)
 	})
