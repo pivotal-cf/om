@@ -27,18 +27,16 @@ var _ = Describe("available-products command", func() {
 +--------------+---------+
 `
 
-	const jsonOutput = `{
-		"available_products": [
-			{
-				"name": "some-product",
-				"version": "1.2.3"
-			},
-			{
-				"name": "p-redis",
-				"version": "1.7.2"
-			}
-		]
-	}`
+	const jsonOutput = `[
+		{
+			"name": "some-product",
+			"version": "1.2.3"
+		},
+		{
+			"name": "p-redis",
+			"version": "1.7.2"
+		}
+	]`
 
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

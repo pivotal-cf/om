@@ -23,12 +23,10 @@ var _ = Describe("deployed-products command", func() {
 +----------------+------------------+
 `
 
-	const jsonOutput = `{
-		"deployed_products": [
-			{"name":"acme-product-1","version":"1.13.0-build.100"},
-			{"name":"acme-product-2","version":"1.8.0"}
-		]
-	}`
+	const jsonOutput = `[
+		{"name":"acme-product-1","version":"1.13.0-build.100"},
+		{"name":"acme-product-2","version":"1.8.0"}
+	]`
 
 	BeforeEach(func() {
 		diagnosticReport := []byte(`{

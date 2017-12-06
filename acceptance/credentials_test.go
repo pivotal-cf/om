@@ -29,9 +29,7 @@ var _ = Describe("credentials command", func() {
 `
 
 	const jsonOutput = `{
-		"credential": {
-			"some-credential-key": "some-credential-value\nnewline\nanother-line\nanother-line"
-	  }
+		"some-credential-key": "some-credential-value\nnewline\nanother-line\nanother-line"
 	}`
 
 	BeforeEach(func() {

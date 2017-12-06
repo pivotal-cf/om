@@ -23,12 +23,10 @@ var _ = Describe("staged-products command", func() {
 +----------------+------------------+
 `
 
-	const jsonOutput = `{
-		"staged_products": [
-			{"name":"acme-product-1","version":"1.13.0-build.100"},
-			{"name":"acme-product-2","version":"1.8.9-build.1"}
-		]
-	}`
+	const jsonOutput = `[
+		{"name":"acme-product-1","version":"1.13.0-build.100"},
+		{"name":"acme-product-2","version":"1.8.9-build.1"}
+	]`
 
 	BeforeEach(func() {
 		diagnosticReport := []byte(`{

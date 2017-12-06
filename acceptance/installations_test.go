@@ -24,30 +24,28 @@ var _ = Describe("installations command", func() {
 +----+-------------+-----------+--------------------------+--------------------------+
 `
 
-	const jsonOutput = `{
-		"installations": [
-			{
-				"user": "some-user",
-				"finished_at": "2017-05-24T23:55:56.106Z",
-				"started_at": "2017-05-24T23:38:37.316Z",
-				"status": "succeeded",
-				"id": 1
-			},
-			{
-				"user": "some-user-2",
-				"finished_at": "2017-05-24T23:55:56.106Z",
-				"started_at": "2017-05-24T23:38:37.316Z",
-				"status": "failed",
-				"id": 2
-			},
-			{
-				"user": "some-user-3",
-				"started_at": "2017-05-24T23:38:37.316Z",
-				"status": "running",
-				"id": 3
-			}
-		]
-	}`
+	const jsonOutput = `[
+		{
+			"user": "some-user",
+			"finished_at": "2017-05-24T23:55:56.106Z",
+			"started_at": "2017-05-24T23:38:37.316Z",
+			"status": "succeeded",
+			"id": 1
+		},
+		{
+			"user": "some-user-2",
+			"finished_at": "2017-05-24T23:55:56.106Z",
+			"started_at": "2017-05-24T23:38:37.316Z",
+			"status": "failed",
+			"id": 2
+		},
+		{
+			"user": "some-user-3",
+			"started_at": "2017-05-24T23:38:37.316Z",
+			"status": "running",
+			"id": 3
+		}
+	]`
 
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

@@ -28,31 +28,30 @@ var _ = Describe("pending_changes command", func() {
 +----------------+---------+--------------------+
 `
 
-	const jsonOutput = `{
-		"pending_changes": [{
-				"guid": "some-product-1",
-				"errands": [
-					{"post_deploy": "true", "pre_delete": true, "name": "smoke-tests"},
-					{"post_deploy": "false", "pre_delete": false, "name": "deploy-autoscaling"}
-				],
-				"action": "update"
-			},
-			{
-				"guid": "some-product-2",
-				"errands": [
-					{"post_deploy": "when-changed", "name": "deploy-broker"}
-				],
-				"action": "install"
-			},
-			{
-				"guid": "some-product-3",
-				"errands": [
-					{"post_deploy": "when-changed", "name": "delete-broker"}
-				],
-				"action": "delete"
-			}
-		]
-	}`
+	const jsonOutput = `[
+		{
+			"guid": "some-product-1",
+			"errands": [
+				{"post_deploy": "true", "pre_delete": true, "name": "smoke-tests"},
+				{"post_deploy": "false", "pre_delete": false, "name": "deploy-autoscaling"}
+			],
+			"action": "update"
+		},
+		{
+			"guid": "some-product-2",
+			"errands": [
+				{"post_deploy": "when-changed", "name": "deploy-broker"}
+			],
+			"action": "install"
+		},
+		{
+			"guid": "some-product-3",
+			"errands": [
+				{"post_deploy": "when-changed", "name": "delete-broker"}
+			],
+			"action": "delete"
+		}
+	]`
 
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

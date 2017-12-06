@@ -28,14 +28,12 @@ var _ = Describe("errands command", func() {
 +---------------+---------------------+--------------------+
 `
 
-	const jsonOutput = `{
-		"errands": [
-			{"name": "some-errand-1", "post_deploy_enabled": "true", "pre_delete_enabled": "true"},
-			{"name": "some-errand-2", "post_deploy_enabled": "false", "pre_delete_enabled": "false"},
-			{"name": "some-errand-3", "pre_delete_enabled": "true"},
-			{"name": "some-errand-4", "post_deploy_enabled": "when-changed"}
-		]
-	}`
+	const jsonOutput = `[
+		{"name": "some-errand-1", "post_deploy_enabled": "true", "pre_delete_enabled": "true"},
+		{"name": "some-errand-2", "post_deploy_enabled": "false", "pre_delete_enabled": "false"},
+		{"name": "some-errand-3", "pre_delete_enabled": "true"},
+		{"name": "some-errand-4", "post_deploy_enabled": "when-changed"}
+	]`
 
 	BeforeEach(func() {
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

@@ -19,66 +19,48 @@ func NewJSONPresenter(stdout io.Writer) JSONPresenter {
 }
 
 func (j JSONPresenter) PresentAvailableProducts(products []models.Product) {
-	j.encodeJSON(&map[string][]models.Product{
-		"available_products": products,
-	})
+	j.encodeJSON(products)
 }
 
 func (j JSONPresenter) PresentCertificateAuthorities(certificateAuthorities []api.CA) {
-	j.encodeJSON(&map[string][]api.CA{
-		"certificate_authorities": certificateAuthorities,
-	})
+	j.encodeJSON(certificateAuthorities)
 }
 
 func (j JSONPresenter) PresentCredentialReferences(credentialReferences []string) {
-	j.encodeJSON(&map[string][]string{
-		"credential_references": credentialReferences,
-	})
+	j.encodeJSON(credentialReferences)
 }
 
 func (j JSONPresenter) PresentCredentials(credentials map[string]string) {
-	j.encodeJSON(&map[string]map[string]string{
-		"credential": credentials,
-	})
+	j.encodeJSON(credentials)
 }
 
 func (j JSONPresenter) PresentDeployedProducts(deployedProducts []api.DiagnosticProduct) {
-	j.encodeJSON(&map[string][]api.DiagnosticProduct{
-		"deployed_products": deployedProducts,
-	})
+	j.encodeJSON(deployedProducts)
 }
 
 func (j JSONPresenter) PresentErrands(errands []models.Errand) {
-	j.encodeJSON(&map[string][]models.Errand{
-		"errands": errands,
-	})
+	j.encodeJSON(errands)
 }
 
 func (j JSONPresenter) PresentCertificateAuthority(certificateAuthority api.CA) {
-	j.encodeJSON(&map[string]api.CA{
-		"certificate_authority": certificateAuthority,
-	})
+	j.encodeJSON(certificateAuthority)
 }
 
 func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
-	j.encodeJSON(&map[string][]models.Installation{
-		"installations": installations,
-	})
+	j.encodeJSON(installations)
 }
 
 func (j JSONPresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
-	j.encodeJSON(&map[string][]api.ProductChange{
-		"pending_changes": pendingChanges,
-	})
+	j.encodeJSON(pendingChanges)
 }
 
 func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
-	j.encodeJSON(&map[string][]api.DiagnosticProduct{
-		"staged_products": stagedProducts,
-	})
+	j.encodeJSON(stagedProducts)
 }
 
 func (j JSONPresenter) encodeJSON(v interface{}) {
 	b, _ := json.MarshalIndent(&v, "", "  ")
+
 	j.stdout.Write(b)
+	j.stdout.Write([]byte("\n"))
 }
