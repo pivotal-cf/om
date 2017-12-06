@@ -91,6 +91,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("failed to import installation: %s", err)
 	}
 
+	ii.logger.Printf("waiting for import to complete...")
 	for ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusComplete {
 		ensureAvailabilityOutput, err = ii.setupService.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {

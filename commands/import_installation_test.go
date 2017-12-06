@@ -84,6 +84,9 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("beginning installation import to Ops Manager"))
 
 		format, v = logger.PrintfArgsForCall(2)
+		Expect(fmt.Sprintf(format, v...)).To(Equal("waiting for import to complete..."))
+
+		format, v = logger.PrintfArgsForCall(3)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 	})
 
