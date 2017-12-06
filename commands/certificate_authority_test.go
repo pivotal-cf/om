@@ -19,12 +19,14 @@ var _ = Describe("Certificate Authority", func() {
 		certificateAuthority              commands.CertificateAuthority
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
 		fakePresenter                     *presenterfakes.Presenter
+		fakeLogger                        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
 		fakePresenter = &presenterfakes.Presenter{}
-		certificateAuthority = commands.NewCertificateAuthority(fakeCertificateAuthoritiesService, fakePresenter)
+		fakeLogger = &fakes.Logger{}
+		certificateAuthority = commands.NewCertificateAuthority(fakeCertificateAuthoritiesService, fakePresenter, fakeLogger)
 
 		certificateAuthorities := []api.CA{
 			{
@@ -76,6 +78,20 @@ var _ = Describe("Certificate Authority", func() {
 				Active:    false,
 				CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI....",
 			}))
+		})
+
+		Context("when the cert-pem flag is provided", func() {
+			It("logs the cert pem to the logger", func() {
+				err := certificateAuthority.Execute([]string{
+					"--id", "other-guid",
+					"--cert-pem",
+				})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(0))
+				Expect(fakeLogger.PrintlnCallCount()).To(Equal(1))
+				output := fakeLogger.PrintlnArgsForCall(0)
+				Expect(output).To(ConsistOf("-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI...."))
+			})
 		})
 
 		Context("failure cases", func() {
