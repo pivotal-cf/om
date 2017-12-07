@@ -66,7 +66,7 @@ var _ = Describe("global trace flag", func() {
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
 		Expect(string(session.Out.Contents())).To(ContainSubstring(tableOutput))
-		Expect(string(session.Out.Contents())).To(ContainSubstring("GET /api/v0"))
-		Expect(string(session.Out.Contents())).To(ContainSubstring("200 OK"))
+		Expect(string(session.Err.Contents())).To(ContainSubstring("GET /api/v0"))
+		Expect(string(session.Err.Contents())).To(ContainSubstring("200 OK"))
 	})
 })

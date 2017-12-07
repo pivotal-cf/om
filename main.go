@@ -106,9 +106,9 @@ func main() {
 	}
 
 	if global.Trace {
-		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stdout)
-		authedClient = network.NewTraceClient(authedClient, os.Stdout)
-		authedCookieClient = network.NewTraceClient(authedCookieClient, os.Stdout)
+		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stderr)
+		authedClient = network.NewTraceClient(authedClient, os.Stderr)
+		authedCookieClient = network.NewTraceClient(authedCookieClient, os.Stderr)
 	}
 
 	setupService := api.NewSetupService(unauthenticatedClient)

@@ -15,13 +15,13 @@ type httpClient interface {
 
 type TraceClient struct {
 	client httpClient
-	out    io.Writer
+	writer io.Writer
 }
 
-func NewTraceClient(client httpClient, out io.Writer) *TraceClient {
+func NewTraceClient(client httpClient, writer io.Writer) *TraceClient {
 	return &TraceClient{
 		client: client,
-		out:    out,
+		writer: writer,
 	}
 }
 
@@ -31,7 +31,7 @@ func (c *TraceClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	fmt.Fprintf(c.out, "%s\n", string(requestOutput))
+	fmt.Fprintf(c.writer, "%s\n", string(requestOutput))
 
 	response, err := c.client.Do(request)
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *TraceClient) Do(request *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Fprintf(c.out, "%s\n", string(responseOutput))
+	fmt.Fprintf(c.writer, "%s\n", string(responseOutput))
 
 	return response, nil
 }
