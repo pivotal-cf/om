@@ -7,6 +7,8 @@ import (
 	"net/http/httputil"
 )
 
+const maxBodySize = 1024 * 1024
+
 //go:generate counterfeiter -o ./fakes/httpclient.go --fake-name HttpClient . httpClient
 
 type httpClient interface {
@@ -26,7 +28,12 @@ func NewTraceClient(client httpClient, writer io.Writer) *TraceClient {
 }
 
 func (c *TraceClient) Do(request *http.Request) (*http.Response, error) {
-	requestOutput, err := httputil.DumpRequest(request, true)
+	dumpRequestBody := true
+	if request.ContentLength >= maxBodySize {
+		dumpRequestBody = false
+	}
+
+	requestOutput, err := httputil.DumpRequest(request, dumpRequestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +45,11 @@ func (c *TraceClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	responseOutput, err := httputil.DumpResponse(response, true)
+	dumpResponseBody := true
+	if response.ContentLength >= maxBodySize {
+		dumpResponseBody = false
+	}
+	responseOutput, err := httputil.DumpResponse(response, dumpResponseBody)
 	if err != nil {
 		return nil, err
 	}

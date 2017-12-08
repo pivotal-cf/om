@@ -1,9 +1,12 @@
 package network_test
 
 import (
+	"bytes"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -67,6 +70,43 @@ var _ = Describe("Trace Client", func() {
 		It("returns the error", func() {
 			_, err := traceClient.Do(request)
 			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Context("when the request body is larger than some arbitrary value", func() {
+		It("only dumps the headers", func() {
+			request.Body = ioutil.NopCloser(strings.NewReader("{}"))
+			request.ContentLength = 1024 * 1024
+
+			_, err := traceClient.Do(request)
+			Expect(err).NotTo(HaveOccurred())
+
+			expectedContents, err := httputil.DumpRequest(request, false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(out).To(gbytes.Say(string(expectedContents)))
+			Expect(out).NotTo(gbytes.Say("{}"))
+		})
+	})
+
+	Context("when the response body is larger than some arbitrary value", func() {
+		It("only dumps the headers", func() {
+			responseBodySize := 1024 * 1024
+
+			var buffer bytes.Buffer
+			for i := 0; i < responseBodySize; i++ {
+				buffer.WriteString("a")
+			}
+
+			response.Body = ioutil.NopCloser(&buffer)
+			response.ContentLength = int64(responseBodySize)
+
+			_, err := traceClient.Do(request)
+			Expect(err).NotTo(HaveOccurred())
+
+			expectedContents, err := httputil.DumpResponse(response, false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(out).To(gbytes.Say(string(expectedContents)))
+			Expect(out).NotTo(gbytes.Say("aaaaaaaaaaaa"))
 		})
 	})
 })
