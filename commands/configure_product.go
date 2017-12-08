@@ -17,9 +17,9 @@ type ConfigureProduct struct {
 	logger          logger
 	Options         struct {
 		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
-		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format" default:""`
-		NetworkProperties string `short:"pn" long:"product-network" description:"network properties in JSON format" default:""`
-		ProductResources  string `short:"pr" long:"product-resources" description:"resource configurations in JSON format" default:""`
+		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format"`
+		NetworkProperties string `short:"pn" long:"product-network" description:"network properties in JSON format"`
+		ProductResources  string `short:"pr" long:"product-resources" description:"resource configurations in JSON format"`
 	}
 }
 
