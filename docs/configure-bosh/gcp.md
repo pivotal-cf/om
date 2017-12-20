@@ -95,6 +95,7 @@ In the example configuration below, we have taken a single GCP network and descr
     },
     {
       "name": "services-network",
+      "service_network": true,
       "subnets": [
         {
           "iaas_identifier": "some-network/services-subnet/us-central1",
