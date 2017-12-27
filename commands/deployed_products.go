@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/presenters"
 )
 
@@ -32,8 +32,8 @@ func (dp DeployedProducts) Execute(args []string) error {
 	return nil
 }
 
-func (dp DeployedProducts) Usage() commands.Usage {
-	return commands.Usage{
+func (dp DeployedProducts) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command lists all deployed products.",
 		ShortDescription: "lists deployed products",
 	}

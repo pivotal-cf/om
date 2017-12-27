@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -65,7 +65,7 @@ var _ = Describe("DeployedProducts", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewDeployedProducts(nil, nil)
-			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
+			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all deployed products.",
 				ShortDescription: "lists deployed products",
 			}))

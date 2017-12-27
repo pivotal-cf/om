@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -37,7 +36,7 @@ func NewConfigureDirector(service directorService, logger logger) ConfigureDirec
 }
 
 func (c ConfigureDirector) Execute(args []string) error {
-	_, err := flags.Parse(&c.Options, args)
+	_, err := jhanda.Parse(&c.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-director flags: %s", err)
 	}
@@ -96,8 +95,8 @@ func (c ConfigureDirector) Execute(args []string) error {
 	return nil
 }
 
-func (c ConfigureDirector) Usage() commands.Usage {
-	return commands.Usage{
+func (c ConfigureDirector) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command configures the director.",
 		ShortDescription: "configures the director",
 		Flags:            c.Options,

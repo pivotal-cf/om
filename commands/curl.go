@@ -10,8 +10,7 @@ import (
 
 	"encoding/json"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -25,11 +24,11 @@ type Curl struct {
 	stdout         logger
 	stderr         logger
 	Options        struct {
-		Path    string            `short:"p" long:"path"    description:"path to api endpoint"`
-		Method  string            `short:"x" long:"request" description:"http verb" default:"GET"`
-		Data    string            `short:"d" long:"data"    description:"api request payload"`
-		Silent  bool              `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
-		Headers flags.StringSlice `short:"H" long:"header"  description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
+		Path    string             `short:"p" long:"path"    description:"path to api endpoint"`
+		Method  string             `short:"x" long:"request" description:"http verb" default:"GET"`
+		Data    string             `short:"d" long:"data"    description:"api request payload"`
+		Silent  bool               `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
+		Headers jhanda.StringSlice `short:"H" long:"header"  description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
 	}
 }
 
@@ -38,7 +37,7 @@ func NewCurl(rs requestService, stdout logger, stderr logger) Curl {
 }
 
 func (c Curl) Execute(args []string) error {
-	_, err := flags.Parse(&c.Options, args)
+	_, err := jhanda.Parse(&c.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse curl flags: %s", err)
 	}
@@ -109,8 +108,8 @@ func (c Curl) Execute(args []string) error {
 	return nil
 }
 
-func (c Curl) Usage() commands.Usage {
-	return commands.Usage{
+func (c Curl) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command issues an authenticated API request as defined in the arguments",
 		ShortDescription: "issues an authenticated API request",
 		Flags:            c.Options,

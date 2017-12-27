@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -35,8 +35,8 @@ func (pc PendingChanges) Execute(args []string) error {
 	return nil
 }
 
-func (pc PendingChanges) Usage() commands.Usage {
-	return commands.Usage{
+func (pc PendingChanges) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command lists all pending changes.",
 		ShortDescription: "lists pending changes",
 	}

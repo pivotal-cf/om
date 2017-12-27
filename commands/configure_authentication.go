@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -36,7 +35,7 @@ func NewConfigureAuthentication(service setupService, logger logger) ConfigureAu
 }
 
 func (ca ConfigureAuthentication) Execute(args []string) error {
-	_, err := flags.Parse(&ca.Options, args)
+	_, err := jhanda.Parse(&ca.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
 	}
@@ -85,8 +84,8 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 	return nil
 }
 
-func (ca ConfigureAuthentication) Usage() commands.Usage {
-	return commands.Usage{
+func (ca ConfigureAuthentication) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This unauthenticated command helps setup the authentication mechanism for your Ops Manager.\nThe \"internal\" userstore mechanism is the only currently supported option.",
 		ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
 		Flags:            ca.Options,

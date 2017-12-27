@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 )
 
 type InstallationLog struct {
@@ -24,7 +23,7 @@ func NewInstallationLog(service installationsService, logger logger) Installatio
 }
 
 func (i InstallationLog) Execute(args []string) error {
-	_, err := flags.Parse(&i.Options, args)
+	_, err := jhanda.Parse(&i.Options, args)
 
 	if err != nil {
 		return fmt.Errorf("could not parse installation-log flags: %s", err)
@@ -42,8 +41,8 @@ func (i InstallationLog) Execute(args []string) error {
 	return nil
 }
 
-func (i InstallationLog) Usage() commands.Usage {
-	return commands.Usage{
+func (i InstallationLog) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command retrieves the logs for a given installation.",
 		ShortDescription: "output installation logs",
 		Flags:            i.Options,

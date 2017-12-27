@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/presenters"
 )
 
@@ -31,8 +31,8 @@ func (sp StagedProducts) Execute(args []string) error {
 	return nil
 }
 
-func (sp StagedProducts) Usage() commands.Usage {
-	return commands.Usage{
+func (sp StagedProducts) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command lists all staged products.",
 		ShortDescription: "lists staged products",
 	}

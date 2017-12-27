@@ -3,7 +3,7 @@ package commands_test
 import (
 	"fmt"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -83,7 +83,7 @@ var _ = Describe("Certificate Authorities", func() {
 		It("returns usage", func() {
 			usage := certificateAuthorities.Usage()
 
-			Expect(usage).To(Equal(jhandacommands.Usage{
+			Expect(usage).To(Equal(jhanda.Usage{
 				Description:      "lists certificates managed by Ops Manager",
 				ShortDescription: "lists certificates managed by Ops Manager",
 			}))

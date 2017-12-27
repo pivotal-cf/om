@@ -64,19 +64,20 @@
 [[projects]]
   branch = "master"
   name = "github.com/pivotal-cf/jhanda"
-  packages = ["commands","flags"]
-  revision = "cd0b97dd71705dd3128a50060d46a8e48d3c96e4"
+  packages = ["."]
+  revision = "917e56f85377606ccf46b8a7d2acf89b4f935640"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","html","html/atom","html/charset"]
+  packages = ["context","context/ctxhttp","html","html/atom","html/charset"]
   revision = "0a9397675ba34b2845f758fe3cd68828369c6517"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","clientcredentials","internal"]
-  revision = "314dd2c0bf3ebd592ec0d20847d27e79d0dbe8dd"
+  revision = "197281d4e0ecd78c33865daf9c6e51626feefcb2"
 
 [[projects]]
   branch = "master"
@@ -111,6 +112,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "33781c35ae6177d437b47e0deff1a68361860f7d533d5d69900da3ad02178139"
+  inputs-digest = "a40b30f7f2447a1be13b67d7396089b0ae26b1323be735d9a2670324efcc2682"
   solver-name = "gps-cdcl"
   solver-version = 1

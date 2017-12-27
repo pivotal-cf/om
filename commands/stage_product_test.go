@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -246,7 +246,7 @@ var _ = Describe("StageProduct", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewStageProduct(nil, nil, nil, nil, nil)
-			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
+			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command attempts to stage a product in the Ops Manager",
 				ShortDescription: "stages a given product in the Ops Manager targeted",
 				Flags:            command.Options,

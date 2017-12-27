@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -59,7 +59,7 @@ var _ = Describe("DeleteProduct", func() {
 	Describe("Usage", func() {
 		It("returns the usage", func() {
 			usage := command.Usage()
-			Expect(usage).To(Equal(jhandacommands.Usage{
+			Expect(usage).To(Equal(jhanda.Usage{
 				Description:      "This command deletes unused products in the targeted Ops Manager",
 				ShortDescription: "deletes unused products on the Ops Manager targeted",
 			}))

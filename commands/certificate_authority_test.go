@@ -3,8 +3,7 @@ package commands_test
 import (
 	"errors"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
-
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -135,7 +134,7 @@ var _ = Describe("Certificate Authority", func() {
 
 	Describe("Usage", func() {
 		It("returns usage", func() {
-			Expect(certificateAuthority.Usage()).To(Equal(jhandacommands.Usage{
+			Expect(certificateAuthority.Usage()).To(Equal(jhanda.Usage{
 				Description:      "prints requested certificate authority",
 				ShortDescription: "prints requested certificate authority",
 			}))

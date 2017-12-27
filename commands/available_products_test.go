@@ -3,7 +3,7 @@ package commands_test
 import (
 	"errors"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -90,7 +90,7 @@ var _ = Describe("AvailableProducts", func() {
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			command := commands.NewAvailableProducts(nil, nil, nil)
-			Expect(command.Usage()).To(Equal(jhandacommands.Usage{
+			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all available products.",
 				ShortDescription: "list available products",
 			}))

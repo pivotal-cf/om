@@ -7,8 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/go-querystring/query"
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -61,7 +60,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		return errors.New("at least one configuration flag must be provided. Please see usage for more information.")
 	}
 
-	nonFlagArgs, err := flags.Parse(&c.Options, args)
+	nonFlagArgs, err := jhanda.Parse(&c.Options, args)
 	if err != nil {
 		return err
 	}
@@ -297,8 +296,8 @@ func (c ConfigureBosh) configureNetworkForm(path string, configuration string, r
 	return nil
 }
 
-func (c ConfigureBosh) Usage() commands.Usage {
-	return commands.Usage{
+func (c ConfigureBosh) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "configures the bosh director that is deployed by the Ops Manager",
 		ShortDescription: "configures Ops Manager deployed bosh director",
 		Flags:            c.Options,

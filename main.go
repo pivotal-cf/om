@@ -10,8 +10,7 @@ import (
 
 	"time"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
@@ -49,12 +48,12 @@ func main() {
 		Version           bool   `short:"v"  long:"version"             default:"false" description:"prints the om release version"`
 	}
 
-	args, err := flags.Parse(&global, os.Args[1:])
+	args, err := jhanda.Parse(&global, os.Args[1:])
 	if err != nil {
 		stdout.Fatal(err)
 	}
 
-	globalFlagsUsage, err := flags.Usage(global)
+	globalFlagsUsage, err := jhanda.PrintUsage(global)
 	if err != nil {
 		stdout.Fatal(err)
 	}
@@ -152,7 +151,7 @@ func main() {
 		stdout.Fatal("Format not supported")
 	}
 
-	commandSet := jhandacommands.Set{}
+	commandSet := jhanda.CommandSet{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)

@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 )
 
 type ExportInstallation struct {
@@ -29,8 +28,8 @@ func NewExportInstallation(installationAssetExporterService installationAssetExp
 	}
 }
 
-func (ei ExportInstallation) Usage() commands.Usage {
-	return commands.Usage{
+func (ei ExportInstallation) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command will export the current installation of the target Ops Manager.",
 		ShortDescription: "exports the installation of the target Ops Manager",
 		Flags:            ei.Options,
@@ -38,7 +37,7 @@ func (ei ExportInstallation) Usage() commands.Usage {
 }
 
 func (ei ExportInstallation) Execute(args []string) error {
-	_, err := flags.Parse(&ei.Options, args)
+	_, err := jhanda.Parse(&ei.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse export-installation flags: %s", err)
 	}

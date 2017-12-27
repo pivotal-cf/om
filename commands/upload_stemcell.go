@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/formcontent"
 )
@@ -47,8 +46,8 @@ func NewUploadStemcell(multipart multipart, stemcellService stemcellService, dia
 	}
 }
 
-func (us UploadStemcell) Usage() commands.Usage {
-	return commands.Usage{
+func (us UploadStemcell) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped",
 		ShortDescription: "uploads a given stemcell to the Ops Manager targeted",
 		Flags:            us.Options,
@@ -56,7 +55,7 @@ func (us UploadStemcell) Usage() commands.Usage {
 }
 
 func (us UploadStemcell) Execute(args []string) error {
-	_, err := flags.Parse(&us.Options, args)
+	_, err := jhanda.Parse(&us.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
 	}

@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -40,8 +39,8 @@ func NewUploadProduct(multipart multipart, extractor extractor, productUploader 
 	}
 }
 
-func (up UploadProduct) Usage() commands.Usage {
-	return commands.Usage{
+func (up UploadProduct) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command attempts to upload a product to the Ops Manager",
 		ShortDescription: "uploads a given product to the Ops Manager targeted",
 		Flags:            up.Options,
@@ -49,7 +48,7 @@ func (up UploadProduct) Usage() commands.Usage {
 }
 
 func (up UploadProduct) Execute(args []string) error {
-	_, err := flags.Parse(&up.Options, args)
+	_, err := jhanda.Parse(&up.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
 	}

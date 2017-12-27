@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -69,7 +69,7 @@ var _ = Describe("GenerateCertificate", func() {
 	Describe("Usage", func() {
 		It("returns usage info", func() {
 			usage := command.Usage()
-			Expect(usage).To(Equal(jhandacommands.Usage{
+			Expect(usage).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command generates a new RSA public/private certificate signed by Ops Manager’s root CA certificate",
 				ShortDescription: "generates a new certificate signed by Ops Manager's root CA",
 				Flags:            command.Options,

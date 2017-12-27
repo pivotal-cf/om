@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -32,7 +31,7 @@ func NewCredentials(csService credentialsService, dpLister deployedProductsListe
 }
 
 func (cs Credentials) Execute(args []string) error {
-	_, err := flags.Parse(&cs.Options, args)
+	_, err := jhanda.Parse(&cs.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse credential-references flags: %s", err)
 	}
@@ -83,8 +82,8 @@ func (cs Credentials) Execute(args []string) error {
 	return nil
 }
 
-func (cs Credentials) Usage() commands.Usage {
-	return commands.Usage{
+func (cs Credentials) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command fetches credentials for deployed products.",
 		ShortDescription: "fetch credentials for a deployed product",
 		Flags:            cs.Options,

@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -47,7 +46,7 @@ func NewStageProduct(productStager productStager, deployedProductsService deploy
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	_, err := flags.Parse(&sp.Options, args)
+	_, err := jhanda.Parse(&sp.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}
@@ -108,8 +107,8 @@ func (sp StageProduct) Execute(args []string) error {
 	return nil
 }
 
-func (sp StageProduct) Usage() commands.Usage {
-	return commands.Usage{
+func (sp StageProduct) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command attempts to stage a product in the Ops Manager",
 		ShortDescription: "stages a given product in the Ops Manager targeted",
 		Flags:            sp.Options,

@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -27,7 +26,7 @@ func NewActivateCertificateAuthority(service certificateAuthorityActivator, logg
 }
 
 func (a ActivateCertificateAuthority) Execute(args []string) error {
-	_, err := flags.Parse(&a.Options, args)
+	_, err := jhanda.Parse(&a.Options, args)
 
 	if err != nil {
 		return fmt.Errorf("could not parse activate-certificate-authority flags: %s", err)
@@ -50,8 +49,8 @@ func (a ActivateCertificateAuthority) Execute(args []string) error {
 	return nil
 }
 
-func (a ActivateCertificateAuthority) Usage() commands.Usage {
-	return commands.Usage{
+func (a ActivateCertificateAuthority) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command activates an existing certificate authority on the Ops Manager",
 		ShortDescription: "activates a certificate authority on the Ops Manager",
 		Flags:            a.Options,

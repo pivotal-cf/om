@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -35,8 +35,8 @@ func (c CertificateAuthorities) Execute(_ []string) error {
 	return nil
 }
 
-func (c CertificateAuthorities) Usage() commands.Usage {
-	return commands.Usage{
+func (c CertificateAuthorities) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "lists certificates managed by Ops Manager",
 		ShortDescription: "lists certificates managed by Ops Manager",
 	}

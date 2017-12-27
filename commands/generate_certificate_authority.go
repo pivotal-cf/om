@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -31,8 +31,8 @@ func (g GenerateCertificateAuthority) Execute(_ []string) error {
 	return nil
 }
 
-func (g GenerateCertificateAuthority) Usage() commands.Usage {
-	return commands.Usage{
+func (g GenerateCertificateAuthority) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command generates a certificate authority on the Ops Manager",
 		ShortDescription: "generates a certificate authority on the Opsman",
 	}

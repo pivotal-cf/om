@@ -3,8 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/presenters"
 )
 
@@ -27,7 +26,7 @@ func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritie
 }
 
 func (c CertificateAuthority) Execute(args []string) error {
-	_, err := flags.Parse(&c.Options, args)
+	_, err := jhanda.Parse(&c.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse certificate-authority flags: %s", err)
 	}
@@ -51,8 +50,8 @@ func (c CertificateAuthority) Execute(args []string) error {
 	return fmt.Errorf("could not find a certificate authority with ID: %q", c.Options.ID)
 }
 
-func (CertificateAuthority) Usage() commands.Usage {
-	return commands.Usage{
+func (CertificateAuthority) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "prints requested certificate authority",
 		ShortDescription: "prints requested certificate authority",
 	}

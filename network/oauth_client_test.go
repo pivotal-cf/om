@@ -88,7 +88,6 @@ var _ = Describe("OAuthClient", func() {
 			err = req.ParseForm()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(req.Form).To(Equal(url.Values{
-				"client_id":  []string{"opsman"},
 				"grant_type": []string{"password"},
 				"username":   []string{"opsman-username"},
 				"password":   []string{"opsman-password"},
@@ -123,7 +122,6 @@ var _ = Describe("OAuthClient", func() {
 			err = req.ParseForm()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(req.Form).To(Equal(url.Values{
-				"client_id":  []string{"client_id"},
 				"grant_type": []string{"client_credentials"},
 			}))
 		})

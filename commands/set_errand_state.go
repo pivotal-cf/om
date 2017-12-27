@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 )
 
 type SetErrandState struct {
@@ -35,7 +34,7 @@ func NewSetErrandState(errandsService errandsService, stagedProductsFinder stage
 }
 
 func (s SetErrandState) Execute(args []string) error {
-	_, err := flags.Parse(&s.Options, args)
+	_, err := jhanda.Parse(&s.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse errands flags: %s", err)
 	}
@@ -87,8 +86,8 @@ func (s SetErrandState) Execute(args []string) error {
 	return nil
 }
 
-func (s SetErrandState) Usage() commands.Usage {
-	return commands.Usage{
+func (s SetErrandState) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command sets the state of a product's errand.",
 		ShortDescription: "sets state for a product's errand",
 		Flags:            s.Options,

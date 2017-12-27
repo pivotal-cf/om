@@ -1,8 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -26,7 +25,7 @@ func NewDeleteProduct(productsService ps) DeleteProduct {
 }
 
 func (dp DeleteProduct) Execute(args []string) error {
-	_, err := flags.Parse(&dp.Options, args)
+	_, err := jhanda.Parse(&dp.Options, args)
 	if err != nil {
 		return err
 	}
@@ -42,8 +41,8 @@ func (dp DeleteProduct) Execute(args []string) error {
 	return nil
 }
 
-func (dp DeleteProduct) Usage() commands.Usage {
-	return commands.Usage{
+func (dp DeleteProduct) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command deletes the named product from the targeted Ops Manager",
 		ShortDescription: "deletes a product from the Ops Manager",
 		Flags:            dp.Options,

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 )
 
 type Version struct {
@@ -19,8 +19,8 @@ func NewVersion(version string, output io.Writer) Version {
 	}
 }
 
-func (v Version) Usage() commands.Usage {
-	return commands.Usage{
+func (v Version) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command prints the om release version number.",
 		ShortDescription: "prints the om release version",
 	}

@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 )
 
 type GenerateCertificate struct {
@@ -26,7 +25,7 @@ func NewGenerateCertificate(service certificateGenerator, logger logger) Generat
 }
 
 func (g GenerateCertificate) Execute(args []string) error {
-	_, err := flags.Parse(&g.Options, args)
+	_, err := jhanda.Parse(&g.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse given flags: %s", err)
 	}
@@ -44,8 +43,8 @@ func (g GenerateCertificate) Execute(args []string) error {
 	return nil
 }
 
-func (g GenerateCertificate) Usage() commands.Usage {
-	return commands.Usage{
+func (g GenerateCertificate) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command generates a new RSA public/private certificate signed by Ops Manager’s root CA certificate",
 		ShortDescription: "generates a new certificate signed by Ops Manager's root CA",
 		Flags:            g.Options,

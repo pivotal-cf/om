@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -35,8 +34,8 @@ func NewImportInstallation(multipart multipart, installationAssetImporterService
 	}
 }
 
-func (ii ImportInstallation) Usage() commands.Usage {
-	return commands.Usage{
+func (ii ImportInstallation) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
 		ShortDescription: "imports a given installation to the Ops Manager targeted",
 		Flags:            ii.Options,
@@ -44,7 +43,7 @@ func (ii ImportInstallation) Usage() commands.Usage {
 }
 
 func (ii ImportInstallation) Execute(args []string) error {
-	_, err := flags.Parse(&ii.Options, args)
+	_, err := jhanda.Parse(&ii.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
 	}

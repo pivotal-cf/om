@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 	"github.com/pivotal-cf/om/presenters"
@@ -45,8 +45,8 @@ func (i Installations) Execute(args []string) error {
 	return nil
 }
 
-func (i Installations) Usage() commands.Usage {
-	return commands.Usage{
+func (i Installations) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command lists all recent installation events.",
 		ShortDescription: "list recent installation events",
 	}

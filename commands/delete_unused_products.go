@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -30,8 +30,8 @@ func (dup DeleteUnusedProducts) Execute(args []string) error {
 	return nil
 }
 
-func (dup DeleteUnusedProducts) Usage() commands.Usage {
-	return commands.Usage{
+func (dup DeleteUnusedProducts) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This command deletes unused products in the targeted Ops Manager",
 		ShortDescription: "deletes unused products on the Ops Manager targeted",
 	}

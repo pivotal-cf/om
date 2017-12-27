@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -45,7 +44,7 @@ func NewApplyChanges(installationsService installationsService, logWriter logWri
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
-	_, err := flags.Parse(&ac.Options, args)
+	_, err := jhanda.Parse(&ac.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
@@ -93,8 +92,8 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 }
 
-func (ac ApplyChanges) Usage() commands.Usage {
-	return commands.Usage{
+func (ac ApplyChanges) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 		ShortDescription: "triggers an install on the Ops Manager targeted",
 		Flags:            ac.Options,

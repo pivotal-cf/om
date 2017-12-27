@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -71,7 +71,7 @@ var _ = Describe("ActivateCertificateAuthority", func() {
 	Describe("Usage", func() {
 		It("returns usage info", func() {
 			usage := command.Usage()
-			Expect(usage).To(Equal(jhandacommands.Usage{
+			Expect(usage).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command activates an existing certificate authority on the Ops Manager",
 				ShortDescription: "activates a certificate authority on the Ops Manager",
 				Flags:            command.Options,

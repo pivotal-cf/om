@@ -1,6 +1,6 @@
 package commands
 
-import "github.com/pivotal-cf/jhanda/commands"
+import "github.com/pivotal-cf/jhanda"
 
 type RegenerateCertificateAuthority struct {
 	service certificateAuthorityRegenerator
@@ -27,8 +27,8 @@ func (r RegenerateCertificateAuthority) Execute(_ []string) error {
 	return nil
 }
 
-func (r RegenerateCertificateAuthority) Usage() commands.Usage {
-	return commands.Usage{
+func (r RegenerateCertificateAuthority) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command regenerates certificate authority on the Ops Manager",
 		ShortDescription: "regenerates a certificate authority on the Opsman",
 	}

@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 	"github.com/pivotal-cf/om/presenters"
@@ -41,7 +40,7 @@ func NewErrands(presenter presenters.Presenter, errandsService errandsService, s
 }
 
 func (e Errands) Execute(args []string) error {
-	_, err := flags.Parse(&e.Options, args)
+	_, err := jhanda.Parse(&e.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse errands flags: %s", err)
 	}
@@ -85,8 +84,8 @@ func boolStringFromType(object interface{}) string {
 	}
 }
 
-func (e Errands) Usage() commands.Usage {
-	return commands.Usage{
+func (e Errands) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command lists all errands for a product.",
 		ShortDescription: "list errands for a product",
 		Flags:            e.Options,

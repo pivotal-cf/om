@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -29,7 +28,7 @@ func NewCreateCertificateAuthority(service certificateAuthorityCreator, presente
 }
 
 func (c CreateCertificateAuthority) Execute(args []string) error {
-	_, err := flags.Parse(&c.Options, args)
+	_, err := jhanda.Parse(&c.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse create-certificate-authority flags: %s", err)
 	}
@@ -55,8 +54,8 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 	return nil
 }
 
-func (c CreateCertificateAuthority) Usage() commands.Usage {
-	return commands.Usage{
+func (c CreateCertificateAuthority) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command creates a certificate authority on the Ops Manager with the given cert and key",
 		ShortDescription: "creates a certificate authority on the Ops Manager",
 		Flags:            c.Options,

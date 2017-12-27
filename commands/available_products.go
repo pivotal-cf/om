@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 	"github.com/pivotal-cf/om/presenters"
@@ -47,8 +47,8 @@ func (ap AvailableProducts) Execute(args []string) error {
 	return nil
 }
 
-func (ap AvailableProducts) Usage() commands.Usage {
-	return commands.Usage{
+func (ap AvailableProducts) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command lists all available products.",
 		ShortDescription: "list available products",
 	}

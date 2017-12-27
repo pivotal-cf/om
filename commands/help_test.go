@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"strings"
 
-	jhandacommands "github.com/pivotal-cf/jhanda/commands"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
@@ -65,12 +65,12 @@ var _ = Describe("Help", func() {
 		Context("when no command name is given", func() {
 			It("prints the global usage to the output", func() {
 				bake := &fakes.Command{}
-				bake.UsageReturns(jhandacommands.Usage{ShortDescription: "bakes you a cake"})
+				bake.UsageReturns(jhanda.Usage{ShortDescription: "bakes you a cake"})
 
 				clean := &fakes.Command{}
-				clean.UsageReturns(jhandacommands.Usage{ShortDescription: "cleans up after baking"})
+				clean.UsageReturns(jhanda.Usage{ShortDescription: "cleans up after baking"})
 
-				help := commands.NewHelp(output, strings.TrimSpace(flags), jhandacommands.Set{
+				help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{
 					"bake":  bake,
 					"clean": clean,
 				})
@@ -84,7 +84,7 @@ var _ = Describe("Help", func() {
 		Context("when a command name is given", func() {
 			It("prints the usage for that command", func() {
 				bake := &fakes.Command{}
-				bake.UsageReturns(jhandacommands.Usage{
+				bake.UsageReturns(jhanda.Usage{
 					Description:      "This command will help you bake a cake.",
 					ShortDescription: "bakes you a cake",
 					Flags: struct {
@@ -94,7 +94,7 @@ var _ = Describe("Help", func() {
 					}{},
 				})
 
-				help := commands.NewHelp(output, strings.TrimSpace(flags), jhandacommands.Set{"bake": bake})
+				help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{"bake": bake})
 				err := help.Execute([]string{"bake"})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -103,7 +103,7 @@ var _ = Describe("Help", func() {
 
 			Context("when the command does not exist", func() {
 				It("returns an error", func() {
-					help := commands.NewHelp(output, flags, jhandacommands.Set{})
+					help := commands.NewHelp(output, flags, jhanda.CommandSet{})
 					err := help.Execute([]string{"missing-command"})
 					Expect(err).To(MatchError("unknown command: missing-command"))
 				})
@@ -112,13 +112,13 @@ var _ = Describe("Help", func() {
 			Context("when the command flags cannot be determined", func() {
 				It("returns an error", func() {
 					bake := &fakes.Command{}
-					bake.UsageReturns(jhandacommands.Usage{
+					bake.UsageReturns(jhanda.Usage{
 						Description:      "This command will help you bake a cake.",
 						ShortDescription: "bakes you a cake",
 						Flags:            func() {},
 					})
 
-					help := commands.NewHelp(output, flags, jhandacommands.Set{"bake": bake})
+					help := commands.NewHelp(output, flags, jhanda.CommandSet{"bake": bake})
 					err := help.Execute([]string{"bake"})
 					Expect(err).To(MatchError("unexpected pointer to non-struct type func"))
 				})
@@ -127,12 +127,12 @@ var _ = Describe("Help", func() {
 			Context("when there are no flags", func() {
 				It("prints the usage of a flag-less command", func() {
 					bake := &fakes.Command{}
-					bake.UsageReturns(jhandacommands.Usage{
+					bake.UsageReturns(jhanda.Usage{
 						Description:      "This command will help you bake a cake.",
 						ShortDescription: "bakes you a cake",
 					})
 
-					help := commands.NewHelp(output, strings.TrimSpace(flags), jhandacommands.Set{"bake": bake})
+					help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{"bake": bake})
 					err := help.Execute([]string{"bake"})
 					Expect(err).NotTo(HaveOccurred())
 
@@ -144,13 +144,13 @@ var _ = Describe("Help", func() {
 			Context("when there is an empty flag object", func() {
 				It("prints the usage of a flag-less command", func() {
 					bake := &fakes.Command{}
-					bake.UsageReturns(jhandacommands.Usage{
+					bake.UsageReturns(jhanda.Usage{
 						Description:      "This command will help you bake a cake.",
 						ShortDescription: "bakes you a cake",
 						Flags:            struct{}{},
 					})
 
-					help := commands.NewHelp(output, strings.TrimSpace(flags), jhandacommands.Set{"bake": bake})
+					help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{"bake": bake})
 					err := help.Execute([]string{"bake"})
 					Expect(err).NotTo(HaveOccurred())
 
@@ -163,8 +163,8 @@ var _ = Describe("Help", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			help := commands.NewHelp(nil, "", jhandacommands.Set{})
-			Expect(help.Usage()).To(Equal(jhandacommands.Usage{
+			help := commands.NewHelp(nil, "", jhanda.CommandSet{})
+			Expect(help.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command prints helpful usage information.",
 				ShortDescription: "prints this usage information",
 			}))

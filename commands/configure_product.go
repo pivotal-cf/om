@@ -6,8 +6,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/pivotal-cf/jhanda/commands"
-	"github.com/pivotal-cf/jhanda/flags"
+	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -45,7 +44,7 @@ func NewConfigureProduct(productConfigurer productConfigurer, jobsConfigurer job
 }
 
 func (cp ConfigureProduct) Execute(args []string) error {
-	_, err := flags.Parse(&cp.Options, args)
+	_, err := jhanda.Parse(&cp.Options, args)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-product flags: %s", err)
 	}
@@ -148,8 +147,8 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	return nil
 }
 
-func (cp ConfigureProduct) Usage() commands.Usage {
-	return commands.Usage{
+func (cp ConfigureProduct) Usage() jhanda.Usage {
+	return jhanda.Usage{
 		Description:      "This authenticated command configures a staged product",
 		ShortDescription: "configures a staged product",
 		Flags:            cp.Options,
