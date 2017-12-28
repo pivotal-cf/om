@@ -64,14 +64,14 @@ var _ = Describe("ConfigureDirector", func() {
 			}))
 
 			Expect(logger.PrintfCallCount()).To(Equal(8))
-			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring availability zone options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring availability zone options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring network options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring network options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(4)).To(Equal("started configuring network assignment options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network assignment options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring director options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring director options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring availability zone options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(4)).To(Equal("started configuring network options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring network assignment options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring network assignment options for bosh tile"))
 		})
 
 		Context("when no director configuration flags are provided", func() {
