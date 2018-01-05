@@ -24,11 +24,11 @@ type Curl struct {
 	stdout         logger
 	stderr         logger
 	Options        struct {
-		Path    string             `short:"p" long:"path"    description:"path to api endpoint"`
-		Method  string             `short:"x" long:"request" description:"http verb" default:"GET"`
-		Data    string             `short:"d" long:"data"    description:"api request payload"`
-		Silent  bool               `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
-		Headers jhanda.StringSlice `short:"H" long:"header"  description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
+		Path    string   `short:"p" long:"path"    description:"path to api endpoint"`
+		Method  string   `short:"x" long:"request" description:"http verb" default:"GET"`
+		Data    string   `short:"d" long:"data"    description:"api request payload"`
+		Silent  bool     `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
+		Headers []string `short:"H" long:"header"  description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
 	}
 }
 
