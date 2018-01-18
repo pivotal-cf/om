@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -15,9 +14,9 @@ type Credentials struct {
 	presenter presenters.Presenter
 	logger    logger
 	Options   struct {
-		Product             string `short:"p"  long:"product-name"  description:"name of deployed product"`
-		CredentialReference string `short:"c"  long:"credential-reference"  description:"name of credential reference"`
-		CredentialField     string `short:"f"  long:"credential-field"  description:"single credential field to output"`
+		Product             string `long:"product-name"         short:"p" required:"true" description:"name of deployed product"`
+		CredentialReference string `long:"credential-reference" short:"c" required:"true" description:"name of credential reference"`
+		CredentialField     string `long:"credential-field"     short:"f"                 description:"single credential field to output"`
 	}
 }
 
@@ -31,17 +30,8 @@ func NewCredentials(csService credentialsService, dpLister deployedProductsListe
 }
 
 func (cs Credentials) Execute(args []string) error {
-	_, err := jhanda.Parse(&cs.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&cs.Options, args); err != nil {
 		return fmt.Errorf("could not parse credential-references flags: %s", err)
-	}
-
-	if cs.Options.Product == "" {
-		return errors.New("error: product-name is missing. Please see usage for more information.")
-	}
-
-	if cs.Options.CredentialReference == "" {
-		return errors.New("error: credential-reference is missing. Please see usage for more information.")
 	}
 
 	deployedProductGUID := ""

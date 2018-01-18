@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -12,7 +11,7 @@ type DeleteCertificateAuthority struct {
 	service certificateAuthorityDeleter
 	logger  logger
 	Options struct {
-		Id string `long:"id"  description:"certificate authority id"`
+		Id string `long:"id" required:"true" description:"certificate authority id"`
 	}
 }
 
@@ -26,17 +25,11 @@ func NewDeleteCertificateAuthority(service certificateAuthorityDeleter, logger l
 }
 
 func (a DeleteCertificateAuthority) Execute(args []string) error {
-	_, err := jhanda.Parse(&a.Options, args)
-
-	if err != nil {
+	if _, err := jhanda.Parse(&a.Options, args); err != nil {
 		return fmt.Errorf("could not parse delete-certificate-authority flags: %s", err)
 	}
 
-	if a.Options.Id == "" {
-		return errors.New("error: id is missing. Please see usage for more information.")
-	}
-
-	err = a.service.Delete(api.DeleteCertificateAuthorityInput{
+	err := a.service.Delete(api.DeleteCertificateAuthorityInput{
 		GUID: a.Options.Id,
 	})
 

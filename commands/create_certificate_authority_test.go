@@ -74,26 +74,29 @@ var _ = Describe("CreateCertificateAuthority", func() {
 					Expect(err).To(MatchError("failed to create certificate"))
 				})
 			})
+
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse create-certificate-authority flags: flag provided but not defined: -badflag"))
 				})
 			})
+
 			Context("when the certificate flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--private-key-pem", "some PrivateKey",
 					})
-					Expect(err).To(MatchError("error: certificate-pem is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse create-certificate-authority flags: missing required flag \"--certificate-pem\""))
 				})
 			})
+
 			Context("when the private key flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--certificate-pem", "some CertPem",
 					})
-					Expect(err).To(MatchError("error: private-key-pem is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse create-certificate-authority flags: missing required flag \"--private-key-pem\""))
 				})
 			})
 		})

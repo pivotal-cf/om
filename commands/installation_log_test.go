@@ -52,7 +52,7 @@ var _ = Describe("InstallationLog", func() {
 			Context("when the installation id is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
-					Expect(err).To(MatchError("error: id is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse installation-log flags: missing required flag \"--id\""))
 				})
 			})
 			Context("when the api fails to retrieve the installation log", func() {

@@ -116,7 +116,7 @@ var _ = Describe("UploadProduct", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, extractor, productsService, logger)
 				err := command.Execute([]string{})
-				Expect(err).To(MatchError("error: product is missing. Please see usage for more information."))
+				Expect(err).To(MatchError("could not parse upload-product flags: missing required flag \"--product\""))
 			})
 		})
 

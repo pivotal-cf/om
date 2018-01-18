@@ -95,7 +95,7 @@ var _ = Describe("Errands", func() {
 			Context("when the product name is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
-					Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse errands flags: missing required flag \"--product-name\""))
 				})
 			})
 		})

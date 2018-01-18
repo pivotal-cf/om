@@ -74,7 +74,7 @@ var _ = Describe("CredentialReferences", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 					err := command.Execute([]string{})
-					Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--product-name\""))
 				})
 			})
 

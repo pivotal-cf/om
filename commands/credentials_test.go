@@ -67,6 +67,28 @@ var _ = Describe("Credentials", func() {
 				))
 			})
 
+			Context("when the --product-name flag is missing", func() {
+				It("returns an error", func() {
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+
+					err := command.Execute([]string{
+						"--credential-reference", "some-credential",
+					})
+					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--product-name\""))
+				})
+			})
+
+			Context("when the --credential-reference flag is missing", func() {
+				It("returns an error", func() {
+					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+					})
+					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--credential-reference\""))
+				})
+			})
+
 			Context("when the credential reference cannot be found", func() {
 				BeforeEach(func() {
 					csService.FetchReturns(api.CredentialOutput{}, nil)
@@ -174,9 +196,7 @@ var _ = Describe("Credentials", func() {
 					Expect(err).To(MatchError(ContainSubstring(`credential field "missing-field" not found`)))
 				})
 			})
-
 		})
-
 	})
 
 	Describe("Usage", func() {

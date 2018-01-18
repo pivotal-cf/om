@@ -12,8 +12,8 @@ type CertificateAuthority struct {
 	presenter presenters.Presenter
 	logger    logger
 	Options   struct {
-		ID      string `long:"id"       description:"ID of certificate to display"`
-		CertPEM bool   `long:"cert-pem" description:"Display the cert pem"`
+		ID      string `long:"id"       required:"true" description:"ID of certificate to display"`
+		CertPEM bool   `long:"cert-pem"                 description:"Display the cert pem"`
 	}
 }
 
@@ -26,8 +26,7 @@ func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritie
 }
 
 func (c CertificateAuthority) Execute(args []string) error {
-	_, err := jhanda.Parse(&c.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse certificate-authority flags: %s", err)
 	}
 

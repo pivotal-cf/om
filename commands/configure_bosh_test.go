@@ -478,6 +478,7 @@ var _ = Describe("ConfigureBosh", func() {
 					format, content := logger.PrintfArgsForCall(0)
 					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring bosh tile"))
 				})
+
 				Context("to the --az-configuration flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -485,6 +486,7 @@ var _ = Describe("ConfigureBosh", func() {
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
+
 				Context("to the --director-configuration flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -492,6 +494,7 @@ var _ = Describe("ConfigureBosh", func() {
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
+
 				Context("to the --iaas-configuration flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -499,6 +502,7 @@ var _ = Describe("ConfigureBosh", func() {
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
+
 				Context("to the --network-assignment flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -506,6 +510,7 @@ var _ = Describe("ConfigureBosh", func() {
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
+
 				Context("to the --networks-configuration flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -513,6 +518,7 @@ var _ = Describe("ConfigureBosh", func() {
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
+
 				Context("to the --resource-configuration flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -520,6 +526,7 @@ var _ = Describe("ConfigureBosh", func() {
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
+
 				Context("to the --security-configuration flag", func() {
 					It("is ignored", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
@@ -538,13 +545,7 @@ var _ = Describe("ConfigureBosh", func() {
 					Expect(err).To(MatchError("at least one configuration flag must be provided. Please see usage for more information."))
 				})
 			})
-			Context("when an unrecognized argument is passed", func() {
-				It("returns an error", func() {
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)
-					err := command.Execute([]string{"not-a-flag", "another-argument"})
-					Expect(err).To(MatchError("unrecognized argument(s): [not-a-flag another-argument]. Please see usage for more information."))
-				})
-			})
+
 			Context("when an invalid flag is passed", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureBosh(boshService, diagnosticService, logger)

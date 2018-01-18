@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -11,7 +10,7 @@ type InstallationLog struct {
 	service installationsService
 	logger  logger
 	Options struct {
-		Id int `short:"id" description:"id of the installation to retrieve logs for"`
+		Id int `long:"id" required:"true" description:"id of the installation to retrieve logs for"`
 	}
 }
 
@@ -23,14 +22,8 @@ func NewInstallationLog(service installationsService, logger logger) Installatio
 }
 
 func (i InstallationLog) Execute(args []string) error {
-	_, err := jhanda.Parse(&i.Options, args)
-
-	if err != nil {
+	if _, err := jhanda.Parse(&i.Options, args); err != nil {
 		return fmt.Errorf("could not parse installation-log flags: %s", err)
-	}
-
-	if i.Options.Id == 0 {
-		return errors.New("error: id is missing. Please see usage for more information.")
 	}
 
 	output, err := i.service.Logs(i.Options.Id)

@@ -154,11 +154,23 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the passphrase is not provided", func() {
+		Context("when the --installation flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
-				err := command.Execute([]string{"--installation", "/some/path"})
-				Expect(err).To(MatchError("could not parse import-installation flags: decryption passphrase not provided"))
+				err := command.Execute([]string{
+					"--decryption-passphrase", "some-passphrase",
+				})
+				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--installation\""))
+			})
+		})
+
+		Context("when the --decryption-passphrase flag is missing", func() {
+			It("returns an error", func() {
+				command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
+				err := command.Execute([]string{
+					"--installation", "/some/path",
+				})
+				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--decryption-passphrase\""))
 			})
 		})
 

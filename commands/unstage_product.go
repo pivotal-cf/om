@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -12,7 +11,7 @@ type UnstageProduct struct {
 	logger                logger
 	stagedProductsService productUnstager
 	Options               struct {
-		Product string `short:"p"  long:"product-name"  description:"name of product"`
+		Product string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
@@ -29,18 +28,13 @@ func NewUnstageProduct(productUnstager productUnstager, logger logger) UnstagePr
 }
 
 func (up UnstageProduct) Execute(args []string) error {
-	_, err := jhanda.Parse(&up.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&up.Options, args); err != nil {
 		return fmt.Errorf("could not parse unstage-product flags: %s", err)
-	}
-
-	if up.Options.Product == "" {
-		return errors.New("error: product-name is missing. Please see usage for more information.")
 	}
 
 	up.logger.Printf("unstaging %s", up.Options.Product)
 
-	err = up.stagedProductsService.Unstage(api.UnstageProductInput{
+	err := up.stagedProductsService.Unstage(api.UnstageProductInput{
 		ProductName: up.Options.Product,
 	})
 

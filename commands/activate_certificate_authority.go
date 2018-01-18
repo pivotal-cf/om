@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -12,7 +11,7 @@ type ActivateCertificateAuthority struct {
 	service certificateAuthorityActivator
 	logger  logger
 	Options struct {
-		Id string `long:"id"  description:"certificate authority id"`
+		Id string `long:"id" required:"true" description:"certificate authority id"`
 	}
 }
 
@@ -26,17 +25,11 @@ func NewActivateCertificateAuthority(service certificateAuthorityActivator, logg
 }
 
 func (a ActivateCertificateAuthority) Execute(args []string) error {
-	_, err := jhanda.Parse(&a.Options, args)
-
-	if err != nil {
+	if _, err := jhanda.Parse(&a.Options, args); err != nil {
 		return fmt.Errorf("could not parse activate-certificate-authority flags: %s", err)
 	}
 
-	if a.Options.Id == "" {
-		return errors.New("error: id is missing. Please see usage for more information.")
-	}
-
-	err = a.service.Activate(api.ActivateCertificateAuthorityInput{
+	err := a.service.Activate(api.ActivateCertificateAuthorityInput{
 		GUID: a.Options.Id,
 	})
 

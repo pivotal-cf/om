@@ -188,6 +188,14 @@ var _ = Describe("UploadStemcell", func() {
 			})
 		})
 
+		Context("when the --stemcell flag is missing", func() {
+			It("returns an error", func() {
+				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				err := command.Execute([]string{})
+				Expect(err).To(MatchError("could not parse upload-stemcell flags: missing required flag \"--stemcell\""))
+			})
+		})
+
 		Context("when the file cannot be opened", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)

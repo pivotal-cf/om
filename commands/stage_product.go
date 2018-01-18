@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -15,8 +14,8 @@ type StageProduct struct {
 	availableProductsService availableProductChecker
 	diagnosticService        diagnosticService
 	Options                  struct {
-		Product string `short:"p"  long:"product-name"  description:"name of product"`
-		Version string `short:"v"  long:"product-version"  description:"version of product"`
+		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
+		Version string `long:"product-version" short:"v" required:"true" description:"version of product"`
 	}
 }
 
@@ -46,17 +45,8 @@ func NewStageProduct(productStager productStager, deployedProductsService deploy
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	_, err := jhanda.Parse(&sp.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&sp.Options, args); err != nil {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
-	}
-
-	if sp.Options.Product == "" {
-		return errors.New("error: product-name is missing. Please see usage for more information.")
-	}
-
-	if sp.Options.Version == "" {
-		return errors.New("error: product-version is missing. Please see usage for more information.")
 	}
 
 	diagnosticReport, err := sp.diagnosticService.Report()

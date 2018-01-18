@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -27,7 +26,7 @@ type Errands struct {
 	errandsService       errandsService
 	stagedProductsFinder stagedProductsFinder
 	Options              struct {
-		ProductName string `short:"p" long:"product-name" description:"name of product"`
+		ProductName string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
@@ -40,13 +39,8 @@ func NewErrands(presenter presenters.Presenter, errandsService errandsService, s
 }
 
 func (e Errands) Execute(args []string) error {
-	_, err := jhanda.Parse(&e.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&e.Options, args); err != nil {
 		return fmt.Errorf("could not parse errands flags: %s", err)
-	}
-
-	if e.Options.ProductName == "" {
-		return errors.New("error: product-name is missing. Please see usage for more information.")
 	}
 
 	findOutput, err := e.stagedProductsFinder.Find(e.Options.ProductName)

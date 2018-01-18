@@ -15,8 +15,8 @@ type UploadStemcell struct {
 	stemcellService   stemcellService
 	diagnosticService diagnosticService
 	Options           struct {
-		Stemcell string `short:"s"  long:"stemcell"  description:"path to stemcell"`
-		Force    bool   `short:"f"  long:"force"  description:"upload stemcell even if it already exists on the target Ops Manager"`
+		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
+		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
 	}
 }
 
@@ -55,8 +55,7 @@ func (us UploadStemcell) Usage() jhanda.Usage {
 }
 
 func (us UploadStemcell) Execute(args []string) error {
-	_, err := jhanda.Parse(&us.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&us.Options, args); err != nil {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
 	}
 
@@ -80,7 +79,7 @@ func (us UploadStemcell) Execute(args []string) error {
 		}
 	}
 
-	err = us.multipart.AddFile("stemcell[file]", us.Options.Stemcell)
+	err := us.multipart.AddFile("stemcell[file]", us.Options.Stemcell)
 	if err != nil {
 		return fmt.Errorf("failed to load stemcell: %s", err)
 	}

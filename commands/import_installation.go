@@ -14,9 +14,9 @@ type ImportInstallation struct {
 	installationAssetImporterService installationAssetImporterService
 	setupService                     setupService
 	Options                          struct {
-		Installation    string `short:"i"  long:"installation"  description:"path to installation."`
-		Passphrase      string `short:"dp" long:"decryption-passphrase" description:"passphrase for Ops Manager to decrypt the installation"`
-		PollingInterval int    `short:"pi" long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
+		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
+		Passphrase      string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase for Ops Manager to decrypt the installation"`
+		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 
@@ -43,13 +43,8 @@ func (ii ImportInstallation) Usage() jhanda.Usage {
 }
 
 func (ii ImportInstallation) Execute(args []string) error {
-	_, err := jhanda.Parse(&ii.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&ii.Options, args); err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
-	}
-
-	if ii.Options.Passphrase == "" {
-		return errors.New("could not parse import-installation flags: decryption passphrase not provided")
 	}
 
 	ensureAvailabilityOutput, err := ii.setupService.EnsureAvailability(api.EnsureAvailabilityInput{})

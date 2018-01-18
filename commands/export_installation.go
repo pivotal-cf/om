@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -11,8 +10,8 @@ type ExportInstallation struct {
 	logger                           logger
 	installationAssetExporterService installationAssetExporterService
 	Options                          struct {
-		OutputFile      string `short:"o"   long:"output-file"      description:"output path to write installation to"`
-		PollingInterval int    `short:"pi"  long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
+		OutputFile      string `long:"output-file"      short:"o"  required:"true" description:"output path to write installation to"`
+		PollingInterval int    `long:"polling-interval" short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 
@@ -37,18 +36,13 @@ func (ei ExportInstallation) Usage() jhanda.Usage {
 }
 
 func (ei ExportInstallation) Execute(args []string) error {
-	_, err := jhanda.Parse(&ei.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&ei.Options, args); err != nil {
 		return fmt.Errorf("could not parse export-installation flags: %s", err)
-	}
-
-	if ei.Options.OutputFile == "" {
-		return errors.New("expected flag --output-file. Run 'om help export-installation' for more information.")
 	}
 
 	ei.logger.Printf("exporting installation")
 
-	err = ei.installationAssetExporterService.Export(ei.Options.OutputFile, ei.Options.PollingInterval)
+	err := ei.installationAssetExporterService.Export(ei.Options.OutputFile, ei.Options.PollingInterval)
 	if err != nil {
 		return fmt.Errorf("failed to export installation: %s", err)
 	}

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,11 +23,11 @@ type Curl struct {
 	stdout         logger
 	stderr         logger
 	Options        struct {
-		Path    string   `short:"p" long:"path"    description:"path to api endpoint"`
-		Method  string   `short:"x" long:"request" description:"http verb" default:"GET"`
-		Data    string   `short:"d" long:"data"    description:"api request payload"`
-		Silent  bool     `short:"s" long:"silent"  description:"only write response headers to stderr if response status is 4XX or 5XX"`
-		Headers []string `short:"H" long:"header"  description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
+		Path    string   `long:"path"    short:"p" required:"true" description:"path to api endpoint"`
+		Method  string   `long:"request" short:"x"                 description:"http verb" default:"GET"`
+		Data    string   `long:"data"    short:"d"                 description:"api request payload"`
+		Silent  bool     `long:"silent"  short:"s"                 description:"only write response headers to stderr if response status is 4XX or 5XX"`
+		Headers []string `long:"header"  short:"H"                 description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
 	}
 }
 
@@ -37,17 +36,11 @@ func NewCurl(rs requestService, stdout logger, stderr logger) Curl {
 }
 
 func (c Curl) Execute(args []string) error {
-	_, err := jhanda.Parse(&c.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse curl flags: %s", err)
 	}
 
-	if c.Options.Path == "" {
-		return errors.New("could not parse curl flags: -path is a required parameter. Please run `om curl --help` for more info.")
-	}
-
 	requestHeaders := make(http.Header)
-
 	for _, h := range c.Options.Headers {
 		split := strings.Split(h, " ")
 		requestHeaders.Set(strings.TrimSuffix(split[0], ":"), split[1])

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -13,8 +12,8 @@ type UploadProduct struct {
 	logger          logger
 	productsService productUploader
 	Options         struct {
-		Product         string `short:"p"   long:"product"  description:"path to product"`
-		PollingInterval int    `short:"pi"  long:"polling-interval" description:"interval (in seconds) at which to print status" default:"1"`
+		Product         string `long:"product"          short:"p"  required:"true" description:"path to product"`
+		PollingInterval int    `long:"polling-interval" short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 	extractor extractor
 }
@@ -48,13 +47,8 @@ func (up UploadProduct) Usage() jhanda.Usage {
 }
 
 func (up UploadProduct) Execute(args []string) error {
-	_, err := jhanda.Parse(&up.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&up.Options, args); err != nil {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
-	}
-
-	if up.Options.Product == "" {
-		return errors.New("error: product is missing. Please see usage for more information.")
 	}
 
 	productName, productVersion, err := up.extractor.ExtractMetadata(up.Options.Product)

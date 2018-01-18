@@ -104,7 +104,7 @@ var _ = Describe("Set errand state", func() {
 			Context("when an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
-					Expect(err).To(MatchError("could not parse errands flags: flag provided but not defined: -unknown-flag"))
+					Expect(err).To(MatchError("could not parse set-errand-state flags: flag provided but not defined: -unknown-flag"))
 				})
 			})
 
@@ -124,11 +124,10 @@ var _ = Describe("Set errand state", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--product-name", "some-product-name",
-						"--errand-name", "",
 						"--post-deploy-state", "enabled",
 					})
 
-					Expect(err).To(MatchError("error: errand-name is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse set-errand-state flags: missing required flag \"--errand-name\""))
 				})
 			})
 
@@ -147,7 +146,7 @@ var _ = Describe("Set errand state", func() {
 			Context("when the product name is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
-					Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse set-errand-state flags: missing required flag \"--product-name\""))
 				})
 			})
 		})

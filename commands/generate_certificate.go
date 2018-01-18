@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -11,7 +10,7 @@ type GenerateCertificate struct {
 	service certificateGenerator
 	logger  logger
 	Options struct {
-		Domains string `short:"d" long:"domains" description:"domains to generate certificates, delimited by comma, can include wildcard domains"`
+		Domains string `long:"domains" short:"d" required:"true" description:"domains to generate certificates, delimited by comma, can include wildcard domains"`
 	}
 }
 
@@ -25,13 +24,8 @@ func NewGenerateCertificate(service certificateGenerator, logger logger) Generat
 }
 
 func (g GenerateCertificate) Execute(args []string) error {
-	_, err := jhanda.Parse(&g.Options, args)
-	if err != nil {
-		return fmt.Errorf("could not parse given flags: %s", err)
-	}
-
-	if g.Options.Domains == "" {
-		return errors.New("error: domains is missing. Please see usage for more information.")
+	if _, err := jhanda.Parse(&g.Options, args); err != nil {
+		return fmt.Errorf("could not parse generate-certificate flags: %s", err)
 	}
 
 	output, err := g.service.Generate(g.Options.Domains)

@@ -51,7 +51,7 @@ var _ = Describe("GenerateCertificate", func() {
 			Context("when the domains flag is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
-					Expect(err).To(MatchError("error: domains is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse generate-certificate flags: missing required flag \"--domains\""))
 				})
 			})
 

@@ -410,6 +410,14 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
+			Context("when the --product-name flag is missing", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureProduct(productsService, jobsService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("could not parse configure-product flags: missing required flag \"--product-name\""))
+				})
+			})
+
 			Context("when the product cannot be configured", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)

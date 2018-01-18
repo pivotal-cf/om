@@ -223,7 +223,7 @@ var _ = Describe("Curl", func() {
 						"--request", "GET",
 						"--data", `{"some-key": "some-value"}`,
 					})
-					Expect(err).To(MatchError("could not parse curl flags: -path is a required parameter. Please run `om curl --help` for more info."))
+					Expect(err).To(MatchError("could not parse curl flags: missing required flag \"--path\""))
 				})
 			})
 

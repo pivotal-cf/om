@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
@@ -8,8 +10,8 @@ import (
 type DeleteProduct struct {
 	productsService ps
 	Options         struct {
-		Product string `short:"p"  long:"product-name"  description:"name of product"`
-		Version string `short:"v"  long:"product-version"  description:"version of product"`
+		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
+		Version string `long:"product-version" short:"v" required:"true" description:"version of product"`
 	}
 }
 
@@ -25,12 +27,11 @@ func NewDeleteProduct(productsService ps) DeleteProduct {
 }
 
 func (dp DeleteProduct) Execute(args []string) error {
-	_, err := jhanda.Parse(&dp.Options, args)
-	if err != nil {
-		return err
+	if _, err := jhanda.Parse(&dp.Options, args); err != nil {
+		return fmt.Errorf("could not parse delete-product flags: %s", err)
 	}
 
-	err = dp.productsService.Delete(api.AvailableProductsInput{
+	err := dp.productsService.Delete(api.AvailableProductsInput{
 		ProductName:    dp.Options.Product,
 		ProductVersion: dp.Options.Version,
 	}, false)

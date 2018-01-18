@@ -151,7 +151,7 @@ var _ = Describe("StageProduct", func() {
 				command := commands.NewStageProduct(
 					stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, logger)
 				err := command.Execute([]string{"--product-version", "1.0"})
-				Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
+				Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-name\""))
 			})
 		})
 
@@ -160,7 +160,7 @@ var _ = Describe("StageProduct", func() {
 				command := commands.NewStageProduct(
 					stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, logger)
 				err := command.Execute([]string{"--product-name", "some-product"})
-				Expect(err).To(MatchError("error: product-version is missing. Please see usage for more information."))
+				Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-version\""))
 			})
 		})
 

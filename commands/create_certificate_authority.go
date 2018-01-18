@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -13,8 +12,8 @@ type CreateCertificateAuthority struct {
 	service   certificateAuthorityCreator
 	presenter presenters.Presenter
 	Options   struct {
-		CertPem    string `long:"certificate-pem"  description:"certificate"`
-		PrivateKey string `long:"private-key-pem"  description:"private key"`
+		CertPem    string `long:"certificate-pem" required:"true" description:"certificate"`
+		PrivateKey string `long:"private-key-pem" required:"true" description:"private key"`
 	}
 }
 
@@ -28,17 +27,8 @@ func NewCreateCertificateAuthority(service certificateAuthorityCreator, presente
 }
 
 func (c CreateCertificateAuthority) Execute(args []string) error {
-	_, err := jhanda.Parse(&c.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse create-certificate-authority flags: %s", err)
-	}
-
-	if c.Options.CertPem == "" {
-		return errors.New("error: certificate-pem is missing. Please see usage for more information.")
-	}
-
-	if c.Options.PrivateKey == "" {
-		return errors.New("error: private-key-pem is missing. Please see usage for more information.")
 	}
 
 	ca, err := c.service.Create(api.CertificateAuthorityInput{

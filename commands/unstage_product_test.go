@@ -58,7 +58,7 @@ var _ = Describe("UnstageProduct", func() {
 			It("returns an error", func() {
 				command := commands.NewUnstageProduct(stagedProductsService, logger)
 				err := command.Execute([]string{})
-				Expect(err).To(MatchError("error: product-name is missing. Please see usage for more information."))
+				Expect(err).To(MatchError("could not parse unstage-product flags: missing required flag \"--product-name\""))
 			})
 		})
 

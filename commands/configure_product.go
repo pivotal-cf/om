@@ -15,10 +15,10 @@ type ConfigureProduct struct {
 	jobsService     jobsConfigurer
 	logger          logger
 	Options         struct {
-		ProductName       string `short:"n"  long:"product-name" description:"name of the product being configured"`
-		ProductProperties string `short:"p" long:"product-properties" description:"properties to be configured in JSON format"`
-		NetworkProperties string `short:"pn" long:"product-network" description:"network properties in JSON format"`
-		ProductResources  string `short:"pr" long:"product-resources" description:"resource configurations in JSON format"`
+		ProductName       string `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
+		ProductProperties string `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
+		NetworkProperties string `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
+		ProductResources  string `long:"product-resources"  short:"pr"                 description:"resource configurations in JSON format"`
 	}
 }
 
@@ -44,13 +44,8 @@ func NewConfigureProduct(productConfigurer productConfigurer, jobsConfigurer job
 }
 
 func (cp ConfigureProduct) Execute(args []string) error {
-	_, err := jhanda.Parse(&cp.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&cp.Options, args); err != nil {
 		return fmt.Errorf("could not parse configure-product flags: %s", err)
-	}
-
-	if cp.Options.ProductName == "" {
-		return fmt.Errorf("error: product-name is missing. Please see usage for more information.")
 	}
 
 	cp.logger.Printf("configuring product...")

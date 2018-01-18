@@ -62,7 +62,7 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 			Context("when the id flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
-					Expect(err).To(MatchError("error: id is missing. Please see usage for more information."))
+					Expect(err).To(MatchError("could not parse delete-certificate-authority flags: missing required flag \"--id\""))
 				})
 			})
 		})

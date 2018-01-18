@@ -37,15 +37,33 @@ var _ = Describe("DeleteProduct", func() {
 			}))
 			Expect(deleteAll).To(BeFalse())
 		})
-	})
 
-	Context("when an error occurs", func() {
-		Context("when deleting a product fails", func() {
-			It("returns an error", func() {
-				deleter.DeleteReturns(errors.New("something bad happened"))
+		Context("failure cases", func() {
+			Context("when deleting a product fails", func() {
+				It("returns an error", func() {
+					deleter.DeleteReturns(errors.New("something bad happened"))
 
-				err := command.Execute([]string{"-p", "nah", "-v", "nope"})
-				Expect(err).To(MatchError("something bad happened"))
+					err := command.Execute([]string{"-p", "nah", "-v", "nope"})
+					Expect(err).To(MatchError("something bad happened"))
+				})
+			})
+
+			Context("when the --product-name flag is missing", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{
+						"--product-version", "1.2.3",
+					})
+					Expect(err).To(MatchError("could not parse delete-product flags: missing required flag \"--product-name\""))
+				})
+			})
+
+			Context("when the --product-version flag is missing", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+					})
+					Expect(err).To(MatchError("could not parse delete-product flags: missing required flag \"--product-version\""))
+				})
 			})
 		})
 	})

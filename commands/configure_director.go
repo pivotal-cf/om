@@ -36,14 +36,13 @@ func NewConfigureDirector(service directorService, logger logger) ConfigureDirec
 }
 
 func (c ConfigureDirector) Execute(args []string) error {
-	_, err := jhanda.Parse(&c.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse configure-director flags: %s", err)
 	}
 
 	c.logger.Printf("started configuring director options for bosh tile")
 
-	err = c.service.Properties(api.DirectorProperties{
+	err := c.service.Properties(api.DirectorProperties{
 		DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
 		IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
 		SecurityConfiguration: json.RawMessage(c.Options.SecurityConfiguration),

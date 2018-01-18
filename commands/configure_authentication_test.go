@@ -171,6 +171,39 @@ var _ = Describe("ConfigureAuthentication", func() {
 					Expect(err).To(MatchError("could not determine final configuration status: failed to fetch status"))
 				})
 			})
+
+			Context("when the --username flag is missing", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--password", "some-password",
+						"--decryption-passphrase", "some-passphrase",
+					})
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--username\""))
+				})
+			})
+
+			Context("when the --password flag is missing", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--username", "some-username",
+						"--decryption-passphrase", "some-passphrase",
+					})
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--password\""))
+				})
+			})
+
+			Context("when the --decryption-passphrase flag is missing", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--username", "some-username",
+						"--password", "some-password",
+					})
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--decryption-passphrase\""))
+				})
+			})
 		})
 	})
 

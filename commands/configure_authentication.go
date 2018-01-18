@@ -18,12 +18,12 @@ type ConfigureAuthentication struct {
 	service setupService
 	logger  logger
 	Options struct {
-		Username             string `short:"u"    long:"username"              description:"admin username"`
-		Password             string `short:"p"    long:"password"              description:"admin password"`
-		DecryptionPassphrase string `short:"dp"   long:"decryption-passphrase" description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL         string `long:"http-proxy-url"        description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL        string `long:"https-proxy-url"       description:"proxy for outbound HTTPS network traffic"`
-		NoProxy              string `long:"no-proxy"              description:"comma-separated list of hosts that do not go through the proxy"`
+		Username             string `long:"username"              short:"u"  required:"true" description:"admin username"`
+		Password             string `long:"password"              short:"p"  required:"true" description:"admin password"`
+		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL         string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL        string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
+		NoProxy              string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
 	}
 }
 
@@ -35,8 +35,7 @@ func NewConfigureAuthentication(service setupService, logger logger) ConfigureAu
 }
 
 func (ca ConfigureAuthentication) Execute(args []string) error {
-	_, err := jhanda.Parse(&ca.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&ca.Options, args); err != nil {
 		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
 	}
 

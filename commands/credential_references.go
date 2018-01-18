@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 
@@ -16,7 +15,7 @@ type CredentialReferences struct {
 	presenter presenters.Presenter
 	logger    logger
 	Options   struct {
-		Product string `short:"p"  long:"product-name"  description:"name of deployed product"`
+		Product string `long:"product-name" short:"p" required:"true" description:"name of deployed product"`
 	}
 }
 
@@ -30,13 +29,8 @@ func NewCredentialReferences(crService credentialReferencesService, dpLister dep
 }
 
 func (cr CredentialReferences) Execute(args []string) error {
-	_, err := jhanda.Parse(&cr.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&cr.Options, args); err != nil {
 		return fmt.Errorf("could not parse credential-references flags: %s", err)
-	}
-
-	if cr.Options.Product == "" {
-		return errors.New("error: product-name is missing. Please see usage for more information.")
 	}
 
 	deployedProductGUID := ""

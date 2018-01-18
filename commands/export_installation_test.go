@@ -76,7 +76,7 @@ var _ = Describe("ExportInstallation", func() {
 			It("returns an error and prints out usage", func() {
 				command := commands.NewExportInstallation(installationService, logger)
 				err := command.Execute([]string{})
-				Expect(err).To(MatchError("expected flag --output-file. Run 'om help export-installation' for more information."))
+				Expect(err).To(MatchError("could not parse export-installation flags: missing required flag \"--output-file\""))
 			})
 		})
 

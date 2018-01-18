@@ -121,6 +121,13 @@ var _ = Describe("Certificate Authority", func() {
 				})
 			})
 
+			Context("when the --id flag is missing", func() {
+				It("returns an error", func() {
+					err := certificateAuthority.Execute([]string{})
+					Expect(err).To(MatchError(`could not parse certificate-authority flags: missing required flag "--id"`))
+				})
+			})
+
 			Context("when the request certificate authority is not found", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{

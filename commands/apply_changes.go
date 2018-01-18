@@ -15,7 +15,7 @@ type ApplyChanges struct {
 	logWriter            logWriter
 	waitDuration         int
 	Options              struct {
-		IgnoreWarnings     bool `short:"i" long:"ignore-warnings" description:"ignore issues reported by Ops Manager when applying changes"`
+		IgnoreWarnings     bool `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
 		SkipDeployProducts bool `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
 	}
 }
@@ -44,8 +44,7 @@ func NewApplyChanges(installationsService installationsService, logWriter logWri
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
-	_, err := jhanda.Parse(&ac.Options, args)
-	if err != nil {
+	if _, err := jhanda.Parse(&ac.Options, args); err != nil {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
 
