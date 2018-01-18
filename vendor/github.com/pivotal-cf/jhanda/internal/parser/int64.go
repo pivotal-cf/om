@@ -7,32 +7,33 @@ import (
 	"strconv"
 )
 
-type Int64 struct{
-	Set *flag.FlagSet
-	Field reflect.Value
-	Tags reflect.StructTag
-}
-
-func (i Int64) Execute() error {
+func NewInt64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	var defaultValue int64
-	defaultStr, ok := i.Tags.Lookup("default")
+	defaultStr, ok := tags.Lookup("default")
 	if ok {
 		var err error
 		defaultValue, err = strconv.ParseInt(defaultStr, 0, 64)
 		if err != nil {
-			return fmt.Errorf("could not parse int64 default value %q: %s", defaultStr, err)
+			return &Flag{}, fmt.Errorf("could not parse int64 default value %q: %s", defaultStr, err)
 		}
 	}
 
-	short, ok := i.Tags.Lookup("short")
+	var f Flag
+	short, ok := tags.Lookup("short")
 	if ok {
-		i.Set.Int64Var(i.Field.Addr().Interface().(*int64), short, defaultValue, "")
+		set.Int64Var(field.Addr().Interface().(*int64), short, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(short))
+		f.name = fmt.Sprintf("-%s", short)
 	}
 
-	long, ok := i.Tags.Lookup("long")
+	long, ok := tags.Lookup("long")
 	if ok {
-		i.Set.Int64Var(i.Field.Addr().Interface().(*int64), long, defaultValue, "")
+		set.Int64Var(field.Addr().Interface().(*int64), long, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(long))
+		f.name = fmt.Sprintf("--%s", long)
 	}
 
-	return nil
+	_, f.required = tags.Lookup("required")
+
+	return &f, nil
 }

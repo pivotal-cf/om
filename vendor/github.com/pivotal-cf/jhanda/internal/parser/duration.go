@@ -7,32 +7,33 @@ import (
 	"time"
 )
 
-type Duration struct{
-	Set *flag.FlagSet
-	Field reflect.Value
-	Tags reflect.StructTag
-}
-
-func (d Duration) Execute() error {
+func NewDuration(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	var defaultValue time.Duration
-	defaultStr, ok := d.Tags.Lookup("default")
+	defaultStr, ok := tags.Lookup("default")
 	if ok {
 		var err error
 		defaultValue, err = time.ParseDuration(defaultStr)
 		if err != nil {
-			return fmt.Errorf("could not parse duration default value %q: %s", defaultStr, err)
+			return &Flag{}, fmt.Errorf("could not parse duration default value %q: %s", defaultStr, err)
 		}
 	}
 
-	short, ok := d.Tags.Lookup("short")
+	var f Flag
+	short, ok := tags.Lookup("short")
 	if ok {
-		d.Set.DurationVar(d.Field.Addr().Interface().(*time.Duration), short, defaultValue, "")
+		set.DurationVar(field.Addr().Interface().(*time.Duration), short, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(short))
+		f.name = fmt.Sprintf("-%s", short)
 	}
 
-	long, ok := d.Tags.Lookup("long")
+	long, ok := tags.Lookup("long")
 	if ok {
-		d.Set.DurationVar(d.Field.Addr().Interface().(*time.Duration), long, defaultValue, "")
+		set.DurationVar(field.Addr().Interface().(*time.Duration), long, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(long))
+		f.name = fmt.Sprintf("--%s", long)
 	}
 
-	return nil
+	_, f.required = tags.Lookup("required")
+
+	return &f, nil
 }

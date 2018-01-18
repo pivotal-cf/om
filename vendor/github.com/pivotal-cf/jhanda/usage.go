@@ -54,9 +54,19 @@ func PrintUsage(receiver interface{}) (string, error) {
 	}
 
 	for i, field := range fields {
+		var kindParts []string
+		if _, ok := field.Tag.Lookup("required"); ok {
+			kindParts = append(kindParts, "required")
+		}
+
 		kind := field.Type.Kind().String()
 		if kind == reflect.Slice.String() {
-			kind = fmt.Sprintf("%s (variadic)", field.Type.Elem().Kind().String())
+			kind = field.Type.Elem().Kind().String()
+			kindParts = append(kindParts, "variadic")
+		}
+
+		if len(kindParts) > 0 {
+			kind = fmt.Sprintf("%s (%s)", kind, strings.Join(kindParts, ", "))
 		}
 
 		line := fmt.Sprintf("%s  %s", usage[i], kind)

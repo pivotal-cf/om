@@ -2,31 +2,33 @@ package parser
 
 import (
 	"flag"
+	"fmt"
 	"reflect"
 )
 
-type String struct {
-	Set   *flag.FlagSet
-	Field reflect.Value
-	Tags  reflect.StructTag
-}
-
-func (s String) Execute() error {
+func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	var defaultValue string
-	defaultStr, ok := s.Tags.Lookup("default")
+	defaultStr, ok := tags.Lookup("default")
 	if ok {
 		defaultValue = defaultStr
 	}
 
-	short, ok := s.Tags.Lookup("short")
+	var f Flag
+	short, ok := tags.Lookup("short")
 	if ok {
-		s.Set.StringVar(s.Field.Addr().Interface().(*string), short, defaultValue, "")
+		set.StringVar(field.Addr().Interface().(*string), short, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(short))
+		f.name = fmt.Sprintf("-%s", short)
 	}
 
-	long, ok := s.Tags.Lookup("long")
+	long, ok := tags.Lookup("long")
 	if ok {
-		s.Set.StringVar(s.Field.Addr().Interface().(*string), long, defaultValue, "")
+		set.StringVar(field.Addr().Interface().(*string), long, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(long))
+		f.name = fmt.Sprintf("--%s", long)
 	}
 
-	return nil
+	_, f.required = tags.Lookup("required")
+
+	return &f, nil
 }

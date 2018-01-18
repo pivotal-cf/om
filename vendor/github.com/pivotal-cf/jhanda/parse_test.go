@@ -50,6 +50,28 @@ var _ = Describe("Parse", func() {
 			Expect(set.Second).To(BeTrue())
 		})
 
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  bool `long:"first" default:"true" required:"true"`
+					Second bool `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  bool `short:"1" default:"true" required:"true"`
+						Second bool `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
+		})
+
 		Context("when the default value is unparsable", func() {
 			It("returns an error", func() {
 				var set struct {
@@ -101,6 +123,28 @@ var _ = Describe("Parse", func() {
 			Expect(set.First).To(ConsistOf([]string{"yes", "no"}))
 			Expect(set.Second).To(ConsistOf([]string{"what"}))
 		})
+
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  []string `long:"first" default:"yes,no" required:"true"`
+					Second []string `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "test"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  []string `short:"1" default:"yes,no" required:"true"`
+						Second []string `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "test"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
+		})
 	})
 
 	Context("float64 flags", func() {
@@ -141,6 +185,28 @@ var _ = Describe("Parse", func() {
 
 			Expect(set.First).To(Equal(78.9))
 			Expect(set.Second).To(Equal(12.3))
+		})
+
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  float64 `long:"first" default:"78.9" required:"true"`
+					Second float64 `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "1.2"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  float64 `short:"1" default:"78.9" required:"true"`
+						Second float64 `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "1.2"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
 		})
 
 		Context("when the default value is unparsable", func() {
@@ -195,6 +261,28 @@ var _ = Describe("Parse", func() {
 			Expect(set.Second).To(Equal(int64(999)))
 		})
 
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  int64 `long:"first" default:"123" required:"true"`
+					Second int64 `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "2"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  int64 `short:"1" default:"123" required:"true"`
+						Second int64 `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "2"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
+		})
+
 		Context("when the default value is unparsable", func() {
 			It("returns an error", func() {
 				var set struct {
@@ -245,6 +333,28 @@ var _ = Describe("Parse", func() {
 
 			Expect(set.First).To(Equal(23 * time.Millisecond))
 			Expect(set.Second).To(Equal(42 * time.Hour))
+		})
+
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  time.Duration `long:"first" default:"23ms" required:"true"`
+					Second time.Duration `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "2s"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  time.Duration `short:"1" default:"23ms" required:"true"`
+						Second time.Duration `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "2s"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
 		})
 
 		Context("when the default value is unparsable", func() {
@@ -299,6 +409,28 @@ var _ = Describe("Parse", func() {
 			Expect(set.Second).To(Equal(420))
 		})
 
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  int `long:"first" default:"234" required:"true"`
+					Second int `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "2"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  int `short:"1" default:"234" required:"true"`
+						Second int `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "2"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
+		})
+
 		Context("when the default value is unparsable", func() {
 			It("returns an error", func() {
 				var set struct {
@@ -350,6 +482,28 @@ var _ = Describe("Parse", func() {
 			Expect(set.First).To(Equal("default"))
 			Expect(set.Second).To(Equal("custom"))
 		})
+
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  string `long:"first" default:"default" required:"true"`
+					Second string `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "two"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  string `short:"1" default:"default" required:"true"`
+						Second string `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "two"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
+		})
 	})
 
 	Context("uint64 flags", func() {
@@ -390,6 +544,28 @@ var _ = Describe("Parse", func() {
 
 			Expect(set.First).To(Equal(uint64(234)))
 			Expect(set.Second).To(Equal(uint64(420)))
+		})
+
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  uint64 `long:"first" default:"234" required:"true"`
+					Second uint64 `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "2"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  uint64 `short:"1" default:"234" required:"true"`
+						Second uint64 `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "2"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
 		})
 
 		Context("when the default value is unparsable", func() {
@@ -442,6 +618,28 @@ var _ = Describe("Parse", func() {
 
 			Expect(set.First).To(Equal(uint(234)))
 			Expect(set.Second).To(Equal(uint(420)))
+		})
+
+		Context("when a required flag is missing", func() {
+			It("returns an error", func() {
+				var set struct {
+					First  uint `long:"first" default:"234" required:"true"`
+					Second uint `long:"second"`
+				}
+				_, err := jhanda.Parse(&set, []string{"--second", "2"})
+				Expect(err).To(MatchError("missing required flag \"--first\""))
+			})
+
+			Context("when the required flag is short", func() {
+				It("returns an error", func() {
+					var set struct {
+						First  uint `short:"1" default:"234" required:"true"`
+						Second uint `long:"second"`
+					}
+					_, err := jhanda.Parse(&set, []string{"--second", "2"})
+					Expect(err).To(MatchError("missing required flag \"-1\""))
+				})
+			})
 		})
 
 		Context("when the default value is unparsable", func() {
