@@ -72,18 +72,6 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf(`could not find product "%s"`, cp.Options.ProductName)
 	}
 
-	if cp.Options.ProductProperties != "" {
-		cp.logger.Printf("setting properties")
-		err = cp.productsService.Configure(api.ProductsConfigurationInput{
-			GUID:          productGUID,
-			Configuration: cp.Options.ProductProperties,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to configure product: %s", err)
-		}
-		cp.logger.Printf("finished setting properties")
-	}
-
 	if cp.Options.NetworkProperties != "" {
 		cp.logger.Printf("setting up network")
 		err = cp.productsService.Configure(api.ProductsConfigurationInput{
@@ -94,6 +82,18 @@ func (cp ConfigureProduct) Execute(args []string) error {
 			return fmt.Errorf("failed to configure product: %s", err)
 		}
 		cp.logger.Printf("finished setting up network")
+	}
+
+	if cp.Options.ProductProperties != "" {
+		cp.logger.Printf("setting properties")
+		err = cp.productsService.Configure(api.ProductsConfigurationInput{
+			GUID:          productGUID,
+			Configuration: cp.Options.ProductProperties,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to configure product: %s", err)
+		}
+		cp.logger.Printf("finished setting properties")
 	}
 
 	if cp.Options.ProductResources != "" {
