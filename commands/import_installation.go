@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
@@ -53,7 +52,8 @@ func (ii ImportInstallation) Execute(args []string) error {
 	}
 
 	if ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusUnstarted {
-		return errors.New("cannot import installation to an Ops Manager that is already configured")
+		ii.logger.Printf("Ops Manager is already configured")
+		return nil
 	}
 
 	ii.logger.Printf("processing installation")

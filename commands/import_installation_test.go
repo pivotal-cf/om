@@ -128,7 +128,7 @@ var _ = Describe("ImportInstallation", func() {
 	})
 
 	Context("when the Ops Manager is already configured", func() {
-		It("returns an error", func() {
+		It("prints a helpful message", func() {
 			setupService = &fakes.SetupService{}
 			setupService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 				Status: api.EnsureAvailabilityStatusComplete,
@@ -140,7 +140,10 @@ var _ = Describe("ImportInstallation", func() {
 				"--installation", "/path/to/some-installation",
 				"--decryption-passphrase", "some-passphrase",
 			})
-			Expect(err).To(MatchError(ContainSubstring("cannot import installation to an Ops Manager that is already configured")))
+			Expect(err).NotTo(HaveOccurred())
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("Ops Manager is already configured"))
 			Expect(setupService.EnsureAvailabilityCallCount()).To(Equal(1))
 		})
 	})

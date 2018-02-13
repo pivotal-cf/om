@@ -124,8 +124,8 @@ var _ = Describe("import-installation command", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(session, 5).Should(gexec.Exit(1))
-			Eventually(session.Err, 5).Should(gbytes.Say("cannot import installation to an Ops Manager that is already configured"))
+			Eventually(session, 5).Should(gexec.Exit(0))
+			Eventually(session.Out, 5).Should(gbytes.Say("Ops Manager is already configured"))
 		})
 	})
 
