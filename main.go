@@ -133,6 +133,7 @@ func main() {
 	certificateAuthoritiesService := api.NewCertificateAuthoritiesService(authedClient)
 	certificatesService := api.NewCertificatesService(authedClient)
 	directorService := api.NewDirectorService(authedClient)
+	vmExtensionService := api.NewVMExtensionsService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -162,6 +163,7 @@ func main() {
 	commandSet["configure-director"] = commands.NewConfigureDirector(directorService, jobsService, stagedProductsService, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(stagedProductsService, jobsService, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, presenter)
+	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(vmExtensionService, stdout)
 	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, presenter, stdout)
 	commandSet["credentials"] = commands.NewCredentials(credentialsService, deployedProductsService, presenter, stdout)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
