@@ -60,6 +60,7 @@ Commands:
   configure-director              configures the director
   configure-product               configures a staged product
   create-certificate-authority    creates a certificate authority on the Ops Manager
+  create-vm-extension             creates a VM extension
   credential-references           list credential references for a deployed product
   credentials                     fetch credentials for a deployed product
   curl                            issues an authenticated API request
