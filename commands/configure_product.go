@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"sort"
 
 	"github.com/pivotal-cf/jhanda"
@@ -128,11 +127,9 @@ func (cp ConfigureProduct) Execute(args []string) error {
 				return err
 			}
 
-			if !reflect.DeepEqual(jobProperties, api.JobProperties{}) {
-				err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
-				if err != nil {
-					return fmt.Errorf("failed to configure resources: %s", err)
-				}
+			err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
+			if err != nil {
+				return fmt.Errorf("failed to configure resources: %s", err)
 			}
 		}
 	}

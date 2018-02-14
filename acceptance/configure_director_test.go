@@ -27,6 +27,8 @@ var _ = Describe("configure-director command", func() {
 		networksConfigurationBody      []byte
 		networksConfigurationCallCount int
 		networksConfigurationMethod    string
+		resourceConfigMethod           string
+		resourceConfigBody             []byte
 
 		server *httptest.Server
 	)
@@ -118,6 +120,56 @@ var _ = Describe("configure-director command", func() {
 				directorPropertiesCallCount++
 
 				w.Write([]byte(`{}`))
+
+			case "/api/v0/staged/products":
+				w.Write([]byte(`[
+					{
+						"installation_name": "component-type1-installation-name",
+						"guid": "component-type1-guid",
+						"type": "component-type1"
+					},
+					{
+						"installation_name": "p-bosh-installation-name",
+						"guid": "p-bosh-guid",
+						"type": "p-bosh"
+					}
+				]`))
+
+			case "/api/v0/staged/products/p-bosh-guid/jobs":
+				w.Write([]byte(`
+					{
+						"jobs": [
+							{
+								"name": "compilation",
+								"guid": "compilation-guid"
+							}
+						]
+					}
+				`))
+
+			case "/api/v0/staged/products/p-bosh-guid/jobs/compilation-guid/resource_config":
+				if req.Method == "GET" {
+					w.Write([]byte(`{
+						"instances": 1,
+						"instance_type": {
+							"id": "automatic"
+						},
+						"persistent_disk": {
+							"size_mb": "20480"
+						},
+						"internet_connected": true,
+						"elb_names": ["my-elb"]
+					}`))
+					return
+				}
+
+				var err error
+				resourceConfigMethod = req.Method
+				resourceConfigBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				w.Write([]byte(`{}`))
+
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -165,6 +217,13 @@ var _ = Describe("configure-director command", func() {
 			}`,
 			"--syslog-configuration", `{
 				"syslogconfig": "awesome"
+			}`,
+			"--resource-configuration", `{
+				"compilation": {
+					"instance_type": {
+						"id": "m4.xlarge"
+					}
+				}
 			}`,
 		)
 
@@ -220,6 +279,19 @@ var _ = Describe("configure-director command", func() {
 			"syslog_configuration": {
 				"syslogconfig": "awesome"
 			}
+	  }`))
+
+		Expect(resourceConfigMethod).To(Equal("PUT"))
+		Expect(resourceConfigBody).To(MatchJSON(`{
+			"instances": 1,
+			"instance_type": {
+				"id": "m4.xlarge"
+			},
+			"persistent_disk": {
+				"size_mb": "20480"
+			},
+			"internet_connected": true,
+			"elb_names": ["my-elb"]
 	  }`))
 	})
 })

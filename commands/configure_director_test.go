@@ -13,15 +13,34 @@ import (
 
 var _ = Describe("ConfigureDirector", func() {
 	var (
-		directorService *fakes.DirectorService
-		command         commands.ConfigureDirector
-		logger          *fakes.Logger
+		directorService       *fakes.DirectorService
+		jobsService           *fakes.JobsService
+		stagedProductsService *fakes.StagedProductsService
+		command               commands.ConfigureDirector
+		logger                *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		directorService = &fakes.DirectorService{}
+		jobsService = &fakes.JobsService{}
+		stagedProductsService = &fakes.StagedProductsService{}
 		logger = &fakes.Logger{}
-		command = commands.NewConfigureDirector(directorService, logger)
+		stagedProductsService.FindReturns(api.StagedProductsFindOutput{
+			Product: api.StagedProduct{
+				GUID: "p-bosh-guid",
+			},
+		}, nil)
+		jobsService.JobsReturns(map[string]string{
+			"resource": "some-resource-guid",
+		}, nil)
+		jobsService.GetExistingJobConfigReturns(api.JobProperties{
+			InstanceType: api.InstanceType{
+				ID: "automatic",
+			},
+			FloatingIPs: "1.2.3.4",
+		}, nil)
+
+		command = commands.NewConfigureDirector(directorService, jobsService, stagedProductsService, logger)
 	})
 
 	Describe("Execute", func() {
@@ -39,6 +58,7 @@ var _ = Describe("ConfigureDirector", func() {
 				"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
 				"--security-configuration", `{"some-security-assignment": "security"}`,
 				"--syslog-configuration", `{"some-syslog-assignment": "syslog"}`,
+				"--resource-configuration", `{"resource": {"instance_type": {"id": "some-type"}}}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -63,7 +83,29 @@ var _ = Describe("ConfigureDirector", func() {
 				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment": "syslog"}`),
 			}))
 
-			Expect(logger.PrintfCallCount()).To(Equal(8))
+			Expect(stagedProductsService.FindCallCount()).To(Equal(1))
+			Expect(stagedProductsService.FindArgsForCall(0)).To(Equal("p-bosh"))
+
+			Expect(jobsService.JobsCallCount()).To(Equal(1))
+			Expect(jobsService.JobsArgsForCall(0)).To(Equal("p-bosh-guid"))
+
+			Expect(jobsService.GetExistingJobConfigCallCount()).To(Equal(1))
+			productGUID, instanceGroupGUID := jobsService.GetExistingJobConfigArgsForCall(0)
+			Expect(productGUID).To(Equal("p-bosh-guid"))
+			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
+
+			Expect(jobsService.ConfigureJobCallCount()).To(Equal(1))
+			productGUID, instanceGroupGUID, jobConfiguration := jobsService.ConfigureJobArgsForCall(0)
+			Expect(productGUID).To(Equal("p-bosh-guid"))
+			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
+			Expect(jobConfiguration).To(Equal(api.JobProperties{
+				InstanceType: api.InstanceType{
+					ID: "some-type",
+				},
+				FloatingIPs: "1.2.3.4",
+			}))
+
+			Expect(logger.PrintfCallCount()).To(Equal(12))
 			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
@@ -72,6 +114,11 @@ var _ = Describe("ConfigureDirector", func() {
 			Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring network assignment options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring network assignment options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(8)).To(Equal("started configuring resource options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(9)).To(Equal("applying resource configuration for the following jobs:"))
+			formatStr, formatArg := logger.PrintfArgsForCall(10)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
+			Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
 		})
 
 		Context("when no director configuration flags are provided", func() {
@@ -128,6 +175,59 @@ var _ = Describe("ConfigureDirector", func() {
 					directorService.PropertiesReturns(errors.New("properties end point failed"))
 					err := command.Execute([]string{"--director-configuration", `{}`})
 					Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
+				})
+			})
+
+			Context("when retrieving staged products fails", func() {
+				It("returns an error", func() {
+					stagedProductsService.FindReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
+					err := command.Execute([]string{"--resource-configuration", `{}`})
+					Expect(err).To(MatchError(ContainSubstring("some-error")))
+				})
+			})
+
+			Context("when user-provided top-level resource config is not valid JSON", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--resource-configuration", `{{{`})
+					Expect(err).To(MatchError(ContainSubstring("resource-configuration")))
+				})
+			})
+
+			Context("when retrieving jobs for product fails", func() {
+				It("returns an error", func() {
+					jobsService.JobsReturns(nil, errors.New("some-error"))
+					err := command.Execute([]string{"--resource-configuration", `{}`})
+					Expect(err).To(MatchError(ContainSubstring("some-error")))
+				})
+			})
+
+			Context("when user-provided job does not exist", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--resource-configuration", `{"invalid-resource": {}}`})
+					Expect(err).To(MatchError(ContainSubstring("invalid-resource")))
+				})
+			})
+
+			Context("when retrieving existing job config fails", func() {
+				It("returns an error", func() {
+					jobsService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some-error"))
+					err := command.Execute([]string{"--resource-configuration", `{"resource": {}}`})
+					Expect(err).To(MatchError(ContainSubstring("some-error")))
+				})
+			})
+
+			Context("when user-provided nested resource config is not valid JSON", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--resource-configuration", `{"resource": "%%%"}`})
+					Expect(err).To(MatchError(ContainSubstring("resource-configuration")))
+				})
+			})
+
+			Context("when configuring the job fails", func() {
+				It("returns an error", func() {
+					jobsService.ConfigureJobReturns(errors.New("some-error"))
+					err := command.Execute([]string{"--resource-configuration", `{"resource": {}}`})
+					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
 			})
 		})
