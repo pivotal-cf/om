@@ -95,7 +95,8 @@ var _ = Describe("JobsService", func() {
 					"instance_type": { "id": "number-1" },
 					"persistent_disk": { "size_mb": "290" },
 					"internet_connected": true,
-					"elb_names": ["something"]
+					"elb_names": ["something"],
+					"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
 				}`)),
 			}, nil)
 
@@ -105,11 +106,12 @@ var _ = Describe("JobsService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(client.DoCallCount()).To(Equal(1))
 			jobProperties := api.JobProperties{
-				Instances:         float64(1),
-				PersistentDisk:    &api.Disk{Size: "290"},
-				InstanceType:      api.InstanceType{ID: "number-1"},
-				InternetConnected: new(bool),
-				LBNames:           []string{"something"},
+				Instances:              float64(1),
+				PersistentDisk:         &api.Disk{Size: "290"},
+				InstanceType:           api.InstanceType{ID: "number-1"},
+				InternetConnected:      new(bool),
+				LBNames:                []string{"something"},
+				AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
 			}
 			*jobProperties.InternetConnected = true
 			Expect(job).To(Equal(jobProperties))
@@ -265,11 +267,12 @@ var _ = Describe("JobsService", func() {
 
 			service := api.NewJobsService(client)
 			jobProperties := api.JobProperties{
-				Instances:         1,
-				PersistentDisk:    &api.Disk{Size: "290"},
-				InstanceType:      api.InstanceType{ID: "number-1"},
-				InternetConnected: new(bool),
-				LBNames:           []string{"something"},
+				Instances:              1,
+				PersistentDisk:         &api.Disk{Size: "290"},
+				InstanceType:           api.InstanceType{ID: "number-1"},
+				InternetConnected:      new(bool),
+				LBNames:                []string{"something"},
+				AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
 			}
 			*jobProperties.InternetConnected = true
 
@@ -289,7 +292,8 @@ var _ = Describe("JobsService", func() {
 				"instance_type": { "id": "number-1" },
 				"persistent_disk": { "size_mb": "290" },
 				"internet_connected": true,
-				"elb_names": ["something"]
+				"elb_names": ["something"],
+				"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
 			}`))
 		})
 

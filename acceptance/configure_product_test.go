@@ -52,9 +52,10 @@ const nsxResourceConfigJSON = `
 const resourceConfigJSON = `
 {
   "some-job": {
-	  "instances": 1,
-		"persistent_disk": { "size_mb": "20480" },
-    "instance_type": { "id": "m1.medium" }
+    "instances": 1,
+    "persistent_disk": { "size_mb": "20480" },
+    "instance_type": { "id": "m1.medium" },
+    "additional_vm_extensions": ["some-vm-extension", "some-other-vm-extension"]
   },
   "some-other-job": {
 	  "instances": "automatic",
@@ -194,7 +195,8 @@ var _ = Describe("configure-product command", func() {
         "instance_type": {
           "id": "m1.medium"
         },
-        "elb_names": null
+        "elb_names": null,
+        "additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
       }`))
 
 		Expect(resourceConfigMethod[3]).To(Equal("PUT"))
