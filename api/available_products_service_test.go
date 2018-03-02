@@ -203,6 +203,34 @@ var _ = Describe("AvailableProductsService", func() {
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
+
+			Context("when server responds with timeout error before upload has finished", func() {
+				It("returns an error", func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						if req.Method != "POST" || req.URL.Path != "/api/v0/available_products" {
+							return nil, nil
+						}
+
+						return &http.Response{
+							StatusCode: http.StatusRequestTimeout,
+							Body:       ioutil.NopCloser(strings.NewReader(`something from nginx probably xml`)),
+						}, nil
+					}
+
+					bar.GetCurrentReturns(0)
+					bar.GetTotalReturns(100)
+
+					done := make(chan bool)
+					var err error
+					go func() {
+						_, err = service.Upload(api.UploadProductInput{PollingInterval: 1})
+						close(done)
+					}()
+
+					Eventually(done, 5*time.Second, 1*time.Second).Should(BeClosed())
+					Expect(err).To(MatchError(ContainSubstring("HTTP/0.0 408 Request Timeout")))
+				})
+			})
 		})
 	})
 
