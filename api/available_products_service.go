@@ -80,22 +80,22 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 				if ap.progress.GetCurrent() != ap.progress.GetTotal() {
 					time.Sleep(time.Second)
 					continue
-				} else {
-					ap.progress.End()
+				}
 
-					liveLog := log.New(ap.liveWriter, "", 0)
-					startTime := time.Now().Round(time.Second)
-					ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
+				ap.progress.End()
 
-					for {
-						select {
-						case <-requestComplete:
-							ticker.Stop()
-							ap.liveWriter.Stop()
-							progressComplete <- true
-						case now := <-ticker.C:
-							liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
-						}
+				liveLog := log.New(ap.liveWriter, "", 0)
+				startTime := time.Now().Round(time.Second)
+				ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
+
+				for {
+					select {
+					case <-requestComplete:
+						ticker.Stop()
+						ap.liveWriter.Stop()
+						progressComplete <- true
+					case now := <-ticker.C:
+						liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
 					}
 				}
 			}
