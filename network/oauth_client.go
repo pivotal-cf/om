@@ -135,7 +135,7 @@ func retrieveTokenWithRetry(config *oauth2.Config, ctx context.Context, username
 	expiryTime := currTime.Add(timeout)
 retry:
 	token, err := config.PasswordCredentialsToken(ctx, username, password)
-	if expiryTime.After(time.Now()) && canRetry(err) {
+	if time.Now().Before(expiryTime) && canRetry(err) {
 		goto retry
 	}
 
