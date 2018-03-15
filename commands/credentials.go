@@ -35,7 +35,7 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, err := cs.lister.DeployedProducts()
+	deployedProducts, err := cs.lister.List()
 	if err != nil {
 		return fmt.Errorf("failed to fetch credential: %s", err)
 	}

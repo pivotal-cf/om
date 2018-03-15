@@ -34,7 +34,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, err := cr.lister.DeployedProducts()
+	deployedProducts, err := cr.lister.List()
 	if err != nil {
 		return fmt.Errorf("failed to list credential references: %s", err)
 	}

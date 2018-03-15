@@ -30,7 +30,7 @@ var _ = Describe("CredentialReferences", func() {
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			dpLister.DeployedProductsReturns([]api.DeployedProductOutput{
+			dpLister.ListReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-product",
 					GUID: "other-deployed-product-guid",
@@ -80,7 +80,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when the deployed product cannot be found", func() {
 				BeforeEach(func() {
-					dpLister.DeployedProductsReturns([]api.DeployedProductOutput{}, nil)
+					dpLister.ListReturns([]api.DeployedProductOutput{}, nil)
 				})
 
 				It("returns an error", func() {
@@ -127,7 +127,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
-					dpLister.DeployedProductsReturns(
+					dpLister.ListReturns(
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 

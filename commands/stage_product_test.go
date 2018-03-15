@@ -36,7 +36,7 @@ var _ = Describe("StageProduct", func() {
 		command := commands.NewStageProduct(
 			stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, logger)
 
-		deployedProductsService.DeployedProductsReturns([]api.DeployedProductOutput{
+		deployedProductsService.ListReturns([]api.DeployedProductOutput{
 			api.DeployedProductOutput{
 				Type: "some-other-product",
 				GUID: "deployed-product-guid",
@@ -49,7 +49,7 @@ var _ = Describe("StageProduct", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(deployedProductsService.DeployedProductsCallCount()).To(Equal(1))
+		Expect(deployedProductsService.ListCallCount()).To(Equal(1))
 
 		Expect(stagedProductsService.StageCallCount()).To(Equal(1))
 		stageProductInput, deployedProductGUID := stagedProductsService.StageArgsForCall(0)
@@ -73,7 +73,7 @@ var _ = Describe("StageProduct", func() {
 			command := commands.NewStageProduct(
 				stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, logger)
 
-			deployedProductsService.DeployedProductsReturns([]api.DeployedProductOutput{
+			deployedProductsService.ListReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-other-product",
 					GUID: "other-deployed-product-guid",
@@ -90,7 +90,7 @@ var _ = Describe("StageProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(deployedProductsService.DeployedProductsCallCount()).To(Equal(1))
+			Expect(deployedProductsService.ListCallCount()).To(Equal(1))
 
 			Expect(stagedProductsService.StageCallCount()).To(Equal(1))
 			stageProductInput, deployedProductGUID := stagedProductsService.StageArgsForCall(0)
@@ -224,7 +224,7 @@ var _ = Describe("StageProduct", func() {
 
 		Context("when the deployed products cannot be fetched", func() {
 			BeforeEach(func() {
-				deployedProductsService.DeployedProductsReturns(
+				deployedProductsService.ListReturns(
 					[]api.DeployedProductOutput{},
 					errors.New("could not fetch deployed products"))
 			})

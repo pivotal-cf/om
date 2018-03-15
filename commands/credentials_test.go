@@ -30,7 +30,7 @@ var _ = Describe("Credentials", func() {
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			dpLister.DeployedProductsReturns([]api.DeployedProductOutput{
+			dpLister.ListReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-product",
 					GUID: "some-deployed-product-guid",
@@ -123,7 +123,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
-					dpLister.DeployedProductsReturns(
+					dpLister.ListReturns(
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 
@@ -140,7 +140,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the product has not been deployed", func() {
 				It("returns an error", func() {
-					dpLister.DeployedProductsReturns([]api.DeployedProductOutput{
+					dpLister.ListReturns([]api.DeployedProductOutput{
 						api.DeployedProductOutput{
 							Type: "some-other-product",
 							GUID: "some-other-deployed-product-guid",

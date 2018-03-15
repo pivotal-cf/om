@@ -22,7 +22,7 @@ func NewDeployedProductsService(client httpClient) DeployedProductsService {
 	}
 }
 
-func (s DeployedProductsService) DeployedProducts() ([]DeployedProductOutput, error) {
+func (s DeployedProductsService) List() ([]DeployedProductOutput, error) {
 	req, err := http.NewRequest("GET", "/api/v0/deployed/products", nil)
 	if err != nil {
 		return []DeployedProductOutput{}, err

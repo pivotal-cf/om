@@ -14,7 +14,7 @@ import (
 )
 
 var _ = Describe("DeployedProductsService", func() {
-	Describe("DeployedProducts", func() {
+	Describe("List", func() {
 		var (
 			client *fakes.HttpClient
 		)
@@ -48,7 +48,7 @@ var _ = Describe("DeployedProductsService", func() {
 		It("retrieves a list of deployed products from the Ops Manager", func() {
 			service := api.NewDeployedProductsService(client)
 
-			output, err := service.DeployedProducts()
+			output, err := service.List()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output).To(Equal([]api.DeployedProductOutput{
@@ -79,7 +79,7 @@ var _ = Describe("DeployedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewDeployedProductsService(client)
 
-					_, err := service.DeployedProducts()
+					_, err := service.List()
 					Expect(err).To(MatchError("could not make api request to deployed products endpoint: nope"))
 				})
 			})
@@ -95,7 +95,7 @@ var _ = Describe("DeployedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewDeployedProductsService(client)
 
-					_, err := service.DeployedProducts()
+					_, err := service.List()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -111,7 +111,7 @@ var _ = Describe("DeployedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewDeployedProductsService(client)
 
-					_, err := service.DeployedProducts()
+					_, err := service.List()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal deployed products response:")))
 				})
 			})

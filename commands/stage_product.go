@@ -26,7 +26,7 @@ type productStager interface {
 
 //go:generate counterfeiter -o ./fakes/deployed_products_lister.go --fake-name DeployedProductsLister . deployedProductsLister
 type deployedProductsLister interface {
-	DeployedProducts() ([]api.DeployedProductOutput, error)
+	List() ([]api.DeployedProductOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/available_product_checker.go --fake-name AvailableProductChecker . availableProductChecker
@@ -55,7 +55,7 @@ func (sp StageProduct) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, err := sp.deployedProductsService.DeployedProducts()
+	deployedProducts, err := sp.deployedProductsService.List()
 	for _, deployedProduct := range deployedProducts {
 		if deployedProduct.Type == sp.Options.Product {
 			deployedProductGUID = deployedProduct.GUID
