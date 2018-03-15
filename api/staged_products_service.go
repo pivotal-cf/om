@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type StageProductInput struct {
@@ -145,7 +147,7 @@ func (p StagedProductsService) Unstage(input UnstageProductInput) error {
 	return nil
 }
 
-func (p StagedProductsService) StagedProducts() (StagedProductsOutput, error) {
+func (p StagedProductsService) List() (StagedProductsOutput, error) {
 	req, err := http.NewRequest("GET", "/api/v0/staged/products", nil)
 	if err != nil {
 		return StagedProductsOutput{}, err
@@ -239,7 +241,7 @@ func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request,
 }
 
 func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {
-	stagedProductsOutput, err := p.StagedProducts()
+	stagedProductsOutput, err := p.List()
 	if err != nil {
 		return "", err
 	}
@@ -254,7 +256,7 @@ func (p StagedProductsService) checkStagedProducts(productName string) (string, 
 }
 
 func (p StagedProductsService) Find(productName string) (StagedProductsFindOutput, error) {
-	productsOutput, err := p.StagedProducts()
+	productsOutput, err := p.List()
 	if err != nil {
 		return StagedProductsFindOutput{}, err
 	}
@@ -272,4 +274,36 @@ func (p StagedProductsService) Find(productName string) (StagedProductsFindOutpu
 	}
 
 	return StagedProductsFindOutput{Product: foundProduct}, nil
+}
+
+func (p StagedProductsService) Manifest(guid string) (string, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/manifest", guid), nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("could not make api request to staged products manifest endpoint: %s", err)
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+	var contents struct {
+		Manifest interface{} `json:"manifest"`
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&contents); err != nil {
+		return "", fmt.Errorf("could not parse json: %s", err)
+	}
+
+	manifest, err := yaml.Marshal(contents.Manifest)
+	if err != nil {
+		return "", err // this should never happen, all valid json can be marshalled
+	}
+
+	return string(manifest), nil
 }

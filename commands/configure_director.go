@@ -46,7 +46,8 @@ type jobsService interface {
 //go:generate counterfeiter -o ./fakes/staged_products_service.go --fake-name StagedProductsService . stagedProductsService
 
 type stagedProductsService interface {
-	Find(string) (api.StagedProductsFindOutput, error)
+	Find(name string) (api.StagedProductsFindOutput, error)
+	Manifest(guid string) (manifest string, err error)
 }
 
 func NewConfigureDirector(directorService directorService, jobsService jobsService, stagedProductsService stagedProductsService, logger logger) ConfigureDirector {

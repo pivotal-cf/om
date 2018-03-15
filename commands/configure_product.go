@@ -23,7 +23,7 @@ type ConfigureProduct struct {
 
 //go:generate counterfeiter -o ./fakes/product_configurer.go --fake-name ProductConfigurer . productConfigurer
 type productConfigurer interface {
-	StagedProducts() (api.StagedProductsOutput, error)
+	List() (api.StagedProductsOutput, error)
 	Configure(api.ProductsConfigurationInput) error
 }
 
@@ -54,7 +54,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return nil
 	}
 
-	stagedProducts, err := cp.productsService.StagedProducts()
+	stagedProducts, err := cp.productsService.List()
 	if err != nil {
 		return err
 	}

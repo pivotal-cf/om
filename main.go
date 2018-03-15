@@ -185,6 +185,7 @@ func main() {
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
 	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, stdout)
+	commandSet["staged-manifest"] = commands.NewStagedManifest(stdout, stagedProductsService)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, diagnosticService)
 	commandSet["unstage-product"] = commands.NewUnstageProduct(stagedProductsService, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, extractor, availableProductsService, stdout)

@@ -58,6 +58,7 @@ Commands:
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   set-errand-state                sets state for a product's errand
   stage-product                   stages a given product in the Ops Manager targeted
+  staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
   unstage-product                 unstages a given product from the Ops Manager targeted
   upload-product                  uploads a given product to the Ops Manager targeted

@@ -65,7 +65,7 @@ var _ = Describe("ConfigureProduct", func() {
 		It("configures a product's properties", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
 
-			productsService.StagedProductsReturns(api.StagedProductsOutput{
+			productsService.ListReturns(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
 					{GUID: "some-product-guid", Type: "cf"},
 					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
@@ -78,7 +78,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
+			Expect(productsService.ListCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
 				GUID:          "some-product-guid",
 				Configuration: productProperties,
@@ -100,7 +100,7 @@ var _ = Describe("ConfigureProduct", func() {
 		It("configures a product's network", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
 
-			productsService.StagedProductsReturns(api.StagedProductsOutput{
+			productsService.ListReturns(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
 					{GUID: "some-product-guid", Type: "cf"},
 					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
@@ -113,7 +113,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
+			Expect(productsService.ListCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
 				GUID:    "some-product-guid",
 				Network: networkProperties,
@@ -134,7 +134,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 		It("configures the resource that is provided", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
-			productsService.StagedProductsReturns(api.StagedProductsOutput{
+			productsService.ListReturns(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
 					{GUID: "some-product-guid", Type: "cf"},
 					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
@@ -185,7 +185,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(productsService.StagedProductsCallCount()).To(Equal(1))
+			Expect(productsService.ListCallCount()).To(Equal(1))
 			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
 			Expect(jobsService.ConfigureJobCallCount()).To(Equal(2))
 
@@ -238,7 +238,7 @@ var _ = Describe("ConfigureProduct", func() {
 		Context("when the instance count is not an int", func() {
 			It("configures the resource that is provided", func() {
 				client := commands.NewConfigureProduct(productsService, jobsService, logger)
-				productsService.StagedProductsReturns(api.StagedProductsOutput{
+				productsService.ListReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
 					},
@@ -293,7 +293,7 @@ var _ = Describe("ConfigureProduct", func() {
 		Context("when GetExistingJobConfig returns an error", func() {
 			It("returns an error", func() {
 				client := commands.NewConfigureProduct(productsService, jobsService, logger)
-				productsService.StagedProductsReturns(api.StagedProductsOutput{
+				productsService.ListReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
 						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
@@ -322,7 +322,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := command.Execute([]string{"--product-name", "cf"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(productsService.StagedProductsCallCount()).To(Equal(0))
+				Expect(productsService.ListCallCount()).To(Equal(0))
 
 				format, content := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("Provided properties are empty, nothing to do here"))
@@ -334,7 +334,7 @@ var _ = Describe("ConfigureProduct", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
 
-					productsService.StagedProductsReturns(api.StagedProductsOutput{
+					productsService.ListReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
 						},
@@ -351,7 +351,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the product resources cannot be decoded", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
-					productsService.StagedProductsReturns(api.StagedProductsOutput{
+					productsService.ListReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
 						},
@@ -365,7 +365,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the jobs cannot be fetched", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
-					productsService.StagedProductsReturns(api.StagedProductsOutput{
+					productsService.ListReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
 						},
@@ -384,7 +384,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when resources fail to configure", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
-					productsService.StagedProductsReturns(api.StagedProductsOutput{
+					productsService.ListReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
 						},
@@ -423,7 +423,7 @@ var _ = Describe("ConfigureProduct", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
 					productsService.ConfigureReturns(errors.New("some product error"))
 
-					productsService.StagedProductsReturns(api.StagedProductsOutput{
+					productsService.ListReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "some-product"},
 						},

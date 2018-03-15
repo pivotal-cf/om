@@ -406,7 +406,7 @@ var _ = Describe("StagedProductsService", func() {
 		})
 	})
 
-	Describe("StagedProducts", func() {
+	Describe("List", func() {
 		var (
 			client *fakes.HttpClient
 		)
@@ -440,7 +440,7 @@ var _ = Describe("StagedProductsService", func() {
 		It("retrieves a list of staged products from the Ops Manager", func() {
 			service := api.NewStagedProductsService(client)
 
-			output, err := service.StagedProducts()
+			output, err := service.List()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output).To(Equal(api.StagedProductsOutput{
@@ -472,7 +472,7 @@ var _ = Describe("StagedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewStagedProductsService(client)
 
-					_, err := service.StagedProducts()
+					_, err := service.List()
 					Expect(err).To(MatchError("could not make api request to staged products endpoint: nope"))
 				})
 			})
@@ -488,7 +488,7 @@ var _ = Describe("StagedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewStagedProductsService(client)
 
-					_, err := service.StagedProducts()
+					_, err := service.List()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -504,7 +504,7 @@ var _ = Describe("StagedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewStagedProductsService(client)
 
-					_, err := service.StagedProducts()
+					_, err := service.List()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
 				})
 			})
@@ -679,6 +679,89 @@ var _ = Describe("StagedProductsService", func() {
 
 					_, err := service.Find("some-product-name")
 					Expect(err).To(MatchError(ContainSubstring("could not find product \"some-product-name\"")))
+				})
+			})
+		})
+	})
+
+	Describe("Manifest", func() {
+		var (
+			client  *fakes.HttpClient
+			service api.StagedProductsService
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+			service = api.NewStagedProductsService(client)
+
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				switch req.URL.Path {
+				case "/api/v0/staged/products/some-product-guid/manifest":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+							"manifest": {
+								"key-1": {
+									"key-2": "value-1"
+								},
+								"key-3": "value-2"
+							}
+						}`)),
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("returns a manifest of a product", func() {
+			manifest, err := service.Manifest("some-product-guid")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(manifest).To(MatchYAML(`---
+key-1:
+  key-2: value-1
+key-3: value-2
+`))
+		})
+
+		Context("failure cases", func() {
+			Context("when the request object is invalid", func() {
+				It("returns an error", func() {
+					_, err := service.Manifest("invalid-guid-%%%")
+					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
+				})
+			})
+
+			Context("when the client request fails", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{}, errors.New("nope"))
+
+					_, err := service.Manifest("some-product-guid")
+					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: nope"))
+				})
+			})
+
+			Context("when the server returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusTeapot,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+					}, nil)
+
+					_, err := service.Manifest("some-product-guid")
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+			Context("when the returned JSON is invalid", func() {
+				It("returns an error", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("---some-malformed-json")),
+					}, nil)
+
+					_, err := service.Manifest("some-product-guid")
+					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
 			})
 		})
