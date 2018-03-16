@@ -27,6 +27,7 @@ type productStager interface {
 //go:generate counterfeiter -o ./fakes/deployed_products_lister.go --fake-name DeployedProductsLister . deployedProductsLister
 type deployedProductsLister interface {
 	List() ([]api.DeployedProductOutput, error)
+	Manifest(guid string) (manifest string, err error)
 }
 
 //go:generate counterfeiter -o ./fakes/available_product_checker.go --fake-name AvailableProductChecker . availableProductChecker

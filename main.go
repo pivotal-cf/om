@@ -171,6 +171,7 @@ func main() {
 	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
 	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(availableProductsService, stdout)
+	commandSet["deployed-manifest"] = commands.NewDeployedManifest(stdout, deployedProductsService)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, diagnosticService)
 	commandSet["errands"] = commands.NewErrands(presenter, errandsService, stagedProductsService)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)

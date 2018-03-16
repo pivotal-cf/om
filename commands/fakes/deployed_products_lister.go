@@ -19,6 +19,19 @@ type DeployedProductsLister struct {
 		result1 []api.DeployedProductOutput
 		result2 error
 	}
+	ManifestStub        func(guid string) (manifest string, err error)
+	manifestMutex       sync.RWMutex
+	manifestArgsForCall []struct {
+		guid string
+	}
+	manifestReturns struct {
+		result1 string
+		result2 error
+	}
+	manifestReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -66,11 +79,64 @@ func (fake *DeployedProductsLister) ListReturnsOnCall(i int, result1 []api.Deplo
 	}{result1, result2}
 }
 
+func (fake *DeployedProductsLister) Manifest(guid string) (manifest string, err error) {
+	fake.manifestMutex.Lock()
+	ret, specificReturn := fake.manifestReturnsOnCall[len(fake.manifestArgsForCall)]
+	fake.manifestArgsForCall = append(fake.manifestArgsForCall, struct {
+		guid string
+	}{guid})
+	fake.recordInvocation("Manifest", []interface{}{guid})
+	fake.manifestMutex.Unlock()
+	if fake.ManifestStub != nil {
+		return fake.ManifestStub(guid)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.manifestReturns.result1, fake.manifestReturns.result2
+}
+
+func (fake *DeployedProductsLister) ManifestCallCount() int {
+	fake.manifestMutex.RLock()
+	defer fake.manifestMutex.RUnlock()
+	return len(fake.manifestArgsForCall)
+}
+
+func (fake *DeployedProductsLister) ManifestArgsForCall(i int) string {
+	fake.manifestMutex.RLock()
+	defer fake.manifestMutex.RUnlock()
+	return fake.manifestArgsForCall[i].guid
+}
+
+func (fake *DeployedProductsLister) ManifestReturns(result1 string, result2 error) {
+	fake.ManifestStub = nil
+	fake.manifestReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *DeployedProductsLister) ManifestReturnsOnCall(i int, result1 string, result2 error) {
+	fake.ManifestStub = nil
+	if fake.manifestReturnsOnCall == nil {
+		fake.manifestReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.manifestReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *DeployedProductsLister) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
+	fake.manifestMutex.RLock()
+	defer fake.manifestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

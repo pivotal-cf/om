@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type DeployedProductOutput struct {
@@ -20,6 +22,36 @@ func NewDeployedProductsService(client httpClient) DeployedProductsService {
 	return DeployedProductsService{
 		client: client,
 	}
+}
+
+func (s DeployedProductsService) Manifest(guid string) (string, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/deployed/products/%s/manifest", guid), nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("could not make api request to staged products manifest endpoint: %s", err)
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+	var contents interface{}
+
+	if err = json.NewDecoder(resp.Body).Decode(&contents); err != nil {
+		return "", fmt.Errorf("could not parse json: %s", err)
+	}
+
+	manifest, err := yaml.Marshal(contents)
+	if err != nil {
+		return "", err // this should never happen, all valid json can be marshalled
+	}
+
+	return string(manifest), nil
 }
 
 func (s DeployedProductsService) List() ([]DeployedProductOutput, error) {
