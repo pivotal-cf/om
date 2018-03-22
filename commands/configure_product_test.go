@@ -3,6 +3,8 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -47,6 +49,46 @@ const automaticResourceConfig = `{
 		"elb_names": ["some-lb"]
   }
 }`
+
+const productPropertiesFile = `---
+product-properties:
+  .properties.something:
+    value: configure-me
+  .a-job.job-property:
+    value:
+      identity: username
+      password: example-new-password
+`
+
+const networkPropertiesFile = `---
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+  other_availability_zones:
+    - name: az-two
+    - name: az-three
+  network:
+    name: network-one
+product-properties:
+`
+
+const resourceConfigFile = `---
+resource-config:
+  some-job:
+    instances: 1
+    persistent_disk:
+      size_mb: "20480"
+    instance_type:
+      id: m1.medium
+    internet_connected: true
+    elb_names:
+      - some-lb
+  some-other-job:
+    persistent_disk:
+      size_mb: "20480"
+    instance_type:
+      id: m1.medium
+`
 
 var _ = Describe("ConfigureProduct", func() {
 	Describe("Execute", func() {
@@ -235,6 +277,206 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
 		})
 
+		Context("when the --config flag is passed", func() {
+			var (
+				configFile *os.File
+				err        error
+			)
+
+			BeforeEach(func() {
+				productsService.ListReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+				jobsService.JobsReturns(map[string]string{
+					"some-job":       "a-guid",
+					"some-other-job": "a-different-guid",
+					"bad":            "do-not-use",
+				}, nil)
+
+				jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+					if productGUID == "some-product-guid" {
+						switch jobGUID {
+						case "a-guid":
+							apiReturn := api.JobProperties{
+								Instances:         0,
+								PersistentDisk:    &api.Disk{Size: "000"},
+								InstanceType:      api.InstanceType{ID: "t2.micro"},
+								InternetConnected: new(bool),
+								LBNames:           []string{"pre-existing-1"},
+							}
+
+							return apiReturn, nil
+						case "a-different-guid":
+							apiReturn := api.JobProperties{
+								Instances:         2,
+								PersistentDisk:    &api.Disk{Size: "20480"},
+								InstanceType:      api.InstanceType{ID: "m1.medium"},
+								InternetConnected: new(bool),
+								LBNames:           []string{"pre-existing-2"},
+							}
+
+							*apiReturn.InternetConnected = true
+
+							return apiReturn, nil
+						default:
+							return api.JobProperties{}, nil
+						}
+					}
+					return api.JobProperties{}, errors.New("guid not found")
+				}
+			})
+
+			AfterEach(func() {
+				os.RemoveAll(configFile.Name())
+			})
+
+			Context("when the config file only contains product properties", func() {
+				It("configures only the product properties", func() {
+					client := commands.NewConfigureProduct(productsService, jobsService, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(productPropertiesFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(productsService.ListCallCount()).To(Equal(1))
+					Expect(productsService.ConfigureCallCount()).To(Equal(1))
+					Expect(productsService.ConfigureArgsForCall(0).GUID).To(Equal("some-product-guid"))
+					Expect(productsService.ConfigureArgsForCall(0).Configuration).To(MatchJSON(productProperties))
+					Expect(productsService.ConfigureArgsForCall(0).Network).To(Equal(""))
+					Expect(jobsService.ConfigureJobCallCount()).To(Equal(0))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting properties"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+				})
+			})
+
+			Context("when the config file only contains network properties", func() {
+				It("configures only the network properties", func() {
+					client := commands.NewConfigureProduct(productsService, jobsService, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(networkPropertiesFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(productsService.ListCallCount()).To(Equal(1))
+					Expect(productsService.ConfigureCallCount()).To(Equal(1))
+					Expect(productsService.ConfigureArgsForCall(0).GUID).To(Equal("some-product-guid"))
+					Expect(productsService.ConfigureArgsForCall(0).Network).To(MatchJSON(networkProperties))
+					Expect(productsService.ConfigureArgsForCall(0).Configuration).To(Equal(""))
+					Expect(jobsService.ConfigureJobCallCount()).To(Equal(0))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("setting up network"))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting up network"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+				})
+			})
+
+			Context("when the config file contains only resource properties", func() {
+				It("configures only the resource properties", func() {
+					client := commands.NewConfigureProduct(productsService, jobsService, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(resourceConfigFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(productsService.ListCallCount()).To(Equal(1))
+					Expect(productsService.ConfigureCallCount()).To(Equal(0))
+
+					Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
+					Expect(jobsService.ConfigureJobCallCount()).To(Equal(2))
+
+					argProductGUID, argJobGUID, argProperties := jobsService.ConfigureJobArgsForCall(0)
+					Expect(argProductGUID).To(Equal("some-product-guid"))
+					Expect(argJobGUID).To(Equal("a-guid"))
+
+					jobProperties := api.JobProperties{
+						Instances:         float64(1),
+						PersistentDisk:    &api.Disk{Size: "20480"},
+						InstanceType:      api.InstanceType{ID: "m1.medium"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"some-lb"},
+					}
+
+					*jobProperties.InternetConnected = true
+
+					argProductGUID, argJobGUID, argProperties = jobsService.ConfigureJobArgsForCall(1)
+					Expect(argProductGUID).To(Equal("some-product-guid"))
+					Expect(argJobGUID).To(Equal("a-different-guid"))
+
+					jobProperties = api.JobProperties{
+						Instances:         2,
+						PersistentDisk:    &api.Disk{Size: "20480"},
+						InstanceType:      api.InstanceType{ID: "m1.medium"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"pre-existing-2"},
+					}
+
+					*jobProperties.InternetConnected = true
+
+					Expect(argProperties).To(Equal(jobProperties))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configuration for the following jobs:"))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
+
+					format, content = logger.PrintfArgsForCall(4)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+				})
+			})
+		})
+
 		Context("when the instance count is not an int", func() {
 			It("configures the resource that is provided", func() {
 				client := commands.NewConfigureProduct(productsService, jobsService, logger)
@@ -415,6 +657,66 @@ var _ = Describe("ConfigureProduct", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("could not parse configure-product flags: missing required flag \"--product-name\""))
+				})
+			})
+
+			Context("when the --config flag is passed", func() {
+				Context("when the config flag is passed with the product-properties, product-network or product-resources flag", func() {
+					It("returns an error", func() {
+						command := commands.NewConfigureProduct(productsService, jobsService, logger)
+						productsService.ListReturns(api.StagedProductsOutput{
+							Products: []api.StagedProduct{
+								{GUID: "some-product-guid", Type: "cf"},
+							},
+						}, nil)
+						err := command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig, "--config", "some/path.yml"})
+						Expect(err).To(MatchError("config flag can not be passed with the product-properties, product-network or product-resources flag"))
+					})
+				})
+
+				Context("when the provided config path does not exist", func() {
+					It("returns an error", func() {
+						command := commands.NewConfigureProduct(productsService, jobsService, logger)
+						productsService.ListReturns(api.StagedProductsOutput{
+							Products: []api.StagedProduct{
+								{GUID: "some-product-guid", Type: "cf"},
+							},
+						}, nil)
+						err := command.Execute([]string{"--product-name", "cf", "--config", "some/non-existant/path.yml"})
+						Expect(err).To(MatchError("open some/non-existant/path.yml: no such file or directory"))
+					})
+				})
+
+				Context("when the provided config file is not valid yaml", func() {
+					var (
+						configFile *os.File
+						err        error
+					)
+
+					AfterEach(func() {
+						os.RemoveAll(configFile.Name())
+					})
+
+					It("returns an error", func() {
+						invalidConfig := "this is not a valid config"
+						client := commands.NewConfigureProduct(productsService, jobsService, logger)
+						productsService.ListReturns(api.StagedProductsOutput{
+							Products: []api.StagedProduct{
+								{GUID: "some-product-guid", Type: "cf"},
+							},
+						}, nil)
+
+						configFile, err = ioutil.TempFile("", "")
+						Expect(err).NotTo(HaveOccurred())
+
+						_, err = configFile.WriteString(invalidConfig)
+						Expect(err).NotTo(HaveOccurred())
+
+						err = client.Execute([]string{"--product-name", "cf", "--config", configFile.Name()})
+						Expect(err).To(MatchError(fmt.Sprintf("%s could not be parsed as valid configuration", configFile.Name())))
+
+						os.RemoveAll(configFile.Name())
+					})
 				})
 			})
 

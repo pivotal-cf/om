@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"os"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -63,6 +64,36 @@ const resourceConfigJSON = `
     "instance_type": { "id": "m1.medium" }
   }
 }`
+
+const configFileContents = `---
+product-properties:
+  .properties.something:
+    value: configure-me
+  .a-job.job-property:
+    value:
+      identity: username
+      password: example-new-password
+  .top-level-property:
+    value: [ { guid: some-guid, name: max, my-secret: {secret: headroom} } ]
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+  other_availability_zones:
+    - name: az-two
+    - name: az-three
+  network:
+    name: network-one
+resource-config:
+  some-job:
+    instances: 1
+    persistent_disk: { size_mb: "20480" }
+    instance_type: { id: m1.medium }
+    additional_vm_extensions: [some-vm-extension, some-other-vm-extension]
+  some-other-job:
+    instances: automatic
+    persistent_disk: { size_mb: "20480" }
+    instance_type: { id: m1.medium }
+`
 
 var _ = Describe("configure-product command", func() {
 	var (
@@ -210,6 +241,74 @@ var _ = Describe("configure-product command", func() {
         },
         "elb_names": null
       }`))
+	})
+
+	Context("when a config file is provided", func() {
+		var (
+			configFile *os.File
+			err        error
+		)
+
+		AfterEach(func() {
+			os.RemoveAll(configFile.Name())
+		})
+
+		It("successfully configures any product", func() {
+			configFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configFileContents)
+			Expect(err).NotTo(HaveOccurred())
+
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"configure-product",
+				"--product-name", "cf",
+				"--config", configFile.Name(),
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(session.Out).To(gbytes.Say("setting properties"))
+			Expect(session.Out).To(gbytes.Say("finished setting properties"))
+
+			Expect(productPropertiesMethod).To(Equal("PUT"))
+			Expect(productPropertiesBody).To(MatchJSON(fmt.Sprintf(`{"properties": %s}`, propertiesJSON)))
+
+			Expect(productNetworkMethod).To(Equal("PUT"))
+			Expect(productNetworkBody).To(MatchJSON(fmt.Sprintf(`{"networks_and_azs": %s}`, productNetworkJSON)))
+
+			Expect(resourceConfigMethod[1]).To(Equal("PUT"))
+			Expect(resourceConfigBody[1]).To(MatchJSON(`{
+        "instances": 1,
+        "persistent_disk": {
+          "size_mb": "20480"
+        },
+        "instance_type": {
+          "id": "m1.medium"
+        },
+        "elb_names": null,
+        "additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
+      }`))
+
+			Expect(resourceConfigMethod[3]).To(Equal("PUT"))
+			Expect(resourceConfigBody[3]).To(MatchJSON(`{
+        "instances": "automatic",
+        "persistent_disk": {
+          "size_mb": "20480"
+        },
+        "instance_type": {
+          "id": "m1.medium"
+        },
+        "elb_names": null
+      }`))
+		})
 	})
 
 	It("successfully configures a product on nsx", func() {

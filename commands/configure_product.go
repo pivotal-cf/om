@@ -3,10 +3,14 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"sort"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+
+	yamlConverter "github.com/ghodss/yaml"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type ConfigureProduct struct {
@@ -15,6 +19,7 @@ type ConfigureProduct struct {
 	logger          logger
 	Options         struct {
 		ProductName       string `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
+		ConfigFile        string `long:"config"             short:"c"                  description:"path to yml file containing all config fields"`
 		ProductProperties string `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
 		NetworkProperties string `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
 		ProductResources  string `long:"product-resources"  short:"pr"                 description:"resource configurations in JSON format"`
@@ -49,9 +54,15 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	cp.logger.Printf("configuring product...")
 
-	if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "" {
-		cp.logger.Printf("Provided properties are empty, nothing to do here")
-		return nil
+	if cp.Options.ConfigFile != "" {
+		if cp.Options.ProductProperties != "" || cp.Options.NetworkProperties != "" || cp.Options.ProductResources != "" {
+			return fmt.Errorf("config flag can not be passed with the product-properties, product-network or product-resources flag")
+		}
+	} else {
+		if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "" {
+			cp.logger.Printf("Provided properties are empty, nothing to do here")
+			return nil
+		}
 	}
 
 	stagedProducts, err := cp.productsService.List()
@@ -72,64 +83,71 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	}
 
 	if cp.Options.NetworkProperties != "" {
-		cp.logger.Printf("setting up network")
-		err = cp.productsService.Configure(api.ProductsConfigurationInput{
-			GUID:    productGUID,
-			Network: cp.Options.NetworkProperties,
-		})
+		err = cp.configureNetwork(cp.Options.NetworkProperties, productGUID)
 		if err != nil {
-			return fmt.Errorf("failed to configure product: %s", err)
+			return err
 		}
-		cp.logger.Printf("finished setting up network")
 	}
 
 	if cp.Options.ProductProperties != "" {
-		cp.logger.Printf("setting properties")
-		err = cp.productsService.Configure(api.ProductsConfigurationInput{
-			GUID:          productGUID,
-			Configuration: cp.Options.ProductProperties,
-		})
+		err = cp.configureProperties(cp.Options.ProductProperties, productGUID)
 		if err != nil {
-			return fmt.Errorf("failed to configure product: %s", err)
+			return err
 		}
-		cp.logger.Printf("finished setting properties")
 	}
 
 	if cp.Options.ProductResources != "" {
-		var userProvidedConfig map[string]json.RawMessage
-		err = json.Unmarshal([]byte(cp.Options.ProductResources), &userProvidedConfig)
+		err = cp.configureResources(cp.Options.ProductResources, productGUID)
 		if err != nil {
-			return fmt.Errorf("could not decode product-resource json: %s", err)
+			return err
 		}
+	}
 
-		jobs, err := cp.jobsService.Jobs(productGUID)
+	if cp.Options.ConfigFile != "" {
+		var config map[string]interface{}
+		configContents, err := ioutil.ReadFile(cp.Options.ConfigFile)
 		if err != nil {
-			return fmt.Errorf("failed to fetch jobs: %s", err)
+			return err
 		}
 
-		var names []string
-		for name, _ := range userProvidedConfig {
-			names = append(names, name)
+		err = yaml.Unmarshal(configContents, &config)
+		if err != nil {
+			return fmt.Errorf("%s could not be parsed as valid configuration", cp.Options.ConfigFile)
 		}
 
-		sort.Strings(names)
-
-		cp.logger.Printf("applying resource configuration for the following jobs:")
-		for _, name := range names {
-			cp.logger.Printf("\t%s", name)
-			jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, jobs[name])
-			if err != nil {
-				return fmt.Errorf("could not fetch existing job configuration: %s", err)
-			}
-
-			err = json.Unmarshal(userProvidedConfig[name], &jobProperties)
+		if config["network-properties"] != nil {
+			networkProperties, err := getJSONProperties(config["network-properties"])
 			if err != nil {
 				return err
 			}
 
-			err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
+			err = cp.configureNetwork(networkProperties, productGUID)
 			if err != nil {
-				return fmt.Errorf("failed to configure resources: %s", err)
+				return err
+			}
+		}
+
+		if config["product-properties"] != nil {
+			productProperties, err := getJSONProperties(config["product-properties"])
+			if err != nil {
+				return err
+			}
+
+			err = cp.configureProperties(productProperties, productGUID)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config["resource-config"] != nil {
+			resourceConfig, err := getJSONProperties(config["resource-config"])
+			if err != nil {
+				return err
+			}
+
+			err = cp.configureResources(resourceConfig, productGUID)
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -145,4 +163,84 @@ func (cp ConfigureProduct) Usage() jhanda.Usage {
 		ShortDescription: "configures a staged product",
 		Flags:            cp.Options,
 	}
+}
+
+func getJSONProperties(properties interface{}) (string, error) {
+	yamlProperties, err := yaml.Marshal(properties)
+	if err != nil {
+		return "", err
+	}
+
+	jsonProperties, err := yamlConverter.YAMLToJSON(yamlProperties)
+	if err != nil {
+		return "", err
+	}
+
+	return string(jsonProperties), nil
+}
+
+func (cp ConfigureProduct) configureResources(productResources string, productGUID string) error {
+	var userProvidedConfig map[string]json.RawMessage
+	err := json.Unmarshal([]byte(productResources), &userProvidedConfig)
+	if err != nil {
+		return fmt.Errorf("could not decode product-resource json: %s", err)
+	}
+
+	jobs, err := cp.jobsService.Jobs(productGUID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch jobs: %s", err)
+	}
+
+	var names []string
+	for name, _ := range userProvidedConfig {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+
+	cp.logger.Printf("applying resource configuration for the following jobs:")
+	for _, name := range names {
+		cp.logger.Printf("\t%s", name)
+		jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, jobs[name])
+		if err != nil {
+			return fmt.Errorf("could not fetch existing job configuration: %s", err)
+		}
+
+		err = json.Unmarshal(userProvidedConfig[name], &jobProperties)
+		if err != nil {
+			return err
+		}
+
+		err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
+		if err != nil {
+			return fmt.Errorf("failed to configure resources: %s", err)
+		}
+	}
+	return nil
+}
+
+func (cp ConfigureProduct) configureProperties(productProperties string, productGUID string) error {
+	cp.logger.Printf("setting properties")
+	err := cp.productsService.Configure(api.ProductsConfigurationInput{
+		GUID:          productGUID,
+		Configuration: productProperties,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to configure product: %s", err)
+	}
+	cp.logger.Printf("finished setting properties")
+	return nil
+}
+
+func (cp ConfigureProduct) configureNetwork(networkProperties string, productGUID string) error {
+	cp.logger.Printf("setting up network")
+	err := cp.productsService.Configure(api.ProductsConfigurationInput{
+		GUID:    productGUID,
+		Network: networkProperties,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to configure product: %s", err)
+	}
+	cp.logger.Printf("finished setting up network")
+	return nil
 }
