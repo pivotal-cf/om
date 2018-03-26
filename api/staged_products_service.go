@@ -240,21 +240,6 @@ func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request,
 	return reqList, nil
 }
 
-func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {
-	stagedProductsOutput, err := p.List()
-	if err != nil {
-		return "", err
-	}
-
-	for _, product := range stagedProductsOutput.Products {
-		if productName == product.Type {
-			return product.GUID, nil
-		}
-	}
-
-	return "", nil
-}
-
 func (p StagedProductsService) Find(productName string) (StagedProductsFindOutput, error) {
 	productsOutput, err := p.List()
 	if err != nil {
@@ -306,4 +291,19 @@ func (p StagedProductsService) Manifest(guid string) (string, error) {
 	}
 
 	return string(manifest), nil
+}
+
+func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {
+	stagedProductsOutput, err := p.List()
+	if err != nil {
+		return "", err
+	}
+
+	for _, product := range stagedProductsOutput.Products {
+		if productName == product.Type {
+			return product.GUID, nil
+		}
+	}
+
+	return "", nil
 }
