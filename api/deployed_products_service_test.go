@@ -34,7 +34,8 @@ var _ = Describe("DeployedProductsService", func() {
 							"key-1": {
 								"key-2": "value-1"
 							},
-							"key-3": "value-2"
+							"key-3": "value-2",
+							"key-4": 2147483648
 						}`)),
 					}
 				}
@@ -49,6 +50,7 @@ var _ = Describe("DeployedProductsService", func() {
 key-1:
   key-2: value-1
 key-3: value-2
+key-4: 2147483648
 `))
 		})
 
@@ -85,7 +87,7 @@ key-3: value-2
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("---some-malformed-json")),
+						Body:       ioutil.NopCloser(bytes.NewBufferString("%%%")),
 					}, nil)
 
 					_, err := service.Manifest("some-product-guid")

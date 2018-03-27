@@ -42,7 +42,12 @@ func (s DeployedProductsService) Manifest(guid string) (string, error) {
 	defer resp.Body.Close()
 	var contents interface{}
 
-	if err = json.NewDecoder(resp.Body).Decode(&contents); err != nil {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if err = yaml.Unmarshal(body, &contents); err != nil {
 		return "", fmt.Errorf("could not parse json: %s", err)
 	}
 
