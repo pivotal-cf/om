@@ -705,7 +705,8 @@ var _ = Describe("StagedProductsService", func() {
 								"key-1": {
 									"key-2": "value-1"
 								},
-								"key-3": "value-2"
+								"key-3": "value-2",
+								"key-4": 2147483648
 							}
 						}`)),
 					}
@@ -714,13 +715,14 @@ var _ = Describe("StagedProductsService", func() {
 			}
 		})
 
-		It("returns a manifest of a product", func() {
+		It("returns the manifest for a product", func() {
 			manifest, err := service.Manifest("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(manifest).To(MatchYAML(`---
 key-1:
   key-2: value-1
 key-3: value-2
+key-4: 2147483648
 `))
 		})
 
