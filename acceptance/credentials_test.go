@@ -18,14 +18,14 @@ var _ = Describe("credentials command", func() {
 		server *httptest.Server
 	)
 
-	const tableOutput = `+--------------------------------+
-|      some-credential-key       |
-+--------------------------------+
-| some-credential-value          |
-| newline                        |
-| another-line                   |
-| another-line                   |
-+--------------------------------+
+	const tableOutput = `+-----------------------+
+|  some-credential-key  |
++-----------------------+
+| some-credential-value |
+| newline               |
+| another-line          |
+| another-line          |
++-----------------------+
 `
 
 	const jsonOutput = `{

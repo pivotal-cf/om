@@ -10,6 +10,11 @@ import (
 	"github.com/pivotal-cf/jhanda/internal/parser"
 )
 
+// Parse will populate the "receiver" object with the parsed values of the
+// given "args". If the parser encounters a non-flag value, it will stop
+// parsing and return the remainer of arguments. Parse will return an error in
+// the case that the flags cannot be parsed, or a required flag is missing.
+// The receiver is expected to be a pointer.
 func Parse(receiver interface{}, args []string) ([]string, error) {
 	set := flag.NewFlagSet("", flag.ContinueOnError)
 	set.SetOutput(ioutil.Discard)

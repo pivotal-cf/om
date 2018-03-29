@@ -1,39 +1,10 @@
-[[constraint]]
-  name = "github.com/PuerkitoBio/goquery"
-  version = "1.1.0"
+[prune]
+  non-go = true
+  unused-packages = true
+  go-tests = true
 
+# Branch is set here because kiln used to use submodules which leads dep to
+# have a dirty working tree when it checks out master from a much older ref.
 [[constraint]]
-  name = "github.com/google/go-querystring"
+  name = "github.com/pivotal-cf/kiln"
   branch = "master"
-
-[[constraint]]
-  name = "github.com/gosuri/uilive"
-  branch = "master"
-
-[[constraint]]
-  name = "github.com/olekukonko/tablewriter"
-  branch = "master"
-
-[[constraint]]
-  name = "github.com/onsi/ginkgo"
-  version = "1.4.0"
-
-[[constraint]]
-  name = "github.com/onsi/gomega"
-  version = "1.2.0"
-
-[[constraint]]
-  name = "github.com/pivotal-cf/jhanda"
-  branch = "master"
-
-[[constraint]]
-  name = "golang.org/x/oauth2"
-  branch = "master"
-
-[[constraint]]
-  name = "gopkg.in/yaml.v2"
-  branch = "v2"
-
-[[constraint]]
-  name = "github.com/ghodss/yaml"
-  version = "1.0.0"

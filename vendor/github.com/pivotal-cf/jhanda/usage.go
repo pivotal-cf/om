@@ -7,12 +7,17 @@ import (
 	"strings"
 )
 
+// Usage provides all of the details describing a Command, including a
+// description, a shorter description (used when display a list of commands),
+// and the flag options offered by the Command.
 type Usage struct {
 	Description      string
 	ShortDescription string
 	Flags            interface{}
 }
 
+// PrintUsage will return a string representation of the options provided by a
+// Command flag set.
 func PrintUsage(receiver interface{}) (string, error) {
 	v := reflect.ValueOf(receiver)
 	t := v.Type()
