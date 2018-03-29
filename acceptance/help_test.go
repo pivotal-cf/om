@@ -31,6 +31,7 @@ Commands:
   available-products              list available products
   certificate-authorities         lists certificates managed by Ops Manager
   certificate-authority           prints requested certificate authority
+  config-template                 generates a config template for the product
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
   configure-bosh                  configures Ops Manager deployed bosh director
   configure-director              configures the director

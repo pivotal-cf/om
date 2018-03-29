@@ -19,10 +19,10 @@ product_version: 1.8.14
 name: some-product`
 )
 
-var _ = Describe("Product Unzipper", func() {
+var _ = Describe("MetadataExtractor", func() {
 	var (
-		unzipper    extractor.ProductUnzipper
-		productFile *os.File
+		metadataExtractor extractor.MetadataExtractor
+		productFile       *os.File
 	)
 
 	BeforeEach(func() {
@@ -48,7 +48,7 @@ var _ = Describe("Product Unzipper", func() {
 		err = zipper.Close()
 		Expect(err).NotTo(HaveOccurred())
 
-		unzipper = extractor.ProductUnzipper{}
+		metadataExtractor = extractor.MetadataExtractor{}
 	})
 
 	AfterEach(func() {
@@ -57,17 +57,18 @@ var _ = Describe("Product Unzipper", func() {
 
 	Describe("ExtractMetadata", func() {
 		It("Extracts the product name and version from the given pivotal file", func() {
-			name, version, err := unzipper.ExtractMetadata(productFile.Name())
+			metadata, err := metadataExtractor.ExtractMetadata(productFile.Name())
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(name).To(Equal("some-product"))
-			Expect(version).To(Equal("1.8.14"))
+			Expect(metadata.Name).To(Equal("some-product"))
+			Expect(metadata.Version).To(Equal("1.8.14"))
+			Expect(metadata.Raw).To(MatchYAML(validYAML))
 		})
 
 		Context("when an error occurs", func() {
 			Context("when the product tarball does not exist", func() {
 				It("returns an error", func() {
-					_, _, err := unzipper.ExtractMetadata("fake-file")
+					_, err := metadataExtractor.ExtractMetadata("fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file or directory")))
 				})
 			})
@@ -90,7 +91,7 @@ var _ = Describe("Product Unzipper", func() {
 				})
 
 				It("returns an error", func() {
-					_, _, err := unzipper.ExtractMetadata(badProductFile.Name())
+					_, err := metadataExtractor.ExtractMetadata(badProductFile.Name())
 					Expect(err).To(MatchError("no metadata file was found in provided .pivotal"))
 				})
 			})
@@ -125,7 +126,7 @@ var _ = Describe("Product Unzipper", func() {
 				})
 
 				It("returns an error", func() {
-					_, _, err := unzipper.ExtractMetadata(badProductFile.Name())
+					_, err := metadataExtractor.ExtractMetadata(badProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("could not extract product metadata: yaml: could not find expected directive name")))
 				})
 			})
@@ -161,7 +162,7 @@ var _ = Describe("Product Unzipper", func() {
 				})
 
 				It("returns an error", func() {
-					_, _, err := unzipper.ExtractMetadata(badProductFile.Name())
+					_, err := metadataExtractor.ExtractMetadata(badProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("could not extract product metadata: could not find product details in metadata file")))
 				})
 			})
@@ -197,7 +198,7 @@ var _ = Describe("Product Unzipper", func() {
 				})
 
 				It("returns an error", func() {
-					_, _, err := unzipper.ExtractMetadata(wrongProductFile.Name())
+					_, err := metadataExtractor.ExtractMetadata(wrongProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})

@@ -1,0 +1,97 @@
+# global property
+  # no default
+  # default
+# nested property
+  # no default
+  # default
+# Named Manifest
+# Non configurable property
+description: This is a tile.
+product_version: 1.2.3
+form_types:
+- description: |
+    This is a form type
+  label: This is a form type
+  name: form_type
+  property_inputs:
+  - description: |
+      This is a global property with a default
+    label: Global Property Default
+    reference: .properties.with_default
+  - description: |
+      This is a global property without a default
+    label: Global Property No Default
+    reference: .properties.without_default
+  - description: |
+      This is a nested property with a default
+    label: Nested Property Default
+    reference: .some-instance-group.with_default
+  - description: |
+      This is a nested property without a default
+    label: Nested Property No Default
+    reference: .some-instance-group.without_default
+  - description: |
+      This is a global property with a named manifest and a default
+    label: Global Property Named Manifest
+    reference: .properties.with_named_manifest
+  - description: |
+      This is a global property with a named manifest and no default
+    label: Global Property Named Manifest No Default
+    reference: .properties.with_named_manifest_without_default
+property_blueprints:
+- name: with_default
+  configurable: true
+  optional: true
+  type: string
+  default: "some-default"
+- name: without_default
+  configurable: true
+  optional: true
+  type: string
+- name: some-nonconfigurable-property
+  configurable: false
+  type: string
+- name: with_named_manifest
+  configurable: true
+  default: enable
+  type: selector
+  option_templates:
+  - name: enable
+    named_manifests:
+    select_value: enable
+    - manifest: |
+        some-choice
+      name: some-choice
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - manifest: |
+        some-other-choice
+      name: some-other-choice
+- name: with_named_manifest_without_default
+  configurable: true
+  type: selector
+  option_templates:
+  - name: enable
+    named_manifests:
+    select_value: enable
+    - manifest: |
+        some-choice
+      name: some-choice
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - manifest: |
+        some-other-choice
+      name: some-other-choice
+job_types:
+- name: some-instance-group
+  description: This is a cool instance group
+  property_blueprints:
+  - name: with_default
+    type: string
+    configurable: true
+    default: "some-default"
+  - name: without_defualt
+    type: string
+    configurable: true

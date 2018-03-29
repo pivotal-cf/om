@@ -28,7 +28,6 @@ var _ = Describe("upload-product command", func() {
 
 	BeforeEach(func() {
 		var err error
-
 		productFile, err = ioutil.TempFile("", "cool_name.com")
 		Expect(err).NotTo(HaveOccurred())
 
