@@ -115,7 +115,7 @@
   branch = "master"
   name = "github.com/pivotal-cf/kiln"
   packages = ["proofing"]
-  revision = "343c5e4c503fba71c10d892265bb753e71ad80d5"
+  revision = "9c0f5ac8553d4e981aec5d24d55f14936bfb7d3c"
 
 [[projects]]
   branch = "master"

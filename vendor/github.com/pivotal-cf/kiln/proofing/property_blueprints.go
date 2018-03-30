@@ -13,6 +13,7 @@ type NormalizedPropertyBlueprint struct {
 	Configurable bool
 	Default      interface{}
 	Required     bool
+	Type         string
 }
 
 // TODO: Less ugly.

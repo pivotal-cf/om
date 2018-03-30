@@ -34,7 +34,7 @@ form_types:
 property_blueprints:
 - name: with_default
   configurable: true
-  optional: true
+  optional: false
   type: string
   default: "some-default"
 - name: without_default

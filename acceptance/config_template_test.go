@@ -12,7 +12,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("config-template command", func() {
+var _ = FDescribe("config-template command", func() {
 	var (
 		product *os.File
 	)

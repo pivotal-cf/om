@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/kiln/proofing"
@@ -68,8 +69,17 @@ func (ct ConfigTemplate) Execute(args []string) error {
 	productProperties := map[string]interface{}{}
 	for _, pb := range template.AllPropertyBlueprints() {
 		if pb.Configurable {
-			productProperties[pb.Property] = map[string]interface{}{
-				"value": pb.Default,
+			if pb.Type == "simple_credentials" {
+				productProperties[pb.Property] = map[string]map[string]string{
+					"value": map[string]string{
+						"identity": "",
+						"password": "",
+					},
+				}
+			} else {
+				productProperties[pb.Property] = map[string]interface{}{
+					"value": pb.Default,
+				}
 			}
 		}
 	}
@@ -83,7 +93,23 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not marshal config template: %s", err) // NOTE: this cannot happen
 	}
 
-	ct.logger.Println(string(output))
+	ct.logger.Println(concatenateRequiredProperties(output, template))
 
 	return nil
+}
+
+func concatenateRequiredProperties(output []byte, template proofing.ProductTemplate) string {
+	lines := strings.Split(string(output), "\n")
+	for i, line := range lines {
+		for _, pb := range template.AllPropertyBlueprints() {
+			propertyName := strings.TrimSpace(strings.Split(line, ":")[0])
+			if pb.Property == propertyName {
+				if pb.Required {
+					lines[i+1] = lines[i+1] + " # required"
+				}
+			}
+		}
+	}
+
+	return strings.Join(lines, "\n")
 }

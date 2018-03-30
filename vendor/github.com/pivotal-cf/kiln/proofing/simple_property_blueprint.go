@@ -26,6 +26,7 @@ func (sp SimplePropertyBlueprint) Normalize(prefix string) []NormalizedPropertyB
 			Configurable: sp.Configurable,
 			Default:      sp.Default,
 			Required:     !sp.Optional,
+			Type:         sp.Type,
 		},
 	}
 }

@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
@@ -28,7 +29,7 @@ property_blueprints:
 - name: some-name
   type: boolean
   default: true
-  optional: false
+  optional: true
   configurable: true
 `),
 		}, nil)
@@ -52,6 +53,84 @@ property_blueprints:
 product-properties:
   .properties.some-name:
     value: true`)))
+		})
+
+		Context("when a property is optional", func() {
+			It("does not write '# required' next to the property", func() {
+				err := command.Execute([]string{
+					"--product", "/path/to/a/product.pivotal",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+
+				lines := strings.Split(output[0].(string), "\n")
+				valueOutput := strings.TrimSpace(lines[2])
+				Expect(valueOutput).To(Equal("value: true"))
+			})
+		})
+
+		Context("when a property is not optional", func() {
+			It("writes '# required' next to the property", func() {
+				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+					Raw: []byte(`---
+property_blueprints:
+- name: some-name
+  type: boolean
+  default: true
+  optional: false
+  configurable: true
+`),
+				}, nil)
+
+				command = commands.NewConfigTemplate(logger, metadataExtractor)
+
+				err := command.Execute([]string{
+					"--product", "/path/to/a/product.pivotal",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+
+				lines := strings.Split(output[0].(string), "\n")
+				valueOutput := strings.TrimSpace(lines[2])
+				Expect(valueOutput).To(Equal("value: true # required"))
+			})
+		})
+
+		Context("when the property is a simple credential", func() {
+			FIt("prints out an identity and password field", func() {
+				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+					Raw: []byte(`---
+property_blueprints:
+- name: some-name
+  type: simple_credentials
+  optional: true
+  configurable: true
+`),
+				}, nil)
+
+				command = commands.NewConfigTemplate(logger, metadataExtractor)
+
+				err := command.Execute([]string{
+					"--product", "/path/to/a/product.pivotal",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
+				Expect(metadataExtractor.ExtractMetadataArgsForCall(0)).To(Equal("/path/to/a/product.pivotal"))
+
+				Expect(logger.PrintlnCallCount()).To(Equal(1))
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`---
+product-properties:
+  .properties.some-name:
+    value:
+      identity:
+      password:
+`)))
+
+			})
 		})
 	})
 
