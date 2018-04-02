@@ -45,8 +45,8 @@ func NewConfigTemplate(logger logger, metadataExtractor metadataExtractor) Confi
 
 func (ct ConfigTemplate) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This command generates a configuration template that can be passed in to om configure-product",
-		ShortDescription: "generates a config template for the product",
+		Description:      "**EXPERIMENTAL** This command generates a configuration template that can be passed in to om configure-product",
+		ShortDescription: "**EXPERIMENTAL** generates a config template for the product",
 		Flags:            ct.Options,
 	}
 }

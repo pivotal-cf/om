@@ -143,8 +143,8 @@ product-properties:
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command generates a configuration template that can be passed in to om configure-product",
-				ShortDescription: "generates a config template for the product",
+				Description:      "**EXPERIMENTAL** This command generates a configuration template that can be passed in to om configure-product",
+				ShortDescription: "**EXPERIMENTAL** generates a config template for the product",
 				Flags:            command.Options,
 			}))
 		})
