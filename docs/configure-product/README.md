@@ -200,7 +200,7 @@ For the current configuration of your product, you can `curl` the API to retriev
 
 ### Configuring via file
 
-#### Example JSON:
+#### Example YAML:
 ```yaml
 product-properties:
   .cloud_controller.apps_domain:
