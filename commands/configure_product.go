@@ -82,26 +82,11 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return fmt.Errorf(`could not find product "%s"`, cp.Options.ProductName)
 	}
 
-	if cp.Options.NetworkProperties != "" {
-		err = cp.configureNetwork(cp.Options.NetworkProperties, productGUID)
-		if err != nil {
-			return err
-		}
-	}
-
-	if cp.Options.ProductProperties != "" {
-		err = cp.configureProperties(cp.Options.ProductProperties, productGUID)
-		if err != nil {
-			return err
-		}
-	}
-
-	if cp.Options.ProductResources != "" {
-		err = cp.configureResources(cp.Options.ProductResources, productGUID)
-		if err != nil {
-			return err
-		}
-	}
+	var (
+		networkProperties string
+		productProperties string
+		productResources  string
+	)
 
 	if cp.Options.ConfigFile != "" {
 		var config map[string]interface{}
@@ -116,39 +101,57 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		}
 
 		if config["network-properties"] != nil {
-			networkProperties, err := getJSONProperties(config["network-properties"])
-			if err != nil {
-				return err
-			}
-
-			err = cp.configureNetwork(networkProperties, productGUID)
+			networkProperties, err = getJSONProperties(config["network-properties"])
 			if err != nil {
 				return err
 			}
 		}
 
 		if config["product-properties"] != nil {
-			productProperties, err := getJSONProperties(config["product-properties"])
-			if err != nil {
-				return err
-			}
-
-			err = cp.configureProperties(productProperties, productGUID)
+			productProperties, err = getJSONProperties(config["product-properties"])
 			if err != nil {
 				return err
 			}
 		}
 
 		if config["resource-config"] != nil {
-			resourceConfig, err := getJSONProperties(config["resource-config"])
+			productResources, err = getJSONProperties(config["resource-config"])
 			if err != nil {
 				return err
 			}
+		}
+	} else {
+		if cp.Options.NetworkProperties != "" {
+			networkProperties = cp.Options.NetworkProperties
+		}
 
-			err = cp.configureResources(resourceConfig, productGUID)
-			if err != nil {
-				return err
-			}
+		if cp.Options.ProductProperties != "" {
+			productProperties = cp.Options.ProductProperties
+		}
+
+		if cp.Options.ProductResources != "" {
+			productResources = cp.Options.ProductResources
+		}
+	}
+
+	if networkProperties != "" {
+		err = cp.configureNetwork(networkProperties, productGUID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if productProperties != "" {
+		err = cp.configureProperties(productProperties, productGUID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if productResources != "" {
+		err = cp.configureResources(productResources, productGUID)
+		if err != nil {
+			return err
 		}
 	}
 
