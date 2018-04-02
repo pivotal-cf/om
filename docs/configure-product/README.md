@@ -10,19 +10,24 @@ The `configure-product` command will configure your product properties, network,
 This authenticated command configures a staged product
 
 Usage: om [options] configure-product [<args>]
-  -v, --version              bool    prints the om release version (default: false)
-  -h, --help                 bool    prints this usage information (default: false)
-  -t, --target               string  location of the Ops Manager VM
-  -u, --username             string  admin username for the Ops Manager VM (not required for unauthenticated commands)
-  -p, --password             string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  -k, --skip-ssl-validation  bool    skip ssl certificate validation during http requests (default: false)
-  -r, --request-timeout      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_ID)
+  --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_SECRET)
+  --format, -f               string  Format to print as (options: table,json) (default: table)
+  --help, -h                 bool    prints this usage information (default: false)
+  --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands, $OM_PASSWORD)
+  --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
+  --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
+  --target, -t               string  location of the Ops Manager VM
+  --trace, -tr               bool    prints HTTP requests and response payloads
+  --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)
+  --version, -v              bool    prints the om release version (default: false)
 
 Command Arguments:
-  -n, --product-name        string  name of the product being configured
-  -p, --product-properties  string  properties to be configured in JSON format (default: )
-  -pn, --product-network    string  network properties in JSON format (default: )
-  -pr, --product-resources  string  resource configurations in JSON format (default: {})
+  --config, -c              string             path to yml file containing all config fields (see docs/configure-product/README.md for format)
+  --product-name, -n        string (required)  name of the product being configured
+  --product-network, -pn    string             network properties in JSON format
+  --product-properties, -p  string             properties to be configured in JSON format
+  --product-resources, -pr  string             resource configurations in JSON format
 ```
 
 ### Configuring the `--product-network`
@@ -191,4 +196,28 @@ For the current configuration of your product, you can `curl` the API to retriev
     "instances": 2
   }
 }
+```
+
+### Configuring via file
+
+#### Example JSON:
+```yaml
+product-properties:
+  .cloud_controller.apps_domain:
+    value: apps.example.com
+network-properties:
+  network:
+    name: some-network
+  other_availability_zones:
+  - name: us-west-2a
+  - name: us-west-2b
+  - name: us-west-2c
+  singleton_availability_zone:
+    name: us-west-2a
+resource-config:
+  diego-cell:
+    instances: 3
+  diego-brain:
+    elb_names:
+    - some-elb
 ```

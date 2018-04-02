@@ -19,7 +19,7 @@ type ConfigureProduct struct {
 	logger          logger
 	Options         struct {
 		ProductName       string `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
-		ConfigFile        string `long:"config"             short:"c"                  description:"path to yml file containing all config fields"`
+		ConfigFile        string `long:"config"             short:"c"                  description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)"`
 		ProductProperties string `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
 		NetworkProperties string `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
 		ProductResources  string `long:"product-resources"  short:"pr"                 description:"resource configurations in JSON format"`
