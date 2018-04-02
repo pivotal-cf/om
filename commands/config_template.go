@@ -90,12 +90,12 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not marshal config template: %s", err) // NOTE: this cannot happen
 	}
 
-	ct.logger.Println(concatenateRequiredProperties(output, template))
+	ct.logger.Println(ct.concatenateRequiredProperties(output, template))
 
 	return nil
 }
 
-func concatenateRequiredProperties(output []byte, template proofing.ProductTemplate) string {
+func (ConfigTemplate) concatenateRequiredProperties(output []byte, template proofing.ProductTemplate) string {
 	lines := strings.Split(string(output), "\n")
 	for i, line := range lines {
 		for _, pb := range template.AllPropertyBlueprints() {
