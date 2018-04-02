@@ -59,7 +59,7 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not parse metadata: %s", err)
 	}
 
-	productProperties := map[string]interface{}{}
+	configTemplateProperties := map[string]interface{}{}
 	for _, pb := range template.AllPropertyBlueprints() {
 		if !pb.Configurable {
 			continue
@@ -67,21 +67,21 @@ func (ct ConfigTemplate) Execute(args []string) error {
 
 		switch pb.Type {
 		case "simple_credentials":
-			productProperties[pb.Property] = map[string]map[string]string{
+			configTemplateProperties[pb.Property] = map[string]map[string]string{
 				"value": map[string]string{
 					"identity": "",
 					"password": "",
 				},
 			}
 		default:
-			productProperties[pb.Property] = map[string]interface{}{
+			configTemplateProperties[pb.Property] = map[string]interface{}{
 				"value": pb.Default,
 			}
 		}
 	}
 
 	configTemplate := map[string]interface{}{
-		"product-properties": productProperties,
+		"product-properties": configTemplateProperties,
 	}
 
 	output, err := yaml.Marshal(configTemplate)
