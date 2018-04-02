@@ -27,7 +27,8 @@ func (me MetadataExtractor) ExtractMetadata(productPath string) (Metadata, error
 	defer zipReader.Close()
 
 	for _, file := range zipReader.File {
-		matched, _ := regexp.MatchString("metadata/.*\\.yml", file.Name)
+		metadataRegexp := regexp.MustCompile("metadata/.*\\.yml")
+		matched := metadataRegexp.MatchString(file.Name)
 
 		if matched {
 			metadataFile, err := file.Open()

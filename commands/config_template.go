@@ -18,11 +18,12 @@ type ConfigTemplate struct {
 }
 
 type propertyBlueprint struct {
-	Name         string      `yaml:"name"`
-	Optional     bool        `yaml:"optional"`
-	Configurable bool        `yaml:"configurable"`
-	Type         string      `yaml:"type"`
-	Default      interface{} `yaml:"default"`
+	Name         string              `yaml:"name"`
+	Optional     bool                `yaml:"optional"`
+	Configurable bool                `yaml:"configurable"`
+	Type         string              `yaml:"type"`
+	Default      interface{}         `yaml:"default"`
+	Properties   []propertyBlueprint `yaml:"property_blueprints"`
 }
 
 type instanceGroup struct {
@@ -55,31 +56,35 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not parse config-template flags: %s", err)
 	}
 
-	metadata, err := ct.metadataExtractor.ExtractMetadata(ct.Options.Product)
+	extractedMetadata, err := ct.metadataExtractor.ExtractMetadata(ct.Options.Product)
 	if err != nil {
 		return fmt.Errorf("could not extract metadata: %s", err)
 	}
 
+	// structured metadata
 	var template proofing.ProductTemplate
-	err = yaml.Unmarshal(metadata.Raw, &template)
+	err = yaml.Unmarshal(extractedMetadata.Raw, &template)
 	if err != nil {
 		return fmt.Errorf("could not parse metadata: %s", err)
 	}
 
 	productProperties := map[string]interface{}{}
 	for _, pb := range template.AllPropertyBlueprints() {
-		if pb.Configurable {
-			if pb.Type == "simple_credentials" {
-				productProperties[pb.Property] = map[string]map[string]string{
-					"value": map[string]string{
-						"identity": "",
-						"password": "",
-					},
-				}
-			} else {
-				productProperties[pb.Property] = map[string]interface{}{
-					"value": pb.Default,
-				}
+		if !pb.Configurable {
+			continue
+		}
+
+		switch pb.Type {
+		case "simple_credentials":
+			productProperties[pb.Property] = map[string]map[string]string{
+				"value": map[string]string{
+					"identity": "",
+					"password": "",
+				},
+			}
+		default:
+			productProperties[pb.Property] = map[string]interface{}{
+				"value": pb.Default,
 			}
 		}
 	}

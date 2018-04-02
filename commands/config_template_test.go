@@ -26,6 +26,10 @@ var _ = Describe("ConfigTemplate", func() {
 		metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
 			Raw: []byte(`---
 property_blueprints:
+- name: some-string-property
+  type: string
+  optional: false
+  configurable: true
 - name: some-name
   type: boolean
   default: true
@@ -51,6 +55,8 @@ property_blueprints:
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
 product-properties:
+  .properties.some-string-property:
+    value: # required
   .properties.some-name:
     value: true`)))
 		})
@@ -70,7 +76,7 @@ product-properties:
 			})
 		})
 
-		Context("when a property is not optional", func() {
+		Context("when a property is required", func() {
 			It("writes '# required' next to the property", func() {
 				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
 					Raw: []byte(`---
@@ -98,8 +104,8 @@ property_blueprints:
 			})
 		})
 
-		Context("when the property is a simple credential", func() {
-			FIt("prints out an identity and password field", func() {
+		Context("when the property is a simple credential type", func() {
+			It("prints out an identity and password field", func() {
 				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
 					Raw: []byte(`---
 property_blueprints:
@@ -126,8 +132,8 @@ property_blueprints:
 product-properties:
   .properties.some-name:
     value:
-      identity:
-      password:
+      identity: ""
+      password: ""
 `)))
 
 			})
