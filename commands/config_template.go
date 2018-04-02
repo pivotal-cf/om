@@ -53,7 +53,6 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not extract metadata: %s", err)
 	}
 
-	// structured metadata
 	var template proofing.ProductTemplate
 	err = yaml.Unmarshal(extractedMetadata.Raw, &template)
 	if err != nil {
