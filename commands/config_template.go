@@ -43,14 +43,6 @@ func NewConfigTemplate(logger logger, metadataExtractor metadataExtractor) Confi
 	}
 }
 
-func (ct ConfigTemplate) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "**EXPERIMENTAL** This command generates a configuration template that can be passed in to om configure-product",
-		ShortDescription: "**EXPERIMENTAL** generates a config template for the product",
-		Flags:            ct.Options,
-	}
-}
-
 func (ct ConfigTemplate) Execute(args []string) error {
 	if _, err := jhanda.Parse(&ct.Options, args); err != nil {
 		return fmt.Errorf("could not parse config-template flags: %s", err)
@@ -117,4 +109,12 @@ func concatenateRequiredProperties(output []byte, template proofing.ProductTempl
 	}
 
 	return strings.Join(lines, "\n")
+}
+
+func (ct ConfigTemplate) Usage() jhanda.Usage {
+	return jhanda.Usage{
+		Description:      "**EXPERIMENTAL** This command generates a configuration template that can be passed in to om configure-product",
+		ShortDescription: "**EXPERIMENTAL** generates a config template for the product",
+		Flags:            ct.Options,
+	}
 }
