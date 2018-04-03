@@ -56,6 +56,10 @@ func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesOutput, err
 		return output, err
 	}
 
+	if err = ValidateStatusOK(resp); err != nil {
+		return CertificateAuthoritiesOutput{}, err
+	}
+
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err != nil {
 		return output, err
@@ -92,6 +96,10 @@ func (c CertificateAuthoritiesService) Generate() (CA, error) {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
+		return CA{}, err
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
 		return CA{}, err
 	}
 

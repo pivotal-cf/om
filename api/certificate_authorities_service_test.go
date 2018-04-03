@@ -102,6 +102,21 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				})
 			})
 		})
+
+		Context("when Ops Manager returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+					}, nil
+				}
+
+				_, err := service.List()
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+			})
+		})
+
 	})
 
 	Describe("Generate", func() {
@@ -143,6 +158,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 		})
 
 		Context("failure cases", func() {
+
 			Context("when the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
@@ -151,6 +167,21 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
+
+			Context("when Ops Manager returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: http.StatusInternalServerError,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+						}, nil
+					}
+
+					_, err := service.Generate()
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
 			Context("when the response body cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
