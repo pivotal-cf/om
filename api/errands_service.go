@@ -58,7 +58,7 @@ func (es ErrandsService) SetState(productID string, errandName string, postDeplo
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if err = ValidateStatusOK(resp); err != nil {
 		rawBody, err := readAll(resp.Body)
 		if err != nil {
 			return err
@@ -84,7 +84,7 @@ func (es ErrandsService) List(productID string) (ErrandsListOutput, error) {
 		return errandsListOutput, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if err = ValidateStatusOK(resp); err != nil {
 		rawBody, err := readAll(resp.Body)
 		if err != nil {
 			return errandsListOutput, err
