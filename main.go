@@ -159,7 +159,7 @@ func main() {
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(certificateAuthoritiesService, presenter, stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
-	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, diagnosticService, stdout)
+	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, diagnosticService, stdout, stderr)
 	commandSet["configure-director"] = commands.NewConfigureDirector(directorService, jobsService, stagedProductsService, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(stagedProductsService, jobsService, stdout)
 	commandSet["config-template"] = commands.NewConfigTemplate(stdout, metadataExtractor)

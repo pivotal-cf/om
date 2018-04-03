@@ -27,6 +27,7 @@ type ConfigureBosh struct {
 	boshService       boshFormService
 	diagnosticService diagnosticService
 	logger            logger
+	loggerErr         logger
 	Options           struct {
 		IaaSConfiguration              string `short:"i"  long:"iaas-configuration"  description:"iaas specific JSON configuration for the bosh director"`
 		DirectorConfiguration          string `short:"d"  long:"director-configuration"  description:"director-specific JSON configuration for the bosh director"`
@@ -46,15 +47,19 @@ type boshFormService interface {
 	Networks() (map[string]string, error)
 }
 
-func NewConfigureBosh(bs boshFormService, ds diagnosticService, l logger) ConfigureBosh {
+func NewConfigureBosh(bs boshFormService, ds diagnosticService, l logger, e logger) ConfigureBosh {
 	return ConfigureBosh{
 		boshService:       bs,
 		diagnosticService: ds,
 		logger:            l,
+		loggerErr:         e,
 	}
 }
 
 func (c ConfigureBosh) Execute(args []string) error {
+
+	c.loggerErr.Printf("**Warning** The `configure-bosh` command has been deprecated.\n\nPlease use the `configure-director` command instead")
+
 	if len(args) == 0 {
 		return errors.New("at least one configuration flag must be provided. Please see usage for more information.")
 	}

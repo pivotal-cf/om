@@ -557,6 +557,8 @@ var _ = Describe("configure-bosh command", func() {
 
 			Eventually(session).Should(gexec.Exit(0))
 
+			Expect(session.Err).To(gbytes.Say(".*configure-bosh(\\W|.)*configure-director.*"))
+
 			Expect(session.Out).To(gbytes.Say("configuring iaas specific options for bosh tile"))
 			Expect(session.Out).To(gbytes.Say("finished configuring bosh tile"))
 
