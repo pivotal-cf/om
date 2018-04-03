@@ -173,6 +173,21 @@ var _ = Describe("ErrandsService", func() {
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
+
+			Context("when the http call returns an error status code", func() {
+				It("returns an error", func() {
+					client.DoStub = func(request *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: http.StatusConflict,
+							Body:       ioutil.NopCloser(strings.NewReader(`Conflict`)),
+						}, nil
+					}
+
+					_, err := service.List("future-moon-and-assimilation")
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(ContainSubstring("failed to list errands: 409 Conflict")))
+				})
+			})
 		})
 	})
 })

@@ -33,7 +33,7 @@ func (es ErrandsService) SetState(productID string, errandName string, postDeplo
 
 	errandsListOutput := ErrandsListOutput{
 		Errands: []Errand{
-			Errand{
+			{
 				Name:       errandName,
 				PostDeploy: postDeployState,
 				PreDelete:  preDeleteState,
@@ -82,6 +82,14 @@ func (es ErrandsService) List(productID string) (ErrandsListOutput, error) {
 	resp, err := es.Client.Do(req)
 	if err != nil {
 		return errandsListOutput, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		rawBody, err := readAll(resp.Body)
+		if err != nil {
+			return errandsListOutput, err
+		}
+		return errandsListOutput, fmt.Errorf("failed to list errands: %d %s", resp.StatusCode, rawBody)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&errandsListOutput)
