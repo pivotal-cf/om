@@ -79,7 +79,7 @@ func (ia InstallationAssetService) Export(outputFile string, pollingInterval int
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if err = ValidateStatusOK(resp); err != nil {
 		return fmt.Errorf("request failed: unexpected response")
 	}
 
