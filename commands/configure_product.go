@@ -97,7 +97,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 		err = yaml.Unmarshal(configContents, &config)
 		if err != nil {
-			return fmt.Errorf("%s could not be parsed as valid configuration", cp.Options.ConfigFile)
+			return fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
 		}
 
 		if config["network-properties"] != nil {

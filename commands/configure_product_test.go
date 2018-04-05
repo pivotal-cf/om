@@ -713,7 +713,7 @@ var _ = Describe("ConfigureProduct", func() {
 						Expect(err).NotTo(HaveOccurred())
 
 						err = client.Execute([]string{"--product-name", "cf", "--config", configFile.Name()})
-						Expect(err).To(MatchError(fmt.Sprintf("%s could not be parsed as valid configuration", configFile.Name())))
+						Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration")))
 
 						os.RemoveAll(configFile.Name())
 					})
