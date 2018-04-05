@@ -64,7 +64,7 @@ var _ = Describe("ExportInstallation", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when an unkwown flag is provided", func() {
+		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewExportInstallation(installationService, logger)
 				err := command.Execute([]string{"--badflag"})

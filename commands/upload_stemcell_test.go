@@ -180,7 +180,7 @@ var _ = Describe("UploadStemcell", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when an unkwown flag is provided", func() {
+		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
 				err := command.Execute([]string{"--badflag"})
