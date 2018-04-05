@@ -153,7 +153,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 
 		Context("when the product cannot be uploaded", func() {
-			It("returns and error", func() {
+			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, metadataExtractor, productsService, logger)
 				productsService.UploadReturns(api.UploadProductOutput{}, errors.New("some product error"))
 

@@ -81,7 +81,7 @@ var _ = Describe("ExportInstallation", func() {
 		})
 
 		Context("when the installation cannot be exported", func() {
-			It("returns and error", func() {
+			It("returns an error", func() {
 				command := commands.NewExportInstallation(installationService, logger)
 				installationService.ExportReturns(errors.New("some error"))
 

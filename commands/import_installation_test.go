@@ -202,7 +202,7 @@ var _ = Describe("ImportInstallation", func() {
 		})
 
 		Context("when the installation cannot be imported", func() {
-			It("returns and error", func() {
+			It("returns an error", func() {
 				setupService = &fakes.SetupService{}
 				setupService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusUnstarted,

@@ -207,7 +207,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 
 		Context("when the stemcell cannot be uploaded", func() {
-			It("returns and error", func() {
+			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
 				stemcellService.UploadReturns(api.StemcellUploadOutput{}, errors.New("some stemcell error"))
 
