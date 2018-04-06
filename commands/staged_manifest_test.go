@@ -30,7 +30,7 @@ name: some-product
 key: value
 `, nil)
 
-		command = commands.NewStagedManifest(logger, stagedProductsService)
+		command = commands.NewStagedManifest(stagedProductsService, logger)
 	})
 
 	It("prints the manifest of the staged product", func() {

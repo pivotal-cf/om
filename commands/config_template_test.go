@@ -38,7 +38,7 @@ property_blueprints:
 `),
 		}, nil)
 
-		command = commands.NewConfigTemplate(logger, metadataExtractor)
+		command = commands.NewConfigTemplate(metadataExtractor, logger)
 	})
 
 	Describe("Execute", func() {
@@ -89,7 +89,7 @@ property_blueprints:
 `),
 				}, nil)
 
-				command = commands.NewConfigTemplate(logger, metadataExtractor)
+				command = commands.NewConfigTemplate(metadataExtractor, logger)
 
 				err := command.Execute([]string{
 					"--product", "/path/to/a/product.pivotal",
@@ -116,7 +116,7 @@ property_blueprints:
 `),
 				}, nil)
 
-				command = commands.NewConfigTemplate(logger, metadataExtractor)
+				command = commands.NewConfigTemplate(metadataExtractor, logger)
 
 				err := command.Execute([]string{
 					"--product", "/path/to/a/product.pivotal",

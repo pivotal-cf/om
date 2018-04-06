@@ -10,8 +10,8 @@ import (
 )
 
 type ConfigTemplate struct {
-	logger            logger
 	metadataExtractor metadataExtractor
+	logger            logger
 	Options           struct {
 		Product string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
 	}
@@ -36,10 +36,10 @@ type metadata struct {
 	InstanceGroups []instanceGroup     `yaml:"job_types"`
 }
 
-func NewConfigTemplate(logger logger, metadataExtractor metadataExtractor) ConfigTemplate {
+func NewConfigTemplate(metadataExtractor metadataExtractor, logger logger) ConfigTemplate {
 	return ConfigTemplate{
-		logger:            logger,
 		metadataExtractor: metadataExtractor,
+		logger:            logger,
 	}
 }
 

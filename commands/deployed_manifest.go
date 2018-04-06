@@ -8,17 +8,17 @@ import (
 )
 
 type DeployedManifest struct {
-	logger           logger
 	deployedProducts deployedProductsLister
+	logger           logger
 	Options          struct {
 		ProductName string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
-func NewDeployedManifest(logger logger, deployedProducts deployedProductsLister) DeployedManifest {
+func NewDeployedManifest(deployedProducts deployedProductsLister, logger logger) DeployedManifest {
 	return DeployedManifest{
-		logger:           logger,
 		deployedProducts: deployedProducts,
+		logger:           logger,
 	}
 }
 

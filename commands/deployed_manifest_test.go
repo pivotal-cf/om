@@ -31,7 +31,7 @@ name: some-product
 key: value
 `, nil)
 
-		command = commands.NewDeployedManifest(logger, deployedProductsLister)
+		command = commands.NewDeployedManifest(deployedProductsLister, logger)
 	})
 
 	It("prints the manifest of the deployed product", func() {

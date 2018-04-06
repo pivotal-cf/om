@@ -7,17 +7,17 @@ import (
 )
 
 type StagedManifest struct {
-	logger                logger
 	stagedProductsService stagedProductsService
+	logger                logger
 	Options               struct {
 		ProductName string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
-func NewStagedManifest(logger logger, stagedProductsService stagedProductsService) StagedManifest {
+func NewStagedManifest(stagedProductsService stagedProductsService, logger logger) StagedManifest {
 	return StagedManifest{
-		logger:                logger,
 		stagedProductsService: stagedProductsService,
+		logger:                logger,
 	}
 }
 
