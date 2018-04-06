@@ -39,6 +39,19 @@ type ProductsConfigurationInput struct {
 	Network       string
 }
 
+type ResponseProperty struct {
+	Value        interface{}
+	Configurable bool
+}
+
+type OutputProperty struct {
+	Value interface{}
+}
+
+type ExportConfigOutput struct {
+	Properties map[string]OutputProperty `yaml:"product-properties"`
+}
+
 type StagedProductsService struct {
 	client httpClient
 }
@@ -296,6 +309,60 @@ func (p StagedProductsService) Manifest(guid string) (string, error) {
 	}
 
 	return string(manifest), nil
+}
+
+func (p StagedProductsService) ExportConfig(product string) (ExportConfigOutput, error) {
+	guid, err := p.checkStagedProducts(product)
+	if err != nil {
+		return ExportConfigOutput{}, err // un-tested
+	}
+	if guid == "" {
+		return ExportConfigOutput{}, fmt.Errorf("product %q is not staged", product)
+	}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/properties", guid), nil)
+	if err != nil {
+		return ExportConfigOutput{}, err // un-tested
+	}
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return ExportConfigOutput{},
+			fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return ExportConfigOutput{}, err
+	}
+
+	defer resp.Body.Close()
+
+	var propertiesResponse struct {
+		Properties map[string]ResponseProperty `yaml:"properties"`
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ExportConfigOutput{}, err // un-tested
+	}
+
+	if err = yaml.Unmarshal(body, &propertiesResponse); err != nil {
+		return ExportConfigOutput{},
+			fmt.Errorf("could not unmarshal staged product properties response: %s", err)
+	}
+
+	propertiesOutput := map[string]OutputProperty{}
+
+	for name, fields := range propertiesResponse.Properties {
+		if fields.Configurable {
+			propertiesOutput[name] = OutputProperty{Value: fields.Value}
+		}
+	}
+
+	return ExportConfigOutput{
+		Properties: propertiesOutput,
+	}, nil
+
 }
 
 func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {

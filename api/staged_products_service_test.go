@@ -768,4 +768,190 @@ key-4: 2147483648
 			})
 		})
 	})
+
+	Describe("ExportConfig", func() {
+		var (
+			client  *fakes.HttpClient
+			service api.StagedProductsService
+		)
+
+		BeforeEach(func() {
+			client = &fakes.HttpClient{}
+			service = api.NewStagedProductsService(client)
+
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				switch req.URL.Path {
+				case "/api/v0/staged/products":
+					if req.Method == "GET" {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(bytes.NewBufferString(`[
+								{
+									"type":"some-product",
+									"guid": "some-product-guid"
+								}
+								]`)),
+						}
+					}
+				case "/api/v0/staged/products/some-product-guid/properties":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+							"properties": {
+								".properties.some-configurable-property": {
+									"value": "some-value",
+									"configurable": true
+								},
+								".properties.some-non-configurable-property": {
+									"value": "some-value",
+									"configurable": false
+								},
+							}
+						}`)),
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("returns the configuration for a product", func() {
+			config, err := service.ExportConfig("some-product")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(config).To(Equal(
+				api.ExportConfigOutput{
+					Properties: map[string]api.OutputProperty{
+						".properties.some-configurable-property": api.OutputProperty{
+							Value: "some-value",
+						},
+					},
+				},
+			))
+		})
+
+		Context("failure cases", func() {
+
+			Context("listing staged products", func() {
+
+				Context("when the client request fails", func() {
+					It("returns an error", func() {
+						client.DoReturns(&http.Response{}, errors.New("some error"))
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError("could not make api request to staged products endpoint: some error"))
+					})
+				})
+
+				Context("when the server returns a non-200 status code", func() {
+					It("returns an error", func() {
+						client.DoReturns(
+							&http.Response{
+								StatusCode: http.StatusTeapot,
+								Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+							}, nil,
+						)
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					})
+				})
+
+				Context("when the returned JSON is invalid", func() {
+					It("returns an error", func() {
+						client.DoReturns(
+							&http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString("---some-malformed-json")),
+							}, nil,
+						)
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response")))
+					})
+				})
+
+				Context("when the product is not staged", func() {
+					It("returns an error", func() {
+						client.DoReturns(
+							&http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
+							}, nil,
+						)
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError(`product "some-product" is not staged`))
+					})
+				})
+
+			})
+
+			Context("retrieving product properties", func() {
+
+				Context("when the client request fails", func() {
+					It("returns an error", func() {
+						client.DoStub = func(req *http.Request) (*http.Response, error) {
+							switch req.URL.Path {
+							case "/api/v0/staged/products":
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
+								}, nil
+							case "/api/v0/staged/products/some-product-guid/properties":
+								return &http.Response{}, errors.New("some error")
+							}
+							return &http.Response{}, nil
+						}
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError("could not make api request to staged product properties endpoint: some error"))
+					})
+				})
+
+				Context("when the server returns a non-200 status code", func() {
+					It("returns an error", func() {
+						client.DoStub = func(req *http.Request) (*http.Response, error) {
+							switch req.URL.Path {
+							case "/api/v0/staged/products":
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
+								}, nil
+							case "/api/v0/staged/products/some-product-guid/properties":
+								return &http.Response{
+									StatusCode: http.StatusTeapot,
+									Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+								}, nil
+							}
+							return &http.Response{}, nil
+						}
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					})
+				})
+
+				Context("when the returned JSON is invalid", func() {
+					It("returns an error", func() {
+						client.DoStub = func(req *http.Request) (*http.Response, error) {
+							switch req.URL.Path {
+							case "/api/v0/staged/products":
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
+								}, nil
+							case "/api/v0/staged/products/some-product-guid/properties":
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       ioutil.NopCloser(bytes.NewBufferString("---some-malformed-json")),
+								}, nil
+							}
+							return &http.Response{}, nil
+						}
+
+						_, err := service.ExportConfig("some-product")
+						Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged product properties response")))
+					})
+				})
+
+			})
+
+		})
+
+	})
+
 })
