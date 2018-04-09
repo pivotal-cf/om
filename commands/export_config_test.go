@@ -32,6 +32,11 @@ var _ = Describe("ExportTemplate", func() {
 						Value: "some-value",
 					},
 				},
+				NetworkProperties: map[string]interface{}{
+					"singleton_availability_zone": map[string]string{
+						"name": "az-one",
+					},
+				},
 			}, nil)
 
 			err := command.Execute([]string{
@@ -48,6 +53,9 @@ var _ = Describe("ExportTemplate", func() {
 product-properties:
   .properties.some-string-property:
     value: some-value
+network-properties:
+  singleton_availability_zone:
+    name: az-one
 `)))
 		})
 

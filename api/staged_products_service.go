@@ -45,11 +45,12 @@ type ResponseProperty struct {
 }
 
 type OutputProperty struct {
-	Value interface{}
+	Value interface{} `yaml:"value,omitempty"`
 }
 
 type ExportConfigOutput struct {
-	Properties map[string]OutputProperty `yaml:"product-properties"`
+	Properties        map[string]OutputProperty `yaml:"product-properties"`
+	NetworkProperties map[string]interface{}    `yaml:"network-properties"`
 }
 
 type StagedProductsService struct {
@@ -64,6 +65,11 @@ type ConfigurationRequest struct {
 	Method        string
 	URL           string
 	Configuration string
+}
+
+type ConfigResponse struct {
+	Properties        map[string]ResponseProperty `yaml:"properties,omitempty"`
+	NetworkProperties map[string]interface{}      `yaml:"networks_and_azs,omitempty"`
 }
 
 func NewStagedProductsService(client httpClient) StagedProductsService {
@@ -320,35 +326,9 @@ func (p StagedProductsService) ExportConfig(product string) (ExportConfigOutput,
 		return ExportConfigOutput{}, fmt.Errorf("product %q is not staged", product)
 	}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/properties", guid), nil)
+	propertiesResponse, err := p.getConfigResponse("properties", guid)
 	if err != nil {
-		return ExportConfigOutput{}, err // un-tested
-	}
-
-	resp, err := p.client.Do(req)
-	if err != nil {
-		return ExportConfigOutput{},
-			fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
-	}
-
-	if err = ValidateStatusOK(resp); err != nil {
 		return ExportConfigOutput{}, err
-	}
-
-	defer resp.Body.Close()
-
-	var propertiesResponse struct {
-		Properties map[string]ResponseProperty `yaml:"properties"`
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return ExportConfigOutput{}, err // un-tested
-	}
-
-	if err = yaml.Unmarshal(body, &propertiesResponse); err != nil {
-		return ExportConfigOutput{},
-			fmt.Errorf("could not unmarshal staged product properties response: %s", err)
 	}
 
 	propertiesOutput := map[string]OutputProperty{}
@@ -359,10 +339,54 @@ func (p StagedProductsService) ExportConfig(product string) (ExportConfigOutput,
 		}
 	}
 
+	networkPropertiesResponse, err := p.getConfigResponse("networks_and_azs", guid)
+	if err != nil {
+		return ExportConfigOutput{}, err
+	}
+
+	networkPropertiesOutput := map[string]interface{}{}
+
+	for name, fields := range networkPropertiesResponse.NetworkProperties {
+		networkPropertiesOutput[name] = fields
+	}
 	return ExportConfigOutput{
-		Properties: propertiesOutput,
+		Properties:        propertiesOutput,
+		NetworkProperties: networkPropertiesOutput,
 	}, nil
 
+}
+
+func (p StagedProductsService) getConfigResponse(endpoint, guid string) (ConfigResponse, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/%s", guid, endpoint), nil)
+	if err != nil {
+		return ConfigResponse{}, err // un-tested
+	}
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return ConfigResponse{},
+			fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
+	}
+
+	if err = ValidateStatusOK(resp); err != nil {
+		return ConfigResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ConfigResponse{}, err // un-tested
+	}
+
+	configResponse := ConfigResponse{}
+
+	if err = yaml.Unmarshal(body, &configResponse); err != nil {
+		return ConfigResponse{},
+			fmt.Errorf("could not unmarshal staged product properties response: %s", err)
+	}
+
+	return configResponse, nil
 }
 
 func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {

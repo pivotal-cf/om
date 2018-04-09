@@ -810,6 +810,17 @@ key-4: 2147483648
 							}
 						}`)),
 					}
+				case "/api/v0/staged/products/some-product-guid/networks_and_azs":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+							"networks_and_azs": {
+								"some-availability-zone": {
+									"name": "az-one"
+								},
+							}
+						}`)),
+					}
 				}
 				return resp, nil
 			}
@@ -823,6 +834,11 @@ key-4: 2147483648
 					Properties: map[string]api.OutputProperty{
 						".properties.some-configurable-property": api.OutputProperty{
 							Value: "some-value",
+						},
+					},
+					NetworkProperties: map[string]interface{}{
+						"some-availability-zone": map[interface{}]interface{}{
+							"name": "az-one",
 						},
 					},
 				},

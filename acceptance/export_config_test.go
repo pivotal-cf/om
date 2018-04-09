@@ -52,6 +52,25 @@ var _ = Describe("export-config command", func() {
             }
           }
         }`))
+			case "/api/v0/staged/products/some-product-guid/networks_and_azs":
+				w.Write([]byte(`{
+          "networks_and_azs": {
+            "singleton_availability_zone": {
+              "name": "az-one"
+            },
+            "other_availability_zones": [
+              {
+                "name": "az-two"
+              },
+              {
+                "name": "az-three"
+              }
+            ],
+            "network": {
+              "name": "network-one"
+            }
+          }
+        }`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -79,6 +98,14 @@ var _ = Describe("export-config command", func() {
 product-properties:
   .properties.some-configurable-property:
     value: some-configurable-value
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+  other_availability_zones:
+    - name: az-two
+    - name: az-three
+  network:
+    name: network-one
 `))
 	})
 })
