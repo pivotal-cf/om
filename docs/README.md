@@ -9,6 +9,7 @@ on a vSphere Ops Manager.
 * [available-products](available-products/README.md)
 * [configure-authentication](configure-authentication/README.md)
 * [configure-bosh](configure-bosh/README.md)
+* [configure-director](configure-director/README.md)
 * [configure-product](configure-product/README.md)
 * [curl](curl/README.md)
 * [delete-installation](delete-installation/README.md)
