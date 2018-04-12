@@ -114,10 +114,10 @@ No additional security configuration is strictly required.
 ```json
 {
   "singleton_availability_zone": {
-    "name: "us-west-1b"
+    "name": "us-west-1b"
   },
   "network": {
-    "name" : "opsman-network"
+    "name": "opsman-network"
   }
 }
 ```
