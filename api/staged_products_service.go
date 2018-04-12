@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -40,17 +41,9 @@ type ProductsConfigurationInput struct {
 }
 
 type ResponseProperty struct {
-	Value        interface{}
-	Configurable bool
-}
-
-type OutputProperty struct {
-	Value interface{} `yaml:"value,omitempty"`
-}
-
-type ExportConfigOutput struct {
-	Properties        map[string]OutputProperty `yaml:"product-properties"`
-	NetworkProperties map[string]interface{}    `yaml:"network-properties"`
+	Value        interface{} `json:"value"`
+	Configurable bool        `json:"configurable"`
+	IsCredential bool        `json:"credential"`
 }
 
 type StagedProductsService struct {
@@ -65,11 +58,6 @@ type ConfigurationRequest struct {
 	Method        string
 	URL           string
 	Configuration string
-}
-
-type ConfigResponse struct {
-	Properties        map[string]ResponseProperty `yaml:"properties,omitempty"`
-	NetworkProperties map[string]interface{}      `yaml:"networks_and_azs,omitempty"`
 }
 
 func NewStagedProductsService(client httpClient) StagedProductsService {
@@ -174,7 +162,7 @@ func (p StagedProductsService) List() (StagedProductsOutput, error) {
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return StagedProductsOutput{}, fmt.Errorf("could not make api request to staged products endpoint: %s", err)
+		return StagedProductsOutput{}, fmt.Errorf("could not make request to staged-products endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
@@ -280,6 +268,7 @@ func (p StagedProductsService) Find(productName string) (StagedProductsFindOutpu
 	return StagedProductsFindOutput{Product: foundProduct}, nil
 }
 
+//TODO consider refactoring to use fetchProductResource
 func (p StagedProductsService) Manifest(guid string) (string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/manifest", guid), nil)
 	if err != nil {
@@ -317,76 +306,57 @@ func (p StagedProductsService) Manifest(guid string) (string, error) {
 	return string(manifest), nil
 }
 
-func (p StagedProductsService) ExportConfig(product string) (ExportConfigOutput, error) {
-	guid, err := p.checkStagedProducts(product)
+func (p StagedProductsService) Properties(product string) (map[string]ResponseProperty, error) {
+	respBody, err := p.fetchProductResource(product, "properties")
 	if err != nil {
-		return ExportConfigOutput{}, err // un-tested
+		return nil, err
 	}
-	if guid == "" {
-		return ExportConfigOutput{}, fmt.Errorf("product %q is not staged", product)
-	}
+	defer respBody.Close()
 
-	propertiesResponse, err := p.getConfigResponse("properties", guid)
-	if err != nil {
-		return ExportConfigOutput{}, err
-	}
-
-	propertiesOutput := map[string]OutputProperty{}
-
-	for name, fields := range propertiesResponse.Properties {
-		if fields.Configurable {
-			propertiesOutput[name] = OutputProperty{Value: fields.Value}
-		}
+	propertiesResponse := struct {
+		Properties map[string]ResponseProperty `json:"properties"`
+	}{}
+	if err = json.NewDecoder(respBody).Decode(&propertiesResponse); err != nil {
+		return nil, fmt.Errorf("could not parse json: %s", err)
 	}
 
-	networkPropertiesResponse, err := p.getConfigResponse("networks_and_azs", guid)
-	if err != nil {
-		return ExportConfigOutput{}, err
-	}
-
-	networkPropertiesOutput := map[string]interface{}{}
-
-	for name, fields := range networkPropertiesResponse.NetworkProperties {
-		networkPropertiesOutput[name] = fields
-	}
-	return ExportConfigOutput{
-		Properties:        propertiesOutput,
-		NetworkProperties: networkPropertiesOutput,
-	}, nil
-
+	return propertiesResponse.Properties, nil
 }
 
-func (p StagedProductsService) getConfigResponse(endpoint, guid string) (ConfigResponse, error) {
+func (p StagedProductsService) NetworksAndAZs(product string) (map[string]interface{}, error) {
+	respBody, err := p.fetchProductResource(product, "networks_and_azs")
+	if err != nil {
+		return nil, err
+	}
+	defer respBody.Close()
+
+	networksResponse := struct {
+		Networks map[string]interface{} `json:"networks_and_azs"`
+	}{}
+	if err = json.NewDecoder(respBody).Decode(&networksResponse); err != nil {
+		return nil, fmt.Errorf("could not parse json: %s", err)
+	}
+
+	return networksResponse.Networks, nil
+}
+
+func (p StagedProductsService) fetchProductResource(guid, endpoint string) (io.ReadCloser, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/%s", guid, endpoint), nil)
 	if err != nil {
-		return ConfigResponse{}, err // un-tested
+		return nil, err // un-tested
 	}
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return ConfigResponse{},
+		return nil,
 			fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
 	}
 
 	if err = ValidateStatusOK(resp); err != nil {
-		return ConfigResponse{}, err
+		return nil, err
 	}
 
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return ConfigResponse{}, err // un-tested
-	}
-
-	configResponse := ConfigResponse{}
-
-	if err = yaml.Unmarshal(body, &configResponse); err != nil {
-		return ConfigResponse{},
-			fmt.Errorf("could not unmarshal staged product properties response: %s", err)
-	}
-
-	return configResponse, nil
+	return resp.Body, nil
 }
 
 func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {

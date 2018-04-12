@@ -12,31 +12,32 @@ type JobsService struct {
 	client httpClient
 }
 
+// TODO: add omitempty everywhere
 type JobProperties struct {
-	Instances              interface{}  `json:"instances"`
-	PersistentDisk         *Disk        `json:"persistent_disk,omitempty"`
-	InstanceType           InstanceType `json:"instance_type"`
-	InternetConnected      *bool        `json:"internet_connected,omitempty"`
-	LBNames                []string     `json:"elb_names"`
-	NSXSecurityGroups      []string     `json:"nsx_security_groups,omitempty"`
-	NSXLBS                 []NSXLB      `json:"nsx_lbs,omitempty"`
-	FloatingIPs            string       `json:"floating_ips,omitempty"`
-	AdditionalVMExtensions []string     `json:"additional_vm_extensions,omitempty"`
+	Instances              interface{}  `json:"instances" yaml:"instances"`
+	PersistentDisk         *Disk        `json:"persistent_disk,omitempty" yaml:"persistent_disk,omitempty":`
+	InstanceType           InstanceType `json:"instance_type" yaml:"instance_type"`
+	InternetConnected      *bool        `json:"internet_connected,omitempty" yaml:"internet_connected,omitempty"`
+	LBNames                []string     `json:"elb_names" yaml:"elb_names,omitempty"`
+	NSXSecurityGroups      []string     `json:"nsx_security_groups,omitempty" yaml:"nsx_security_groups,omitempty"`
+	NSXLBS                 []NSXLB      `json:"nsx_lbs,omitempty" yaml:"nsx_lbs,omitempty"`
+	FloatingIPs            string       `json:"floating_ips,omitempty" yaml:"floating_ips,omitempty"`
+	AdditionalVMExtensions []string     `json:"additional_vm_extensions,omitempty" yaml:"additional_vm_extensions,omitempty"`
 }
 
 type NSXLB struct {
-	EdgeName      string `json:"edge_name"`
-	PoolName      string `json:"pool_name"`
-	SecurityGroup string `json:"security_group"`
-	Port          string `json:"port"`
+	EdgeName      string `json:"edge_name" yaml:"edge_name"`
+	PoolName      string `json:"pool_name" yaml:"pool_name"`
+	SecurityGroup string `json:"security_group" yaml:"security_group"`
+	Port          string `json:"port" yaml:"port"`
 }
 
 type Disk struct {
-	Size string `json:"size_mb"`
+	Size string `json:"size_mb" yaml:"size_mb"`
 }
 
 type InstanceType struct {
-	ID string `json:"id"`
+	ID string `json:"id" yaml:"id"`
 }
 
 type Job struct {

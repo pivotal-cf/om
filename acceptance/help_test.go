@@ -48,7 +48,6 @@ Commands:
   deployed-manifest               prints the deployed manifest for a product
   deployed-products               lists deployed products
   errands                         list errands for a product
-  export-config                   generates a config from a staged product
   export-installation             exports the installation of the target Ops Manager
   generate-certificate            generates a new certificate signed by Ops Manager's root CA
   generate-certificate-authority  generates a certificate authority on the Opsman
@@ -61,6 +60,7 @@ Commands:
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   set-errand-state                sets state for a product's errand
   stage-product                   stages a given product in the Ops Manager targeted
+  staged-config                   generates a config from a staged product
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
   unstage-product                 unstages a given product from the Ops Manager targeted

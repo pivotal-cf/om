@@ -12,7 +12,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("export-config command", func() {
+var _ = Describe("staged-config command", func() {
 	var (
 		server *httptest.Server
 	)
@@ -49,6 +49,15 @@ var _ = Describe("export-config command", func() {
               "credential": false,
               "value": "some-non-configurable-value",
               "optional": false
+            },
+            ".properties.some-secret-property": {
+              "type": "string",
+              "configurable": true,
+              "credential": true,
+              "value": {
+                "some-secret-type": "***"
+              },
+              "optional": true
             }
           }
         }`))
@@ -71,6 +80,27 @@ var _ = Describe("export-config command", func() {
             }
           }
         }`))
+			case "/api/v0/staged/products/some-product-guid/jobs":
+				w.Write([]byte(`{
+					"jobs": [
+					  {
+							"name": "some-job",
+							"guid": "some-guid"
+						}
+					]
+				}`))
+			case "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config":
+				w.Write([]byte(`{
+						"instances": 1,
+						"instance_type": {
+							"id": "automatic"
+						},
+						"persistent_disk": {
+							"size_mb": "20480"
+						},
+						"internet_connected": true,
+						"elb_names": ["my-elb"]
+					}`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -85,7 +115,7 @@ var _ = Describe("export-config command", func() {
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
-			"export-config",
+			"staged-config",
 			"--product-name", "some-product",
 		)
 
@@ -98,6 +128,9 @@ var _ = Describe("export-config command", func() {
 product-properties:
   .properties.some-configurable-property:
     value: some-configurable-value
+  .properties.some-secret-property:
+    value:
+      some-secret-type: "***"
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -106,6 +139,13 @@ network-properties:
     - name: az-three
   network:
     name: network-one
+resource-config:
+  some-job:
+    instances: 1
+    persistent_disk: { size_mb: "20480" }
+    instance_type: { id: automatic }
+    elb_names: ["my-elb"]
+    internet_connected: true
 `))
 	})
 })

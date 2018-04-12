@@ -41,7 +41,7 @@ var _ = Describe("Credentials", func() {
 			It("outputs the credentials alphabetically", func() {
 				command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
-				csService.FetchReturns(api.CredentialOutput{
+				csService.FetchCredentialReturns(api.CredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{
@@ -91,7 +91,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credential reference cannot be found", func() {
 				BeforeEach(func() {
-					csService.FetchReturns(api.CredentialOutput{}, nil)
+					csService.FetchCredentialReturns(api.CredentialOutput{}, nil)
 				})
 
 				It("returns an error", func() {
@@ -109,7 +109,7 @@ var _ = Describe("Credentials", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
-					csService.FetchReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
+					csService.FetchCredentialReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -160,7 +160,7 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting an individual credential value", func() {
 			BeforeEach(func() {
-				csService.FetchReturns(api.CredentialOutput{
+				csService.FetchCredentialReturns(api.CredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{

@@ -21,7 +21,7 @@ type CredentialReferences struct {
 
 //go:generate counterfeiter -o ./fakes/credential_references_service.go --fake-name CredentialReferencesService . credentialReferencesService
 type credentialReferencesService interface {
-	List(deployedProductGUID string) (api.CredentialReferencesOutput, error)
+	ListCredentials(deployedProductGUID string) (api.CredentialReferencesOutput, error)
 }
 
 func NewCredentialReferences(crService credentialReferencesService, dpLister deployedProductsLister, presenter presenters.Presenter, logger logger) CredentialReferences {
@@ -49,7 +49,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 		return fmt.Errorf("failed to list credential references: %s is not deployed", cr.Options.Product)
 	}
 
-	output, err := cr.service.List(deployedProductGUID)
+	output, err := cr.service.ListCredentials(deployedProductGUID)
 	sort.Strings(output.Credentials)
 	if err != nil {
 		return fmt.Errorf("failed to list credential references: %s", err)

@@ -8,17 +8,17 @@ import (
 )
 
 type CredentialsService struct {
-	FetchStub        func(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
-	fetchMutex       sync.RWMutex
-	fetchArgsForCall []struct {
+	FetchCredentialStub        func(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
+	fetchCredentialMutex       sync.RWMutex
+	fetchCredentialArgsForCall []struct {
 		deployedProductGUID string
 		credentialReference string
 	}
-	fetchReturns struct {
+	fetchCredentialReturns struct {
 		result1 api.CredentialOutput
 		result2 error
 	}
-	fetchReturnsOnCall map[int]struct {
+	fetchCredentialReturnsOnCall map[int]struct {
 		result1 api.CredentialOutput
 		result2 error
 	}
@@ -26,53 +26,53 @@ type CredentialsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CredentialsService) Fetch(deployedProductGUID string, credentialReference string) (api.CredentialOutput, error) {
-	fake.fetchMutex.Lock()
-	ret, specificReturn := fake.fetchReturnsOnCall[len(fake.fetchArgsForCall)]
-	fake.fetchArgsForCall = append(fake.fetchArgsForCall, struct {
+func (fake *CredentialsService) FetchCredential(deployedProductGUID string, credentialReference string) (api.CredentialOutput, error) {
+	fake.fetchCredentialMutex.Lock()
+	ret, specificReturn := fake.fetchCredentialReturnsOnCall[len(fake.fetchCredentialArgsForCall)]
+	fake.fetchCredentialArgsForCall = append(fake.fetchCredentialArgsForCall, struct {
 		deployedProductGUID string
 		credentialReference string
 	}{deployedProductGUID, credentialReference})
-	fake.recordInvocation("Fetch", []interface{}{deployedProductGUID, credentialReference})
-	fake.fetchMutex.Unlock()
-	if fake.FetchStub != nil {
-		return fake.FetchStub(deployedProductGUID, credentialReference)
+	fake.recordInvocation("FetchCredential", []interface{}{deployedProductGUID, credentialReference})
+	fake.fetchCredentialMutex.Unlock()
+	if fake.FetchCredentialStub != nil {
+		return fake.FetchCredentialStub(deployedProductGUID, credentialReference)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.fetchReturns.result1, fake.fetchReturns.result2
+	return fake.fetchCredentialReturns.result1, fake.fetchCredentialReturns.result2
 }
 
-func (fake *CredentialsService) FetchCallCount() int {
-	fake.fetchMutex.RLock()
-	defer fake.fetchMutex.RUnlock()
-	return len(fake.fetchArgsForCall)
+func (fake *CredentialsService) FetchCredentialCallCount() int {
+	fake.fetchCredentialMutex.RLock()
+	defer fake.fetchCredentialMutex.RUnlock()
+	return len(fake.fetchCredentialArgsForCall)
 }
 
-func (fake *CredentialsService) FetchArgsForCall(i int) (string, string) {
-	fake.fetchMutex.RLock()
-	defer fake.fetchMutex.RUnlock()
-	return fake.fetchArgsForCall[i].deployedProductGUID, fake.fetchArgsForCall[i].credentialReference
+func (fake *CredentialsService) FetchCredentialArgsForCall(i int) (string, string) {
+	fake.fetchCredentialMutex.RLock()
+	defer fake.fetchCredentialMutex.RUnlock()
+	return fake.fetchCredentialArgsForCall[i].deployedProductGUID, fake.fetchCredentialArgsForCall[i].credentialReference
 }
 
-func (fake *CredentialsService) FetchReturns(result1 api.CredentialOutput, result2 error) {
-	fake.FetchStub = nil
-	fake.fetchReturns = struct {
+func (fake *CredentialsService) FetchCredentialReturns(result1 api.CredentialOutput, result2 error) {
+	fake.FetchCredentialStub = nil
+	fake.fetchCredentialReturns = struct {
 		result1 api.CredentialOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CredentialsService) FetchReturnsOnCall(i int, result1 api.CredentialOutput, result2 error) {
-	fake.FetchStub = nil
-	if fake.fetchReturnsOnCall == nil {
-		fake.fetchReturnsOnCall = make(map[int]struct {
+func (fake *CredentialsService) FetchCredentialReturnsOnCall(i int, result1 api.CredentialOutput, result2 error) {
+	fake.FetchCredentialStub = nil
+	if fake.fetchCredentialReturnsOnCall == nil {
+		fake.fetchCredentialReturnsOnCall = make(map[int]struct {
 			result1 api.CredentialOutput
 			result2 error
 		})
 	}
-	fake.fetchReturnsOnCall[i] = struct {
+	fake.fetchCredentialReturnsOnCall[i] = struct {
 		result1 api.CredentialOutput
 		result2 error
 	}{result1, result2}
@@ -81,8 +81,8 @@ func (fake *CredentialsService) FetchReturnsOnCall(i int, result1 api.Credential
 func (fake *CredentialsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.fetchMutex.RLock()
-	defer fake.fetchMutex.RUnlock()
+	fake.fetchCredentialMutex.RLock()
+	defer fake.fetchCredentialMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

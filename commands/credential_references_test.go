@@ -40,7 +40,7 @@ var _ = Describe("CredentialReferences", func() {
 		It("lists the credential references in alphabetical order", func() {
 			command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
-			crService.ListReturns(api.CredentialReferencesOutput{
+			crService.ListCredentialsReturns(api.CredentialReferencesOutput{
 				Credentials: []string{
 					".properties.some-credentials",
 					".our-job.some-other-credential",
@@ -97,7 +97,7 @@ var _ = Describe("CredentialReferences", func() {
 				It("prints a helpful message instead of a table", func() {
 					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
-					crService.ListReturns(api.CredentialReferencesOutput{}, nil)
+					crService.ListCredentialsReturns(api.CredentialReferencesOutput{}, nil)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -114,7 +114,7 @@ var _ = Describe("CredentialReferences", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
-					crService.ListReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
+					crService.ListCredentialsReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",

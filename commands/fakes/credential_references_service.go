@@ -8,16 +8,16 @@ import (
 )
 
 type CredentialReferencesService struct {
-	ListStub        func(deployedProductGUID string) (api.CredentialReferencesOutput, error)
-	listMutex       sync.RWMutex
-	listArgsForCall []struct {
+	ListCredentialsStub        func(deployedProductGUID string) (api.CredentialReferencesOutput, error)
+	listCredentialsMutex       sync.RWMutex
+	listCredentialsArgsForCall []struct {
 		deployedProductGUID string
 	}
-	listReturns struct {
+	listCredentialsReturns struct {
 		result1 api.CredentialReferencesOutput
 		result2 error
 	}
-	listReturnsOnCall map[int]struct {
+	listCredentialsReturnsOnCall map[int]struct {
 		result1 api.CredentialReferencesOutput
 		result2 error
 	}
@@ -25,52 +25,52 @@ type CredentialReferencesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CredentialReferencesService) List(deployedProductGUID string) (api.CredentialReferencesOutput, error) {
-	fake.listMutex.Lock()
-	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
-	fake.listArgsForCall = append(fake.listArgsForCall, struct {
+func (fake *CredentialReferencesService) ListCredentials(deployedProductGUID string) (api.CredentialReferencesOutput, error) {
+	fake.listCredentialsMutex.Lock()
+	ret, specificReturn := fake.listCredentialsReturnsOnCall[len(fake.listCredentialsArgsForCall)]
+	fake.listCredentialsArgsForCall = append(fake.listCredentialsArgsForCall, struct {
 		deployedProductGUID string
 	}{deployedProductGUID})
-	fake.recordInvocation("List", []interface{}{deployedProductGUID})
-	fake.listMutex.Unlock()
-	if fake.ListStub != nil {
-		return fake.ListStub(deployedProductGUID)
+	fake.recordInvocation("ListCredentials", []interface{}{deployedProductGUID})
+	fake.listCredentialsMutex.Unlock()
+	if fake.ListCredentialsStub != nil {
+		return fake.ListCredentialsStub(deployedProductGUID)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listReturns.result1, fake.listReturns.result2
+	return fake.listCredentialsReturns.result1, fake.listCredentialsReturns.result2
 }
 
-func (fake *CredentialReferencesService) ListCallCount() int {
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
-	return len(fake.listArgsForCall)
+func (fake *CredentialReferencesService) ListCredentialsCallCount() int {
+	fake.listCredentialsMutex.RLock()
+	defer fake.listCredentialsMutex.RUnlock()
+	return len(fake.listCredentialsArgsForCall)
 }
 
-func (fake *CredentialReferencesService) ListArgsForCall(i int) string {
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
-	return fake.listArgsForCall[i].deployedProductGUID
+func (fake *CredentialReferencesService) ListCredentialsArgsForCall(i int) string {
+	fake.listCredentialsMutex.RLock()
+	defer fake.listCredentialsMutex.RUnlock()
+	return fake.listCredentialsArgsForCall[i].deployedProductGUID
 }
 
-func (fake *CredentialReferencesService) ListReturns(result1 api.CredentialReferencesOutput, result2 error) {
-	fake.ListStub = nil
-	fake.listReturns = struct {
+func (fake *CredentialReferencesService) ListCredentialsReturns(result1 api.CredentialReferencesOutput, result2 error) {
+	fake.ListCredentialsStub = nil
+	fake.listCredentialsReturns = struct {
 		result1 api.CredentialReferencesOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CredentialReferencesService) ListReturnsOnCall(i int, result1 api.CredentialReferencesOutput, result2 error) {
-	fake.ListStub = nil
-	if fake.listReturnsOnCall == nil {
-		fake.listReturnsOnCall = make(map[int]struct {
+func (fake *CredentialReferencesService) ListCredentialsReturnsOnCall(i int, result1 api.CredentialReferencesOutput, result2 error) {
+	fake.ListCredentialsStub = nil
+	if fake.listCredentialsReturnsOnCall == nil {
+		fake.listCredentialsReturnsOnCall = make(map[int]struct {
 			result1 api.CredentialReferencesOutput
 			result2 error
 		})
 	}
-	fake.listReturnsOnCall[i] = struct {
+	fake.listCredentialsReturnsOnCall[i] = struct {
 		result1 api.CredentialReferencesOutput
 		result2 error
 	}{result1, result2}
@@ -79,8 +79,8 @@ func (fake *CredentialReferencesService) ListReturnsOnCall(i int, result1 api.Cr
 func (fake *CredentialReferencesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
+	fake.listCredentialsMutex.RLock()
+	defer fake.listCredentialsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

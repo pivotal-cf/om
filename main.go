@@ -114,7 +114,6 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
 	stagedProductsService := api.NewStagedProductsService(authedClient)
 	deployedProductsService := api.NewDeployedProductsService(authedClient)
-	credentialReferencesService := api.NewCredentialReferencesService(authedClient, progress.NewBar())
 	credentialsService := api.NewCredentialsService(authedClient, progress.NewBar())
 	availableProductsService := api.NewAvailableProductsService(authedClient, progress.NewBar(), liveWriter)
 	diagnosticService := api.NewDiagnosticService(authedClient)
@@ -165,7 +164,7 @@ func main() {
 	commandSet["config-template"] = commands.NewConfigTemplate(metadataExtractor, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, presenter)
 	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(vmExtensionService, stdout)
-	commandSet["credential-references"] = commands.NewCredentialReferences(credentialReferencesService, deployedProductsService, presenter, stdout)
+	commandSet["credential-references"] = commands.NewCredentialReferences(credentialsService, deployedProductsService, presenter, stdout)
 	commandSet["credentials"] = commands.NewCredentials(credentialsService, deployedProductsService, presenter, stdout)
 	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(certificateAuthoritiesService, stdout)
@@ -175,7 +174,6 @@ func main() {
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(deployedProductsService, stdout)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, diagnosticService)
 	commandSet["errands"] = commands.NewErrands(presenter, errandsService, stagedProductsService)
-	commandSet["export-config"] = commands.NewExportConfig(stagedProductsService, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
 	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, presenter)
@@ -187,6 +185,13 @@ func main() {
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
+	commandSet["staged-config"] = commands.NewStagedConfig(struct {
+		api.StagedProductsService
+		api.JobsService
+	}{
+		stagedProductsService,
+		jobsService,
+	}, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, stdout)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(stagedProductsService, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, diagnosticService)
