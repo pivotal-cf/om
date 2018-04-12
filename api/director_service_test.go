@@ -30,7 +30,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("AZConfiguration", func() {
 		It("configures availability zones", func() {
-			err := directorService.AZConfiguration(api.AZConfiguration{
+			err := directorService.SetAZConfiguration(api.AZConfiguration{
 				AvailabilityZones: json.RawMessage(`[{"az_name": "1"}]`),
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -57,7 +57,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusInternalServerError,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.AZConfiguration(api.AZConfiguration{})
+				err := directorService.SetAZConfiguration(api.AZConfiguration{})
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
@@ -66,7 +66,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.AZConfiguration(api.AZConfiguration{})
+				err := directorService.SetAZConfiguration(api.AZConfiguration{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})
@@ -75,7 +75,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("NetworksConfiguration", func() {
 		It("configures networks", func() {
-			err := directorService.NetworksConfiguration(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
+			err := directorService.SetNetworksConfiguration(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(1))
@@ -100,7 +100,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusInternalServerError,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.NetworksConfiguration(json.RawMessage("{}"))
+				err := directorService.SetNetworksConfiguration(json.RawMessage("{}"))
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
@@ -109,7 +109,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.NetworksConfiguration(json.RawMessage("{}"))
+				err := directorService.SetNetworksConfiguration(json.RawMessage("{}"))
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/networks: api endpoint failed"))
 			})
 		})
@@ -117,7 +117,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
-			err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{
+			err := directorService.SetNetworkAndAZ(api.NetworkAndAZConfiguration{
 				NetworkAZ: json.RawMessage(`{
 					"network": {"name": "network_name"},
 					"singleton_availability_zone": {"name": "availability_zone_name"}
@@ -153,7 +153,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{})
+				err := directorService.SetNetworkAndAZ(api.NetworkAndAZConfiguration{})
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
 
@@ -162,7 +162,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{})
+				err := directorService.SetNetworkAndAZ(api.NetworkAndAZConfiguration{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/network_and_az: api endpoint failed"))
 			})
@@ -171,7 +171,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("Properties", func() {
 		It("assigns director configuration properties", func() {
-			err := directorService.Properties(api.DirectorProperties{
+			err := directorService.SetProperties(api.DirectorProperties{
 				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 				DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				SecurityConfiguration: json.RawMessage(`{"hello": "goodbye"}`),
@@ -199,7 +199,7 @@ var _ = Describe("DirectorService", func() {
 
 		Context("when some of the configurations are empty", func() {
 			It("returns only configurations that are populated", func() {
-				err := directorService.Properties(api.DirectorProperties{
+				err := directorService.SetProperties(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 					DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				})
@@ -228,7 +228,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.Properties(api.DirectorProperties{})
+				err := directorService.SetProperties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
@@ -238,7 +238,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.Properties(api.DirectorProperties{})
+				err := directorService.SetProperties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/properties: api endpoint failed"))
 			})

@@ -29,10 +29,10 @@ type ConfigureDirector struct {
 //go:generate counterfeiter -o ./fakes/director_service.go --fake-name DirectorService . directorService
 
 type directorService interface {
-	AZConfiguration(api.AZConfiguration) error
-	NetworksConfiguration(json.RawMessage) error
-	NetworkAndAZ(api.NetworkAndAZConfiguration) error
-	Properties(api.DirectorProperties) error
+	SetAZConfiguration(api.AZConfiguration) error
+	SetNetworksConfiguration(json.RawMessage) error
+	SetNetworkAndAZ(api.NetworkAndAZConfiguration) error
+	SetProperties(api.DirectorProperties) error
 }
 
 //go:generate counterfeiter -o ./fakes/jobs_service.go --fake-name JobsService . jobsService
@@ -61,7 +61,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 
 	c.logger.Printf("started configuring director options for bosh tile")
 
-	err := c.directorService.Properties(api.DirectorProperties{
+	err := c.directorService.SetProperties(api.DirectorProperties{
 		DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
 		IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
 		SecurityConfiguration: json.RawMessage(c.Options.SecurityConfiguration),
@@ -76,7 +76,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.AZConfiguration != "" {
 		c.logger.Printf("started configuring availability zone options for bosh tile")
 
-		err = c.directorService.AZConfiguration(api.AZConfiguration{
+		err = c.directorService.SetAZConfiguration(api.AZConfiguration{
 			AvailabilityZones: json.RawMessage(c.Options.AZConfiguration),
 		})
 		if err != nil {
@@ -89,7 +89,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.NetworksConfiguration != "" {
 		c.logger.Printf("started configuring network options for bosh tile")
 
-		err = c.directorService.NetworksConfiguration(json.RawMessage(c.Options.NetworksConfiguration))
+		err = c.directorService.SetNetworksConfiguration(json.RawMessage(c.Options.NetworksConfiguration))
 		if err != nil {
 			return fmt.Errorf("networks configuration could not be applied: %s", err)
 		}
@@ -100,7 +100,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.NetworkAssignment != "" {
 		c.logger.Printf("started configuring network assignment options for bosh tile")
 
-		err = c.directorService.NetworkAndAZ(api.NetworkAndAZConfiguration{
+		err = c.directorService.SetNetworkAndAZ(api.NetworkAndAZConfiguration{
 			NetworkAZ: json.RawMessage(c.Options.NetworkAssignment),
 		})
 		if err != nil {
