@@ -192,7 +192,7 @@ var _ = Describe("configure-director command", func() {
 				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			}`,
 			"--az-configuration",
-			`[ {"az_property": "value"} ]`,
+			`[ {"name": "some-az-1"} ]`,
 			"--networks-configuration",
 			`{
 				"networks": [{"network": "network-1"}],
@@ -235,7 +235,7 @@ var _ = Describe("configure-director command", func() {
 		Expect(azCallCount).To(Equal(1))
 		Expect(azConfigurationMethod).To(Equal("PUT"))
 		Expect(azConfigurationBody).To(MatchJSON(`{
-			"availability_zones": [{"az_property": "value"}]
+			"availability_zones": [{"name": "some-az-1"}]
 		}`))
 
 		Expect(networksConfigurationCallCount).To(Equal(1))
