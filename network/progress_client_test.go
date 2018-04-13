@@ -3,7 +3,6 @@ package network_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -96,10 +95,11 @@ var _ = Describe("ProgressClient", func() {
 			})
 
 			By("writing to the live log writer", func() {
-				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
-				for i := 0; i < liveWriter.WriteCallCount(); i++ {
-					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
-				}
+				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 6, 1))
+				Expect(liveWriter.WriteArgsForCall(0)).To(ContainSubstring("1s elapsed"))
+				Expect(liveWriter.WriteArgsForCall(1)).To(ContainSubstring("2s elapsed"))
+				Expect(liveWriter.WriteArgsForCall(2)).To(ContainSubstring("3s elapsed"))
+				Expect(liveWriter.WriteArgsForCall(3)).To(ContainSubstring("4s elapsed"))
 			})
 
 			By("flushing the live log writer", func() {
@@ -165,31 +165,21 @@ var _ = Describe("ProgressClient", func() {
 				_, err = progressClient.Do(req)
 				Expect(err).NotTo(HaveOccurred())
 
-				By("starting the live log writer", func() {
-					Expect(liveWriter.StartCallCount()).To(Equal(1))
-				})
-
-				By("writing to the live log writer", func() {
-					Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
-
-					for i := 0; i < liveWriter.WriteCallCount(); i++ {
-						Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", 2*(i+1))))
-					}
-				})
-
-				By("flushing the live log writer", func() {
-					Expect(liveWriter.StopCallCount()).To(Equal(1))
-				})
+				Expect(liveWriter.StartCallCount()).To(Equal(1))
+				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
+				Expect(liveWriter.WriteArgsForCall(0)).To(ContainSubstring("2s elapsed"))
+				Expect(liveWriter.WriteArgsForCall(1)).To(ContainSubstring("4s elapsed"))
+				Expect(liveWriter.StopCallCount()).To(Equal(1))
 			})
 		})
 
 		Context("when the polling interval is greater than the time it takes upload the product", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					time.Sleep(100 * time.Millisecond)
-
 					ioutil.ReadAll(req.Body)
 					defer req.Body.Close()
+
+					time.Sleep(100 * time.Millisecond)
 
 					return &http.Response{
 						StatusCode: http.StatusOK,
@@ -205,17 +195,9 @@ var _ = Describe("ProgressClient", func() {
 				_, err = progressClient.Do(req)
 				Expect(err).NotTo(HaveOccurred())
 
-				By("starting the live log writer", func() {
-					Expect(liveWriter.StartCallCount()).To(Equal(1))
-				})
-
-				By("writing to the live log writer", func() {
-					Expect(liveWriter.WriteCallCount()).To(Equal(0))
-				})
-
-				By("flushing the live log writer", func() {
-					Expect(liveWriter.StopCallCount()).To(Equal(1))
-				})
+				Expect(liveWriter.StartCallCount()).To(Equal(1))
+				Expect(liveWriter.WriteCallCount()).To(Equal(1))
+				Expect(liveWriter.StopCallCount()).To(Equal(1))
 			})
 		})
 
