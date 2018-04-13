@@ -93,7 +93,7 @@ func main() {
 
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 
-	var unauthenticatedClient, authedClient, authedCookieClient httpClient
+	var unauthenticatedClient, authedClient, authedCookieClient, authedProgressClient httpClient
 	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
 	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout)
 	if err != nil {
@@ -104,18 +104,21 @@ func main() {
 		stdout.Fatal(err)
 	}
 
+	authedProgressClient = network.NewProgressClient(authedClient, progress.NewBar(), liveWriter)
+
 	if global.Trace {
 		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stderr)
 		authedClient = network.NewTraceClient(authedClient, os.Stderr)
 		authedCookieClient = network.NewTraceClient(authedCookieClient, os.Stderr)
+		authedProgressClient = network.NewTraceClient(authedProgressClient, os.Stderr)
 	}
 
 	setupService := api.NewSetupService(unauthenticatedClient)
-	uploadStemcellService := api.NewUploadStemcellService(authedClient, progress.NewBar())
+	uploadStemcellService := api.NewUploadStemcellService(authedProgressClient)
 	stagedProductsService := api.NewStagedProductsService(authedClient)
 	deployedProductsService := api.NewDeployedProductsService(authedClient)
 	credentialsService := api.NewCredentialsService(authedClient, progress.NewBar())
-	availableProductsService := api.NewAvailableProductsService(authedClient, progress.NewBar(), liveWriter)
+	availableProductsService := api.NewAvailableProductsService(authedClient, authedProgressClient)
 	diagnosticService := api.NewDiagnosticService(authedClient)
 	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveWriter)
 	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)

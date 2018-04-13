@@ -1,10 +1,14 @@
 package acceptance
 
 import (
+	"archive/zip"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"os"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -14,7 +18,10 @@ import (
 )
 
 var _ = Describe("global trace flag", func() {
-	var server *httptest.Server
+	var (
+		productFile *os.File
+		server      *httptest.Server
+	)
 
 	const tableOutput = `+--------------+---------+
 |     NAME     | VERSION |
@@ -25,6 +32,30 @@ var _ = Describe("global trace flag", func() {
 `
 
 	BeforeEach(func() {
+		var err error
+		productFile, err = ioutil.TempFile("", "cool_name.com")
+		Expect(err).NotTo(HaveOccurred())
+
+		stat, err := productFile.Stat()
+		Expect(err).NotTo(HaveOccurred())
+
+		zipper := zip.NewWriter(productFile)
+
+		productWriter, err := zipper.CreateHeader(&zip.FileHeader{
+			Name:               "./metadata/some-product.yml",
+			UncompressedSize64: uint64(stat.Size()),
+			ModifiedTime:       uint16(stat.ModTime().Unix()),
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		_, err = io.WriteString(productWriter, `
+---
+product_version: 1.8.14
+name: some-product`)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = zipper.Close()
+		Expect(err).NotTo(HaveOccurred())
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
@@ -42,13 +73,24 @@ var _ = Describe("global trace flag", func() {
 					return
 				}
 
-				w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
+				switch req.Method {
+				case "GET":
+					w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
+				case "POST":
+					w.WriteHeader(http.StatusOK)
+				default:
+					Fail(fmt.Sprintf("unexpected method: %s", req.Method))
+				}
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
 				Fail(fmt.Sprintf("unexpected request: %s", out))
 			}
 		}))
+	})
+
+	AfterEach(func() {
+		os.Remove(productFile.Name())
 	})
 
 	It("prints helpful debug output for http request", func() {
@@ -67,6 +109,26 @@ var _ = Describe("global trace flag", func() {
 
 		Expect(string(session.Out.Contents())).To(ContainSubstring(tableOutput))
 		Expect(string(session.Err.Contents())).To(ContainSubstring("GET /api/v0"))
+		Expect(string(session.Err.Contents())).To(ContainSubstring("200 OK"))
+	})
+
+	It("prints helpful debug output for upload requests", func() {
+		command := exec.Command(pathToMain,
+			"--target", server.URL,
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"--trace",
+			"upload-product",
+			"--product", productFile.Name(),
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session, "40s").Should(gexec.Exit(0))
+
+		Expect(string(session.Err.Contents())).To(ContainSubstring("POST /api/v0/available_products"))
 		Expect(string(session.Err.Contents())).To(ContainSubstring("200 OK"))
 	})
 })

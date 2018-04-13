@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("upload-product command", func() {
+var _ = Describe("upload-product command", func() {
 	var (
 		product     string
 		productFile *os.File

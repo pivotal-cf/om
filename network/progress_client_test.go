@@ -1,6 +1,7 @@
-package api_test
+package network_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -8,19 +9,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
+	"github.com/pivotal-cf/om/network"
+	"github.com/pivotal-cf/om/network/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("ProgressClient", func() {
+var _ = Describe("ProgressClient", func() {
 	var (
 		client         *fakes.HttpClient
 		bar            *fakes.Progress
 		liveWriter     *fakes.LiveWriter
-		progressClient api.ProgressClient
+		progressClient network.ProgressClient
 	)
 
 	BeforeEach(func() {
@@ -28,7 +29,7 @@ var _ = FDescribe("ProgressClient", func() {
 		liveWriter = &fakes.LiveWriter{}
 		bar = &fakes.Progress{}
 
-		progressClient = api.NewProgressClient(client, bar, liveWriter, 1)
+		progressClient = network.NewProgressClient(client, bar, liveWriter)
 	})
 
 	Describe("Do", func() {
@@ -42,6 +43,8 @@ var _ = FDescribe("ProgressClient", func() {
 
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 			Expect(err).NotTo(HaveOccurred())
+
+			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Second))
 
 			resp, err := progressClient.Do(req)
 			Expect(err).NotTo(HaveOccurred())
@@ -105,10 +108,6 @@ var _ = FDescribe("ProgressClient", func() {
 		})
 
 		Context("when the polling interval is greater than 1", func() {
-			BeforeEach(func() {
-				progressClient = api.NewProgressClient(client, bar, liveWriter, 2)
-			})
-
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					time.Sleep(5 * time.Second)
@@ -123,6 +122,8 @@ var _ = FDescribe("ProgressClient", func() {
 
 				req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 				Expect(err).NotTo(HaveOccurred())
+
+				req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 2*time.Second))
 
 				_, err = progressClient.Do(req)
 				Expect(err).NotTo(HaveOccurred())

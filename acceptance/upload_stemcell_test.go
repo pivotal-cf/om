@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -94,7 +95,7 @@ var _ = Describe("upload-stemcell command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
+		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
 		Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
 		Eventually(session.Out).Should(gbytes.Say("finished upload"))
@@ -150,7 +151,7 @@ var _ = Describe("upload-stemcell command", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(0))
+			Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("stemcell has already been uploaded"))
 		})
 	})
@@ -183,7 +184,7 @@ var _ = Describe("upload-stemcell command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
+				Eventually(session, 10*time.Second).Should(gexec.Exit(1))
 				Eventually(session.Err).Should(gbytes.Say("failed to load stemcell: file provided has no content"))
 			})
 		})
@@ -207,7 +208,7 @@ var _ = Describe("upload-stemcell command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(1))
+				Eventually(session, 10*time.Second).Should(gexec.Exit(1))
 				Eventually(session.Err).Should(gbytes.Say(`no such file or directory`))
 			})
 		})

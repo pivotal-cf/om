@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const availableProductsEndpoint = "/api/v0/available_products"
@@ -35,16 +37,14 @@ type AvailableProductsInput struct {
 }
 
 type AvailableProductsService struct {
-	client     httpClient
-	progress   progress
-	liveWriter liveWriter
+	client         httpClient
+	progressClient httpClient
 }
 
-func NewAvailableProductsService(client httpClient, progress progress, liveWriter liveWriter) AvailableProductsService {
+func NewAvailableProductsService(client httpClient, progressClient httpClient) AvailableProductsService {
 	return AvailableProductsService{
-		client:     client,
-		progress:   progress,
-		liveWriter: liveWriter,
+		client:         client,
+		progressClient: progressClient,
 	}
 }
 
@@ -57,8 +57,9 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	pc := NewProgressClient(ap.client, ap.progress, ap.liveWriter, input.PollingInterval)
-	resp, err := pc.Do(req)
+	req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Duration(input.PollingInterval)*time.Second))
+
+	resp, err := ap.progressClient.Do(req)
 	if err != nil {
 		return UploadProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
