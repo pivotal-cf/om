@@ -130,7 +130,16 @@ var _ = Describe("DirectorService", func() {
 				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("{malformed"),
 				})
+				Expect(client.DoCallCount()).To(Equal(0))
 				Expect(err).To(MatchError(HavePrefix("provided AZ config is not well-formed JSON")))
+			})
+
+			It("returns an error when the provided AZ config does not include a name", func() {
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage("[{}]"),
+				})
+				Expect(client.DoCallCount()).To(Equal(0))
+				Expect(err).To(MatchError(HavePrefix("provided AZ config [0] does not specify the AZ 'name'")))
 			})
 
 			It("returns an error when the GET http status is non-200", func() {

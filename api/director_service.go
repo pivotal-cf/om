@@ -54,6 +54,12 @@ func (d DirectorService) SetAZConfiguration(input AvailabilityZoneInput) error {
 		return fmt.Errorf("provided AZ config is not well-formed JSON: %s", err)
 	}
 
+	for i, az := range azs.AvailabilityZones {
+		if az.Name == "" {
+			return fmt.Errorf("provided AZ config [%d] does not specify the AZ 'name'", i)
+		}
+	}
+
 	existingAzsResponse, err := d.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	if err != nil {
 		return fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
