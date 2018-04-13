@@ -63,7 +63,7 @@ var _ = Describe("ConfigureDirector", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(directorService.SetAZConfigurationCallCount()).To(Equal(1))
-			Expect(directorService.SetAZConfigurationArgsForCall(0)).To(Equal(api.AZConfiguration{
+			Expect(directorService.SetAZConfigurationArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[{"some-az-assignment": "az"}]`),
 			}))
 

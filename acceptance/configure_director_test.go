@@ -15,8 +15,8 @@ import (
 
 var _ = Describe("configure-director command", func() {
 	var (
-		azCallCount                    int
-		azConfigurationBody            []byte
+		azPutCallCount                 int
+		azPutConfigurationBody         []byte
 		azConfigurationMethod          string
 		directorPropertiesBody         []byte
 		directorPropertiesCallCount    int
@@ -61,14 +61,23 @@ var _ = Describe("configure-director command", func() {
 					return
 				}
 
-				var err error
-				azConfigurationBody, err = ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
 				azConfigurationMethod = req.Method
 
-				azCallCount++
+				if req.Method == "GET" {
+					w.Write([]byte(`"availability_zones": [{"guid": "existing-az-guid", "name": "some-existing-az"}]`))
+				} else if req.Method == "PUT" {
+					var err error
+					azPutConfigurationBody, err = ioutil.ReadAll(req.Body)
+					Expect(err).NotTo(HaveOccurred())
 
-				w.Write([]byte(`{}`))
+					azPutCallCount++
+
+					w.Write([]byte(`{}`))
+				} else {
+					out, err := httputil.DumpRequest(req, true)
+					Expect(err).NotTo(HaveOccurred())
+					Fail(fmt.Sprintf("unexpected request: %s", out))
+				}
 
 			case "/api/v0/staged/director/networks":
 				auth := req.Header.Get("Authorization")
@@ -92,7 +101,7 @@ var _ = Describe("configure-director command", func() {
 					return
 				}
 
-				if azCallCount == 0 || networksConfigurationCallCount == 0 {
+				if azPutCallCount == 0 || networksConfigurationCallCount == 0 {
 					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
@@ -192,7 +201,7 @@ var _ = Describe("configure-director command", func() {
 				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			}`,
 			"--az-configuration",
-			`[ {"name": "some-az-1"} ]`,
+			`[ {"name": "some-az-1"}, {"name": "some-existing-az"} ]`,
 			"--networks-configuration",
 			`{
 				"networks": [{"network": "network-1"}],
@@ -232,10 +241,10 @@ var _ = Describe("configure-director command", func() {
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
-		Expect(azCallCount).To(Equal(1))
+		Expect(azPutCallCount).To(Equal(1))
 		Expect(azConfigurationMethod).To(Equal("PUT"))
-		Expect(azConfigurationBody).To(MatchJSON(`{
-			"availability_zones": [{"name": "some-az-1"}]
+		Expect(azPutConfigurationBody).To(MatchJSON(`{
+			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
 		}`))
 
 		Expect(networksConfigurationCallCount).To(Equal(1))
@@ -294,4 +303,5 @@ var _ = Describe("configure-director command", func() {
 			"elb_names": ["my-elb"]
 	  }`))
 	})
+
 })

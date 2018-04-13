@@ -29,7 +29,7 @@ type ConfigureDirector struct {
 //go:generate counterfeiter -o ./fakes/director_service.go --fake-name DirectorService . directorService
 
 type directorService interface {
-	SetAZConfiguration(api.AZConfiguration) error
+	SetAZConfiguration(api.AvailabilityZoneInput) error
 	SetNetworksConfiguration(json.RawMessage) error
 	SetNetworkAndAZ(api.NetworkAndAZConfiguration) error
 	SetProperties(api.DirectorProperties) error
@@ -76,7 +76,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.AZConfiguration != "" {
 		c.logger.Printf("started configuring availability zone options for bosh tile")
 
-		err = c.directorService.SetAZConfiguration(api.AZConfiguration{
+		err = c.directorService.SetAZConfiguration(api.AvailabilityZoneInput{
 			AvailabilityZones: json.RawMessage(c.Options.AZConfiguration),
 		})
 		if err != nil {

@@ -9,10 +9,10 @@ import (
 )
 
 type DirectorService struct {
-	SetAZConfigurationStub        func(api.AZConfiguration) error
+	SetAZConfigurationStub        func(api.AvailabilityZoneInput) error
 	setAZConfigurationMutex       sync.RWMutex
 	setAZConfigurationArgsForCall []struct {
-		arg1 api.AZConfiguration
+		arg1 api.AvailabilityZoneInput
 	}
 	setAZConfigurationReturns struct {
 		result1 error
@@ -57,11 +57,11 @@ type DirectorService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *DirectorService) SetAZConfiguration(arg1 api.AZConfiguration) error {
+func (fake *DirectorService) SetAZConfiguration(arg1 api.AvailabilityZoneInput) error {
 	fake.setAZConfigurationMutex.Lock()
 	ret, specificReturn := fake.setAZConfigurationReturnsOnCall[len(fake.setAZConfigurationArgsForCall)]
 	fake.setAZConfigurationArgsForCall = append(fake.setAZConfigurationArgsForCall, struct {
-		arg1 api.AZConfiguration
+		arg1 api.AvailabilityZoneInput
 	}{arg1})
 	fake.recordInvocation("SetAZConfiguration", []interface{}{arg1})
 	fake.setAZConfigurationMutex.Unlock()
@@ -80,7 +80,7 @@ func (fake *DirectorService) SetAZConfigurationCallCount() int {
 	return len(fake.setAZConfigurationArgsForCall)
 }
 
-func (fake *DirectorService) SetAZConfigurationArgsForCall(i int) api.AZConfiguration {
+func (fake *DirectorService) SetAZConfigurationArgsForCall(i int) api.AvailabilityZoneInput {
 	fake.setAZConfigurationMutex.RLock()
 	defer fake.setAZConfigurationMutex.RUnlock()
 	return fake.setAZConfigurationArgsForCall[i].arg1

@@ -29,44 +29,178 @@ var _ = Describe("DirectorService", func() {
 	})
 
 	Describe("AZConfiguration", func() {
+
+		BeforeEach(func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				if req.Method == "GET" {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(strings.NewReader(
+							`{"availability_zones": [{"guid": "existing-az-guid", "name": "existing-az"}]}`,
+						))}, nil
+				} else {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+				}
+			}
+		})
+
 		It("configures availability zones", func() {
-			err := directorService.SetAZConfiguration(api.AZConfiguration{
-				AvailabilityZones: json.RawMessage(`[{"az_name": "1"}]`),
+			err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
+				AvailabilityZones: json.RawMessage(`[
+          {"name": "existing-az"},
+          {"name": "new-az"}
+        ]`),
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
+			Expect(client.DoCallCount()).To(Equal(2))
 
-			Expect(req.Method).To(Equal("PUT"))
-			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
-			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+			getReq := client.DoArgsForCall(0)
+			Expect(getReq.Method).To(Equal("GET"))
+			Expect(getReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(getReq.Header.Get("Content-Type")).To(Equal("application/json"))
 
-			jsonBody, err := ioutil.ReadAll(req.Body)
+			putReq := client.DoArgsForCall(1)
+
+			Expect(putReq.Method).To(Equal("PUT"))
+			Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(putReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(putReq.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jsonBody).To(MatchJSON(`{
-				"availability_zones": [
-					{"az_name": "1"}
-				]
+        "availability_zones": [
+         {"guid": "existing-az-guid", "name": "existing-az"},
+         {"name": "new-az"}
+        ]
+			}`))
+		})
+
+		It("preserves all provided fields", func() {
+			err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
+				AvailabilityZones: json.RawMessage(`[
+          {
+            "name": "some-az",
+            "clusters": [
+              {
+                "cluster": "some-cluster",
+                "resource_pool": "some-resource-pool"
+              }
+            ]
+          }
+        ]`),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(2))
+
+			getReq := client.DoArgsForCall(0)
+			Expect(getReq.Method).To(Equal("GET"))
+			Expect(getReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(getReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			putReq := client.DoArgsForCall(1)
+
+			Expect(putReq.Method).To(Equal("PUT"))
+			Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(putReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(putReq.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+        "availability_zones": [
+          {
+            "name": "some-az",
+            "clusters": [
+              {
+                "cluster": "some-cluster",
+                "resource_pool": "some-resource-pool"
+              }
+            ]
+          }
+        ]
 			}`))
 		})
 
 		Context("failure cases", func() {
-			It("returns an error when the http status is non-200", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusInternalServerError,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.SetAZConfiguration(api.AZConfiguration{})
+			It("returns an error when the provided AZ config is malformed", func() {
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage("{malformed"),
+				})
+				Expect(err).To(MatchError(HavePrefix("provided AZ config is not well-formed JSON")))
+			})
+
+			It("returns an error when the GET http status is non-200", func() {
+				client.DoReturns(
+					&http.Response{
+						StatusCode: http.StatusInternalServerError,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil,
+				)
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{})
+				Expect(err).To(MatchError(HavePrefix("unable to fetch existing AZ configuration")))
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
-			It("returns an error when the api endpoint fails", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+			It("returns an error when the GET to the api endpoint fails", func() {
+				client.DoReturns(
+					&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"),
+				)
 
-				err := directorService.SetAZConfiguration(api.AZConfiguration{})
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{})
+
+				Expect(err).To(MatchError(HavePrefix("unable to fetch existing AZ configuration")))
+				Expect(err).To(MatchError(ContainSubstring(
+					"could not send api request to GET /api/v0/staged/director/availability_zones: api endpoint failed")))
+			})
+
+			It("returns an error when the GET returns malformed existing AZs", func() {
+				client.DoReturns(
+					&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`malformed`))}, nil,
+				)
+
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{})
+
+				Expect(err).To(MatchError(HavePrefix(
+					"problem retrieving existing AZs: response is not well-formed")))
+			})
+
+			It("returns an error when the PUT http status is non-200", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{"availability_zones": []}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusInternalServerError,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{})
+				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+			})
+
+			It("returns an error when the PUT to the api endpoint fails", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{"availability_zones": []}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed")
+					}
+				}
+
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})
