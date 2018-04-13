@@ -15,7 +15,7 @@ func NewBar() Bar {
 	bar := pb.New(0)
 	bar.SetUnits(pb.U_BYTES)
 	bar.Width = 80
-	bar.Output = os.Stdout
+	bar.Output = os.Stderr
 	return Bar{bar}
 }
 

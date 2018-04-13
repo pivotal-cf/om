@@ -58,7 +58,7 @@ var _ = Describe("export-installation command", func() {
 		os.Remove(outputFileName)
 	})
 
-	FIt("successfully exports the installation of the ops-manager", func() {
+	It("successfully exports the installation of the ops-manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
@@ -72,12 +72,10 @@ var _ = Describe("export-installation command", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session, 5).Should(gexec.Exit(0))
-		fmt.Printf("session.Out: %#v\n", string(session.Out.Contents()))
-		fmt.Printf("session.Err: %#v\n", string(session.Err.Contents()))
-		Expect(session.Out).To(gbytes.Say("exporting installation"))
+		Expect(session.Err).To(gbytes.Say("exporting installation"))
 		Expect(session.Err).To(gbytes.Say("waiting for response"))
-		Expect(session.Out).To(gbytes.Say(`100(\.\d+)?%`))
-		Expect(session.Out).To(gbytes.Say("finished exporting installation"))
+		Expect(session.Err).To(gbytes.Say(`100(\.\d+)?%`))
+		Expect(session.Err).To(gbytes.Say("finished exporting installation"))
 
 		content, err := ioutil.ReadFile(outputFileName)
 		Expect(err).NotTo(HaveOccurred())

@@ -7,12 +7,17 @@ import (
 )
 
 type ProgressBar struct {
-	StartStub                 func()
-	startMutex                sync.RWMutex
-	startArgsForCall          []struct{}
-	FinishStub                func()
-	finishMutex               sync.RWMutex
-	finishArgsForCall         []struct{}
+	StartStub             func()
+	startMutex            sync.RWMutex
+	startArgsForCall      []struct{}
+	FinishStub            func()
+	finishMutex           sync.RWMutex
+	finishArgsForCall     []struct{}
+	SetTotal64Stub        func(int64)
+	setTotal64Mutex       sync.RWMutex
+	setTotal64ArgsForCall []struct {
+		arg1 int64
+	}
 	NewProxyReaderStub        func(io.Reader) io.ReadCloser
 	newProxyReaderMutex       sync.RWMutex
 	newProxyReaderArgsForCall []struct {
@@ -58,6 +63,30 @@ func (fake *ProgressBar) FinishCallCount() int {
 	fake.finishMutex.RLock()
 	defer fake.finishMutex.RUnlock()
 	return len(fake.finishArgsForCall)
+}
+
+func (fake *ProgressBar) SetTotal64(arg1 int64) {
+	fake.setTotal64Mutex.Lock()
+	fake.setTotal64ArgsForCall = append(fake.setTotal64ArgsForCall, struct {
+		arg1 int64
+	}{arg1})
+	fake.recordInvocation("SetTotal64", []interface{}{arg1})
+	fake.setTotal64Mutex.Unlock()
+	if fake.SetTotal64Stub != nil {
+		fake.SetTotal64Stub(arg1)
+	}
+}
+
+func (fake *ProgressBar) SetTotal64CallCount() int {
+	fake.setTotal64Mutex.RLock()
+	defer fake.setTotal64Mutex.RUnlock()
+	return len(fake.setTotal64ArgsForCall)
+}
+
+func (fake *ProgressBar) SetTotal64ArgsForCall(i int) int64 {
+	fake.setTotal64Mutex.RLock()
+	defer fake.setTotal64Mutex.RUnlock()
+	return fake.setTotal64ArgsForCall[i].arg1
 }
 
 func (fake *ProgressBar) NewProxyReader(arg1 io.Reader) io.ReadCloser {
@@ -115,6 +144,8 @@ func (fake *ProgressBar) Invocations() map[string][][]interface{} {
 	defer fake.startMutex.RUnlock()
 	fake.finishMutex.RLock()
 	defer fake.finishMutex.RUnlock()
+	fake.setTotal64Mutex.RLock()
+	defer fake.setTotal64Mutex.RUnlock()
 	fake.newProxyReaderMutex.RLock()
 	defer fake.newProxyReaderMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

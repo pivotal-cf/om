@@ -179,7 +179,7 @@ func main() {
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(deployedProductsService, stdout)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, diagnosticService)
 	commandSet["errands"] = commands.NewErrands(presenter, errandsService, stagedProductsService)
-	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stdout)
+	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stderr)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
 	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, presenter)
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)

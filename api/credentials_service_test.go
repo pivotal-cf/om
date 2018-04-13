@@ -16,15 +16,13 @@ import (
 var _ = Describe("CredentialsService", func() {
 	var (
 		client  *fakes.HttpClient
-		bar     *fakes.Progress
 		service api.CredentialsService
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		bar = &fakes.Progress{}
 
-		service = api.NewCredentialsService(client, bar)
+		service = api.NewCredentialsService(client)
 	})
 
 	Describe("ListCredentials", func() {

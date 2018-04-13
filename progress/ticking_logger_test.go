@@ -1,11 +1,10 @@
 package progress_test
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/progress"
+	"github.com/pivotal-cf/om/progress/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,23 +12,23 @@ import (
 
 var _ = Describe("TickingLogger", func() {
 	var (
-		logger *fakes.Logger
-		tl     *progress.TickingLogger
+		liveWriter *fakes.LiveWriter
+		tl         *progress.TickingLogger
 	)
 
 	BeforeEach(func() {
-		logger = &fakes.Logger{}
-		tl = progress.NewTickingLogger(logger, 10*time.Millisecond)
+		liveWriter = &fakes.LiveWriter{}
+		tl = progress.NewTickingLogger(liveWriter, 10*time.Millisecond)
 	})
 
 	Describe("Start", func() {
 		It("starts printing log lines", func() {
 			tl.Start()
 
-			Eventually(logger.PrintfCallCount).Should(BeNumerically(">", 0))
+			Eventually(liveWriter.WriteCallCount).Should(BeNumerically(">", 0))
 			Eventually(func() string {
-				format, parts := logger.PrintfArgsForCall(logger.PrintfCallCount() - 1)
-				return fmt.Sprintf(format, parts...)
+				buffer := liveWriter.WriteArgsForCall(liveWriter.WriteCallCount() - 1)
+				return string(buffer)
 			}, "5s").Should(ContainSubstring("2s elapsed"))
 		})
 	})
@@ -38,12 +37,12 @@ var _ = Describe("TickingLogger", func() {
 		It("stops printing log lines", func() {
 			tl.Start()
 
-			Eventually(logger.PrintfCallCount).Should(BeNumerically(">", 0))
+			Eventually(liveWriter.WriteCallCount).Should(BeNumerically(">", 0))
 
 			tl.Stop()
 
-			count := logger.PrintfCallCount()
-			Consistently(logger.PrintfCallCount()).Should(Equal(count))
+			count := liveWriter.WriteCallCount()
+			Consistently(liveWriter.WriteCallCount()).Should(Equal(count))
 		})
 	})
 })

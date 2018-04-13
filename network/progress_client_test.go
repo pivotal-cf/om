@@ -19,7 +19,7 @@ import (
 var _ = Describe("ProgressClient", func() {
 	var (
 		client         *fakes.HttpClient
-		bar            *fakes.Progress
+		progressBar    *fakes.ProgressBar
 		liveWriter     *fakes.LiveWriter
 		progressClient network.ProgressClient
 	)
@@ -27,9 +27,9 @@ var _ = Describe("ProgressClient", func() {
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 		liveWriter = &fakes.LiveWriter{}
-		bar = &fakes.Progress{}
+		progressBar = &fakes.ProgressBar{}
 
-		progressClient = network.NewProgressClient(client, bar, liveWriter)
+		progressClient = network.NewProgressClient(client, progressBar, liveWriter)
 	})
 
 	Describe("Do", func() {
@@ -39,7 +39,7 @@ var _ = Describe("ProgressClient", func() {
 				Body:       ioutil.NopCloser(strings.NewReader("{}")),
 			}, nil)
 
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some content")))
+			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some content")))
 
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 			Expect(err).NotTo(HaveOccurred())
@@ -63,11 +63,11 @@ var _ = Describe("ProgressClient", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(rawReqBody)).To(Equal("some content"))
 
-			Expect(bar.SetTotalCallCount()).To(Equal(1))
-			Expect(bar.SetTotalArgsForCall(0)).To(Equal(int64(12)))
+			Expect(progressBar.SetTotal64CallCount()).To(Equal(1))
+			Expect(progressBar.SetTotal64ArgsForCall(0)).To(Equal(int64(12)))
 
-			Expect(bar.KickoffCallCount()).To(Equal(1))
-			Expect(bar.EndCallCount()).To(Equal(1))
+			Expect(progressBar.StartCallCount()).To(Equal(1))
+			Expect(progressBar.FinishCallCount()).To(Equal(1))
 		})
 
 		It("logs while waiting for a response from the Ops Manager", func() {
@@ -83,7 +83,7 @@ var _ = Describe("ProgressClient", func() {
 				}, nil
 			}
 
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
+			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 			Expect(err).NotTo(HaveOccurred())
@@ -114,7 +114,7 @@ var _ = Describe("ProgressClient", func() {
 				Body:          ioutil.NopCloser(strings.NewReader("fake-server-response")),
 			}, nil)
 
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("fake-wrapper-response")))
+			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("fake-wrapper-response")))
 
 			req, err := http.NewRequest("GET", "/some/endpoint", nil)
 			Expect(err).NotTo(HaveOccurred())
@@ -134,16 +134,19 @@ var _ = Describe("ProgressClient", func() {
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.Path).To(Equal("/some/endpoint"))
 
-			Expect(bar.SetTotalCallCount()).To(Equal(1))
-			Expect(bar.SetTotalArgsForCall(0)).To(Equal(int64(len([]byte("fake-server-response")))))
+			Expect(progressBar.SetTotal64CallCount()).To(Equal(1))
+			Expect(progressBar.SetTotal64ArgsForCall(0)).To(Equal(int64(len([]byte("fake-server-response")))))
 
-			Expect(bar.KickoffCallCount()).To(Equal(1))
-			Expect(bar.EndCallCount()).To(Equal(1))
+			Expect(progressBar.StartCallCount()).To(Equal(1))
+			Expect(progressBar.FinishCallCount()).To(Equal(1))
 		})
 
 		Context("when the polling interval is greater than 1", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					ioutil.ReadAll(req.Body)
+					defer req.Body.Close()
+
 					time.Sleep(5 * time.Second)
 
 					return &http.Response{
@@ -152,7 +155,7 @@ var _ = Describe("ProgressClient", func() {
 					}, nil
 				}
 
-				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
+				progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 				req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 				Expect(err).NotTo(HaveOccurred())
@@ -185,13 +188,16 @@ var _ = Describe("ProgressClient", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					time.Sleep(100 * time.Millisecond)
 
+					ioutil.ReadAll(req.Body)
+					defer req.Body.Close()
+
 					return &http.Response{
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("some-installation")),
 					}, nil
 				}
 
-				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
+				progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 				req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 				Expect(err).NotTo(HaveOccurred())
@@ -234,9 +240,6 @@ var _ = Describe("ProgressClient", func() {
 							Body:       ioutil.NopCloser(strings.NewReader(`something from nginx probably xml`)),
 						}, nil
 					}
-
-					bar.GetCurrentReturns(0)
-					bar.GetTotalReturns(100)
 
 					var req *http.Request
 					req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))

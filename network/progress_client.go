@@ -2,7 +2,6 @@ package network
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -22,6 +21,7 @@ type liveWriter interface {
 	io.Writer
 	Start()
 	Stop()
+	Flush() error
 }
 
 type ProgressClient struct {
@@ -44,7 +44,7 @@ func (pc ProgressClient) Do(req *http.Request) (*http.Response, error) {
 		duration = time.Second
 	}
 
-	tl := progress.NewTickingLogger(log.New(pc.liveWriter, "", 0), duration)
+	tl := progress.NewTickingLogger(pc.liveWriter, duration)
 
 	switch req.Method {
 	case "POST", "PUT":
@@ -56,11 +56,14 @@ func (pc ProgressClient) Do(req *http.Request) (*http.Response, error) {
 
 	resp, err := pc.client.Do(req)
 	tl.Stop()
+	if err != nil {
+		return nil, err
+	}
 
 	if req.Method == "GET" {
 		resp.Body = progress.NewReadCloser(resp.Body, pc.progressBar, nil)
 		pc.progressBar.SetTotal64(resp.ContentLength)
 	}
 
-	return resp, err
+	return resp, nil
 }
