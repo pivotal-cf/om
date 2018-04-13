@@ -29,8 +29,6 @@ type httpClient interface {
 }
 
 func main() {
-	liveWriter := uilive.New()
-
 	stdout := log.New(os.Stdout, "", 0)
 	stderr := log.New(os.Stderr, "", 0)
 
@@ -93,7 +91,7 @@ func main() {
 
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 
-	var unauthenticatedClient, authedClient, authedCookieClient, authedProgressClient httpClient
+	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
 	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
 	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout)
 	if err != nil {
@@ -104,10 +102,14 @@ func main() {
 		stdout.Fatal(err)
 	}
 
+	liveWriter := uilive.New()
+	liveWriter.Out = os.Stderr
+	unauthenticatedProgressClient = network.NewProgressClient(unauthenticatedClient, progress.NewBar(), liveWriter)
 	authedProgressClient = network.NewProgressClient(authedClient, progress.NewBar(), liveWriter)
 
 	if global.Trace {
 		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stderr)
+		unauthenticatedProgressClient = network.NewTraceClient(unauthenticatedProgressClient, os.Stderr)
 		authedClient = network.NewTraceClient(authedClient, os.Stderr)
 		authedCookieClient = network.NewTraceClient(authedCookieClient, os.Stderr)
 		authedProgressClient = network.NewTraceClient(authedProgressClient, os.Stderr)
@@ -117,12 +119,12 @@ func main() {
 	uploadStemcellService := api.NewUploadStemcellService(authedProgressClient)
 	stagedProductsService := api.NewStagedProductsService(authedClient)
 	deployedProductsService := api.NewDeployedProductsService(authedClient)
-	credentialsService := api.NewCredentialsService(authedClient, progress.NewBar())
+	credentialsService := api.NewCredentialsService(authedClient)
 	availableProductsService := api.NewAvailableProductsService(authedClient, authedProgressClient)
 	diagnosticService := api.NewDiagnosticService(authedClient)
-	importInstallationService := api.NewInstallationAssetService(unauthenticatedClient, progress.NewBar(), liveWriter)
-	exportInstallationService := api.NewInstallationAssetService(authedClient, progress.NewBar(), liveWriter)
-	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil, nil)
+	importInstallationService := api.NewInstallationAssetService(nil, unauthenticatedProgressClient)
+	exportInstallationService := api.NewInstallationAssetService(nil, authedProgressClient)
+	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil)
 	installationsService := api.NewInstallationsService(authedClient)
 	errandsService := api.NewErrandsService(authedClient)
 	pendingChangesService := api.NewPendingChangesService(authedClient)

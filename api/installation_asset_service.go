@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 type ImportInstallationInput struct {
@@ -19,27 +17,18 @@ type ImportInstallationInput struct {
 }
 
 type InstallationAssetService struct {
-	client     httpClient
-	progress   progress
-	liveWriter liveWriter
+	client         httpClient
+	progressClient httpClient
 }
 
 type logger interface {
 	Printf(format string, v ...interface{})
 }
 
-//go:generate counterfeiter -o ./fakes/livewriter.go --fake-name LiveWriter . liveWriter
-type liveWriter interface {
-	io.Writer
-	Start()
-	Stop()
-}
-
-func NewInstallationAssetService(client httpClient, progress progress, liveWriter liveWriter) InstallationAssetService {
+func NewInstallationAssetService(client, progressClient httpClient) InstallationAssetService {
 	return InstallationAssetService{
-		client:     client,
-		progress:   progress,
-		liveWriter: liveWriter,
+		client:         client,
+		progressClient: progressClient,
 	}
 }
 
@@ -49,32 +38,7 @@ func (ia InstallationAssetService) Export(outputFile string, pollingInterval int
 		return err
 	}
 
-	requestComplete := make(chan bool)
-	progressComplete := make(chan bool)
-
-	go func() {
-		ia.liveWriter.Start()
-
-		liveLog := log.New(ia.liveWriter, "", 0)
-		startTime := time.Now().Round(time.Second)
-		ticker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
-
-		for {
-			select {
-			case <-requestComplete:
-				ticker.Stop()
-				ia.liveWriter.Stop()
-				progressComplete <- true
-			case now := <-ticker.C:
-				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
-			}
-		}
-	}()
-
-	resp, err := ia.client.Do(req)
-	requestComplete <- true
-	<-progressComplete
-
+	resp, err := ia.progressClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
@@ -83,9 +47,6 @@ func (ia InstallationAssetService) Export(outputFile string, pollingInterval int
 		return fmt.Errorf("request failed: unexpected response")
 	}
 
-	ia.progress.SetTotal(resp.ContentLength)
-	ia.progress.Kickoff()
-	progressReader := ia.progress.NewBarReader(resp.Body)
 	defer resp.Body.Close()
 
 	outputFileHandle, err := os.Create(outputFile)
@@ -93,7 +54,7 @@ func (ia InstallationAssetService) Export(outputFile string, pollingInterval int
 		return fmt.Errorf("cannot create output file: %s", err)
 	}
 
-	bytesWritten, err := io.Copy(outputFileHandle, progressReader)
+	bytesWritten, err := io.Copy(outputFileHandle, resp.Body)
 	if err != nil {
 		return fmt.Errorf("cannot write output file: %s", err)
 	}
@@ -102,16 +63,11 @@ func (ia InstallationAssetService) Export(outputFile string, pollingInterval int
 		return fmt.Errorf("invalid response length (expected %d, got %d)", resp.ContentLength, bytesWritten)
 	}
 
-	ia.progress.End()
-
 	return nil
 }
 
 func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
-	ia.progress.SetTotal(input.ContentLength)
-	body := ia.progress.NewBarReader(input.Installation)
-
-	req, err := http.NewRequest("POST", "/api/v0/installation_asset_collection", body)
+	req, err := http.NewRequest("POST", "/api/v0/installation_asset_collection", input.Installation)
 	if err != nil {
 		return err
 	}
@@ -119,42 +75,7 @@ func (ia InstallationAssetService) Import(input ImportInstallationInput) error {
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	requestComplete := make(chan bool)
-	progressComplete := make(chan bool)
-
-	go func() {
-		ia.progress.Kickoff()
-		ia.liveWriter.Start()
-
-		for {
-			if ia.progress.GetCurrent() == ia.progress.GetTotal() {
-				ia.progress.End()
-				break
-			}
-
-			time.Sleep(time.Second)
-		}
-
-		liveLog := log.New(ia.liveWriter, "", 0)
-		startTime := time.Now().Round(time.Second)
-		ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
-
-		for {
-			select {
-			case <-requestComplete:
-				ticker.Stop()
-				ia.liveWriter.Stop()
-				progressComplete <- true
-			case now := <-ticker.C:
-				liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
-			}
-		}
-	}()
-
-	resp, err := ia.client.Do(req)
-	requestComplete <- true
-	<-progressComplete
-
+	resp, err := ia.progressClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}

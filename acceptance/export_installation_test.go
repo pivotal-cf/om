@@ -31,31 +31,26 @@ var _ = Describe("export-installation command", func() {
 		outputFileName = tempFile.Name()
 
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{
+					"access_token": "some-opsman-token",
+					"token_type": "bearer",
+					"expires_in": 3600
+				}`))
+
 			case "/api/v0/installation_asset_collection":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-				responseString = "some-installation"
 				time.Sleep(2 * time.Second)
+				w.Write([]byte("some-installation"))
+
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
 				Fail(fmt.Sprintf("unexpected request: %s", out))
 			}
 
-			w.Write([]byte(responseString))
 		}))
 	})
 
@@ -63,7 +58,7 @@ var _ = Describe("export-installation command", func() {
 		os.Remove(outputFileName)
 	})
 
-	It("successfully exports the installation of the ops-manager", func() {
+	FIt("successfully exports the installation of the ops-manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
@@ -77,9 +72,12 @@ var _ = Describe("export-installation command", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session, 5).Should(gexec.Exit(0))
-		Eventually(session.Out, 5).Should(gbytes.Say("exporting installation"))
-		Eventually(session.Out, 5).Should(gbytes.Say("2s elapsed, waiting for response"))
-		Eventually(session.Out, 5).Should(gbytes.Say("finished exporting installation"))
+		fmt.Printf("session.Out: %#v\n", string(session.Out.Contents()))
+		fmt.Printf("session.Err: %#v\n", string(session.Err.Contents()))
+		Expect(session.Out).To(gbytes.Say("exporting installation"))
+		Expect(session.Err).To(gbytes.Say("waiting for response"))
+		Expect(session.Out).To(gbytes.Say(`100(\.\d+)?%`))
+		Expect(session.Out).To(gbytes.Say("finished exporting installation"))
 
 		content, err := ioutil.ReadFile(outputFileName)
 		Expect(err).NotTo(HaveOccurred())

@@ -107,6 +107,40 @@ var _ = Describe("ProgressClient", func() {
 			})
 		})
 
+		It("makes a request to download the product to the Ops Manager", func() {
+			client.DoReturns(&http.Response{
+				StatusCode:    http.StatusOK,
+				ContentLength: int64(len([]byte("fake-server-response"))),
+				Body:          ioutil.NopCloser(strings.NewReader("fake-server-response")),
+			}, nil)
+
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("fake-wrapper-response")))
+
+			req, err := http.NewRequest("GET", "/some/endpoint", nil)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Second))
+
+			resp, err := progressClient.Do(req)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			rawRespBody, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(rawRespBody)).To(Equal("fake-wrapper-response"))
+
+			request := client.DoArgsForCall(0)
+			Expect(request.Method).To(Equal("GET"))
+			Expect(request.URL.Path).To(Equal("/some/endpoint"))
+
+			Expect(bar.SetTotalCallCount()).To(Equal(1))
+			Expect(bar.SetTotalArgsForCall(0)).To(Equal(int64(len([]byte("fake-server-response")))))
+
+			Expect(bar.KickoffCallCount()).To(Equal(1))
+			Expect(bar.EndCallCount()).To(Equal(1))
+		})
+
 		Context("when the polling interval is greater than 1", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {

@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,15 +18,15 @@ import (
 var _ = Describe("InstallationAssetService", func() {
 	Describe("Export", func() {
 		var (
-			client     *fakes.HttpClient
-			outputFile *os.File
-			bar        *fakes.Progress
-			liveWriter *fakes.LiveWriter
+			progressClient *fakes.HttpClient
+			outputFile     *os.File
+			bar            *fakes.Progress
+			liveWriter     *fakes.LiveWriter
 		)
 
 		BeforeEach(func() {
 			var err error
-			client = &fakes.HttpClient{}
+			progressClient = &fakes.HttpClient{}
 			liveWriter = &fakes.LiveWriter{}
 			outputFile, err = ioutil.TempFile("", "")
 			Expect(err).NotTo(HaveOccurred())
@@ -40,148 +39,33 @@ var _ = Describe("InstallationAssetService", func() {
 		})
 
 		It("makes a request to export the current Ops Manager installation", func() {
-			client.DoReturns(&http.Response{
+			progressClient.DoReturns(&http.Response{
 				StatusCode:    http.StatusOK,
-				ContentLength: 22,
+				ContentLength: int64(len([]byte("some-installation"))),
 				Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
 			}, nil)
 
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-			service := api.NewInstallationAssetService(client, bar, liveWriter)
+			service := api.NewInstallationAssetService(nil, progressClient)
 
 			err := service.Export(outputFile.Name(), 1)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("posting to the installation_asset_collection endpoint")
-			request := client.DoArgsForCall(0)
+			request := progressClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
 
 			By("writing the installation to a local file")
 			ins, err := ioutil.ReadFile(outputFile.Name())
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(ins)).To(Equal("some-fake-installation"))
-
-			newReaderContent, err := ioutil.ReadAll(bar.NewBarReaderArgsForCall(0))
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(string(newReaderContent)).To(Equal("some-installation"))
-			Expect(bar.SetTotalArgsForCall(0)).To(BeNumerically("==", 22))
-			Expect(bar.KickoffCallCount()).To(Equal(1))
-			Expect(bar.EndCallCount()).To(Equal(1))
-		})
-
-		It("logs while waiting for a response from the Ops Manager", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				if req.URL.Path == "/api/v0/installation_asset_collection" {
-					time.Sleep(5 * time.Second)
-					return &http.Response{
-						StatusCode:    http.StatusOK,
-						Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
-						ContentLength: 22,
-					}, nil
-				}
-				return nil, nil
-			}
-
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-			service := api.NewInstallationAssetService(client, bar, liveWriter)
-
-			pollingInterval := 1
-			err := service.Export(outputFile.Name(), pollingInterval)
-			Expect(err).NotTo(HaveOccurred())
-
-			By("starting the live log writer")
-			Expect(liveWriter.StartCallCount()).To(Equal(1))
-
-			By("writing to the live log writer")
-			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
-			for i := 0; i < liveWriter.WriteCallCount(); i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
-			}
-
-			By("flushing the live log writer")
-			Expect(liveWriter.StopCallCount()).To(Equal(1))
-		})
-
-		Context("when the polling interval is greater than 1", func() {
-			It("prints logs at the interval", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					if req.URL.Path == "/api/v0/installation_asset_collection" {
-						time.Sleep(6 * time.Second)
-						return &http.Response{
-							StatusCode:    http.StatusOK,
-							Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
-							ContentLength: 22,
-						}, nil
-					}
-					return nil, nil
-				}
-
-				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-				service := api.NewInstallationAssetService(client, bar, liveWriter)
-
-				pollingInterval := 2
-				err := service.Export(outputFile.Name(), pollingInterval)
-				Expect(err).NotTo(HaveOccurred())
-
-				By("starting the live log writer")
-				Expect(liveWriter.StartCallCount()).To(Equal(1))
-
-				By("writing to the live log writer")
-				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 3, 1))
-				for i := 0; i < liveWriter.WriteCallCount(); i++ {
-					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", 2*(i+1))))
-				}
-
-				By("flushing the live log writer")
-				Expect(liveWriter.StopCallCount()).To(Equal(1))
-
-			})
-			Context("when the polling interval is higher than the time it takes to export the installation", func() {
-				It("exits when the export finishes", func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						if req.URL.Path == "/api/v0/installation_asset_collection" {
-							time.Sleep(2 * time.Second)
-							return &http.Response{
-								StatusCode:    http.StatusOK,
-								Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
-								ContentLength: 22,
-							}, nil
-						}
-						return nil, nil
-					}
-
-					bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
-
-					By("exiting when the export is finished")
-					var err error
-					errChan := make(chan error)
-					outputFileName := outputFile.Name()
-					go func(outputFileName string) {
-						errChan <- service.Export(outputFileName, 20)
-					}(outputFileName)
-					Eventually(errChan, 3*time.Second).Should(Receive(&err))
-					Expect(err).ToNot(HaveOccurred())
-
-					By("starting the live log writer")
-					Expect(liveWriter.StartCallCount()).To(Equal(1))
-
-					By("not writing to the live log writer")
-					Expect(liveWriter.WriteCallCount()).To(Equal(0))
-
-					By("flushing the live log writer")
-					Expect(liveWriter.StopCallCount()).To(Equal(1))
-				})
-			})
+			Expect(string(ins)).To(Equal("some-installation"))
 		})
 
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
+					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
+					service := api.NewInstallationAssetService(nil, progressClient)
 
 					err := service.Export("fake-file", 1)
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -190,11 +74,11 @@ var _ = Describe("InstallationAssetService", func() {
 
 			Context("when the api returns a non-200 status code", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
+					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
+					service := api.NewInstallationAssetService(nil, progressClient)
 
 					err := service.Export("fake-file", 1)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -203,12 +87,11 @@ var _ = Describe("InstallationAssetService", func() {
 
 			Context("when the output file cannot be written", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
+					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
+					service := api.NewInstallationAssetService(nil, progressClient)
 
 					err := service.Export("fake-dir/fake-file", 1)
 					Expect(err).To(MatchError(ContainSubstring("no such file")))
@@ -217,13 +100,12 @@ var _ = Describe("InstallationAssetService", func() {
 
 			Context("when the response length doesn't match the number of bytes copied", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
+					progressClient.DoReturns(&http.Response{
 						StatusCode:    http.StatusOK,
 						Body:          ioutil.NopCloser(strings.NewReader("{}")),
 						ContentLength: 50,
 					}, nil)
-					bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
+					service := api.NewInstallationAssetService(nil, progressClient)
 
 					err := service.Export(outputFile.Name(), 1)
 					Expect(err).To(MatchError(ContainSubstring("invalid response length")))
@@ -234,26 +116,21 @@ var _ = Describe("InstallationAssetService", func() {
 
 	Describe("Import", func() {
 		var (
-			client     *fakes.HttpClient
-			bar        *fakes.Progress
-			liveWriter *fakes.LiveWriter
+			progressClient *fakes.HttpClient
 		)
 
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			liveWriter = &fakes.LiveWriter{}
-			bar = &fakes.Progress{}
+			progressClient = &fakes.HttpClient{}
 		})
 
 		It("makes a request to import the installation to the Ops Manager", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
+			progressClient.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader("{}")),
 				}, nil
 			}
 
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other installation")))
-			service := api.NewInstallationAssetService(client, bar, liveWriter)
+			service := api.NewInstallationAssetService(nil, progressClient)
 
 			err := service.Import(api.ImportInstallationInput{
 				ContentLength:   10,
@@ -263,7 +140,7 @@ var _ = Describe("InstallationAssetService", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			request := client.DoArgsForCall(0)
+			request := progressClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("POST"))
 			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
 			Expect(request.ContentLength).To(Equal(int64(10)))
@@ -272,136 +149,14 @@ var _ = Describe("InstallationAssetService", func() {
 			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(body)).To(Equal("some other installation"))
-
-			newReaderContent, err := ioutil.ReadAll(bar.NewBarReaderArgsForCall(0))
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(string(newReaderContent)).To(Equal("some installation"))
-			Expect(bar.SetTotalArgsForCall(0)).To(BeNumerically("==", 10))
-			Expect(bar.KickoffCallCount()).To(Equal(1))
-			By("ending the progress bar")
-			Expect(bar.EndCallCount()).To(Equal(1))
-		})
-
-		It("logs while waiting for a response from the Ops Manager", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				if req.URL.Path == "/api/v0/installation_asset_collection" {
-					time.Sleep(5 * time.Second)
-					return &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
-					}, nil
-				}
-				return nil, nil
-			}
-
-			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
-			service := api.NewInstallationAssetService(client, bar, liveWriter)
-
-			err := service.Import(api.ImportInstallationInput{
-				ContentLength:   10,
-				Installation:    strings.NewReader("some installation"),
-				ContentType:     "some content-type",
-				PollingInterval: 1,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			By("starting the live log writer")
-			Expect(liveWriter.StartCallCount()).To(Equal(1))
-
-			By("writing to the live log writer")
-			Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 5, 1))
-
-			for i := 0; i < liveWriter.WriteCallCount(); i++ {
-				Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", i+1)))
-			}
-
-			By("flushing the live log writer")
-			Expect(liveWriter.StopCallCount()).To(Equal(1))
-		})
-
-		Context("when the polling interval is greater than 1", func() {
-			It("prints logs at the interval", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					time.Sleep(6 * time.Second)
-					return &http.Response{StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader("{}")),
-					}, nil
-				}
-
-				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other installation")))
-				service := api.NewInstallationAssetService(client, bar, liveWriter)
-
-				err := service.Import(api.ImportInstallationInput{
-					ContentLength:   10,
-					Installation:    strings.NewReader("some installation"),
-					ContentType:     "some content-type",
-					PollingInterval: 2,
-				})
-				Expect(err).NotTo(HaveOccurred())
-
-				By("starting the live log writer")
-				Expect(liveWriter.StartCallCount()).To(Equal(1))
-
-				By("writing to the live log writer")
-				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 3, 1))
-				for i := 0; i < liveWriter.WriteCallCount(); i++ {
-					Expect(string(liveWriter.WriteArgsForCall(i))).To(ContainSubstring(fmt.Sprintf("%ds elapsed", 2*(i+1))))
-				}
-
-				By("flushing the live log writer")
-				Expect(liveWriter.StopCallCount()).To(Equal(1))
-			})
-
-		})
-
-		Context("when the polling interval is higher than the time it takes to export the installation", func() {
-			It("exits when the export finishes", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					time.Sleep(2 * time.Second)
-					return &http.Response{StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader("{}")),
-					}, nil
-				}
-
-				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other installation")))
-				service := api.NewInstallationAssetService(client, bar, liveWriter)
-
-				var err error
-				errChan := make(chan error)
-
-				go func(input api.ImportInstallationInput) {
-					errChan <- service.Import(input)
-				}(
-					api.ImportInstallationInput{
-						ContentLength:   10,
-						Installation:    strings.NewReader("some installation"),
-						ContentType:     "some content-type",
-						PollingInterval: 20,
-					},
-				)
-
-				Eventually(errChan, 3*time.Second).Should(Receive(&err))
-				Expect(err).ToNot(HaveOccurred())
-
-				By("starting the live log writer")
-				Expect(liveWriter.StartCallCount()).To(Equal(1))
-
-				By("not writing to the live log writer")
-				Expect(liveWriter.WriteCallCount()).To(Equal(0))
-
-				By("flushing the live log writer")
-				Expect(liveWriter.StopCallCount()).To(Equal(1))
-
-			})
+			Expect(string(body)).To(Equal("some installation"))
 		})
 
 		Context("when an error occurs", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
+					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
+					service := api.NewInstallationAssetService(nil, progressClient)
 
 					err := service.Import(api.ImportInstallationInput{
 						PollingInterval: 1,
@@ -412,11 +167,11 @@ var _ = Describe("InstallationAssetService", func() {
 
 			Context("when the api returns a non-200 status code", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
+					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewInstallationAssetService(client, bar, liveWriter)
+					service := api.NewInstallationAssetService(nil, progressClient)
 
 					err := service.Import(api.ImportInstallationInput{
 						PollingInterval: 1,
@@ -448,7 +203,7 @@ var _ = Describe("InstallationAssetService", func() {
 				}, nil
 			}
 
-			service := api.NewInstallationAssetService(client, nil, nil)
+			service := api.NewInstallationAssetService(client, nil)
 
 			output, err := service.Delete()
 			Expect(err).NotTo(HaveOccurred())
@@ -474,7 +229,7 @@ var _ = Describe("InstallationAssetService", func() {
 				}, nil
 			}
 
-			service := api.NewInstallationAssetService(client, nil, nil)
+			service := api.NewInstallationAssetService(client, nil)
 
 			output, err := service.Delete()
 			Expect(err).NotTo(HaveOccurred())
@@ -485,7 +240,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewInstallationAssetService(client, nil, nil)
+					service := api.NewInstallationAssetService(client, nil)
 
 					_, err := service.Delete()
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -498,7 +253,7 @@ var _ = Describe("InstallationAssetService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewInstallationAssetService(client, nil, nil)
+					service := api.NewInstallationAssetService(client, nil)
 
 					_, err := service.Delete()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -511,7 +266,7 @@ var _ = Describe("InstallationAssetService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("%%%")),
 					}, nil)
-					service := api.NewInstallationAssetService(client, nil, nil)
+					service := api.NewInstallationAssetService(client, nil)
 
 					_, err := service.Delete()
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
