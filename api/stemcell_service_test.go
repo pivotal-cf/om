@@ -31,7 +31,7 @@ var _ = Describe("StemcellService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader("{}")),
 			}, nil)
 
-			bar.NewBarReaderReturns(strings.NewReader("some other content"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other content")))
 			service := api.NewUploadStemcellService(client, bar)
 
 			output, err := service.Upload(api.StemcellUploadInput{

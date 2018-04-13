@@ -44,7 +44,7 @@ var _ = Describe("AvailableProductsService", func() {
 				}, nil
 			}
 
-			bar.NewBarReaderReturns(strings.NewReader("some other content"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other content")))
 
 			output, err := service.Upload(api.UploadProductInput{
 				ContentLength:   10,
@@ -82,7 +82,7 @@ var _ = Describe("AvailableProductsService", func() {
 				return nil, nil
 			}
 
-			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 			_, err := service.Upload(api.UploadProductInput{
 				ContentLength:   10,
@@ -118,7 +118,7 @@ var _ = Describe("AvailableProductsService", func() {
 					return nil, nil
 				}
 
-				bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 				_, err := service.Upload(api.UploadProductInput{
 					ContentLength:   10,
@@ -157,7 +157,7 @@ var _ = Describe("AvailableProductsService", func() {
 					return nil, nil
 				}
 
-				bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 				_, err := service.Upload(api.UploadProductInput{
 					ContentLength:   10,

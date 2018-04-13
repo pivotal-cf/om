@@ -31,7 +31,7 @@ func (b Bar) GetTotal() int64 {
 	return b.Total
 }
 
-func (b Bar) NewBarReader(r io.Reader) io.Reader {
+func (b Bar) NewBarReader(r io.Reader) io.ReadCloser {
 	return b.NewProxyReader(r)
 }
 

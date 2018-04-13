@@ -12,16 +12,16 @@ type Progress struct {
 	setTotalArgsForCall []struct {
 		arg1 int64
 	}
-	NewBarReaderStub        func(io.Reader) io.Reader
+	NewBarReaderStub        func(io.Reader) io.ReadCloser
 	newBarReaderMutex       sync.RWMutex
 	newBarReaderArgsForCall []struct {
 		arg1 io.Reader
 	}
 	newBarReaderReturns struct {
-		result1 io.Reader
+		result1 io.ReadCloser
 	}
 	newBarReaderReturnsOnCall map[int]struct {
-		result1 io.Reader
+		result1 io.ReadCloser
 	}
 	KickoffStub         func()
 	kickoffMutex        sync.RWMutex
@@ -75,7 +75,7 @@ func (fake *Progress) SetTotalArgsForCall(i int) int64 {
 	return fake.setTotalArgsForCall[i].arg1
 }
 
-func (fake *Progress) NewBarReader(arg1 io.Reader) io.Reader {
+func (fake *Progress) NewBarReader(arg1 io.Reader) io.ReadCloser {
 	fake.newBarReaderMutex.Lock()
 	ret, specificReturn := fake.newBarReaderReturnsOnCall[len(fake.newBarReaderArgsForCall)]
 	fake.newBarReaderArgsForCall = append(fake.newBarReaderArgsForCall, struct {
@@ -104,22 +104,22 @@ func (fake *Progress) NewBarReaderArgsForCall(i int) io.Reader {
 	return fake.newBarReaderArgsForCall[i].arg1
 }
 
-func (fake *Progress) NewBarReaderReturns(result1 io.Reader) {
+func (fake *Progress) NewBarReaderReturns(result1 io.ReadCloser) {
 	fake.NewBarReaderStub = nil
 	fake.newBarReaderReturns = struct {
-		result1 io.Reader
+		result1 io.ReadCloser
 	}{result1}
 }
 
-func (fake *Progress) NewBarReaderReturnsOnCall(i int, result1 io.Reader) {
+func (fake *Progress) NewBarReaderReturnsOnCall(i int, result1 io.ReadCloser) {
 	fake.NewBarReaderStub = nil
 	if fake.newBarReaderReturnsOnCall == nil {
 		fake.newBarReaderReturnsOnCall = make(map[int]struct {
-			result1 io.Reader
+			result1 io.ReadCloser
 		})
 	}
 	fake.newBarReaderReturnsOnCall[i] = struct {
-		result1 io.Reader
+		result1 io.ReadCloser
 	}{result1}
 }
 

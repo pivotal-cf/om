@@ -46,7 +46,7 @@ var _ = Describe("InstallationAssetService", func() {
 				Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
 			}, nil)
 
-			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Export(outputFile.Name(), 1)
@@ -84,7 +84,7 @@ var _ = Describe("InstallationAssetService", func() {
 				return nil, nil
 			}
 
-			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			pollingInterval := 1
@@ -118,7 +118,7 @@ var _ = Describe("InstallationAssetService", func() {
 					return nil, nil
 				}
 
-				bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 				service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 				pollingInterval := 2
@@ -152,7 +152,7 @@ var _ = Describe("InstallationAssetService", func() {
 						return nil, nil
 					}
 
-					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+					bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					By("exiting when the export is finished")
@@ -207,7 +207,7 @@ var _ = Describe("InstallationAssetService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+					bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Export("fake-dir/fake-file", 1)
@@ -222,7 +222,7 @@ var _ = Describe("InstallationAssetService", func() {
 						Body:          ioutil.NopCloser(strings.NewReader("{}")),
 						ContentLength: 50,
 					}, nil)
-					bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+					bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 					service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 					err := service.Export(outputFile.Name(), 1)
@@ -252,7 +252,7 @@ var _ = Describe("InstallationAssetService", func() {
 				}, nil
 			}
 
-			bar.NewBarReaderReturns(strings.NewReader("some other installation"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other installation")))
 			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Import(api.ImportInstallationInput{
@@ -296,7 +296,7 @@ var _ = Describe("InstallationAssetService", func() {
 				return nil, nil
 			}
 
-			bar.NewBarReaderReturns(strings.NewReader("some-fake-installation"))
+			bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 			service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 			err := service.Import(api.ImportInstallationInput{
@@ -330,7 +330,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil
 				}
 
-				bar.NewBarReaderReturns(strings.NewReader("some other installation"))
+				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other installation")))
 				service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 				err := service.Import(api.ImportInstallationInput{
@@ -365,7 +365,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil
 				}
 
-				bar.NewBarReaderReturns(strings.NewReader("some other installation"))
+				bar.NewBarReaderReturns(ioutil.NopCloser(strings.NewReader("some other installation")))
 				service := api.NewInstallationAssetService(client, bar, liveWriter)
 
 				var err error

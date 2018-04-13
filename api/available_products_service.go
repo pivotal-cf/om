@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 const availableProductsEndpoint = "/api/v0/available_products"
@@ -51,10 +49,7 @@ func NewAvailableProductsService(client httpClient, progress progress, liveWrite
 }
 
 func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProductOutput, error) {
-	ap.progress.SetTotal(input.ContentLength)
-	body := ap.progress.NewBarReader(input.Product)
-
-	req, err := http.NewRequest("POST", availableProductsEndpoint, body)
+	req, err := http.NewRequest("POST", availableProductsEndpoint, input.Product)
 	if err != nil {
 		return UploadProductOutput{}, err
 	}
@@ -62,50 +57,8 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	requestComplete := make(chan bool)
-	progressComplete := make(chan bool)
-
-	go func() {
-		ap.progress.Kickoff()
-		ap.liveWriter.Start()
-
-		for {
-			select {
-			case <-requestComplete:
-				ap.progress.End()
-				ap.liveWriter.Stop()
-				progressComplete <- true
-				return
-			default:
-				if ap.progress.GetCurrent() != ap.progress.GetTotal() {
-					time.Sleep(time.Second)
-					continue
-				}
-
-				ap.progress.End()
-
-				liveLog := log.New(ap.liveWriter, "", 0)
-				startTime := time.Now().Round(time.Second)
-				ticker := time.NewTicker(time.Duration(input.PollingInterval) * time.Second)
-
-				for {
-					select {
-					case <-requestComplete:
-						ticker.Stop()
-						ap.liveWriter.Stop()
-						progressComplete <- true
-					case now := <-ticker.C:
-						liveLog.Printf("%s elapsed, waiting for response from Ops Manager...\r", now.Round(time.Second).Sub(startTime).String())
-					}
-				}
-			}
-		}
-	}()
-
-	resp, err := ap.client.Do(req)
-	requestComplete <- true
-	<-progressComplete
-
+	pc := NewProgressClient(ap.client, ap.progress, ap.liveWriter, input.PollingInterval)
+	resp, err := pc.Do(req)
 	if err != nil {
 		return UploadProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
