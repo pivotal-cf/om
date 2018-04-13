@@ -105,7 +105,7 @@ No additional security configuration is strictly required.
           "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
           "dns": "8.8.8.8",
           "gateway": "10.0.0.1",
-          "availability_zones": [
+          "availability_zone_names": [
             "az-1",
             "az-2",
             "az-3"
@@ -123,7 +123,7 @@ No additional security configuration is strictly required.
           "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
           "dns": "8.8.8.8",
           "gateway": "10.0.4.1",
-          "availability_zones": [
+          "availability_zone_names": [
             "az-1",
             "az-2",
             "az-3"
@@ -141,7 +141,7 @@ No additional security configuration is strictly required.
           "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
           "dns": "8.8.8.8",
           "gateway": "10.0.8.1",
-          "availability_zones": [
+          "availability_zone_names": [
             "az-1",
             "az-2",
             "az-3"
