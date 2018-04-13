@@ -65,7 +65,7 @@ In the example configuration below, we have taken a single GCP network and descr
           "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
           "dns": "8.8.8.8",
           "gateway": "10.0.0.1",
-          "availability_zones": [
+          "availability_zone_names": [
             "us-central1-a",
             "us-central1-b",
             "us-central1-c"
@@ -82,7 +82,7 @@ In the example configuration below, we have taken a single GCP network and descr
           "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
           "dns": "8.8.8.8",
           "gateway": "10.0.4.1",
-          "availability_zones": [
+          "availability_zone_names": [
             "us-central1-a",
             "us-central1-b",
             "us-central1-c"
@@ -100,7 +100,7 @@ In the example configuration below, we have taken a single GCP network and descr
           "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
           "dns": "8.8.8.8",
           "gateway": "10.0.8.1",
-          "availability_zones": [
+          "availability_zone_names": [
             "us-central1-a",
             "us-central1-b",
             "us-central1-c"
