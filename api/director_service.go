@@ -47,7 +47,6 @@ func NewDirectorService(client httpClient) DirectorService {
 }
 
 func (d DirectorService) SetAZConfiguration(input AvailabilityZoneInput) error {
-
 	azs := AvailabilityZones{}
 	err := yaml.Unmarshal(input.AvailabilityZones, &azs.AvailabilityZones)
 	if err != nil {
@@ -60,31 +59,9 @@ func (d DirectorService) SetAZConfiguration(input AvailabilityZoneInput) error {
 		}
 	}
 
-	existingAzsResponse, err := d.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
+	azs, err = d.addGUIDToExistingAZs(azs)
 	if err != nil {
-		if existingAzsResponse.StatusCode != http.StatusNotFound {
-			return fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
-		}
-	}
-
-	existingAzsJSON, err := ioutil.ReadAll(existingAzsResponse.Body)
-	if err != nil {
-		return fmt.Errorf("unable to read existing AZ configuration: %s", err) // un-tested
-	}
-
-	var existingAZs AvailabilityZones
-	err = yaml.Unmarshal(existingAzsJSON, &existingAZs)
-	if err != nil {
-		return fmt.Errorf("problem retrieving existing AZs: response is not well-formed: %s", err)
-	}
-
-	for _, az := range azs.AvailabilityZones {
-		for _, existingAZ := range existingAZs.AvailabilityZones {
-			if az.Name == existingAZ.Name {
-				az.GUID = existingAZ.GUID
-				break
-			}
-		}
+		return err
 	}
 
 	decoratedConfig, err := yaml.Marshal(azs)
@@ -129,6 +106,40 @@ func (d DirectorService) SetProperties(input DirectorProperties) error {
 
 	_, err = d.sendAPIRequest("PUT", "/api/v0/staged/director/properties", jsonData)
 	return err
+}
+
+func (d DirectorService) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, error) {
+	existingAzsResponse, err := d.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
+	if err != nil {
+		if existingAzsResponse.StatusCode != http.StatusNotFound {
+			return AvailabilityZones{}, fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
+		}
+	}
+
+	if existingAzsResponse.StatusCode == http.StatusNotFound {
+		return azs, nil
+	}
+
+	existingAzsJSON, err := ioutil.ReadAll(existingAzsResponse.Body)
+	if err != nil {
+		return AvailabilityZones{}, fmt.Errorf("unable to read existing AZ configuration: %s", err) // un-tested
+	}
+
+	var existingAZs AvailabilityZones
+	err = yaml.Unmarshal(existingAzsJSON, &existingAZs)
+	if err != nil {
+		return AvailabilityZones{}, fmt.Errorf("problem retrieving existing AZs: response is not well-formed: %s", err)
+	}
+
+	for _, az := range azs.AvailabilityZones {
+		for _, existingAZ := range existingAZs.AvailabilityZones {
+			if az.Name == existingAZ.Name {
+				az.GUID = existingAZ.GUID
+				break
+			}
+		}
+	}
+	return azs, nil
 }
 
 func (d DirectorService) sendAPIRequest(verb, endpoint string, jsonData []byte) (*http.Response, error) {

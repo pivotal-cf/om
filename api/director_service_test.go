@@ -133,7 +133,7 @@ var _ = Describe("DirectorService", func() {
 					}
 					return &http.Response{
 						StatusCode: statusCode,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader("some error")),
 					}, nil
 				}
 			})
