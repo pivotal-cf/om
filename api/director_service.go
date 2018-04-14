@@ -11,8 +11,15 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+//go:generate counterfeiter -o ./fakes/logger.go --fake-name Logger . logger
+
+type logger interface {
+	Println(v ...interface{})
+}
+
 type DirectorService struct {
 	client httpClient
+	stderr logger
 }
 
 type AvailabilityZoneInput struct {
@@ -40,9 +47,10 @@ type DirectorProperties struct {
 	SyslogConfiguration   json.RawMessage `json:"syslog_configuration,omitempty"`
 }
 
-func NewDirectorService(client httpClient) DirectorService {
+func NewDirectorService(client httpClient, stderr logger) DirectorService {
 	return DirectorService{
 		client: client,
+		stderr: stderr,
 	}
 }
 
@@ -117,6 +125,7 @@ func (d DirectorService) addGUIDToExistingAZs(azs AvailabilityZones) (Availabili
 	}
 
 	if existingAzsResponse.StatusCode == http.StatusNotFound {
+		d.stderr.Println("unable to retrieve existing AZ configuration, attempting to configure anyway")
 		return azs, nil
 	}
 

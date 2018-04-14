@@ -136,7 +136,7 @@ func main() {
 	dashboardService := api.NewDashboardService(authedCookieClient)
 	certificateAuthoritiesService := api.NewCertificateAuthoritiesService(authedClient)
 	certificatesService := api.NewCertificatesService(authedClient)
-	directorService := api.NewDirectorService(authedClient)
+	directorService := api.NewDirectorService(authedClient, stderr)
 	vmExtensionService := api.NewVMExtensionsService(authedClient)
 
 	form, err := formcontent.NewForm()

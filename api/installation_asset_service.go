@@ -21,10 +21,6 @@ type InstallationAssetService struct {
 	progressClient httpClient
 }
 
-type logger interface {
-	Printf(format string, v ...interface{})
-}
-
 func NewInstallationAssetService(client, progressClient httpClient) InstallationAssetService {
 	return InstallationAssetService{
 		client:         client,

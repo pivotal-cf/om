@@ -16,12 +16,14 @@ import (
 var _ = Describe("DirectorService", func() {
 	var (
 		client          *fakes.HttpClient
+		stderr          *fakes.Logger
 		directorService api.DirectorService
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		directorService = api.NewDirectorService(client)
+		stderr = &fakes.Logger{}
+		directorService = api.NewDirectorService(client, stderr)
 
 		client.DoReturns(&http.Response{
 			StatusCode: http.StatusOK,
@@ -54,6 +56,7 @@ var _ = Describe("DirectorService", func() {
         ]`),
 			})
 			Expect(err).NotTo(HaveOccurred())
+			Expect(stderr.Invocations()).To(HaveLen(0))
 
 			Expect(client.DoCallCount()).To(Equal(2))
 
@@ -152,6 +155,20 @@ var _ = Describe("DirectorService", func() {
 
 				Expect(putReq.Method).To(Equal("PUT"))
 				Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			})
+
+			It("prints a warning to the operator", func() {
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[
+          {"name": "new-az"}
+        ]`),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(stderr.PrintlnCallCount()).To(Equal(1))
+				warning := stderr.PrintlnArgsForCall(0)
+				Expect(warning[0]).To(Equal(
+					"unable to retrieve existing AZ configuration, attempting to configure anyway"))
 			})
 		})
 
