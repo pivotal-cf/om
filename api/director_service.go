@@ -62,11 +62,18 @@ func (d DirectorService) SetAZConfiguration(input AvailabilityZoneInput) error {
 
 	existingAzsResponse, err := d.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	if err != nil {
-		return fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
+		if existingAzsResponse.StatusCode != http.StatusNotFound {
+			return fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
+		}
+	}
+
+	existingAzsJSON, err := ioutil.ReadAll(existingAzsResponse.Body)
+	if err != nil {
+		return fmt.Errorf("unable to read existing AZ configuration: %s", err) // un-tested
 	}
 
 	var existingAZs AvailabilityZones
-	err = yaml.Unmarshal(existingAzsResponse, &existingAZs)
+	err = yaml.Unmarshal(existingAzsJSON, &existingAZs)
 	if err != nil {
 		return fmt.Errorf("problem retrieving existing AZs: response is not well-formed: %s", err)
 	}
@@ -124,23 +131,23 @@ func (d DirectorService) SetProperties(input DirectorProperties) error {
 	return err
 }
 
-func (d DirectorService) sendAPIRequest(verb, endpoint string, jsonData []byte) ([]byte, error) {
+func (d DirectorService) sendAPIRequest(verb, endpoint string, jsonData []byte) (*http.Response, error) {
 	req, err := http.NewRequest(verb, endpoint, bytes.NewReader(jsonData))
 	if err != nil {
-		return []byte{}, fmt.Errorf("could not create api request %s %s: %s", verb, endpoint, err.Error())
+		return nil, fmt.Errorf("could not create api request %s %s: %s", verb, endpoint, err.Error())
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := d.client.Do(req)
 	if err != nil {
-		return []byte{}, fmt.Errorf("could not send api request to %s %s: %s", verb, endpoint, err.Error())
+		return resp, fmt.Errorf("could not send api request to %s %s: %s", verb, endpoint, err.Error())
 	}
 
 	err = ValidateStatusOK(resp)
 	if err != nil {
-		return []byte{}, err
+		return resp, err
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return resp, nil
 }

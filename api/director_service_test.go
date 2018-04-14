@@ -124,6 +124,37 @@ var _ = Describe("DirectorService", func() {
 			}`))
 		})
 
+		Context("when the Ops Manager does not support retrieving existing availability zones", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					statusCode := http.StatusOK
+					if req.Method == "GET" {
+						statusCode = http.StatusNotFound
+					}
+					return &http.Response{
+						StatusCode: statusCode,
+						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					}, nil
+				}
+			})
+
+			It("continues to configure the availability zones", func() {
+				err := directorService.SetAZConfiguration(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[
+          {"name": "new-az"}
+        ]`),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(2))
+
+				putReq := client.DoArgsForCall(1)
+
+				Expect(putReq.Method).To(Equal("PUT"))
+				Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			})
+		})
+
 		Context("failure cases", func() {
 
 			It("returns an error when the provided AZ config is malformed", func() {
@@ -142,7 +173,7 @@ var _ = Describe("DirectorService", func() {
 				Expect(err).To(MatchError(HavePrefix("provided AZ config [0] does not specify the AZ 'name'")))
 			})
 
-			It("returns an error when the GET http status is non-200", func() {
+			It("returns an error when the GET http status is not a 200 or 404", func() {
 				client.DoReturns(
 					&http.Response{
 						StatusCode: http.StatusInternalServerError,
