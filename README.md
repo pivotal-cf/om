@@ -80,7 +80,7 @@ Commands:
   installation-log                output installation logs
   installations                   list recent installation events
   pending-changes                 lists pending changes
-  regenerate-certificates         regenerates a certificate authority on the Opsman
+  regenerate-certificates         deletes all non-configurable certificates in Ops Manager
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   set-errand-state                sets state for a product's errand
   stage-product                   stages a given product in the Ops Manager targeted
