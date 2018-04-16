@@ -187,7 +187,7 @@ func main() {
 	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
 	commandSet["installations"] = commands.NewInstallations(installationsService, presenter)
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, pendingChangesService)
-	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificateAuthority(certificateAuthoritiesService, stdout)
+	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(certificateAuthoritiesService, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
 	commandSet["staged-config"] = commands.NewStagedConfig(struct {

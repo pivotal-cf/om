@@ -12,7 +12,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("regenerate certificate authority", func() {
+var _ = Describe("regenerate certificates", func() {
 	var server *httptest.Server
 
 	BeforeEach(func() {
@@ -36,7 +36,7 @@ var _ = Describe("regenerate certificate authority", func() {
 		}))
 	})
 
-	It("regenerates an inactive certificate authority on the OpsMan", func() {
+	It("regenerates certificates for an inactive certificate authority on the OpsMan", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
