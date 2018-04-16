@@ -25,6 +25,7 @@ var _ = Describe("ReadCloser", func() {
 			bar = &fakes.ProgressBar{}
 			bar.NewProxyReaderReturns(ioutil.NopCloser(reader))
 
+			callbackWasCalled = false
 			readCloser = progress.NewReadCloser(reader, bar, func() { callbackWasCalled = true })
 		})
 
