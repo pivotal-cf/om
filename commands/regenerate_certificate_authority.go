@@ -29,7 +29,7 @@ func (r RegenerateCertificateAuthority) Execute(_ []string) error {
 
 func (r RegenerateCertificateAuthority) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command regenerates certificate authority on the Ops Manager",
-		ShortDescription: "regenerates a certificate authority on the Opsman",
+		Description:      "This authenticated command deletes all non-configurable certificates in Ops Manager",
+		ShortDescription: "deletes all non-configurable certificates in Ops Manager",
 	}
 }
