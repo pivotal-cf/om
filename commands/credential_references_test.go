@@ -30,7 +30,7 @@ var _ = Describe("CredentialReferences", func() {
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			dpLister.ListReturns([]api.DeployedProductOutput{
+			dpLister.ListDeployedProductsReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-product",
 					GUID: "other-deployed-product-guid",
@@ -40,7 +40,7 @@ var _ = Describe("CredentialReferences", func() {
 		It("lists the credential references in alphabetical order", func() {
 			command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
-			crService.ListCredentialsReturns(api.CredentialReferencesOutput{
+			crService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{
 				Credentials: []string{
 					".properties.some-credentials",
 					".our-job.some-other-credential",
@@ -80,7 +80,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when the deployed product cannot be found", func() {
 				BeforeEach(func() {
-					dpLister.ListReturns([]api.DeployedProductOutput{}, nil)
+					dpLister.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
 				})
 
 				It("returns an error", func() {
@@ -97,7 +97,7 @@ var _ = Describe("CredentialReferences", func() {
 				It("prints a helpful message instead of a table", func() {
 					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
-					crService.ListCredentialsReturns(api.CredentialReferencesOutput{}, nil)
+					crService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{}, nil)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -114,7 +114,7 @@ var _ = Describe("CredentialReferences", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentialReferences(crService, dpLister, fakePresenter, logger)
 
-					crService.ListCredentialsReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
+					crService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -127,7 +127,7 @@ var _ = Describe("CredentialReferences", func() {
 
 			Context("when the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
-					dpLister.ListReturns(
+					dpLister.ListDeployedProductsReturns(
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 

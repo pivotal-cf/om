@@ -25,7 +25,7 @@ var _ = Describe("StagedManifest", func() {
 		stagedProductsService.FindReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{GUID: "some-product-guid", Type: "some-product"},
 		}, nil)
-		stagedProductsService.ManifestReturns(`---
+		stagedProductsService.GetStagedProductManifestReturns(`---
 name: some-product
 key: value
 `, nil)
@@ -42,8 +42,8 @@ key: value
 		Expect(stagedProductsService.FindCallCount()).To(Equal(1))
 		Expect(stagedProductsService.FindArgsForCall(0)).To(Equal("some-product"))
 
-		Expect(stagedProductsService.ManifestCallCount()).To(Equal(1))
-		Expect(stagedProductsService.ManifestArgsForCall(0)).To(Equal("some-product-guid"))
+		Expect(stagedProductsService.GetStagedProductManifestCallCount()).To(Equal(1))
+		Expect(stagedProductsService.GetStagedProductManifestArgsForCall(0)).To(Equal("some-product-guid"))
 
 		Expect(logger.PrintCallCount()).To(Equal(1))
 		Expect(logger.PrintArgsForCall(0)[0]).To(MatchYAML(`---
@@ -75,7 +75,7 @@ key: value
 
 		Context("when the staged products service manifest call fails", func() {
 			It("returns an error", func() {
-				stagedProductsService.ManifestReturns("", errors.New("product manifest failed"))
+				stagedProductsService.GetStagedProductManifestReturns("", errors.New("product manifest failed"))
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",

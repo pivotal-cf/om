@@ -29,7 +29,7 @@ func NewPendingChangesService(client httpClient) PendingChangesService {
 	}
 }
 
-func (pc PendingChangesService) List() (PendingChangesOutput, error) {
+func (pc PendingChangesService) ListStagedPendingChanges() (PendingChangesOutput, error) {
 	pcReq, err := http.NewRequest("GET", pendingChangesEndpoint, nil)
 	if err != nil {
 		return PendingChangesOutput{}, err

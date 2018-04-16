@@ -21,7 +21,7 @@ type ImportInstallation struct {
 
 //go:generate counterfeiter -o ./fakes/installation_asset_importer_service.go --fake-name InstallationAssetImporterService . installationAssetImporterService
 type installationAssetImporterService interface {
-	Import(api.ImportInstallationInput) error
+	UploadInstallationAssetCollection(api.ImportInstallationInput) error
 }
 
 func NewImportInstallation(multipart multipart, installationAssetImporterService installationAssetImporterService, setupService setupService, logger logger) ImportInstallation {
@@ -75,7 +75,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 
 	ii.logger.Printf("beginning installation import to Ops Manager")
 
-	err = ii.installationAssetImporterService.Import(api.ImportInstallationInput{
+	err = ii.installationAssetImporterService.UploadInstallationAssetCollection(api.ImportInstallationInput{
 		ContentLength:   submission.Length,
 		Installation:    submission.Content,
 		ContentType:     submission.ContentType,

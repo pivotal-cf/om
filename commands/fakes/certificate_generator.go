@@ -6,16 +6,16 @@ import (
 )
 
 type CertificateGenerator struct {
-	GenerateStub        func(string) (string, error)
-	generateMutex       sync.RWMutex
-	generateArgsForCall []struct {
+	GenerateCertificateStub        func(string) (string, error)
+	generateCertificateMutex       sync.RWMutex
+	generateCertificateArgsForCall []struct {
 		arg1 string
 	}
-	generateReturns struct {
+	generateCertificateReturns struct {
 		result1 string
 		result2 error
 	}
-	generateReturnsOnCall map[int]struct {
+	generateCertificateReturnsOnCall map[int]struct {
 		result1 string
 		result2 error
 	}
@@ -23,52 +23,52 @@ type CertificateGenerator struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateGenerator) Generate(arg1 string) (string, error) {
-	fake.generateMutex.Lock()
-	ret, specificReturn := fake.generateReturnsOnCall[len(fake.generateArgsForCall)]
-	fake.generateArgsForCall = append(fake.generateArgsForCall, struct {
+func (fake *CertificateGenerator) GenerateCertificate(arg1 string) (string, error) {
+	fake.generateCertificateMutex.Lock()
+	ret, specificReturn := fake.generateCertificateReturnsOnCall[len(fake.generateCertificateArgsForCall)]
+	fake.generateCertificateArgsForCall = append(fake.generateCertificateArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("Generate", []interface{}{arg1})
-	fake.generateMutex.Unlock()
-	if fake.GenerateStub != nil {
-		return fake.GenerateStub(arg1)
+	fake.recordInvocation("GenerateCertificate", []interface{}{arg1})
+	fake.generateCertificateMutex.Unlock()
+	if fake.GenerateCertificateStub != nil {
+		return fake.GenerateCertificateStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.generateReturns.result1, fake.generateReturns.result2
+	return fake.generateCertificateReturns.result1, fake.generateCertificateReturns.result2
 }
 
-func (fake *CertificateGenerator) GenerateCallCount() int {
-	fake.generateMutex.RLock()
-	defer fake.generateMutex.RUnlock()
-	return len(fake.generateArgsForCall)
+func (fake *CertificateGenerator) GenerateCertificateCallCount() int {
+	fake.generateCertificateMutex.RLock()
+	defer fake.generateCertificateMutex.RUnlock()
+	return len(fake.generateCertificateArgsForCall)
 }
 
-func (fake *CertificateGenerator) GenerateArgsForCall(i int) string {
-	fake.generateMutex.RLock()
-	defer fake.generateMutex.RUnlock()
-	return fake.generateArgsForCall[i].arg1
+func (fake *CertificateGenerator) GenerateCertificateArgsForCall(i int) string {
+	fake.generateCertificateMutex.RLock()
+	defer fake.generateCertificateMutex.RUnlock()
+	return fake.generateCertificateArgsForCall[i].arg1
 }
 
-func (fake *CertificateGenerator) GenerateReturns(result1 string, result2 error) {
-	fake.GenerateStub = nil
-	fake.generateReturns = struct {
+func (fake *CertificateGenerator) GenerateCertificateReturns(result1 string, result2 error) {
+	fake.GenerateCertificateStub = nil
+	fake.generateCertificateReturns = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CertificateGenerator) GenerateReturnsOnCall(i int, result1 string, result2 error) {
-	fake.GenerateStub = nil
-	if fake.generateReturnsOnCall == nil {
-		fake.generateReturnsOnCall = make(map[int]struct {
+func (fake *CertificateGenerator) GenerateCertificateReturnsOnCall(i int, result1 string, result2 error) {
+	fake.GenerateCertificateStub = nil
+	if fake.generateCertificateReturnsOnCall == nil {
+		fake.generateCertificateReturnsOnCall = make(map[int]struct {
 			result1 string
 			result2 error
 		})
 	}
-	fake.generateReturnsOnCall[i] = struct {
+	fake.generateCertificateReturnsOnCall[i] = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
@@ -77,8 +77,8 @@ func (fake *CertificateGenerator) GenerateReturnsOnCall(i int, result1 string, r
 func (fake *CertificateGenerator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.generateMutex.RLock()
-	defer fake.generateMutex.RUnlock()
+	fake.generateCertificateMutex.RLock()
+	defer fake.generateCertificateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

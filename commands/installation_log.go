@@ -26,7 +26,7 @@ func (i InstallationLog) Execute(args []string) error {
 		return fmt.Errorf("could not parse installation-log flags: %s", err)
 	}
 
-	output, err := i.service.Logs(i.Options.Id)
+	output, err := i.service.GetInstallationLogs(i.Options.Id)
 	if err != nil {
 		return err
 	}

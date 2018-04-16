@@ -14,7 +14,7 @@ type CertificateAuthorities struct {
 //go:generate counterfeiter -o ./fakes/certificate_authorities_service.go --fake-name CertificateAuthoritiesService . certificateAuthoritiesService
 
 type certificateAuthoritiesService interface {
-	List() (api.CertificateAuthoritiesOutput, error)
+	ListCertificateAuthorities() (api.CertificateAuthoritiesOutput, error)
 }
 
 func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.Presenter) CertificateAuthorities {
@@ -25,7 +25,7 @@ func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthorit
 }
 
 func (c CertificateAuthorities) Execute(_ []string) error {
-	casOutput, err := c.cas.List()
+	casOutput, err := c.cas.ListCertificateAuthorities()
 	if err != nil {
 		return err
 	}

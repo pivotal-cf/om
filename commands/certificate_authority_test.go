@@ -46,7 +46,7 @@ var _ = Describe("Certificate Authority", func() {
 			},
 		}
 
-		fakeCertificateAuthoritiesService.ListReturns(
+		fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 			api.CertificateAuthoritiesOutput{certificateAuthorities},
 			nil,
 		)
@@ -59,7 +59,7 @@ var _ = Describe("Certificate Authority", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthoritiesService.ListCallCount()).To(Equal(1))
+			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
 		})
 
 		It("prints the certificate authorities to a table", func() {
@@ -107,7 +107,7 @@ var _ = Describe("Certificate Authority", func() {
 
 			Context("when the service fails to retrieve CAs", func() {
 				BeforeEach(func() {
-					fakeCertificateAuthoritiesService.ListReturns(
+					fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 						api.CertificateAuthoritiesOutput{},
 						errors.New("service failed"),
 					)

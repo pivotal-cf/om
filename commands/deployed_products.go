@@ -20,7 +20,7 @@ func NewDeployedProducts(presenter presenters.Presenter, diagnosticService diagn
 }
 
 func (dp DeployedProducts) Execute(args []string) error {
-	diagnosticReport, err := dp.diagnosticService.Report()
+	diagnosticReport, err := dp.diagnosticService.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve deployed products %s", err)
 	}

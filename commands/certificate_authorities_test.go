@@ -31,12 +31,12 @@ var _ = Describe("Certificate Authorities", func() {
 			err := certificateAuthorities.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthoritiesService.ListCallCount()).To(Equal(1))
+			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
 		})
 
 		Context("when request for certificate authorities fails", func() {
 			It("returns an error", func() {
-				fakeCertificateAuthoritiesService.ListReturns(
+				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 					api.CertificateAuthoritiesOutput{},
 					fmt.Errorf("could not get certificate authorities"),
 				)
@@ -66,7 +66,7 @@ var _ = Describe("Certificate Authorities", func() {
 				},
 			}
 
-			fakeCertificateAuthoritiesService.ListReturns(
+			fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 				api.CertificateAuthoritiesOutput{certificateAuthoritiesOutput},
 				nil,
 			)

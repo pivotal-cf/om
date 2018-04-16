@@ -260,7 +260,7 @@ var _ = Describe("InstallationsService", func() {
 		})
 	})
 
-	Describe("Trigger", func() {
+	Describe("CreateInstallation", func() {
 		Context("When deploying all products", func() {
 			It("triggers an installation on an Ops Manager, deploying all products", func() {
 				client.DoReturns(&http.Response{
@@ -268,7 +268,7 @@ var _ = Describe("InstallationsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
 				}, nil)
 
-				output, err := is.Trigger(false, true)
+				output, err := is.CreateInstallation(false, true)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -291,7 +291,7 @@ var _ = Describe("InstallationsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
 				}, nil)
 
-				output, err := is.Trigger(false, false)
+				output, err := is.CreateInstallation(false, false)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -315,7 +315,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, errors.New("some error"))
 
-					_, err := is.Trigger(false, true)
+					_, err := is.CreateInstallation(false, true)
 					Expect(err).To(MatchError("could not make api request to installations endpoint: some error"))
 				})
 			})
@@ -327,7 +327,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					_, err := is.Trigger(false, true)
+					_, err := is.CreateInstallation(false, true)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -339,21 +339,21 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("##################")),
 					}, nil)
 
-					_, err := is.Trigger(false, true)
+					_, err := is.CreateInstallation(false, true)
 					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 				})
 			})
 		})
 	})
 
-	Describe("Status", func() {
+	Describe("GetInstallation", func() {
 		It("fetches the status of the installation from the Ops Manager", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{"status": "running"}`)),
 			}, nil)
 
-			output, err := is.Status(3232)
+			output, err := is.GetInstallation(3232)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output.Status).To(Equal("running"))
@@ -372,7 +372,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, errors.New("some error"))
 
-					_, err := is.Status(3232)
+					_, err := is.GetInstallation(3232)
 					Expect(err).To(MatchError("could not make api request to installations status endpoint: some error"))
 				})
 			})
@@ -384,7 +384,7 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					_, err := is.Status(3232)
+					_, err := is.GetInstallation(3232)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -396,21 +396,21 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("##################")),
 					}, nil)
 
-					_, err := is.Status(3232)
+					_, err := is.GetInstallation(3232)
 					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 				})
 			})
 		})
 	})
 
-	Describe("Logs", func() {
+	Describe("GetInstallationLogs", func() {
 		It("grabs the logs from the currently running installation", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{"logs": "some logs"}`)),
 			}, nil)
 
-			output, err := is.Logs(3232)
+			output, err := is.GetInstallationLogs(3232)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output.Logs).To(Equal("some logs"))
@@ -430,7 +430,7 @@ var _ = Describe("InstallationsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader("")),
 				}, errors.New("some error"))
 
-				_, err := is.Logs(3232)
+				_, err := is.GetInstallationLogs(3232)
 				Expect(err).To(MatchError("could not make api request to installations logs endpoint: some error"))
 			})
 		})
@@ -442,7 +442,7 @@ var _ = Describe("InstallationsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
 
-				_, err := is.Logs(3232)
+				_, err := is.GetInstallationLogs(3232)
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
@@ -454,7 +454,7 @@ var _ = Describe("InstallationsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader("##################")),
 				}, nil)
 
-				_, err := is.Logs(3232)
+				_, err := is.GetInstallationLogs(3232)
 				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 			})
 		})

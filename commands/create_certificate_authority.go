@@ -19,7 +19,7 @@ type CreateCertificateAuthority struct {
 
 //go:generate counterfeiter -o ./fakes/certificate_authority_creator.go --fake-name CertificateAuthorityCreator . certificateAuthorityCreator
 type certificateAuthorityCreator interface {
-	Create(api.CertificateAuthorityInput) (api.CA, error)
+	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.CA, error)
 }
 
 func NewCreateCertificateAuthority(service certificateAuthorityCreator, presenter presenters.Presenter) CreateCertificateAuthority {
@@ -31,7 +31,7 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 		return fmt.Errorf("could not parse create-certificate-authority flags: %s", err)
 	}
 
-	ca, err := c.service.Create(api.CertificateAuthorityInput{
+	ca, err := c.service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 		CertPem:       c.Options.CertPem,
 		PrivateKeyPem: c.Options.PrivateKey,
 	})

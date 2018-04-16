@@ -36,14 +36,14 @@ var _ = Describe("StagedProducts", func() {
 				Version: "version-infinity",
 			},
 		}
-		diagnosticService.ReportReturns(api.DiagnosticReport{
+		diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
 			StagedProducts: stagedProducts,
 		}, nil)
 
 		err := command.Execute([]string{})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(diagnosticService.ReportCallCount()).To(Equal(1))
+		Expect(diagnosticService.GetDiagnosticReportCallCount()).To(Equal(1))
 
 		Expect(presenter.PresentStagedProductsCallCount()).To(Equal(1))
 		Expect(presenter.PresentStagedProductsArgsForCall(0)).To(Equal(stagedProducts))
@@ -52,7 +52,7 @@ var _ = Describe("StagedProducts", func() {
 	Context("failure cases", func() {
 		Context("when fetching the diagnostic report fails", func() {
 			It("returns an error", func() {
-				diagnosticService.ReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to retrieve staged products beep boop"))

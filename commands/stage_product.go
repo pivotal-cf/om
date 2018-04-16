@@ -26,8 +26,7 @@ type productStager interface {
 
 //go:generate counterfeiter -o ./fakes/deployed_products_lister.go --fake-name DeployedProductsLister . deployedProductsLister
 type deployedProductsLister interface {
-	List() ([]api.DeployedProductOutput, error)
-	Manifest(guid string) (manifest string, err error)
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/available_product_checker.go --fake-name AvailableProductChecker . availableProductChecker
@@ -50,13 +49,13 @@ func (sp StageProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}
 
-	diagnosticReport, err := sp.diagnosticService.Report()
+	diagnosticReport, err := sp.diagnosticService.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to stage product: %s", err)
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, err := sp.deployedProductsService.List()
+	deployedProducts, err := sp.deployedProductsService.ListDeployedProducts()
 	for _, deployedProduct := range deployedProducts {
 		if deployedProduct.Type == sp.Options.Product {
 			deployedProductGUID = deployedProduct.GUID

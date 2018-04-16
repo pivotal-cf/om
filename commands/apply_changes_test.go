@@ -47,14 +47,14 @@ var _ = Describe("ApplyChanges", func() {
 		statusCount = 0
 		logsCount = 0
 
-		service.StatusStub = func(id int) (api.InstallationsServiceOutput, error) {
+		service.GetInstallationStub = func(id int) (api.InstallationsServiceOutput, error) {
 			output := statusOutputs[statusCount]
 			err := statusErrors[statusCount]
 			statusCount++
 			return output, err
 		}
 
-		service.LogsStub = func(id int) (api.InstallationsServiceOutput, error) {
+		service.GetInstallationLogsStub = func(id int) (api.InstallationsServiceOutput, error) {
 			output := logsOutputs[logsCount]
 			err := logsErrors[logsCount]
 			logsCount++
@@ -64,7 +64,7 @@ var _ = Describe("ApplyChanges", func() {
 
 	Describe("Execute", func() {
 		It("applies changes to the Ops Manager", func() {
-			service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 			service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
 			statusOutputs = []api.InstallationsServiceOutput{
@@ -88,20 +88,20 @@ var _ = Describe("ApplyChanges", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(service.TriggerCallCount()).To(Equal(1))
+			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts := service.TriggerArgsForCall(0)
+			ignoreWarnings, deployProducts := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
 
-			Expect(service.StatusArgsForCall(0)).To(Equal(311))
-			Expect(service.StatusCallCount()).To(Equal(3))
+			Expect(service.GetInstallationArgsForCall(0)).To(Equal(311))
+			Expect(service.GetInstallationCallCount()).To(Equal(3))
 
-			Expect(service.LogsArgsForCall(0)).To(Equal(311))
-			Expect(service.LogsCallCount()).To(Equal(3))
+			Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(311))
+			Expect(service.GetInstallationLogsCallCount()).To(Equal(3))
 
 			Expect(writer.FlushCallCount()).To(Equal(3))
 			Expect(writer.FlushArgsForCall(0)).To(Equal("start of logs"))
@@ -111,7 +111,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		Context("when passed the ignore-warnings flag", func() {
 			It("applies changes while ignoring warnings", func() {
-				service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
 				statusOutputs = []api.InstallationsServiceOutput{
@@ -134,14 +134,14 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--ignore-warnings"})
 				Expect(err).NotTo(HaveOccurred())
 
-				ignoreWarnings, _ := service.TriggerArgsForCall(0)
+				ignoreWarnings, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
 			})
 		})
 
 		Context("when passed the skip-deploy-products flag", func() {
 			It("applies changes while not deploying products", func() {
-				service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
 				statusOutputs = []api.InstallationsServiceOutput{
@@ -164,7 +164,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--skip-deploy-products"})
 				Expect(err).NotTo(HaveOccurred())
 
-				_, deployProducts := service.TriggerArgsForCall(0)
+				_, deployProducts := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 		})
@@ -199,17 +199,17 @@ var _ = Describe("ApplyChanges", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(service.TriggerCallCount()).To(Equal(0))
+			Expect(service.CreateInstallationCallCount()).To(Equal(0))
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
 
-			Expect(service.StatusArgsForCall(0)).To(Equal(200))
-			Expect(service.LogsArgsForCall(0)).To(Equal(200))
+			Expect(service.GetInstallationArgsForCall(0)).To(Equal(200))
+			Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(200))
 		})
 
 		It("handles a failed installation", func() {
-			service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 			statusOutputs = []api.InstallationsServiceOutput{
 				{Status: "failed"},
 			}
@@ -242,7 +242,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Context("when an installation cannot be triggered", func() {
 				It("returns an error", func() {
-					service.TriggerReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+					service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
 					command := commands.NewApplyChanges(service, writer, logger, 1)
 
@@ -253,7 +253,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Context("when getting the installation status has an error", func() {
 				It("returns an error", func() {
-					service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
 					statusOutputs = []api.InstallationsServiceOutput{{}}
 
@@ -268,7 +268,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Context("when there is an error fetching the logs", func() {
 				It("returns an error", func() {
-					service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
 					statusOutputs = []api.InstallationsServiceOutput{
 						{Status: "running"},
@@ -289,7 +289,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Context("when there is an error flushing the logs", func() {
 				It("returns an error", func() {
-					service.TriggerReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
 					statusOutputs = []api.InstallationsServiceOutput{
 						{Status: "running"},

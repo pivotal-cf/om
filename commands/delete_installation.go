@@ -19,7 +19,7 @@ type DeleteInstallation struct {
 
 //go:generate counterfeiter -o ./fakes/installation_asset_deleter_service.go --fake-name InstallationAssetDeleterService . installationAssetDeleterService
 type installationAssetDeleterService interface {
-	Delete() (api.InstallationsServiceOutput, error)
+	DeleteInstallationAssetCollection() (api.InstallationsServiceOutput, error)
 }
 
 func NewDeleteInstallation(deleteService installationAssetDeleterService, installationsService installationsService, logWriter logWriter, logger logger, waitDuration int) DeleteInstallation {
@@ -38,7 +38,7 @@ func (ac DeleteInstallation) Execute(args []string) error {
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to delete the installation on the targeted Ops Manager")
 
-		installation, err = ac.deleteService.Delete()
+		installation, err = ac.deleteService.DeleteInstallationAssetCollection()
 		if err != nil {
 			return fmt.Errorf("failed to delete installation: %s", err)
 		}
@@ -52,12 +52,12 @@ func (ac DeleteInstallation) Execute(args []string) error {
 	}
 
 	for {
-		current, err := ac.installationsService.Status(installation.ID)
+		current, err := ac.installationsService.GetInstallation(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get status: %s", err)
 		}
 
-		install, err := ac.installationsService.Logs(installation.ID)
+		install, err := ac.installationsService.GetInstallationLogs(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get logs: %s", err)
 		}

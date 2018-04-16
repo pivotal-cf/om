@@ -17,8 +17,8 @@ type stagedProductsFinder interface {
 
 //go:generate counterfeiter -o ./fakes/errands_service.go --fake-name ErrandsService . errandsService
 type errandsService interface {
-	List(productID string) (api.ErrandsListOutput, error)
-	SetState(productID, errandName string, postDeployState, preDeleteState interface{}) error
+	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
+	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
 }
 
 type Errands struct {
@@ -48,7 +48,7 @@ func (e Errands) Execute(args []string) error {
 		return fmt.Errorf("failed to find staged product %q: %s", e.Options.ProductName, err)
 	}
 
-	errandsOutput, err := e.errandsService.List(findOutput.Product.GUID)
+	errandsOutput, err := e.errandsService.ListStagedProductErrands(findOutput.Product.GUID)
 	if err != nil {
 		return fmt.Errorf("failed to list errands: %s", err)
 	}

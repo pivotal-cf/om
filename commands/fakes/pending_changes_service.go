@@ -8,14 +8,14 @@ import (
 )
 
 type PendingChangesService struct {
-	ListStub        func() (api.PendingChangesOutput, error)
-	listMutex       sync.RWMutex
-	listArgsForCall []struct{}
-	listReturns     struct {
+	ListStagedPendingChangesStub        func() (api.PendingChangesOutput, error)
+	listStagedPendingChangesMutex       sync.RWMutex
+	listStagedPendingChangesArgsForCall []struct{}
+	listStagedPendingChangesReturns     struct {
 		result1 api.PendingChangesOutput
 		result2 error
 	}
-	listReturnsOnCall map[int]struct {
+	listStagedPendingChangesReturnsOnCall map[int]struct {
 		result1 api.PendingChangesOutput
 		result2 error
 	}
@@ -23,44 +23,44 @@ type PendingChangesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *PendingChangesService) List() (api.PendingChangesOutput, error) {
-	fake.listMutex.Lock()
-	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
-	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
-	fake.recordInvocation("List", []interface{}{})
-	fake.listMutex.Unlock()
-	if fake.ListStub != nil {
-		return fake.ListStub()
+func (fake *PendingChangesService) ListStagedPendingChanges() (api.PendingChangesOutput, error) {
+	fake.listStagedPendingChangesMutex.Lock()
+	ret, specificReturn := fake.listStagedPendingChangesReturnsOnCall[len(fake.listStagedPendingChangesArgsForCall)]
+	fake.listStagedPendingChangesArgsForCall = append(fake.listStagedPendingChangesArgsForCall, struct{}{})
+	fake.recordInvocation("ListStagedPendingChanges", []interface{}{})
+	fake.listStagedPendingChangesMutex.Unlock()
+	if fake.ListStagedPendingChangesStub != nil {
+		return fake.ListStagedPendingChangesStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listReturns.result1, fake.listReturns.result2
+	return fake.listStagedPendingChangesReturns.result1, fake.listStagedPendingChangesReturns.result2
 }
 
-func (fake *PendingChangesService) ListCallCount() int {
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
-	return len(fake.listArgsForCall)
+func (fake *PendingChangesService) ListStagedPendingChangesCallCount() int {
+	fake.listStagedPendingChangesMutex.RLock()
+	defer fake.listStagedPendingChangesMutex.RUnlock()
+	return len(fake.listStagedPendingChangesArgsForCall)
 }
 
-func (fake *PendingChangesService) ListReturns(result1 api.PendingChangesOutput, result2 error) {
-	fake.ListStub = nil
-	fake.listReturns = struct {
+func (fake *PendingChangesService) ListStagedPendingChangesReturns(result1 api.PendingChangesOutput, result2 error) {
+	fake.ListStagedPendingChangesStub = nil
+	fake.listStagedPendingChangesReturns = struct {
 		result1 api.PendingChangesOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *PendingChangesService) ListReturnsOnCall(i int, result1 api.PendingChangesOutput, result2 error) {
-	fake.ListStub = nil
-	if fake.listReturnsOnCall == nil {
-		fake.listReturnsOnCall = make(map[int]struct {
+func (fake *PendingChangesService) ListStagedPendingChangesReturnsOnCall(i int, result1 api.PendingChangesOutput, result2 error) {
+	fake.ListStagedPendingChangesStub = nil
+	if fake.listStagedPendingChangesReturnsOnCall == nil {
+		fake.listStagedPendingChangesReturnsOnCall = make(map[int]struct {
 			result1 api.PendingChangesOutput
 			result2 error
 		})
 	}
-	fake.listReturnsOnCall[i] = struct {
+	fake.listStagedPendingChangesReturnsOnCall[i] = struct {
 		result1 api.PendingChangesOutput
 		result2 error
 	}{result1, result2}
@@ -69,8 +69,8 @@ func (fake *PendingChangesService) ListReturnsOnCall(i int, result1 api.PendingC
 func (fake *PendingChangesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
+	fake.listStagedPendingChangesMutex.RLock()
+	defer fake.listStagedPendingChangesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

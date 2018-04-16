@@ -30,10 +30,10 @@ var _ = Describe("ConfigureDirector", func() {
 				GUID: "p-bosh-guid",
 			},
 		}, nil)
-		jobsService.JobsReturns(map[string]string{
+		jobsService.ListStagedProductJobsReturns(map[string]string{
 			"resource": "some-resource-guid",
 		}, nil)
-		jobsService.GetExistingJobConfigReturns(api.JobProperties{
+		jobsService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
 			InstanceType: api.InstanceType{
 				ID: "automatic",
 			},
@@ -62,21 +62,21 @@ var _ = Describe("ConfigureDirector", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(directorService.SetAZConfigurationCallCount()).To(Equal(1))
-			Expect(directorService.SetAZConfigurationArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
+			Expect(directorService.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(1))
+			Expect(directorService.UpdateStagedDirectorAvailabilityZonesArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[{"some-az-assignment": "az"}]`),
 			}))
 
-			Expect(directorService.SetNetworksConfigurationCallCount()).To(Equal(1))
-			Expect(directorService.SetNetworksConfigurationArgsForCall(0)).To(Equal(json.RawMessage(`{"network": "network-1"}`)))
+			Expect(directorService.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
+			Expect(directorService.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(json.RawMessage(`{"network": "network-1"}`)))
 
-			Expect(directorService.SetNetworkAndAZCallCount()).To(Equal(1))
-			Expect(directorService.SetNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
+			Expect(directorService.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(1))
+			Expect(directorService.UpdateStagedDirectorNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
 				NetworkAZ: json.RawMessage(networkAssignmentJSON),
 			}))
 
-			Expect(directorService.SetPropertiesCallCount()).To(Equal(1))
-			Expect(directorService.SetPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
+			Expect(directorService.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+			Expect(directorService.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 				DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
 				IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment": "iaas"}`),
 				SecurityConfiguration: json.RawMessage(`{"some-security-assignment": "security"}`),
@@ -86,16 +86,16 @@ var _ = Describe("ConfigureDirector", func() {
 			Expect(stagedProductsService.FindCallCount()).To(Equal(1))
 			Expect(stagedProductsService.FindArgsForCall(0)).To(Equal("p-bosh"))
 
-			Expect(jobsService.JobsCallCount()).To(Equal(1))
-			Expect(jobsService.JobsArgsForCall(0)).To(Equal("p-bosh-guid"))
+			Expect(jobsService.ListStagedProductJobsCallCount()).To(Equal(1))
+			Expect(jobsService.ListStagedProductJobsArgsForCall(0)).To(Equal("p-bosh-guid"))
 
-			Expect(jobsService.GetExistingJobConfigCallCount()).To(Equal(1))
-			productGUID, instanceGroupGUID := jobsService.GetExistingJobConfigArgsForCall(0)
+			Expect(jobsService.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
+			productGUID, instanceGroupGUID := jobsService.GetStagedProductJobResourceConfigArgsForCall(0)
 			Expect(productGUID).To(Equal("p-bosh-guid"))
 			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
 
-			Expect(jobsService.ConfigureJobCallCount()).To(Equal(1))
-			productGUID, instanceGroupGUID, jobConfiguration := jobsService.ConfigureJobArgsForCall(0)
+			Expect(jobsService.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
+			productGUID, instanceGroupGUID, jobConfiguration := jobsService.UpdateStagedProductJobResourceConfigArgsForCall(0)
 			Expect(productGUID).To(Equal("p-bosh-guid"))
 			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
 			Expect(jobConfiguration).To(Equal(api.JobProperties{
@@ -125,11 +125,11 @@ var _ = Describe("ConfigureDirector", func() {
 			It("only calls the properties function once", func() {
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
-				Expect(directorService.SetAZConfigurationCallCount()).To(Equal(0))
-				Expect(directorService.SetNetworksConfigurationCallCount()).To(Equal(0))
-				Expect(directorService.SetNetworkAndAZCallCount()).To(Equal(0))
-				Expect(directorService.SetPropertiesCallCount()).To(Equal(1))
-				Expect(directorService.SetPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
+				Expect(directorService.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(0))
+				Expect(directorService.UpdateStagedDirectorNetworksCallCount()).To(Equal(0))
+				Expect(directorService.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(0))
+				Expect(directorService.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+				Expect(directorService.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(``),
 					DirectorConfiguration: json.RawMessage(``),
 					SecurityConfiguration: json.RawMessage(``),
@@ -148,7 +148,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when configuring availability_zones fails", func() {
 				It("returns an error", func() {
-					directorService.SetAZConfigurationReturns(errors.New("az endpoint failed"))
+					directorService.UpdateStagedDirectorAvailabilityZonesReturns(errors.New("az endpoint failed"))
 					err := command.Execute([]string{"--az-configuration", `{}`})
 					Expect(err).To(MatchError("availability zones configuration could not be applied: az endpoint failed"))
 				})
@@ -156,7 +156,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when configuring networks fails", func() {
 				It("returns an error", func() {
-					directorService.SetNetworksConfigurationReturns(errors.New("networks endpoint failed"))
+					directorService.UpdateStagedDirectorNetworksReturns(errors.New("networks endpoint failed"))
 					err := command.Execute([]string{"--networks-configuration", `{}`})
 					Expect(err).To(MatchError("networks configuration could not be applied: networks endpoint failed"))
 				})
@@ -164,7 +164,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when configuring networks fails", func() {
 				It("returns an error", func() {
-					directorService.SetNetworkAndAZReturns(errors.New("director service failed"))
+					directorService.UpdateStagedDirectorNetworkAndAZReturns(errors.New("director service failed"))
 					err := command.Execute([]string{"--network-assignment", `{}`})
 					Expect(err).To(MatchError("network and AZs could not be applied: director service failed"))
 				})
@@ -172,7 +172,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when configuring properties fails", func() {
 				It("returns an error", func() {
-					directorService.SetPropertiesReturns(errors.New("properties end point failed"))
+					directorService.UpdateStagedDirectorPropertiesReturns(errors.New("properties end point failed"))
 					err := command.Execute([]string{"--director-configuration", `{}`})
 					Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
 				})
@@ -195,7 +195,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when retrieving jobs for product fails", func() {
 				It("returns an error", func() {
-					jobsService.JobsReturns(nil, errors.New("some-error"))
+					jobsService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
 					err := command.Execute([]string{"--resource-configuration", `{}`})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
@@ -210,7 +210,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when retrieving existing job config fails", func() {
 				It("returns an error", func() {
-					jobsService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some-error"))
+					jobsService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
 					err := command.Execute([]string{"--resource-configuration", `{"resource": {}}`})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
@@ -225,7 +225,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when configuring the job fails", func() {
 				It("returns an error", func() {
-					jobsService.ConfigureJobReturns(errors.New("some-error"))
+					jobsService.UpdateStagedProductJobResourceConfigReturns(errors.New("some-error"))
 					err := command.Execute([]string{"--resource-configuration", `{"resource": {}}`})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})

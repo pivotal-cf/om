@@ -24,7 +24,7 @@ var _ = Describe("ErrandsService", func() {
 		service = api.NewErrandsService(client)
 	})
 
-	Describe("SetState", func() {
+	Describe("UpdateStagedProductErrands", func() {
 		It("sets state for a product's errands", func() {
 			var path, method string
 			var header http.Header
@@ -40,7 +40,7 @@ var _ = Describe("ErrandsService", func() {
 				}, nil
 			}
 
-			err := service.SetState("some-product-id", "some-errand", "when-changed", false)
+			err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
 			Expect(method).To(Equal("PUT"))
@@ -68,14 +68,14 @@ var _ = Describe("ErrandsService", func() {
 						}, nil
 					}
 
-					err := service.SetState("some-product-id", "some-errand", "when-changed", "false")
+					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", "false")
 					Expect(err).To(MatchError("failed to set errand state: 418 I'm a teapot"))
 				})
 			})
 
 			Context("when the product ID cannot be URL encoded", func() {
 				It("returns an error", func() {
-					err := service.SetState("%%%", "some-errand", "true", "false")
+					err := service.UpdateStagedProductErrands("%%%", "some-errand", "true", "false")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
@@ -84,7 +84,7 @@ var _ = Describe("ErrandsService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					err := service.SetState("some-product-id", "some-errand", "true", "false")
+					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -107,14 +107,14 @@ var _ = Describe("ErrandsService", func() {
 						}, nil
 					}
 
-					err := service.SetState("some-product-id", "some-errand", "true", "false")
+					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
 					Expect(err).To(MatchError(ContainSubstring("failed to read body")))
 				})
 			})
 		})
 	})
 
-	Describe("List", func() {
+	Describe("ListStagedProductErrands", func() {
 		It("lists errands for a product", func() {
 			var path string
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
@@ -131,7 +131,7 @@ var _ = Describe("ErrandsService", func() {
 				}, nil
 			}
 
-			output, err := service.List("some-product-id")
+			output, err := service.ListStagedProductErrands("some-product-id")
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output.Errands).To(ConsistOf([]api.Errand{
@@ -147,7 +147,7 @@ var _ = Describe("ErrandsService", func() {
 		Context("failure cases", func() {
 			Context("when the product ID cannot be URL encoded", func() {
 				It("returns an error", func() {
-					_, err := service.List("%%%")
+					_, err := service.ListStagedProductErrands("%%%")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
@@ -156,7 +156,7 @@ var _ = Describe("ErrandsService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.List("some-product-id")
+					_, err := service.ListStagedProductErrands("some-product-id")
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -169,7 +169,7 @@ var _ = Describe("ErrandsService", func() {
 						}, nil
 					}
 
-					_, err := service.List("some-product-id")
+					_, err := service.ListStagedProductErrands("some-product-id")
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
@@ -183,7 +183,7 @@ var _ = Describe("ErrandsService", func() {
 						}, nil
 					}
 
-					_, err := service.List("future-moon-and-assimilation")
+					_, err := service.ListStagedProductErrands("future-moon-and-assimilation")
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError(ContainSubstring("failed to list errands: 409 Conflict")))
 				})

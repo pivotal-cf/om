@@ -9,242 +9,242 @@ import (
 )
 
 type DirectorService struct {
-	SetAZConfigurationStub        func(api.AvailabilityZoneInput) error
-	setAZConfigurationMutex       sync.RWMutex
-	setAZConfigurationArgsForCall []struct {
+	UpdateStagedDirectorAvailabilityZonesStub        func(api.AvailabilityZoneInput) error
+	updateStagedDirectorAvailabilityZonesMutex       sync.RWMutex
+	updateStagedDirectorAvailabilityZonesArgsForCall []struct {
 		arg1 api.AvailabilityZoneInput
 	}
-	setAZConfigurationReturns struct {
+	updateStagedDirectorAvailabilityZonesReturns struct {
 		result1 error
 	}
-	setAZConfigurationReturnsOnCall map[int]struct {
+	updateStagedDirectorAvailabilityZonesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SetNetworksConfigurationStub        func(json.RawMessage) error
-	setNetworksConfigurationMutex       sync.RWMutex
-	setNetworksConfigurationArgsForCall []struct {
+	UpdateStagedDirectorNetworksStub        func(json.RawMessage) error
+	updateStagedDirectorNetworksMutex       sync.RWMutex
+	updateStagedDirectorNetworksArgsForCall []struct {
 		arg1 json.RawMessage
 	}
-	setNetworksConfigurationReturns struct {
+	updateStagedDirectorNetworksReturns struct {
 		result1 error
 	}
-	setNetworksConfigurationReturnsOnCall map[int]struct {
+	updateStagedDirectorNetworksReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SetNetworkAndAZStub        func(api.NetworkAndAZConfiguration) error
-	setNetworkAndAZMutex       sync.RWMutex
-	setNetworkAndAZArgsForCall []struct {
+	UpdateStagedDirectorNetworkAndAZStub        func(api.NetworkAndAZConfiguration) error
+	updateStagedDirectorNetworkAndAZMutex       sync.RWMutex
+	updateStagedDirectorNetworkAndAZArgsForCall []struct {
 		arg1 api.NetworkAndAZConfiguration
 	}
-	setNetworkAndAZReturns struct {
+	updateStagedDirectorNetworkAndAZReturns struct {
 		result1 error
 	}
-	setNetworkAndAZReturnsOnCall map[int]struct {
+	updateStagedDirectorNetworkAndAZReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SetPropertiesStub        func(api.DirectorProperties) error
-	setPropertiesMutex       sync.RWMutex
-	setPropertiesArgsForCall []struct {
+	UpdateStagedDirectorPropertiesStub        func(api.DirectorProperties) error
+	updateStagedDirectorPropertiesMutex       sync.RWMutex
+	updateStagedDirectorPropertiesArgsForCall []struct {
 		arg1 api.DirectorProperties
 	}
-	setPropertiesReturns struct {
+	updateStagedDirectorPropertiesReturns struct {
 		result1 error
 	}
-	setPropertiesReturnsOnCall map[int]struct {
+	updateStagedDirectorPropertiesReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *DirectorService) SetAZConfiguration(arg1 api.AvailabilityZoneInput) error {
-	fake.setAZConfigurationMutex.Lock()
-	ret, specificReturn := fake.setAZConfigurationReturnsOnCall[len(fake.setAZConfigurationArgsForCall)]
-	fake.setAZConfigurationArgsForCall = append(fake.setAZConfigurationArgsForCall, struct {
+func (fake *DirectorService) UpdateStagedDirectorAvailabilityZones(arg1 api.AvailabilityZoneInput) error {
+	fake.updateStagedDirectorAvailabilityZonesMutex.Lock()
+	ret, specificReturn := fake.updateStagedDirectorAvailabilityZonesReturnsOnCall[len(fake.updateStagedDirectorAvailabilityZonesArgsForCall)]
+	fake.updateStagedDirectorAvailabilityZonesArgsForCall = append(fake.updateStagedDirectorAvailabilityZonesArgsForCall, struct {
 		arg1 api.AvailabilityZoneInput
 	}{arg1})
-	fake.recordInvocation("SetAZConfiguration", []interface{}{arg1})
-	fake.setAZConfigurationMutex.Unlock()
-	if fake.SetAZConfigurationStub != nil {
-		return fake.SetAZConfigurationStub(arg1)
+	fake.recordInvocation("UpdateStagedDirectorAvailabilityZones", []interface{}{arg1})
+	fake.updateStagedDirectorAvailabilityZonesMutex.Unlock()
+	if fake.UpdateStagedDirectorAvailabilityZonesStub != nil {
+		return fake.UpdateStagedDirectorAvailabilityZonesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.setAZConfigurationReturns.result1
+	return fake.updateStagedDirectorAvailabilityZonesReturns.result1
 }
 
-func (fake *DirectorService) SetAZConfigurationCallCount() int {
-	fake.setAZConfigurationMutex.RLock()
-	defer fake.setAZConfigurationMutex.RUnlock()
-	return len(fake.setAZConfigurationArgsForCall)
+func (fake *DirectorService) UpdateStagedDirectorAvailabilityZonesCallCount() int {
+	fake.updateStagedDirectorAvailabilityZonesMutex.RLock()
+	defer fake.updateStagedDirectorAvailabilityZonesMutex.RUnlock()
+	return len(fake.updateStagedDirectorAvailabilityZonesArgsForCall)
 }
 
-func (fake *DirectorService) SetAZConfigurationArgsForCall(i int) api.AvailabilityZoneInput {
-	fake.setAZConfigurationMutex.RLock()
-	defer fake.setAZConfigurationMutex.RUnlock()
-	return fake.setAZConfigurationArgsForCall[i].arg1
+func (fake *DirectorService) UpdateStagedDirectorAvailabilityZonesArgsForCall(i int) api.AvailabilityZoneInput {
+	fake.updateStagedDirectorAvailabilityZonesMutex.RLock()
+	defer fake.updateStagedDirectorAvailabilityZonesMutex.RUnlock()
+	return fake.updateStagedDirectorAvailabilityZonesArgsForCall[i].arg1
 }
 
-func (fake *DirectorService) SetAZConfigurationReturns(result1 error) {
-	fake.SetAZConfigurationStub = nil
-	fake.setAZConfigurationReturns = struct {
+func (fake *DirectorService) UpdateStagedDirectorAvailabilityZonesReturns(result1 error) {
+	fake.UpdateStagedDirectorAvailabilityZonesStub = nil
+	fake.updateStagedDirectorAvailabilityZonesReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetAZConfigurationReturnsOnCall(i int, result1 error) {
-	fake.SetAZConfigurationStub = nil
-	if fake.setAZConfigurationReturnsOnCall == nil {
-		fake.setAZConfigurationReturnsOnCall = make(map[int]struct {
+func (fake *DirectorService) UpdateStagedDirectorAvailabilityZonesReturnsOnCall(i int, result1 error) {
+	fake.UpdateStagedDirectorAvailabilityZonesStub = nil
+	if fake.updateStagedDirectorAvailabilityZonesReturnsOnCall == nil {
+		fake.updateStagedDirectorAvailabilityZonesReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.setAZConfigurationReturnsOnCall[i] = struct {
+	fake.updateStagedDirectorAvailabilityZonesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetNetworksConfiguration(arg1 json.RawMessage) error {
-	fake.setNetworksConfigurationMutex.Lock()
-	ret, specificReturn := fake.setNetworksConfigurationReturnsOnCall[len(fake.setNetworksConfigurationArgsForCall)]
-	fake.setNetworksConfigurationArgsForCall = append(fake.setNetworksConfigurationArgsForCall, struct {
+func (fake *DirectorService) UpdateStagedDirectorNetworks(arg1 json.RawMessage) error {
+	fake.updateStagedDirectorNetworksMutex.Lock()
+	ret, specificReturn := fake.updateStagedDirectorNetworksReturnsOnCall[len(fake.updateStagedDirectorNetworksArgsForCall)]
+	fake.updateStagedDirectorNetworksArgsForCall = append(fake.updateStagedDirectorNetworksArgsForCall, struct {
 		arg1 json.RawMessage
 	}{arg1})
-	fake.recordInvocation("SetNetworksConfiguration", []interface{}{arg1})
-	fake.setNetworksConfigurationMutex.Unlock()
-	if fake.SetNetworksConfigurationStub != nil {
-		return fake.SetNetworksConfigurationStub(arg1)
+	fake.recordInvocation("UpdateStagedDirectorNetworks", []interface{}{arg1})
+	fake.updateStagedDirectorNetworksMutex.Unlock()
+	if fake.UpdateStagedDirectorNetworksStub != nil {
+		return fake.UpdateStagedDirectorNetworksStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.setNetworksConfigurationReturns.result1
+	return fake.updateStagedDirectorNetworksReturns.result1
 }
 
-func (fake *DirectorService) SetNetworksConfigurationCallCount() int {
-	fake.setNetworksConfigurationMutex.RLock()
-	defer fake.setNetworksConfigurationMutex.RUnlock()
-	return len(fake.setNetworksConfigurationArgsForCall)
+func (fake *DirectorService) UpdateStagedDirectorNetworksCallCount() int {
+	fake.updateStagedDirectorNetworksMutex.RLock()
+	defer fake.updateStagedDirectorNetworksMutex.RUnlock()
+	return len(fake.updateStagedDirectorNetworksArgsForCall)
 }
 
-func (fake *DirectorService) SetNetworksConfigurationArgsForCall(i int) json.RawMessage {
-	fake.setNetworksConfigurationMutex.RLock()
-	defer fake.setNetworksConfigurationMutex.RUnlock()
-	return fake.setNetworksConfigurationArgsForCall[i].arg1
+func (fake *DirectorService) UpdateStagedDirectorNetworksArgsForCall(i int) json.RawMessage {
+	fake.updateStagedDirectorNetworksMutex.RLock()
+	defer fake.updateStagedDirectorNetworksMutex.RUnlock()
+	return fake.updateStagedDirectorNetworksArgsForCall[i].arg1
 }
 
-func (fake *DirectorService) SetNetworksConfigurationReturns(result1 error) {
-	fake.SetNetworksConfigurationStub = nil
-	fake.setNetworksConfigurationReturns = struct {
+func (fake *DirectorService) UpdateStagedDirectorNetworksReturns(result1 error) {
+	fake.UpdateStagedDirectorNetworksStub = nil
+	fake.updateStagedDirectorNetworksReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetNetworksConfigurationReturnsOnCall(i int, result1 error) {
-	fake.SetNetworksConfigurationStub = nil
-	if fake.setNetworksConfigurationReturnsOnCall == nil {
-		fake.setNetworksConfigurationReturnsOnCall = make(map[int]struct {
+func (fake *DirectorService) UpdateStagedDirectorNetworksReturnsOnCall(i int, result1 error) {
+	fake.UpdateStagedDirectorNetworksStub = nil
+	if fake.updateStagedDirectorNetworksReturnsOnCall == nil {
+		fake.updateStagedDirectorNetworksReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.setNetworksConfigurationReturnsOnCall[i] = struct {
+	fake.updateStagedDirectorNetworksReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetNetworkAndAZ(arg1 api.NetworkAndAZConfiguration) error {
-	fake.setNetworkAndAZMutex.Lock()
-	ret, specificReturn := fake.setNetworkAndAZReturnsOnCall[len(fake.setNetworkAndAZArgsForCall)]
-	fake.setNetworkAndAZArgsForCall = append(fake.setNetworkAndAZArgsForCall, struct {
+func (fake *DirectorService) UpdateStagedDirectorNetworkAndAZ(arg1 api.NetworkAndAZConfiguration) error {
+	fake.updateStagedDirectorNetworkAndAZMutex.Lock()
+	ret, specificReturn := fake.updateStagedDirectorNetworkAndAZReturnsOnCall[len(fake.updateStagedDirectorNetworkAndAZArgsForCall)]
+	fake.updateStagedDirectorNetworkAndAZArgsForCall = append(fake.updateStagedDirectorNetworkAndAZArgsForCall, struct {
 		arg1 api.NetworkAndAZConfiguration
 	}{arg1})
-	fake.recordInvocation("SetNetworkAndAZ", []interface{}{arg1})
-	fake.setNetworkAndAZMutex.Unlock()
-	if fake.SetNetworkAndAZStub != nil {
-		return fake.SetNetworkAndAZStub(arg1)
+	fake.recordInvocation("UpdateStagedDirectorNetworkAndAZ", []interface{}{arg1})
+	fake.updateStagedDirectorNetworkAndAZMutex.Unlock()
+	if fake.UpdateStagedDirectorNetworkAndAZStub != nil {
+		return fake.UpdateStagedDirectorNetworkAndAZStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.setNetworkAndAZReturns.result1
+	return fake.updateStagedDirectorNetworkAndAZReturns.result1
 }
 
-func (fake *DirectorService) SetNetworkAndAZCallCount() int {
-	fake.setNetworkAndAZMutex.RLock()
-	defer fake.setNetworkAndAZMutex.RUnlock()
-	return len(fake.setNetworkAndAZArgsForCall)
+func (fake *DirectorService) UpdateStagedDirectorNetworkAndAZCallCount() int {
+	fake.updateStagedDirectorNetworkAndAZMutex.RLock()
+	defer fake.updateStagedDirectorNetworkAndAZMutex.RUnlock()
+	return len(fake.updateStagedDirectorNetworkAndAZArgsForCall)
 }
 
-func (fake *DirectorService) SetNetworkAndAZArgsForCall(i int) api.NetworkAndAZConfiguration {
-	fake.setNetworkAndAZMutex.RLock()
-	defer fake.setNetworkAndAZMutex.RUnlock()
-	return fake.setNetworkAndAZArgsForCall[i].arg1
+func (fake *DirectorService) UpdateStagedDirectorNetworkAndAZArgsForCall(i int) api.NetworkAndAZConfiguration {
+	fake.updateStagedDirectorNetworkAndAZMutex.RLock()
+	defer fake.updateStagedDirectorNetworkAndAZMutex.RUnlock()
+	return fake.updateStagedDirectorNetworkAndAZArgsForCall[i].arg1
 }
 
-func (fake *DirectorService) SetNetworkAndAZReturns(result1 error) {
-	fake.SetNetworkAndAZStub = nil
-	fake.setNetworkAndAZReturns = struct {
+func (fake *DirectorService) UpdateStagedDirectorNetworkAndAZReturns(result1 error) {
+	fake.UpdateStagedDirectorNetworkAndAZStub = nil
+	fake.updateStagedDirectorNetworkAndAZReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetNetworkAndAZReturnsOnCall(i int, result1 error) {
-	fake.SetNetworkAndAZStub = nil
-	if fake.setNetworkAndAZReturnsOnCall == nil {
-		fake.setNetworkAndAZReturnsOnCall = make(map[int]struct {
+func (fake *DirectorService) UpdateStagedDirectorNetworkAndAZReturnsOnCall(i int, result1 error) {
+	fake.UpdateStagedDirectorNetworkAndAZStub = nil
+	if fake.updateStagedDirectorNetworkAndAZReturnsOnCall == nil {
+		fake.updateStagedDirectorNetworkAndAZReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.setNetworkAndAZReturnsOnCall[i] = struct {
+	fake.updateStagedDirectorNetworkAndAZReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetProperties(arg1 api.DirectorProperties) error {
-	fake.setPropertiesMutex.Lock()
-	ret, specificReturn := fake.setPropertiesReturnsOnCall[len(fake.setPropertiesArgsForCall)]
-	fake.setPropertiesArgsForCall = append(fake.setPropertiesArgsForCall, struct {
+func (fake *DirectorService) UpdateStagedDirectorProperties(arg1 api.DirectorProperties) error {
+	fake.updateStagedDirectorPropertiesMutex.Lock()
+	ret, specificReturn := fake.updateStagedDirectorPropertiesReturnsOnCall[len(fake.updateStagedDirectorPropertiesArgsForCall)]
+	fake.updateStagedDirectorPropertiesArgsForCall = append(fake.updateStagedDirectorPropertiesArgsForCall, struct {
 		arg1 api.DirectorProperties
 	}{arg1})
-	fake.recordInvocation("SetProperties", []interface{}{arg1})
-	fake.setPropertiesMutex.Unlock()
-	if fake.SetPropertiesStub != nil {
-		return fake.SetPropertiesStub(arg1)
+	fake.recordInvocation("UpdateStagedDirectorProperties", []interface{}{arg1})
+	fake.updateStagedDirectorPropertiesMutex.Unlock()
+	if fake.UpdateStagedDirectorPropertiesStub != nil {
+		return fake.UpdateStagedDirectorPropertiesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.setPropertiesReturns.result1
+	return fake.updateStagedDirectorPropertiesReturns.result1
 }
 
-func (fake *DirectorService) SetPropertiesCallCount() int {
-	fake.setPropertiesMutex.RLock()
-	defer fake.setPropertiesMutex.RUnlock()
-	return len(fake.setPropertiesArgsForCall)
+func (fake *DirectorService) UpdateStagedDirectorPropertiesCallCount() int {
+	fake.updateStagedDirectorPropertiesMutex.RLock()
+	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
+	return len(fake.updateStagedDirectorPropertiesArgsForCall)
 }
 
-func (fake *DirectorService) SetPropertiesArgsForCall(i int) api.DirectorProperties {
-	fake.setPropertiesMutex.RLock()
-	defer fake.setPropertiesMutex.RUnlock()
-	return fake.setPropertiesArgsForCall[i].arg1
+func (fake *DirectorService) UpdateStagedDirectorPropertiesArgsForCall(i int) api.DirectorProperties {
+	fake.updateStagedDirectorPropertiesMutex.RLock()
+	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
+	return fake.updateStagedDirectorPropertiesArgsForCall[i].arg1
 }
 
-func (fake *DirectorService) SetPropertiesReturns(result1 error) {
-	fake.SetPropertiesStub = nil
-	fake.setPropertiesReturns = struct {
+func (fake *DirectorService) UpdateStagedDirectorPropertiesReturns(result1 error) {
+	fake.UpdateStagedDirectorPropertiesStub = nil
+	fake.updateStagedDirectorPropertiesReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *DirectorService) SetPropertiesReturnsOnCall(i int, result1 error) {
-	fake.SetPropertiesStub = nil
-	if fake.setPropertiesReturnsOnCall == nil {
-		fake.setPropertiesReturnsOnCall = make(map[int]struct {
+func (fake *DirectorService) UpdateStagedDirectorPropertiesReturnsOnCall(i int, result1 error) {
+	fake.UpdateStagedDirectorPropertiesStub = nil
+	if fake.updateStagedDirectorPropertiesReturnsOnCall == nil {
+		fake.updateStagedDirectorPropertiesReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.setPropertiesReturnsOnCall[i] = struct {
+	fake.updateStagedDirectorPropertiesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -252,14 +252,14 @@ func (fake *DirectorService) SetPropertiesReturnsOnCall(i int, result1 error) {
 func (fake *DirectorService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.setAZConfigurationMutex.RLock()
-	defer fake.setAZConfigurationMutex.RUnlock()
-	fake.setNetworksConfigurationMutex.RLock()
-	defer fake.setNetworksConfigurationMutex.RUnlock()
-	fake.setNetworkAndAZMutex.RLock()
-	defer fake.setNetworkAndAZMutex.RUnlock()
-	fake.setPropertiesMutex.RLock()
-	defer fake.setPropertiesMutex.RUnlock()
+	fake.updateStagedDirectorAvailabilityZonesMutex.RLock()
+	defer fake.updateStagedDirectorAvailabilityZonesMutex.RUnlock()
+	fake.updateStagedDirectorNetworksMutex.RLock()
+	defer fake.updateStagedDirectorNetworksMutex.RUnlock()
+	fake.updateStagedDirectorNetworkAndAZMutex.RLock()
+	defer fake.updateStagedDirectorNetworkAndAZMutex.RUnlock()
+	fake.updateStagedDirectorPropertiesMutex.RLock()
+	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -16,17 +16,17 @@ var _ = Describe("DeployedManifest", func() {
 	var (
 		command                commands.DeployedManifest
 		logger                 *fakes.Logger
-		deployedProductsLister *fakes.DeployedProductsLister
+		deployedProductsLister *fakes.DeployedProductService
 	)
 
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
-		deployedProductsLister = &fakes.DeployedProductsLister{}
-		deployedProductsLister.ListReturns([]api.DeployedProductOutput{
+		deployedProductsLister = &fakes.DeployedProductService{}
+		deployedProductsLister.ListDeployedProductsReturns([]api.DeployedProductOutput{
 			{Type: "other-product", GUID: "other-product-guid"},
 			{Type: "some-product", GUID: "some-product-guid"},
 		}, nil)
-		deployedProductsLister.ManifestReturns(`---
+		deployedProductsLister.GetDeployedProductManifestReturns(`---
 name: some-product
 key: value
 `, nil)
@@ -40,10 +40,10 @@ key: value
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(deployedProductsLister.ListCallCount()).To(Equal(1))
+		Expect(deployedProductsLister.ListDeployedProductsCallCount()).To(Equal(1))
 
-		Expect(deployedProductsLister.ManifestCallCount()).To(Equal(1))
-		Expect(deployedProductsLister.ManifestArgsForCall(0)).To(Equal("some-product-guid"))
+		Expect(deployedProductsLister.GetDeployedProductManifestCallCount()).To(Equal(1))
+		Expect(deployedProductsLister.GetDeployedProductManifestArgsForCall(0)).To(Equal("some-product-guid"))
 
 		Expect(logger.PrintCallCount()).To(Equal(1))
 		Expect(logger.PrintArgsForCall(0)[0]).To(MatchYAML(`---
@@ -64,7 +64,7 @@ key: value
 
 		Context("when the deployed products cannot be listed", func() {
 			It("returns an error", func() {
-				deployedProductsLister.ListReturns([]api.DeployedProductOutput{}, errors.New("deployed products cannot be listed"))
+				deployedProductsLister.ListDeployedProductsReturns([]api.DeployedProductOutput{}, errors.New("deployed products cannot be listed"))
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -84,7 +84,7 @@ key: value
 
 		Context("when the manifest cannot be returned", func() {
 			It("returns an error", func() {
-				deployedProductsLister.ManifestReturns("", errors.New("manifest could not be retrieved"))
+				deployedProductsLister.GetDeployedProductManifestReturns("", errors.New("manifest could not be retrieved"))
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})

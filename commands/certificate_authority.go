@@ -30,7 +30,7 @@ func (c CertificateAuthority) Execute(args []string) error {
 		return fmt.Errorf("could not parse certificate-authority flags: %s", err)
 	}
 
-	cas, err := c.cas.List()
+	cas, err := c.cas.ListCertificateAuthorities()
 	if err != nil {
 		return err
 	}

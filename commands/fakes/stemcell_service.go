@@ -8,16 +8,16 @@ import (
 )
 
 type StemcellService struct {
-	UploadStub        func(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
-	uploadMutex       sync.RWMutex
-	uploadArgsForCall []struct {
+	UploadStemcellStub        func(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
+	uploadStemcellMutex       sync.RWMutex
+	uploadStemcellArgsForCall []struct {
 		arg1 api.StemcellUploadInput
 	}
-	uploadReturns struct {
+	uploadStemcellReturns struct {
 		result1 api.StemcellUploadOutput
 		result2 error
 	}
-	uploadReturnsOnCall map[int]struct {
+	uploadStemcellReturnsOnCall map[int]struct {
 		result1 api.StemcellUploadOutput
 		result2 error
 	}
@@ -25,52 +25,52 @@ type StemcellService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *StemcellService) Upload(arg1 api.StemcellUploadInput) (api.StemcellUploadOutput, error) {
-	fake.uploadMutex.Lock()
-	ret, specificReturn := fake.uploadReturnsOnCall[len(fake.uploadArgsForCall)]
-	fake.uploadArgsForCall = append(fake.uploadArgsForCall, struct {
+func (fake *StemcellService) UploadStemcell(arg1 api.StemcellUploadInput) (api.StemcellUploadOutput, error) {
+	fake.uploadStemcellMutex.Lock()
+	ret, specificReturn := fake.uploadStemcellReturnsOnCall[len(fake.uploadStemcellArgsForCall)]
+	fake.uploadStemcellArgsForCall = append(fake.uploadStemcellArgsForCall, struct {
 		arg1 api.StemcellUploadInput
 	}{arg1})
-	fake.recordInvocation("Upload", []interface{}{arg1})
-	fake.uploadMutex.Unlock()
-	if fake.UploadStub != nil {
-		return fake.UploadStub(arg1)
+	fake.recordInvocation("UploadStemcell", []interface{}{arg1})
+	fake.uploadStemcellMutex.Unlock()
+	if fake.UploadStemcellStub != nil {
+		return fake.UploadStemcellStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.uploadReturns.result1, fake.uploadReturns.result2
+	return fake.uploadStemcellReturns.result1, fake.uploadStemcellReturns.result2
 }
 
-func (fake *StemcellService) UploadCallCount() int {
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
-	return len(fake.uploadArgsForCall)
+func (fake *StemcellService) UploadStemcellCallCount() int {
+	fake.uploadStemcellMutex.RLock()
+	defer fake.uploadStemcellMutex.RUnlock()
+	return len(fake.uploadStemcellArgsForCall)
 }
 
-func (fake *StemcellService) UploadArgsForCall(i int) api.StemcellUploadInput {
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
-	return fake.uploadArgsForCall[i].arg1
+func (fake *StemcellService) UploadStemcellArgsForCall(i int) api.StemcellUploadInput {
+	fake.uploadStemcellMutex.RLock()
+	defer fake.uploadStemcellMutex.RUnlock()
+	return fake.uploadStemcellArgsForCall[i].arg1
 }
 
-func (fake *StemcellService) UploadReturns(result1 api.StemcellUploadOutput, result2 error) {
-	fake.UploadStub = nil
-	fake.uploadReturns = struct {
+func (fake *StemcellService) UploadStemcellReturns(result1 api.StemcellUploadOutput, result2 error) {
+	fake.UploadStemcellStub = nil
+	fake.uploadStemcellReturns = struct {
 		result1 api.StemcellUploadOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *StemcellService) UploadReturnsOnCall(i int, result1 api.StemcellUploadOutput, result2 error) {
-	fake.UploadStub = nil
-	if fake.uploadReturnsOnCall == nil {
-		fake.uploadReturnsOnCall = make(map[int]struct {
+func (fake *StemcellService) UploadStemcellReturnsOnCall(i int, result1 api.StemcellUploadOutput, result2 error) {
+	fake.UploadStemcellStub = nil
+	if fake.uploadStemcellReturnsOnCall == nil {
+		fake.uploadStemcellReturnsOnCall = make(map[int]struct {
 			result1 api.StemcellUploadOutput
 			result2 error
 		})
 	}
-	fake.uploadReturnsOnCall[i] = struct {
+	fake.uploadStemcellReturnsOnCall[i] = struct {
 		result1 api.StemcellUploadOutput
 		result2 error
 	}{result1, result2}
@@ -79,8 +79,8 @@ func (fake *StemcellService) UploadReturnsOnCall(i int, result1 api.StemcellUplo
 func (fake *StemcellService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
+	fake.uploadStemcellMutex.RLock()
+	defer fake.uploadStemcellMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

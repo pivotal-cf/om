@@ -17,7 +17,7 @@ type DeleteCertificateAuthority struct {
 
 //go:generate counterfeiter -o ./fakes/certificate_authority_deleter.go --fake-name CertificateAuthorityDeleter . certificateAuthorityDeleter
 type certificateAuthorityDeleter interface {
-	Delete(api.DeleteCertificateAuthorityInput) error
+	DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput) error
 }
 
 func NewDeleteCertificateAuthority(service certificateAuthorityDeleter, logger logger) DeleteCertificateAuthority {
@@ -29,7 +29,7 @@ func (a DeleteCertificateAuthority) Execute(args []string) error {
 		return fmt.Errorf("could not parse delete-certificate-authority flags: %s", err)
 	}
 
-	err := a.service.Delete(api.DeleteCertificateAuthorityInput{
+	err := a.service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 		GUID: a.Options.Id,
 	})
 

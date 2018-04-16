@@ -30,7 +30,7 @@ var _ = Describe("Credentials", func() {
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			dpLister.ListReturns([]api.DeployedProductOutput{
+			dpLister.ListDeployedProductsReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-product",
 					GUID: "some-deployed-product-guid",
@@ -41,7 +41,7 @@ var _ = Describe("Credentials", func() {
 			It("outputs the credentials alphabetically", func() {
 				command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
-				csService.FetchCredentialReturns(api.CredentialOutput{
+				csService.GetDeployedProductCredentialReturns(api.CredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{
@@ -91,7 +91,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credential reference cannot be found", func() {
 				BeforeEach(func() {
-					csService.FetchCredentialReturns(api.CredentialOutput{}, nil)
+					csService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, nil)
 				})
 
 				It("returns an error", func() {
@@ -109,7 +109,7 @@ var _ = Describe("Credentials", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
 
-					csService.FetchCredentialReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
+					csService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -123,7 +123,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
-					dpLister.ListReturns(
+					dpLister.ListDeployedProductsReturns(
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 
@@ -140,7 +140,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the product has not been deployed", func() {
 				It("returns an error", func() {
-					dpLister.ListReturns([]api.DeployedProductOutput{
+					dpLister.ListDeployedProductsReturns([]api.DeployedProductOutput{
 						api.DeployedProductOutput{
 							Type: "some-other-product",
 							GUID: "some-other-deployed-product-guid",
@@ -160,7 +160,7 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting an individual credential value", func() {
 			BeforeEach(func() {
-				csService.FetchCredentialReturns(api.CredentialOutput{
+				csService.GetDeployedProductCredentialReturns(api.CredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{

@@ -306,7 +306,7 @@ var _ = Describe("ConfigureBosh", func() {
 					RailsMethod:       "the-rails",
 				}, nil)
 
-				diagnosticService.ReportReturns(api.DiagnosticReport{
+				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					InfrastructureType: "azure",
 				}, nil)
 
@@ -378,7 +378,7 @@ var _ = Describe("ConfigureBosh", func() {
 					RailsMethod:       "the-rails",
 				}, nil)
 
-				diagnosticService.ReportReturns(api.DiagnosticReport{
+				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					DeployedProducts: []api.DiagnosticProduct{
 						{
 							Name: "p-bosh",
@@ -465,7 +465,7 @@ var _ = Describe("ConfigureBosh", func() {
 					It("returns an error", func() {
 						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
 
-						diagnosticService.ReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+						diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
 						err := command.Execute([]string{"--az-configuration", `{"some": "configuration"}`})
 						Expect(err).To(MatchError("beep boop"))
@@ -590,7 +590,7 @@ var _ = Describe("ConfigureBosh", func() {
 				It("returns an error", func() {
 					boshService.AvailabilityZonesReturns(map[string]string{}, errors.New("FAIL"))
 
-					diagnosticService.ReportReturns(
+					diagnosticService.GetDiagnosticReportReturns(
 						api.DiagnosticReport{}, nil)
 
 					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)

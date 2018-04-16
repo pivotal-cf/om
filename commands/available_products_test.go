@@ -31,7 +31,7 @@ var _ = Describe("AvailableProducts", func() {
 		It("lists the available products", func() {
 			command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
-			apService.ListReturns(api.AvailableProductsOutput{
+			apService.ListAvailableProductsReturns(api.AvailableProductsOutput{
 				ProductsList: []api.ProductInfo{
 					api.ProductInfo{
 						Name:    "first-product",
@@ -65,7 +65,7 @@ var _ = Describe("AvailableProducts", func() {
 			It("prints a helpful message instead of a table", func() {
 				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
-				apService.ListReturns(api.AvailableProductsOutput{}, nil)
+				apService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, nil)
 
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
@@ -79,7 +79,7 @@ var _ = Describe("AvailableProducts", func() {
 			It("returns the error", func() {
 				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
-				apService.ListReturns(api.AvailableProductsOutput{}, errors.New("blargh"))
+				apService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, errors.New("blargh"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("blargh"))

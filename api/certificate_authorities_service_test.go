@@ -24,7 +24,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 		service = api.NewCertificateAuthoritiesService(client)
 	})
 
-	Describe("List", func() {
+	Describe("ListCertificateAuthorities", func() {
 		It("returns a slice of CAs", func() {
 			var path string
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
@@ -54,7 +54,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			output, err := service.List()
+			output, err := service.ListCertificateAuthorities()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output.CAs).To(ConsistOf([]api.CA{
@@ -84,7 +84,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.List()
+					_, err := service.ListCertificateAuthorities()
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -97,7 +97,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 						}, nil
 					}
 
-					_, err := service.List()
+					_, err := service.ListCertificateAuthorities()
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
@@ -112,14 +112,14 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 					}, nil
 				}
 
-				_, err := service.List()
+				_, err := service.ListCertificateAuthorities()
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 
 	})
 
-	Describe("Generate", func() {
+	Describe("GenerateCertificateAuthority", func() {
 		It("generates a certificate authority", func() {
 			var (
 				path   string
@@ -141,7 +141,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			ca, err := service.Generate()
+			ca, err := service.GenerateCertificateAuthority()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(ca).To(Equal(api.CA{
@@ -163,7 +163,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.Generate()
+					_, err := service.GenerateCertificateAuthority()
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -177,7 +177,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 						}, nil
 					}
 
-					_, err := service.Generate()
+					_, err := service.GenerateCertificateAuthority()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -190,14 +190,14 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 						}, nil
 					}
 
-					_, err := service.Generate()
+					_, err := service.GenerateCertificateAuthority()
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
 		})
 	})
 
-	Describe("Regenerate", func() {
+	Describe("RegenerateCertificates", func() {
 		It("regenerates certificate authority", func() {
 			var (
 				path   string
@@ -212,7 +212,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			err := service.Regenerate()
+			err := service.RegenerateCertificates()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(method).To(Equal("POST"))
@@ -224,7 +224,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					err := service.Regenerate()
+					err := service.RegenerateCertificates()
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -247,14 +247,14 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 				It("returns an error", func() {
 					service := api.NewCertificateAuthoritiesService(client)
-					err := service.Regenerate()
+					err := service.RegenerateCertificates()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 		})
 	})
 
-	Describe("Create", func() {
+	Describe("CreateCertificateAuthority", func() {
 		var (
 			certPem    string
 			privateKey string
@@ -279,7 +279,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			ca, err := service.Create(api.CertificateAuthorityInput{
+			ca, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 				CertPem:       certPem,
 				PrivateKeyPem: privateKey,
 			})
@@ -312,7 +312,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.Create(api.CertificateAuthorityInput{
+					_, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})
@@ -327,7 +327,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 						}, nil
 					}
 
-					_, err := service.Create(api.CertificateAuthorityInput{
+					_, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})
@@ -351,7 +351,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 				It("returns an error", func() {
 					service := api.NewCertificateAuthoritiesService(client)
-					_, err := service.Create(api.CertificateAuthorityInput{
+					_, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})
@@ -362,7 +362,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 		})
 	})
 
-	Describe("Activate", func() {
+	Describe("ActivateCertificateAuthority", func() {
 		It("activates a certificate authority", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
@@ -370,7 +370,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			err := service.Activate(api.ActivateCertificateAuthorityInput{
+			err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 				GUID: "some-certificate-authority-guid",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -392,7 +392,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					err := service.Activate(api.ActivateCertificateAuthorityInput{
+					err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
 					Expect(err).To(MatchError("client do errored"))
@@ -416,7 +416,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 				It("returns an error", func() {
 					service := api.NewCertificateAuthoritiesService(client)
-					err := service.Activate(api.ActivateCertificateAuthorityInput{
+					err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -426,7 +426,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 		})
 	})
 
-	Describe("Delete", func() {
+	Describe("DeleteCertificateAuthority", func() {
 		It("deletes a certificate authority", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
@@ -434,7 +434,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				}, nil
 			}
 
-			err := service.Delete(api.DeleteCertificateAuthorityInput{
+			err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 				GUID: "some-certificate-authority-guid",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -455,7 +455,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					err := service.Delete(api.DeleteCertificateAuthorityInput{
+					err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
 					Expect(err).To(MatchError("client do errored"))
@@ -479,7 +479,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 				It("returns an error", func() {
 					service := api.NewCertificateAuthoritiesService(client)
-					err := service.Delete(api.DeleteCertificateAuthorityInput{
+					err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))

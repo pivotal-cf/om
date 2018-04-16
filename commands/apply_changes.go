@@ -22,9 +22,9 @@ type ApplyChanges struct {
 
 //go:generate counterfeiter -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
 type installationsService interface {
-	Trigger(bool, bool) (api.InstallationsServiceOutput, error)
-	Status(id int) (api.InstallationsServiceOutput, error)
-	Logs(id int) (api.InstallationsServiceOutput, error)
+	CreateInstallation(bool, bool) (api.InstallationsServiceOutput, error)
+	GetInstallation(id int) (api.InstallationsServiceOutput, error)
+	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
@@ -56,7 +56,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
 		deployProducts := !ac.Options.SkipDeployProducts
-		installation, err = ac.installationsService.Trigger(ac.Options.IgnoreWarnings, deployProducts)
+		installation, err = ac.installationsService.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts)
 		if err != nil {
 			return fmt.Errorf("installation failed to trigger: %s", err)
 		}
@@ -66,12 +66,12 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	for {
-		current, err := ac.installationsService.Status(installation.ID)
+		current, err := ac.installationsService.GetInstallation(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get status: %s", err)
 		}
 
-		install, err := ac.installationsService.Logs(installation.ID)
+		install, err := ac.installationsService.GetInstallationLogs(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get logs: %s", err)
 		}

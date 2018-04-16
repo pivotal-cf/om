@@ -31,7 +31,7 @@ var _ = Describe("Errands", func() {
 
 	Describe("Execute", func() {
 		It("lists the available products", func() {
-			errandsService.ListReturns(api.ErrandsListOutput{
+			errandsService.ListStagedProductErrandsReturns(api.ErrandsListOutput{
 				Errands: []api.Errand{
 					{Name: "first-errand", PostDeploy: "true"},
 					{Name: "second-errand", PostDeploy: "false"},
@@ -54,8 +54,8 @@ var _ = Describe("Errands", func() {
 			Expect(stagedProductsFinder.FindCallCount()).To(Equal(1))
 			Expect(stagedProductsFinder.FindArgsForCall(0)).To(Equal("some-product-name"))
 
-			Expect(errandsService.ListCallCount()).To(Equal(1))
-			Expect(errandsService.ListArgsForCall(0)).To(Equal("some-product-id"))
+			Expect(errandsService.ListStagedProductErrandsCallCount()).To(Equal(1))
+			Expect(errandsService.ListStagedProductErrandsArgsForCall(0)).To(Equal("some-product-id"))
 
 			Expect(fakePresenter.PresentErrandsCallCount()).To(Equal(1))
 			errands := fakePresenter.PresentErrandsArgsForCall(0)
@@ -86,7 +86,7 @@ var _ = Describe("Errands", func() {
 
 			Context("when the errands service fails", func() {
 				It("returns an error", func() {
-					errandsService.ListReturns(api.ErrandsListOutput{}, errors.New("there was an error"))
+					errandsService.ListStagedProductErrandsReturns(api.ErrandsListOutput{}, errors.New("there was an error"))
 					err := command.Execute([]string{"--product-name", "some-product"})
 					Expect(err).To(MatchError("failed to list errands: there was an error"))
 				})

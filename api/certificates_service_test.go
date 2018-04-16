@@ -25,7 +25,7 @@ var _ = Describe("CertificatesService", func() {
 		service = api.NewCertificatesService(client)
 	})
 
-	Describe("Generate", func() {
+	Describe("GenerateCertificate", func() {
 		It("returns a cert and key", func() {
 			var path string
 			var header http.Header
@@ -49,7 +49,7 @@ var _ = Describe("CertificatesService", func() {
 				return resp, nil
 			}
 
-			output, err := service.Generate("*.example.com,*.example.org")
+			output, err := service.GenerateCertificate("*.example.com,*.example.org")
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(header.Get("Content-Type")).To(Equal("application/json"))
@@ -73,7 +73,7 @@ var _ = Describe("CertificatesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.Generate("some-domains")
+					_, err := service.GenerateCertificate("some-domains")
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
@@ -96,7 +96,7 @@ var _ = Describe("CertificatesService", func() {
 
 				It("returns an error", func() {
 					service := api.NewCertificatesService(client)
-					_, err := service.Generate("some-domains")
+					_, err := service.GenerateCertificate("some-domains")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

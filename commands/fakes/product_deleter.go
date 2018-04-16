@@ -8,67 +8,65 @@ import (
 )
 
 type ProductDeleter struct {
-	DeleteStub        func(input api.AvailableProductsInput, deleteAll bool) error
-	deleteMutex       sync.RWMutex
-	deleteArgsForCall []struct {
-		input     api.AvailableProductsInput
-		deleteAll bool
+	DeleteAvailableProductsStub        func(input api.DeleteAvailableProductsInput) error
+	deleteAvailableProductsMutex       sync.RWMutex
+	deleteAvailableProductsArgsForCall []struct {
+		input api.DeleteAvailableProductsInput
 	}
-	deleteReturns struct {
+	deleteAvailableProductsReturns struct {
 		result1 error
 	}
-	deleteReturnsOnCall map[int]struct {
+	deleteAvailableProductsReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductDeleter) Delete(input api.AvailableProductsInput, deleteAll bool) error {
-	fake.deleteMutex.Lock()
-	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
-	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
-		input     api.AvailableProductsInput
-		deleteAll bool
-	}{input, deleteAll})
-	fake.recordInvocation("Delete", []interface{}{input, deleteAll})
-	fake.deleteMutex.Unlock()
-	if fake.DeleteStub != nil {
-		return fake.DeleteStub(input, deleteAll)
+func (fake *ProductDeleter) DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error {
+	fake.deleteAvailableProductsMutex.Lock()
+	ret, specificReturn := fake.deleteAvailableProductsReturnsOnCall[len(fake.deleteAvailableProductsArgsForCall)]
+	fake.deleteAvailableProductsArgsForCall = append(fake.deleteAvailableProductsArgsForCall, struct {
+		input api.DeleteAvailableProductsInput
+	}{input})
+	fake.recordInvocation("DeleteAvailableProducts", []interface{}{input})
+	fake.deleteAvailableProductsMutex.Unlock()
+	if fake.DeleteAvailableProductsStub != nil {
+		return fake.DeleteAvailableProductsStub(input)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deleteReturns.result1
+	return fake.deleteAvailableProductsReturns.result1
 }
 
-func (fake *ProductDeleter) DeleteCallCount() int {
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	return len(fake.deleteArgsForCall)
+func (fake *ProductDeleter) DeleteAvailableProductsCallCount() int {
+	fake.deleteAvailableProductsMutex.RLock()
+	defer fake.deleteAvailableProductsMutex.RUnlock()
+	return len(fake.deleteAvailableProductsArgsForCall)
 }
 
-func (fake *ProductDeleter) DeleteArgsForCall(i int) (api.AvailableProductsInput, bool) {
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	return fake.deleteArgsForCall[i].input, fake.deleteArgsForCall[i].deleteAll
+func (fake *ProductDeleter) DeleteAvailableProductsArgsForCall(i int) api.DeleteAvailableProductsInput {
+	fake.deleteAvailableProductsMutex.RLock()
+	defer fake.deleteAvailableProductsMutex.RUnlock()
+	return fake.deleteAvailableProductsArgsForCall[i].input
 }
 
-func (fake *ProductDeleter) DeleteReturns(result1 error) {
-	fake.DeleteStub = nil
-	fake.deleteReturns = struct {
+func (fake *ProductDeleter) DeleteAvailableProductsReturns(result1 error) {
+	fake.DeleteAvailableProductsStub = nil
+	fake.deleteAvailableProductsReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *ProductDeleter) DeleteReturnsOnCall(i int, result1 error) {
-	fake.DeleteStub = nil
-	if fake.deleteReturnsOnCall == nil {
-		fake.deleteReturnsOnCall = make(map[int]struct {
+func (fake *ProductDeleter) DeleteAvailableProductsReturnsOnCall(i int, result1 error) {
+	fake.DeleteAvailableProductsStub = nil
+	if fake.deleteAvailableProductsReturnsOnCall == nil {
+		fake.deleteAvailableProductsReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.deleteReturnsOnCall[i] = struct {
+	fake.deleteAvailableProductsReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -76,8 +74,8 @@ func (fake *ProductDeleter) DeleteReturnsOnCall(i int, result1 error) {
 func (fake *ProductDeleter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
+	fake.deleteAvailableProductsMutex.RLock()
+	defer fake.deleteAvailableProductsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -96,7 +96,7 @@ func (c ConfigureBosh) Execute(args []string) error {
 		}
 	}
 
-	report, err := c.diagnosticService.Report()
+	report, err := c.diagnosticService.GetDiagnosticReport()
 	if err != nil {
 		return err
 	}

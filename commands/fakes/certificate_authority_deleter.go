@@ -8,65 +8,65 @@ import (
 )
 
 type CertificateAuthorityDeleter struct {
-	DeleteStub        func(api.DeleteCertificateAuthorityInput) error
-	deleteMutex       sync.RWMutex
-	deleteArgsForCall []struct {
+	DeleteCertificateAuthorityStub        func(api.DeleteCertificateAuthorityInput) error
+	deleteCertificateAuthorityMutex       sync.RWMutex
+	deleteCertificateAuthorityArgsForCall []struct {
 		arg1 api.DeleteCertificateAuthorityInput
 	}
-	deleteReturns struct {
+	deleteCertificateAuthorityReturns struct {
 		result1 error
 	}
-	deleteReturnsOnCall map[int]struct {
+	deleteCertificateAuthorityReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateAuthorityDeleter) Delete(arg1 api.DeleteCertificateAuthorityInput) error {
-	fake.deleteMutex.Lock()
-	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
-	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
+func (fake *CertificateAuthorityDeleter) DeleteCertificateAuthority(arg1 api.DeleteCertificateAuthorityInput) error {
+	fake.deleteCertificateAuthorityMutex.Lock()
+	ret, specificReturn := fake.deleteCertificateAuthorityReturnsOnCall[len(fake.deleteCertificateAuthorityArgsForCall)]
+	fake.deleteCertificateAuthorityArgsForCall = append(fake.deleteCertificateAuthorityArgsForCall, struct {
 		arg1 api.DeleteCertificateAuthorityInput
 	}{arg1})
-	fake.recordInvocation("Delete", []interface{}{arg1})
-	fake.deleteMutex.Unlock()
-	if fake.DeleteStub != nil {
-		return fake.DeleteStub(arg1)
+	fake.recordInvocation("DeleteCertificateAuthority", []interface{}{arg1})
+	fake.deleteCertificateAuthorityMutex.Unlock()
+	if fake.DeleteCertificateAuthorityStub != nil {
+		return fake.DeleteCertificateAuthorityStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deleteReturns.result1
+	return fake.deleteCertificateAuthorityReturns.result1
 }
 
-func (fake *CertificateAuthorityDeleter) DeleteCallCount() int {
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	return len(fake.deleteArgsForCall)
+func (fake *CertificateAuthorityDeleter) DeleteCertificateAuthorityCallCount() int {
+	fake.deleteCertificateAuthorityMutex.RLock()
+	defer fake.deleteCertificateAuthorityMutex.RUnlock()
+	return len(fake.deleteCertificateAuthorityArgsForCall)
 }
 
-func (fake *CertificateAuthorityDeleter) DeleteArgsForCall(i int) api.DeleteCertificateAuthorityInput {
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	return fake.deleteArgsForCall[i].arg1
+func (fake *CertificateAuthorityDeleter) DeleteCertificateAuthorityArgsForCall(i int) api.DeleteCertificateAuthorityInput {
+	fake.deleteCertificateAuthorityMutex.RLock()
+	defer fake.deleteCertificateAuthorityMutex.RUnlock()
+	return fake.deleteCertificateAuthorityArgsForCall[i].arg1
 }
 
-func (fake *CertificateAuthorityDeleter) DeleteReturns(result1 error) {
-	fake.DeleteStub = nil
-	fake.deleteReturns = struct {
+func (fake *CertificateAuthorityDeleter) DeleteCertificateAuthorityReturns(result1 error) {
+	fake.DeleteCertificateAuthorityStub = nil
+	fake.deleteCertificateAuthorityReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *CertificateAuthorityDeleter) DeleteReturnsOnCall(i int, result1 error) {
-	fake.DeleteStub = nil
-	if fake.deleteReturnsOnCall == nil {
-		fake.deleteReturnsOnCall = make(map[int]struct {
+func (fake *CertificateAuthorityDeleter) DeleteCertificateAuthorityReturnsOnCall(i int, result1 error) {
+	fake.DeleteCertificateAuthorityStub = nil
+	if fake.deleteCertificateAuthorityReturnsOnCall == nil {
+		fake.deleteCertificateAuthorityReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.deleteReturnsOnCall[i] = struct {
+	fake.deleteCertificateAuthorityReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -74,8 +74,8 @@ func (fake *CertificateAuthorityDeleter) DeleteReturnsOnCall(i int, result1 erro
 func (fake *CertificateAuthorityDeleter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
+	fake.deleteCertificateAuthorityMutex.RLock()
+	defer fake.deleteCertificateAuthorityMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

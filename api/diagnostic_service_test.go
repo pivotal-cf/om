@@ -50,7 +50,7 @@ var _ = Describe("DiagnosticService", func() {
 		client = &fakes.HttpClient{}
 	})
 
-	Describe("Report", func() {
+	Describe("DiagnosticReport", func() {
 		It("returns a diagnostic report", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -58,7 +58,7 @@ var _ = Describe("DiagnosticService", func() {
 			}, nil)
 
 			service := api.NewDiagnosticService(client)
-			report, err := service.Report()
+			report, err := service.GetDiagnosticReport()
 			Expect(err).NotTo(HaveOccurred())
 
 			request := client.DoArgsForCall(0)
@@ -102,7 +102,7 @@ var _ = Describe("DiagnosticService", func() {
 					}, nil)
 
 					service := api.NewDiagnosticService(client)
-					_, err := service.Report()
+					_, err := service.GetDiagnosticReport()
 					Expect(err).To(BeAssignableToTypeOf(api.DiagnosticReportUnavailable{}))
 				})
 			})
@@ -112,7 +112,7 @@ var _ = Describe("DiagnosticService", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
 
 					service := api.NewDiagnosticService(client)
-					_, err := service.Report()
+					_, err := service.GetDiagnosticReport()
 					Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: some error"))
 				})
 			})
@@ -125,7 +125,7 @@ var _ = Describe("DiagnosticService", func() {
 					}, nil)
 
 					service := api.NewDiagnosticService(client)
-					_, err := service.Report()
+					_, err := service.GetDiagnosticReport()
 					Expect(err).NotTo(MatchError("request failed: unexpected response"))
 				})
 			})
@@ -138,7 +138,7 @@ var _ = Describe("DiagnosticService", func() {
 					}, nil)
 
 					service := api.NewDiagnosticService(client)
-					_, err := service.Report()
+					_, err := service.GetDiagnosticReport()
 					Expect(err).NotTo(MatchError("invalid json received from server"))
 				})
 			})

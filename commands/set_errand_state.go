@@ -69,7 +69,7 @@ func (s SetErrandState) Execute(args []string) error {
 		return errors.New(strings.Join(errs, ", "))
 	}
 
-	err = s.errandsService.SetState(findOutput.Product.GUID, s.Options.ErrandName, postDeployState, preDeleteState)
+	err = s.errandsService.UpdateStagedProductErrands(findOutput.Product.GUID, s.Options.ErrandName, postDeployState, preDeleteState)
 	if err != nil {
 		return fmt.Errorf("failed to set errand state: %s", err)
 	}

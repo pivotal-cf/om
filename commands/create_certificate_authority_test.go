@@ -33,8 +33,8 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthorityService.CreateCallCount()).To(Equal(1))
-			Expect(fakeCertificateAuthorityService.CreateArgsForCall(0)).To(Equal(api.CertificateAuthorityInput{
+			Expect(fakeCertificateAuthorityService.CreateCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakeCertificateAuthorityService.CreateCertificateAuthorityArgsForCall(0)).To(Equal(api.CertificateAuthorityInput{
 				CertPem:       "some CertPem",
 				PrivateKeyPem: "some PrivateKey",
 			}))
@@ -50,7 +50,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 				CertPEM:   "some CertPem",
 			}
 
-			fakeCertificateAuthorityService.CreateReturns(ca, nil)
+			fakeCertificateAuthorityService.CreateCertificateAuthorityReturns(ca, nil)
 
 			err := command.Execute([]string{
 				"--certificate-pem", "some CertPem",
@@ -65,7 +65,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 		Context("failure cases", func() {
 			Context("when the service fails to create a certificate", func() {
 				It("returns an error", func() {
-					fakeCertificateAuthorityService.CreateReturns(api.CA{}, errors.New("failed to create certificate"))
+					fakeCertificateAuthorityService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
 
 					err := command.Execute([]string{
 						"--certificate-pem", "some CertPem",

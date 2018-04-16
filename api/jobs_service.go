@@ -51,7 +51,7 @@ func NewJobsService(client httpClient) JobsService {
 	}
 }
 
-func (j JobsService) Jobs(productGUID string) (map[string]string, error) {
+func (j JobsService) ListStagedProductJobs(productGUID string) (map[string]string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs", productGUID), nil)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (j JobsService) Jobs(productGUID string) (map[string]string, error) {
 	return jobGUIDMap, nil
 }
 
-func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobProperties, error) {
+func (j JobsService) GetStagedProductJobResourceConfig(productGUID, jobGUID string) (JobProperties, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), nil)
 	if err != nil {
 		return JobProperties{}, err
@@ -116,7 +116,7 @@ func (j JobsService) GetExistingJobConfig(productGUID, jobGUID string) (JobPrope
 	return existingConfig, nil
 }
 
-func (j JobsService) ConfigureJob(productGUID, jobGUID string, jobProperties JobProperties) error {
+func (j JobsService) UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties JobProperties) error {
 	bodyBytes := bytes.NewBuffer([]byte{})
 	err := json.NewEncoder(bodyBytes).Encode(jobProperties)
 	if err != nil {

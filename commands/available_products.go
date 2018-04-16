@@ -16,7 +16,7 @@ type AvailableProducts struct {
 //go:generate counterfeiter -o ./fakes/available_products_service.go --fake-name AvailableProductsService . availableProductsService
 
 type availableProductsService interface {
-	List() (api.AvailableProductsOutput, error)
+	ListAvailableProducts() (api.AvailableProductsOutput, error)
 }
 
 func NewAvailableProducts(apService availableProductsService, presenter presenters.Presenter, logger logger) AvailableProducts {
@@ -24,7 +24,7 @@ func NewAvailableProducts(apService availableProductsService, presenter presente
 }
 
 func (ap AvailableProducts) Execute(args []string) error {
-	output, err := ap.service.List()
+	output, err := ap.service.ListAvailableProducts()
 	if err != nil {
 		return err
 	}

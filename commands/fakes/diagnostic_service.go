@@ -8,14 +8,14 @@ import (
 )
 
 type DiagnosticService struct {
-	ReportStub        func() (api.DiagnosticReport, error)
-	reportMutex       sync.RWMutex
-	reportArgsForCall []struct{}
-	reportReturns     struct {
+	GetDiagnosticReportStub        func() (api.DiagnosticReport, error)
+	getDiagnosticReportMutex       sync.RWMutex
+	getDiagnosticReportArgsForCall []struct{}
+	getDiagnosticReportReturns     struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
-	reportReturnsOnCall map[int]struct {
+	getDiagnosticReportReturnsOnCall map[int]struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
@@ -23,44 +23,44 @@ type DiagnosticService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *DiagnosticService) Report() (api.DiagnosticReport, error) {
-	fake.reportMutex.Lock()
-	ret, specificReturn := fake.reportReturnsOnCall[len(fake.reportArgsForCall)]
-	fake.reportArgsForCall = append(fake.reportArgsForCall, struct{}{})
-	fake.recordInvocation("Report", []interface{}{})
-	fake.reportMutex.Unlock()
-	if fake.ReportStub != nil {
-		return fake.ReportStub()
+func (fake *DiagnosticService) GetDiagnosticReport() (api.DiagnosticReport, error) {
+	fake.getDiagnosticReportMutex.Lock()
+	ret, specificReturn := fake.getDiagnosticReportReturnsOnCall[len(fake.getDiagnosticReportArgsForCall)]
+	fake.getDiagnosticReportArgsForCall = append(fake.getDiagnosticReportArgsForCall, struct{}{})
+	fake.recordInvocation("GetDiagnosticReport", []interface{}{})
+	fake.getDiagnosticReportMutex.Unlock()
+	if fake.GetDiagnosticReportStub != nil {
+		return fake.GetDiagnosticReportStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.reportReturns.result1, fake.reportReturns.result2
+	return fake.getDiagnosticReportReturns.result1, fake.getDiagnosticReportReturns.result2
 }
 
-func (fake *DiagnosticService) ReportCallCount() int {
-	fake.reportMutex.RLock()
-	defer fake.reportMutex.RUnlock()
-	return len(fake.reportArgsForCall)
+func (fake *DiagnosticService) GetDiagnosticReportCallCount() int {
+	fake.getDiagnosticReportMutex.RLock()
+	defer fake.getDiagnosticReportMutex.RUnlock()
+	return len(fake.getDiagnosticReportArgsForCall)
 }
 
-func (fake *DiagnosticService) ReportReturns(result1 api.DiagnosticReport, result2 error) {
-	fake.ReportStub = nil
-	fake.reportReturns = struct {
+func (fake *DiagnosticService) GetDiagnosticReportReturns(result1 api.DiagnosticReport, result2 error) {
+	fake.GetDiagnosticReportStub = nil
+	fake.getDiagnosticReportReturns = struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *DiagnosticService) ReportReturnsOnCall(i int, result1 api.DiagnosticReport, result2 error) {
-	fake.ReportStub = nil
-	if fake.reportReturnsOnCall == nil {
-		fake.reportReturnsOnCall = make(map[int]struct {
+func (fake *DiagnosticService) GetDiagnosticReportReturnsOnCall(i int, result1 api.DiagnosticReport, result2 error) {
+	fake.GetDiagnosticReportStub = nil
+	if fake.getDiagnosticReportReturnsOnCall == nil {
+		fake.getDiagnosticReportReturnsOnCall = make(map[int]struct {
 			result1 api.DiagnosticReport
 			result2 error
 		})
 	}
-	fake.reportReturnsOnCall[i] = struct {
+	fake.getDiagnosticReportReturnsOnCall[i] = struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}{result1, result2}
@@ -69,8 +69,8 @@ func (fake *DiagnosticService) ReportReturnsOnCall(i int, result1 api.Diagnostic
 func (fake *DiagnosticService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.reportMutex.RLock()
-	defer fake.reportMutex.RUnlock()
+	fake.getDiagnosticReportMutex.RLock()
+	defer fake.getDiagnosticReportMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

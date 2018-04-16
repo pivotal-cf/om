@@ -14,7 +14,7 @@ import (
 )
 
 var _ = Describe("StemcellService", func() {
-	Describe("Upload", func() {
+	Describe("UploadStemcell", func() {
 		var (
 			progressClient *fakes.HttpClient
 		)
@@ -31,7 +31,7 @@ var _ = Describe("StemcellService", func() {
 
 			service := api.NewUploadStemcellService(progressClient)
 
-			output, err := service.Upload(api.StemcellUploadInput{
+			output, err := service.UploadStemcell(api.StemcellUploadInput{
 				ContentLength: 10,
 				Stemcell:      strings.NewReader("some content"),
 				ContentType:   "some content-type",
@@ -57,7 +57,7 @@ var _ = Describe("StemcellService", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 					service := api.NewUploadStemcellService(progressClient)
 
-					_, err := service.Upload(api.StemcellUploadInput{})
+					_, err := service.UploadStemcell(api.StemcellUploadInput{})
 					Expect(err).To(MatchError("could not make api request to stemcells endpoint: some client error"))
 				})
 			})
@@ -70,7 +70,7 @@ var _ = Describe("StemcellService", func() {
 					}, nil)
 					service := api.NewUploadStemcellService(progressClient)
 
-					_, err := service.Upload(api.StemcellUploadInput{})
+					_, err := service.UploadStemcell(api.StemcellUploadInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

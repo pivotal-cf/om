@@ -8,14 +8,14 @@ import (
 )
 
 type CertificateAuthorityGenerator struct {
-	GenerateStub        func() (api.CA, error)
-	generateMutex       sync.RWMutex
-	generateArgsForCall []struct{}
-	generateReturns     struct {
+	GenerateCertificateAuthorityStub        func() (api.CA, error)
+	generateCertificateAuthorityMutex       sync.RWMutex
+	generateCertificateAuthorityArgsForCall []struct{}
+	generateCertificateAuthorityReturns     struct {
 		result1 api.CA
 		result2 error
 	}
-	generateReturnsOnCall map[int]struct {
+	generateCertificateAuthorityReturnsOnCall map[int]struct {
 		result1 api.CA
 		result2 error
 	}
@@ -23,44 +23,44 @@ type CertificateAuthorityGenerator struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateAuthorityGenerator) Generate() (api.CA, error) {
-	fake.generateMutex.Lock()
-	ret, specificReturn := fake.generateReturnsOnCall[len(fake.generateArgsForCall)]
-	fake.generateArgsForCall = append(fake.generateArgsForCall, struct{}{})
-	fake.recordInvocation("Generate", []interface{}{})
-	fake.generateMutex.Unlock()
-	if fake.GenerateStub != nil {
-		return fake.GenerateStub()
+func (fake *CertificateAuthorityGenerator) GenerateCertificateAuthority() (api.CA, error) {
+	fake.generateCertificateAuthorityMutex.Lock()
+	ret, specificReturn := fake.generateCertificateAuthorityReturnsOnCall[len(fake.generateCertificateAuthorityArgsForCall)]
+	fake.generateCertificateAuthorityArgsForCall = append(fake.generateCertificateAuthorityArgsForCall, struct{}{})
+	fake.recordInvocation("GenerateCertificateAuthority", []interface{}{})
+	fake.generateCertificateAuthorityMutex.Unlock()
+	if fake.GenerateCertificateAuthorityStub != nil {
+		return fake.GenerateCertificateAuthorityStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.generateReturns.result1, fake.generateReturns.result2
+	return fake.generateCertificateAuthorityReturns.result1, fake.generateCertificateAuthorityReturns.result2
 }
 
-func (fake *CertificateAuthorityGenerator) GenerateCallCount() int {
-	fake.generateMutex.RLock()
-	defer fake.generateMutex.RUnlock()
-	return len(fake.generateArgsForCall)
+func (fake *CertificateAuthorityGenerator) GenerateCertificateAuthorityCallCount() int {
+	fake.generateCertificateAuthorityMutex.RLock()
+	defer fake.generateCertificateAuthorityMutex.RUnlock()
+	return len(fake.generateCertificateAuthorityArgsForCall)
 }
 
-func (fake *CertificateAuthorityGenerator) GenerateReturns(result1 api.CA, result2 error) {
-	fake.GenerateStub = nil
-	fake.generateReturns = struct {
+func (fake *CertificateAuthorityGenerator) GenerateCertificateAuthorityReturns(result1 api.CA, result2 error) {
+	fake.GenerateCertificateAuthorityStub = nil
+	fake.generateCertificateAuthorityReturns = struct {
 		result1 api.CA
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CertificateAuthorityGenerator) GenerateReturnsOnCall(i int, result1 api.CA, result2 error) {
-	fake.GenerateStub = nil
-	if fake.generateReturnsOnCall == nil {
-		fake.generateReturnsOnCall = make(map[int]struct {
+func (fake *CertificateAuthorityGenerator) GenerateCertificateAuthorityReturnsOnCall(i int, result1 api.CA, result2 error) {
+	fake.GenerateCertificateAuthorityStub = nil
+	if fake.generateCertificateAuthorityReturnsOnCall == nil {
+		fake.generateCertificateAuthorityReturnsOnCall = make(map[int]struct {
 			result1 api.CA
 			result2 error
 		})
 	}
-	fake.generateReturnsOnCall[i] = struct {
+	fake.generateCertificateAuthorityReturnsOnCall[i] = struct {
 		result1 api.CA
 		result2 error
 	}{result1, result2}
@@ -69,8 +69,8 @@ func (fake *CertificateAuthorityGenerator) GenerateReturnsOnCall(i int, result1 
 func (fake *CertificateAuthorityGenerator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.generateMutex.RLock()
-	defer fake.generateMutex.RUnlock()
+	fake.generateCertificateAuthorityMutex.RLock()
+	defer fake.generateCertificateAuthorityMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

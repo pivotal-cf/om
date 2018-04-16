@@ -36,14 +36,14 @@ var _ = Describe("DeleteInstallation", func() {
 		statusCount = 0
 		logsCount = 0
 
-		installationService.StatusStub = func(id int) (api.InstallationsServiceOutput, error) {
+		installationService.GetInstallationStub = func(id int) (api.InstallationsServiceOutput, error) {
 			output := statusOutputs[statusCount]
 			err := statusErrors[statusCount]
 			statusCount++
 			return output, err
 		}
 
-		installationService.LogsStub = func(id int) (api.InstallationsServiceOutput, error) {
+		installationService.GetInstallationLogsStub = func(id int) (api.InstallationsServiceOutput, error) {
 			output := logsOutputs[logsCount]
 			err := logsErrors[logsCount]
 			logsCount++
@@ -54,7 +54,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 	Describe("Execute", func() {
 		It("deletes the current installation in the Ops Manager", func() {
-			deleteService.DeleteStub = func() (api.InstallationsServiceOutput, error) {
+			deleteService.DeleteInstallationAssetCollectionStub = func() (api.InstallationsServiceOutput, error) {
 				output := api.InstallationsServiceOutput{ID: 311}
 				return output, nil
 			}
@@ -83,12 +83,12 @@ var _ = Describe("DeleteInstallation", func() {
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to delete the installation on the targeted Ops Manager"))
 
-			Expect(deleteService.DeleteCallCount()).To(Equal(1))
-			Expect(installationService.StatusArgsForCall(0)).To(Equal(311))
-			Expect(installationService.StatusCallCount()).To(Equal(3))
+			Expect(deleteService.DeleteInstallationAssetCollectionCallCount()).To(Equal(1))
+			Expect(installationService.GetInstallationArgsForCall(0)).To(Equal(311))
+			Expect(installationService.GetInstallationCallCount()).To(Equal(3))
 
-			Expect(installationService.LogsArgsForCall(0)).To(Equal(311))
-			Expect(installationService.LogsCallCount()).To(Equal(3))
+			Expect(installationService.GetInstallationLogsArgsForCall(0)).To(Equal(311))
+			Expect(installationService.GetInstallationLogsCallCount()).To(Equal(3))
 
 			Expect(writer.FlushCallCount()).To(Equal(3))
 			Expect(writer.FlushArgsForCall(0)).To(Equal("start of logs"))
@@ -97,7 +97,7 @@ var _ = Describe("DeleteInstallation", func() {
 		})
 
 		It("handles a failed installation", func() {
-			deleteService.DeleteStub = func() (api.InstallationsServiceOutput, error) {
+			deleteService.DeleteInstallationAssetCollectionStub = func() (api.InstallationsServiceOutput, error) {
 				output := api.InstallationsServiceOutput{ID: 311}
 				return output, nil
 			}
@@ -121,7 +121,7 @@ var _ = Describe("DeleteInstallation", func() {
 		})
 
 		It("handles the case when there is no installation to delete", func() {
-			deleteService.DeleteStub = func() (api.InstallationsServiceOutput, error) {
+			deleteService.DeleteInstallationAssetCollectionStub = func() (api.InstallationsServiceOutput, error) {
 				output := api.InstallationsServiceOutput{}
 				return output, nil
 			}
@@ -162,20 +162,20 @@ var _ = Describe("DeleteInstallation", func() {
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(deleteService.DeleteCallCount()).To(Equal(0))
+				Expect(deleteService.DeleteInstallationAssetCollectionCallCount()).To(Equal(0))
 
 				format, content := logger.PrintfArgsForCall(0)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running deletion...attempting to re-attach"))
 
-				Expect(installationService.StatusArgsForCall(0)).To(Equal(311))
-				Expect(installationService.LogsArgsForCall(0)).To(Equal(311))
+				Expect(installationService.GetInstallationArgsForCall(0)).To(Equal(311))
+				Expect(installationService.GetInstallationLogsArgsForCall(0)).To(Equal(311))
 			})
 		})
 
 		Context("failure cases", func() {
 			Context("when the delete to installation_asset_collection is unsuccessful", func() {
 				It("returns an error", func() {
-					deleteService.DeleteReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+					deleteService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
 					command := commands.NewDeleteInstallation(deleteService, installationService, writer, logger, 1)
 
@@ -186,7 +186,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			Context("when getting the installation status has an error", func() {
 				It("returns an error", func() {
-					deleteService.DeleteReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+					deleteService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
 					statusOutputs = []api.InstallationsServiceOutput{{}}
 
@@ -201,7 +201,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			Context("when there is an error fetching the logs", func() {
 				It("returns an error", func() {
-					deleteService.DeleteReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+					deleteService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
 					statusOutputs = []api.InstallationsServiceOutput{
 						{Status: "running"},
@@ -222,7 +222,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			Context("when there is an error flushing the logs", func() {
 				It("returns an error", func() {
-					deleteService.DeleteReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+					deleteService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
 					statusOutputs = []api.InstallationsServiceOutput{
 						{Status: "running"},

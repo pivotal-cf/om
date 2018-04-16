@@ -14,7 +14,7 @@ import (
 )
 
 var _ = Describe("RequestService", func() {
-	Describe("Invoke", func() {
+	Describe("Curl", func() {
 		var (
 			client  *fakes.HttpClient
 			service api.RequestService
@@ -34,7 +34,7 @@ var _ = Describe("RequestService", func() {
 				Body: ioutil.NopCloser(strings.NewReader("some-response-body")),
 			}, nil)
 
-			output, err := service.Invoke(api.RequestServiceInvokeInput{
+			output, err := service.Curl(api.RequestServiceCurlInput{
 				Method:  "PUT",
 				Path:    "/api/v0/api/endpoint",
 				Data:    strings.NewReader("some-request-body"),
@@ -66,7 +66,7 @@ var _ = Describe("RequestService", func() {
 		Context("failure cases", func() {
 			Context("when the request cannot be constructed", func() {
 				It("returns an error", func() {
-					_, err := service.Invoke(api.RequestServiceInvokeInput{
+					_, err := service.Curl(api.RequestServiceCurlInput{
 						Method: "PUT",
 						Path:   "%%%",
 						Data:   strings.NewReader("some-request-body"),
@@ -80,7 +80,7 @@ var _ = Describe("RequestService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("boom"))
 
-					_, err := service.Invoke(api.RequestServiceInvokeInput{
+					_, err := service.Curl(api.RequestServiceCurlInput{
 						Method: "PUT",
 						Path:   "/api/v0/api/endpoint",
 						Data:   strings.NewReader("some-request-body"),

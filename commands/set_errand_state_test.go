@@ -43,9 +43,9 @@ var _ = Describe("Set errand state", func() {
 			Expect(stagedProductsFinder.FindCallCount()).To(Equal(1))
 			Expect(stagedProductsFinder.FindArgsForCall(0)).To(Equal("some-product-name"))
 
-			Expect(errandsService.SetStateCallCount()).To(Equal(1))
+			Expect(errandsService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
 
-			productGUID, errandName, postDeployState, preDeleteState := errandsService.SetStateArgsForCall(0)
+			productGUID, errandName, postDeployState, preDeleteState := errandsService.UpdateStagedProductErrandsArgsForCall(0)
 
 			Expect(productGUID).To(Equal("some-product-guid"))
 			Expect(errandName).To(Equal("some-errand"))
@@ -63,9 +63,9 @@ var _ = Describe("Set errand state", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(errandsService.SetStateCallCount()).To(Equal(1))
+			Expect(errandsService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
 
-			productGUID, errandName, postDeployState, preDeleteState := errandsService.SetStateArgsForCall(0)
+			productGUID, errandName, postDeployState, preDeleteState := errandsService.UpdateStagedProductErrandsArgsForCall(0)
 
 			Expect(productGUID).To(Equal("some-product-guid"))
 			Expect(errandName).To(Equal("some-errand"))
@@ -133,7 +133,7 @@ var _ = Describe("Set errand state", func() {
 
 			Context("when the errands service fails", func() {
 				It("returns an error", func() {
-					errandsService.SetStateReturns(errors.New("there was an error"))
+					errandsService.UpdateStagedProductErrandsReturns(errors.New("there was an error"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",

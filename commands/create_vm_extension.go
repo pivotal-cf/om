@@ -10,7 +10,7 @@ import (
 
 //go:generate counterfeiter -o ./fakes/vm_extension_creator.go --fake-name VMExtensionCreator . vmExtensionCreator
 type vmExtensionCreator interface {
-	Create(api.CreateVMExtension) error
+	CreateStagedVMExtension(api.CreateVMExtension) error
 }
 
 type CreateVMExtension struct {
@@ -34,7 +34,7 @@ func (c CreateVMExtension) Execute(args []string) error {
 		return fmt.Errorf("could not parse create-vm-extension flags: %s", err)
 	}
 
-	err := c.service.Create(api.CreateVMExtension{
+	err := c.service.CreateStagedVMExtension(api.CreateVMExtension{
 		Name:            c.Options.Name,
 		CloudProperties: json.RawMessage(c.Options.CloudProperties),
 	})

@@ -5,17 +5,24 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/api"
 )
 
 type DeployedManifest struct {
-	deployedProducts deployedProductsLister
+	deployedProducts deployedProductService
 	logger           logger
 	Options          struct {
 		ProductName string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
-func NewDeployedManifest(deployedProducts deployedProductsLister, logger logger) DeployedManifest {
+//go:generate counterfeiter -o ./fakes/deployed_product_service.go --fake-name DeployedProductService . deployedProductService
+type deployedProductService interface {
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
+	GetDeployedProductManifest(guid string) (string, error)
+}
+
+func NewDeployedManifest(deployedProducts deployedProductService, logger logger) DeployedManifest {
 	return DeployedManifest{
 		deployedProducts: deployedProducts,
 		logger:           logger,
@@ -27,7 +34,7 @@ func (dm DeployedManifest) Execute(args []string) error {
 		return fmt.Errorf("could not parse staged-manifest flags: %s", err)
 	}
 
-	output, err := dm.deployedProducts.List()
+	output, err := dm.deployedProducts.ListDeployedProducts()
 	if err != nil {
 		return err
 	}
@@ -44,7 +51,7 @@ func (dm DeployedManifest) Execute(args []string) error {
 		return errors.New("could not find given product")
 	}
 
-	manifest, err := dm.deployedProducts.Manifest(guid)
+	manifest, err := dm.deployedProducts.GetDeployedProductManifest(guid)
 	if err != nil {
 		return err
 	}

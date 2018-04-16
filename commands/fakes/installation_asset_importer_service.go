@@ -8,65 +8,65 @@ import (
 )
 
 type InstallationAssetImporterService struct {
-	ImportStub        func(api.ImportInstallationInput) error
-	importMutex       sync.RWMutex
-	importArgsForCall []struct {
+	UploadInstallationAssetCollectionStub        func(api.ImportInstallationInput) error
+	uploadInstallationAssetCollectionMutex       sync.RWMutex
+	uploadInstallationAssetCollectionArgsForCall []struct {
 		arg1 api.ImportInstallationInput
 	}
-	importReturns struct {
+	uploadInstallationAssetCollectionReturns struct {
 		result1 error
 	}
-	importReturnsOnCall map[int]struct {
+	uploadInstallationAssetCollectionReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *InstallationAssetImporterService) Import(arg1 api.ImportInstallationInput) error {
-	fake.importMutex.Lock()
-	ret, specificReturn := fake.importReturnsOnCall[len(fake.importArgsForCall)]
-	fake.importArgsForCall = append(fake.importArgsForCall, struct {
+func (fake *InstallationAssetImporterService) UploadInstallationAssetCollection(arg1 api.ImportInstallationInput) error {
+	fake.uploadInstallationAssetCollectionMutex.Lock()
+	ret, specificReturn := fake.uploadInstallationAssetCollectionReturnsOnCall[len(fake.uploadInstallationAssetCollectionArgsForCall)]
+	fake.uploadInstallationAssetCollectionArgsForCall = append(fake.uploadInstallationAssetCollectionArgsForCall, struct {
 		arg1 api.ImportInstallationInput
 	}{arg1})
-	fake.recordInvocation("Import", []interface{}{arg1})
-	fake.importMutex.Unlock()
-	if fake.ImportStub != nil {
-		return fake.ImportStub(arg1)
+	fake.recordInvocation("UploadInstallationAssetCollection", []interface{}{arg1})
+	fake.uploadInstallationAssetCollectionMutex.Unlock()
+	if fake.UploadInstallationAssetCollectionStub != nil {
+		return fake.UploadInstallationAssetCollectionStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.importReturns.result1
+	return fake.uploadInstallationAssetCollectionReturns.result1
 }
 
-func (fake *InstallationAssetImporterService) ImportCallCount() int {
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
-	return len(fake.importArgsForCall)
+func (fake *InstallationAssetImporterService) UploadInstallationAssetCollectionCallCount() int {
+	fake.uploadInstallationAssetCollectionMutex.RLock()
+	defer fake.uploadInstallationAssetCollectionMutex.RUnlock()
+	return len(fake.uploadInstallationAssetCollectionArgsForCall)
 }
 
-func (fake *InstallationAssetImporterService) ImportArgsForCall(i int) api.ImportInstallationInput {
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
-	return fake.importArgsForCall[i].arg1
+func (fake *InstallationAssetImporterService) UploadInstallationAssetCollectionArgsForCall(i int) api.ImportInstallationInput {
+	fake.uploadInstallationAssetCollectionMutex.RLock()
+	defer fake.uploadInstallationAssetCollectionMutex.RUnlock()
+	return fake.uploadInstallationAssetCollectionArgsForCall[i].arg1
 }
 
-func (fake *InstallationAssetImporterService) ImportReturns(result1 error) {
-	fake.ImportStub = nil
-	fake.importReturns = struct {
+func (fake *InstallationAssetImporterService) UploadInstallationAssetCollectionReturns(result1 error) {
+	fake.UploadInstallationAssetCollectionStub = nil
+	fake.uploadInstallationAssetCollectionReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *InstallationAssetImporterService) ImportReturnsOnCall(i int, result1 error) {
-	fake.ImportStub = nil
-	if fake.importReturnsOnCall == nil {
-		fake.importReturnsOnCall = make(map[int]struct {
+func (fake *InstallationAssetImporterService) UploadInstallationAssetCollectionReturnsOnCall(i int, result1 error) {
+	fake.UploadInstallationAssetCollectionStub = nil
+	if fake.uploadInstallationAssetCollectionReturnsOnCall == nil {
+		fake.uploadInstallationAssetCollectionReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.importReturnsOnCall[i] = struct {
+	fake.uploadInstallationAssetCollectionReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -74,8 +74,8 @@ func (fake *InstallationAssetImporterService) ImportReturnsOnCall(i int, result1
 func (fake *InstallationAssetImporterService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
+	fake.uploadInstallationAssetCollectionMutex.RLock()
+	defer fake.uploadInstallationAssetCollectionMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

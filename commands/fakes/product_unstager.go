@@ -8,65 +8,65 @@ import (
 )
 
 type ProductUnstager struct {
-	UnstageStub        func(api.UnstageProductInput) error
-	unstageMutex       sync.RWMutex
-	unstageArgsForCall []struct {
+	DeleteStagedProductStub        func(api.UnstageProductInput) error
+	deleteStagedProductMutex       sync.RWMutex
+	deleteStagedProductArgsForCall []struct {
 		arg1 api.UnstageProductInput
 	}
-	unstageReturns struct {
+	deleteStagedProductReturns struct {
 		result1 error
 	}
-	unstageReturnsOnCall map[int]struct {
+	deleteStagedProductReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductUnstager) Unstage(arg1 api.UnstageProductInput) error {
-	fake.unstageMutex.Lock()
-	ret, specificReturn := fake.unstageReturnsOnCall[len(fake.unstageArgsForCall)]
-	fake.unstageArgsForCall = append(fake.unstageArgsForCall, struct {
+func (fake *ProductUnstager) DeleteStagedProduct(arg1 api.UnstageProductInput) error {
+	fake.deleteStagedProductMutex.Lock()
+	ret, specificReturn := fake.deleteStagedProductReturnsOnCall[len(fake.deleteStagedProductArgsForCall)]
+	fake.deleteStagedProductArgsForCall = append(fake.deleteStagedProductArgsForCall, struct {
 		arg1 api.UnstageProductInput
 	}{arg1})
-	fake.recordInvocation("Unstage", []interface{}{arg1})
-	fake.unstageMutex.Unlock()
-	if fake.UnstageStub != nil {
-		return fake.UnstageStub(arg1)
+	fake.recordInvocation("DeleteStagedProduct", []interface{}{arg1})
+	fake.deleteStagedProductMutex.Unlock()
+	if fake.DeleteStagedProductStub != nil {
+		return fake.DeleteStagedProductStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.unstageReturns.result1
+	return fake.deleteStagedProductReturns.result1
 }
 
-func (fake *ProductUnstager) UnstageCallCount() int {
-	fake.unstageMutex.RLock()
-	defer fake.unstageMutex.RUnlock()
-	return len(fake.unstageArgsForCall)
+func (fake *ProductUnstager) DeleteStagedProductCallCount() int {
+	fake.deleteStagedProductMutex.RLock()
+	defer fake.deleteStagedProductMutex.RUnlock()
+	return len(fake.deleteStagedProductArgsForCall)
 }
 
-func (fake *ProductUnstager) UnstageArgsForCall(i int) api.UnstageProductInput {
-	fake.unstageMutex.RLock()
-	defer fake.unstageMutex.RUnlock()
-	return fake.unstageArgsForCall[i].arg1
+func (fake *ProductUnstager) DeleteStagedProductArgsForCall(i int) api.UnstageProductInput {
+	fake.deleteStagedProductMutex.RLock()
+	defer fake.deleteStagedProductMutex.RUnlock()
+	return fake.deleteStagedProductArgsForCall[i].arg1
 }
 
-func (fake *ProductUnstager) UnstageReturns(result1 error) {
-	fake.UnstageStub = nil
-	fake.unstageReturns = struct {
+func (fake *ProductUnstager) DeleteStagedProductReturns(result1 error) {
+	fake.DeleteStagedProductStub = nil
+	fake.deleteStagedProductReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *ProductUnstager) UnstageReturnsOnCall(i int, result1 error) {
-	fake.UnstageStub = nil
-	if fake.unstageReturnsOnCall == nil {
-		fake.unstageReturnsOnCall = make(map[int]struct {
+func (fake *ProductUnstager) DeleteStagedProductReturnsOnCall(i int, result1 error) {
+	fake.DeleteStagedProductStub = nil
+	if fake.deleteStagedProductReturnsOnCall == nil {
+		fake.deleteStagedProductReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.unstageReturnsOnCall[i] = struct {
+	fake.deleteStagedProductReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -74,8 +74,8 @@ func (fake *ProductUnstager) UnstageReturnsOnCall(i int, result1 error) {
 func (fake *ProductUnstager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.unstageMutex.RLock()
-	defer fake.unstageMutex.RUnlock()
+	fake.deleteStagedProductMutex.RLock()
+	defer fake.deleteStagedProductMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

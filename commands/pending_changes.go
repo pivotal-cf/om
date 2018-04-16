@@ -15,7 +15,7 @@ type PendingChanges struct {
 
 //go:generate counterfeiter -o ./fakes/pending_changes_service.go --fake-name PendingChangesService . pendingChangesService
 type pendingChangesService interface {
-	List() (api.PendingChangesOutput, error)
+	ListStagedPendingChanges() (api.PendingChangesOutput, error)
 }
 
 func NewPendingChanges(presenter presenters.Presenter, service pendingChangesService) PendingChanges {
@@ -26,7 +26,7 @@ func NewPendingChanges(presenter presenters.Presenter, service pendingChangesSer
 }
 
 func (pc PendingChanges) Execute(args []string) error {
-	output, err := pc.service.List()
+	output, err := pc.service.ListStagedPendingChanges()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve pending changes %s", err)
 	}

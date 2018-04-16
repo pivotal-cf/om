@@ -20,7 +20,9 @@ func NewDeleteUnusedProducts(productDeleter ps, logger logger) DeleteUnusedProdu
 func (dup DeleteUnusedProducts) Execute(args []string) error {
 	dup.logger.Printf("trashing unused products")
 
-	err := dup.productsService.Delete(api.AvailableProductsInput{}, true)
+	err := dup.productsService.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
+		ShouldDeleteAllProducts: true,
+	})
 	if err != nil {
 		return err
 	}

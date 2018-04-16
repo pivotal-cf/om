@@ -34,7 +34,7 @@ var _ = Describe("CreateVMExtension", func() {
 			})
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(fakeVMExtensionService.CreateArgsForCall(0)).To(Equal(api.CreateVMExtension{
+			Expect(fakeVMExtensionService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 				Name:            "some-vm-extension",
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			}))
@@ -47,7 +47,7 @@ var _ = Describe("CreateVMExtension", func() {
 		Context("failure cases", func() {
 			Context("when the service fails to create a VM extension", func() {
 				It("returns an error", func() {
-					fakeVMExtensionService.CreateReturns(errors.New("failed to create VM extension"))
+					fakeVMExtensionService.CreateStagedVMExtensionReturns(errors.New("failed to create VM extension"))
 
 					err := command.Execute([]string{
 						"--name", "some-vm-extension",

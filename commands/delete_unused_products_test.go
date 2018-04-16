@@ -31,11 +31,12 @@ var _ = Describe("DeleteProduct", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(deleter.DeleteCallCount()).To(Equal(1))
+			Expect(deleter.DeleteAvailableProductsCallCount()).To(Equal(1))
 
-			input, deleteAll := deleter.DeleteArgsForCall(0)
-			Expect(input).To(Equal(api.AvailableProductsInput{}))
-			Expect(deleteAll).To(BeTrue())
+			input := deleter.DeleteAvailableProductsArgsForCall(0)
+			Expect(input).To(Equal(api.DeleteAvailableProductsInput{
+				ShouldDeleteAllProducts: true,
+			}))
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("trashing unused products"))
@@ -48,7 +49,7 @@ var _ = Describe("DeleteProduct", func() {
 	Context("when an error occurs", func() {
 		Context("when deleting all products fails", func() {
 			It("returns an error", func() {
-				deleter.DeleteReturns(errors.New("something bad happened"))
+				deleter.DeleteAvailableProductsReturns(errors.New("something bad happened"))
 
 				err := command.Execute([]string{"-p", "nah", "-v", "nope"})
 				Expect(err).To(MatchError("something bad happened"))

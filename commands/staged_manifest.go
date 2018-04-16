@@ -31,7 +31,7 @@ func (sm StagedManifest) Execute(args []string) error {
 		return fmt.Errorf("failed to find product: %s", err)
 	}
 
-	manifest, err := sm.stagedProductsService.Manifest(output.Product.GUID)
+	manifest, err := sm.stagedProductsService.GetStagedProductManifest(output.Product.GUID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch product manifest: %s", err)
 	}

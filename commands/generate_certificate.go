@@ -16,7 +16,7 @@ type GenerateCertificate struct {
 
 //go:generate counterfeiter -o ./fakes/certificate_generator.go --fake-name CertificateGenerator . certificateGenerator
 type certificateGenerator interface {
-	Generate(string) (string, error)
+	GenerateCertificate(string) (string, error)
 }
 
 func NewGenerateCertificate(service certificateGenerator, logger logger) GenerateCertificate {
@@ -28,7 +28,8 @@ func (g GenerateCertificate) Execute(args []string) error {
 		return fmt.Errorf("could not parse generate-certificate flags: %s", err)
 	}
 
-	output, err := g.service.Generate(g.Options.Domains)
+	output, err := g.service.GenerateCertificate(g.Options.Domains)
+
 	if err != nil {
 		return err
 	}

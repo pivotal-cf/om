@@ -17,7 +17,7 @@ type UnstageProduct struct {
 
 //go:generate counterfeiter -o ./fakes/product_unstager.go --fake-name ProductUnstager . productUnstager
 type productUnstager interface {
-	Unstage(api.UnstageProductInput) error
+	DeleteStagedProduct(api.UnstageProductInput) error
 }
 
 func NewUnstageProduct(productUnstager productUnstager, logger logger) UnstageProduct {
@@ -34,7 +34,7 @@ func (up UnstageProduct) Execute(args []string) error {
 
 	up.logger.Printf("unstaging %s", up.Options.Product)
 
-	err := up.stagedProductsService.Unstage(api.UnstageProductInput{
+	err := up.stagedProductsService.DeleteStagedProduct(api.UnstageProductInput{
 		ProductName: up.Options.Product,
 	})
 

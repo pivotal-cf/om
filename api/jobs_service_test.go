@@ -22,7 +22,7 @@ var _ = Describe("JobsService", func() {
 		client = &fakes.HttpClient{}
 	})
 
-	Describe("Jobs", func() {
+	Describe("ListStagedProductJobs", func() {
 		It("returns a map of the jobs", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -32,7 +32,7 @@ var _ = Describe("JobsService", func() {
 
 			service := api.NewJobsService(client)
 
-			jobs, err := service.Jobs("some-product-guid")
+			jobs, err := service.ListStagedProductJobs("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jobs).To(Equal(map[string]string{
 				"job-1": "some-guid-1",
@@ -51,7 +51,7 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					_, err := service.Jobs("some-product-guid")
+					_, err := service.ListStagedProductJobs("some-product-guid")
 					Expect(err).To(MatchError("could not make api request to jobs endpoint: bad"))
 				})
 			})
@@ -65,7 +65,7 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					_, err := service.Jobs("some-product-guid")
+					_, err := service.ListStagedProductJobs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
 				})
 			})
@@ -79,14 +79,14 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					_, err := service.Jobs("some-product-guid")
+					_, err := service.ListStagedProductJobs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("failed to decode jobs json response:")))
 				})
 			})
 		})
 	})
 
-	Describe("GetExistingJobConfig", func() {
+	Describe("GetStagedProductJobResourceConfig", func() {
 		It("fetches the resource config for a given job", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -101,7 +101,7 @@ var _ = Describe("JobsService", func() {
 			}, nil)
 
 			service := api.NewJobsService(client)
-			job, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+			job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(client.DoCallCount()).To(Equal(1))
@@ -133,7 +133,7 @@ var _ = Describe("JobsService", func() {
 				}, nil)
 
 				service := api.NewJobsService(client)
-				job, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+				job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.DoCallCount()).To(Equal(1))
@@ -180,7 +180,7 @@ var _ = Describe("JobsService", func() {
 				}, nil)
 
 				service := api.NewJobsService(client)
-				job, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+				job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(client.DoCallCount()).To(Equal(1))
@@ -222,7 +222,7 @@ var _ = Describe("JobsService", func() {
 					}, errors.New("some client error"))
 
 					service := api.NewJobsService(client)
-					_, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 					Expect(err).To(MatchError("could not make api request to resource_config endpoint: some client error"))
 				})
@@ -236,7 +236,7 @@ var _ = Describe("JobsService", func() {
 					}, nil)
 
 					service := api.NewJobsService(client)
-					_, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 				})
@@ -250,7 +250,7 @@ var _ = Describe("JobsService", func() {
 					}, nil)
 
 					service := api.NewJobsService(client)
-					_, err := service.GetExistingJobConfig("some-product-guid", "some-guid")
+					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
@@ -258,7 +258,7 @@ var _ = Describe("JobsService", func() {
 		})
 	})
 
-	Describe("ConfigureJob", func() {
+	Describe("UpdateStagedProductJobResourceConfig", func() {
 		It("configures job resources", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -276,7 +276,7 @@ var _ = Describe("JobsService", func() {
 			}
 			*jobProperties.InternetConnected = true
 
-			err := service.ConfigureJob("some-product-guid", "some-job-guid", jobProperties)
+			err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid", jobProperties)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(1))
@@ -306,7 +306,7 @@ var _ = Describe("JobsService", func() {
 
 				service := api.NewJobsService(client)
 
-				err := service.ConfigureJob("some-product-guid", "some-job-guid",
+				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
 					api.JobProperties{
 						Instances:         1,
 						PersistentDisk:    &api.Disk{Size: "290"},
@@ -343,7 +343,7 @@ var _ = Describe("JobsService", func() {
 
 				service := api.NewJobsService(client)
 
-				err := service.ConfigureJob("some-product-guid", "some-job-guid",
+				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
 					api.JobProperties{
 						Instances:         1,
 						PersistentDisk:    &api.Disk{Size: "290"},
@@ -382,7 +382,7 @@ var _ = Describe("JobsService", func() {
 
 				service := api.NewJobsService(client)
 
-				err := service.ConfigureJob("some-product-guid", "some-job-guid",
+				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
 					api.JobProperties{
 						Instances:      1,
 						PersistentDisk: &api.Disk{Size: "290"},
@@ -418,7 +418,7 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					err := service.ConfigureJob("some-product-guid", "some-other-guid", api.JobProperties{
+					err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-other-guid", api.JobProperties{
 						Instances:      2,
 						PersistentDisk: &api.Disk{Size: "000"},
 						InstanceType:   api.InstanceType{ID: "number-2"},
@@ -436,7 +436,7 @@ var _ = Describe("JobsService", func() {
 
 					service := api.NewJobsService(client)
 
-					err := service.ConfigureJob("some-product-guid", "some-other-guid", api.JobProperties{
+					err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-other-guid", api.JobProperties{
 						Instances:      2,
 						PersistentDisk: &api.Disk{Size: "000"},
 						InstanceType:   api.InstanceType{ID: "number-2"},

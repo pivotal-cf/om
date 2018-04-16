@@ -29,7 +29,7 @@ var _ = Describe("VMExtensionsService", func() {
 	})
 
 	It("creates a VM Extension", func() {
-		err := vmExtensionsService.Create(api.CreateVMExtension{
+		err := vmExtensionsService.CreateStagedVMExtension(api.CreateVMExtension{
 			Name:            "some-vm-extension",
 			CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 		})
@@ -58,7 +58,7 @@ var _ = Describe("VMExtensionsService", func() {
 				StatusCode: http.StatusInternalServerError,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-			err := vmExtensionsService.Create(api.CreateVMExtension{
+			err := vmExtensionsService.CreateStagedVMExtension(api.CreateVMExtension{
 				Name:            "some-vm-extension",
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			})
@@ -71,7 +71,7 @@ var _ = Describe("VMExtensionsService", func() {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-			err := vmExtensionsService.Create(api.CreateVMExtension{
+			err := vmExtensionsService.CreateStagedVMExtension(api.CreateVMExtension{
 				Name:            "some-vm-extension",
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			})

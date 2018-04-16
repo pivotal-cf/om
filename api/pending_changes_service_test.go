@@ -25,7 +25,7 @@ var _ = Describe("PendingChangesService", func() {
 		service = api.NewPendingChangesService(client)
 	})
 
-	Describe("List", func() {
+	Describe("ListStagedPendingChanges", func() {
 		It("lists pending changes", func() {
 			var path string
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
@@ -51,7 +51,7 @@ var _ = Describe("PendingChangesService", func() {
 				}, nil
 			}
 
-			output, err := service.List()
+			output, err := service.ListStagedPendingChanges()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output.ChangeList).To(ConsistOf([]api.ProductChange{
@@ -79,7 +79,7 @@ var _ = Describe("PendingChangesService", func() {
 			Context("the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.List()
+					_, err := service.ListStagedPendingChanges()
 					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
 				})
 			})
@@ -91,7 +91,7 @@ var _ = Describe("PendingChangesService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					_, err := service.List()
+					_, err := service.ListStagedPendingChanges()
 					Expect(err).To(MatchError(ContainSubstring("request failed")))
 				})
 			})
@@ -103,7 +103,7 @@ var _ = Describe("PendingChangesService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
 					}, nil)
 
-					_, err := service.List()
+					_, err := service.ListStagedPendingChanges()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 				})
 			})

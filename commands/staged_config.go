@@ -19,10 +19,10 @@ type StagedConfig struct {
 //go:generate counterfeiter -o ./fakes/export_config_service.go --fake-name StagedConfigService . stagedConfigService
 type stagedConfigService interface {
 	Find(product string) (api.StagedProductsFindOutput, error)
-	Jobs(productGUID string) (map[string]string, error)
-	GetExistingJobConfig(productGUID, jobGUID string) (api.JobProperties, error)
-	Properties(product string) (map[string]api.ResponseProperty, error)
-	NetworksAndAZs(product string) (map[string]interface{}, error)
+	ListStagedProductJobs(productGUID string) (map[string]string, error)
+	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
+	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
+	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
 }
 
 func NewStagedConfig(stagedConfigService stagedConfigService, logger logger) StagedConfig {
@@ -51,7 +51,7 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 	productGUID := findOutput.Product.GUID
 
-	properties, err := ec.stagedConfigService.Properties(productGUID)
+	properties, err := ec.stagedConfigService.GetStagedProductProperties(productGUID)
 	if err != nil {
 		return err
 	}
@@ -64,12 +64,12 @@ func (ec StagedConfig) Execute(args []string) error {
 		}
 	}
 
-	networks, err := ec.stagedConfigService.NetworksAndAZs(productGUID)
+	networks, err := ec.stagedConfigService.GetStagedProductNetworksAndAZs(productGUID)
 	if err != nil {
 		return err
 	}
 
-	jobs, err := ec.stagedConfigService.Jobs(productGUID)
+	jobs, err := ec.stagedConfigService.ListStagedProductJobs(productGUID)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (ec StagedConfig) Execute(args []string) error {
 	resourceConfig := map[string]api.JobProperties{}
 
 	for name, jobGUID := range jobs {
-		jobProperties, err := ec.stagedConfigService.GetExistingJobConfig(productGUID, jobGUID)
+		jobProperties, err := ec.stagedConfigService.GetStagedProductJobResourceConfig(productGUID, jobGUID)
 		if err != nil {
 			return err
 		}

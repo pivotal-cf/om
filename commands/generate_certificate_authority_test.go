@@ -30,7 +30,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthorityService.GenerateCallCount()).To(Equal(1))
+			Expect(fakeCertificateAuthorityService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
 		})
 
 		It("prints a table containing the certificate authority that was generated", func() {
@@ -43,7 +43,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 				CertPEM:   "some CertPem",
 			}
 
-			fakeCertificateAuthorityService.GenerateReturns(certificateAuthority, nil)
+			fakeCertificateAuthorityService.GenerateCertificateAuthorityReturns(certificateAuthority, nil)
 
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -55,7 +55,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 
 		Context("failure cases", func() {
 			It("returns an error when the service fails to generate a certificate", func() {
-				fakeCertificateAuthorityService.GenerateReturns(api.CA{}, errors.New("failed to generate certificate"))
+				fakeCertificateAuthorityService.GenerateCertificateAuthorityReturns(api.CA{}, errors.New("failed to generate certificate"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to generate certificate"))

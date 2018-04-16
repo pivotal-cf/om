@@ -61,7 +61,7 @@ func (is InstallationsService) ListInstallations() ([]InstallationsServiceOutput
 	return responseStruct.Installations, nil
 }
 
-func (is InstallationsService) Trigger(ignoreWarnings bool, deployProducts bool) (InstallationsServiceOutput, error) {
+func (is InstallationsService) CreateInstallation(ignoreWarnings bool, deployProducts bool) (InstallationsServiceOutput, error) {
 	deployProductsVal := "none"
 	if deployProducts {
 		deployProductsVal = "all"
@@ -109,6 +109,7 @@ func (is InstallationsService) Trigger(ignoreWarnings bool, deployProducts bool)
 	return InstallationsServiceOutput{ID: installation.Install.ID}, nil
 }
 
+// TODO: extract to helper package?
 func (is InstallationsService) RunningInstallation() (InstallationsServiceOutput, error) {
 	installationOutput, err := is.ListInstallations()
 	if err != nil {
@@ -120,7 +121,7 @@ func (is InstallationsService) RunningInstallation() (InstallationsServiceOutput
 	return InstallationsServiceOutput{}, nil
 }
 
-func (is InstallationsService) Status(id int) (InstallationsServiceOutput, error) {
+func (is InstallationsService) GetInstallation(id int) (InstallationsServiceOutput, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/installations/%d", id), nil)
 	if err != nil {
 		return InstallationsServiceOutput{}, err
@@ -150,7 +151,7 @@ func (is InstallationsService) Status(id int) (InstallationsServiceOutput, error
 	return InstallationsServiceOutput{Status: output.Status}, nil
 }
 
-func (is InstallationsService) Logs(id int) (InstallationsServiceOutput, error) {
+func (is InstallationsService) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/installations/%d/logs", id), nil)
 	if err != nil {
 		return InstallationsServiceOutput{}, err

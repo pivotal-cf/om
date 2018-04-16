@@ -17,7 +17,7 @@ type ExportInstallation struct {
 
 //go:generate counterfeiter -o ./fakes/installation_asset_exporter_service.go --fake-name InstallationAssetExporterService . installationAssetExporterService
 type installationAssetExporterService interface {
-	Export(outputFile string, pollingInterval int) error
+	DownloadInstallationAssetCollection(outputFile string, pollingInterval int) error
 }
 
 func NewExportInstallation(installationAssetExporterService installationAssetExporterService, logger logger) ExportInstallation {
@@ -42,7 +42,7 @@ func (ei ExportInstallation) Execute(args []string) error {
 
 	ei.logger.Printf("exporting installation")
 
-	err := ei.installationAssetExporterService.Export(ei.Options.OutputFile, ei.Options.PollingInterval)
+	err := ei.installationAssetExporterService.DownloadInstallationAssetCollection(ei.Options.OutputFile, ei.Options.PollingInterval)
 	if err != nil {
 		return fmt.Errorf("failed to export installation: %s", err)
 	}

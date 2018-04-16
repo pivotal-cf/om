@@ -8,14 +8,14 @@ import (
 )
 
 type CertificateAuthoritiesService struct {
-	ListStub        func() (api.CertificateAuthoritiesOutput, error)
-	listMutex       sync.RWMutex
-	listArgsForCall []struct{}
-	listReturns     struct {
+	ListCertificateAuthoritiesStub        func() (api.CertificateAuthoritiesOutput, error)
+	listCertificateAuthoritiesMutex       sync.RWMutex
+	listCertificateAuthoritiesArgsForCall []struct{}
+	listCertificateAuthoritiesReturns     struct {
 		result1 api.CertificateAuthoritiesOutput
 		result2 error
 	}
-	listReturnsOnCall map[int]struct {
+	listCertificateAuthoritiesReturnsOnCall map[int]struct {
 		result1 api.CertificateAuthoritiesOutput
 		result2 error
 	}
@@ -23,44 +23,44 @@ type CertificateAuthoritiesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateAuthoritiesService) List() (api.CertificateAuthoritiesOutput, error) {
-	fake.listMutex.Lock()
-	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
-	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
-	fake.recordInvocation("List", []interface{}{})
-	fake.listMutex.Unlock()
-	if fake.ListStub != nil {
-		return fake.ListStub()
+func (fake *CertificateAuthoritiesService) ListCertificateAuthorities() (api.CertificateAuthoritiesOutput, error) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	ret, specificReturn := fake.listCertificateAuthoritiesReturnsOnCall[len(fake.listCertificateAuthoritiesArgsForCall)]
+	fake.listCertificateAuthoritiesArgsForCall = append(fake.listCertificateAuthoritiesArgsForCall, struct{}{})
+	fake.recordInvocation("ListCertificateAuthorities", []interface{}{})
+	fake.listCertificateAuthoritiesMutex.Unlock()
+	if fake.ListCertificateAuthoritiesStub != nil {
+		return fake.ListCertificateAuthoritiesStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listReturns.result1, fake.listReturns.result2
+	return fake.listCertificateAuthoritiesReturns.result1, fake.listCertificateAuthoritiesReturns.result2
 }
 
-func (fake *CertificateAuthoritiesService) ListCallCount() int {
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
-	return len(fake.listArgsForCall)
+func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesCallCount() int {
+	fake.listCertificateAuthoritiesMutex.RLock()
+	defer fake.listCertificateAuthoritiesMutex.RUnlock()
+	return len(fake.listCertificateAuthoritiesArgsForCall)
 }
 
-func (fake *CertificateAuthoritiesService) ListReturns(result1 api.CertificateAuthoritiesOutput, result2 error) {
-	fake.ListStub = nil
-	fake.listReturns = struct {
+func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesReturns(result1 api.CertificateAuthoritiesOutput, result2 error) {
+	fake.ListCertificateAuthoritiesStub = nil
+	fake.listCertificateAuthoritiesReturns = struct {
 		result1 api.CertificateAuthoritiesOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CertificateAuthoritiesService) ListReturnsOnCall(i int, result1 api.CertificateAuthoritiesOutput, result2 error) {
-	fake.ListStub = nil
-	if fake.listReturnsOnCall == nil {
-		fake.listReturnsOnCall = make(map[int]struct {
+func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesReturnsOnCall(i int, result1 api.CertificateAuthoritiesOutput, result2 error) {
+	fake.ListCertificateAuthoritiesStub = nil
+	if fake.listCertificateAuthoritiesReturnsOnCall == nil {
+		fake.listCertificateAuthoritiesReturnsOnCall = make(map[int]struct {
 			result1 api.CertificateAuthoritiesOutput
 			result2 error
 		})
 	}
-	fake.listReturnsOnCall[i] = struct {
+	fake.listCertificateAuthoritiesReturnsOnCall[i] = struct {
 		result1 api.CertificateAuthoritiesOutput
 		result2 error
 	}{result1, result2}
@@ -69,8 +69,8 @@ func (fake *CertificateAuthoritiesService) ListReturnsOnCall(i int, result1 api.
 func (fake *CertificateAuthoritiesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
+	fake.listCertificateAuthoritiesMutex.RLock()
+	defer fake.listCertificateAuthoritiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

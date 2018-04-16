@@ -8,65 +8,65 @@ import (
 )
 
 type VMExtensionCreator struct {
-	CreateStub        func(api.CreateVMExtension) error
-	createMutex       sync.RWMutex
-	createArgsForCall []struct {
+	CreateStagedVMExtensionStub        func(api.CreateVMExtension) error
+	createStagedVMExtensionMutex       sync.RWMutex
+	createStagedVMExtensionArgsForCall []struct {
 		arg1 api.CreateVMExtension
 	}
-	createReturns struct {
+	createStagedVMExtensionReturns struct {
 		result1 error
 	}
-	createReturnsOnCall map[int]struct {
+	createStagedVMExtensionReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *VMExtensionCreator) Create(arg1 api.CreateVMExtension) error {
-	fake.createMutex.Lock()
-	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
-	fake.createArgsForCall = append(fake.createArgsForCall, struct {
+func (fake *VMExtensionCreator) CreateStagedVMExtension(arg1 api.CreateVMExtension) error {
+	fake.createStagedVMExtensionMutex.Lock()
+	ret, specificReturn := fake.createStagedVMExtensionReturnsOnCall[len(fake.createStagedVMExtensionArgsForCall)]
+	fake.createStagedVMExtensionArgsForCall = append(fake.createStagedVMExtensionArgsForCall, struct {
 		arg1 api.CreateVMExtension
 	}{arg1})
-	fake.recordInvocation("Create", []interface{}{arg1})
-	fake.createMutex.Unlock()
-	if fake.CreateStub != nil {
-		return fake.CreateStub(arg1)
+	fake.recordInvocation("CreateStagedVMExtension", []interface{}{arg1})
+	fake.createStagedVMExtensionMutex.Unlock()
+	if fake.CreateStagedVMExtensionStub != nil {
+		return fake.CreateStagedVMExtensionStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.createReturns.result1
+	return fake.createStagedVMExtensionReturns.result1
 }
 
-func (fake *VMExtensionCreator) CreateCallCount() int {
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	return len(fake.createArgsForCall)
+func (fake *VMExtensionCreator) CreateStagedVMExtensionCallCount() int {
+	fake.createStagedVMExtensionMutex.RLock()
+	defer fake.createStagedVMExtensionMutex.RUnlock()
+	return len(fake.createStagedVMExtensionArgsForCall)
 }
 
-func (fake *VMExtensionCreator) CreateArgsForCall(i int) api.CreateVMExtension {
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	return fake.createArgsForCall[i].arg1
+func (fake *VMExtensionCreator) CreateStagedVMExtensionArgsForCall(i int) api.CreateVMExtension {
+	fake.createStagedVMExtensionMutex.RLock()
+	defer fake.createStagedVMExtensionMutex.RUnlock()
+	return fake.createStagedVMExtensionArgsForCall[i].arg1
 }
 
-func (fake *VMExtensionCreator) CreateReturns(result1 error) {
-	fake.CreateStub = nil
-	fake.createReturns = struct {
+func (fake *VMExtensionCreator) CreateStagedVMExtensionReturns(result1 error) {
+	fake.CreateStagedVMExtensionStub = nil
+	fake.createStagedVMExtensionReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *VMExtensionCreator) CreateReturnsOnCall(i int, result1 error) {
-	fake.CreateStub = nil
-	if fake.createReturnsOnCall == nil {
-		fake.createReturnsOnCall = make(map[int]struct {
+func (fake *VMExtensionCreator) CreateStagedVMExtensionReturnsOnCall(i int, result1 error) {
+	fake.CreateStagedVMExtensionStub = nil
+	if fake.createStagedVMExtensionReturnsOnCall == nil {
+		fake.createStagedVMExtensionReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.createReturnsOnCall[i] = struct {
+	fake.createStagedVMExtensionReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -74,8 +74,8 @@ func (fake *VMExtensionCreator) CreateReturnsOnCall(i int, result1 error) {
 func (fake *VMExtensionCreator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
+	fake.createStagedVMExtensionMutex.RLock()
+	defer fake.createStagedVMExtensionMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

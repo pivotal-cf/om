@@ -54,7 +54,7 @@ func NewDirectorService(client httpClient, stderr logger) DirectorService {
 	}
 }
 
-func (d DirectorService) SetAZConfiguration(input AvailabilityZoneInput) error {
+func (d DirectorService) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) error {
 	azs := AvailabilityZones{}
 	err := yaml.Unmarshal(input.AvailabilityZones, &azs.AvailabilityZones)
 	if err != nil {
@@ -86,7 +86,7 @@ func (d DirectorService) SetAZConfiguration(input AvailabilityZoneInput) error {
 	return err
 }
 
-func (d DirectorService) SetNetworksConfiguration(input json.RawMessage) error {
+func (d DirectorService) UpdateStagedDirectorNetworks(input json.RawMessage) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)
@@ -96,7 +96,7 @@ func (d DirectorService) SetNetworksConfiguration(input json.RawMessage) error {
 	return err
 }
 
-func (d DirectorService) SetNetworkAndAZ(input NetworkAndAZConfiguration) error {
+func (d DirectorService) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)
@@ -106,7 +106,7 @@ func (d DirectorService) SetNetworkAndAZ(input NetworkAndAZConfiguration) error 
 	return err
 }
 
-func (d DirectorService) SetProperties(input DirectorProperties) error {
+func (d DirectorService) UpdateStagedDirectorProperties(input DirectorProperties) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)

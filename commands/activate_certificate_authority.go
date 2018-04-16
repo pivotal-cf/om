@@ -17,7 +17,7 @@ type ActivateCertificateAuthority struct {
 
 //go:generate counterfeiter -o ./fakes/certificate_authority_activator.go --fake-name CertificateAuthorityActivator . certificateAuthorityActivator
 type certificateAuthorityActivator interface {
-	Activate(api.ActivateCertificateAuthorityInput) error
+	ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput) error
 }
 
 func NewActivateCertificateAuthority(service certificateAuthorityActivator, logger logger) ActivateCertificateAuthority {
@@ -29,7 +29,7 @@ func (a ActivateCertificateAuthority) Execute(args []string) error {
 		return fmt.Errorf("could not parse activate-certificate-authority flags: %s", err)
 	}
 
-	err := a.service.Activate(api.ActivateCertificateAuthorityInput{
+	err := a.service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 		GUID: a.Options.Id,
 	})
 

@@ -19,7 +19,7 @@ func NewSecurityService(client httpClient) SecurityService {
 	return SecurityService{client: client}
 }
 
-func (s SecurityService) FetchRootCACert() (string, error) {
+func (s SecurityService) GetSecurityRootCACertificate() (string, error) {
 	request, err := http.NewRequest("GET", "/api/v0/security/root_ca_certificate", nil)
 	if err != nil {
 		return "", fmt.Errorf("failed constructing request: %s", err)

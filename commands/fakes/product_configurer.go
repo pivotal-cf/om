@@ -8,14 +8,14 @@ import (
 )
 
 type ProductConfigurer struct {
-	ListStub        func() (api.StagedProductsOutput, error)
-	listMutex       sync.RWMutex
-	listArgsForCall []struct{}
-	listReturns     struct {
+	ListStagedProductsStub        func() (api.StagedProductsOutput, error)
+	listStagedProductsMutex       sync.RWMutex
+	listStagedProductsArgsForCall []struct{}
+	listStagedProductsReturns     struct {
 		result1 api.StagedProductsOutput
 		result2 error
 	}
-	listReturnsOnCall map[int]struct {
+	listStagedProductsReturnsOnCall map[int]struct {
 		result1 api.StagedProductsOutput
 		result2 error
 	}
@@ -34,44 +34,44 @@ type ProductConfigurer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductConfigurer) List() (api.StagedProductsOutput, error) {
-	fake.listMutex.Lock()
-	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
-	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
-	fake.recordInvocation("List", []interface{}{})
-	fake.listMutex.Unlock()
-	if fake.ListStub != nil {
-		return fake.ListStub()
+func (fake *ProductConfigurer) ListStagedProducts() (api.StagedProductsOutput, error) {
+	fake.listStagedProductsMutex.Lock()
+	ret, specificReturn := fake.listStagedProductsReturnsOnCall[len(fake.listStagedProductsArgsForCall)]
+	fake.listStagedProductsArgsForCall = append(fake.listStagedProductsArgsForCall, struct{}{})
+	fake.recordInvocation("ListStagedProducts", []interface{}{})
+	fake.listStagedProductsMutex.Unlock()
+	if fake.ListStagedProductsStub != nil {
+		return fake.ListStagedProductsStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listReturns.result1, fake.listReturns.result2
+	return fake.listStagedProductsReturns.result1, fake.listStagedProductsReturns.result2
 }
 
-func (fake *ProductConfigurer) ListCallCount() int {
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
-	return len(fake.listArgsForCall)
+func (fake *ProductConfigurer) ListStagedProductsCallCount() int {
+	fake.listStagedProductsMutex.RLock()
+	defer fake.listStagedProductsMutex.RUnlock()
+	return len(fake.listStagedProductsArgsForCall)
 }
 
-func (fake *ProductConfigurer) ListReturns(result1 api.StagedProductsOutput, result2 error) {
-	fake.ListStub = nil
-	fake.listReturns = struct {
+func (fake *ProductConfigurer) ListStagedProductsReturns(result1 api.StagedProductsOutput, result2 error) {
+	fake.ListStagedProductsStub = nil
+	fake.listStagedProductsReturns = struct {
 		result1 api.StagedProductsOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ProductConfigurer) ListReturnsOnCall(i int, result1 api.StagedProductsOutput, result2 error) {
-	fake.ListStub = nil
-	if fake.listReturnsOnCall == nil {
-		fake.listReturnsOnCall = make(map[int]struct {
+func (fake *ProductConfigurer) ListStagedProductsReturnsOnCall(i int, result1 api.StagedProductsOutput, result2 error) {
+	fake.ListStagedProductsStub = nil
+	if fake.listStagedProductsReturnsOnCall == nil {
+		fake.listStagedProductsReturnsOnCall = make(map[int]struct {
 			result1 api.StagedProductsOutput
 			result2 error
 		})
 	}
-	fake.listReturnsOnCall[i] = struct {
+	fake.listStagedProductsReturnsOnCall[i] = struct {
 		result1 api.StagedProductsOutput
 		result2 error
 	}{result1, result2}
@@ -128,8 +128,8 @@ func (fake *ProductConfigurer) ConfigureReturnsOnCall(i int, result1 error) {
 func (fake *ProductConfigurer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
+	fake.listStagedProductsMutex.RLock()
+	defer fake.listStagedProductsMutex.RUnlock()
 	fake.configureMutex.RLock()
 	defer fake.configureMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

@@ -30,7 +30,7 @@ func NewCredentialsService(client httpClient) CredentialsService {
 	}
 }
 
-func (cr CredentialsService) FetchCredential(deployedGUID, credential string) (CredentialOutput, error) {
+func (cr CredentialsService) GetDeployedProductCredential(deployedGUID, credential string) (CredentialOutput, error) {
 	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", deployedGUID, credential)
 	req, err := http.NewRequest("GET", path, nil)
 	if err != nil {
@@ -61,7 +61,7 @@ func (cr CredentialsService) FetchCredential(deployedGUID, credential string) (C
 	return credentialOutput, nil
 }
 
-func (cs CredentialsService) ListCredentials(deployedGUID string) (CredentialReferencesOutput, error) {
+func (cs CredentialsService) ListDeployedProductCredentials(deployedGUID string) (CredentialReferencesOutput, error) {
 	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials", deployedGUID)
 	req, err := http.NewRequest("GET", path, nil)
 	if err != nil {

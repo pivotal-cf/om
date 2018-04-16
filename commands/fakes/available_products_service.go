@@ -8,14 +8,14 @@ import (
 )
 
 type AvailableProductsService struct {
-	ListStub        func() (api.AvailableProductsOutput, error)
-	listMutex       sync.RWMutex
-	listArgsForCall []struct{}
-	listReturns     struct {
+	ListAvailableProductsStub        func() (api.AvailableProductsOutput, error)
+	listAvailableProductsMutex       sync.RWMutex
+	listAvailableProductsArgsForCall []struct{}
+	listAvailableProductsReturns     struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}
-	listReturnsOnCall map[int]struct {
+	listAvailableProductsReturnsOnCall map[int]struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}
@@ -23,44 +23,44 @@ type AvailableProductsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *AvailableProductsService) List() (api.AvailableProductsOutput, error) {
-	fake.listMutex.Lock()
-	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
-	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
-	fake.recordInvocation("List", []interface{}{})
-	fake.listMutex.Unlock()
-	if fake.ListStub != nil {
-		return fake.ListStub()
+func (fake *AvailableProductsService) ListAvailableProducts() (api.AvailableProductsOutput, error) {
+	fake.listAvailableProductsMutex.Lock()
+	ret, specificReturn := fake.listAvailableProductsReturnsOnCall[len(fake.listAvailableProductsArgsForCall)]
+	fake.listAvailableProductsArgsForCall = append(fake.listAvailableProductsArgsForCall, struct{}{})
+	fake.recordInvocation("ListAvailableProducts", []interface{}{})
+	fake.listAvailableProductsMutex.Unlock()
+	if fake.ListAvailableProductsStub != nil {
+		return fake.ListAvailableProductsStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listReturns.result1, fake.listReturns.result2
+	return fake.listAvailableProductsReturns.result1, fake.listAvailableProductsReturns.result2
 }
 
-func (fake *AvailableProductsService) ListCallCount() int {
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
-	return len(fake.listArgsForCall)
+func (fake *AvailableProductsService) ListAvailableProductsCallCount() int {
+	fake.listAvailableProductsMutex.RLock()
+	defer fake.listAvailableProductsMutex.RUnlock()
+	return len(fake.listAvailableProductsArgsForCall)
 }
 
-func (fake *AvailableProductsService) ListReturns(result1 api.AvailableProductsOutput, result2 error) {
-	fake.ListStub = nil
-	fake.listReturns = struct {
+func (fake *AvailableProductsService) ListAvailableProductsReturns(result1 api.AvailableProductsOutput, result2 error) {
+	fake.ListAvailableProductsStub = nil
+	fake.listAvailableProductsReturns = struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *AvailableProductsService) ListReturnsOnCall(i int, result1 api.AvailableProductsOutput, result2 error) {
-	fake.ListStub = nil
-	if fake.listReturnsOnCall == nil {
-		fake.listReturnsOnCall = make(map[int]struct {
+func (fake *AvailableProductsService) ListAvailableProductsReturnsOnCall(i int, result1 api.AvailableProductsOutput, result2 error) {
+	fake.ListAvailableProductsStub = nil
+	if fake.listAvailableProductsReturnsOnCall == nil {
+		fake.listAvailableProductsReturnsOnCall = make(map[int]struct {
 			result1 api.AvailableProductsOutput
 			result2 error
 		})
 	}
-	fake.listReturnsOnCall[i] = struct {
+	fake.listAvailableProductsReturnsOnCall[i] = struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}{result1, result2}
@@ -69,8 +69,8 @@ func (fake *AvailableProductsService) ListReturnsOnCall(i int, result1 api.Avail
 func (fake *AvailableProductsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listMutex.RLock()
-	defer fake.listMutex.RUnlock()
+	fake.listAvailableProductsMutex.RLock()
+	defer fake.listAvailableProductsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

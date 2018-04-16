@@ -36,7 +36,7 @@ func NewDiagnosticService(client httpClient) DiagnosticService {
 	}
 }
 
-func (ds DiagnosticService) Report() (DiagnosticReport, error) {
+func (ds DiagnosticService) GetDiagnosticReport() (DiagnosticReport, error) {
 	req, err := http.NewRequest("GET", "/api/v0/diagnostic_report", nil)
 	if err != nil {
 		return DiagnosticReport{}, err

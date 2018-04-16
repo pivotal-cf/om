@@ -24,7 +24,7 @@ func NewUploadStemcellService(client httpClient) UploadStemcellService {
 	}
 }
 
-func (us UploadStemcellService) Upload(input StemcellUploadInput) (StemcellUploadOutput, error) {
+func (us UploadStemcellService) UploadStemcell(input StemcellUploadInput) (StemcellUploadOutput, error) {
 	req, err := http.NewRequest("POST", "/api/v0/stemcells", input.Stemcell)
 	if err != nil {
 		return StemcellUploadOutput{}, err

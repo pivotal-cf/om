@@ -30,7 +30,7 @@ var _ = Describe("SecurityService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader(`{"root_ca_certificate_pem": "some-response-cert"}`)),
 			}, nil)
 
-			output, err := service.FetchRootCACert()
+			output, err := service.GetSecurityRootCACertificate()
 			Expect(err).NotTo(HaveOccurred())
 
 			request := client.DoArgsForCall(0)
@@ -43,7 +43,7 @@ var _ = Describe("SecurityService", func() {
 			It("returns error if request fails to submit", func() {
 				client.DoReturns(&http.Response{}, errors.New("some-error"))
 
-				_, err := service.FetchRootCACert()
+				_, err := service.GetSecurityRootCACertificate()
 				Expect(err).To(MatchError("failed to submit request: some-error"))
 			})
 
@@ -53,7 +53,7 @@ var _ = Describe("SecurityService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
 
-				_, err := service.FetchRootCACert()
+				_, err := service.GetSecurityRootCACertificate()
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 
@@ -63,7 +63,7 @@ var _ = Describe("SecurityService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`%%%`)),
 				}, nil)
 
-				_, err := service.FetchRootCACert()
+				_, err := service.GetSecurityRootCACertificate()
 				Expect(err).To(MatchError(ContainSubstring("failed to unmarshal response: invalid character")))
 			})
 		})

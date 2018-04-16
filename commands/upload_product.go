@@ -21,7 +21,7 @@ type UploadProduct struct {
 
 //go:generate counterfeiter -o ./fakes/product_uploader.go --fake-name ProductUploader . productUploader
 type productUploader interface {
-	Upload(api.UploadProductInput) (api.UploadProductOutput, error)
+	UploadAvailableProduct(api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error)
 	CheckProductAvailability(string, string) (bool, error)
 }
 
@@ -80,7 +80,7 @@ func (up UploadProduct) Execute(args []string) error {
 
 	up.logger.Printf("beginning product upload to Ops Manager")
 
-	_, err = up.productsService.Upload(api.UploadProductInput{
+	_, err = up.productsService.UploadAvailableProduct(api.UploadAvailableProductInput{
 		ContentLength:   submission.Length,
 		Product:         submission.Content,
 		ContentType:     submission.ContentType,

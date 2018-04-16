@@ -66,6 +66,7 @@ func NewStagedProductsService(client httpClient) StagedProductsService {
 	}
 }
 
+// TODO: extract to helper package?
 func (p StagedProductsService) Stage(input StageProductInput, deployedGUID string) error {
 	stagedGUID, err := p.checkStagedProducts(input.ProductName)
 	if err != nil {
@@ -127,7 +128,7 @@ func (p StagedProductsService) Stage(input StageProductInput, deployedGUID strin
 	return nil
 }
 
-func (p StagedProductsService) Unstage(input UnstageProductInput) error {
+func (p StagedProductsService) DeleteStagedProduct(input UnstageProductInput) error {
 	stagedGUID, err := p.checkStagedProducts(input.ProductName)
 	if err != nil {
 		return err
@@ -154,7 +155,7 @@ func (p StagedProductsService) Unstage(input UnstageProductInput) error {
 	return nil
 }
 
-func (p StagedProductsService) List() (StagedProductsOutput, error) {
+func (p StagedProductsService) ListStagedProducts() (StagedProductsOutput, error) {
 	req, err := http.NewRequest("GET", "/api/v0/staged/products", nil)
 	if err != nil {
 		return StagedProductsOutput{}, err
@@ -186,6 +187,7 @@ func (p StagedProductsService) List() (StagedProductsOutput, error) {
 	}, nil
 }
 
+// TODO: extract to helper package?
 func (p StagedProductsService) Configure(input ProductsConfigurationInput) error {
 	reqList, err := createConfigureRequests(input)
 	if err != nil {
@@ -247,8 +249,9 @@ func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request,
 	return reqList, nil
 }
 
+// TODO: extract to helper package?
 func (p StagedProductsService) Find(productName string) (StagedProductsFindOutput, error) {
-	productsOutput, err := p.List()
+	productsOutput, err := p.ListStagedProducts()
 	if err != nil {
 		return StagedProductsFindOutput{}, err
 	}
@@ -269,7 +272,7 @@ func (p StagedProductsService) Find(productName string) (StagedProductsFindOutpu
 }
 
 //TODO consider refactoring to use fetchProductResource
-func (p StagedProductsService) Manifest(guid string) (string, error) {
+func (p StagedProductsService) GetStagedProductManifest(guid string) (string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/manifest", guid), nil)
 	if err != nil {
 		return "", err
@@ -306,7 +309,7 @@ func (p StagedProductsService) Manifest(guid string) (string, error) {
 	return string(manifest), nil
 }
 
-func (p StagedProductsService) Properties(product string) (map[string]ResponseProperty, error) {
+func (p StagedProductsService) GetStagedProductProperties(product string) (map[string]ResponseProperty, error) {
 	respBody, err := p.fetchProductResource(product, "properties")
 	if err != nil {
 		return nil, err
@@ -323,7 +326,7 @@ func (p StagedProductsService) Properties(product string) (map[string]ResponsePr
 	return propertiesResponse.Properties, nil
 }
 
-func (p StagedProductsService) NetworksAndAZs(product string) (map[string]interface{}, error) {
+func (p StagedProductsService) GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error) {
 	respBody, err := p.fetchProductResource(product, "networks_and_azs")
 	if err != nil {
 		return nil, err
@@ -360,7 +363,7 @@ func (p StagedProductsService) fetchProductResource(guid, endpoint string) (io.R
 }
 
 func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {
-	stagedProductsOutput, err := p.List()
+	stagedProductsOutput, err := p.ListStagedProducts()
 	if err != nil {
 		return "", err
 	}

@@ -8,65 +8,65 @@ import (
 )
 
 type CertificateAuthorityActivator struct {
-	ActivateStub        func(api.ActivateCertificateAuthorityInput) error
-	activateMutex       sync.RWMutex
-	activateArgsForCall []struct {
+	ActivateCertificateAuthorityStub        func(api.ActivateCertificateAuthorityInput) error
+	activateCertificateAuthorityMutex       sync.RWMutex
+	activateCertificateAuthorityArgsForCall []struct {
 		arg1 api.ActivateCertificateAuthorityInput
 	}
-	activateReturns struct {
+	activateCertificateAuthorityReturns struct {
 		result1 error
 	}
-	activateReturnsOnCall map[int]struct {
+	activateCertificateAuthorityReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateAuthorityActivator) Activate(arg1 api.ActivateCertificateAuthorityInput) error {
-	fake.activateMutex.Lock()
-	ret, specificReturn := fake.activateReturnsOnCall[len(fake.activateArgsForCall)]
-	fake.activateArgsForCall = append(fake.activateArgsForCall, struct {
+func (fake *CertificateAuthorityActivator) ActivateCertificateAuthority(arg1 api.ActivateCertificateAuthorityInput) error {
+	fake.activateCertificateAuthorityMutex.Lock()
+	ret, specificReturn := fake.activateCertificateAuthorityReturnsOnCall[len(fake.activateCertificateAuthorityArgsForCall)]
+	fake.activateCertificateAuthorityArgsForCall = append(fake.activateCertificateAuthorityArgsForCall, struct {
 		arg1 api.ActivateCertificateAuthorityInput
 	}{arg1})
-	fake.recordInvocation("Activate", []interface{}{arg1})
-	fake.activateMutex.Unlock()
-	if fake.ActivateStub != nil {
-		return fake.ActivateStub(arg1)
+	fake.recordInvocation("ActivateCertificateAuthority", []interface{}{arg1})
+	fake.activateCertificateAuthorityMutex.Unlock()
+	if fake.ActivateCertificateAuthorityStub != nil {
+		return fake.ActivateCertificateAuthorityStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.activateReturns.result1
+	return fake.activateCertificateAuthorityReturns.result1
 }
 
-func (fake *CertificateAuthorityActivator) ActivateCallCount() int {
-	fake.activateMutex.RLock()
-	defer fake.activateMutex.RUnlock()
-	return len(fake.activateArgsForCall)
+func (fake *CertificateAuthorityActivator) ActivateCertificateAuthorityCallCount() int {
+	fake.activateCertificateAuthorityMutex.RLock()
+	defer fake.activateCertificateAuthorityMutex.RUnlock()
+	return len(fake.activateCertificateAuthorityArgsForCall)
 }
 
-func (fake *CertificateAuthorityActivator) ActivateArgsForCall(i int) api.ActivateCertificateAuthorityInput {
-	fake.activateMutex.RLock()
-	defer fake.activateMutex.RUnlock()
-	return fake.activateArgsForCall[i].arg1
+func (fake *CertificateAuthorityActivator) ActivateCertificateAuthorityArgsForCall(i int) api.ActivateCertificateAuthorityInput {
+	fake.activateCertificateAuthorityMutex.RLock()
+	defer fake.activateCertificateAuthorityMutex.RUnlock()
+	return fake.activateCertificateAuthorityArgsForCall[i].arg1
 }
 
-func (fake *CertificateAuthorityActivator) ActivateReturns(result1 error) {
-	fake.ActivateStub = nil
-	fake.activateReturns = struct {
+func (fake *CertificateAuthorityActivator) ActivateCertificateAuthorityReturns(result1 error) {
+	fake.ActivateCertificateAuthorityStub = nil
+	fake.activateCertificateAuthorityReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *CertificateAuthorityActivator) ActivateReturnsOnCall(i int, result1 error) {
-	fake.ActivateStub = nil
-	if fake.activateReturnsOnCall == nil {
-		fake.activateReturnsOnCall = make(map[int]struct {
+func (fake *CertificateAuthorityActivator) ActivateCertificateAuthorityReturnsOnCall(i int, result1 error) {
+	fake.ActivateCertificateAuthorityStub = nil
+	if fake.activateCertificateAuthorityReturnsOnCall == nil {
+		fake.activateCertificateAuthorityReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.activateReturnsOnCall[i] = struct {
+	fake.activateCertificateAuthorityReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -74,8 +74,8 @@ func (fake *CertificateAuthorityActivator) ActivateReturnsOnCall(i int, result1 
 func (fake *CertificateAuthorityActivator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.activateMutex.RLock()
-	defer fake.activateMutex.RUnlock()
+	fake.activateCertificateAuthorityMutex.RLock()
+	defer fake.activateCertificateAuthorityMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

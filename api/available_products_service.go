@@ -13,7 +13,7 @@ import (
 
 const availableProductsEndpoint = "/api/v0/available_products"
 
-type UploadProductInput struct {
+type UploadAvailableProductInput struct {
 	ContentLength   int64
 	Product         io.Reader
 	ContentType     string
@@ -25,15 +25,16 @@ type ProductInfo struct {
 	Version string `json:"product_version"`
 }
 
-type UploadProductOutput struct{}
+type UploadAvailableProductOutput struct{}
 
 type AvailableProductsOutput struct {
 	ProductsList []ProductInfo
 }
 
-type AvailableProductsInput struct {
-	ProductName    string
-	ProductVersion string
+type DeleteAvailableProductsInput struct {
+	ProductName             string
+	ProductVersion          string
+	ShouldDeleteAllProducts bool
 }
 
 type AvailableProductsService struct {
@@ -48,10 +49,10 @@ func NewAvailableProductsService(client httpClient, progressClient httpClient) A
 	}
 }
 
-func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProductOutput, error) {
+func (ap AvailableProductsService) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAvailableProductOutput, error) {
 	req, err := http.NewRequest("POST", availableProductsEndpoint, input.Product)
 	if err != nil {
-		return UploadProductOutput{}, err
+		return UploadAvailableProductOutput{}, err
 	}
 
 	req.Header.Set("Content-Type", input.ContentType)
@@ -61,19 +62,19 @@ func (ap AvailableProductsService) Upload(input UploadProductInput) (UploadProdu
 
 	resp, err := ap.progressClient.Do(req)
 	if err != nil {
-		return UploadProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
+		return UploadAvailableProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
 	if err = ValidateStatusOK(resp); err != nil {
-		return UploadProductOutput{}, err
+		return UploadAvailableProductOutput{}, err
 	}
 
-	return UploadProductOutput{}, nil
+	return UploadAvailableProductOutput{}, nil
 }
 
-func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
+func (ap AvailableProductsService) ListAvailableProducts() (AvailableProductsOutput, error) {
 	avReq, err := http.NewRequest("GET", availableProductsEndpoint, nil)
 	if err != nil {
 		return AvailableProductsOutput{}, err
@@ -103,8 +104,9 @@ func (ap AvailableProductsService) List() (AvailableProductsOutput, error) {
 	return AvailableProductsOutput{ProductsList: availableProducts}, nil
 }
 
+// TODO: move to helper package?
 func (ap AvailableProductsService) CheckProductAvailability(productName string, productVersion string) (bool, error) {
-	availableProducts, err := ap.List()
+	availableProducts, err := ap.ListAvailableProducts()
 	if err != nil {
 		return false, err
 	}
@@ -118,10 +120,10 @@ func (ap AvailableProductsService) CheckProductAvailability(productName string, 
 	return false, nil
 }
 
-func (ap AvailableProductsService) Delete(input AvailableProductsInput, all bool) error {
+func (ap AvailableProductsService) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
 	req, err := http.NewRequest("DELETE", availableProductsEndpoint, nil)
 
-	if !all {
+	if !input.ShouldDeleteAllProducts {
 		query := url.Values{}
 		query.Add("product_name", input.ProductName)
 		query.Add("version", input.ProductVersion)

@@ -50,7 +50,7 @@ var _ = Describe("UploadProduct", func() {
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("product[file]"))
 		Expect(file).To(Equal("/path/to/some-product.tgz"))
-		Expect(productsService.UploadArgsForCall(0)).To(Equal(api.UploadProductInput{
+		Expect(productsService.UploadAvailableProductArgsForCall(0)).To(Equal(api.UploadAvailableProductInput{
 			ContentLength:   10,
 			Product:         ioutil.NopCloser(strings.NewReader("")),
 			ContentType:     "some content-type",
@@ -77,7 +77,7 @@ var _ = Describe("UploadProduct", func() {
 				"--polling-interval", "48",
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(productsService.UploadArgsForCall(0).PollingInterval).To(Equal(48))
+			Expect(productsService.UploadAvailableProductArgsForCall(0).PollingInterval).To(Equal(48))
 		})
 	})
 
@@ -100,7 +100,7 @@ var _ = Describe("UploadProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
-			Expect(productsService.UploadCallCount()).To(Equal(0))
+			Expect(productsService.UploadAvailableProductCallCount()).To(Equal(0))
 
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done."))
@@ -155,7 +155,7 @@ var _ = Describe("UploadProduct", func() {
 		Context("when the product cannot be uploaded", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, metadataExtractor, productsService, logger)
-				productsService.UploadReturns(api.UploadProductOutput{}, errors.New("some product error"))
+				productsService.UploadAvailableProductReturns(api.UploadAvailableProductOutput{}, errors.New("some product error"))
 
 				err := command.Execute([]string{"--product", "/some/path"})
 				Expect(err).To(MatchError("failed to upload product: some product error"))

@@ -32,8 +32,8 @@ var _ = Describe("ExportInstallation", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("calling export on the installation service")
-		Expect(installationService.ExportCallCount()).To(Equal(1))
-		outputFile, pollingInterval := installationService.ExportArgsForCall(0)
+		Expect(installationService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
+		outputFile, pollingInterval := installationService.DownloadInstallationAssetCollectionArgsForCall(0)
 		Expect(outputFile).To(Equal("/path/to/output.zip"))
 		Expect(pollingInterval).To(Equal(1))
 
@@ -56,8 +56,8 @@ var _ = Describe("ExportInstallation", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(installationService.ExportCallCount()).To(Equal(1))
-			outputFile, pollingInterval := installationService.ExportArgsForCall(0)
+			Expect(installationService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
+			outputFile, pollingInterval := installationService.DownloadInstallationAssetCollectionArgsForCall(0)
 			Expect(outputFile).To(Equal("/path/to/output.zip"))
 			Expect(pollingInterval).To(Equal(48))
 		})
@@ -83,7 +83,7 @@ var _ = Describe("ExportInstallation", func() {
 		Context("when the installation cannot be exported", func() {
 			It("returns an error", func() {
 				command := commands.NewExportInstallation(installationService, logger)
-				installationService.ExportReturns(errors.New("some error"))
+				installationService.DownloadInstallationAssetCollectionReturns(errors.New("some error"))
 
 				err := command.Execute([]string{"--output-file", "/some/path"})
 				Expect(err).To(MatchError("failed to export installation: some error"))

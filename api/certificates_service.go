@@ -22,7 +22,7 @@ func NewCertificatesService(client httpClient) CertificatesService {
 	}
 }
 
-func (c CertificatesService) Generate(domains string) (string, error) {
+func (c CertificatesService) GenerateCertificate(domains string) (string, error) {
 	domainsOutput := domainsOutput{
 		Domains: strings.Split(domains, ","),
 	}

@@ -266,7 +266,7 @@ var _ = Describe("StagedProductsService", func() {
 		})
 	})
 
-	Describe("Unstage", func() {
+	Describe("DeleteStagedProduct", func() {
 		var (
 			client *fakes.HttpClient
 		)
@@ -299,7 +299,7 @@ var _ = Describe("StagedProductsService", func() {
 		It("makes a request to unstage the product from the Ops Manager", func() {
 			service := api.NewStagedProductsService(client)
 
-			err := service.Unstage(api.UnstageProductInput{
+			err := service.DeleteStagedProduct(api.UnstageProductInput{
 				ProductName: "some-product",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -337,7 +337,7 @@ var _ = Describe("StagedProductsService", func() {
 			It("returns an error", func() {
 				service := api.NewStagedProductsService(client)
 
-				err := service.Unstage(api.UnstageProductInput{
+				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
 				Expect(err).To(MatchError("product is not staged: some-product"))
@@ -363,7 +363,7 @@ var _ = Describe("StagedProductsService", func() {
 			It("returns an error", func() {
 				service := api.NewStagedProductsService(client)
 
-				err := service.Unstage(api.UnstageProductInput{
+				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
 				Expect(err).To(MatchError("could not make request to staged-products endpoint: some error"))
@@ -398,7 +398,7 @@ var _ = Describe("StagedProductsService", func() {
 			It("returns an error", func() {
 				service := api.NewStagedProductsService(client)
 
-				err := service.Unstage(api.UnstageProductInput{
+				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
 				Expect(err).To(MatchError("could not make DELETE api request to staged products endpoint: some error"))
@@ -406,7 +406,7 @@ var _ = Describe("StagedProductsService", func() {
 		})
 	})
 
-	Describe("List", func() {
+	Describe("ListStagedProducts", func() {
 		var (
 			client *fakes.HttpClient
 		)
@@ -440,7 +440,7 @@ var _ = Describe("StagedProductsService", func() {
 		It("retrieves a list of staged products from the Ops Manager", func() {
 			service := api.NewStagedProductsService(client)
 
-			output, err := service.List()
+			output, err := service.ListStagedProducts()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output).To(Equal(api.StagedProductsOutput{
@@ -472,7 +472,7 @@ var _ = Describe("StagedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewStagedProductsService(client)
 
-					_, err := service.List()
+					_, err := service.ListStagedProducts()
 					Expect(err).To(MatchError("could not make request to staged-products endpoint: nope"))
 				})
 			})
@@ -488,7 +488,7 @@ var _ = Describe("StagedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewStagedProductsService(client)
 
-					_, err := service.List()
+					_, err := service.ListStagedProducts()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -504,7 +504,7 @@ var _ = Describe("StagedProductsService", func() {
 				It("returns an error", func() {
 					service := api.NewStagedProductsService(client)
 
-					_, err := service.List()
+					_, err := service.ListStagedProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
 				})
 			})
@@ -684,7 +684,7 @@ var _ = Describe("StagedProductsService", func() {
 		})
 	})
 
-	Describe("Manifest", func() {
+	Describe("GetStagedProductManifest", func() {
 		var (
 			client  *fakes.HttpClient
 			service api.StagedProductsService
@@ -716,7 +716,7 @@ var _ = Describe("StagedProductsService", func() {
 		})
 
 		It("returns the manifest for a product", func() {
-			manifest, err := service.Manifest("some-product-guid")
+			manifest, err := service.GetStagedProductManifest("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(manifest).To(MatchYAML(`---
 key-1:
@@ -729,7 +729,7 @@ key-4: 2147483648
 		Context("failure cases", func() {
 			Context("when the request object is invalid", func() {
 				It("returns an error", func() {
-					_, err := service.Manifest("invalid-guid-%%%")
+					_, err := service.GetStagedProductManifest("invalid-guid-%%%")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
@@ -738,7 +738,7 @@ key-4: 2147483648
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 
-					_, err := service.Manifest("some-product-guid")
+					_, err := service.GetStagedProductManifest("some-product-guid")
 					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: nope"))
 				})
 			})
@@ -750,7 +750,7 @@ key-4: 2147483648
 						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
 					}, nil)
 
-					_, err := service.Manifest("some-product-guid")
+					_, err := service.GetStagedProductManifest("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -762,14 +762,14 @@ key-4: 2147483648
 						Body:       ioutil.NopCloser(bytes.NewBufferString("---some-malformed-json")),
 					}, nil)
 
-					_, err := service.Manifest("some-product-guid")
+					_, err := service.GetStagedProductManifest("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
 			})
 		})
 	})
 
-	Describe("Properties", func() {
+	Describe("GetStagedProductProperties", func() {
 		var (
 			client  *fakes.HttpClient
 			service api.StagedProductsService
@@ -811,7 +811,7 @@ key-4: 2147483648
 		})
 
 		It("returns the configuration for a product", func() {
-			config, err := service.Properties("some-product-guid")
+			config, err := service.GetStagedProductProperties("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(config).To(Equal(map[string]api.ResponseProperty{
 				".properties.some-configurable-property": api.ResponseProperty{
@@ -848,7 +848,7 @@ key-4: 2147483648
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.Properties("some-product-guid")
+					_, err := service.GetStagedProductProperties("some-product-guid")
 					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: some-error`))
 				})
 			})
@@ -870,7 +870,7 @@ key-4: 2147483648
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.Properties("some-product-guid")
+					_, err := service.GetStagedProductProperties("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -892,14 +892,14 @@ key-4: 2147483648
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.Properties("some-product-guid")
+					_, err := service.GetStagedProductProperties("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
 			})
 		})
 	})
 
-	Describe("NetworksAndAZs", func() {
+	Describe("GetStagedProductNetworksAndAZs", func() {
 		var (
 			client  *fakes.HttpClient
 			service api.StagedProductsService
@@ -936,7 +936,7 @@ key-4: 2147483648
 		})
 
 		It("returns the networks + azs for a product", func() {
-			config, err := service.NetworksAndAZs("some-product-guid")
+			config, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(config).To(Equal(map[string]interface{}{
 				"singleton_availability_zone": map[string]interface{}{
@@ -968,7 +968,7 @@ key-4: 2147483648
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.NetworksAndAZs("some-product-guid")
+					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: some-error`))
 				})
 			})
@@ -991,7 +991,7 @@ key-4: 2147483648
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.NetworksAndAZs("some-product-guid")
+					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
 			})

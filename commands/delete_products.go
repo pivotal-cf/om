@@ -17,7 +17,7 @@ type DeleteProduct struct {
 
 //go:generate counterfeiter -o ./fakes/product_deleter.go --fake-name ProductDeleter . ps
 type ps interface {
-	Delete(input api.AvailableProductsInput, deleteAll bool) error
+	DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error
 }
 
 func NewDeleteProduct(productsService ps) DeleteProduct {
@@ -31,10 +31,11 @@ func (dp DeleteProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse delete-product flags: %s", err)
 	}
 
-	err := dp.productsService.Delete(api.AvailableProductsInput{
-		ProductName:    dp.Options.Product,
-		ProductVersion: dp.Options.Version,
-	}, false)
+	err := dp.productsService.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
+		ProductName:             dp.Options.Product,
+		ProductVersion:          dp.Options.Version,
+		ShouldDeleteAllProducts: false,
+	})
 	if err != nil {
 		return err
 	}

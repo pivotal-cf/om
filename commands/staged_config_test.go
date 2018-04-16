@@ -22,7 +22,7 @@ var _ = Describe("StagedConfig", func() {
 		logger = &fakes.Logger{}
 
 		stagedConfigService = &fakes.StagedConfigService{}
-		stagedConfigService.PropertiesReturns(
+		stagedConfigService.GetStagedProductPropertiesReturns(
 			map[string]api.ResponseProperty{
 				".properties.some-string-property": api.ResponseProperty{
 					Value:        "some-value",
@@ -44,7 +44,7 @@ var _ = Describe("StagedConfig", func() {
 					Configurable: true,
 				},
 			}, nil)
-		stagedConfigService.NetworksAndAZsReturns(
+		stagedConfigService.GetStagedProductNetworksAndAZsReturns(
 			map[string]interface{}{
 				"singleton_availability_zone": map[string]string{
 					"name": "az-one",
@@ -57,10 +57,10 @@ var _ = Describe("StagedConfig", func() {
 			},
 		}, nil)
 
-		stagedConfigService.JobsReturns(map[string]string{
+		stagedConfigService.ListStagedProductJobsReturns(map[string]string{
 			"some-job": "some-job-guid",
 		}, nil)
-		stagedConfigService.GetExistingJobConfigReturns(api.JobProperties{
+		stagedConfigService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
 			InstanceType: api.InstanceType{
 				ID: "automatic",
 			},
@@ -79,17 +79,17 @@ var _ = Describe("StagedConfig", func() {
 			Expect(stagedConfigService.FindCallCount()).To(Equal(1))
 			Expect(stagedConfigService.FindArgsForCall(0)).To(Equal("some-product"))
 
-			Expect(stagedConfigService.PropertiesCallCount()).To(Equal(1))
-			Expect(stagedConfigService.PropertiesArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(stagedConfigService.GetStagedProductPropertiesCallCount()).To(Equal(1))
+			Expect(stagedConfigService.GetStagedProductPropertiesArgsForCall(0)).To(Equal("some-product-guid"))
 
-			Expect(stagedConfigService.NetworksAndAZsCallCount()).To(Equal(1))
-			Expect(stagedConfigService.NetworksAndAZsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(stagedConfigService.GetStagedProductNetworksAndAZsCallCount()).To(Equal(1))
+			Expect(stagedConfigService.GetStagedProductNetworksAndAZsArgsForCall(0)).To(Equal("some-product-guid"))
 
-			Expect(stagedConfigService.JobsCallCount()).To(Equal(1))
-			Expect(stagedConfigService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(stagedConfigService.ListStagedProductJobsCallCount()).To(Equal(1))
+			Expect(stagedConfigService.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
 
-			Expect(stagedConfigService.GetExistingJobConfigCallCount()).To(Equal(1))
-			productGuid, jobsGuid := stagedConfigService.GetExistingJobConfigArgsForCall(0)
+			Expect(stagedConfigService.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
+			productGuid, jobsGuid := stagedConfigService.GetStagedProductJobResourceConfigArgsForCall(0)
 			Expect(productGuid).To(Equal("some-product-guid"))
 			Expect(jobsGuid).To(Equal("some-job-guid"))
 
@@ -147,7 +147,7 @@ resource-config:
 
 		Context("when looking up the product properties fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.PropertiesReturns(nil, errors.New("some-error"))
+				stagedConfigService.GetStagedProductPropertiesReturns(nil, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
@@ -161,7 +161,7 @@ resource-config:
 
 		Context("when looking up the network fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.NetworksAndAZsReturns(nil, errors.New("some-error"))
+				stagedConfigService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
@@ -175,7 +175,7 @@ resource-config:
 
 		Context("when listing jobs fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.JobsReturns(nil, errors.New("some-error"))
+				stagedConfigService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
@@ -189,7 +189,7 @@ resource-config:
 
 		Context("when looking up the job fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some-error"))
+				stagedConfigService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {

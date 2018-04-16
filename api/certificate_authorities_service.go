@@ -43,7 +43,7 @@ func NewCertificateAuthoritiesService(client httpClient) CertificateAuthoritiesS
 	}
 }
 
-func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesOutput, error) {
+func (c CertificateAuthoritiesService) ListCertificateAuthorities() (CertificateAuthoritiesOutput, error) {
 	var output CertificateAuthoritiesOutput
 
 	req, err := http.NewRequest("GET", "/api/v0/certificate_authorities", nil)
@@ -68,7 +68,7 @@ func (c CertificateAuthoritiesService) List() (CertificateAuthoritiesOutput, err
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) Regenerate() error {
+func (c CertificateAuthoritiesService) RegenerateCertificates() error {
 	req, err := http.NewRequest("POST", "/api/v0/certificate_authorities/active/regenerate", nil)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (c CertificateAuthoritiesService) Regenerate() error {
 	return nil
 }
 
-func (c CertificateAuthoritiesService) Generate() (CA, error) {
+func (c CertificateAuthoritiesService) GenerateCertificateAuthority() (CA, error) {
 	var output CA
 
 	req, err := http.NewRequest("POST", "/api/v0/certificate_authorities/generate", nil)
@@ -111,7 +111,7 @@ func (c CertificateAuthoritiesService) Generate() (CA, error) {
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) Create(certBody CertificateAuthorityInput) (CA, error) {
+func (c CertificateAuthoritiesService) CreateCertificateAuthority(certBody CertificateAuthorityInput) (CA, error) {
 	var output CA
 
 	body, err := json.Marshal(certBody)
@@ -142,7 +142,7 @@ func (c CertificateAuthoritiesService) Create(certBody CertificateAuthorityInput
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) Activate(input ActivateCertificateAuthorityInput) error {
+func (c CertificateAuthoritiesService) ActivateCertificateAuthority(input ActivateCertificateAuthorityInput) error {
 
 	path := fmt.Sprintf("/api/v0/certificate_authorities/%s/activate", input.GUID)
 
@@ -164,7 +164,7 @@ func (c CertificateAuthoritiesService) Activate(input ActivateCertificateAuthori
 	return nil
 }
 
-func (c CertificateAuthoritiesService) Delete(input DeleteCertificateAuthorityInput) error {
+func (c CertificateAuthoritiesService) DeleteCertificateAuthority(input DeleteCertificateAuthorityInput) error {
 
 	path := fmt.Sprintf("/api/v0/certificate_authorities/%s", input.GUID)
 

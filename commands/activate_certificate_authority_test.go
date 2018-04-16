@@ -32,8 +32,8 @@ var _ = Describe("ActivateCertificateAuthority", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthorityService.ActivateCallCount()).To(Equal(1))
-			Expect(fakeCertificateAuthorityService.ActivateArgsForCall(0)).To(Equal(api.ActivateCertificateAuthorityInput{
+			Expect(fakeCertificateAuthorityService.ActivateCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakeCertificateAuthorityService.ActivateCertificateAuthorityArgsForCall(0)).To(Equal(api.ActivateCertificateAuthorityInput{
 				GUID: "some-certificate-authority-id",
 			}))
 
@@ -45,7 +45,7 @@ var _ = Describe("ActivateCertificateAuthority", func() {
 		Context("failure cases", func() {
 			Context("when the service fails to activate a certificate", func() {
 				It("returns an error", func() {
-					fakeCertificateAuthorityService.ActivateReturns(errors.New("failed to activate certificate"))
+					fakeCertificateAuthorityService.ActivateCertificateAuthorityReturns(errors.New("failed to activate certificate"))
 
 					err := command.Execute([]string{
 						"--id", "some-certificate-authority-id",

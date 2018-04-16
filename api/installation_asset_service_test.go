@@ -16,7 +16,7 @@ import (
 )
 
 var _ = Describe("InstallationAssetService", func() {
-	Describe("Export", func() {
+	Describe("DownloadInstallationAssetCollection", func() {
 		var (
 			progressClient *fakes.HttpClient
 			outputFile     *os.File
@@ -47,7 +47,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 			service := api.NewInstallationAssetService(nil, progressClient)
 
-			err := service.Export(outputFile.Name(), 1)
+			err := service.DownloadInstallationAssetCollection(outputFile.Name(), 1)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("posting to the installation_asset_collection endpoint")
@@ -67,7 +67,7 @@ var _ = Describe("InstallationAssetService", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 					service := api.NewInstallationAssetService(nil, progressClient)
 
-					err := service.Export("fake-file", 1)
+					err := service.DownloadInstallationAssetCollection("fake-file", 1)
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
 				})
 			})
@@ -80,7 +80,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil)
 					service := api.NewInstallationAssetService(nil, progressClient)
 
-					err := service.Export("fake-file", 1)
+					err := service.DownloadInstallationAssetCollection("fake-file", 1)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -93,7 +93,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil)
 					service := api.NewInstallationAssetService(nil, progressClient)
 
-					err := service.Export("fake-dir/fake-file", 1)
+					err := service.DownloadInstallationAssetCollection("fake-dir/fake-file", 1)
 					Expect(err).To(MatchError(ContainSubstring("no such file")))
 				})
 			})
@@ -107,14 +107,14 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil)
 					service := api.NewInstallationAssetService(nil, progressClient)
 
-					err := service.Export(outputFile.Name(), 1)
+					err := service.DownloadInstallationAssetCollection(outputFile.Name(), 1)
 					Expect(err).To(MatchError(ContainSubstring("invalid response length")))
 				})
 			})
 		})
 	})
 
-	Describe("Import", func() {
+	Describe("UploadInstallationAssetCollection", func() {
 		var (
 			progressClient *fakes.HttpClient
 		)
@@ -132,7 +132,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 			service := api.NewInstallationAssetService(nil, progressClient)
 
-			err := service.Import(api.ImportInstallationInput{
+			err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
 				ContentLength:   10,
 				Installation:    strings.NewReader("some installation"),
 				ContentType:     "some content-type",
@@ -158,7 +158,7 @@ var _ = Describe("InstallationAssetService", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 					service := api.NewInstallationAssetService(nil, progressClient)
 
-					err := service.Import(api.ImportInstallationInput{
+					err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
 						PollingInterval: 1,
 					})
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
@@ -173,7 +173,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil)
 					service := api.NewInstallationAssetService(nil, progressClient)
 
-					err := service.Import(api.ImportInstallationInput{
+					err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
 						PollingInterval: 1,
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -182,7 +182,7 @@ var _ = Describe("InstallationAssetService", func() {
 		})
 	})
 
-	Describe("Delete", func() {
+	Describe("DeleteInstallationAssetCollection", func() {
 		var (
 			client *fakes.HttpClient
 		)
@@ -205,7 +205,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 			service := api.NewInstallationAssetService(client, nil)
 
-			output, err := service.Delete()
+			output, err := service.DeleteInstallationAssetCollection()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output.ID).To(Equal(12))
 
@@ -231,7 +231,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 			service := api.NewInstallationAssetService(client, nil)
 
-			output, err := service.Delete()
+			output, err := service.DeleteInstallationAssetCollection()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 		})
@@ -242,7 +242,7 @@ var _ = Describe("InstallationAssetService", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
 					service := api.NewInstallationAssetService(client, nil)
 
-					_, err := service.Delete()
+					_, err := service.DeleteInstallationAssetCollection()
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
 				})
 			})
@@ -255,7 +255,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil)
 					service := api.NewInstallationAssetService(client, nil)
 
-					_, err := service.Delete()
+					_, err := service.DeleteInstallationAssetCollection()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -268,7 +268,7 @@ var _ = Describe("InstallationAssetService", func() {
 					}, nil)
 					service := api.NewInstallationAssetService(client, nil)
 
-					_, err := service.Delete()
+					_, err := service.DeleteInstallationAssetCollection()
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})

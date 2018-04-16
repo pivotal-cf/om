@@ -28,15 +28,15 @@ type ConfigureProduct struct {
 
 //go:generate counterfeiter -o ./fakes/product_configurer.go --fake-name ProductConfigurer . productConfigurer
 type productConfigurer interface {
-	List() (api.StagedProductsOutput, error)
+	ListStagedProducts() (api.StagedProductsOutput, error)
 	Configure(api.ProductsConfigurationInput) error
 }
 
 //go:generate counterfeiter -o ./fakes/jobs_configurer.go --fake-name JobsConfigurer . jobsConfigurer
 type jobsConfigurer interface {
-	Jobs(productGUID string) (map[string]string, error)
-	GetExistingJobConfig(productGUID, jobGUID string) (api.JobProperties, error)
-	ConfigureJob(productGUID, jobGUID string, jobProperties api.JobProperties) error
+	ListStagedProductJobs(productGUID string) (map[string]string, error)
+	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
+	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
 }
 
 func NewConfigureProduct(productConfigurer productConfigurer, jobsConfigurer jobsConfigurer, logger logger) ConfigureProduct {
@@ -65,7 +65,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		}
 	}
 
-	stagedProducts, err := cp.productsService.List()
+	stagedProducts, err := cp.productsService.ListStagedProducts()
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 		return fmt.Errorf("could not decode product-resource json: %s", err)
 	}
 
-	jobs, err := cp.jobsService.Jobs(productGUID)
+	jobs, err := cp.jobsService.ListStagedProductJobs(productGUID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch jobs: %s", err)
 	}
@@ -204,7 +204,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 	cp.logger.Printf("applying resource configuration for the following jobs:")
 	for _, name := range names {
 		cp.logger.Printf("\t%s", name)
-		jobProperties, err := cp.jobsService.GetExistingJobConfig(productGUID, jobs[name])
+		jobProperties, err := cp.jobsService.GetStagedProductJobResourceConfig(productGUID, jobs[name])
 		if err != nil {
 			return fmt.Errorf("could not fetch existing job configuration: %s", err)
 		}
@@ -214,7 +214,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 			return err
 		}
 
-		err = cp.jobsService.ConfigureJob(productGUID, jobs[name], jobProperties)
+		err = cp.jobsService.UpdateStagedProductJobResourceConfig(productGUID, jobs[name], jobProperties)
 		if err != nil {
 			return fmt.Errorf("failed to configure resources: %s", err)
 		}

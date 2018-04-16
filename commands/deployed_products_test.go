@@ -38,14 +38,14 @@ var _ = Describe("DeployedProducts", func() {
 			},
 		}
 
-		diagnosticService.ReportReturns(api.DiagnosticReport{
+		diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
 			DeployedProducts: deployedProducts,
 		}, nil)
 
 		err := command.Execute([]string{})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(diagnosticService.ReportCallCount()).To(Equal(1))
+		Expect(diagnosticService.GetDiagnosticReportCallCount()).To(Equal(1))
 
 		Expect(presenter.PresentDeployedProductsCallCount()).To(Equal(1))
 		Expect(presenter.PresentDeployedProductsArgsForCall(0)).To(Equal(deployedProducts))
@@ -54,7 +54,7 @@ var _ = Describe("DeployedProducts", func() {
 	Context("failure cases", func() {
 		Context("when fetching the diagnostic report fails", func() {
 			It("returns an error", func() {
-				diagnosticService.ReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to retrieve deployed products beep boop"))

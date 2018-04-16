@@ -107,7 +107,7 @@ var _ = Describe("ConfigureProduct", func() {
 		It("configures a product's properties", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
 
-			productsService.ListReturns(api.StagedProductsOutput{
+			productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
 					{GUID: "some-product-guid", Type: "cf"},
 					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
@@ -120,7 +120,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(productsService.ListCallCount()).To(Equal(1))
+			Expect(productsService.ListStagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
 				GUID:          "some-product-guid",
 				Configuration: productProperties,
@@ -142,7 +142,7 @@ var _ = Describe("ConfigureProduct", func() {
 		It("configures a product's network", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
 
-			productsService.ListReturns(api.StagedProductsOutput{
+			productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
 					{GUID: "some-product-guid", Type: "cf"},
 					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
@@ -155,7 +155,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(productsService.ListCallCount()).To(Equal(1))
+			Expect(productsService.ListStagedProductsCallCount()).To(Equal(1))
 			Expect(productsService.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
 				GUID:    "some-product-guid",
 				Network: networkProperties,
@@ -176,20 +176,20 @@ var _ = Describe("ConfigureProduct", func() {
 
 		It("configures the resource that is provided", func() {
 			client := commands.NewConfigureProduct(productsService, jobsService, logger)
-			productsService.ListReturns(api.StagedProductsOutput{
+			productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
 					{GUID: "some-product-guid", Type: "cf"},
 					{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
 				},
 			}, nil)
 
-			jobsService.JobsReturns(map[string]string{
+			jobsService.ListStagedProductJobsReturns(map[string]string{
 				"some-job":       "a-guid",
 				"some-other-job": "a-different-guid",
 				"bad":            "do-not-use",
 			}, nil)
 
-			jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+			jobsService.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
 				if productGUID == "some-product-guid" {
 					switch jobGUID {
 					case "a-guid":
@@ -227,11 +227,11 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(productsService.ListCallCount()).To(Equal(1))
-			Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-			Expect(jobsService.ConfigureJobCallCount()).To(Equal(2))
+			Expect(productsService.ListStagedProductsCallCount()).To(Equal(1))
+			Expect(jobsService.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(jobsService.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(2))
 
-			argProductGUID, argJobGUID, argProperties := jobsService.ConfigureJobArgsForCall(0)
+			argProductGUID, argJobGUID, argProperties := jobsService.UpdateStagedProductJobResourceConfigArgsForCall(0)
 			Expect(argProductGUID).To(Equal("some-product-guid"))
 			Expect(argJobGUID).To(Equal("a-guid"))
 
@@ -245,7 +245,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 			*jobProperties.InternetConnected = true
 
-			argProductGUID, argJobGUID, argProperties = jobsService.ConfigureJobArgsForCall(1)
+			argProductGUID, argJobGUID, argProperties = jobsService.UpdateStagedProductJobResourceConfigArgsForCall(1)
 			Expect(argProductGUID).To(Equal("some-product-guid"))
 			Expect(argJobGUID).To(Equal("a-different-guid"))
 
@@ -284,19 +284,19 @@ var _ = Describe("ConfigureProduct", func() {
 			)
 
 			BeforeEach(func() {
-				productsService.ListReturns(api.StagedProductsOutput{
+				productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
 						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
 					},
 				}, nil)
-				jobsService.JobsReturns(map[string]string{
+				jobsService.ListStagedProductJobsReturns(map[string]string{
 					"some-job":       "a-guid",
 					"some-other-job": "a-different-guid",
 					"bad":            "do-not-use",
 				}, nil)
 
-				jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+				jobsService.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
 					if productGUID == "some-product-guid" {
 						switch jobGUID {
 						case "a-guid":
@@ -349,12 +349,12 @@ var _ = Describe("ConfigureProduct", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(productsService.ListCallCount()).To(Equal(1))
+					Expect(productsService.ListStagedProductsCallCount()).To(Equal(1))
 					Expect(productsService.ConfigureCallCount()).To(Equal(1))
 					Expect(productsService.ConfigureArgsForCall(0).GUID).To(Equal("some-product-guid"))
 					Expect(productsService.ConfigureArgsForCall(0).Configuration).To(MatchJSON(productProperties))
 					Expect(productsService.ConfigureArgsForCall(0).Network).To(Equal(""))
-					Expect(jobsService.ConfigureJobCallCount()).To(Equal(0))
+					Expect(jobsService.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(0))
 
 					format, content := logger.PrintfArgsForCall(0)
 					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
@@ -386,12 +386,12 @@ var _ = Describe("ConfigureProduct", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(productsService.ListCallCount()).To(Equal(1))
+					Expect(productsService.ListStagedProductsCallCount()).To(Equal(1))
 					Expect(productsService.ConfigureCallCount()).To(Equal(1))
 					Expect(productsService.ConfigureArgsForCall(0).GUID).To(Equal("some-product-guid"))
 					Expect(productsService.ConfigureArgsForCall(0).Network).To(MatchJSON(networkProperties))
 					Expect(productsService.ConfigureArgsForCall(0).Configuration).To(Equal(""))
-					Expect(jobsService.ConfigureJobCallCount()).To(Equal(0))
+					Expect(jobsService.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(0))
 
 					format, content := logger.PrintfArgsForCall(0)
 					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
@@ -423,13 +423,13 @@ var _ = Describe("ConfigureProduct", func() {
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(productsService.ListCallCount()).To(Equal(1))
+					Expect(productsService.ListStagedProductsCallCount()).To(Equal(1))
 					Expect(productsService.ConfigureCallCount()).To(Equal(0))
 
-					Expect(jobsService.JobsArgsForCall(0)).To(Equal("some-product-guid"))
-					Expect(jobsService.ConfigureJobCallCount()).To(Equal(2))
+					Expect(jobsService.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
+					Expect(jobsService.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(2))
 
-					argProductGUID, argJobGUID, argProperties := jobsService.ConfigureJobArgsForCall(0)
+					argProductGUID, argJobGUID, argProperties := jobsService.UpdateStagedProductJobResourceConfigArgsForCall(0)
 					Expect(argProductGUID).To(Equal("some-product-guid"))
 					Expect(argJobGUID).To(Equal("a-guid"))
 
@@ -443,7 +443,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 					*jobProperties.InternetConnected = true
 
-					argProductGUID, argJobGUID, argProperties = jobsService.ConfigureJobArgsForCall(1)
+					argProductGUID, argJobGUID, argProperties = jobsService.UpdateStagedProductJobResourceConfigArgsForCall(1)
 					Expect(argProductGUID).To(Equal("some-product-guid"))
 					Expect(argJobGUID).To(Equal("a-different-guid"))
 
@@ -480,17 +480,17 @@ var _ = Describe("ConfigureProduct", func() {
 		Context("when the instance count is not an int", func() {
 			It("configures the resource that is provided", func() {
 				client := commands.NewConfigureProduct(productsService, jobsService, logger)
-				productsService.ListReturns(api.StagedProductsOutput{
+				productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
 					},
 				}, nil)
 
-				jobsService.JobsReturns(map[string]string{
+				jobsService.ListStagedProductJobsReturns(map[string]string{
 					"some-job": "a-guid",
 				}, nil)
 
-				jobsService.GetExistingJobConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+				jobsService.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
 					if productGUID == "some-product-guid" {
 						switch jobGUID {
 						case "a-guid":
@@ -516,7 +516,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				_, _, argProperties := jobsService.ConfigureJobArgsForCall(0)
+				_, _, argProperties := jobsService.UpdateStagedProductJobResourceConfigArgsForCall(0)
 
 				jobProperties := api.JobProperties{
 					Instances:         "automatic",
@@ -532,23 +532,23 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when GetExistingJobConfig returns an error", func() {
+		Context("when GetStagedProductJobResourceConfig returns an error", func() {
 			It("returns an error", func() {
 				client := commands.NewConfigureProduct(productsService, jobsService, logger)
-				productsService.ListReturns(api.StagedProductsOutput{
+				productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
 						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
 					},
 				}, nil)
 
-				jobsService.JobsReturns(map[string]string{
+				jobsService.ListStagedProductJobsReturns(map[string]string{
 					"some-job":       "a-guid",
 					"some-other-job": "a-different-guid",
 					"bad":            "do-not-use",
 				}, nil)
 
-				jobsService.GetExistingJobConfigReturns(api.JobProperties{}, errors.New("some error"))
+				jobsService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some error"))
 				err := client.Execute([]string{
 					"--product-name", "cf",
 					"--product-resources", resourceConfig,
@@ -564,7 +564,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := command.Execute([]string{"--product-name", "cf"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(productsService.ListCallCount()).To(Equal(0))
+				Expect(productsService.ListStagedProductsCallCount()).To(Equal(0))
 
 				format, content := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("Provided properties are empty, nothing to do here"))
@@ -576,7 +576,7 @@ var _ = Describe("ConfigureProduct", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
 
-					productsService.ListReturns(api.StagedProductsOutput{
+					productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
 						},
@@ -593,7 +593,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the product resources cannot be decoded", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
-					productsService.ListReturns(api.StagedProductsOutput{
+					productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
 						},
@@ -607,13 +607,13 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the jobs cannot be fetched", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
-					productsService.ListReturns(api.StagedProductsOutput{
+					productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
 						},
 					}, nil)
 
-					jobsService.JobsReturns(
+					jobsService.ListStagedProductJobsReturns(
 						map[string]string{
 							"some-job": "a-guid",
 						}, errors.New("boom"))
@@ -626,18 +626,18 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when resources fail to configure", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
-					productsService.ListReturns(api.StagedProductsOutput{
+					productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
 						},
 					}, nil)
 
-					jobsService.JobsReturns(
+					jobsService.ListStagedProductJobsReturns(
 						map[string]string{
 							"some-job": "a-guid",
 						}, nil)
 
-					jobsService.ConfigureJobReturns(errors.New("bad things happened"))
+					jobsService.UpdateStagedProductJobResourceConfigReturns(errors.New("bad things happened"))
 
 					err := command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig})
 					Expect(err).To(MatchError("failed to configure resources: bad things happened"))
@@ -664,7 +664,7 @@ var _ = Describe("ConfigureProduct", func() {
 				Context("when the config flag is passed with the product-properties, product-network or product-resources flag", func() {
 					It("returns an error", func() {
 						command := commands.NewConfigureProduct(productsService, jobsService, logger)
-						productsService.ListReturns(api.StagedProductsOutput{
+						productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 							Products: []api.StagedProduct{
 								{GUID: "some-product-guid", Type: "cf"},
 							},
@@ -677,7 +677,7 @@ var _ = Describe("ConfigureProduct", func() {
 				Context("when the provided config path does not exist", func() {
 					It("returns an error", func() {
 						command := commands.NewConfigureProduct(productsService, jobsService, logger)
-						productsService.ListReturns(api.StagedProductsOutput{
+						productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 							Products: []api.StagedProduct{
 								{GUID: "some-product-guid", Type: "cf"},
 							},
@@ -700,7 +700,7 @@ var _ = Describe("ConfigureProduct", func() {
 					It("returns an error", func() {
 						invalidConfig := "this is not a valid config"
 						client := commands.NewConfigureProduct(productsService, jobsService, logger)
-						productsService.ListReturns(api.StagedProductsOutput{
+						productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 							Products: []api.StagedProduct{
 								{GUID: "some-product-guid", Type: "cf"},
 							},
@@ -725,7 +725,7 @@ var _ = Describe("ConfigureProduct", func() {
 					command := commands.NewConfigureProduct(productsService, jobsService, logger)
 					productsService.ConfigureReturns(errors.New("some product error"))
 
-					productsService.ListReturns(api.StagedProductsOutput{
+					productsService.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "some-product"},
 						},

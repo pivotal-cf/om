@@ -31,11 +31,11 @@ var _ = Describe("GenerateCertificate", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateService.GenerateCallCount()).To(Equal(1))
+			Expect(fakeCertificateService.GenerateCertificateCallCount()).To(Equal(1))
 		})
 
 		It("prints a json output for the generated certificate", func() {
-			fakeCertificateService.GenerateReturns(`some-json-response`, nil)
+			fakeCertificateService.GenerateCertificateReturns(`some-json-response`, nil)
 
 			err := command.Execute([]string{
 				"--domains", "*.apps.example.com, *.sys.example.com",
@@ -56,7 +56,7 @@ var _ = Describe("GenerateCertificate", func() {
 			})
 
 			It("returns an error when the service fails to generate a certificate", func() {
-				fakeCertificateService.GenerateReturns(`some-json-response`, errors.New("failed to generate certificate"))
+				fakeCertificateService.GenerateCertificateReturns(`some-json-response`, errors.New("failed to generate certificate"))
 
 				err := command.Execute([]string{
 					"--domains", "*.apps.example.com, *.sys.example.com",

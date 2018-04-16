@@ -8,43 +8,43 @@ import (
 )
 
 type InstallationsService struct {
-	TriggerStub        func(bool, bool) (api.InstallationsServiceOutput, error)
-	triggerMutex       sync.RWMutex
-	triggerArgsForCall []struct {
+	CreateInstallationStub        func(bool, bool) (api.InstallationsServiceOutput, error)
+	createInstallationMutex       sync.RWMutex
+	createInstallationArgsForCall []struct {
 		arg1 bool
 		arg2 bool
 	}
-	triggerReturns struct {
+	createInstallationReturns struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	triggerReturnsOnCall map[int]struct {
+	createInstallationReturnsOnCall map[int]struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	StatusStub        func(id int) (api.InstallationsServiceOutput, error)
-	statusMutex       sync.RWMutex
-	statusArgsForCall []struct {
+	GetInstallationStub        func(id int) (api.InstallationsServiceOutput, error)
+	getInstallationMutex       sync.RWMutex
+	getInstallationArgsForCall []struct {
 		id int
 	}
-	statusReturns struct {
+	getInstallationReturns struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	statusReturnsOnCall map[int]struct {
+	getInstallationReturnsOnCall map[int]struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	LogsStub        func(id int) (api.InstallationsServiceOutput, error)
-	logsMutex       sync.RWMutex
-	logsArgsForCall []struct {
+	GetInstallationLogsStub        func(id int) (api.InstallationsServiceOutput, error)
+	getInstallationLogsMutex       sync.RWMutex
+	getInstallationLogsArgsForCall []struct {
 		id int
 	}
-	logsReturns struct {
+	getInstallationLogsReturns struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	logsReturnsOnCall map[int]struct {
+	getInstallationLogsReturnsOnCall map[int]struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
@@ -74,155 +74,155 @@ type InstallationsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *InstallationsService) Trigger(arg1 bool, arg2 bool) (api.InstallationsServiceOutput, error) {
-	fake.triggerMutex.Lock()
-	ret, specificReturn := fake.triggerReturnsOnCall[len(fake.triggerArgsForCall)]
-	fake.triggerArgsForCall = append(fake.triggerArgsForCall, struct {
+func (fake *InstallationsService) CreateInstallation(arg1 bool, arg2 bool) (api.InstallationsServiceOutput, error) {
+	fake.createInstallationMutex.Lock()
+	ret, specificReturn := fake.createInstallationReturnsOnCall[len(fake.createInstallationArgsForCall)]
+	fake.createInstallationArgsForCall = append(fake.createInstallationArgsForCall, struct {
 		arg1 bool
 		arg2 bool
 	}{arg1, arg2})
-	fake.recordInvocation("Trigger", []interface{}{arg1, arg2})
-	fake.triggerMutex.Unlock()
-	if fake.TriggerStub != nil {
-		return fake.TriggerStub(arg1, arg2)
+	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2})
+	fake.createInstallationMutex.Unlock()
+	if fake.CreateInstallationStub != nil {
+		return fake.CreateInstallationStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.triggerReturns.result1, fake.triggerReturns.result2
+	return fake.createInstallationReturns.result1, fake.createInstallationReturns.result2
 }
 
-func (fake *InstallationsService) TriggerCallCount() int {
-	fake.triggerMutex.RLock()
-	defer fake.triggerMutex.RUnlock()
-	return len(fake.triggerArgsForCall)
+func (fake *InstallationsService) CreateInstallationCallCount() int {
+	fake.createInstallationMutex.RLock()
+	defer fake.createInstallationMutex.RUnlock()
+	return len(fake.createInstallationArgsForCall)
 }
 
-func (fake *InstallationsService) TriggerArgsForCall(i int) (bool, bool) {
-	fake.triggerMutex.RLock()
-	defer fake.triggerMutex.RUnlock()
-	return fake.triggerArgsForCall[i].arg1, fake.triggerArgsForCall[i].arg2
+func (fake *InstallationsService) CreateInstallationArgsForCall(i int) (bool, bool) {
+	fake.createInstallationMutex.RLock()
+	defer fake.createInstallationMutex.RUnlock()
+	return fake.createInstallationArgsForCall[i].arg1, fake.createInstallationArgsForCall[i].arg2
 }
 
-func (fake *InstallationsService) TriggerReturns(result1 api.InstallationsServiceOutput, result2 error) {
-	fake.TriggerStub = nil
-	fake.triggerReturns = struct {
+func (fake *InstallationsService) CreateInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
+	fake.CreateInstallationStub = nil
+	fake.createInstallationReturns = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *InstallationsService) TriggerReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
-	fake.TriggerStub = nil
-	if fake.triggerReturnsOnCall == nil {
-		fake.triggerReturnsOnCall = make(map[int]struct {
+func (fake *InstallationsService) CreateInstallationReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
+	fake.CreateInstallationStub = nil
+	if fake.createInstallationReturnsOnCall == nil {
+		fake.createInstallationReturnsOnCall = make(map[int]struct {
 			result1 api.InstallationsServiceOutput
 			result2 error
 		})
 	}
-	fake.triggerReturnsOnCall[i] = struct {
+	fake.createInstallationReturnsOnCall[i] = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *InstallationsService) Status(id int) (api.InstallationsServiceOutput, error) {
-	fake.statusMutex.Lock()
-	ret, specificReturn := fake.statusReturnsOnCall[len(fake.statusArgsForCall)]
-	fake.statusArgsForCall = append(fake.statusArgsForCall, struct {
+func (fake *InstallationsService) GetInstallation(id int) (api.InstallationsServiceOutput, error) {
+	fake.getInstallationMutex.Lock()
+	ret, specificReturn := fake.getInstallationReturnsOnCall[len(fake.getInstallationArgsForCall)]
+	fake.getInstallationArgsForCall = append(fake.getInstallationArgsForCall, struct {
 		id int
 	}{id})
-	fake.recordInvocation("Status", []interface{}{id})
-	fake.statusMutex.Unlock()
-	if fake.StatusStub != nil {
-		return fake.StatusStub(id)
+	fake.recordInvocation("GetInstallation", []interface{}{id})
+	fake.getInstallationMutex.Unlock()
+	if fake.GetInstallationStub != nil {
+		return fake.GetInstallationStub(id)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.statusReturns.result1, fake.statusReturns.result2
+	return fake.getInstallationReturns.result1, fake.getInstallationReturns.result2
 }
 
-func (fake *InstallationsService) StatusCallCount() int {
-	fake.statusMutex.RLock()
-	defer fake.statusMutex.RUnlock()
-	return len(fake.statusArgsForCall)
+func (fake *InstallationsService) GetInstallationCallCount() int {
+	fake.getInstallationMutex.RLock()
+	defer fake.getInstallationMutex.RUnlock()
+	return len(fake.getInstallationArgsForCall)
 }
 
-func (fake *InstallationsService) StatusArgsForCall(i int) int {
-	fake.statusMutex.RLock()
-	defer fake.statusMutex.RUnlock()
-	return fake.statusArgsForCall[i].id
+func (fake *InstallationsService) GetInstallationArgsForCall(i int) int {
+	fake.getInstallationMutex.RLock()
+	defer fake.getInstallationMutex.RUnlock()
+	return fake.getInstallationArgsForCall[i].id
 }
 
-func (fake *InstallationsService) StatusReturns(result1 api.InstallationsServiceOutput, result2 error) {
-	fake.StatusStub = nil
-	fake.statusReturns = struct {
+func (fake *InstallationsService) GetInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
+	fake.GetInstallationStub = nil
+	fake.getInstallationReturns = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *InstallationsService) StatusReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
-	fake.StatusStub = nil
-	if fake.statusReturnsOnCall == nil {
-		fake.statusReturnsOnCall = make(map[int]struct {
+func (fake *InstallationsService) GetInstallationReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
+	fake.GetInstallationStub = nil
+	if fake.getInstallationReturnsOnCall == nil {
+		fake.getInstallationReturnsOnCall = make(map[int]struct {
 			result1 api.InstallationsServiceOutput
 			result2 error
 		})
 	}
-	fake.statusReturnsOnCall[i] = struct {
+	fake.getInstallationReturnsOnCall[i] = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *InstallationsService) Logs(id int) (api.InstallationsServiceOutput, error) {
-	fake.logsMutex.Lock()
-	ret, specificReturn := fake.logsReturnsOnCall[len(fake.logsArgsForCall)]
-	fake.logsArgsForCall = append(fake.logsArgsForCall, struct {
+func (fake *InstallationsService) GetInstallationLogs(id int) (api.InstallationsServiceOutput, error) {
+	fake.getInstallationLogsMutex.Lock()
+	ret, specificReturn := fake.getInstallationLogsReturnsOnCall[len(fake.getInstallationLogsArgsForCall)]
+	fake.getInstallationLogsArgsForCall = append(fake.getInstallationLogsArgsForCall, struct {
 		id int
 	}{id})
-	fake.recordInvocation("Logs", []interface{}{id})
-	fake.logsMutex.Unlock()
-	if fake.LogsStub != nil {
-		return fake.LogsStub(id)
+	fake.recordInvocation("GetInstallationLogs", []interface{}{id})
+	fake.getInstallationLogsMutex.Unlock()
+	if fake.GetInstallationLogsStub != nil {
+		return fake.GetInstallationLogsStub(id)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.logsReturns.result1, fake.logsReturns.result2
+	return fake.getInstallationLogsReturns.result1, fake.getInstallationLogsReturns.result2
 }
 
-func (fake *InstallationsService) LogsCallCount() int {
-	fake.logsMutex.RLock()
-	defer fake.logsMutex.RUnlock()
-	return len(fake.logsArgsForCall)
+func (fake *InstallationsService) GetInstallationLogsCallCount() int {
+	fake.getInstallationLogsMutex.RLock()
+	defer fake.getInstallationLogsMutex.RUnlock()
+	return len(fake.getInstallationLogsArgsForCall)
 }
 
-func (fake *InstallationsService) LogsArgsForCall(i int) int {
-	fake.logsMutex.RLock()
-	defer fake.logsMutex.RUnlock()
-	return fake.logsArgsForCall[i].id
+func (fake *InstallationsService) GetInstallationLogsArgsForCall(i int) int {
+	fake.getInstallationLogsMutex.RLock()
+	defer fake.getInstallationLogsMutex.RUnlock()
+	return fake.getInstallationLogsArgsForCall[i].id
 }
 
-func (fake *InstallationsService) LogsReturns(result1 api.InstallationsServiceOutput, result2 error) {
-	fake.LogsStub = nil
-	fake.logsReturns = struct {
+func (fake *InstallationsService) GetInstallationLogsReturns(result1 api.InstallationsServiceOutput, result2 error) {
+	fake.GetInstallationLogsStub = nil
+	fake.getInstallationLogsReturns = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *InstallationsService) LogsReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
-	fake.LogsStub = nil
-	if fake.logsReturnsOnCall == nil {
-		fake.logsReturnsOnCall = make(map[int]struct {
+func (fake *InstallationsService) GetInstallationLogsReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
+	fake.GetInstallationLogsStub = nil
+	if fake.getInstallationLogsReturnsOnCall == nil {
+		fake.getInstallationLogsReturnsOnCall = make(map[int]struct {
 			result1 api.InstallationsServiceOutput
 			result2 error
 		})
 	}
-	fake.logsReturnsOnCall[i] = struct {
+	fake.getInstallationLogsReturnsOnCall[i] = struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
@@ -317,12 +317,12 @@ func (fake *InstallationsService) ListInstallationsReturnsOnCall(i int, result1 
 func (fake *InstallationsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.triggerMutex.RLock()
-	defer fake.triggerMutex.RUnlock()
-	fake.statusMutex.RLock()
-	defer fake.statusMutex.RUnlock()
-	fake.logsMutex.RLock()
-	defer fake.logsMutex.RUnlock()
+	fake.createInstallationMutex.RLock()
+	defer fake.createInstallationMutex.RUnlock()
+	fake.getInstallationMutex.RLock()
+	defer fake.getInstallationMutex.RUnlock()
+	fake.getInstallationLogsMutex.RLock()
+	defer fake.getInstallationLogsMutex.RUnlock()
 	fake.runningInstallationMutex.RLock()
 	defer fake.runningInstallationMutex.RUnlock()
 	fake.listInstallationsMutex.RLock()

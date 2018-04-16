@@ -6,55 +6,55 @@ import (
 )
 
 type CertificateAuthorityRegenerator struct {
-	RegenerateStub        func() error
-	regenerateMutex       sync.RWMutex
-	regenerateArgsForCall []struct{}
-	regenerateReturns     struct {
+	RegenerateCertificatesStub        func() error
+	regenerateCertificatesMutex       sync.RWMutex
+	regenerateCertificatesArgsForCall []struct{}
+	regenerateCertificatesReturns     struct {
 		result1 error
 	}
-	regenerateReturnsOnCall map[int]struct {
+	regenerateCertificatesReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CertificateAuthorityRegenerator) Regenerate() error {
-	fake.regenerateMutex.Lock()
-	ret, specificReturn := fake.regenerateReturnsOnCall[len(fake.regenerateArgsForCall)]
-	fake.regenerateArgsForCall = append(fake.regenerateArgsForCall, struct{}{})
-	fake.recordInvocation("Regenerate", []interface{}{})
-	fake.regenerateMutex.Unlock()
-	if fake.RegenerateStub != nil {
-		return fake.RegenerateStub()
+func (fake *CertificateAuthorityRegenerator) RegenerateCertificates() error {
+	fake.regenerateCertificatesMutex.Lock()
+	ret, specificReturn := fake.regenerateCertificatesReturnsOnCall[len(fake.regenerateCertificatesArgsForCall)]
+	fake.regenerateCertificatesArgsForCall = append(fake.regenerateCertificatesArgsForCall, struct{}{})
+	fake.recordInvocation("RegenerateCertificates", []interface{}{})
+	fake.regenerateCertificatesMutex.Unlock()
+	if fake.RegenerateCertificatesStub != nil {
+		return fake.RegenerateCertificatesStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.regenerateReturns.result1
+	return fake.regenerateCertificatesReturns.result1
 }
 
-func (fake *CertificateAuthorityRegenerator) RegenerateCallCount() int {
-	fake.regenerateMutex.RLock()
-	defer fake.regenerateMutex.RUnlock()
-	return len(fake.regenerateArgsForCall)
+func (fake *CertificateAuthorityRegenerator) RegenerateCertificatesCallCount() int {
+	fake.regenerateCertificatesMutex.RLock()
+	defer fake.regenerateCertificatesMutex.RUnlock()
+	return len(fake.regenerateCertificatesArgsForCall)
 }
 
-func (fake *CertificateAuthorityRegenerator) RegenerateReturns(result1 error) {
-	fake.RegenerateStub = nil
-	fake.regenerateReturns = struct {
+func (fake *CertificateAuthorityRegenerator) RegenerateCertificatesReturns(result1 error) {
+	fake.RegenerateCertificatesStub = nil
+	fake.regenerateCertificatesReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *CertificateAuthorityRegenerator) RegenerateReturnsOnCall(i int, result1 error) {
-	fake.RegenerateStub = nil
-	if fake.regenerateReturnsOnCall == nil {
-		fake.regenerateReturnsOnCall = make(map[int]struct {
+func (fake *CertificateAuthorityRegenerator) RegenerateCertificatesReturnsOnCall(i int, result1 error) {
+	fake.RegenerateCertificatesStub = nil
+	if fake.regenerateCertificatesReturnsOnCall == nil {
+		fake.regenerateCertificatesReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.regenerateReturnsOnCall[i] = struct {
+	fake.regenerateCertificatesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -62,8 +62,8 @@ func (fake *CertificateAuthorityRegenerator) RegenerateReturnsOnCall(i int, resu
 func (fake *CertificateAuthorityRegenerator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.regenerateMutex.RLock()
-	defer fake.regenerateMutex.RUnlock()
+	fake.regenerateCertificatesMutex.RLock()
+	defer fake.regenerateCertificatesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

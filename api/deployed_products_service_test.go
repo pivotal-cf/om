@@ -14,7 +14,7 @@ import (
 )
 
 var _ = Describe("DeployedProductsService", func() {
-	Describe("Manifest", func() {
+	Describe("GetDeployedProductManifest", func() {
 		var (
 			client  *fakes.HttpClient
 			service api.DeployedProductsService
@@ -44,7 +44,7 @@ var _ = Describe("DeployedProductsService", func() {
 		})
 
 		It("returns a manifest of a product", func() {
-			manifest, err := service.Manifest("some-product-guid")
+			manifest, err := service.GetDeployedProductManifest("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(manifest).To(MatchYAML(`---
 key-1:
@@ -57,7 +57,7 @@ key-4: 2147483648
 		Context("failure cases", func() {
 			Context("when the request object is invalid", func() {
 				It("returns an error", func() {
-					_, err := service.Manifest("invalid-guid-%%%")
+					_, err := service.GetDeployedProductManifest("invalid-guid-%%%")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
@@ -66,7 +66,7 @@ key-4: 2147483648
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 
-					_, err := service.Manifest("some-product-guid")
+					_, err := service.GetDeployedProductManifest("some-product-guid")
 					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: nope"))
 				})
 			})
@@ -78,7 +78,7 @@ key-4: 2147483648
 						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
 					}, nil)
 
-					_, err := service.Manifest("some-product-guid")
+					_, err := service.GetDeployedProductManifest("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -90,7 +90,7 @@ key-4: 2147483648
 						Body:       ioutil.NopCloser(bytes.NewBufferString("%%%")),
 					}, nil)
 
-					_, err := service.Manifest("some-product-guid")
+					_, err := service.GetDeployedProductManifest("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
 			})
@@ -131,7 +131,7 @@ key-4: 2147483648
 		It("retrieves a list of deployed products from the Ops Manager", func() {
 			service := api.NewDeployedProductsService(client)
 
-			output, err := service.List()
+			output, err := service.ListDeployedProducts()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output).To(Equal([]api.DeployedProductOutput{
@@ -162,7 +162,7 @@ key-4: 2147483648
 				It("returns an error", func() {
 					service := api.NewDeployedProductsService(client)
 
-					_, err := service.List()
+					_, err := service.ListDeployedProducts()
 					Expect(err).To(MatchError("could not make api request to deployed products endpoint: nope"))
 				})
 			})
@@ -178,7 +178,7 @@ key-4: 2147483648
 				It("returns an error", func() {
 					service := api.NewDeployedProductsService(client)
 
-					_, err := service.List()
+					_, err := service.ListDeployedProducts()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -194,7 +194,7 @@ key-4: 2147483648
 				It("returns an error", func() {
 					service := api.NewDeployedProductsService(client)
 
-					_, err := service.List()
+					_, err := service.ListDeployedProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal deployed products response:")))
 				})
 			})

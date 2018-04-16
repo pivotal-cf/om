@@ -24,7 +24,7 @@ func NewDeployedProductsService(client httpClient) DeployedProductsService {
 	}
 }
 
-func (s DeployedProductsService) Manifest(guid string) (string, error) {
+func (s DeployedProductsService) GetDeployedProductManifest(guid string) (string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/deployed/products/%s/manifest", guid), nil)
 	if err != nil {
 		return "", err
@@ -59,7 +59,7 @@ func (s DeployedProductsService) Manifest(guid string) (string, error) {
 	return string(manifest), nil
 }
 
-func (s DeployedProductsService) List() ([]DeployedProductOutput, error) {
+func (s DeployedProductsService) ListDeployedProducts() ([]DeployedProductOutput, error) {
 	req, err := http.NewRequest("GET", "/api/v0/deployed/products", nil)
 	if err != nil {
 		return []DeployedProductOutput{}, err

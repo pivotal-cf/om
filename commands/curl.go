@@ -15,7 +15,7 @@ import (
 
 //go:generate counterfeiter -o ./fakes/request_service.go --fake-name RequestService . requestService
 type requestService interface {
-	Invoke(api.RequestServiceInvokeInput) (api.RequestServiceInvokeOutput, error)
+	Curl(api.RequestServiceCurlInput) (api.RequestServiceCurlOutput, error)
 }
 
 type Curl struct {
@@ -46,14 +46,14 @@ func (c Curl) Execute(args []string) error {
 		requestHeaders.Set(strings.TrimSuffix(split[0], ":"), split[1])
 	}
 
-	input := api.RequestServiceInvokeInput{
+	input := api.RequestServiceCurlInput{
 		Path:    c.Options.Path,
 		Method:  c.Options.Method,
 		Data:    strings.NewReader(c.Options.Data),
 		Headers: requestHeaders,
 	}
 
-	output, err := c.requestService.Invoke(input)
+	output, err := c.requestService.Curl(input)
 	if err != nil {
 		return fmt.Errorf("failed to make api request: %s", err)
 	}

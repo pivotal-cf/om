@@ -29,12 +29,12 @@ type multipart interface {
 
 //go:generate counterfeiter -o ./fakes/stemcell_service.go --fake-name StemcellService . stemcellService
 type stemcellService interface {
-	Upload(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
+	UploadStemcell(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/diagnostic_service.go --fake-name DiagnosticService . diagnosticService
 type diagnosticService interface {
-	Report() (api.DiagnosticReport, error)
+	GetDiagnosticReport() (api.DiagnosticReport, error)
 }
 
 func NewUploadStemcell(multipart multipart, stemcellService stemcellService, diagnosticService diagnosticService, logger logger) UploadStemcell {
@@ -61,7 +61,7 @@ func (us UploadStemcell) Execute(args []string) error {
 
 	if !us.Options.Force {
 		us.logger.Printf("processing stemcell")
-		report, err := us.diagnosticService.Report()
+		report, err := us.diagnosticService.GetDiagnosticReport()
 		if err != nil {
 			switch err.(type) {
 			case api.DiagnosticReportUnavailable:
@@ -91,7 +91,7 @@ func (us UploadStemcell) Execute(args []string) error {
 
 	us.logger.Printf("beginning stemcell upload to Ops Manager")
 
-	_, err = us.stemcellService.Upload(api.StemcellUploadInput{
+	_, err = us.stemcellService.UploadStemcell(api.StemcellUploadInput{
 		ContentLength: submission.Length,
 		Stemcell:      submission.Content,
 		ContentType:   submission.ContentType,

@@ -20,7 +20,7 @@ func NewStagedProducts(presenter presenters.Presenter, diagnosticService diagnos
 }
 
 func (sp StagedProducts) Execute(args []string) error {
-	diagnosticReport, err := sp.diagnosticService.Report()
+	diagnosticReport, err := sp.diagnosticService.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve staged products %s", err)
 	}

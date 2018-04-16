@@ -8,70 +8,70 @@ import (
 )
 
 type RequestService struct {
-	InvokeStub        func(api.RequestServiceInvokeInput) (api.RequestServiceInvokeOutput, error)
-	invokeMutex       sync.RWMutex
-	invokeArgsForCall []struct {
-		arg1 api.RequestServiceInvokeInput
+	CurlStub        func(api.RequestServiceCurlInput) (api.RequestServiceCurlOutput, error)
+	curlMutex       sync.RWMutex
+	curlArgsForCall []struct {
+		arg1 api.RequestServiceCurlInput
 	}
-	invokeReturns struct {
-		result1 api.RequestServiceInvokeOutput
+	curlReturns struct {
+		result1 api.RequestServiceCurlOutput
 		result2 error
 	}
-	invokeReturnsOnCall map[int]struct {
-		result1 api.RequestServiceInvokeOutput
+	curlReturnsOnCall map[int]struct {
+		result1 api.RequestServiceCurlOutput
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *RequestService) Invoke(arg1 api.RequestServiceInvokeInput) (api.RequestServiceInvokeOutput, error) {
-	fake.invokeMutex.Lock()
-	ret, specificReturn := fake.invokeReturnsOnCall[len(fake.invokeArgsForCall)]
-	fake.invokeArgsForCall = append(fake.invokeArgsForCall, struct {
-		arg1 api.RequestServiceInvokeInput
+func (fake *RequestService) Curl(arg1 api.RequestServiceCurlInput) (api.RequestServiceCurlOutput, error) {
+	fake.curlMutex.Lock()
+	ret, specificReturn := fake.curlReturnsOnCall[len(fake.curlArgsForCall)]
+	fake.curlArgsForCall = append(fake.curlArgsForCall, struct {
+		arg1 api.RequestServiceCurlInput
 	}{arg1})
-	fake.recordInvocation("Invoke", []interface{}{arg1})
-	fake.invokeMutex.Unlock()
-	if fake.InvokeStub != nil {
-		return fake.InvokeStub(arg1)
+	fake.recordInvocation("Curl", []interface{}{arg1})
+	fake.curlMutex.Unlock()
+	if fake.CurlStub != nil {
+		return fake.CurlStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.invokeReturns.result1, fake.invokeReturns.result2
+	return fake.curlReturns.result1, fake.curlReturns.result2
 }
 
-func (fake *RequestService) InvokeCallCount() int {
-	fake.invokeMutex.RLock()
-	defer fake.invokeMutex.RUnlock()
-	return len(fake.invokeArgsForCall)
+func (fake *RequestService) CurlCallCount() int {
+	fake.curlMutex.RLock()
+	defer fake.curlMutex.RUnlock()
+	return len(fake.curlArgsForCall)
 }
 
-func (fake *RequestService) InvokeArgsForCall(i int) api.RequestServiceInvokeInput {
-	fake.invokeMutex.RLock()
-	defer fake.invokeMutex.RUnlock()
-	return fake.invokeArgsForCall[i].arg1
+func (fake *RequestService) CurlArgsForCall(i int) api.RequestServiceCurlInput {
+	fake.curlMutex.RLock()
+	defer fake.curlMutex.RUnlock()
+	return fake.curlArgsForCall[i].arg1
 }
 
-func (fake *RequestService) InvokeReturns(result1 api.RequestServiceInvokeOutput, result2 error) {
-	fake.InvokeStub = nil
-	fake.invokeReturns = struct {
-		result1 api.RequestServiceInvokeOutput
+func (fake *RequestService) CurlReturns(result1 api.RequestServiceCurlOutput, result2 error) {
+	fake.CurlStub = nil
+	fake.curlReturns = struct {
+		result1 api.RequestServiceCurlOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *RequestService) InvokeReturnsOnCall(i int, result1 api.RequestServiceInvokeOutput, result2 error) {
-	fake.InvokeStub = nil
-	if fake.invokeReturnsOnCall == nil {
-		fake.invokeReturnsOnCall = make(map[int]struct {
-			result1 api.RequestServiceInvokeOutput
+func (fake *RequestService) CurlReturnsOnCall(i int, result1 api.RequestServiceCurlOutput, result2 error) {
+	fake.CurlStub = nil
+	if fake.curlReturnsOnCall == nil {
+		fake.curlReturnsOnCall = make(map[int]struct {
+			result1 api.RequestServiceCurlOutput
 			result2 error
 		})
 	}
-	fake.invokeReturnsOnCall[i] = struct {
-		result1 api.RequestServiceInvokeOutput
+	fake.curlReturnsOnCall[i] = struct {
+		result1 api.RequestServiceCurlOutput
 		result2 error
 	}{result1, result2}
 }
@@ -79,8 +79,8 @@ func (fake *RequestService) InvokeReturnsOnCall(i int, result1 api.RequestServic
 func (fake *RequestService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.invokeMutex.RLock()
-	defer fake.invokeMutex.RUnlock()
+	fake.curlMutex.RLock()
+	defer fake.curlMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

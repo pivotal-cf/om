@@ -32,8 +32,8 @@ var _ = Describe("UnstageProduct", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(stagedProductsService.UnstageCallCount()).To(Equal(1))
-		Expect(stagedProductsService.UnstageArgsForCall(0)).To(Equal(
+		Expect(stagedProductsService.DeleteStagedProductCallCount()).To(Equal(1))
+		Expect(stagedProductsService.DeleteStagedProductArgsForCall(0)).To(Equal(
 			api.UnstageProductInput{
 				ProductName: "some-product",
 			}))
@@ -65,7 +65,7 @@ var _ = Describe("UnstageProduct", func() {
 		Context("when the product cannot be unstaged", func() {
 			It("returns an error", func() {
 				command := commands.NewUnstageProduct(stagedProductsService, logger)
-				stagedProductsService.UnstageReturns(errors.New("some product error"))
+				stagedProductsService.DeleteStagedProductReturns(errors.New("some product error"))
 
 				err := command.Execute([]string{"--product-name", "some-product"})
 				Expect(err).To(MatchError("failed to unstage product: some product error"))

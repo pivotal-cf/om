@@ -28,7 +28,7 @@ var _ = Describe("AvailableProductsService", func() {
 		service = api.NewAvailableProductsService(client, progressClient)
 	})
 
-	Describe("Upload", func() {
+	Describe("UploadAvailableProduct", func() {
 		It("makes a request to upload the product to the Ops Manager", func() {
 			progressClient.DoStub = func(req *http.Request) (*http.Response, error) {
 				Expect(req.Context().Value("polling-interval")).To(Equal(time.Second))
@@ -43,14 +43,14 @@ var _ = Describe("AvailableProductsService", func() {
 				}, nil
 			}
 
-			output, err := service.Upload(api.UploadProductInput{
+			output, err := service.UploadAvailableProduct(api.UploadAvailableProductInput{
 				ContentLength:   10,
 				Product:         strings.NewReader("some content"),
 				ContentType:     "some content-type",
 				PollingInterval: 1,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(output).To(Equal(api.UploadProductOutput{}))
+			Expect(output).To(Equal(api.UploadAvailableProductOutput{}))
 
 			request := progressClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("POST"))
@@ -64,7 +64,7 @@ var _ = Describe("AvailableProductsService", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
-					_, err := service.Upload(api.UploadProductInput{
+					_, err := service.UploadAvailableProduct(api.UploadAvailableProductInput{
 						PollingInterval: 1,
 					})
 					Expect(err).To(MatchError("could not make api request to available_products endpoint: some client error"))
@@ -78,7 +78,7 @@ var _ = Describe("AvailableProductsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 
-					_, err := service.Upload(api.UploadProductInput{
+					_, err := service.UploadAvailableProduct(api.UploadAvailableProductInput{
 						PollingInterval: 1,
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -87,7 +87,7 @@ var _ = Describe("AvailableProductsService", func() {
 		})
 	})
 
-	Describe("List", func() {
+	Describe("ListAvailableProducts", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				if req.URL.Path == "/api/v0/available_products" {
@@ -104,7 +104,7 @@ var _ = Describe("AvailableProductsService", func() {
 		})
 
 		It("lists available products", func() {
-			output, err := service.List()
+			output, err := service.ListAvailableProducts()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output.ProductsList).To(ConsistOf(
@@ -120,7 +120,7 @@ var _ = Describe("AvailableProductsService", func() {
 			Context("the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.List()
+					_, err := service.ListAvailableProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
 				})
 			})
@@ -132,7 +132,7 @@ var _ = Describe("AvailableProductsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					_, err := service.List()
+					_, err := service.ListAvailableProducts()
 					Expect(err).To(MatchError(ContainSubstring("request failed")))
 				})
 			})
@@ -144,7 +144,7 @@ var _ = Describe("AvailableProductsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
 					}, nil)
 
-					_, err := service.List()
+					_, err := service.ListAvailableProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 				})
 			})
@@ -191,17 +191,17 @@ var _ = Describe("AvailableProductsService", func() {
 		})
 	})
 
-	Describe("Delete", func() {
+	Describe("DeleteAvailableProducts", func() {
 		It("deletes a named product / version", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 			}, nil)
 
-			err := service.Delete(api.AvailableProductsInput{
+			err := service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
 				ProductName:    "some-product",
 				ProductVersion: "1.2.3-build.4",
-			}, false)
+			})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(1))
@@ -212,14 +212,16 @@ var _ = Describe("AvailableProductsService", func() {
 			Expect(request.URL.RawQuery).To(Equal("product_name=some-product&version=1.2.3-build.4"))
 		})
 
-		Context("when the all flag is provided", func() {
+		Context("when the ShouldDeleteAllProducts flag is provided", func() {
 			It("does not provide a product query to DELETE", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
 
-				err := service.Delete(api.AvailableProductsInput{}, true)
+				err := service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
+					ShouldDeleteAllProducts: true,
+				})
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(client.DoCallCount()).To(Equal(1))
@@ -239,10 +241,10 @@ var _ = Describe("AvailableProductsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					err := service.Delete(api.AvailableProductsInput{
+					err := service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
 						ProductName:    "some-product",
 						ProductVersion: "1.2.3-build.4",
-					}, false)
+					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
 				})
 			})

@@ -26,15 +26,15 @@ var _ = Describe("InstallationLog", func() {
 
 	Describe("Execute", func() {
 		It("displays the logs for the specified installation", func() {
-			installationsService.LogsReturns(api.InstallationsServiceOutput{Logs: "some log output"}, nil)
+			installationsService.GetInstallationLogsReturns(api.InstallationsServiceOutput{Logs: "some log output"}, nil)
 			err := command.Execute([]string{
 				"--id", "999",
 			})
 
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(installationsService.LogsCallCount()).To(Equal(1))
-			requestedInstallationId := installationsService.LogsArgsForCall(0)
+			Expect(installationsService.GetInstallationLogsCallCount()).To(Equal(1))
+			requestedInstallationId := installationsService.GetInstallationLogsArgsForCall(0)
 			Expect(requestedInstallationId).To(Equal(999))
 
 			Expect(logger.PrintCallCount()).To(Equal(1))
@@ -57,7 +57,7 @@ var _ = Describe("InstallationLog", func() {
 			})
 			Context("when the api fails to retrieve the installation log", func() {
 				It("returns an error", func() {
-					installationsService.LogsReturns(
+					installationsService.GetInstallationLogsReturns(
 						api.InstallationsServiceOutput{},
 						errors.New("failed to retrieve installation log"),
 					)

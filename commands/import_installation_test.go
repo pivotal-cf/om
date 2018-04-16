@@ -70,7 +70,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
-		Expect(installationService.ImportArgsForCall(0)).To(Equal(api.ImportInstallationInput{
+		Expect(installationService.UploadInstallationAssetCollectionArgsForCall(0)).To(Equal(api.ImportInstallationInput{
 			ContentLength:   10,
 			Installation:    ioutil.NopCloser(strings.NewReader("")),
 			ContentType:     "some content-type",
@@ -121,8 +121,8 @@ var _ = Describe("ImportInstallation", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(installationService.ImportCallCount()).To(Equal(1))
-			input := installationService.ImportArgsForCall(0)
+			Expect(installationService.UploadInstallationAssetCollectionCallCount()).To(Equal(1))
+			input := installationService.UploadInstallationAssetCollectionArgsForCall(0)
 			Expect(input.PollingInterval).To(Equal(48))
 		})
 	})
@@ -208,7 +208,7 @@ var _ = Describe("ImportInstallation", func() {
 					Status: api.EnsureAvailabilityStatusUnstarted,
 				}, nil)
 				command := commands.NewImportInstallation(multipart, installationService, setupService, logger)
-				installationService.ImportReturns(errors.New("some installation error"))
+				installationService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
 
 				err := command.Execute([]string{"--installation", "/some/path", "--decryption-passphrase", "some-passphrase"})
 				Expect(err).To(MatchError("failed to import installation: some installation error"))

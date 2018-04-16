@@ -26,7 +26,7 @@ var _ = Describe("PendingChanges", func() {
 	})
 
 	It("lists the pending changes", func() {
-		pcService.ListReturns(api.PendingChangesOutput{
+		pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 			ChangeList: []api.ProductChange{
 				{
 					Product: "some-product",
@@ -63,7 +63,7 @@ var _ = Describe("PendingChanges", func() {
 			It("returns an error", func() {
 				command := commands.NewPendingChanges(presenter, pcService)
 
-				pcService.ListReturns(api.PendingChangesOutput{}, errors.New("beep boop"))
+				pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{}, errors.New("beep boop"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to retrieve pending changes beep boop"))

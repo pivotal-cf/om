@@ -27,7 +27,7 @@ type VMExtensionInput struct {
 	CloudProperties string `json:"cloud_properties"`
 }
 
-func (v VMExtensionsService) Create(input CreateVMExtension) error {
+func (v VMExtensionsService) CreateStagedVMExtension(input CreateVMExtension) error {
 	jsonData, err := json.Marshal(&input)
 
 	if err != nil {
