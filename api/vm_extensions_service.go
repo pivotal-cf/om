@@ -7,19 +7,9 @@ import (
 	"net/http"
 )
 
-type VMExtensionsService struct {
-	client httpClient
-}
-
 type CreateVMExtension struct {
 	Name            string          `json:"name"`
 	CloudProperties json.RawMessage `json:"cloud_properties"`
-}
-
-func NewVMExtensionsService(client httpClient) VMExtensionsService {
-	return VMExtensionsService{
-		client: client,
-	}
 }
 
 type VMExtensionInput struct {
@@ -27,7 +17,7 @@ type VMExtensionInput struct {
 	CloudProperties string `json:"cloud_properties"`
 }
 
-func (v VMExtensionsService) CreateStagedVMExtension(input CreateVMExtension) error {
+func (a Api) CreateStagedVMExtension(input CreateVMExtension) error {
 	jsonData, err := json.Marshal(&input)
 
 	if err != nil {
@@ -42,12 +32,12 @@ func (v VMExtensionsService) CreateStagedVMExtension(input CreateVMExtension) er
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := v.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not send api request to %s %s: %s", verb, endpoint, err.Error())
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 

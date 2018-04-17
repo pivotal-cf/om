@@ -6,7 +6,7 @@ import (
 	"net/http/httputil"
 )
 
-func ValidateStatusOK(resp *http.Response) error {
+func validateStatusOK(resp *http.Response) error {
 	if resp.StatusCode != http.StatusOK {
 		out, err := httputil.DumpResponse(resp, true)
 		if err != nil {

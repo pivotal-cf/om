@@ -19,22 +19,14 @@ type RequestServiceCurlOutput struct {
 	Body       io.Reader
 }
 
-type RequestService struct {
-	client httpClient
-}
-
-func NewRequestService(client httpClient) RequestService {
-	return RequestService{client: client}
-}
-
-func (rs RequestService) Curl(input RequestServiceCurlInput) (RequestServiceCurlOutput, error) {
+func (a Api) Curl(input RequestServiceCurlInput) (RequestServiceCurlOutput, error) {
 	request, err := http.NewRequest(input.Method, input.Path, input.Data)
 	if err != nil {
 		return RequestServiceCurlOutput{}, fmt.Errorf("failed constructing request: %s", err)
 	}
 
 	request.Header = input.Headers
-	response, err := rs.client.Do(request)
+	response, err := a.client.Do(request)
 	if err != nil {
 		return RequestServiceCurlOutput{}, fmt.Errorf("failed submitting request: %s", err)
 	}

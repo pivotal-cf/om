@@ -8,28 +8,27 @@ import (
 )
 
 type ImportInstallation struct {
-	multipart                        multipart
-	logger                           logger
-	installationAssetImporterService installationAssetImporterService
-	setupService                     setupService
-	Options                          struct {
+	multipart multipart
+	logger    logger
+	service   importInstallationService
+	Options   struct {
 		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
 		Passphrase      string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase for Ops Manager to decrypt the installation"`
 		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installation_asset_importer_service.go --fake-name InstallationAssetImporterService . installationAssetImporterService
-type installationAssetImporterService interface {
+//go:generate counterfeiter -o ./fakes/import_installation_service.go --fake-name ImportInstallationService . importInstallationService
+type importInstallationService interface {
 	UploadInstallationAssetCollection(api.ImportInstallationInput) error
+	EnsureAvailability(input api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
 }
 
-func NewImportInstallation(multipart multipart, installationAssetImporterService installationAssetImporterService, setupService setupService, logger logger) ImportInstallation {
+func NewImportInstallation(multipart multipart, service importInstallationService, logger logger) ImportInstallation {
 	return ImportInstallation{
 		multipart: multipart,
 		logger:    logger,
-		installationAssetImporterService: installationAssetImporterService,
-		setupService:                     setupService,
+		service:   service,
 	}
 }
 
@@ -46,7 +45,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
 	}
 
-	ensureAvailabilityOutput, err := ii.setupService.EnsureAvailability(api.EnsureAvailabilityInput{})
+	ensureAvailabilityOutput, err := ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 	if err != nil {
 		return fmt.Errorf("could not check Ops Manager status: %s", err)
 	}
@@ -75,7 +74,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 
 	ii.logger.Printf("beginning installation import to Ops Manager")
 
-	err = ii.installationAssetImporterService.UploadInstallationAssetCollection(api.ImportInstallationInput{
+	err = ii.service.UploadInstallationAssetCollection(api.ImportInstallationInput{
 		ContentLength:   submission.Length,
 		Installation:    submission.Content,
 		ContentType:     submission.ContentType,
@@ -87,7 +86,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 
 	ii.logger.Printf("waiting for import to complete...")
 	for ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusComplete {
-		ensureAvailabilityOutput, err = ii.setupService.EnsureAvailability(api.EnsureAvailabilityInput{})
+		ensureAvailabilityOutput, err = ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {
 			return fmt.Errorf("could not check Ops Manager Status: %s", err)
 		}

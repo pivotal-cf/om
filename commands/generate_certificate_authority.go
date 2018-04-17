@@ -7,16 +7,16 @@ import (
 )
 
 type GenerateCertificateAuthority struct {
-	service   certificateAuthorityGenerator
+	service   generateCertificateAuthorityService
 	presenter presenters.Presenter
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_authority_generator.go --fake-name CertificateAuthorityGenerator . certificateAuthorityGenerator
-type certificateAuthorityGenerator interface {
+//go:generate counterfeiter -o ./fakes/generate_certificate_authority_service.go --fake-name GenerateCertificateAuthorityService . generateCertificateAuthorityService
+type generateCertificateAuthorityService interface {
 	GenerateCertificateAuthority() (api.CA, error)
 }
 
-func NewGenerateCertificateAuthority(service certificateAuthorityGenerator, presenter presenters.Presenter) GenerateCertificateAuthority {
+func NewGenerateCertificateAuthority(service generateCertificateAuthorityService, presenter presenters.Presenter) GenerateCertificateAuthority {
 	return GenerateCertificateAuthority{service: service, presenter: presenter}
 }
 

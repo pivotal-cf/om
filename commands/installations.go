@@ -12,13 +12,14 @@ type Installations struct {
 	presenter presenters.Presenter
 }
 
-func (i Installations) ListInstallations() (api.InstallationsServiceOutput, error) {
-	return api.InstallationsServiceOutput{}, nil
+//go:generate counterfeiter -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
+type installationsService interface {
+	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
 
-func NewInstallations(incomingService installationsService, presenter presenters.Presenter) Installations {
+func NewInstallations(service installationsService, presenter presenters.Presenter) Installations {
 	return Installations{
-		service:   incomingService,
+		service:   service,
 		presenter: presenter,
 	}
 }

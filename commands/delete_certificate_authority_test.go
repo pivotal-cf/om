@@ -14,15 +14,15 @@ import (
 
 var _ = Describe("DeleteCertificateAuthority", func() {
 	var (
-		fakeCertificateAuthorityService *fakes.CertificateAuthorityDeleter
-		fakeLogger                      *fakes.Logger
-		command                         commands.DeleteCertificateAuthority
+		fakeService *fakes.DeleteCertificateAuthorityService
+		fakeLogger  *fakes.Logger
+		command     commands.DeleteCertificateAuthority
 	)
 
 	BeforeEach(func() {
-		fakeCertificateAuthorityService = &fakes.CertificateAuthorityDeleter{}
+		fakeService = &fakes.DeleteCertificateAuthorityService{}
 		fakeLogger = &fakes.Logger{}
-		command = commands.NewDeleteCertificateAuthority(fakeCertificateAuthorityService, fakeLogger)
+		command = commands.NewDeleteCertificateAuthority(fakeService, fakeLogger)
 	})
 
 	Describe("Execute", func() {
@@ -32,8 +32,8 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthorityService.DeleteCertificateAuthorityCallCount()).To(Equal(1))
-			Expect(fakeCertificateAuthorityService.DeleteCertificateAuthorityArgsForCall(0)).To(Equal(api.DeleteCertificateAuthorityInput{
+			Expect(fakeService.DeleteCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakeService.DeleteCertificateAuthorityArgsForCall(0)).To(Equal(api.DeleteCertificateAuthorityInput{
 				GUID: "some-certificate-authority-id",
 			}))
 
@@ -45,7 +45,7 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 		Context("failure cases", func() {
 			Context("when the service fails to delete a certificate", func() {
 				It("returns an error", func() {
-					fakeCertificateAuthorityService.DeleteCertificateAuthorityReturns(errors.New("failed to delete certificate"))
+					fakeService.DeleteCertificateAuthorityReturns(errors.New("failed to delete certificate"))
 
 					err := command.Execute([]string{
 						"--id", "some-certificate-authority-id",

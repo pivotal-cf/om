@@ -6,21 +6,26 @@ import (
 )
 
 type DeleteUnusedProducts struct {
-	productsService ps
-	logger          logger
+	service deleteUnusedProductsService
+	logger  logger
 }
 
-func NewDeleteUnusedProducts(productDeleter ps, logger logger) DeleteUnusedProducts {
+//go:generate counterfeiter -o ./fakes/delete_unused_products_service.go --fake-name DeleteUnusedProductsService . deleteUnusedProductsService
+type deleteUnusedProductsService interface {
+	DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error
+}
+
+func NewDeleteUnusedProducts(service deleteUnusedProductsService, logger logger) DeleteUnusedProducts {
 	return DeleteUnusedProducts{
-		productsService: productDeleter,
-		logger:          logger,
+		service: service,
+		logger:  logger,
 	}
 }
 
 func (dup DeleteUnusedProducts) Execute(args []string) error {
 	dup.logger.Printf("trashing unused products")
 
-	err := dup.productsService.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
+	err := dup.service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
 		ShouldDeleteAllProducts: true,
 	})
 	if err != nil {

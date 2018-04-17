@@ -14,15 +14,17 @@ import (
 	"github.com/pivotal-cf/om/api/fakes"
 )
 
-var _ = Describe("CertificatesService", func() {
+var _ = Describe("Certificates", func() {
 	var (
 		client  *fakes.HttpClient
-		service api.CertificatesService
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		service = api.NewCertificatesService(client)
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("GenerateCertificate", func() {
@@ -80,7 +82,6 @@ var _ = Describe("CertificatesService", func() {
 
 			Context("when Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.URL.Path == "/api/v0/certificates/generate" &&
@@ -95,7 +96,6 @@ var _ = Describe("CertificatesService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewCertificatesService(client)
 					_, err := service.GenerateCertificate("some-domains")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})

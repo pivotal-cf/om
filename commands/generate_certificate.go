@@ -7,19 +7,19 @@ import (
 )
 
 type GenerateCertificate struct {
-	service certificateGenerator
+	service generateCertificateService
 	logger  logger
 	Options struct {
 		Domains string `long:"domains" short:"d" required:"true" description:"domains to generate certificates, delimited by comma, can include wildcard domains"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_generator.go --fake-name CertificateGenerator . certificateGenerator
-type certificateGenerator interface {
+//go:generate counterfeiter -o ./fakes/generate_certificate_service.go --fake-name GenerateCertificateService . generateCertificateService
+type generateCertificateService interface {
 	GenerateCertificate(string) (string, error)
 }
 
-func NewGenerateCertificate(service certificateGenerator, logger logger) GenerateCertificate {
+func NewGenerateCertificate(service generateCertificateService, logger logger) GenerateCertificate {
 	return GenerateCertificate{service: service, logger: logger}
 }
 

@@ -15,15 +15,15 @@ import (
 
 var _ = Describe("DeleteProduct", func() {
 	var (
-		command commands.DeleteUnusedProducts
-		deleter *fakes.ProductDeleter
-		logger  *fakes.Logger
+		command     commands.DeleteUnusedProducts
+		fakeService *fakes.DeleteUnusedProductsService
+		logger      *fakes.Logger
 	)
 
 	BeforeEach(func() {
-		deleter = &fakes.ProductDeleter{}
+		fakeService = &fakes.DeleteUnusedProductsService{}
 		logger = &fakes.Logger{}
-		command = commands.NewDeleteUnusedProducts(deleter, logger)
+		command = commands.NewDeleteUnusedProducts(fakeService, logger)
 	})
 
 	Describe("Execute", func() {
@@ -31,9 +31,9 @@ var _ = Describe("DeleteProduct", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(deleter.DeleteAvailableProductsCallCount()).To(Equal(1))
+			Expect(fakeService.DeleteAvailableProductsCallCount()).To(Equal(1))
 
-			input := deleter.DeleteAvailableProductsArgsForCall(0)
+			input := fakeService.DeleteAvailableProductsArgsForCall(0)
 			Expect(input).To(Equal(api.DeleteAvailableProductsInput{
 				ShouldDeleteAllProducts: true,
 			}))
@@ -49,7 +49,7 @@ var _ = Describe("DeleteProduct", func() {
 	Context("when an error occurs", func() {
 		Context("when deleting all products fails", func() {
 			It("returns an error", func() {
-				deleter.DeleteAvailableProductsReturns(errors.New("something bad happened"))
+				fakeService.DeleteAvailableProductsReturns(errors.New("something bad happened"))
 
 				err := command.Execute([]string{"-p", "nah", "-v", "nope"})
 				Expect(err).To(MatchError("something bad happened"))

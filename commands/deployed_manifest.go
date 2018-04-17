@@ -9,23 +9,23 @@ import (
 )
 
 type DeployedManifest struct {
-	deployedProducts deployedProductService
-	logger           logger
-	Options          struct {
+	service deployedManifestService
+	logger  logger
+	Options struct {
 		ProductName string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/deployed_product_service.go --fake-name DeployedProductService . deployedProductService
-type deployedProductService interface {
+//go:generate counterfeiter -o ./fakes/deployed_manifest_service.go --fake-name DeployedManifestService . deployedManifestService
+type deployedManifestService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	GetDeployedProductManifest(guid string) (string, error)
 }
 
-func NewDeployedManifest(deployedProducts deployedProductService, logger logger) DeployedManifest {
+func NewDeployedManifest(service deployedManifestService, logger logger) DeployedManifest {
 	return DeployedManifest{
-		deployedProducts: deployedProducts,
-		logger:           logger,
+		service: service,
+		logger:  logger,
 	}
 }
 
@@ -34,7 +34,7 @@ func (dm DeployedManifest) Execute(args []string) error {
 		return fmt.Errorf("could not parse staged-manifest flags: %s", err)
 	}
 
-	output, err := dm.deployedProducts.ListDeployedProducts()
+	output, err := dm.service.ListDeployedProducts()
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (dm DeployedManifest) Execute(args []string) error {
 		return errors.New("could not find given product")
 	}
 
-	manifest, err := dm.deployedProducts.GetDeployedProductManifest(guid)
+	manifest, err := dm.service.GetDeployedProductManifest(guid)
 	if err != nil {
 		return err
 	}

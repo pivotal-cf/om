@@ -8,14 +8,14 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-//go:generate counterfeiter -o ./fakes/setup_service.go --fake-name SetupService . setupService
-type setupService interface {
+//go:generate counterfeiter -o ./fakes/configure_authentication_service.go --fake-name ConfigureAuthenticationService . configureAuthenticationService
+type configureAuthenticationService interface {
 	Setup(api.SetupInput) (api.SetupOutput, error)
 	EnsureAvailability(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
 }
 
 type ConfigureAuthentication struct {
-	service setupService
+	service configureAuthenticationService
 	logger  logger
 	Options struct {
 		Username             string `long:"username"              short:"u"  required:"true" description:"admin username"`
@@ -27,7 +27,7 @@ type ConfigureAuthentication struct {
 	}
 }
 
-func NewConfigureAuthentication(service setupService, logger logger) ConfigureAuthentication {
+func NewConfigureAuthentication(service configureAuthenticationService, logger logger) ConfigureAuthentication {
 	return ConfigureAuthentication{
 		service: service,
 		logger:  logger,

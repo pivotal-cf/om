@@ -8,6 +8,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/ui"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,15 +16,15 @@ import (
 
 var _ = Describe("ConfigureBosh", func() {
 	var (
-		boshService       *fakes.BoshFormService
-		diagnosticService *fakes.DiagnosticService
-		logger            *fakes.Logger
-		loggerErr         *fakes.Logger
+		boshService *fakes.BoshFormService
+		fakeService *fakes.ConfigureBoshService
+		logger      *fakes.Logger
+		loggerErr   *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		boshService = &fakes.BoshFormService{}
-		diagnosticService = &fakes.DiagnosticService{}
+		fakeService = &fakes.ConfigureBoshService{}
 		logger = &fakes.Logger{}
 		loggerErr = &fakes.Logger{}
 	})
@@ -32,7 +33,7 @@ var _ = Describe("ConfigureBosh", func() {
 		It("configures bosh", func() {
 			testBoshConfigurationWithAZs(
 				boshService,
-				diagnosticService,
+				fakeService,
 				logger, loggerErr,
 				`{"availability_zones": [{"name": "some-az-name"},{"name": "some-az-other"}]}`,
 				"_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Biaas_identifier%5D=some-az-other",
@@ -42,7 +43,7 @@ var _ = Describe("ConfigureBosh", func() {
 		It("configures bosh for vSphere", func() {
 			testBoshConfigurationWithAZs(
 				boshService,
-				diagnosticService,
+				fakeService,
 				logger, loggerErr,
 				`{"availability_zones": [{"name": "some-az-name","cluster": "cluster-1","resource_pool": "pool-1"},{"name": "some-az-other", "cluster": "cluster-2","resource_pool": "pool-2"}]}`,
 				"_method=the-rails&authenticity_token=some-auth-token&availability_zones%5Bavailability_zones%5D%5B%5D%5Bcluster%5D=cluster-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Bcluster%5D=cluster-2&availability_zones%5Bavailability_zones%5D%5B%5D%5Bname%5D=some-az-name&availability_zones%5Bavailability_zones%5D%5B%5D%5Bname%5D=some-az-other&availability_zones%5Bavailability_zones%5D%5B%5D%5Bresource_pool%5D=pool-1&availability_zones%5Bavailability_zones%5D%5B%5D%5Bresource_pool%5D=pool-2",
@@ -50,9 +51,9 @@ var _ = Describe("ConfigureBosh", func() {
 		})
 
 		It("configures bosh with no availability zones", func() {
-			command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+			command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
-			boshService.GetFormReturns(api.Form{
+			boshService.GetFormReturns(ui.Form{
 				Action:            "form-action",
 				AuthenticityToken: "some-auth-token",
 				RailsMethod:       "the-rails",
@@ -129,8 +130,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Expect(boshService.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
 
-			Expect(boshService.PostFormArgsForCall(0)).To(Equal(api.PostFormInput{
-				Form: api.Form{
+			Expect(boshService.PostFormArgsForCall(0)).To(Equal(ui.PostFormInput{
+				Form: ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -140,8 +141,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Expect(boshService.GetFormArgsForCall(1)).To(Equal("/infrastructure/director_configuration/edit"))
 
-			Expect(boshService.PostFormArgsForCall(1)).To(Equal(api.PostFormInput{
-				Form: api.Form{
+			Expect(boshService.PostFormArgsForCall(1)).To(Equal(ui.PostFormInput{
+				Form: ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -151,8 +152,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
 
-			Expect(boshService.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
-				Form: api.Form{
+			Expect(boshService.PostFormArgsForCall(2)).To(Equal(ui.PostFormInput{
+				Form: ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -162,8 +163,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/networks/edit"))
 
-			Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
-				Form: api.Form{
+			Expect(boshService.PostFormArgsForCall(3)).To(Equal(ui.PostFormInput{
+				Form: ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -173,8 +174,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Expect(boshService.GetFormArgsForCall(4)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
-			Expect(boshService.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
-				Form: api.Form{
+			Expect(boshService.PostFormArgsForCall(4)).To(Equal(ui.PostFormInput{
+				Form: ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -185,9 +186,9 @@ var _ = Describe("ConfigureBosh", func() {
 
 		Context("when a network already exists", func() {
 			It("does network assignment", func() {
-				command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+				command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
-				boshService.GetFormReturns(api.Form{
+				boshService.GetFormReturns(ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -250,8 +251,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Expect(boshService.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
 
-				Expect(boshService.PostFormArgsForCall(0)).To(Equal(api.PostFormInput{
-					Form: api.Form{
+				Expect(boshService.PostFormArgsForCall(0)).To(Equal(ui.PostFormInput{
+					Form: ui.Form{
 						Action:            "form-action",
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",
@@ -261,8 +262,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Expect(boshService.GetFormArgsForCall(1)).To(Equal("/infrastructure/director_configuration/edit"))
 
-				Expect(boshService.PostFormArgsForCall(1)).To(Equal(api.PostFormInput{
-					Form: api.Form{
+				Expect(boshService.PostFormArgsForCall(1)).To(Equal(ui.PostFormInput{
+					Form: ui.Form{
 						Action:            "form-action",
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",
@@ -272,8 +273,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
 
-				Expect(boshService.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
-					Form: api.Form{
+				Expect(boshService.PostFormArgsForCall(2)).To(Equal(ui.PostFormInput{
+					Form: ui.Form{
 						Action:            "form-action",
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",
@@ -283,8 +284,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
-				Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
-					Form: api.Form{
+				Expect(boshService.PostFormArgsForCall(3)).To(Equal(ui.PostFormInput{
+					Form: ui.Form{
 						Action:            "form-action",
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",
@@ -298,15 +299,15 @@ var _ = Describe("ConfigureBosh", func() {
 
 		Context("when the iaas is azure", func() {
 			It("does not attempt to get the availability zones", func() {
-				command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+				command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
-				boshService.GetFormReturns(api.Form{
+				boshService.GetFormReturns(ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				}, nil)
 
-				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					InfrastructureType: "azure",
 				}, nil)
 
@@ -370,15 +371,15 @@ var _ = Describe("ConfigureBosh", func() {
 
 		Context("when the network is configured and deployed", func() {
 			It("ignores all network changes", func() {
-				command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+				command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
-				boshService.GetFormReturns(api.Form{
+				boshService.GetFormReturns(ui.Form{
 					Action:            "form-action",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
 				}, nil)
 
-				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					DeployedProducts: []api.DiagnosticProduct{
 						{
 							Name: "p-bosh",
@@ -463,9 +464,9 @@ var _ = Describe("ConfigureBosh", func() {
 			Context("when error occurs", func() {
 				Context("when fetching the diagnostic report fails", func() {
 					It("returns an error", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
-						diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+						fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
 						err := command.Execute([]string{"--az-configuration", `{"some": "configuration"}`})
 						Expect(err).To(MatchError("beep boop"))
@@ -483,7 +484,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --az-configuration flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--az-configuration", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -491,7 +492,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --director-configuration flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--director-configuration", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -499,7 +500,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --iaas-configuration flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--iaas-configuration", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -507,7 +508,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --network-assignment flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--network-assignment", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -515,7 +516,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --networks-configuration flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--networks-configuration", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -523,7 +524,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --resource-configuration flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--resource-configuration", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -531,7 +532,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 				Context("to the --security-configuration flag", func() {
 					It("is ignored", func() {
-						command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+						command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 						err := command.Execute([]string{"--security-configuration", "{}"})
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -542,7 +543,7 @@ var _ = Describe("ConfigureBosh", func() {
 		Context("error cases", func() {
 			Context("when no configuration flags are passed", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+					command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("at least one configuration flag must be provided. Please see usage for more information."))
 				})
@@ -550,7 +551,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Context("when an invalid flag is passed", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+					command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 					err := command.Execute([]string{"--not-a-real-flag"})
 					Expect(err).To(MatchError("flag provided but not defined: -not-a-real-flag"))
 				})
@@ -558,8 +559,8 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Context("when the form can't be fetched", func() {
 				It("returns an error", func() {
-					boshService.GetFormReturns(api.Form{}, errors.New("meow meow meow"))
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+					boshService.GetFormReturns(ui.Form{}, errors.New("meow meow meow"))
+					command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
 					err := command.Execute([]string{"--iaas-configuration", `{"some": "configuration"}`})
 					Expect(err).To(MatchError("could not fetch form: meow meow meow"))
@@ -568,7 +569,7 @@ var _ = Describe("ConfigureBosh", func() {
 
 			Context("when the json can't be decoded", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+					command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
 					err := command.Execute([]string{"--iaas-configuration", "%$#@#$"})
 					Expect(err).To(MatchError("could not decode json: invalid character '%' looking for beginning of value"))
@@ -579,7 +580,7 @@ var _ = Describe("ConfigureBosh", func() {
 				It("returns an error", func() {
 					boshService.PostFormReturns(errors.New("NOPE"))
 
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+					command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
 					err := command.Execute([]string{"--iaas-configuration", `{"invalid": "configuration"}`})
 					Expect(err).To(MatchError("tile failed to configure: NOPE"))
@@ -590,10 +591,10 @@ var _ = Describe("ConfigureBosh", func() {
 				It("returns an error", func() {
 					boshService.AvailabilityZonesReturns(map[string]string{}, errors.New("FAIL"))
 
-					diagnosticService.GetDiagnosticReportReturns(
+					fakeService.GetDiagnosticReportReturns(
 						api.DiagnosticReport{}, nil)
 
-					command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+					command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
 					err := command.Execute([]string{
 						"--az-configuration", `{"some": "configuration"}`,
@@ -618,10 +619,10 @@ var _ = Describe("ConfigureBosh", func() {
 	})
 })
 
-func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnosticService *fakes.DiagnosticService, logger *fakes.Logger, loggerErr *fakes.Logger, azConfiguration, azEncodedPayload string) {
-	command := commands.NewConfigureBosh(boshService, diagnosticService, logger, loggerErr)
+func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, fakeService *fakes.ConfigureBoshService, logger *fakes.Logger, loggerErr *fakes.Logger, azConfiguration, azEncodedPayload string) {
+	command := commands.NewConfigureBosh(boshService, fakeService, logger, loggerErr)
 
-	boshService.GetFormReturns(api.Form{
+	boshService.GetFormReturns(ui.Form{
 		Action:            "form-action",
 		AuthenticityToken: "some-auth-token",
 		RailsMethod:       "the-rails",
@@ -737,8 +738,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(0)).To(Equal("/infrastructure/iaas_configuration/edit"))
 
-	Expect(boshService.PostFormArgsForCall(0)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(0)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
@@ -748,8 +749,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(1)).To(Equal("/infrastructure/director_configuration/edit"))
 
-	Expect(boshService.PostFormArgsForCall(1)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(1)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
@@ -759,8 +760,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(2)).To(Equal("/infrastructure/security_tokens/edit"))
 
-	Expect(boshService.PostFormArgsForCall(2)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(2)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
@@ -770,8 +771,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(3)).To(Equal("/infrastructure/director/resources/edit"))
 
-	Expect(boshService.PostFormArgsForCall(3)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(3)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
@@ -781,8 +782,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(4)).To(Equal("/infrastructure/availability_zones/edit"))
 
-	Expect(boshService.PostFormArgsForCall(4)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(4)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
@@ -792,8 +793,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(5)).To(Equal("/infrastructure/networks/edit"))
 
-	Expect(boshService.PostFormArgsForCall(5)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(5)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",
@@ -803,8 +804,8 @@ func testBoshConfigurationWithAZs(boshService *fakes.BoshFormService, diagnostic
 
 	Expect(boshService.GetFormArgsForCall(6)).To(Equal("/infrastructure/director/az_and_network_assignment/edit"))
 
-	Expect(boshService.PostFormArgsForCall(6)).To(Equal(api.PostFormInput{
-		Form: api.Form{
+	Expect(boshService.PostFormArgsForCall(6)).To(Equal(ui.PostFormInput{
+		Form: ui.Form{
 			Action:            "form-action",
 			AuthenticityToken: "some-auth-token",
 			RailsMethod:       "the-rails",

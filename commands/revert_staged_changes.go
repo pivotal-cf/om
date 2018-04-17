@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-querystring/query"
 	"github.com/pivotal-cf/jhanda"
-	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/ui"
 )
 
 type RevertStagedChanges struct {
@@ -15,9 +15,9 @@ type RevertStagedChanges struct {
 
 //go:generate counterfeiter -o ./fakes/dashboard_service.go --fake-name DashboardService . dashboardService
 type dashboardService interface {
-	GetInstallForm() (api.Form, error)
-	GetRevertForm() (api.Form, error)
-	PostInstallForm(api.PostFormInput) error
+	GetInstallForm() (ui.Form, error)
+	GetRevertForm() (ui.Form, error)
+	PostInstallForm(ui.PostFormInput) error
 }
 
 func NewRevertStagedChanges(s dashboardService, l logger) RevertStagedChanges {
@@ -30,7 +30,7 @@ func (c RevertStagedChanges) Execute(args []string) error {
 		return fmt.Errorf("could not fetch form: %s", err)
 	}
 
-	if form == (api.Form{}) {
+	if form == (ui.Form{}) {
 		return nil
 	}
 
@@ -45,7 +45,7 @@ func (c RevertStagedChanges) Execute(args []string) error {
 	}
 
 	c.logger.Printf("reverting staged changes on the targeted Ops Manager")
-	err = c.service.PostInstallForm(api.PostFormInput{Form: form, EncodedPayload: formValues.Encode()})
+	err = c.service.PostInstallForm(ui.PostFormInput{Form: form, EncodedPayload: formValues.Encode()})
 	if err != nil {
 		return fmt.Errorf("failed to revert staged changes: %s", err)
 	}

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
-	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/ui"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,7 +28,7 @@ var _ = Describe("RevertStagedChanges", func() {
 		It("reverts staged changes on the targeted OpsMan", func() {
 			command := commands.NewRevertStagedChanges(service, logger)
 
-			service.GetRevertFormReturns(api.Form{
+			service.GetRevertFormReturns(ui.Form{
 				Action:            "/installation",
 				AuthenticityToken: "some-auth-token",
 				RailsMethod:       "the-rails",
@@ -38,8 +38,8 @@ var _ = Describe("RevertStagedChanges", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(service.PostInstallFormArgsForCall(0)).To(Equal(api.PostFormInput{
-				Form: api.Form{
+			Expect(service.PostInstallFormArgsForCall(0)).To(Equal(ui.PostFormInput{
+				Form: ui.Form{
 					Action:            "/installation",
 					AuthenticityToken: "some-auth-token",
 					RailsMethod:       "the-rails",
@@ -56,7 +56,7 @@ var _ = Describe("RevertStagedChanges", func() {
 		Context("when there are no staged changes to revert", func() {
 			It("returns without error", func() {
 				command := commands.NewRevertStagedChanges(service, logger)
-				service.GetRevertFormReturns(api.Form{}, nil)
+				service.GetRevertFormReturns(ui.Form{}, nil)
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(service.PostInstallFormCallCount()).To(Equal(0))
@@ -66,7 +66,7 @@ var _ = Describe("RevertStagedChanges", func() {
 		Context("error cases", func() {
 			Context("when the form can't be fetched", func() {
 				It("returns an error", func() {
-					service.GetRevertFormReturns(api.Form{}, errors.New("meow meow meow"))
+					service.GetRevertFormReturns(ui.Form{}, errors.New("meow meow meow"))
 
 					command := commands.NewRevertStagedChanges(service, logger)
 
@@ -77,7 +77,7 @@ var _ = Describe("RevertStagedChanges", func() {
 
 			Context("when the form can't be posted", func() {
 				It("returns an error", func() {
-					service.GetRevertFormReturns(api.Form{
+					service.GetRevertFormReturns(ui.Form{
 						Action:            "/installation",
 						AuthenticityToken: "some-auth-token",
 						RailsMethod:       "the-rails",

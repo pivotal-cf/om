@@ -14,14 +14,21 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("StagedProductsService", func() {
-	Describe("Stage", func() {
-		var (
-			client *fakes.HttpClient
-		)
+var _ = Describe("StagedProducts", func() {
+	var (
+		client  *fakes.HttpClient
+		service api.Api
+	)
 
+	BeforeEach(func() {
+		client = &fakes.HttpClient{}
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
+	})
+
+	Describe("Stage", func() {
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				resp = &http.Response{
@@ -42,8 +49,6 @@ var _ = Describe("StagedProductsService", func() {
 		})
 
 		It("makes a request to stage the product to the Ops Manager", func() {
-			service := api.NewStagedProductsService(client)
-
 			err := service.Stage(api.StageProductInput{
 				ProductName:    "some-product",
 				ProductVersion: "some-version",
@@ -71,7 +76,6 @@ var _ = Describe("StagedProductsService", func() {
 
 		Context("when the same type of product is already deployed", func() {
 			BeforeEach(func() {
-				client = &fakes.HttpClient{}
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
 					resp = &http.Response{
@@ -93,8 +97,6 @@ var _ = Describe("StagedProductsService", func() {
 			})
 
 			It("makes a request to stage the product to the Ops Manager", func() {
-				service := api.NewStagedProductsService(client)
-
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
 					ProductVersion: "1.1.0",
@@ -119,7 +121,6 @@ var _ = Describe("StagedProductsService", func() {
 
 		Context("when the same type of product is already staged", func() {
 			BeforeEach(func() {
-				client = &fakes.HttpClient{}
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
 					resp = &http.Response{
@@ -148,8 +149,6 @@ var _ = Describe("StagedProductsService", func() {
 			})
 
 			It("makes a request to stage the product to the Ops Manager", func() {
-				service := api.NewStagedProductsService(client)
-
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
 					ProductVersion: "1.1.0",
@@ -179,7 +178,6 @@ var _ = Describe("StagedProductsService", func() {
 		Context("when an error occurs", func() {
 			Context("when a GET to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						resp = &http.Response{
@@ -194,8 +192,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
 						ProductVersion: "bar",
@@ -206,7 +202,6 @@ var _ = Describe("StagedProductsService", func() {
 
 			Context("when a POST/PUT to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.Method == "GET" {
@@ -223,8 +218,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
 						ProductVersion: "bar",
@@ -235,7 +228,6 @@ var _ = Describe("StagedProductsService", func() {
 
 			Context("when a POST/PUT to the staged products endpoint returns a non-200 status code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.Method == "GET" {
@@ -255,7 +247,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
 					err := service.Stage(api.StageProductInput{
 						ProductName:    "foo",
 						ProductVersion: "bar",
@@ -267,12 +258,7 @@ var _ = Describe("StagedProductsService", func() {
 	})
 
 	Describe("DeleteStagedProduct", func() {
-		var (
-			client *fakes.HttpClient
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 
@@ -297,8 +283,6 @@ var _ = Describe("StagedProductsService", func() {
 		})
 
 		It("makes a request to unstage the product from the Ops Manager", func() {
-			service := api.NewStagedProductsService(client)
-
 			err := service.DeleteStagedProduct(api.UnstageProductInput{
 				ProductName: "some-product",
 			})
@@ -320,8 +304,6 @@ var _ = Describe("StagedProductsService", func() {
 
 		Context("when the product is not staged", func() {
 			BeforeEach(func() {
-				client = &fakes.HttpClient{}
-
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
 					if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
@@ -335,8 +317,6 @@ var _ = Describe("StagedProductsService", func() {
 			})
 
 			It("returns an error", func() {
-				service := api.NewStagedProductsService(client)
-
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
@@ -346,7 +326,6 @@ var _ = Describe("StagedProductsService", func() {
 
 		Context("when a GET to the staged products endpoint returns an error", func() {
 			BeforeEach(func() {
-				client = &fakes.HttpClient{}
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
 					resp = &http.Response{
@@ -361,8 +340,6 @@ var _ = Describe("StagedProductsService", func() {
 			})
 
 			It("returns an error", func() {
-				service := api.NewStagedProductsService(client)
-
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
@@ -372,9 +349,6 @@ var _ = Describe("StagedProductsService", func() {
 
 		Context("when a DELETE to the staged products endpoint returns an error", func() {
 			BeforeEach(func() {
-
-				client = &fakes.HttpClient{}
-
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
 
@@ -396,8 +370,6 @@ var _ = Describe("StagedProductsService", func() {
 			})
 
 			It("returns an error", func() {
-				service := api.NewStagedProductsService(client)
-
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
@@ -407,12 +379,7 @@ var _ = Describe("StagedProductsService", func() {
 	})
 
 	Describe("ListStagedProducts", func() {
-		var (
-			client *fakes.HttpClient
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				resp = &http.Response{
@@ -438,8 +405,6 @@ var _ = Describe("StagedProductsService", func() {
 		})
 
 		It("retrieves a list of staged products from the Ops Manager", func() {
-			service := api.NewStagedProductsService(client)
-
 			output, err := service.ListStagedProducts()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -470,8 +435,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					_, err := service.ListStagedProducts()
 					Expect(err).To(MatchError("could not make request to staged-products endpoint: nope"))
 				})
@@ -486,8 +449,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					_, err := service.ListStagedProducts()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
@@ -502,8 +463,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					_, err := service.ListStagedProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
 				})
@@ -512,12 +471,7 @@ var _ = Describe("StagedProductsService", func() {
 	})
 
 	Describe("Configure", func() {
-		var (
-			client *fakes.HttpClient
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				switch req.URL.Path {
@@ -537,8 +491,6 @@ var _ = Describe("StagedProductsService", func() {
 		})
 
 		It("configures the properties for the given staged product in the Ops Manager", func() {
-			service := api.NewStagedProductsService(client)
-
 			err := service.Configure(api.ProductsConfigurationInput{
 				GUID: "some-product-guid",
 				Configuration: `{
@@ -564,8 +516,6 @@ var _ = Describe("StagedProductsService", func() {
 		})
 
 		It("configures the network for the given staged product in the Ops Manager", func() {
-			service := api.NewStagedProductsService(client)
-
 			err := service.Configure(api.ProductsConfigurationInput{
 				GUID: "some-product-guid",
 				Network: `{
@@ -597,8 +547,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					err := service.Configure(api.ProductsConfigurationInput{
 						GUID:          "foo",
 						Configuration: `{}`,
@@ -616,8 +564,6 @@ var _ = Describe("StagedProductsService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewStagedProductsService(client)
-
 					err := service.Configure(api.ProductsConfigurationInput{
 						GUID:          "foo",
 						Configuration: `{}`,
@@ -629,16 +575,6 @@ var _ = Describe("StagedProductsService", func() {
 	})
 
 	Describe("Find", func() {
-		var (
-			client  *fakes.HttpClient
-			service api.StagedProductsService
-		)
-
-		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			service = api.NewStagedProductsService(client)
-		})
-
 		It("Find product by product name", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
@@ -685,15 +621,7 @@ var _ = Describe("StagedProductsService", func() {
 	})
 
 	Describe("GetStagedProductManifest", func() {
-		var (
-			client  *fakes.HttpClient
-			service api.StagedProductsService
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			service = api.NewStagedProductsService(client)
-
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				switch req.URL.Path {
@@ -770,15 +698,7 @@ key-4: 2147483648
 	})
 
 	Describe("GetStagedProductProperties", func() {
-		var (
-			client  *fakes.HttpClient
-			service api.StagedProductsService
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			service = api.NewStagedProductsService(client)
-
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				switch req.URL.Path {
@@ -835,9 +755,6 @@ key-4: 2147483648
 		Context("failure cases", func() {
 			Context("when the properties request returns an error", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
-					service = api.NewStagedProductsService(client)
-
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						switch req.URL.Path {
@@ -852,11 +769,9 @@ key-4: 2147483648
 					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: some-error`))
 				})
 			})
+
 			Context("when the properties request returns a non 200 error code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
-					service = api.NewStagedProductsService(client)
-
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						switch req.URL.Path {
@@ -874,11 +789,9 @@ key-4: 2147483648
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
+
 			Context("when the server returns invalid json", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
-					service = api.NewStagedProductsService(client)
-
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						switch req.URL.Path {
@@ -891,6 +804,7 @@ key-4: 2147483648
 						return resp, nil
 					}
 				})
+
 				It("returns an error", func() {
 					_, err := service.GetStagedProductProperties("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
@@ -900,15 +814,7 @@ key-4: 2147483648
 	})
 
 	Describe("GetStagedProductNetworksAndAZs", func() {
-		var (
-			client  *fakes.HttpClient
-			service api.StagedProductsService
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			service = api.NewStagedProductsService(client)
-
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				switch req.URL.Path {
@@ -955,9 +861,6 @@ key-4: 2147483648
 		Context("failure cases", func() {
 			Context("when the networks_and_azs request returns an error", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
-					service = api.NewStagedProductsService(client)
-
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						switch req.URL.Path {
@@ -967,6 +870,7 @@ key-4: 2147483648
 						return resp, nil
 					}
 				})
+
 				It("returns an error", func() {
 					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: some-error`))
@@ -975,9 +879,6 @@ key-4: 2147483648
 
 			Context("when the server returns invalid json", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
-					service = api.NewStagedProductsService(client)
-
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						switch req.URL.Path {
@@ -990,6 +891,7 @@ key-4: 2147483648
 						return resp, nil
 					}
 				})
+
 				It("returns an error", func() {
 					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))

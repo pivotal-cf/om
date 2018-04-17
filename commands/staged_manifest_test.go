@@ -14,23 +14,23 @@ import (
 
 var _ = Describe("StagedManifest", func() {
 	var (
-		command               commands.StagedManifest
-		logger                *fakes.Logger
-		stagedProductsService *fakes.StagedProductsService
+		command     commands.StagedManifest
+		logger      *fakes.Logger
+		fakeService *fakes.StagedManifestService
 	)
 
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
-		stagedProductsService = &fakes.StagedProductsService{}
-		stagedProductsService.FindReturns(api.StagedProductsFindOutput{
+		fakeService = &fakes.StagedManifestService{}
+		fakeService.FindReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{GUID: "some-product-guid", Type: "some-product"},
 		}, nil)
-		stagedProductsService.GetStagedProductManifestReturns(`---
+		fakeService.GetStagedProductManifestReturns(`---
 name: some-product
 key: value
 `, nil)
 
-		command = commands.NewStagedManifest(stagedProductsService, logger)
+		command = commands.NewStagedManifest(fakeService, logger)
 	})
 
 	It("prints the manifest of the staged product", func() {
@@ -39,11 +39,11 @@ key: value
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(stagedProductsService.FindCallCount()).To(Equal(1))
-		Expect(stagedProductsService.FindArgsForCall(0)).To(Equal("some-product"))
+		Expect(fakeService.FindCallCount()).To(Equal(1))
+		Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product"))
 
-		Expect(stagedProductsService.GetStagedProductManifestCallCount()).To(Equal(1))
-		Expect(stagedProductsService.GetStagedProductManifestArgsForCall(0)).To(Equal("some-product-guid"))
+		Expect(fakeService.GetStagedProductManifestCallCount()).To(Equal(1))
+		Expect(fakeService.GetStagedProductManifestArgsForCall(0)).To(Equal("some-product-guid"))
 
 		Expect(logger.PrintCallCount()).To(Equal(1))
 		Expect(logger.PrintArgsForCall(0)[0]).To(MatchYAML(`---
@@ -64,7 +64,7 @@ key: value
 
 		Context("when the staged products service find call fails", func() {
 			It("returns an error", func() {
-				stagedProductsService.FindReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
+				fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -75,7 +75,7 @@ key: value
 
 		Context("when the staged products service manifest call fails", func() {
 			It("returns an error", func() {
-				stagedProductsService.GetStagedProductManifestReturns("", errors.New("product manifest failed"))
+				fakeService.GetStagedProductManifestReturns("", errors.New("product manifest failed"))
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",

@@ -14,17 +14,17 @@ import (
 
 var _ = Describe("ExportInstallation", func() {
 	var (
-		installationService *fakes.InstallationAssetExporterService
-		logger              *fakes.Logger
+		fakeService *fakes.ExportInstallationService
+		logger      *fakes.Logger
 	)
 
 	BeforeEach(func() {
-		installationService = &fakes.InstallationAssetExporterService{}
+		fakeService = &fakes.ExportInstallationService{}
 		logger = &fakes.Logger{}
 	})
 
 	It("exports the installation", func() {
-		command := commands.NewExportInstallation(installationService, logger)
+		command := commands.NewExportInstallation(fakeService, logger)
 
 		err := command.Execute([]string{
 			"--output-file", "/path/to/output.zip",
@@ -32,8 +32,8 @@ var _ = Describe("ExportInstallation", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("calling export on the installation service")
-		Expect(installationService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
-		outputFile, pollingInterval := installationService.DownloadInstallationAssetCollectionArgsForCall(0)
+		Expect(fakeService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
+		outputFile, pollingInterval := fakeService.DownloadInstallationAssetCollectionArgsForCall(0)
 		Expect(outputFile).To(Equal("/path/to/output.zip"))
 		Expect(pollingInterval).To(Equal(1))
 
@@ -48,7 +48,7 @@ var _ = Describe("ExportInstallation", func() {
 
 	Context("when polling interval is specified", func() {
 		It("passes the value to the installation service", func() {
-			command := commands.NewExportInstallation(installationService, logger)
+			command := commands.NewExportInstallation(fakeService, logger)
 
 			err := command.Execute([]string{
 				"--output-file", "/path/to/output.zip",
@@ -56,8 +56,8 @@ var _ = Describe("ExportInstallation", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(installationService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
-			outputFile, pollingInterval := installationService.DownloadInstallationAssetCollectionArgsForCall(0)
+			Expect(fakeService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
+			outputFile, pollingInterval := fakeService.DownloadInstallationAssetCollectionArgsForCall(0)
 			Expect(outputFile).To(Equal("/path/to/output.zip"))
 			Expect(pollingInterval).To(Equal(48))
 		})
@@ -66,7 +66,7 @@ var _ = Describe("ExportInstallation", func() {
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewExportInstallation(installationService, logger)
+				command := commands.NewExportInstallation(fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse export-installation flags: flag provided but not defined: -badflag"))
 			})
@@ -74,7 +74,7 @@ var _ = Describe("ExportInstallation", func() {
 
 		Context("when output file is not provided", func() {
 			It("returns an error and prints out usage", func() {
-				command := commands.NewExportInstallation(installationService, logger)
+				command := commands.NewExportInstallation(fakeService, logger)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse export-installation flags: missing required flag \"--output-file\""))
 			})
@@ -82,8 +82,8 @@ var _ = Describe("ExportInstallation", func() {
 
 		Context("when the installation cannot be exported", func() {
 			It("returns an error", func() {
-				command := commands.NewExportInstallation(installationService, logger)
-				installationService.DownloadInstallationAssetCollectionReturns(errors.New("some error"))
+				command := commands.NewExportInstallation(fakeService, logger)
+				fakeService.DownloadInstallationAssetCollectionReturns(errors.New("some error"))
 
 				err := command.Execute([]string{"--output-file", "/some/path"})
 				Expect(err).To(MatchError("failed to export installation: some error"))

@@ -16,22 +16,20 @@ import (
 
 var _ = Describe("Errands", func() {
 	var (
-		fakePresenter        *presenterfakes.Presenter
-		stagedProductsFinder *fakes.StagedProductsFinder
-		errandsService       *fakes.ErrandsService
-		command              commands.Errands
+		fakePresenter *presenterfakes.Presenter
+		fakeService   *fakes.ErrandsService
+		command       commands.Errands
 	)
 
 	BeforeEach(func() {
 		fakePresenter = &presenterfakes.Presenter{}
-		stagedProductsFinder = &fakes.StagedProductsFinder{}
-		errandsService = &fakes.ErrandsService{}
-		command = commands.NewErrands(fakePresenter, errandsService, stagedProductsFinder)
+		fakeService = &fakes.ErrandsService{}
+		command = commands.NewErrands(fakePresenter, fakeService)
 	})
 
 	Describe("Execute", func() {
 		It("lists the available products", func() {
-			errandsService.ListStagedProductErrandsReturns(api.ErrandsListOutput{
+			fakeService.ListStagedProductErrandsReturns(api.ErrandsListOutput{
 				Errands: []api.Errand{
 					{Name: "first-errand", PostDeploy: "true"},
 					{Name: "second-errand", PostDeploy: "false"},
@@ -41,7 +39,7 @@ var _ = Describe("Errands", func() {
 				},
 			}, nil)
 
-			stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{
+			fakeService.FindReturns(api.StagedProductsFindOutput{
 				Product: api.StagedProduct{
 					Type: "some-product-name",
 					GUID: "some-product-id",
@@ -51,11 +49,11 @@ var _ = Describe("Errands", func() {
 			err := command.Execute([]string{"--product-name", "some-product-name"})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stagedProductsFinder.FindCallCount()).To(Equal(1))
-			Expect(stagedProductsFinder.FindArgsForCall(0)).To(Equal("some-product-name"))
+			Expect(fakeService.FindCallCount()).To(Equal(1))
+			Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product-name"))
 
-			Expect(errandsService.ListStagedProductErrandsCallCount()).To(Equal(1))
-			Expect(errandsService.ListStagedProductErrandsArgsForCall(0)).To(Equal("some-product-id"))
+			Expect(fakeService.ListStagedProductErrandsCallCount()).To(Equal(1))
+			Expect(fakeService.ListStagedProductErrandsArgsForCall(0)).To(Equal("some-product-id"))
 
 			Expect(fakePresenter.PresentErrandsCallCount()).To(Equal(1))
 			errands := fakePresenter.PresentErrandsArgsForCall(0)
@@ -78,7 +76,7 @@ var _ = Describe("Errands", func() {
 
 			Context("when the staged products finder fails", func() {
 				It("returns an error", func() {
-					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
+					fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
 					err := command.Execute([]string{"--product-name", "some-product"})
 					Expect(err).To(MatchError("failed to find staged product \"some-product\": there was an error"))
 				})
@@ -86,7 +84,7 @@ var _ = Describe("Errands", func() {
 
 			Context("when the errands service fails", func() {
 				It("returns an error", func() {
-					errandsService.ListStagedProductErrandsReturns(api.ErrandsListOutput{}, errors.New("there was an error"))
+					fakeService.ListStagedProductErrandsReturns(api.ErrandsListOutput{}, errors.New("there was an error"))
 					err := command.Execute([]string{"--product-name", "some-product"})
 					Expect(err).To(MatchError("failed to list errands: there was an error"))
 				})
@@ -103,7 +101,7 @@ var _ = Describe("Errands", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewErrands(nil, nil, nil)
+			command := commands.NewErrands(nil, nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all errands for a product.",
 				ShortDescription: "list errands for a product",

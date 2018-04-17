@@ -46,10 +46,6 @@ type ResponseProperty struct {
 	IsCredential bool        `json:"credential"`
 }
 
-type StagedProductsService struct {
-	client httpClient
-}
-
 type UpgradeRequest struct {
 	ToVersion string `json:"to_version"`
 }
@@ -60,15 +56,9 @@ type ConfigurationRequest struct {
 	Configuration string
 }
 
-func NewStagedProductsService(client httpClient) StagedProductsService {
-	return StagedProductsService{
-		client: client,
-	}
-}
-
 // TODO: extract to helper package?
-func (p StagedProductsService) Stage(input StageProductInput, deployedGUID string) error {
-	stagedGUID, err := p.checkStagedProducts(input.ProductName)
+func (a Api) Stage(input StageProductInput, deployedGUID string) error {
+	stagedGUID, err := a.checkStagedProducts(input.ProductName)
 	if err != nil {
 		return err
 	}
@@ -115,21 +105,21 @@ func (p StagedProductsService) Stage(input StageProductInput, deployedGUID strin
 	}
 
 	stReq.Header.Set("Content-Type", "application/json")
-	stResp, err := p.client.Do(stReq)
+	stResp, err := a.client.Do(stReq)
 	if err != nil {
 		return fmt.Errorf("could not make %s api request to staged products endpoint: %s", stReq.Method, err)
 	}
 	defer stResp.Body.Close()
 
-	if err = ValidateStatusOK(stResp); err != nil {
+	if err = validateStatusOK(stResp); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (p StagedProductsService) DeleteStagedProduct(input UnstageProductInput) error {
-	stagedGUID, err := p.checkStagedProducts(input.ProductName)
+func (a Api) DeleteStagedProduct(input UnstageProductInput) error {
+	stagedGUID, err := a.checkStagedProducts(input.ProductName)
 	if err != nil {
 		return err
 	}
@@ -142,32 +132,32 @@ func (p StagedProductsService) DeleteStagedProduct(input UnstageProductInput) er
 	req, err = http.NewRequest("DELETE", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), strings.NewReader("{}"))
 
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := p.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make %s api request to staged products endpoint: %s", req.Method, err)
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (p StagedProductsService) ListStagedProducts() (StagedProductsOutput, error) {
+func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
 	req, err := http.NewRequest("GET", "/api/v0/staged/products", nil)
 	if err != nil {
 		return StagedProductsOutput{}, err
 	}
 
-	resp, err := p.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return StagedProductsOutput{}, fmt.Errorf("could not make request to staged-products endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return StagedProductsOutput{}, err
 	}
 
@@ -188,20 +178,20 @@ func (p StagedProductsService) ListStagedProducts() (StagedProductsOutput, error
 }
 
 // TODO: extract to helper package?
-func (p StagedProductsService) Configure(input ProductsConfigurationInput) error {
+func (a Api) Configure(input ProductsConfigurationInput) error {
 	reqList, err := createConfigureRequests(input)
 	if err != nil {
 		return err
 	}
 
 	for _, req := range reqList {
-		resp, err := p.client.Do(req)
+		resp, err := a.client.Do(req)
 		if err != nil {
 			return fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
 		}
 		defer resp.Body.Close()
 
-		if err = ValidateStatusOK(resp); err != nil {
+		if err = validateStatusOK(resp); err != nil {
 			return err
 		}
 	}
@@ -250,8 +240,8 @@ func createConfigureRequests(input ProductsConfigurationInput) ([]*http.Request,
 }
 
 // TODO: extract to helper package?
-func (p StagedProductsService) Find(productName string) (StagedProductsFindOutput, error) {
-	productsOutput, err := p.ListStagedProducts()
+func (a Api) Find(productName string) (StagedProductsFindOutput, error) {
+	productsOutput, err := a.ListStagedProducts()
 	if err != nil {
 		return StagedProductsFindOutput{}, err
 	}
@@ -272,18 +262,18 @@ func (p StagedProductsService) Find(productName string) (StagedProductsFindOutpu
 }
 
 //TODO consider refactoring to use fetchProductResource
-func (p StagedProductsService) GetStagedProductManifest(guid string) (string, error) {
+func (a Api) GetStagedProductManifest(guid string) (string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/manifest", guid), nil)
 	if err != nil {
 		return "", err
 	}
 
-	resp, err := p.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not make api request to staged products manifest endpoint: %s", err)
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return "", err
 	}
 
@@ -309,8 +299,8 @@ func (p StagedProductsService) GetStagedProductManifest(guid string) (string, er
 	return string(manifest), nil
 }
 
-func (p StagedProductsService) GetStagedProductProperties(product string) (map[string]ResponseProperty, error) {
-	respBody, err := p.fetchProductResource(product, "properties")
+func (a Api) GetStagedProductProperties(product string) (map[string]ResponseProperty, error) {
+	respBody, err := a.fetchProductResource(product, "properties")
 	if err != nil {
 		return nil, err
 	}
@@ -326,8 +316,8 @@ func (p StagedProductsService) GetStagedProductProperties(product string) (map[s
 	return propertiesResponse.Properties, nil
 }
 
-func (p StagedProductsService) GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error) {
-	respBody, err := p.fetchProductResource(product, "networks_and_azs")
+func (a Api) GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error) {
+	respBody, err := a.fetchProductResource(product, "networks_and_azs")
 	if err != nil {
 		return nil, err
 	}
@@ -343,27 +333,27 @@ func (p StagedProductsService) GetStagedProductNetworksAndAZs(product string) (m
 	return networksResponse.Networks, nil
 }
 
-func (p StagedProductsService) fetchProductResource(guid, endpoint string) (io.ReadCloser, error) {
+func (a Api) fetchProductResource(guid, endpoint string) (io.ReadCloser, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/%s", guid, endpoint), nil)
 	if err != nil {
 		return nil, err // un-tested
 	}
 
-	resp, err := p.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return nil,
 			fmt.Errorf("could not make api request to staged product properties endpoint: %s", err)
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return nil, err
 	}
 
 	return resp.Body, nil
 }
 
-func (p StagedProductsService) checkStagedProducts(productName string) (string, error) {
-	stagedProductsOutput, err := p.ListStagedProducts()
+func (a Api) checkStagedProducts(productName string) (string, error) {
+	stagedProductsOutput, err := a.ListStagedProducts()
 	if err != nil {
 		return "", err
 	}

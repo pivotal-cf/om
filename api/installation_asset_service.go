@@ -16,30 +16,18 @@ type ImportInstallationInput struct {
 	PollingInterval int
 }
 
-type InstallationAssetService struct {
-	client         httpClient
-	progressClient httpClient
-}
-
-func NewInstallationAssetService(client, progressClient httpClient) InstallationAssetService {
-	return InstallationAssetService{
-		client:         client,
-		progressClient: progressClient,
-	}
-}
-
-func (ia InstallationAssetService) DownloadInstallationAssetCollection(outputFile string, pollingInterval int) error {
+func (a Api) DownloadInstallationAssetCollection(outputFile string, pollingInterval int) error {
 	req, err := http.NewRequest("GET", "/api/v0/installation_asset_collection", nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := ia.progressClient.Do(req)
+	resp, err := a.progressClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return fmt.Errorf("request failed: unexpected response")
 	}
 
@@ -62,7 +50,7 @@ func (ia InstallationAssetService) DownloadInstallationAssetCollection(outputFil
 	return nil
 }
 
-func (ia InstallationAssetService) UploadInstallationAssetCollection(input ImportInstallationInput) error {
+func (a Api) UploadInstallationAssetCollection(input ImportInstallationInput) error {
 	req, err := http.NewRequest("POST", "/api/v0/installation_asset_collection", input.Installation)
 	if err != nil {
 		return err
@@ -71,28 +59,28 @@ func (ia InstallationAssetService) UploadInstallationAssetCollection(input Impor
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	resp, err := ia.progressClient.Do(req)
+	resp, err := a.unauthedProgressClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (ia InstallationAssetService) DeleteInstallationAssetCollection() (InstallationsServiceOutput, error) {
+func (a Api) DeleteInstallationAssetCollection() (InstallationsServiceOutput, error) {
 	req, err := http.NewRequest("DELETE", "/api/v0/installation_asset_collection", bytes.NewBuffer([]byte(`{"errands": {}}`)))
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := ia.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installation_asset_collection endpoint: %s", err)
 	}
@@ -103,7 +91,7 @@ func (ia InstallationAssetService) DeleteInstallationAssetCollection() (Installa
 		return InstallationsServiceOutput{}, nil
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return InstallationsServiceOutput{}, err
 	}
 

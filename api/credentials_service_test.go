@@ -13,16 +13,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("CredentialsService", func() {
+var _ = Describe("Credentials", func() {
 	var (
 		client  *fakes.HttpClient
-		service api.CredentialsService
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 
-		service = api.NewCredentialsService(client)
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("ListDeployedProductCredentials", func() {

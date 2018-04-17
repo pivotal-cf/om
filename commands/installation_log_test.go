@@ -13,28 +13,28 @@ import (
 
 var _ = Describe("InstallationLog", func() {
 	var (
-		command              commands.InstallationLog
-		installationsService *fakes.InstallationsService
-		logger               *fakes.Logger
+		command     commands.InstallationLog
+		fakeService *fakes.InstallationLogService
+		logger      *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
-		installationsService = &fakes.InstallationsService{}
-		command = commands.NewInstallationLog(installationsService, logger)
+		fakeService = &fakes.InstallationLogService{}
+		command = commands.NewInstallationLog(fakeService, logger)
 	})
 
 	Describe("Execute", func() {
 		It("displays the logs for the specified installation", func() {
-			installationsService.GetInstallationLogsReturns(api.InstallationsServiceOutput{Logs: "some log output"}, nil)
+			fakeService.GetInstallationLogsReturns(api.InstallationsServiceOutput{Logs: "some log output"}, nil)
 			err := command.Execute([]string{
 				"--id", "999",
 			})
 
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(installationsService.GetInstallationLogsCallCount()).To(Equal(1))
-			requestedInstallationId := installationsService.GetInstallationLogsArgsForCall(0)
+			Expect(fakeService.GetInstallationLogsCallCount()).To(Equal(1))
+			requestedInstallationId := fakeService.GetInstallationLogsArgsForCall(0)
 			Expect(requestedInstallationId).To(Equal(999))
 
 			Expect(logger.PrintCallCount()).To(Equal(1))
@@ -57,7 +57,7 @@ var _ = Describe("InstallationLog", func() {
 			})
 			Context("when the api fails to retrieve the installation log", func() {
 				It("returns an error", func() {
-					installationsService.GetInstallationLogsReturns(
+					fakeService.GetInstallationLogsReturns(
 						api.InstallationsServiceOutput{},
 						errors.New("failed to retrieve installation log"),
 					)

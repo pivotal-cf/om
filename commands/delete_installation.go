@@ -10,35 +10,36 @@ import (
 )
 
 type DeleteInstallation struct {
-	deleteService        installationAssetDeleterService
-	installationsService installationsService
-	logger               logger
-	logWriter            logWriter
-	waitDuration         int
+	service      deleteInstallationService
+	logger       logger
+	logWriter    logWriter
+	waitDuration int
 }
 
-//go:generate counterfeiter -o ./fakes/installation_asset_deleter_service.go --fake-name InstallationAssetDeleterService . installationAssetDeleterService
-type installationAssetDeleterService interface {
+//go:generate counterfeiter -o ./fakes/delete_installation_service.go --fake-name DeleteInstallationService . deleteInstallationService
+type deleteInstallationService interface {
 	DeleteInstallationAssetCollection() (api.InstallationsServiceOutput, error)
+	RunningInstallation() (api.InstallationsServiceOutput, error)
+	GetInstallation(id int) (api.InstallationsServiceOutput, error)
+	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 }
 
-func NewDeleteInstallation(deleteService installationAssetDeleterService, installationsService installationsService, logWriter logWriter, logger logger, waitDuration int) DeleteInstallation {
+func NewDeleteInstallation(service deleteInstallationService, logWriter logWriter, logger logger, waitDuration int) DeleteInstallation {
 	return DeleteInstallation{
-		deleteService:        deleteService,
-		installationsService: installationsService,
-		logger:               logger,
-		logWriter:            logWriter,
-		waitDuration:         waitDuration,
+		service:      service,
+		logger:       logger,
+		logWriter:    logWriter,
+		waitDuration: waitDuration,
 	}
 }
 
 func (ac DeleteInstallation) Execute(args []string) error {
-	installation, err := ac.installationsService.RunningInstallation()
+	installation, err := ac.service.RunningInstallation()
 
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to delete the installation on the targeted Ops Manager")
 
-		installation, err = ac.deleteService.DeleteInstallationAssetCollection()
+		installation, err = ac.service.DeleteInstallationAssetCollection()
 		if err != nil {
 			return fmt.Errorf("failed to delete installation: %s", err)
 		}
@@ -52,12 +53,12 @@ func (ac DeleteInstallation) Execute(args []string) error {
 	}
 
 	for {
-		current, err := ac.installationsService.GetInstallation(installation.ID)
+		current, err := ac.service.GetInstallation(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get status: %s", err)
 		}
 
-		install, err := ac.installationsService.GetInstallationLogs(installation.ID)
+		install, err := ac.service.GetInstallationLogs(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get logs: %s", err)
 		}

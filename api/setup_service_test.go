@@ -13,21 +13,25 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("SetupService", func() {
-	Describe("Setup", func() {
-		var client *fakes.HttpClient
+var _ = Describe("Setup", func() {
+	var (
+		client  *fakes.HttpClient
+		service api.Api
+	)
 
-		BeforeEach(func() {
-			client = &fakes.HttpClient{}
+	BeforeEach(func() {
+		client = &fakes.HttpClient{}
+		service = api.New(api.ApiInput{
+			UnauthedClient: client,
 		})
+	})
 
+	Describe("Setup", func() {
 		It("makes a request to setup the OpsManager", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader("{}")),
 			}, nil)
-
-			service := api.NewSetupService(client)
 
 			output, err := service.Setup(api.SetupInput{
 				IdentityProvider:                 "some-provider",
@@ -73,8 +77,6 @@ var _ = Describe("SetupService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("could not make request"))
 
-					service := api.NewSetupService(client)
-
 					_, err := service.Setup(api.SetupInput{})
 					Expect(err).To(MatchError("could not make api request to setup endpoint: could not make request"))
 				})
@@ -88,8 +90,6 @@ var _ = Describe("SetupService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{"error": "something bad happened"}`)),
 					}, nil)
 
-					service := api.NewSetupService(client)
-
 					_, err := service.Setup(api.SetupInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
@@ -98,20 +98,12 @@ var _ = Describe("SetupService", func() {
 	})
 
 	Describe("EnsureAvailability", func() {
-		var client *fakes.HttpClient
-
-		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-		})
-
 		Context("when the availability endpoint returns an unexpected status code", func() {
 			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
-
-				service := api.NewSetupService(client)
 
 				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 				Expect(err).To(MatchError("Unexpected response code: 418 I'm a teapot"))
@@ -124,8 +116,6 @@ var _ = Describe("SetupService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader("some body")),
 				}, nil)
-
-				service := api.NewSetupService(client)
 
 				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 				Expect(err).To(MatchError("Received OK with an unexpected body: some body"))
@@ -142,8 +132,6 @@ var _ = Describe("SetupService", func() {
 					Body: ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
 
-				service := api.NewSetupService(client)
-
 				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 				Expect(err).To(MatchError("Unexpected redirect location: /something/else"))
 			})
@@ -159,8 +147,6 @@ var _ = Describe("SetupService", func() {
 					Body: ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
 
-				service := api.NewSetupService(client)
-
 				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
@@ -175,8 +161,6 @@ var _ = Describe("SetupService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
 				}, nil)
-
-				service := api.NewSetupService(client)
 
 				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 				Expect(err).NotTo(HaveOccurred())
@@ -196,8 +180,6 @@ var _ = Describe("SetupService", func() {
 					Body: ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
 
-				service := api.NewSetupService(client)
-
 				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
@@ -210,8 +192,6 @@ var _ = Describe("SetupService", func() {
 			Context("when the request fails", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("failed to make round trip"))
-
-					service := api.NewSetupService(client)
 
 					_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 					Expect(err).To(MatchError("could not make request round trip: failed to make round trip"))
@@ -227,8 +207,6 @@ var _ = Describe("SetupService", func() {
 						},
 						Body: ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
-
-					service := api.NewSetupService(client)
 
 					_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
 					Expect(err).To(MatchError("could not parse redirect url: parse %%%%%%: invalid URL escape \"%%%\""))

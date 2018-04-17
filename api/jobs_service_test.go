@@ -15,11 +15,15 @@ import (
 
 var _ = Describe("JobsService", func() {
 	var (
-		client *fakes.HttpClient
+		client  *fakes.HttpClient
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("ListStagedProductJobs", func() {
@@ -29,8 +33,6 @@ var _ = Describe("JobsService", func() {
 				Body: ioutil.NopCloser(strings.NewReader(`{"jobs": [{"name":"job-1","guid":"some-guid-1"},
 				{"name":"job-2","guid":"some-guid-2"}]}`)),
 			}, nil)
-
-			service := api.NewJobsService(client)
 
 			jobs, err := service.ListStagedProductJobs("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
@@ -49,8 +51,6 @@ var _ = Describe("JobsService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("bad"))
 
-					service := api.NewJobsService(client)
-
 					_, err := service.ListStagedProductJobs("some-product-guid")
 					Expect(err).To(MatchError("could not make api request to jobs endpoint: bad"))
 				})
@@ -63,8 +63,6 @@ var _ = Describe("JobsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(``)),
 					}, nil)
 
-					service := api.NewJobsService(client)
-
 					_, err := service.ListStagedProductJobs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
 				})
@@ -76,8 +74,6 @@ var _ = Describe("JobsService", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader(``)),
 					}, nil)
-
-					service := api.NewJobsService(client)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("failed to decode jobs json response:")))
@@ -100,7 +96,6 @@ var _ = Describe("JobsService", func() {
 				}`)),
 			}, nil)
 
-			service := api.NewJobsService(client)
 			job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 			Expect(err).NotTo(HaveOccurred())
@@ -132,7 +127,6 @@ var _ = Describe("JobsService", func() {
 					}`)),
 				}, nil)
 
-				service := api.NewJobsService(client)
 				job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 				Expect(err).NotTo(HaveOccurred())
@@ -179,7 +173,6 @@ var _ = Describe("JobsService", func() {
 					}`)),
 				}, nil)
 
-				service := api.NewJobsService(client)
 				job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 				Expect(err).NotTo(HaveOccurred())
@@ -221,7 +214,6 @@ var _ = Describe("JobsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, errors.New("some client error"))
 
-					service := api.NewJobsService(client)
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 					Expect(err).To(MatchError("could not make api request to resource_config endpoint: some client error"))
@@ -235,7 +227,6 @@ var _ = Describe("JobsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					service := api.NewJobsService(client)
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
@@ -249,7 +240,6 @@ var _ = Describe("JobsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`%%%`)),
 					}, nil)
 
-					service := api.NewJobsService(client)
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
@@ -265,7 +255,6 @@ var _ = Describe("JobsService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 			}, nil)
 
-			service := api.NewJobsService(client)
 			jobProperties := api.JobProperties{
 				Instances:              1,
 				PersistentDisk:         &api.Disk{Size: "290"},
@@ -304,8 +293,6 @@ var _ = Describe("JobsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
 
-				service := api.NewJobsService(client)
-
 				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
 					api.JobProperties{
 						Instances:         1,
@@ -340,8 +327,6 @@ var _ = Describe("JobsService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
-
-				service := api.NewJobsService(client)
 
 				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
 					api.JobProperties{
@@ -380,8 +365,6 @@ var _ = Describe("JobsService", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
 
-				service := api.NewJobsService(client)
-
 				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
 					api.JobProperties{
 						Instances:      1,
@@ -416,8 +399,6 @@ var _ = Describe("JobsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, errors.New("bad things"))
 
-					service := api.NewJobsService(client)
-
 					err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-other-guid", api.JobProperties{
 						Instances:      2,
 						PersistentDisk: &api.Disk{Size: "000"},
@@ -433,8 +414,6 @@ var _ = Describe("JobsService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
-
-					service := api.NewJobsService(client)
 
 					err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-other-guid", api.JobProperties{
 						Instances:      2,

@@ -26,20 +26,20 @@ func parseTime(timeString string) *time.Time {
 
 var _ = Describe("Installations", func() {
 	var (
-		command                  commands.Installations
-		fakeInstallationsService *fakes.InstallationsService
-		fakePresenter            *presenterfakes.Presenter
+		command       commands.Installations
+		fakeService   *fakes.InstallationsService
+		fakePresenter *presenterfakes.Presenter
 	)
 
 	BeforeEach(func() {
 		fakePresenter = &presenterfakes.Presenter{}
-		fakeInstallationsService = &fakes.InstallationsService{}
-		command = commands.NewInstallations(fakeInstallationsService, fakePresenter)
+		fakeService = &fakes.InstallationsService{}
+		command = commands.NewInstallations(fakeService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
 		It("lists recent installations as a table", func() {
-			fakeInstallationsService.ListInstallationsReturns([]api.InstallationsServiceOutput{
+			fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{
 				{
 					ID:         1,
 					UserName:   "some-user",
@@ -79,7 +79,7 @@ var _ = Describe("Installations", func() {
 		Context("Failure cases", func() {
 			Context("when the api fails to list installations", func() {
 				It("returns an error", func() {
-					fakeInstallationsService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
+					fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("failed to retrieve installations"))

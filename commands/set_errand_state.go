@@ -6,17 +6,23 @@ import (
 	"strings"
 
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/api"
 )
 
 type SetErrandState struct {
-	errandsService       errandsService
-	stagedProductsFinder stagedProductsFinder
-	Options              struct {
+	service setErrandStateService
+	Options struct {
 		ProductName     string `long:"product-name"      short:"p" required:"true" description:"name of product"`
 		ErrandName      string `long:"errand-name"       short:"e" required:"true" description:"name of errand"`
 		PostDeployState string `long:"post-deploy-state"                           description:"desired errand state. (enabled/disabled/when-changed)"`
 		PreDeleteState  string `long:"pre-delete-state"                            description:"desired errand state (enabled/disabled)"`
 	}
+}
+
+//go:generate counterfeiter -o ./fakes/set_errand_state_service.go --fake-name SetErrandStateService . setErrandStateService
+type setErrandStateService interface {
+	Find(productName string) (api.StagedProductsFindOutput, error)
+	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
 }
 
 var userToOMInputs = map[string]interface{}{
@@ -26,10 +32,9 @@ var userToOMInputs = map[string]interface{}{
 	"default":      "default",
 }
 
-func NewSetErrandState(errandsService errandsService, stagedProductsFinder stagedProductsFinder) SetErrandState {
+func NewSetErrandState(service setErrandStateService) SetErrandState {
 	return SetErrandState{
-		errandsService:       errandsService,
-		stagedProductsFinder: stagedProductsFinder,
+		service: service,
 	}
 }
 
@@ -38,7 +43,7 @@ func (s SetErrandState) Execute(args []string) error {
 		return fmt.Errorf("could not parse set-errand-state flags: %s", err)
 	}
 
-	findOutput, err := s.stagedProductsFinder.Find(s.Options.ProductName)
+	findOutput, err := s.service.Find(s.Options.ProductName)
 	if err != nil {
 		return fmt.Errorf("failed to find staged product %q: %s", s.Options.ProductName, err)
 	}
@@ -69,7 +74,7 @@ func (s SetErrandState) Execute(args []string) error {
 		return errors.New(strings.Join(errs, ", "))
 	}
 
-	err = s.errandsService.UpdateStagedProductErrands(findOutput.Product.GUID, s.Options.ErrandName, postDeployState, preDeleteState)
+	err = s.service.UpdateStagedProductErrands(findOutput.Product.GUID, s.Options.ErrandName, postDeployState, preDeleteState)
 	if err != nil {
 		return fmt.Errorf("failed to set errand state: %s", err)
 	}

@@ -8,21 +8,21 @@ import (
 )
 
 type DeleteProduct struct {
-	productsService ps
-	Options         struct {
+	service deleteProductService
+	Options struct {
 		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
 		Version string `long:"product-version" short:"v" required:"true" description:"version of product"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/product_deleter.go --fake-name ProductDeleter . ps
-type ps interface {
+//go:generate counterfeiter -o ./fakes/delete_product_service.go --fake-name DeleteProductService . deleteProductService
+type deleteProductService interface {
 	DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error
 }
 
-func NewDeleteProduct(productsService ps) DeleteProduct {
+func NewDeleteProduct(service deleteProductService) DeleteProduct {
 	return DeleteProduct{
-		productsService: productsService,
+		service: service,
 	}
 }
 
@@ -31,7 +31,7 @@ func (dp DeleteProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse delete-product flags: %s", err)
 	}
 
-	err := dp.productsService.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
+	err := dp.service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
 		ProductName:             dp.Options.Product,
 		ProductVersion:          dp.Options.Version,
 		ShouldDeleteAllProducts: false,

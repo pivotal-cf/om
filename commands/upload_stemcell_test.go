@@ -18,16 +18,14 @@ import (
 
 var _ = Describe("UploadStemcell", func() {
 	var (
-		stemcellService   *fakes.StemcellService
-		diagnosticService *fakes.DiagnosticService
-		multipart         *fakes.Multipart
-		logger            *fakes.Logger
+		fakeService *fakes.UploadStemcellService
+		multipart   *fakes.Multipart
+		logger      *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
-		stemcellService = &fakes.StemcellService{}
-		diagnosticService = &fakes.DiagnosticService{}
+		fakeService = &fakes.UploadStemcellService{}
 		logger = &fakes.Logger{}
 	})
 
@@ -39,9 +37,9 @@ var _ = Describe("UploadStemcell", func() {
 		}
 		multipart.FinalizeReturns(submission, nil)
 
-		diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
+		fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
-		command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+		command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
 		err := command.Execute([]string{
 			"--stemcell", "/path/to/stemcell.tgz",
@@ -51,7 +49,7 @@ var _ = Describe("UploadStemcell", func() {
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("stemcell[file]"))
 		Expect(file).To(Equal("/path/to/stemcell.tgz"))
-		Expect(stemcellService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+		Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 			ContentLength: 10,
 			Stemcell:      ioutil.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
@@ -79,11 +77,11 @@ var _ = Describe("UploadStemcell", func() {
 				}
 				multipart.FinalizeReturns(submission, nil)
 
-				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					Stemcells: []string{"stemcell.tgz"},
 				}, nil)
 
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
 				err := command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
@@ -104,11 +102,11 @@ var _ = Describe("UploadStemcell", func() {
 				}
 				multipart.FinalizeReturns(submission, nil)
 
-				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					Stemcells: []string{"stemcell.tgz"},
 				}, nil)
 
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
 				err := command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
@@ -119,7 +117,7 @@ var _ = Describe("UploadStemcell", func() {
 				key, file := multipart.AddFileArgsForCall(0)
 				Expect(key).To(Equal("stemcell[file]"))
 				Expect(file).To(Equal("/path/to/stemcell.tgz"))
-				Expect(stemcellService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+				Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 					ContentLength: 10,
 					Stemcell:      ioutil.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
@@ -145,9 +143,9 @@ var _ = Describe("UploadStemcell", func() {
 			}
 			multipart.FinalizeReturns(submission, nil)
 
-			diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, api.DiagnosticReportUnavailable{})
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, api.DiagnosticReportUnavailable{})
 
-			command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
 			err := command.Execute([]string{
 				"--stemcell", "/path/to/stemcell.tgz",
@@ -157,7 +155,7 @@ var _ = Describe("UploadStemcell", func() {
 			key, file := multipart.AddFileArgsForCall(0)
 			Expect(key).To(Equal("stemcell[file]"))
 			Expect(file).To(Equal("/path/to/stemcell.tgz"))
-			Expect(stemcellService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+			Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 				ContentLength: 10,
 				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
@@ -182,7 +180,7 @@ var _ = Describe("UploadStemcell", func() {
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse upload-stemcell flags: flag provided but not defined: -badflag"))
 			})
@@ -190,7 +188,7 @@ var _ = Describe("UploadStemcell", func() {
 
 		Context("when the --stemcell flag is missing", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse upload-stemcell flags: missing required flag \"--stemcell\""))
 			})
@@ -198,7 +196,7 @@ var _ = Describe("UploadStemcell", func() {
 
 		Context("when the file cannot be opened", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
 				err := command.Execute([]string{"--stemcell", "/some/path"})
@@ -208,8 +206,8 @@ var _ = Describe("UploadStemcell", func() {
 
 		Context("when the stemcell cannot be uploaded", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
-				stemcellService.UploadStemcellReturns(api.StemcellUploadOutput{}, errors.New("some stemcell error"))
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
+				fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, errors.New("some stemcell error"))
 
 				err := command.Execute([]string{"--stemcell", "/some/path"})
 				Expect(err).To(MatchError("failed to upload stemcell: some stemcell error"))
@@ -218,8 +216,8 @@ var _ = Describe("UploadStemcell", func() {
 
 		Context("when the diagnostic report cannot be fetched", func() {
 			It("returns an error", func() {
-				command := commands.NewUploadStemcell(multipart, stemcellService, diagnosticService, logger)
-				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("some diagnostic error"))
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("some diagnostic error"))
 
 				err := command.Execute([]string{"--stemcell", "/some/path"})
 				Expect(err).To(MatchError("failed to get diagnostic report: some diagnostic error"))
@@ -229,7 +227,7 @@ var _ = Describe("UploadStemcell", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewUploadStemcell(nil, nil, nil, nil)
+			command := commands.NewUploadStemcell(nil, nil, nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped",
 				ShortDescription: "uploads a given stemcell to the Ops Manager targeted",

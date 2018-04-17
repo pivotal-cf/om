@@ -16,7 +16,7 @@ import (
 var _ = Describe("ConfigureAuthentication", func() {
 	Describe("Execute", func() {
 		It("sets up a user with the specified configuration information, waiting for the setup to complete", func() {
-			service := &fakes.SetupService{}
+			service := &fakes.ConfigureAuthenticationService{}
 			eaOutputs := []api.EnsureAvailabilityOutput{
 				{Status: api.EnsureAvailabilityStatusUnstarted},
 				{Status: api.EnsureAvailabilityStatusPending},
@@ -62,7 +62,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 		Context("when the authentication setup has already been configured", func() {
 			It("returns without configuring the authentication system", func() {
-				service := &fakes.SetupService{}
+				service := &fakes.ConfigureAuthenticationService{}
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
 				}, nil)
@@ -88,7 +88,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureAuthentication(&fakes.SetupService{}, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-authentication flags: flag provided but not defined: -banana"))
 				})
@@ -96,7 +96,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
-					service := &fakes.SetupService{}
+					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
 					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
@@ -111,7 +111,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the initial configuration status is unknown", func() {
 				It("returns an error", func() {
-					service := &fakes.SetupService{}
+					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnknown,
 					}, nil)
@@ -128,7 +128,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the setup service encounters an error", func() {
 				It("returns an error", func() {
-					service := &fakes.SetupService{}
+					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnstarted,
 					}, nil)
@@ -147,7 +147,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the final configuration status cannot be determined", func() {
 				It("returns an error", func() {
-					service := &fakes.SetupService{}
+					service := &fakes.ConfigureAuthenticationService{}
 
 					eaOutputs := []api.EnsureAvailabilityOutput{
 						{Status: api.EnsureAvailabilityStatusUnstarted},

@@ -9,7 +9,7 @@ import (
 )
 
 type CreateCertificateAuthority struct {
-	service   certificateAuthorityCreator
+	service   createCertificateAuthorityService
 	presenter presenters.Presenter
 	Options   struct {
 		CertPem    string `long:"certificate-pem" required:"true" description:"certificate"`
@@ -17,12 +17,12 @@ type CreateCertificateAuthority struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_authority_creator.go --fake-name CertificateAuthorityCreator . certificateAuthorityCreator
-type certificateAuthorityCreator interface {
+//go:generate counterfeiter -o ./fakes/create_certificate_authority_service.go --fake-name CreateCertificateAuthorityService . createCertificateAuthorityService
+type createCertificateAuthorityService interface {
 	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.CA, error)
 }
 
-func NewCreateCertificateAuthority(service certificateAuthorityCreator, presenter presenters.Presenter) CreateCertificateAuthority {
+func NewCreateCertificateAuthority(service createCertificateAuthorityService, presenter presenters.Presenter) CreateCertificateAuthority {
 	return CreateCertificateAuthority{service: service, presenter: presenter}
 }
 

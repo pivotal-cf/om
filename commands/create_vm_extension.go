@@ -8,13 +8,13 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-//go:generate counterfeiter -o ./fakes/vm_extension_creator.go --fake-name VMExtensionCreator . vmExtensionCreator
-type vmExtensionCreator interface {
+//go:generate counterfeiter -o ./fakes/create_vm_extension_service.go --fake-name CreateVMExtensionService . createVMExtensionService
+type createVMExtensionService interface {
 	CreateStagedVMExtension(api.CreateVMExtension) error
 }
 
 type CreateVMExtension struct {
-	service vmExtensionCreator
+	service createVMExtensionService
 	logger  logger
 	Options struct {
 		Name            string `long:"name"             short:"n"  required:"true" description:"VM extension name"`
@@ -22,7 +22,7 @@ type CreateVMExtension struct {
 	}
 }
 
-func NewCreateVMExtension(service vmExtensionCreator, logger logger) CreateVMExtension {
+func NewCreateVMExtension(service createVMExtensionService, logger logger) CreateVMExtension {
 	return CreateVMExtension{
 		service: service,
 		logger:  logger,

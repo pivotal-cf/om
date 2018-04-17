@@ -16,13 +16,15 @@ import (
 var _ = Describe("PendingChangesService", func() {
 	var (
 		client  *fakes.HttpClient
-		service api.PendingChangesService
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 
-		service = api.NewPendingChangesService(client)
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("ListStagedPendingChanges", func() {

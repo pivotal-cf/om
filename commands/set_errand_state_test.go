@@ -14,20 +14,18 @@ import (
 
 var _ = Describe("Set errand state", func() {
 	var (
-		stagedProductsFinder *fakes.StagedProductsFinder
-		errandsService       *fakes.ErrandsService
-		command              commands.SetErrandState
+		fakeService *fakes.SetErrandStateService
+		command     commands.SetErrandState
 	)
 
 	BeforeEach(func() {
-		stagedProductsFinder = &fakes.StagedProductsFinder{}
-		errandsService = &fakes.ErrandsService{}
+		fakeService = &fakes.SetErrandStateService{}
 
-		stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{
+		fakeService.FindReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{GUID: "some-product-guid", Type: "some-type"},
 		}, nil)
 
-		command = commands.NewSetErrandState(errandsService, stagedProductsFinder)
+		command = commands.NewSetErrandState(fakeService)
 	})
 
 	Describe("Execute", func() {
@@ -40,12 +38,12 @@ var _ = Describe("Set errand state", func() {
 			})
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(stagedProductsFinder.FindCallCount()).To(Equal(1))
-			Expect(stagedProductsFinder.FindArgsForCall(0)).To(Equal("some-product-name"))
+			Expect(fakeService.FindCallCount()).To(Equal(1))
+			Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product-name"))
 
-			Expect(errandsService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
 
-			productGUID, errandName, postDeployState, preDeleteState := errandsService.UpdateStagedProductErrandsArgsForCall(0)
+			productGUID, errandName, postDeployState, preDeleteState := fakeService.UpdateStagedProductErrandsArgsForCall(0)
 
 			Expect(productGUID).To(Equal("some-product-guid"))
 			Expect(errandName).To(Equal("some-errand"))
@@ -63,9 +61,9 @@ var _ = Describe("Set errand state", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(errandsService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
 
-			productGUID, errandName, postDeployState, preDeleteState := errandsService.UpdateStagedProductErrandsArgsForCall(0)
+			productGUID, errandName, postDeployState, preDeleteState := fakeService.UpdateStagedProductErrandsArgsForCall(0)
 
 			Expect(productGUID).To(Equal("some-product-guid"))
 			Expect(errandName).To(Equal("some-errand"))
@@ -110,7 +108,7 @@ var _ = Describe("Set errand state", func() {
 
 			Context("when the staged products finder fails", func() {
 				It("returns an error", func() {
-					stagedProductsFinder.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
+					fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -133,7 +131,7 @@ var _ = Describe("Set errand state", func() {
 
 			Context("when the errands service fails", func() {
 				It("returns an error", func() {
-					errandsService.UpdateStagedProductErrandsReturns(errors.New("there was an error"))
+					fakeService.UpdateStagedProductErrandsReturns(errors.New("there was an error"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -154,7 +152,7 @@ var _ = Describe("Set errand state", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewSetErrandState(nil, nil)
+			command := commands.NewSetErrandState(nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command sets the state of a product's errand.",
 				ShortDescription: "sets state for a product's errand",

@@ -4,17 +4,23 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/api"
 )
 
 type InstallationLog struct {
-	service installationsService
+	service installationLogService
 	logger  logger
 	Options struct {
 		Id int `long:"id" required:"true" description:"id of the installation to retrieve logs for"`
 	}
 }
 
-func NewInstallationLog(service installationsService, logger logger) InstallationLog {
+//go:generate counterfeiter -o ./fakes/installation_log_service.go --fake-name InstallationLogService . installationLogService
+type installationLogService interface {
+	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
+}
+
+func NewInstallationLog(service installationLogService, logger logger) InstallationLog {
 	return InstallationLog{
 		service: service,
 		logger:  logger,

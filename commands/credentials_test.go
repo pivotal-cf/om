@@ -15,22 +15,20 @@ import (
 
 var _ = Describe("Credentials", func() {
 	var (
-		csService     *fakes.CredentialsService
-		dpLister      *fakes.DeployedProductsLister
+		fakeService   *fakes.CredentialsService
 		fakePresenter *presenterfakes.Presenter
 		logger        *fakes.Logger
 	)
 
 	BeforeEach(func() {
-		csService = &fakes.CredentialsService{}
-		dpLister = &fakes.DeployedProductsLister{}
+		fakeService = &fakes.CredentialsService{}
 		fakePresenter = &presenterfakes.Presenter{}
 		logger = &fakes.Logger{}
 	})
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			dpLister.ListDeployedProductsReturns([]api.DeployedProductOutput{
+			fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
 				api.DeployedProductOutput{
 					Type: "some-product",
 					GUID: "some-deployed-product-guid",
@@ -39,9 +37,9 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting all values for a credential", func() {
 			It("outputs the credentials alphabetically", func() {
-				command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+				command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-				csService.GetDeployedProductCredentialReturns(api.CredentialOutput{
+				fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{
@@ -69,7 +67,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the --product-name flag is missing", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--credential-reference", "some-credential",
@@ -80,7 +78,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the --credential-reference flag is missing", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -91,11 +89,11 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credential reference cannot be found", func() {
 				BeforeEach(func() {
-					csService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, nil)
+					fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, nil)
 				})
 
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -107,9 +105,9 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credentials cannot be fetched", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-					csService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
+					fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -123,11 +121,11 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
-					dpLister.ListDeployedProductsReturns(
+					fakeService.ListDeployedProductsReturns(
 						[]api.DeployedProductOutput{},
 						errors.New("could not fetch deployed products"))
 
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 					err := command.Execute([]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
@@ -140,13 +138,13 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the product has not been deployed", func() {
 				It("returns an error", func() {
-					dpLister.ListDeployedProductsReturns([]api.DeployedProductOutput{
+					fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
 						api.DeployedProductOutput{
 							Type: "some-other-product",
 							GUID: "some-other-deployed-product-guid",
 						}}, nil)
 
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 					err := command.Execute([]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
@@ -160,7 +158,7 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting an individual credential value", func() {
 			BeforeEach(func() {
-				csService.GetDeployedProductCredentialReturns(api.CredentialOutput{
+				fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{
@@ -172,7 +170,7 @@ var _ = Describe("Credentials", func() {
 			})
 
 			It("outputs the credential value only", func() {
-				command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+				command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -186,7 +184,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credential field cannot be found", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(csService, dpLister, fakePresenter, logger)
+					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -201,7 +199,7 @@ var _ = Describe("Credentials", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewCredentials(nil, nil, nil, nil)
+			command := commands.NewCredentials(nil, nil, nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command fetches credentials for deployed products.",
 				ShortDescription: "fetch credentials for a deployed product",

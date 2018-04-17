@@ -4,36 +4,36 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/ui"
 )
 
 type DashboardService struct {
-	GetInstallFormStub        func() (api.Form, error)
+	GetInstallFormStub        func() (ui.Form, error)
 	getInstallFormMutex       sync.RWMutex
 	getInstallFormArgsForCall []struct{}
 	getInstallFormReturns     struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}
 	getInstallFormReturnsOnCall map[int]struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}
-	GetRevertFormStub        func() (api.Form, error)
+	GetRevertFormStub        func() (ui.Form, error)
 	getRevertFormMutex       sync.RWMutex
 	getRevertFormArgsForCall []struct{}
 	getRevertFormReturns     struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}
 	getRevertFormReturnsOnCall map[int]struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}
-	PostInstallFormStub        func(api.PostFormInput) error
+	PostInstallFormStub        func(ui.PostFormInput) error
 	postInstallFormMutex       sync.RWMutex
 	postInstallFormArgsForCall []struct {
-		arg1 api.PostFormInput
+		arg1 ui.PostFormInput
 	}
 	postInstallFormReturns struct {
 		result1 error
@@ -45,7 +45,7 @@ type DashboardService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *DashboardService) GetInstallForm() (api.Form, error) {
+func (fake *DashboardService) GetInstallForm() (ui.Form, error) {
 	fake.getInstallFormMutex.Lock()
 	ret, specificReturn := fake.getInstallFormReturnsOnCall[len(fake.getInstallFormArgsForCall)]
 	fake.getInstallFormArgsForCall = append(fake.getInstallFormArgsForCall, struct{}{})
@@ -66,29 +66,29 @@ func (fake *DashboardService) GetInstallFormCallCount() int {
 	return len(fake.getInstallFormArgsForCall)
 }
 
-func (fake *DashboardService) GetInstallFormReturns(result1 api.Form, result2 error) {
+func (fake *DashboardService) GetInstallFormReturns(result1 ui.Form, result2 error) {
 	fake.GetInstallFormStub = nil
 	fake.getInstallFormReturns = struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *DashboardService) GetInstallFormReturnsOnCall(i int, result1 api.Form, result2 error) {
+func (fake *DashboardService) GetInstallFormReturnsOnCall(i int, result1 ui.Form, result2 error) {
 	fake.GetInstallFormStub = nil
 	if fake.getInstallFormReturnsOnCall == nil {
 		fake.getInstallFormReturnsOnCall = make(map[int]struct {
-			result1 api.Form
+			result1 ui.Form
 			result2 error
 		})
 	}
 	fake.getInstallFormReturnsOnCall[i] = struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *DashboardService) GetRevertForm() (api.Form, error) {
+func (fake *DashboardService) GetRevertForm() (ui.Form, error) {
 	fake.getRevertFormMutex.Lock()
 	ret, specificReturn := fake.getRevertFormReturnsOnCall[len(fake.getRevertFormArgsForCall)]
 	fake.getRevertFormArgsForCall = append(fake.getRevertFormArgsForCall, struct{}{})
@@ -109,33 +109,33 @@ func (fake *DashboardService) GetRevertFormCallCount() int {
 	return len(fake.getRevertFormArgsForCall)
 }
 
-func (fake *DashboardService) GetRevertFormReturns(result1 api.Form, result2 error) {
+func (fake *DashboardService) GetRevertFormReturns(result1 ui.Form, result2 error) {
 	fake.GetRevertFormStub = nil
 	fake.getRevertFormReturns = struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *DashboardService) GetRevertFormReturnsOnCall(i int, result1 api.Form, result2 error) {
+func (fake *DashboardService) GetRevertFormReturnsOnCall(i int, result1 ui.Form, result2 error) {
 	fake.GetRevertFormStub = nil
 	if fake.getRevertFormReturnsOnCall == nil {
 		fake.getRevertFormReturnsOnCall = make(map[int]struct {
-			result1 api.Form
+			result1 ui.Form
 			result2 error
 		})
 	}
 	fake.getRevertFormReturnsOnCall[i] = struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *DashboardService) PostInstallForm(arg1 api.PostFormInput) error {
+func (fake *DashboardService) PostInstallForm(arg1 ui.PostFormInput) error {
 	fake.postInstallFormMutex.Lock()
 	ret, specificReturn := fake.postInstallFormReturnsOnCall[len(fake.postInstallFormArgsForCall)]
 	fake.postInstallFormArgsForCall = append(fake.postInstallFormArgsForCall, struct {
-		arg1 api.PostFormInput
+		arg1 ui.PostFormInput
 	}{arg1})
 	fake.recordInvocation("PostInstallForm", []interface{}{arg1})
 	fake.postInstallFormMutex.Unlock()
@@ -154,7 +154,7 @@ func (fake *DashboardService) PostInstallFormCallCount() int {
 	return len(fake.postInstallFormArgsForCall)
 }
 
-func (fake *DashboardService) PostInstallFormArgsForCall(i int) api.PostFormInput {
+func (fake *DashboardService) PostInstallFormArgsForCall(i int) ui.PostFormInput {
 	fake.postInstallFormMutex.RLock()
 	defer fake.postInstallFormMutex.RUnlock()
 	return fake.postInstallFormArgsForCall[i].arg1

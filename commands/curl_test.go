@@ -25,21 +25,21 @@ func (er errReader) Read([]byte) (int, error) {
 var _ = Describe("Curl", func() {
 	Describe("Execute", func() {
 		var (
-			command        commands.Curl
-			requestService *fakes.RequestService
-			stdout         *fakes.Logger
-			stderr         *fakes.Logger
+			command     commands.Curl
+			fakeService *fakes.CurlService
+			stdout      *fakes.Logger
+			stderr      *fakes.Logger
 		)
 
 		BeforeEach(func() {
-			requestService = &fakes.RequestService{}
+			fakeService = &fakes.CurlService{}
 			stdout = &fakes.Logger{}
 			stderr = &fakes.Logger{}
-			command = commands.NewCurl(requestService, stdout, stderr)
+			command = commands.NewCurl(fakeService, stdout, stderr)
 		})
 
 		It("executes the API call", func() {
-			requestService.CurlReturns(api.RequestServiceCurlOutput{
+			fakeService.CurlReturns(api.RequestServiceCurlOutput{
 				StatusCode: http.StatusOK,
 				Headers: http.Header{
 					"Content-Length": []string{"33"},
@@ -56,7 +56,7 @@ var _ = Describe("Curl", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			input := requestService.CurlArgsForCall(0)
+			input := fakeService.CurlArgsForCall(0)
 			Expect(input.Path).To(Equal("/api/v0/some/path"))
 			Expect(input.Method).To(Equal("POST"))
 			Expect(input.Headers).To(HaveKeyWithValue("Content-Type", []string{"application/json"}))
@@ -76,7 +76,7 @@ var _ = Describe("Curl", func() {
 
 		Context("when --silent is specified", func() {
 			It("does not write anything to stderr if the status is 200", func() {
-				requestService.CurlReturns(api.RequestServiceCurlOutput{
+				fakeService.CurlReturns(api.RequestServiceCurlOutput{
 					StatusCode: http.StatusOK,
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
@@ -95,7 +95,7 @@ var _ = Describe("Curl", func() {
 			})
 
 			It("does not write anything to stderr if the status is 201", func() {
-				requestService.CurlReturns(api.RequestServiceCurlOutput{
+				fakeService.CurlReturns(api.RequestServiceCurlOutput{
 					StatusCode: http.StatusCreated,
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
@@ -114,7 +114,7 @@ var _ = Describe("Curl", func() {
 			})
 
 			It("still writes response headers to stderr if the status is 404", func() {
-				requestService.CurlReturns(api.RequestServiceCurlOutput{
+				fakeService.CurlReturns(api.RequestServiceCurlOutput{
 					StatusCode: http.StatusNotFound,
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
@@ -139,7 +139,7 @@ var _ = Describe("Curl", func() {
 
 		Context("When a custom content-type is passed in", func() {
 			It("executes the API call with the given content type", func() {
-				requestService.CurlReturns(api.RequestServiceCurlOutput{
+				fakeService.CurlReturns(api.RequestServiceCurlOutput{
 					Headers: http.Header{
 						"Content-Length": []string{"33"},
 						"Content-Type":   []string{"application/json"},
@@ -156,7 +156,7 @@ var _ = Describe("Curl", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				input := requestService.CurlArgsForCall(0)
+				input := fakeService.CurlArgsForCall(0)
 				Expect(input.Path).To(Equal("/api/v0/some/path"))
 				Expect(input.Method).To(Equal("POST"))
 				Expect(input.Headers).To(HaveKeyWithValue("Content-Type", []string{"application/x-www-form-urlencoded"}))
@@ -166,7 +166,7 @@ var _ = Describe("Curl", func() {
 		Describe("pretty printing", func() {
 			Context("when the response type is JSON", func() {
 				It("pretty prints the response body", func() {
-					requestService.CurlReturns(api.RequestServiceCurlOutput{
+					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Headers: http.Header{
 							"Content-Length": []string{"33"},
 							"Content-Type":   []string{"application/json; charset=utf-8"},
@@ -188,7 +188,7 @@ var _ = Describe("Curl", func() {
 
 			Context("when the response type is not JSON", func() {
 				It("doesn't format the response body", func() {
-					requestService.CurlReturns(api.RequestServiceCurlOutput{
+					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Headers: http.Header{
 							"Content-Length": []string{"33"},
 							"Content-Type":   []string{"text/plain; charset=utf-8"},
@@ -229,7 +229,7 @@ var _ = Describe("Curl", func() {
 
 			Context("when the request service returns an error", func() {
 				It("returns an error", func() {
-					requestService.CurlReturns(api.RequestServiceCurlOutput{}, errors.New("some request error"))
+					fakeService.CurlReturns(api.RequestServiceCurlOutput{}, errors.New("some request error"))
 					err := command.Execute([]string{
 						"--path", "/api/v0/some/path",
 						"--request", "POST",
@@ -241,7 +241,7 @@ var _ = Describe("Curl", func() {
 
 			Context("when the response body cannot be read", func() {
 				It("returns an error", func() {
-					requestService.CurlReturns(api.RequestServiceCurlOutput{
+					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Body: errReader{},
 					}, nil)
 					err := command.Execute([]string{
@@ -255,7 +255,7 @@ var _ = Describe("Curl", func() {
 
 			Context("when the response code is 400 or higher", func() {
 				It("returns an error", func() {
-					requestService.CurlReturns(api.RequestServiceCurlOutput{
+					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						StatusCode: 401,
 						Body:       strings.NewReader(`{"some-response-key": "some-response-value"}`),
 					}, nil)

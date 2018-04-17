@@ -14,15 +14,15 @@ import (
 
 var _ = Describe("StagedConfig", func() {
 	var (
-		logger              *fakes.Logger
-		stagedConfigService *fakes.StagedConfigService
+		logger      *fakes.Logger
+		fakeService *fakes.StagedConfigService
 	)
 
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
 
-		stagedConfigService = &fakes.StagedConfigService{}
-		stagedConfigService.GetStagedProductPropertiesReturns(
+		fakeService = &fakes.StagedConfigService{}
+		fakeService.GetStagedProductPropertiesReturns(
 			map[string]api.ResponseProperty{
 				".properties.some-string-property": api.ResponseProperty{
 					Value:        "some-value",
@@ -44,23 +44,23 @@ var _ = Describe("StagedConfig", func() {
 					Configurable: true,
 				},
 			}, nil)
-		stagedConfigService.GetStagedProductNetworksAndAZsReturns(
+		fakeService.GetStagedProductNetworksAndAZsReturns(
 			map[string]interface{}{
 				"singleton_availability_zone": map[string]string{
 					"name": "az-one",
 				},
 			}, nil)
 
-		stagedConfigService.FindReturns(api.StagedProductsFindOutput{
+		fakeService.FindReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{
 				GUID: "some-product-guid",
 			},
 		}, nil)
 
-		stagedConfigService.ListStagedProductJobsReturns(map[string]string{
+		fakeService.ListStagedProductJobsReturns(map[string]string{
 			"some-job": "some-job-guid",
 		}, nil)
-		stagedConfigService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
+		fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
 			InstanceType: api.InstanceType{
 				ID: "automatic",
 			},
@@ -70,26 +70,26 @@ var _ = Describe("StagedConfig", func() {
 
 	Describe("Execute", func() {
 		It("writes a config file to output", func() {
-			command := commands.NewStagedConfig(stagedConfigService, logger)
+			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stagedConfigService.FindCallCount()).To(Equal(1))
-			Expect(stagedConfigService.FindArgsForCall(0)).To(Equal("some-product"))
+			Expect(fakeService.FindCallCount()).To(Equal(1))
+			Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product"))
 
-			Expect(stagedConfigService.GetStagedProductPropertiesCallCount()).To(Equal(1))
-			Expect(stagedConfigService.GetStagedProductPropertiesArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(fakeService.GetStagedProductPropertiesCallCount()).To(Equal(1))
+			Expect(fakeService.GetStagedProductPropertiesArgsForCall(0)).To(Equal("some-product-guid"))
 
-			Expect(stagedConfigService.GetStagedProductNetworksAndAZsCallCount()).To(Equal(1))
-			Expect(stagedConfigService.GetStagedProductNetworksAndAZsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(fakeService.GetStagedProductNetworksAndAZsCallCount()).To(Equal(1))
+			Expect(fakeService.GetStagedProductNetworksAndAZsArgsForCall(0)).To(Equal("some-product-guid"))
 
-			Expect(stagedConfigService.ListStagedProductJobsCallCount()).To(Equal(1))
-			Expect(stagedConfigService.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
+			Expect(fakeService.ListStagedProductJobsCallCount()).To(Equal(1))
+			Expect(fakeService.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
 
-			Expect(stagedConfigService.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
-			productGuid, jobsGuid := stagedConfigService.GetStagedProductJobResourceConfigArgsForCall(0)
+			Expect(fakeService.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
+			productGuid, jobsGuid := fakeService.GetStagedProductJobResourceConfigArgsForCall(0)
 			Expect(productGuid).To(Equal("some-product-guid"))
 			Expect(jobsGuid).To(Equal("some-job-guid"))
 
@@ -117,7 +117,7 @@ resource-config:
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
 			})
@@ -125,7 +125,7 @@ resource-config:
 
 		Context("when product name is not provided", func() {
 			It("returns an error and prints out usage", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse staged-config flags: missing required flag \"--product-name\""))
 			})
@@ -133,11 +133,11 @@ resource-config:
 
 		Context("when looking up the product GUID fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.FindReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
+				fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -147,11 +147,11 @@ resource-config:
 
 		Context("when looking up the product properties fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.GetStagedProductPropertiesReturns(nil, errors.New("some-error"))
+				fakeService.GetStagedProductPropertiesReturns(nil, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -161,11 +161,11 @@ resource-config:
 
 		Context("when looking up the network fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
+				fakeService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -175,11 +175,11 @@ resource-config:
 
 		Context("when listing jobs fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
+				fakeService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -189,11 +189,11 @@ resource-config:
 
 		Context("when looking up the job fails", func() {
 			BeforeEach(func() {
-				stagedConfigService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
+				fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(stagedConfigService, logger)
+				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})

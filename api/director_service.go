@@ -11,17 +11,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-//go:generate counterfeiter -o ./fakes/logger.go --fake-name Logger . logger
-
-type logger interface {
-	Println(v ...interface{})
-}
-
-type DirectorService struct {
-	client httpClient
-	stderr logger
-}
-
 type AvailabilityZoneInput struct {
 	AvailabilityZones json.RawMessage `json:"availability_zones"`
 }
@@ -47,14 +36,7 @@ type DirectorProperties struct {
 	SyslogConfiguration   json.RawMessage `json:"syslog_configuration,omitempty"`
 }
 
-func NewDirectorService(client httpClient, stderr logger) DirectorService {
-	return DirectorService{
-		client: client,
-		stderr: stderr,
-	}
-}
-
-func (d DirectorService) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) error {
+func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) error {
 	azs := AvailabilityZones{}
 	err := yaml.Unmarshal(input.AvailabilityZones, &azs.AvailabilityZones)
 	if err != nil {
@@ -67,7 +49,7 @@ func (d DirectorService) UpdateStagedDirectorAvailabilityZones(input Availabilit
 		}
 	}
 
-	azs, err = d.addGUIDToExistingAZs(azs)
+	azs, err = a.addGUIDToExistingAZs(azs)
 	if err != nil {
 		return err
 	}
@@ -82,42 +64,42 @@ func (d DirectorService) UpdateStagedDirectorAvailabilityZones(input Availabilit
 		return fmt.Errorf("problem converting request to JSON: %s", err) // un-tested
 	}
 
-	_, err = d.sendAPIRequest("PUT", "/api/v0/staged/director/availability_zones", jsonData)
+	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/availability_zones", jsonData)
 	return err
 }
 
-func (d DirectorService) UpdateStagedDirectorNetworks(input json.RawMessage) error {
+func (a Api) UpdateStagedDirectorNetworks(input json.RawMessage) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)
 	}
 
-	_, err = d.sendAPIRequest("PUT", "/api/v0/staged/director/networks", jsonData)
+	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/networks", jsonData)
 	return err
 }
 
-func (d DirectorService) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) error {
+func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)
 	}
 
-	_, err = d.sendAPIRequest("PUT", "/api/v0/staged/director/network_and_az", jsonData)
+	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/network_and_az", jsonData)
 	return err
 }
 
-func (d DirectorService) UpdateStagedDirectorProperties(input DirectorProperties) error {
+func (a Api) UpdateStagedDirectorProperties(input DirectorProperties) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)
 	}
 
-	_, err = d.sendAPIRequest("PUT", "/api/v0/staged/director/properties", jsonData)
+	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/properties", jsonData)
 	return err
 }
 
-func (d DirectorService) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, error) {
-	existingAzsResponse, err := d.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
+func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, error) {
+	existingAzsResponse, err := a.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	if err != nil {
 		if existingAzsResponse.StatusCode != http.StatusNotFound {
 			return AvailabilityZones{}, fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
@@ -125,7 +107,7 @@ func (d DirectorService) addGUIDToExistingAZs(azs AvailabilityZones) (Availabili
 	}
 
 	if existingAzsResponse.StatusCode == http.StatusNotFound {
-		d.stderr.Println("unable to retrieve existing AZ configuration, attempting to configure anyway")
+		a.logger.Println("unable to retrieve existing AZ configuration, attempting to configure anyway")
 		return azs, nil
 	}
 
@@ -151,7 +133,7 @@ func (d DirectorService) addGUIDToExistingAZs(azs AvailabilityZones) (Availabili
 	return azs, nil
 }
 
-func (d DirectorService) sendAPIRequest(verb, endpoint string, jsonData []byte) (*http.Response, error) {
+func (a Api) sendAPIRequest(verb, endpoint string, jsonData []byte) (*http.Response, error) {
 	req, err := http.NewRequest(verb, endpoint, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("could not create api request %s %s: %s", verb, endpoint, err.Error())
@@ -159,12 +141,12 @@ func (d DirectorService) sendAPIRequest(verb, endpoint string, jsonData []byte) 
 
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := d.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return resp, fmt.Errorf("could not send api request to %s %s: %s", verb, endpoint, err.Error())
 	}
 
-	err = ValidateStatusOK(resp)
+	err = validateStatusOK(resp)
 	if err != nil {
 		return resp, err
 	}

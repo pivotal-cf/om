@@ -9,14 +9,14 @@ import (
 )
 
 type StagedConfig struct {
-	logger              logger
-	stagedConfigService stagedConfigService
-	Options             struct {
+	logger  logger
+	service stagedConfigService
+	Options struct {
 		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/export_config_service.go --fake-name StagedConfigService . stagedConfigService
+//go:generate counterfeiter -o ./fakes/staged_config_service.go --fake-name StagedConfigService . stagedConfigService
 type stagedConfigService interface {
 	Find(product string) (api.StagedProductsFindOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
@@ -25,10 +25,10 @@ type stagedConfigService interface {
 	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
 }
 
-func NewStagedConfig(stagedConfigService stagedConfigService, logger logger) StagedConfig {
+func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
 	return StagedConfig{
-		logger:              logger,
-		stagedConfigService: stagedConfigService,
+		logger:  logger,
+		service: service,
 	}
 }
 
@@ -45,13 +45,13 @@ func (ec StagedConfig) Execute(args []string) error {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
 	}
 
-	findOutput, err := ec.stagedConfigService.Find(ec.Options.Product)
+	findOutput, err := ec.service.Find(ec.Options.Product)
 	if err != nil {
 		return err
 	}
 	productGUID := findOutput.Product.GUID
 
-	properties, err := ec.stagedConfigService.GetStagedProductProperties(productGUID)
+	properties, err := ec.service.GetStagedProductProperties(productGUID)
 	if err != nil {
 		return err
 	}
@@ -64,12 +64,12 @@ func (ec StagedConfig) Execute(args []string) error {
 		}
 	}
 
-	networks, err := ec.stagedConfigService.GetStagedProductNetworksAndAZs(productGUID)
+	networks, err := ec.service.GetStagedProductNetworksAndAZs(productGUID)
 	if err != nil {
 		return err
 	}
 
-	jobs, err := ec.stagedConfigService.ListStagedProductJobs(productGUID)
+	jobs, err := ec.service.ListStagedProductJobs(productGUID)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (ec StagedConfig) Execute(args []string) error {
 	resourceConfig := map[string]api.JobProperties{}
 
 	for name, jobGUID := range jobs {
-		jobProperties, err := ec.stagedConfigService.GetStagedProductJobResourceConfig(productGUID, jobGUID)
+		jobProperties, err := ec.service.GetStagedProductJobResourceConfig(productGUID, jobGUID)
 		if err != nil {
 			return err
 		}

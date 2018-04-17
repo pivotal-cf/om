@@ -11,16 +11,6 @@ import (
 	"strings"
 )
 
-type SetupService struct {
-	client httpClient
-}
-
-func NewSetupService(client httpClient) SetupService {
-	return SetupService{
-		client: client,
-	}
-}
-
 type SetupInput struct {
 	IdentityProvider                 string
 	AdminUserName                    string
@@ -36,7 +26,7 @@ type SetupInput struct {
 
 type SetupOutput struct{}
 
-func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
+func (a Api) Setup(input SetupInput) (SetupOutput, error) {
 	var setup struct {
 		Setup struct {
 			IdentityProvider                 string `json:"identity_provider"`
@@ -75,14 +65,14 @@ func (ss SetupService) Setup(input SetupInput) (SetupOutput, error) {
 
 	request.Header.Set("Content-Type", "application/json")
 
-	response, err := ss.client.Do(request)
+	response, err := a.unauthedClient.Do(request)
 	if err != nil {
 		return SetupOutput{}, fmt.Errorf("could not make api request to setup endpoint: %s", err)
 	}
 
 	defer response.Body.Close()
 
-	if err = ValidateStatusOK(response); err != nil {
+	if err = validateStatusOK(response); err != nil {
 		return SetupOutput{}, err
 	}
 
@@ -101,13 +91,13 @@ type EnsureAvailabilityOutput struct {
 	Status string
 }
 
-func (ss SetupService) EnsureAvailability(input EnsureAvailabilityInput) (EnsureAvailabilityOutput, error) {
+func (a Api) EnsureAvailability(input EnsureAvailabilityInput) (EnsureAvailabilityOutput, error) {
 	request, err := http.NewRequest("GET", "/login/ensure_availability", nil)
 	if err != nil {
 		return EnsureAvailabilityOutput{}, err
 	}
 
-	response, err := ss.client.Do(request)
+	response, err := a.unauthedClient.Do(request)
 	if err != nil {
 		return EnsureAvailabilityOutput{}, fmt.Errorf("could not make request round trip: %s", err)
 	}

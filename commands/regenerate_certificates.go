@@ -3,16 +3,16 @@ package commands
 import "github.com/pivotal-cf/jhanda"
 
 type RegenerateCertificates struct {
-	service certificateRegenerator
+	service regenerateCertificatesService
 	logger  logger
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_regenerator.go --fake-name CertificateRegenerator . certificateRegenerator
-type certificateRegenerator interface {
+//go:generate counterfeiter -o ./fakes/regenerate_certificates_service.go --fake-name RegenerateCertificatesService . regenerateCertificatesService
+type regenerateCertificatesService interface {
 	RegenerateCertificates() error
 }
 
-func NewRegenerateCertificates(service certificateRegenerator, logger logger) RegenerateCertificates {
+func NewRegenerateCertificates(service regenerateCertificatesService, logger logger) RegenerateCertificates {
 	return RegenerateCertificates{service: service, logger: logger}
 }
 

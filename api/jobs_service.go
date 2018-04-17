@@ -8,10 +8,6 @@ import (
 	"net/http"
 )
 
-type JobsService struct {
-	client httpClient
-}
-
 // TODO: add omitempty everywhere
 type JobProperties struct {
 	Instances              interface{}  `json:"instances" yaml:"instances"`
@@ -45,26 +41,20 @@ type Job struct {
 	Name string
 }
 
-func NewJobsService(client httpClient) JobsService {
-	return JobsService{
-		client: client,
-	}
-}
-
-func (j JobsService) ListStagedProductJobs(productGUID string) (map[string]string, error) {
+func (a Api) ListStagedProductJobs(productGUID string) (map[string]string, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs", productGUID), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := j.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("could not make api request to jobs endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return nil, err
 	}
 
@@ -85,20 +75,20 @@ func (j JobsService) ListStagedProductJobs(productGUID string) (map[string]strin
 	return jobGUIDMap, nil
 }
 
-func (j JobsService) GetStagedProductJobResourceConfig(productGUID, jobGUID string) (JobProperties, error) {
+func (a Api) GetStagedProductJobResourceConfig(productGUID, jobGUID string) (JobProperties, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), nil)
 	if err != nil {
 		return JobProperties{}, err
 	}
 
-	resp, err := j.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return JobProperties{}, fmt.Errorf("could not make api request to resource_config endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return JobProperties{}, err
 	}
 
@@ -116,7 +106,7 @@ func (j JobsService) GetStagedProductJobResourceConfig(productGUID, jobGUID stri
 	return existingConfig, nil
 }
 
-func (j JobsService) UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties JobProperties) error {
+func (a Api) UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties JobProperties) error {
 	bodyBytes := bytes.NewBuffer([]byte{})
 	err := json.NewEncoder(bodyBytes).Encode(jobProperties)
 	if err != nil {
@@ -130,14 +120,14 @@ func (j JobsService) UpdateStagedProductJobResourceConfig(productGUID, jobGUID s
 
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := j.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to jobs resource_config endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 

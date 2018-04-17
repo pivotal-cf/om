@@ -20,30 +20,20 @@ type Credential struct {
 	Value map[string]string `json:"value"`
 }
 
-type CredentialsService struct {
-	client httpClient
-}
-
-func NewCredentialsService(client httpClient) CredentialsService {
-	return CredentialsService{
-		client: client,
-	}
-}
-
-func (cr CredentialsService) GetDeployedProductCredential(deployedGUID, credential string) (CredentialOutput, error) {
+func (a Api) GetDeployedProductCredential(deployedGUID, credential string) (CredentialOutput, error) {
 	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", deployedGUID, credential)
 	req, err := http.NewRequest("GET", path, nil)
 	if err != nil {
 		return CredentialOutput{}, err
 	}
 
-	resp, err := cr.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return CredentialOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return CredentialOutput{}, err
 	}
 
@@ -61,20 +51,20 @@ func (cr CredentialsService) GetDeployedProductCredential(deployedGUID, credenti
 	return credentialOutput, nil
 }
 
-func (cs CredentialsService) ListDeployedProductCredentials(deployedGUID string) (CredentialReferencesOutput, error) {
+func (a Api) ListDeployedProductCredentials(deployedGUID string) (CredentialReferencesOutput, error) {
 	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials", deployedGUID)
 	req, err := http.NewRequest("GET", path, nil)
 	if err != nil {
 		return CredentialReferencesOutput{}, err
 	}
 
-	resp, err := cs.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return CredentialReferencesOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return CredentialReferencesOutput{}, err
 	}
 

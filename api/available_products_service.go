@@ -37,19 +37,7 @@ type DeleteAvailableProductsInput struct {
 	ShouldDeleteAllProducts bool
 }
 
-type AvailableProductsService struct {
-	client         httpClient
-	progressClient httpClient
-}
-
-func NewAvailableProductsService(client httpClient, progressClient httpClient) AvailableProductsService {
-	return AvailableProductsService{
-		client:         client,
-		progressClient: progressClient,
-	}
-}
-
-func (ap AvailableProductsService) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAvailableProductOutput, error) {
+func (a Api) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAvailableProductOutput, error) {
 	req, err := http.NewRequest("POST", availableProductsEndpoint, input.Product)
 	if err != nil {
 		return UploadAvailableProductOutput{}, err
@@ -60,33 +48,33 @@ func (ap AvailableProductsService) UploadAvailableProduct(input UploadAvailableP
 
 	req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Duration(input.PollingInterval)*time.Second))
 
-	resp, err := ap.progressClient.Do(req)
+	resp, err := a.progressClient.Do(req)
 	if err != nil {
 		return UploadAvailableProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return UploadAvailableProductOutput{}, err
 	}
 
 	return UploadAvailableProductOutput{}, nil
 }
 
-func (ap AvailableProductsService) ListAvailableProducts() (AvailableProductsOutput, error) {
+func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 	avReq, err := http.NewRequest("GET", availableProductsEndpoint, nil)
 	if err != nil {
 		return AvailableProductsOutput{}, err
 	}
 
-	resp, err := ap.client.Do(avReq)
+	resp, err := a.client.Do(avReq)
 	if err != nil {
 		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return AvailableProductsOutput{}, err
 	}
 
@@ -105,8 +93,8 @@ func (ap AvailableProductsService) ListAvailableProducts() (AvailableProductsOut
 }
 
 // TODO: move to helper package?
-func (ap AvailableProductsService) CheckProductAvailability(productName string, productVersion string) (bool, error) {
-	availableProducts, err := ap.ListAvailableProducts()
+func (a Api) CheckProductAvailability(productName string, productVersion string) (bool, error) {
+	availableProducts, err := a.ListAvailableProducts()
 	if err != nil {
 		return false, err
 	}
@@ -120,7 +108,7 @@ func (ap AvailableProductsService) CheckProductAvailability(productName string, 
 	return false, nil
 }
 
-func (ap AvailableProductsService) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
+func (a Api) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
 	req, err := http.NewRequest("DELETE", availableProductsEndpoint, nil)
 
 	if !input.ShouldDeleteAllProducts {
@@ -131,14 +119,14 @@ func (ap AvailableProductsService) DeleteAvailableProducts(input DeleteAvailable
 		req.URL.RawQuery = query.Encode()
 	}
 
-	resp, err := ap.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 

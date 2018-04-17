@@ -43,11 +43,17 @@ const report = `{
   }
 }`
 
-var _ = Describe("DiagnosticService", func() {
-	var client *fakes.HttpClient
+var _ = Describe("Diagnostic", func() {
+	var (
+		client  *fakes.HttpClient
+		service api.Api
+	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("DiagnosticReport", func() {
@@ -57,7 +63,6 @@ var _ = Describe("DiagnosticService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader(report)),
 			}, nil)
 
-			service := api.NewDiagnosticService(client)
 			report, err := service.GetDiagnosticReport()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -101,7 +106,6 @@ var _ = Describe("DiagnosticService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					service := api.NewDiagnosticService(client)
 					_, err := service.GetDiagnosticReport()
 					Expect(err).To(BeAssignableToTypeOf(api.DiagnosticReportUnavailable{}))
 				})
@@ -111,7 +115,6 @@ var _ = Describe("DiagnosticService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
 
-					service := api.NewDiagnosticService(client)
 					_, err := service.GetDiagnosticReport()
 					Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: some error"))
 				})
@@ -124,7 +127,6 @@ var _ = Describe("DiagnosticService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					service := api.NewDiagnosticService(client)
 					_, err := service.GetDiagnosticReport()
 					Expect(err).NotTo(MatchError("request failed: unexpected response"))
 				})
@@ -137,7 +139,6 @@ var _ = Describe("DiagnosticService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`$$$$$`)),
 					}, nil)
 
-					service := api.NewDiagnosticService(client)
 					_, err := service.GetDiagnosticReport()
 					Expect(err).NotTo(MatchError("invalid json received from server"))
 				})

@@ -8,19 +8,19 @@ import (
 )
 
 type DeleteCertificateAuthority struct {
-	service certificateAuthorityDeleter
+	service deleteCertificateAuthorityService
 	logger  logger
 	Options struct {
 		Id string `long:"id" required:"true" description:"certificate authority id"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_authority_deleter.go --fake-name CertificateAuthorityDeleter . certificateAuthorityDeleter
-type certificateAuthorityDeleter interface {
+//go:generate counterfeiter -o ./fakes/delete_certificate_authority_service.go --fake-name DeleteCertificateAuthorityService . deleteCertificateAuthorityService
+type deleteCertificateAuthorityService interface {
 	DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput) error
 }
 
-func NewDeleteCertificateAuthority(service certificateAuthorityDeleter, logger logger) DeleteCertificateAuthority {
+func NewDeleteCertificateAuthority(service deleteCertificateAuthorityService, logger logger) DeleteCertificateAuthority {
 	return DeleteCertificateAuthority{service: service, logger: logger}
 }
 

@@ -10,11 +10,10 @@ import (
 )
 
 type UploadStemcell struct {
-	multipart         multipart
-	logger            logger
-	stemcellService   stemcellService
-	diagnosticService diagnosticService
-	Options           struct {
+	multipart multipart
+	logger    logger
+	service   uploadStemcellService
+	Options   struct {
 		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
 		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
 	}
@@ -27,22 +26,17 @@ type multipart interface {
 	AddField(key, value string) error
 }
 
-//go:generate counterfeiter -o ./fakes/stemcell_service.go --fake-name StemcellService . stemcellService
-type stemcellService interface {
+//go:generate counterfeiter -o ./fakes/upload_stemcell_service.go --fake-name UploadStemcellService . uploadStemcellService
+type uploadStemcellService interface {
 	UploadStemcell(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
-}
-
-//go:generate counterfeiter -o ./fakes/diagnostic_service.go --fake-name DiagnosticService . diagnosticService
-type diagnosticService interface {
 	GetDiagnosticReport() (api.DiagnosticReport, error)
 }
 
-func NewUploadStemcell(multipart multipart, stemcellService stemcellService, diagnosticService diagnosticService, logger logger) UploadStemcell {
+func NewUploadStemcell(multipart multipart, service uploadStemcellService, logger logger) UploadStemcell {
 	return UploadStemcell{
-		multipart:         multipart,
-		logger:            logger,
-		stemcellService:   stemcellService,
-		diagnosticService: diagnosticService,
+		multipart: multipart,
+		logger:    logger,
+		service:   service,
 	}
 }
 
@@ -61,7 +55,7 @@ func (us UploadStemcell) Execute(args []string) error {
 
 	if !us.Options.Force {
 		us.logger.Printf("processing stemcell")
-		report, err := us.diagnosticService.GetDiagnosticReport()
+		report, err := us.service.GetDiagnosticReport()
 		if err != nil {
 			switch err.(type) {
 			case api.DiagnosticReportUnavailable:
@@ -91,7 +85,7 @@ func (us UploadStemcell) Execute(args []string) error {
 
 	us.logger.Printf("beginning stemcell upload to Ops Manager")
 
-	_, err = us.stemcellService.UploadStemcell(api.StemcellUploadInput{
+	_, err = us.service.UploadStemcell(api.StemcellUploadInput{
 		ContentLength: submission.Length,
 		Stemcell:      submission.Content,
 		ContentType:   submission.ContentType,

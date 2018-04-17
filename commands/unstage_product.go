@@ -8,22 +8,22 @@ import (
 )
 
 type UnstageProduct struct {
-	logger                logger
-	stagedProductsService productUnstager
-	Options               struct {
+	logger  logger
+	service unstageProductService
+	Options struct {
 		Product string `long:"product-name" short:"p" required:"true" description:"name of product"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/product_unstager.go --fake-name ProductUnstager . productUnstager
-type productUnstager interface {
+//go:generate counterfeiter -o ./fakes/unstage_product_service.go --fake-name UnstageProductService . unstageProductService
+type unstageProductService interface {
 	DeleteStagedProduct(api.UnstageProductInput) error
 }
 
-func NewUnstageProduct(productUnstager productUnstager, logger logger) UnstageProduct {
+func NewUnstageProduct(service unstageProductService, logger logger) UnstageProduct {
 	return UnstageProduct{
-		logger:                logger,
-		stagedProductsService: productUnstager,
+		logger:  logger,
+		service: service,
 	}
 }
 
@@ -34,7 +34,7 @@ func (up UnstageProduct) Execute(args []string) error {
 
 	up.logger.Printf("unstaging %s", up.Options.Product)
 
-	err := up.stagedProductsService.DeleteStagedProduct(api.UnstageProductInput{
+	err := up.service.DeleteStagedProduct(api.UnstageProductInput{
 		ProductName: up.Options.Product,
 	})
 

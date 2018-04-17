@@ -13,15 +13,17 @@ import (
 	"github.com/pivotal-cf/om/api/fakes"
 )
 
-var _ = Describe("CertificateAuthoritiesService", func() {
+var _ = Describe("CertificateAuthorities", func() {
 	var (
 		client  *fakes.HttpClient
-		service api.CertificateAuthoritiesService
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		service = api.NewCertificateAuthoritiesService(client)
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("ListCertificateAuthorities", func() {
@@ -231,7 +233,6 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 			Context("when Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.URL.Path == "/api/v0/certificate_authorities/active/regenerate" &&
@@ -246,7 +247,6 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewCertificateAuthoritiesService(client)
 					err := service.RegenerateCertificates()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
@@ -307,6 +307,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 			Expect(request.URL.Path).To(Equal("/api/v0/certificate_authorities"))
 			Expect(string(body)).To(MatchJSON(`{"cert_pem":"some-cert", "private_key_pem":"some-key"}`))
 		})
+
 		Context("failure cases", func() {
 			Context("when the client cannot make a request", func() {
 				It("returns an error", func() {
@@ -319,6 +320,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
+
 			Context("when the response body cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
@@ -334,9 +336,9 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
+
 			Context("when it returns a non-200 status code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.URL.Path == "/api/v0/certificate_authorities" && req.Method == "POST" {
@@ -350,7 +352,6 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewCertificateAuthoritiesService(client)
 					_, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
@@ -387,6 +388,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 			Expect(request.URL.Path).To(Equal("/api/v0/certificate_authorities/some-certificate-authority-guid/activate"))
 			Expect(string(body)).To(MatchJSON("{}"))
 		})
+
 		Context("failure cases", func() {
 			Context("when the client cannot make a request", func() {
 				It("returns an error", func() {
@@ -398,9 +400,9 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
+
 			Context("when Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.URL.Path == "/api/v0/certificate_authorities/some-certificate-authority-guid/activate" &&
@@ -415,7 +417,6 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewCertificateAuthoritiesService(client)
 					err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
@@ -450,6 +451,7 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 
 			Expect(request.URL.Path).To(Equal("/api/v0/certificate_authorities/some-certificate-authority-guid"))
 		})
+
 		Context("failure cases", func() {
 			Context("when the client cannot make a request", func() {
 				It("returns an error", func() {
@@ -461,9 +463,9 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 					Expect(err).To(MatchError("client do errored"))
 				})
 			})
+
 			Context("when Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
-					client = &fakes.HttpClient{}
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
 						if req.URL.Path == "/api/v0/certificate_authorities/some-certificate-authority-guid" &&
@@ -478,7 +480,6 @@ var _ = Describe("CertificateAuthoritiesService", func() {
 				})
 
 				It("returns an error", func() {
-					service := api.NewCertificateAuthoritiesService(client)
 					err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})

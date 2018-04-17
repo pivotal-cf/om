@@ -4,27 +4,27 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/ui"
 )
 
 type BoshFormService struct {
-	GetFormStub        func(path string) (api.Form, error)
+	GetFormStub        func(path string) (ui.Form, error)
 	getFormMutex       sync.RWMutex
 	getFormArgsForCall []struct {
 		path string
 	}
 	getFormReturns struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}
 	getFormReturnsOnCall map[int]struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}
-	PostFormStub        func(api.PostFormInput) error
+	PostFormStub        func(ui.PostFormInput) error
 	postFormMutex       sync.RWMutex
 	postFormArgsForCall []struct {
-		arg1 api.PostFormInput
+		arg1 ui.PostFormInput
 	}
 	postFormReturns struct {
 		result1 error
@@ -58,7 +58,7 @@ type BoshFormService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *BoshFormService) GetForm(path string) (api.Form, error) {
+func (fake *BoshFormService) GetForm(path string) (ui.Form, error) {
 	fake.getFormMutex.Lock()
 	ret, specificReturn := fake.getFormReturnsOnCall[len(fake.getFormArgsForCall)]
 	fake.getFormArgsForCall = append(fake.getFormArgsForCall, struct {
@@ -87,33 +87,33 @@ func (fake *BoshFormService) GetFormArgsForCall(i int) string {
 	return fake.getFormArgsForCall[i].path
 }
 
-func (fake *BoshFormService) GetFormReturns(result1 api.Form, result2 error) {
+func (fake *BoshFormService) GetFormReturns(result1 ui.Form, result2 error) {
 	fake.GetFormStub = nil
 	fake.getFormReturns = struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *BoshFormService) GetFormReturnsOnCall(i int, result1 api.Form, result2 error) {
+func (fake *BoshFormService) GetFormReturnsOnCall(i int, result1 ui.Form, result2 error) {
 	fake.GetFormStub = nil
 	if fake.getFormReturnsOnCall == nil {
 		fake.getFormReturnsOnCall = make(map[int]struct {
-			result1 api.Form
+			result1 ui.Form
 			result2 error
 		})
 	}
 	fake.getFormReturnsOnCall[i] = struct {
-		result1 api.Form
+		result1 ui.Form
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *BoshFormService) PostForm(arg1 api.PostFormInput) error {
+func (fake *BoshFormService) PostForm(arg1 ui.PostFormInput) error {
 	fake.postFormMutex.Lock()
 	ret, specificReturn := fake.postFormReturnsOnCall[len(fake.postFormArgsForCall)]
 	fake.postFormArgsForCall = append(fake.postFormArgsForCall, struct {
-		arg1 api.PostFormInput
+		arg1 ui.PostFormInput
 	}{arg1})
 	fake.recordInvocation("PostForm", []interface{}{arg1})
 	fake.postFormMutex.Unlock()
@@ -132,7 +132,7 @@ func (fake *BoshFormService) PostFormCallCount() int {
 	return len(fake.postFormArgsForCall)
 }
 
-func (fake *BoshFormService) PostFormArgsForCall(i int) api.PostFormInput {
+func (fake *BoshFormService) PostFormArgsForCall(i int) ui.PostFormInput {
 	fake.postFormMutex.RLock()
 	defer fake.postFormMutex.RUnlock()
 	return fake.postFormArgsForCall[i].arg1

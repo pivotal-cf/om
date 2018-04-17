@@ -14,18 +14,21 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("AvailableProductsService", func() {
+var _ = Describe("Available Products", func() {
 	var (
 		progressClient *fakes.HttpClient
 		client         *fakes.HttpClient
-		service        api.AvailableProductsService
+		service        api.Api
 	)
 
 	BeforeEach(func() {
 		progressClient = &fakes.HttpClient{}
 		client = &fakes.HttpClient{}
 
-		service = api.NewAvailableProductsService(client, progressClient)
+		service = api.New(api.ApiInput{
+			Client:         client,
+			ProgressClient: progressClient,
+		})
 	})
 
 	Describe("UploadAvailableProduct", func() {

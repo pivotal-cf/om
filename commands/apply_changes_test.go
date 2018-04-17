@@ -28,7 +28,7 @@ func (ne netError) Timeout() bool {
 
 var _ = Describe("ApplyChanges", func() {
 	var (
-		service       *fakes.InstallationsService
+		service       *fakes.ApplyChangesService
 		logger        *fakes.Logger
 		writer        *fakes.LogWriter
 		statusOutputs []api.InstallationsServiceOutput
@@ -40,7 +40,7 @@ var _ = Describe("ApplyChanges", func() {
 	)
 
 	BeforeEach(func() {
-		service = &fakes.InstallationsService{}
+		service = &fakes.ApplyChangesService{}
 		logger = &fakes.Logger{}
 		writer = &fakes.LogWriter{}
 

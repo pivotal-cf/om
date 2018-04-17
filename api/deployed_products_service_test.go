@@ -13,17 +13,21 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("DeployedProductsService", func() {
+var _ = Describe("DeployedProducts", func() {
+	var (
+		client  *fakes.HttpClient
+		service api.Api
+	)
+
+	BeforeEach(func() {
+		client = &fakes.HttpClient{}
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
+	})
+
 	Describe("GetDeployedProductManifest", func() {
-		var (
-			client  *fakes.HttpClient
-			service api.DeployedProductsService
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			service = api.NewDeployedProductsService(client)
-
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				switch req.URL.Path {
@@ -98,12 +102,7 @@ key-4: 2147483648
 	})
 
 	Describe("List", func() {
-		var (
-			client *fakes.HttpClient
-		)
-
 		BeforeEach(func() {
-			client = &fakes.HttpClient{}
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				resp = &http.Response{
@@ -129,8 +128,6 @@ key-4: 2147483648
 		})
 
 		It("retrieves a list of deployed products from the Ops Manager", func() {
-			service := api.NewDeployedProductsService(client)
-
 			output, err := service.ListDeployedProducts()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -160,8 +157,6 @@ key-4: 2147483648
 				})
 
 				It("returns an error", func() {
-					service := api.NewDeployedProductsService(client)
-
 					_, err := service.ListDeployedProducts()
 					Expect(err).To(MatchError("could not make api request to deployed products endpoint: nope"))
 				})
@@ -176,8 +171,6 @@ key-4: 2147483648
 				})
 
 				It("returns an error", func() {
-					service := api.NewDeployedProductsService(client)
-
 					_, err := service.ListDeployedProducts()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
@@ -192,8 +185,6 @@ key-4: 2147483648
 				})
 
 				It("returns an error", func() {
-					service := api.NewDeployedProductsService(client)
-
 					_, err := service.ListDeployedProducts()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal deployed products response:")))
 				})

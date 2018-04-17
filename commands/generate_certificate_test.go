@@ -13,15 +13,15 @@ import (
 
 var _ = Describe("GenerateCertificate", func() {
 	var (
-		fakeCertificateService *fakes.CertificateGenerator
-		fakeLogger             *fakes.Logger
-		command                commands.GenerateCertificate
+		fakeService *fakes.GenerateCertificateService
+		fakeLogger  *fakes.Logger
+		command     commands.GenerateCertificate
 	)
 
 	BeforeEach(func() {
-		fakeCertificateService = &fakes.CertificateGenerator{}
+		fakeService = &fakes.GenerateCertificateService{}
 		fakeLogger = &fakes.Logger{}
-		command = commands.NewGenerateCertificate(fakeCertificateService, fakeLogger)
+		command = commands.NewGenerateCertificate(fakeService, fakeLogger)
 	})
 
 	Describe("Execute", func() {
@@ -31,11 +31,11 @@ var _ = Describe("GenerateCertificate", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateService.GenerateCertificateCallCount()).To(Equal(1))
+			Expect(fakeService.GenerateCertificateCallCount()).To(Equal(1))
 		})
 
 		It("prints a json output for the generated certificate", func() {
-			fakeCertificateService.GenerateCertificateReturns(`some-json-response`, nil)
+			fakeService.GenerateCertificateReturns(`some-json-response`, nil)
 
 			err := command.Execute([]string{
 				"--domains", "*.apps.example.com, *.sys.example.com",
@@ -56,7 +56,7 @@ var _ = Describe("GenerateCertificate", func() {
 			})
 
 			It("returns an error when the service fails to generate a certificate", func() {
-				fakeCertificateService.GenerateCertificateReturns(`some-json-response`, errors.New("failed to generate certificate"))
+				fakeService.GenerateCertificateReturns(`some-json-response`, errors.New("failed to generate certificate"))
 
 				err := command.Execute([]string{
 					"--domains", "*.apps.example.com, *.sys.example.com",

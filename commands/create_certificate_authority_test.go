@@ -14,15 +14,15 @@ import (
 
 var _ = Describe("CreateCertificateAuthority", func() {
 	var (
-		fakePresenter                   *presenterfakes.Presenter
-		fakeCertificateAuthorityService *fakes.CertificateAuthorityCreator
-		command                         commands.CreateCertificateAuthority
+		fakePresenter *presenterfakes.Presenter
+		fakeService   *fakes.CreateCertificateAuthorityService
+		command       commands.CreateCertificateAuthority
 	)
 
 	BeforeEach(func() {
 		fakePresenter = &presenterfakes.Presenter{}
-		fakeCertificateAuthorityService = &fakes.CertificateAuthorityCreator{}
-		command = commands.NewCreateCertificateAuthority(fakeCertificateAuthorityService, fakePresenter)
+		fakeService = &fakes.CreateCertificateAuthorityService{}
+		command = commands.NewCreateCertificateAuthority(fakeService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -33,8 +33,8 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthorityService.CreateCertificateAuthorityCallCount()).To(Equal(1))
-			Expect(fakeCertificateAuthorityService.CreateCertificateAuthorityArgsForCall(0)).To(Equal(api.CertificateAuthorityInput{
+			Expect(fakeService.CreateCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakeService.CreateCertificateAuthorityArgsForCall(0)).To(Equal(api.CertificateAuthorityInput{
 				CertPem:       "some CertPem",
 				PrivateKeyPem: "some PrivateKey",
 			}))
@@ -50,7 +50,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 				CertPEM:   "some CertPem",
 			}
 
-			fakeCertificateAuthorityService.CreateCertificateAuthorityReturns(ca, nil)
+			fakeService.CreateCertificateAuthorityReturns(ca, nil)
 
 			err := command.Execute([]string{
 				"--certificate-pem", "some CertPem",
@@ -65,7 +65,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 		Context("failure cases", func() {
 			Context("when the service fails to create a certificate", func() {
 				It("returns an error", func() {
-					fakeCertificateAuthorityService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
+					fakeService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
 
 					err := command.Execute([]string{
 						"--certificate-pem", "some CertPem",

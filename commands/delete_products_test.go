@@ -14,13 +14,13 @@ import (
 
 var _ = Describe("DeleteProduct", func() {
 	var (
-		command commands.DeleteProduct
-		deleter *fakes.ProductDeleter
+		command     commands.DeleteProduct
+		fakeService *fakes.DeleteProductService
 	)
 
 	BeforeEach(func() {
-		deleter = &fakes.ProductDeleter{}
-		command = commands.NewDeleteProduct(deleter)
+		fakeService = &fakes.DeleteProductService{}
+		command = commands.NewDeleteProduct(fakeService)
 	})
 
 	Describe("Execute", func() {
@@ -28,9 +28,9 @@ var _ = Describe("DeleteProduct", func() {
 			err := command.Execute([]string{"-p", "some-product-name", "-v", "1.2.3-build.4"})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(deleter.DeleteAvailableProductsCallCount()).To(Equal(1))
+			Expect(fakeService.DeleteAvailableProductsCallCount()).To(Equal(1))
 
-			input := deleter.DeleteAvailableProductsArgsForCall(0)
+			input := fakeService.DeleteAvailableProductsArgsForCall(0)
 			Expect(input).To(Equal(api.DeleteAvailableProductsInput{
 				ProductName:             "some-product-name",
 				ProductVersion:          "1.2.3-build.4",
@@ -41,7 +41,7 @@ var _ = Describe("DeleteProduct", func() {
 		Context("failure cases", func() {
 			Context("when deleting a product fails", func() {
 				It("returns an error", func() {
-					deleter.DeleteAvailableProductsReturns(errors.New("something bad happened"))
+					fakeService.DeleteAvailableProductsReturns(errors.New("something bad happened"))
 
 					err := command.Execute([]string{"-p", "nah", "-v", "nope"})
 					Expect(err).To(MatchError("something bad happened"))

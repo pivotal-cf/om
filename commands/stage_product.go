@@ -8,39 +8,26 @@ import (
 )
 
 type StageProduct struct {
-	logger                   logger
-	stagedProductsService    productStager
-	deployedProductsService  deployedProductsLister
-	availableProductsService availableProductChecker
-	diagnosticService        diagnosticService
-	Options                  struct {
+	logger  logger
+	service stageProductService
+	Options struct {
 		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
 		Version string `long:"product-version" short:"v" required:"true" description:"version of product"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/product_stager.go --fake-name ProductStager . productStager
-type productStager interface {
+//go:generate counterfeiter -o ./fakes/stage_product_service.go --fake-name StageProductService . stageProductService
+type stageProductService interface {
 	Stage(api.StageProductInput, string) error
-}
-
-//go:generate counterfeiter -o ./fakes/deployed_products_lister.go --fake-name DeployedProductsLister . deployedProductsLister
-type deployedProductsLister interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
-}
-
-//go:generate counterfeiter -o ./fakes/available_product_checker.go --fake-name AvailableProductChecker . availableProductChecker
-type availableProductChecker interface {
 	CheckProductAvailability(productName string, productVersion string) (bool, error)
+	GetDiagnosticReport() (api.DiagnosticReport, error)
 }
 
-func NewStageProduct(productStager productStager, deployedProductsService deployedProductsLister, availableProductChecker availableProductChecker, diagnosticService diagnosticService, logger logger) StageProduct {
+func NewStageProduct(service stageProductService, logger logger) StageProduct {
 	return StageProduct{
-		logger:                   logger,
-		stagedProductsService:    productStager,
-		deployedProductsService:  deployedProductsService,
-		availableProductsService: availableProductChecker,
-		diagnosticService:        diagnosticService,
+		logger:  logger,
+		service: service,
 	}
 }
 
@@ -49,13 +36,13 @@ func (sp StageProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}
 
-	diagnosticReport, err := sp.diagnosticService.GetDiagnosticReport()
+	diagnosticReport, err := sp.service.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to stage product: %s", err)
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, err := sp.deployedProductsService.ListDeployedProducts()
+	deployedProducts, err := sp.service.ListDeployedProducts()
 	for _, deployedProduct := range deployedProducts {
 		if deployedProduct.Type == sp.Options.Product {
 			deployedProductGUID = deployedProduct.GUID
@@ -73,7 +60,7 @@ func (sp StageProduct) Execute(args []string) error {
 		}
 	}
 
-	available, err := sp.availableProductsService.CheckProductAvailability(sp.Options.Product, sp.Options.Version)
+	available, err := sp.service.CheckProductAvailability(sp.Options.Product, sp.Options.Version)
 	if err != nil {
 		return fmt.Errorf("failed to stage product: cannot check availability of product %s %s", sp.Options.Product, sp.Options.Version)
 	}
@@ -84,7 +71,7 @@ func (sp StageProduct) Execute(args []string) error {
 
 	sp.logger.Printf("staging %s %s", sp.Options.Product, sp.Options.Version)
 
-	err = sp.stagedProductsService.Stage(api.StageProductInput{
+	err = sp.service.Stage(api.StageProductInput{
 		ProductName:    sp.Options.Product,
 		ProductVersion: sp.Options.Version,
 	}, deployedProductGUID)

@@ -7,23 +7,23 @@ import (
 )
 
 type ExportInstallation struct {
-	logger                           logger
-	installationAssetExporterService installationAssetExporterService
-	Options                          struct {
+	logger  logger
+	service exportInstallationService
+	Options struct {
 		OutputFile      string `long:"output-file"      short:"o"  required:"true" description:"output path to write installation to"`
 		PollingInterval int    `long:"polling-interval" short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installation_asset_exporter_service.go --fake-name InstallationAssetExporterService . installationAssetExporterService
-type installationAssetExporterService interface {
+//go:generate counterfeiter -o ./fakes/export_installation_service.go --fake-name ExportInstallationService . exportInstallationService
+type exportInstallationService interface {
 	DownloadInstallationAssetCollection(outputFile string, pollingInterval int) error
 }
 
-func NewExportInstallation(installationAssetExporterService installationAssetExporterService, logger logger) ExportInstallation {
+func NewExportInstallation(service exportInstallationService, logger logger) ExportInstallation {
 	return ExportInstallation{
-		logger: logger,
-		installationAssetExporterService: installationAssetExporterService,
+		logger:  logger,
+		service: service,
 	}
 }
 
@@ -42,7 +42,7 @@ func (ei ExportInstallation) Execute(args []string) error {
 
 	ei.logger.Printf("exporting installation")
 
-	err := ei.installationAssetExporterService.DownloadInstallationAssetCollection(ei.Options.OutputFile, ei.Options.PollingInterval)
+	err := ei.service.DownloadInstallationAssetCollection(ei.Options.OutputFile, ei.Options.PollingInterval)
 	if err != nil {
 		return fmt.Errorf("failed to export installation: %s", err)
 	}

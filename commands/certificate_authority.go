@@ -8,7 +8,7 @@ import (
 )
 
 type CertificateAuthority struct {
-	cas       certificateAuthoritiesService
+	service   certificateAuthoritiesService
 	presenter presenters.Presenter
 	logger    logger
 	Options   struct {
@@ -19,7 +19,7 @@ type CertificateAuthority struct {
 
 func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.Presenter, logger logger) CertificateAuthority {
 	return CertificateAuthority{
-		cas:       certificateAuthoritiesService,
+		service:   certificateAuthoritiesService,
 		presenter: presenter,
 		logger:    logger,
 	}
@@ -30,7 +30,7 @@ func (c CertificateAuthority) Execute(args []string) error {
 		return fmt.Errorf("could not parse certificate-authority flags: %s", err)
 	}
 
-	cas, err := c.cas.ListCertificateAuthorities()
+	cas, err := c.service.ListCertificateAuthorities()
 	if err != nil {
 		return err
 	}

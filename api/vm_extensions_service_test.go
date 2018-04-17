@@ -13,15 +13,17 @@ import (
 	"github.com/pivotal-cf/om/api/fakes"
 )
 
-var _ = Describe("VMExtensionsService", func() {
+var _ = Describe("VMExtensions", func() {
 	var (
-		client              *fakes.HttpClient
-		vmExtensionsService api.VMExtensionsService
+		client  *fakes.HttpClient
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		vmExtensionsService = api.NewVMExtensionsService(client)
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 
 		client.DoReturns(&http.Response{
 			StatusCode: http.StatusOK,
@@ -29,7 +31,7 @@ var _ = Describe("VMExtensionsService", func() {
 	})
 
 	It("creates a VM Extension", func() {
-		err := vmExtensionsService.CreateStagedVMExtension(api.CreateVMExtension{
+		err := service.CreateStagedVMExtension(api.CreateVMExtension{
 			Name:            "some-vm-extension",
 			CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 		})
@@ -58,7 +60,7 @@ var _ = Describe("VMExtensionsService", func() {
 				StatusCode: http.StatusInternalServerError,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-			err := vmExtensionsService.CreateStagedVMExtension(api.CreateVMExtension{
+			err := service.CreateStagedVMExtension(api.CreateVMExtension{
 				Name:            "some-vm-extension",
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			})
@@ -71,7 +73,7 @@ var _ = Describe("VMExtensionsService", func() {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-			err := vmExtensionsService.CreateStagedVMExtension(api.CreateVMExtension{
+			err := service.CreateStagedVMExtension(api.CreateVMExtension{
 				Name:            "some-vm-extension",
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			})

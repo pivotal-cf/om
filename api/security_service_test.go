@@ -12,16 +12,18 @@ import (
 	"github.com/pivotal-cf/om/api/fakes"
 )
 
-var _ = Describe("SecurityService", func() {
+var _ = Describe("Security", func() {
 	Describe("Fetch Root CA Cert", func() {
 		var (
 			client  *fakes.HttpClient
-			service api.SecurityService
+			service api.Api
 		)
 
 		BeforeEach(func() {
 			client = &fakes.HttpClient{}
-			service = api.NewSecurityService(client)
+			service = api.New(api.ApiInput{
+				Client: client,
+			})
 		})
 
 		It("gets the root CA cert", func() {

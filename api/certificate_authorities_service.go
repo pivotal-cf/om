@@ -7,10 +7,6 @@ import (
 	"net/http"
 )
 
-type CertificateAuthoritiesService struct {
-	client httpClient
-}
-
 type ActivateCertificateAuthorityInput struct {
 	GUID string
 }
@@ -37,13 +33,7 @@ type CA struct {
 	CertPEM   string `json:"cert_pem"`
 }
 
-func NewCertificateAuthoritiesService(client httpClient) CertificateAuthoritiesService {
-	return CertificateAuthoritiesService{
-		client: client,
-	}
-}
-
-func (c CertificateAuthoritiesService) ListCertificateAuthorities() (CertificateAuthoritiesOutput, error) {
+func (a Api) ListCertificateAuthorities() (CertificateAuthoritiesOutput, error) {
 	var output CertificateAuthoritiesOutput
 
 	req, err := http.NewRequest("GET", "/api/v0/certificate_authorities", nil)
@@ -51,12 +41,12 @@ func (c CertificateAuthoritiesService) ListCertificateAuthorities() (Certificate
 		return output, err
 	}
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return output, err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return CertificateAuthoritiesOutput{}, err
 	}
 
@@ -68,25 +58,25 @@ func (c CertificateAuthoritiesService) ListCertificateAuthorities() (Certificate
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) RegenerateCertificates() error {
+func (a Api) RegenerateCertificates() error {
 	req, err := http.NewRequest("POST", "/api/v0/certificate_authorities/active/regenerate", nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c CertificateAuthoritiesService) GenerateCertificateAuthority() (CA, error) {
+func (a Api) GenerateCertificateAuthority() (CA, error) {
 	var output CA
 
 	req, err := http.NewRequest("POST", "/api/v0/certificate_authorities/generate", nil)
@@ -94,12 +84,12 @@ func (c CertificateAuthoritiesService) GenerateCertificateAuthority() (CA, error
 		return CA{}, err
 	}
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return CA{}, err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return CA{}, err
 	}
 
@@ -111,7 +101,7 @@ func (c CertificateAuthoritiesService) GenerateCertificateAuthority() (CA, error
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) CreateCertificateAuthority(certBody CertificateAuthorityInput) (CA, error) {
+func (a Api) CreateCertificateAuthority(certBody CertificateAuthorityInput) (CA, error) {
 	var output CA
 
 	body, err := json.Marshal(certBody)
@@ -125,12 +115,12 @@ func (c CertificateAuthoritiesService) CreateCertificateAuthority(certBody Certi
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return CA{}, err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return CA{}, err
 	}
 
@@ -142,7 +132,7 @@ func (c CertificateAuthoritiesService) CreateCertificateAuthority(certBody Certi
 	return output, nil
 }
 
-func (c CertificateAuthoritiesService) ActivateCertificateAuthority(input ActivateCertificateAuthorityInput) error {
+func (a Api) ActivateCertificateAuthority(input ActivateCertificateAuthorityInput) error {
 
 	path := fmt.Sprintf("/api/v0/certificate_authorities/%s/activate", input.GUID)
 
@@ -152,19 +142,19 @@ func (c CertificateAuthoritiesService) ActivateCertificateAuthority(input Activa
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c CertificateAuthoritiesService) DeleteCertificateAuthority(input DeleteCertificateAuthorityInput) error {
+func (a Api) DeleteCertificateAuthority(input DeleteCertificateAuthorityInput) error {
 
 	path := fmt.Sprintf("/api/v0/certificate_authorities/%s", input.GUID)
 
@@ -174,12 +164,12 @@ func (c CertificateAuthoritiesService) DeleteCertificateAuthority(input DeleteCe
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return err
 	}
 

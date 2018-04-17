@@ -13,17 +13,20 @@ import (
 	"github.com/pivotal-cf/om/api/fakes"
 )
 
-var _ = Describe("DirectorService", func() {
+var _ = Describe("Director", func() {
 	var (
-		client          *fakes.HttpClient
-		stderr          *fakes.Logger
-		directorService api.DirectorService
+		client  *fakes.HttpClient
+		stderr  *fakes.Logger
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
 		stderr = &fakes.Logger{}
-		directorService = api.NewDirectorService(client, stderr)
+		service = api.New(api.ApiInput{
+			Client: client,
+			Logger: stderr,
+		})
 
 		client.DoReturns(&http.Response{
 			StatusCode: http.StatusOK,
@@ -49,7 +52,7 @@ var _ = Describe("DirectorService", func() {
 		})
 
 		It("configures availability zones", func() {
-			err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+			err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[
           {"name": "existing-az"},
           {"name": "new-az"}
@@ -82,7 +85,7 @@ var _ = Describe("DirectorService", func() {
 		})
 
 		It("preserves all provided fields", func() {
-			err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+			err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[
           {
             "name": "some-az",
@@ -142,7 +145,7 @@ var _ = Describe("DirectorService", func() {
 			})
 
 			It("continues to configure the availability zones", func() {
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage(`[
           {"name": "new-az"}
         ]`),
@@ -158,7 +161,7 @@ var _ = Describe("DirectorService", func() {
 			})
 
 			It("prints a warning to the operator", func() {
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage(`[
           {"name": "new-az"}
         ]`),
@@ -175,7 +178,7 @@ var _ = Describe("DirectorService", func() {
 		Context("failure cases", func() {
 
 			It("returns an error when the provided AZ config is malformed", func() {
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("{malformed"),
 				})
 				Expect(client.DoCallCount()).To(Equal(0))
@@ -183,7 +186,7 @@ var _ = Describe("DirectorService", func() {
 			})
 
 			It("returns an error when the provided AZ config does not include a name", func() {
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("[{}]"),
 				})
 				Expect(client.DoCallCount()).To(Equal(0))
@@ -196,7 +199,7 @@ var _ = Describe("DirectorService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil,
 				)
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
 				Expect(err).To(MatchError(HavePrefix("unable to fetch existing AZ configuration")))
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
@@ -208,7 +211,7 @@ var _ = Describe("DirectorService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"),
 				)
 
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
 
 				Expect(err).To(MatchError(HavePrefix("unable to fetch existing AZ configuration")))
 				Expect(err).To(MatchError(ContainSubstring(
@@ -222,7 +225,7 @@ var _ = Describe("DirectorService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`malformed`))}, nil,
 				)
 
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
 
 				Expect(err).To(MatchError(HavePrefix(
 					"problem retrieving existing AZs: response is not well-formed")))
@@ -240,7 +243,7 @@ var _ = Describe("DirectorService", func() {
 							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
 					}
 				}
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
@@ -257,7 +260,7 @@ var _ = Describe("DirectorService", func() {
 					}
 				}
 
-				err := directorService.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})
@@ -266,7 +269,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("NetworksConfiguration", func() {
 		It("configures networks", func() {
-			err := directorService.UpdateStagedDirectorNetworks(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
+			err := service.UpdateStagedDirectorNetworks(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(1))
@@ -291,7 +294,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusInternalServerError,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.UpdateStagedDirectorNetworks(json.RawMessage("{}"))
+				err := service.UpdateStagedDirectorNetworks(json.RawMessage("{}"))
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
@@ -300,7 +303,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.UpdateStagedDirectorNetworks(json.RawMessage("{}"))
+				err := service.UpdateStagedDirectorNetworks(json.RawMessage("{}"))
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/networks: api endpoint failed"))
 			})
 		})
@@ -308,7 +311,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
-			err := directorService.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
+			err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
 				NetworkAZ: json.RawMessage(`{
 					"network": {"name": "network_name"},
 					"singleton_availability_zone": {"name": "availability_zone_name"}
@@ -344,7 +347,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
+				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
 
@@ -353,7 +356,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
+				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/network_and_az: api endpoint failed"))
 			})
@@ -362,7 +365,7 @@ var _ = Describe("DirectorService", func() {
 
 	Describe("Properties", func() {
 		It("assigns director configuration properties", func() {
-			err := directorService.UpdateStagedDirectorProperties(api.DirectorProperties{
+			err := service.UpdateStagedDirectorProperties(api.DirectorProperties{
 				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 				DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				SecurityConfiguration: json.RawMessage(`{"hello": "goodbye"}`),
@@ -390,7 +393,7 @@ var _ = Describe("DirectorService", func() {
 
 		Context("when some of the configurations are empty", func() {
 			It("returns only configurations that are populated", func() {
-				err := directorService.UpdateStagedDirectorProperties(api.DirectorProperties{
+				err := service.UpdateStagedDirectorProperties(api.DirectorProperties{
 					IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
 					DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
 				})
@@ -419,7 +422,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := directorService.UpdateStagedDirectorProperties(api.DirectorProperties{})
+				err := service.UpdateStagedDirectorProperties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
@@ -429,7 +432,7 @@ var _ = Describe("DirectorService", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := directorService.UpdateStagedDirectorProperties(api.DirectorProperties{})
+				err := service.UpdateStagedDirectorProperties(api.DirectorProperties{})
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/properties: api endpoint failed"))
 			})

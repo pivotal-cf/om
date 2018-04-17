@@ -14,15 +14,15 @@ import (
 
 var _ = Describe("StagedProducts", func() {
 	var (
-		presenter         *presenterfakes.Presenter
-		diagnosticService *fakes.DiagnosticService
-		command           commands.StagedProducts
+		presenter   *presenterfakes.Presenter
+		fakeService *fakes.StagedProductsService
+		command     commands.StagedProducts
 	)
 
 	BeforeEach(func() {
 		presenter = &presenterfakes.Presenter{}
-		diagnosticService = &fakes.DiagnosticService{}
-		command = commands.NewStagedProducts(presenter, diagnosticService)
+		fakeService = &fakes.StagedProductsService{}
+		command = commands.NewStagedProducts(presenter, fakeService)
 	})
 
 	It("lists the staged products", func() {
@@ -36,14 +36,14 @@ var _ = Describe("StagedProducts", func() {
 				Version: "version-infinity",
 			},
 		}
-		diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{
+		fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 			StagedProducts: stagedProducts,
 		}, nil)
 
 		err := command.Execute([]string{})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(diagnosticService.GetDiagnosticReportCallCount()).To(Equal(1))
+		Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
 
 		Expect(presenter.PresentStagedProductsCallCount()).To(Equal(1))
 		Expect(presenter.PresentStagedProductsArgsForCall(0)).To(Equal(stagedProducts))
@@ -52,7 +52,7 @@ var _ = Describe("StagedProducts", func() {
 	Context("failure cases", func() {
 		Context("when fetching the diagnostic report fails", func() {
 			It("returns an error", func() {
-				diagnosticService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to retrieve staged products beep boop"))

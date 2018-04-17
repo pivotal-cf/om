@@ -10,7 +10,6 @@ import (
 
 type Credentials struct {
 	service   credentialsService
-	lister    deployedProductsLister
 	presenter presenters.Presenter
 	logger    logger
 	Options   struct {
@@ -23,10 +22,11 @@ type Credentials struct {
 //go:generate counterfeiter -o ./fakes/credentials_service.go --fake-name CredentialsService . credentialsService
 type credentialsService interface {
 	GetDeployedProductCredential(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
-func NewCredentials(csService credentialsService, dpLister deployedProductsLister, presenter presenters.Presenter, logger logger) Credentials {
-	return Credentials{service: csService, lister: dpLister, presenter: presenter, logger: logger}
+func NewCredentials(csService credentialsService, presenter presenters.Presenter, logger logger) Credentials {
+	return Credentials{service: csService, presenter: presenter, logger: logger}
 }
 
 func (cs Credentials) Execute(args []string) error {
@@ -35,7 +35,7 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	deployedProductGUID := ""
-	deployedProducts, err := cs.lister.ListDeployedProducts()
+	deployedProducts, err := cs.service.ListDeployedProducts()
 	if err != nil {
 		return fmt.Errorf("failed to fetch credential: %s", err)
 	}

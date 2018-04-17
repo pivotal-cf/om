@@ -16,12 +16,14 @@ import (
 var _ = Describe("ErrandsService", func() {
 	var (
 		client  *fakes.HttpClient
-		service api.ErrandsService
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = &fakes.HttpClient{}
-		service = api.NewErrandsService(client)
+		service = api.New(api.ApiInput{
+			Client: client,
+		})
 	})
 
 	Describe("UpdateStagedProductErrands", func() {

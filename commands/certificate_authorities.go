@@ -7,7 +7,7 @@ import (
 )
 
 type CertificateAuthorities struct {
-	cas       certificateAuthoritiesService
+	service   certificateAuthoritiesService
 	presenter presenters.Presenter
 }
 
@@ -19,13 +19,13 @@ type certificateAuthoritiesService interface {
 
 func NewCertificateAuthorities(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.Presenter) CertificateAuthorities {
 	return CertificateAuthorities{
-		cas:       certificateAuthoritiesService,
+		service:   certificateAuthoritiesService,
 		presenter: presenter,
 	}
 }
 
 func (c CertificateAuthorities) Execute(_ []string) error {
-	casOutput, err := c.cas.ListCertificateAuthorities()
+	casOutput, err := c.service.ListCertificateAuthorities()
 	if err != nil {
 		return err
 	}

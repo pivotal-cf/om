@@ -14,10 +14,9 @@ import (
 )
 
 type ConfigureProduct struct {
-	productsService productConfigurer
-	jobsService     jobsConfigurer
-	logger          logger
-	Options         struct {
+	service configureProductService
+	logger  logger
+	Options struct {
 		ProductName       string `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
 		ConfigFile        string `long:"config"             short:"c"                  description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)"`
 		ProductProperties string `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
@@ -26,24 +25,19 @@ type ConfigureProduct struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/product_configurer.go --fake-name ProductConfigurer . productConfigurer
-type productConfigurer interface {
+//go:generate counterfeiter -o ./fakes/configure_product_service.go --fake-name ConfigureProductService . configureProductService
+type configureProductService interface {
 	ListStagedProducts() (api.StagedProductsOutput, error)
 	Configure(api.ProductsConfigurationInput) error
-}
-
-//go:generate counterfeiter -o ./fakes/jobs_configurer.go --fake-name JobsConfigurer . jobsConfigurer
-type jobsConfigurer interface {
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
 }
 
-func NewConfigureProduct(productConfigurer productConfigurer, jobsConfigurer jobsConfigurer, logger logger) ConfigureProduct {
+func NewConfigureProduct(service configureProductService, logger logger) ConfigureProduct {
 	return ConfigureProduct{
-		productsService: productConfigurer,
-		jobsService:     jobsConfigurer,
-		logger:          logger,
+		service: service,
+		logger:  logger,
 	}
 }
 
@@ -65,7 +59,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		}
 	}
 
-	stagedProducts, err := cp.productsService.ListStagedProducts()
+	stagedProducts, err := cp.service.ListStagedProducts()
 	if err != nil {
 		return err
 	}
@@ -189,7 +183,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 		return fmt.Errorf("could not decode product-resource json: %s", err)
 	}
 
-	jobs, err := cp.jobsService.ListStagedProductJobs(productGUID)
+	jobs, err := cp.service.ListStagedProductJobs(productGUID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch jobs: %s", err)
 	}
@@ -204,7 +198,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 	cp.logger.Printf("applying resource configuration for the following jobs:")
 	for _, name := range names {
 		cp.logger.Printf("\t%s", name)
-		jobProperties, err := cp.jobsService.GetStagedProductJobResourceConfig(productGUID, jobs[name])
+		jobProperties, err := cp.service.GetStagedProductJobResourceConfig(productGUID, jobs[name])
 		if err != nil {
 			return fmt.Errorf("could not fetch existing job configuration: %s", err)
 		}
@@ -214,7 +208,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 			return err
 		}
 
-		err = cp.jobsService.UpdateStagedProductJobResourceConfig(productGUID, jobs[name], jobProperties)
+		err = cp.service.UpdateStagedProductJobResourceConfig(productGUID, jobs[name], jobProperties)
 		if err != nil {
 			return fmt.Errorf("failed to configure resources: %s", err)
 		}
@@ -224,7 +218,7 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 
 func (cp ConfigureProduct) configureProperties(productProperties string, productGUID string) error {
 	cp.logger.Printf("setting properties")
-	err := cp.productsService.Configure(api.ProductsConfigurationInput{
+	err := cp.service.Configure(api.ProductsConfigurationInput{
 		GUID:          productGUID,
 		Configuration: productProperties,
 	})
@@ -237,7 +231,7 @@ func (cp ConfigureProduct) configureProperties(productProperties string, product
 
 func (cp ConfigureProduct) configureNetwork(networkProperties string, productGUID string) error {
 	cp.logger.Printf("setting up network")
-	err := cp.productsService.Configure(api.ProductsConfigurationInput{
+	err := cp.service.Configure(api.ProductsConfigurationInput{
 		GUID:    productGUID,
 		Network: networkProperties,
 	})

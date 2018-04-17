@@ -4,23 +4,29 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
 
 type DeployedProducts struct {
-	presenter         presenters.Presenter
-	diagnosticService diagnosticService
+	presenter presenters.Presenter
+	service   deployedProductsService
 }
 
-func NewDeployedProducts(presenter presenters.Presenter, diagnosticService diagnosticService) DeployedProducts {
+//go:generate counterfeiter -o ./fakes/deployed_products_service.go --fake-name DeployedProductsService . deployedProductsService
+type deployedProductsService interface {
+	GetDiagnosticReport() (api.DiagnosticReport, error)
+}
+
+func NewDeployedProducts(presenter presenters.Presenter, service deployedProductsService) DeployedProducts {
 	return DeployedProducts{
-		presenter:         presenter,
-		diagnosticService: diagnosticService,
+		presenter: presenter,
+		service:   service,
 	}
 }
 
 func (dp DeployedProducts) Execute(args []string) error {
-	diagnosticReport, err := dp.diagnosticService.GetDiagnosticReport()
+	diagnosticReport, err := dp.service.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve deployed products %s", err)
 	}

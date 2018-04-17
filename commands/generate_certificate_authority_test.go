@@ -14,15 +14,15 @@ import (
 
 var _ = Describe("GenerateCertificateAuthority", func() {
 	var (
-		fakePresenter                   *presenterfakes.Presenter
-		fakeCertificateAuthorityService *fakes.CertificateAuthorityGenerator
-		command                         commands.GenerateCertificateAuthority
+		fakePresenter *presenterfakes.Presenter
+		fakeService   *fakes.GenerateCertificateAuthorityService
+		command       commands.GenerateCertificateAuthority
 	)
 
 	BeforeEach(func() {
 		fakePresenter = &presenterfakes.Presenter{}
-		fakeCertificateAuthorityService = &fakes.CertificateAuthorityGenerator{}
-		command = commands.NewGenerateCertificateAuthority(fakeCertificateAuthorityService, fakePresenter)
+		fakeService = &fakes.GenerateCertificateAuthorityService{}
+		command = commands.NewGenerateCertificateAuthority(fakeService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -30,7 +30,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeCertificateAuthorityService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
+			Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
 		})
 
 		It("prints a table containing the certificate authority that was generated", func() {
@@ -43,7 +43,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 				CertPEM:   "some CertPem",
 			}
 
-			fakeCertificateAuthorityService.GenerateCertificateAuthorityReturns(certificateAuthority, nil)
+			fakeService.GenerateCertificateAuthorityReturns(certificateAuthority, nil)
 
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -55,7 +55,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 
 		Context("failure cases", func() {
 			It("returns an error when the service fails to generate a certificate", func() {
-				fakeCertificateAuthorityService.GenerateCertificateAuthorityReturns(api.CA{}, errors.New("failed to generate certificate"))
+				fakeService.GenerateCertificateAuthorityReturns(api.CA{}, errors.New("failed to generate certificate"))
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to generate certificate"))

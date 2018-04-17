@@ -7,10 +7,6 @@ import (
 	"net/http"
 )
 
-type DiagnosticService struct {
-	client httpClient
-}
-
 type DiagnosticProduct struct {
 	Name     string `json:"name"`
 	Version  string `json:"version"`
@@ -30,19 +26,13 @@ func (du DiagnosticReportUnavailable) Error() string {
 	return "diagnostic report is currently unavailable"
 }
 
-func NewDiagnosticService(client httpClient) DiagnosticService {
-	return DiagnosticService{
-		client: client,
-	}
-}
-
-func (ds DiagnosticService) GetDiagnosticReport() (DiagnosticReport, error) {
+func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 	req, err := http.NewRequest("GET", "/api/v0/diagnostic_report", nil)
 	if err != nil {
 		return DiagnosticReport{}, err
 	}
 
-	resp, err := ds.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return DiagnosticReport{}, fmt.Errorf("could not make api request to diagnostic_report endpoint: %s", err)
 	}
@@ -53,7 +43,7 @@ func (ds DiagnosticService) GetDiagnosticReport() (DiagnosticReport, error) {
 		return DiagnosticReport{}, DiagnosticReportUnavailable{}
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return DiagnosticReport{}, err
 	}
 

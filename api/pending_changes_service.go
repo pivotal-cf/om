@@ -19,29 +19,19 @@ type ProductChange struct {
 	Action  string   `json:"action"`
 }
 
-type PendingChangesService struct {
-	client httpClient
-}
-
-func NewPendingChangesService(client httpClient) PendingChangesService {
-	return PendingChangesService{
-		client: client,
-	}
-}
-
-func (pc PendingChangesService) ListStagedPendingChanges() (PendingChangesOutput, error) {
+func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
 	pcReq, err := http.NewRequest("GET", pendingChangesEndpoint, nil)
 	if err != nil {
 		return PendingChangesOutput{}, err
 	}
 
-	resp, err := pc.client.Do(pcReq)
+	resp, err := a.client.Do(pcReq)
 	if err != nil {
 		return PendingChangesOutput{}, fmt.Errorf("could not make api request to pending_changes endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return PendingChangesOutput{}, err
 	}
 

@@ -13,16 +13,16 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-//go:generate counterfeiter -o ./fakes/request_service.go --fake-name RequestService . requestService
-type requestService interface {
+//go:generate counterfeiter -o ./fakes/curl_service.go --fake-name CurlService . curlService
+type curlService interface {
 	Curl(api.RequestServiceCurlInput) (api.RequestServiceCurlOutput, error)
 }
 
 type Curl struct {
-	requestService requestService
-	stdout         logger
-	stderr         logger
-	Options        struct {
+	service curlService
+	stdout  logger
+	stderr  logger
+	Options struct {
 		Path    string   `long:"path"    short:"p" required:"true" description:"path to api endpoint"`
 		Method  string   `long:"request" short:"x"                 description:"http verb" default:"GET"`
 		Data    string   `long:"data"    short:"d"                 description:"api request payload"`
@@ -31,8 +31,8 @@ type Curl struct {
 	}
 }
 
-func NewCurl(rs requestService, stdout logger, stderr logger) Curl {
-	return Curl{requestService: rs, stdout: stdout, stderr: stderr}
+func NewCurl(service curlService, stdout logger, stderr logger) Curl {
+	return Curl{service: service, stdout: stdout, stderr: stderr}
 }
 
 func (c Curl) Execute(args []string) error {
@@ -53,7 +53,7 @@ func (c Curl) Execute(args []string) error {
 		Headers: requestHeaders,
 	}
 
-	output, err := c.requestService.Curl(input)
+	output, err := c.service.Curl(input)
 	if err != nil {
 		return fmt.Errorf("failed to make api request: %s", err)
 	}

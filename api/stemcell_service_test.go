@@ -17,10 +17,14 @@ var _ = Describe("StemcellService", func() {
 	Describe("UploadStemcell", func() {
 		var (
 			progressClient *fakes.HttpClient
+			service        api.Api
 		)
 
 		BeforeEach(func() {
 			progressClient = &fakes.HttpClient{}
+			service = api.New(api.ApiInput{
+				ProgressClient: progressClient,
+			})
 		})
 
 		It("makes a request to upload the stemcell to the OpsManager", func() {
@@ -28,8 +32,6 @@ var _ = Describe("StemcellService", func() {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader("{}")),
 			}, nil)
-
-			service := api.NewUploadStemcellService(progressClient)
 
 			output, err := service.UploadStemcell(api.StemcellUploadInput{
 				ContentLength: 10,
@@ -55,7 +57,6 @@ var _ = Describe("StemcellService", func() {
 			Context("when the client errors before the request", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
-					service := api.NewUploadStemcellService(progressClient)
 
 					_, err := service.UploadStemcell(api.StemcellUploadInput{})
 					Expect(err).To(MatchError("could not make api request to stemcells endpoint: some client error"))
@@ -68,7 +69,6 @@ var _ = Describe("StemcellService", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
-					service := api.NewUploadStemcellService(progressClient)
 
 					_, err := service.UploadStemcell(api.StemcellUploadInput{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))

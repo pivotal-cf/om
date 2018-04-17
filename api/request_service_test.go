@@ -17,12 +17,14 @@ var _ = Describe("RequestService", func() {
 	Describe("Curl", func() {
 		var (
 			client  *fakes.HttpClient
-			service api.RequestService
+			service api.Api
 		)
 
 		BeforeEach(func() {
 			client = &fakes.HttpClient{}
-			service = api.NewRequestService(client)
+			service = api.New(api.ApiInput{
+				Client: client,
+			})
 		})
 
 		It("makes a request against the api and returns a response", func() {

@@ -8,21 +8,11 @@ import (
 	"strings"
 )
 
-type CertificatesService struct {
-	client httpClient
-}
-
 type domainsOutput struct {
 	Domains []string `json:"domains"`
 }
 
-func NewCertificatesService(client httpClient) CertificatesService {
-	return CertificatesService{
-		client: client,
-	}
-}
-
-func (c CertificatesService) GenerateCertificate(domains string) (string, error) {
+func (a Api) GenerateCertificate(domains string) (string, error) {
 	domainsOutput := domainsOutput{
 		Domains: strings.Split(domains, ","),
 	}
@@ -39,13 +29,13 @@ func (c CertificatesService) GenerateCertificate(domains string) (string, error)
 
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := c.client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		return "", err
 	}
 

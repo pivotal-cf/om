@@ -20,15 +20,7 @@ type ErrandsListOutput struct {
 	Errands []Errand `json:"errands"`
 }
 
-type ErrandsService struct {
-	Client httpClient
-}
-
-func NewErrandsService(client httpClient) ErrandsService {
-	return ErrandsService{Client: client}
-}
-
-func (es ErrandsService) UpdateStagedProductErrands(productID string, errandName string, postDeployState interface{}, preDeleteState interface{}) error {
+func (a Api) UpdateStagedProductErrands(productID string, errandName string, postDeployState interface{}, preDeleteState interface{}) error {
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
 
 	errandsListOutput := ErrandsListOutput{
@@ -53,12 +45,12 @@ func (es ErrandsService) UpdateStagedProductErrands(productID string, errandName
 
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := es.Client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		rawBody, err := readAll(resp.Body)
 		if err != nil {
 			return err
@@ -70,7 +62,7 @@ func (es ErrandsService) UpdateStagedProductErrands(productID string, errandName
 	return nil
 }
 
-func (es ErrandsService) ListStagedProductErrands(productID string) (ErrandsListOutput, error) {
+func (a Api) ListStagedProductErrands(productID string) (ErrandsListOutput, error) {
 	var errandsListOutput ErrandsListOutput
 
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
@@ -79,12 +71,12 @@ func (es ErrandsService) ListStagedProductErrands(productID string) (ErrandsList
 		return errandsListOutput, err
 	}
 
-	resp, err := es.Client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return errandsListOutput, err
 	}
 
-	if err = ValidateStatusOK(resp); err != nil {
+	if err = validateStatusOK(resp); err != nil {
 		rawBody, err := readAll(resp.Body)
 		if err != nil {
 			return errandsListOutput, err

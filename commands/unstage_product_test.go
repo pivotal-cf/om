@@ -15,25 +15,25 @@ import (
 
 var _ = Describe("UnstageProduct", func() {
 	var (
-		stagedProductsService *fakes.ProductUnstager
-		logger                *fakes.Logger
+		fakeService *fakes.UnstageProductService
+		logger      *fakes.Logger
 	)
 
 	BeforeEach(func() {
-		stagedProductsService = &fakes.ProductUnstager{}
+		fakeService = &fakes.UnstageProductService{}
 		logger = &fakes.Logger{}
 	})
 
 	It("unstages a product", func() {
-		command := commands.NewUnstageProduct(stagedProductsService, logger)
+		command := commands.NewUnstageProduct(fakeService, logger)
 
 		err := command.Execute([]string{
 			"--product-name", "some-product",
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(stagedProductsService.DeleteStagedProductCallCount()).To(Equal(1))
-		Expect(stagedProductsService.DeleteStagedProductArgsForCall(0)).To(Equal(
+		Expect(fakeService.DeleteStagedProductCallCount()).To(Equal(1))
+		Expect(fakeService.DeleteStagedProductArgsForCall(0)).To(Equal(
 			api.UnstageProductInput{
 				ProductName: "some-product",
 			}))
@@ -48,7 +48,7 @@ var _ = Describe("UnstageProduct", func() {
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewUnstageProduct(stagedProductsService, logger)
+				command := commands.NewUnstageProduct(fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse unstage-product flags: flag provided but not defined: -badflag"))
 			})
@@ -56,7 +56,7 @@ var _ = Describe("UnstageProduct", func() {
 
 		Context("when the product-name flag is not provided", func() {
 			It("returns an error", func() {
-				command := commands.NewUnstageProduct(stagedProductsService, logger)
+				command := commands.NewUnstageProduct(fakeService, logger)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse unstage-product flags: missing required flag \"--product-name\""))
 			})
@@ -64,8 +64,8 @@ var _ = Describe("UnstageProduct", func() {
 
 		Context("when the product cannot be unstaged", func() {
 			It("returns an error", func() {
-				command := commands.NewUnstageProduct(stagedProductsService, logger)
-				stagedProductsService.DeleteStagedProductReturns(errors.New("some product error"))
+				command := commands.NewUnstageProduct(fakeService, logger)
+				fakeService.DeleteStagedProductReturns(errors.New("some product error"))
 
 				err := command.Execute([]string{"--product-name", "some-product"})
 				Expect(err).To(MatchError("failed to unstage product: some product error"))

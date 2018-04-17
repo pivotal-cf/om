@@ -9,18 +9,18 @@ import (
 )
 
 type UploadProduct struct {
-	multipart       multipart
-	logger          logger
-	productsService productUploader
-	Options         struct {
+	multipart multipart
+	logger    logger
+	service   uploadProductService
+	Options   struct {
 		Product         string `long:"product"          short:"p"  required:"true" description:"path to product"`
 		PollingInterval int    `long:"polling-interval" short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 	metadataExtractor metadataExtractor
 }
 
-//go:generate counterfeiter -o ./fakes/product_uploader.go --fake-name ProductUploader . productUploader
-type productUploader interface {
+//go:generate counterfeiter -o ./fakes/upload_product_service.go --fake-name UploadProductService . uploadProductService
+type uploadProductService interface {
 	UploadAvailableProduct(api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error)
 	CheckProductAvailability(string, string) (bool, error)
 }
@@ -30,12 +30,12 @@ type metadataExtractor interface {
 	ExtractMetadata(string) (extractor.Metadata, error)
 }
 
-func NewUploadProduct(multipart multipart, metadataExtractor metadataExtractor, productUploader productUploader, logger logger) UploadProduct {
+func NewUploadProduct(multipart multipart, metadataExtractor metadataExtractor, service uploadProductService, logger logger) UploadProduct {
 	return UploadProduct{
 		multipart:         multipart,
-		logger:            logger,
-		productsService:   productUploader,
 		metadataExtractor: metadataExtractor,
+		logger:            logger,
+		service:           service,
 	}
 }
 
@@ -57,7 +57,7 @@ func (up UploadProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to extract product metadata: %s", err)
 	}
 
-	prodAvailable, err := up.productsService.CheckProductAvailability(metadata.Name, metadata.Version)
+	prodAvailable, err := up.service.CheckProductAvailability(metadata.Name, metadata.Version)
 	if err != nil {
 		return fmt.Errorf("failed to check product availability: %s", err)
 	}
@@ -80,7 +80,7 @@ func (up UploadProduct) Execute(args []string) error {
 
 	up.logger.Printf("beginning product upload to Ops Manager")
 
-	_, err = up.productsService.UploadAvailableProduct(api.UploadAvailableProductInput{
+	_, err = up.service.UploadAvailableProduct(api.UploadAvailableProductInput{
 		ContentLength:   submission.Length,
 		Product:         submission.Content,
 		ContentType:     submission.ContentType,

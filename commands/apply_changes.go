@@ -10,18 +10,18 @@ import (
 )
 
 type ApplyChanges struct {
-	installationsService installationsService
-	logger               logger
-	logWriter            logWriter
-	waitDuration         int
-	Options              struct {
+	service      applyChangesService
+	logger       logger
+	logWriter    logWriter
+	waitDuration int
+	Options      struct {
 		IgnoreWarnings     bool `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
 		SkipDeployProducts bool `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
-type installationsService interface {
+//go:generate counterfeiter -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
+type applyChangesService interface {
 	CreateInstallation(bool, bool) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
@@ -34,12 +34,12 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(installationsService installationsService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
+func NewApplyChanges(service applyChangesService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
 	return ApplyChanges{
-		installationsService: installationsService,
-		logger:               logger,
-		logWriter:            logWriter,
-		waitDuration:         waitDuration,
+		service:      service,
+		logger:       logger,
+		logWriter:    logWriter,
+		waitDuration: waitDuration,
 	}
 }
 
@@ -48,7 +48,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
 
-	installation, err := ac.installationsService.RunningInstallation()
+	installation, err := ac.service.RunningInstallation()
 	if err != nil {
 		return fmt.Errorf("could not check for any already running installation: %s", err)
 	}
@@ -56,7 +56,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
 		deployProducts := !ac.Options.SkipDeployProducts
-		installation, err = ac.installationsService.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts)
+		installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts)
 		if err != nil {
 			return fmt.Errorf("installation failed to trigger: %s", err)
 		}
@@ -66,12 +66,12 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	for {
-		current, err := ac.installationsService.GetInstallation(installation.ID)
+		current, err := ac.service.GetInstallation(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get status: %s", err)
 		}
 
-		install, err := ac.installationsService.GetInstallationLogs(installation.ID)
+		install, err := ac.service.GetInstallationLogs(installation.ID)
 		if err != nil {
 			return fmt.Errorf("installation failed to get logs: %s", err)
 		}

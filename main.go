@@ -18,6 +18,7 @@ import (
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
+	"github.com/pivotal-cf/om/ui"
 )
 
 var version = "unknown"
@@ -115,29 +116,18 @@ func main() {
 		authedProgressClient = network.NewTraceClient(authedProgressClient, os.Stderr)
 	}
 
-	setupService := api.NewSetupService(unauthenticatedClient)
-	uploadStemcellService := api.NewUploadStemcellService(authedProgressClient)
-	stagedProductsService := api.NewStagedProductsService(authedClient)
-	deployedProductsService := api.NewDeployedProductsService(authedClient)
-	credentialsService := api.NewCredentialsService(authedClient)
-	availableProductsService := api.NewAvailableProductsService(authedClient, authedProgressClient)
-	diagnosticService := api.NewDiagnosticService(authedClient)
-	importInstallationService := api.NewInstallationAssetService(nil, unauthenticatedProgressClient)
-	exportInstallationService := api.NewInstallationAssetService(nil, authedProgressClient)
-	deleteInstallationService := api.NewInstallationAssetService(authedClient, nil)
-	installationsService := api.NewInstallationsService(authedClient)
-	errandsService := api.NewErrandsService(authedClient)
-	pendingChangesService := api.NewPendingChangesService(authedClient)
+	api := api.New(api.ApiInput{
+		Client:                 authedClient,
+		UnauthedClient:         unauthenticatedClient,
+		ProgressClient:         authedProgressClient,
+		UnauthedProgressClient: unauthenticatedProgressClient,
+		Logger:                 stderr,
+	})
+	ui := ui.New(ui.UiInput{
+		Client: authedCookieClient,
+	})
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
-	requestService := api.NewRequestService(authedClient)
-	jobsService := api.NewJobsService(authedClient)
-	boshService := api.NewBoshFormService(authedCookieClient)
-	dashboardService := api.NewDashboardService(authedCookieClient)
-	certificateAuthoritiesService := api.NewCertificateAuthoritiesService(authedClient)
-	certificatesService := api.NewCertificatesService(authedClient)
-	directorService := api.NewDirectorService(authedClient, stderr)
-	vmExtensionService := api.NewVMExtensionsService(authedClient)
 
 	form, err := formcontent.NewForm()
 	if err != nil {
@@ -157,52 +147,46 @@ func main() {
 	}
 
 	commandSet := jhanda.CommandSet{}
-	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(certificateAuthoritiesService, stdout)
-	commandSet["apply-changes"] = commands.NewApplyChanges(installationsService, logWriter, stdout, applySleepSeconds)
-	commandSet["available-products"] = commands.NewAvailableProducts(availableProductsService, presenter, stdout)
-	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(certificateAuthoritiesService, presenter)
-	commandSet["certificate-authority"] = commands.NewCertificateAuthority(certificateAuthoritiesService, presenter, stdout)
-	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(setupService, stdout)
-	commandSet["configure-bosh"] = commands.NewConfigureBosh(boshService, diagnosticService, stdout, stderr)
-	commandSet["configure-director"] = commands.NewConfigureDirector(directorService, jobsService, stagedProductsService, stdout)
-	commandSet["configure-product"] = commands.NewConfigureProduct(stagedProductsService, jobsService, stdout)
+	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)
+	commandSet["apply-changes"] = commands.NewApplyChanges(api, logWriter, stdout, applySleepSeconds)
+	commandSet["available-products"] = commands.NewAvailableProducts(api, presenter, stdout)
+	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
+	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
+	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(api, stdout)
+	commandSet["configure-bosh"] = commands.NewConfigureBosh(ui, api, stdout, stderr)
+	commandSet["configure-director"] = commands.NewConfigureDirector(api, stdout)
+	commandSet["configure-product"] = commands.NewConfigureProduct(api, stdout)
 	commandSet["config-template"] = commands.NewConfigTemplate(metadataExtractor, stdout)
-	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(certificateAuthoritiesService, presenter)
-	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(vmExtensionService, stdout)
-	commandSet["credential-references"] = commands.NewCredentialReferences(credentialsService, deployedProductsService, presenter, stdout)
-	commandSet["credentials"] = commands.NewCredentials(credentialsService, deployedProductsService, presenter, stdout)
-	commandSet["curl"] = commands.NewCurl(requestService, stdout, stderr)
-	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(certificateAuthoritiesService, stdout)
-	commandSet["delete-installation"] = commands.NewDeleteInstallation(deleteInstallationService, installationsService, logWriter, stdout, applySleepSeconds)
-	commandSet["delete-product"] = commands.NewDeleteProduct(availableProductsService)
-	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(availableProductsService, stdout)
-	commandSet["deployed-manifest"] = commands.NewDeployedManifest(deployedProductsService, stdout)
-	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, diagnosticService)
-	commandSet["errands"] = commands.NewErrands(presenter, errandsService, stagedProductsService)
-	commandSet["export-installation"] = commands.NewExportInstallation(exportInstallationService, stderr)
-	commandSet["generate-certificate"] = commands.NewGenerateCertificate(certificatesService, stdout)
-	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(certificateAuthoritiesService, presenter)
+	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(api, presenter)
+	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(api, stdout)
+	commandSet["credential-references"] = commands.NewCredentialReferences(api, presenter, stdout)
+	commandSet["credentials"] = commands.NewCredentials(api, presenter, stdout)
+	commandSet["curl"] = commands.NewCurl(api, stdout, stderr)
+	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(api, stdout)
+	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, applySleepSeconds)
+	commandSet["delete-product"] = commands.NewDeleteProduct(api)
+	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
+	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
+	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
+	commandSet["errands"] = commands.NewErrands(presenter, api)
+	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)
+	commandSet["generate-certificate"] = commands.NewGenerateCertificate(api, stdout)
+	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(api, presenter)
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
-	commandSet["import-installation"] = commands.NewImportInstallation(form, importInstallationService, setupService, stdout)
-	commandSet["installation-log"] = commands.NewInstallationLog(installationsService, stdout)
-	commandSet["installations"] = commands.NewInstallations(installationsService, presenter)
-	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, pendingChangesService)
-	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(certificateAuthoritiesService, stdout)
-	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(dashboardService, stdout)
-	commandSet["set-errand-state"] = commands.NewSetErrandState(errandsService, stagedProductsService)
-	commandSet["staged-config"] = commands.NewStagedConfig(struct {
-		api.StagedProductsService
-		api.JobsService
-	}{
-		stagedProductsService,
-		jobsService,
-	}, stdout)
-	commandSet["stage-product"] = commands.NewStageProduct(stagedProductsService, deployedProductsService, availableProductsService, diagnosticService, stdout)
-	commandSet["staged-manifest"] = commands.NewStagedManifest(stagedProductsService, stdout)
-	commandSet["staged-products"] = commands.NewStagedProducts(presenter, diagnosticService)
-	commandSet["unstage-product"] = commands.NewUnstageProduct(stagedProductsService, stdout)
-	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, availableProductsService, stdout)
-	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, uploadStemcellService, diagnosticService, stdout)
+	commandSet["import-installation"] = commands.NewImportInstallation(form, api, stdout)
+	commandSet["installation-log"] = commands.NewInstallationLog(api, stdout)
+	commandSet["installations"] = commands.NewInstallations(api, presenter)
+	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
+	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
+	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
+	commandSet["set-errand-state"] = commands.NewSetErrandState(api)
+	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
+	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
+	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
+	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
+	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
+	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
+	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, api, stdout)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)
 
 	err = commandSet.Execute(command, args)
