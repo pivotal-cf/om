@@ -92,22 +92,6 @@ func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 	return AvailableProductsOutput{ProductsList: availableProducts}, nil
 }
 
-// TODO: move to helper package?
-func (a Api) CheckProductAvailability(productName string, productVersion string) (bool, error) {
-	availableProducts, err := a.ListAvailableProducts()
-	if err != nil {
-		return false, err
-	}
-
-	for _, product := range availableProducts.ProductsList {
-		if product.Name == productName && product.Version == productVersion {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
 func (a Api) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
 	req, err := http.NewRequest("DELETE", availableProductsEndpoint, nil)
 

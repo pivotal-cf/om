@@ -154,46 +154,6 @@ var _ = Describe("Available Products", func() {
 		})
 	})
 
-	Describe("CheckProductAvailability", func() {
-		BeforeEach(func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`[{
-						"name": "available-product",
-						"product_version": "available-version"
-					}]`)),
-			}, nil)
-		})
-
-		Context("when the product is available", func() {
-			It("is true", func() {
-				available, err := service.CheckProductAvailability("available-product", "available-version")
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(available).To(BeTrue())
-			})
-		})
-
-		Context("when the product is unavailable", func() {
-			It("is false", func() {
-				available, err := service.CheckProductAvailability("unavailable-product", "available-version")
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(available).To(BeFalse())
-			})
-		})
-
-		Context("When an error occurs", func() {
-			Context("when the client can't connect to the server", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.CheckProductAvailability("", "")
-					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
-				})
-			})
-		})
-	})
-
 	Describe("DeleteAvailableProducts", func() {
 		It("deletes a named product / version", func() {
 			client.DoReturns(&http.Response{

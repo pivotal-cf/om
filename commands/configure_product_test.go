@@ -119,9 +119,9 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(service.ListStagedProductsCallCount()).To(Equal(1))
-			Expect(service.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
-				GUID:          "some-product-guid",
-				Configuration: productProperties,
+			Expect(service.UpdateStagedProductPropertiesArgsForCall(0)).To(Equal(api.UpdateStagedProductPropertiesInput{
+				GUID:       "some-product-guid",
+				Properties: productProperties,
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -154,9 +154,9 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(service.ListStagedProductsCallCount()).To(Equal(1))
-			Expect(service.ConfigureArgsForCall(0)).To(Equal(api.ProductsConfigurationInput{
-				GUID:    "some-product-guid",
-				Network: networkProperties,
+			Expect(service.UpdateStagedProductNetworksAndAZsArgsForCall(0)).To(Equal(api.UpdateStagedProductNetworksAndAZsInput{
+				GUID:           "some-product-guid",
+				NetworksAndAZs: networkProperties,
 			}))
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -348,10 +348,10 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
-					Expect(service.ConfigureCallCount()).To(Equal(1))
-					Expect(service.ConfigureArgsForCall(0).GUID).To(Equal("some-product-guid"))
-					Expect(service.ConfigureArgsForCall(0).Configuration).To(MatchJSON(productProperties))
-					Expect(service.ConfigureArgsForCall(0).Network).To(Equal(""))
+					Expect(service.UpdateStagedProductPropertiesCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).GUID).To(Equal("some-product-guid"))
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).Properties).To(MatchJSON(productProperties))
+					Expect(service.UpdateStagedProductNetworksAndAZsCallCount()).To(Equal(0))
 					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(0))
 
 					format, content := logger.PrintfArgsForCall(0)
@@ -385,10 +385,10 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
-					Expect(service.ConfigureCallCount()).To(Equal(1))
-					Expect(service.ConfigureArgsForCall(0).GUID).To(Equal("some-product-guid"))
-					Expect(service.ConfigureArgsForCall(0).Network).To(MatchJSON(networkProperties))
-					Expect(service.ConfigureArgsForCall(0).Configuration).To(Equal(""))
+					Expect(service.UpdateStagedProductNetworksAndAZsCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedProductNetworksAndAZsArgsForCall(0).GUID).To(Equal("some-product-guid"))
+					Expect(service.UpdateStagedProductNetworksAndAZsArgsForCall(0).NetworksAndAZs).To(MatchJSON(networkProperties))
+					Expect(service.UpdateStagedProductPropertiesCallCount()).To(Equal(0))
 					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(0))
 
 					format, content := logger.PrintfArgsForCall(0)
@@ -422,7 +422,8 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
-					Expect(service.ConfigureCallCount()).To(Equal(0))
+					Expect(service.UpdateStagedProductPropertiesCallCount()).To(Equal(0))
+					Expect(service.UpdateStagedProductNetworksAndAZsCallCount()).To(Equal(0))
 
 					Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
 					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(2))
@@ -718,10 +719,26 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the product cannot be configured", func() {
+			Context("when the properties cannot be configured", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(service, logger)
-					service.ConfigureReturns(errors.New("some product error"))
+					service.UpdateStagedProductPropertiesReturns(errors.New("some product error"))
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "some-product"},
+						},
+					}, nil)
+
+					err := command.Execute([]string{"--product-name", "some-product", "--product-properties", "{}", "--product-network", "anything"})
+					Expect(err).To(MatchError("failed to configure product: some product error"))
+				})
+			})
+
+			Context("when the networks cannot be configured", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureProduct(service, logger)
+					service.UpdateStagedProductNetworksAndAZsReturns(errors.New("some product error"))
 
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{

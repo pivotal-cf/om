@@ -21,7 +21,7 @@ var _ = Describe("ConfigureDirector", func() {
 	BeforeEach(func() {
 		service = &fakes.ConfigureDirectorService{}
 		logger = &fakes.Logger{}
-		service.FindReturns(api.StagedProductsFindOutput{
+		service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{
 				GUID: "p-bosh-guid",
 			},
@@ -79,8 +79,8 @@ var _ = Describe("ConfigureDirector", func() {
 				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment": "syslog"}`),
 			}))
 
-			Expect(service.FindCallCount()).To(Equal(1))
-			Expect(service.FindArgsForCall(0)).To(Equal("p-bosh"))
+			Expect(service.GetStagedProductByNameCallCount()).To(Equal(1))
+			Expect(service.GetStagedProductByNameArgsForCall(0)).To(Equal("p-bosh"))
 
 			Expect(service.ListStagedProductJobsCallCount()).To(Equal(1))
 			Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("p-bosh-guid"))
@@ -176,7 +176,7 @@ var _ = Describe("ConfigureDirector", func() {
 
 			Context("when retrieving staged products fails", func() {
 				It("returns an error", func() {
-					service.FindReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
+					service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
 					err := command.Execute([]string{"--resource-configuration", `{}`})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})

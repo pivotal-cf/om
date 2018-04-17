@@ -8,16 +8,16 @@ import (
 )
 
 type StagedManifestService struct {
-	FindStub        func(product string) (api.StagedProductsFindOutput, error)
-	findMutex       sync.RWMutex
-	findArgsForCall []struct {
+	GetStagedProductByNameStub        func(product string) (api.StagedProductsFindOutput, error)
+	getStagedProductByNameMutex       sync.RWMutex
+	getStagedProductByNameArgsForCall []struct {
 		product string
 	}
-	findReturns struct {
+	getStagedProductByNameReturns struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}
-	findReturnsOnCall map[int]struct {
+	getStagedProductByNameReturnsOnCall map[int]struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}
@@ -38,52 +38,52 @@ type StagedManifestService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *StagedManifestService) Find(product string) (api.StagedProductsFindOutput, error) {
-	fake.findMutex.Lock()
-	ret, specificReturn := fake.findReturnsOnCall[len(fake.findArgsForCall)]
-	fake.findArgsForCall = append(fake.findArgsForCall, struct {
+func (fake *StagedManifestService) GetStagedProductByName(product string) (api.StagedProductsFindOutput, error) {
+	fake.getStagedProductByNameMutex.Lock()
+	ret, specificReturn := fake.getStagedProductByNameReturnsOnCall[len(fake.getStagedProductByNameArgsForCall)]
+	fake.getStagedProductByNameArgsForCall = append(fake.getStagedProductByNameArgsForCall, struct {
 		product string
 	}{product})
-	fake.recordInvocation("Find", []interface{}{product})
-	fake.findMutex.Unlock()
-	if fake.FindStub != nil {
-		return fake.FindStub(product)
+	fake.recordInvocation("GetStagedProductByName", []interface{}{product})
+	fake.getStagedProductByNameMutex.Unlock()
+	if fake.GetStagedProductByNameStub != nil {
+		return fake.GetStagedProductByNameStub(product)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.findReturns.result1, fake.findReturns.result2
+	return fake.getStagedProductByNameReturns.result1, fake.getStagedProductByNameReturns.result2
 }
 
-func (fake *StagedManifestService) FindCallCount() int {
-	fake.findMutex.RLock()
-	defer fake.findMutex.RUnlock()
-	return len(fake.findArgsForCall)
+func (fake *StagedManifestService) GetStagedProductByNameCallCount() int {
+	fake.getStagedProductByNameMutex.RLock()
+	defer fake.getStagedProductByNameMutex.RUnlock()
+	return len(fake.getStagedProductByNameArgsForCall)
 }
 
-func (fake *StagedManifestService) FindArgsForCall(i int) string {
-	fake.findMutex.RLock()
-	defer fake.findMutex.RUnlock()
-	return fake.findArgsForCall[i].product
+func (fake *StagedManifestService) GetStagedProductByNameArgsForCall(i int) string {
+	fake.getStagedProductByNameMutex.RLock()
+	defer fake.getStagedProductByNameMutex.RUnlock()
+	return fake.getStagedProductByNameArgsForCall[i].product
 }
 
-func (fake *StagedManifestService) FindReturns(result1 api.StagedProductsFindOutput, result2 error) {
-	fake.FindStub = nil
-	fake.findReturns = struct {
+func (fake *StagedManifestService) GetStagedProductByNameReturns(result1 api.StagedProductsFindOutput, result2 error) {
+	fake.GetStagedProductByNameStub = nil
+	fake.getStagedProductByNameReturns = struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *StagedManifestService) FindReturnsOnCall(i int, result1 api.StagedProductsFindOutput, result2 error) {
-	fake.FindStub = nil
-	if fake.findReturnsOnCall == nil {
-		fake.findReturnsOnCall = make(map[int]struct {
+func (fake *StagedManifestService) GetStagedProductByNameReturnsOnCall(i int, result1 api.StagedProductsFindOutput, result2 error) {
+	fake.GetStagedProductByNameStub = nil
+	if fake.getStagedProductByNameReturnsOnCall == nil {
+		fake.getStagedProductByNameReturnsOnCall = make(map[int]struct {
 			result1 api.StagedProductsFindOutput
 			result2 error
 		})
 	}
-	fake.findReturnsOnCall[i] = struct {
+	fake.getStagedProductByNameReturnsOnCall[i] = struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}{result1, result2}
@@ -143,8 +143,8 @@ func (fake *StagedManifestService) GetStagedProductManifestReturnsOnCall(i int, 
 func (fake *StagedManifestService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.findMutex.RLock()
-	defer fake.findMutex.RUnlock()
+	fake.getStagedProductByNameMutex.RLock()
+	defer fake.getStagedProductByNameMutex.RUnlock()
 	fake.getStagedProductManifestMutex.RLock()
 	defer fake.getStagedProductManifestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

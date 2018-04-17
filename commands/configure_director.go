@@ -33,7 +33,7 @@ type configureDirectorService interface {
 	ListStagedProductJobs(string) (map[string]string, error)
 	GetStagedProductJobResourceConfig(string, string) (api.JobProperties, error)
 	UpdateStagedProductJobResourceConfig(string, string, api.JobProperties) error
-	Find(name string) (api.StagedProductsFindOutput, error)
+	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
 	GetStagedProductManifest(guid string) (manifest string, err error)
 }
 
@@ -100,7 +100,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.ResourceConfiguration != "" {
 		c.logger.Printf("started configuring resource options for bosh tile")
 
-		findOutput, err := c.service.Find("p-bosh")
+		findOutput, err := c.service.GetStagedProductByName("p-bosh")
 		if err != nil {
 			return fmt.Errorf("could not find staged product with name 'p-bosh': %s", err)
 		}

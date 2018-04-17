@@ -22,7 +22,7 @@ var _ = Describe("StagedManifest", func() {
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
 		fakeService = &fakes.StagedManifestService{}
-		fakeService.FindReturns(api.StagedProductsFindOutput{
+		fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{GUID: "some-product-guid", Type: "some-product"},
 		}, nil)
 		fakeService.GetStagedProductManifestReturns(`---
@@ -39,8 +39,8 @@ key: value
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(fakeService.FindCallCount()).To(Equal(1))
-		Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product"))
+		Expect(fakeService.GetStagedProductByNameCallCount()).To(Equal(1))
+		Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product"))
 
 		Expect(fakeService.GetStagedProductManifestCallCount()).To(Equal(1))
 		Expect(fakeService.GetStagedProductManifestArgsForCall(0)).To(Equal("some-product-guid"))
@@ -64,7 +64,7 @@ key: value
 
 		Context("when the staged products service find call fails", func() {
 			It("returns an error", func() {
-				fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
+				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
 
 				err := command.Execute([]string{
 					"--product-name", "some-product",

@@ -470,7 +470,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 	})
 
-	Describe("Configure", func() {
+	Describe("UpdateStagedProductProperties", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
@@ -480,20 +480,17 @@ var _ = Describe("StagedProducts", func() {
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
 					}
-				case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
-					}
+				default:
+					Fail(fmt.Sprintf("unexpected request to '%s'", req.URL.Path))
 				}
 				return resp, nil
 			}
 		})
 
 		It("configures the properties for the given staged product in the Ops Manager", func() {
-			err := service.Configure(api.ProductsConfigurationInput{
+			err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
 				GUID: "some-product-guid",
-				Configuration: `{
+				Properties: `{
 					"key": "value"
 				}`,
 			})
@@ -515,16 +512,70 @@ var _ = Describe("StagedProducts", func() {
 			}`))
 		})
 
-		It("configures the network for the given staged product in the Ops Manager", func() {
-			err := service.Configure(api.ProductsConfigurationInput{
+		Context("failure cases", func() {
+			Context("when the request fails", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{}, errors.New("nope"))
+				})
+
+				It("returns an error", func() {
+					err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+						GUID:       "foo",
+						Properties: `{}`,
+					})
+					Expect(err).To(MatchError("could not make api request to staged product properties endpoint: nope"))
+				})
+			})
+
+			Context("when the server returns a non-200 status code", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusTeapot,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+					}, nil)
+				})
+
+				It("returns an error", func() {
+					err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+						GUID:       "foo",
+						Properties: `{}`,
+					})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+		})
+	})
+
+	Describe("UpdateStagedProductNetworksAndAZs", func() {
+		BeforeEach(func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				switch req.URL.Path {
+				case "/api/v0/staged/products/some-product-guid/properties":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+					}
+				case "/api/v0/staged/products/some-product-guid/networks_and_azs":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("configures the networks for the given staged product in the Ops Manager", func() {
+			err := service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
 				GUID: "some-product-guid",
-				Network: `{
+				NetworksAndAZs: `{
 					"key": "value"
 				}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			By("configuring the product network")
+			By("configuring the product properties")
 			Expect(client.DoCallCount()).To(Equal(1))
 			req := client.DoArgsForCall(0)
 			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/networks_and_azs"))
@@ -547,11 +598,11 @@ var _ = Describe("StagedProducts", func() {
 				})
 
 				It("returns an error", func() {
-					err := service.Configure(api.ProductsConfigurationInput{
-						GUID:          "foo",
-						Configuration: `{}`,
+					err := service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
+						GUID:           "foo",
+						NetworksAndAZs: `{}`,
 					})
-					Expect(err).To(MatchError("could not make api request to staged product properties endpoint: nope"))
+					Expect(err).To(MatchError("could not make api request to staged product networks_and_azs endpoint: nope"))
 				})
 			})
 
@@ -564,57 +615,11 @@ var _ = Describe("StagedProducts", func() {
 				})
 
 				It("returns an error", func() {
-					err := service.Configure(api.ProductsConfigurationInput{
-						GUID:          "foo",
-						Configuration: `{}`,
+					err := service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
+						GUID:           "foo",
+						NetworksAndAZs: `{}`,
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
-			})
-		})
-	})
-
-	Describe("Find", func() {
-		It("Find product by product name", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(bytes.NewBufferString(`[
-					{"installation_name":"p-bosh","guid":"some-product-id","type":"some-product-name","product_version":"1.10.0.0"},
-					{"installation_name":"cf-15b22d1810a034ea3aca","guid":"cf-15b22d1810a034ea3aca","type":"cf","product_version":"1.10.0-build.177"},
-					{"installation_name":"p-isolation-segment-0ab7a3616c32a441a115","guid":"p-isolation-segment-0ab7a3616c32a441a115","type":"p-isolation-segment","product_version":"1.10.0-build.31"}
-				]`)),
-			}, nil)
-
-			finderOutput, err := service.Find("some-product-name")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(finderOutput.Product.GUID).To(Equal("some-product-id"))
-		})
-
-		Context("failure cases", func() {
-			Context("Failed to list staged products", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(`%%`)),
-					}, nil)
-
-					_, err := service.Find("some-product-name")
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response")))
-				})
-			})
-
-			Context("Target product not in staged product list", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`[
-					{"installation_name":"cf-15b22d1810a034ea3aca","guid":"cf-15b22d1810a034ea3aca","type":"cf","product_version":"1.10.0-build.177"},
-					{"installation_name":"p-isolation-segment-0ab7a3616c32a441a115","guid":"p-isolation-segment-0ab7a3616c32a441a115","type":"p-isolation-segment","product_version":"1.10.0-build.31"}
-				]`)),
-					}, nil)
-
-					_, err := service.Find("some-product-name")
-					Expect(err).To(MatchError(ContainSubstring("could not find product \"some-product-name\"")))
 				})
 			})
 		})

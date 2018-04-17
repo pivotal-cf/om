@@ -99,18 +99,6 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool) (Insta
 	return InstallationsServiceOutput{ID: installation.Install.ID}, nil
 }
 
-// TODO: extract to helper package?
-func (a Api) RunningInstallation() (InstallationsServiceOutput, error) {
-	installationOutput, err := a.ListInstallations()
-	if err != nil {
-		return InstallationsServiceOutput{}, err
-	}
-	if len(installationOutput) > 0 && installationOutput[0].Status == StatusRunning {
-		return installationOutput[0], nil
-	}
-	return InstallationsServiceOutput{}, nil
-}
-
 func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/installations/%d", id), nil)
 	if err != nil {

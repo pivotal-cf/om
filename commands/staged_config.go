@@ -18,7 +18,7 @@ type StagedConfig struct {
 
 //go:generate counterfeiter -o ./fakes/staged_config_service.go --fake-name StagedConfigService . stagedConfigService
 type stagedConfigService interface {
-	Find(product string) (api.StagedProductsFindOutput, error)
+	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
@@ -45,7 +45,7 @@ func (ec StagedConfig) Execute(args []string) error {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
 	}
 
-	findOutput, err := ec.service.Find(ec.Options.Product)
+	findOutput, err := ec.service.GetStagedProductByName(ec.Options.Product)
 	if err != nil {
 		return err
 	}

@@ -21,7 +21,7 @@ type SetErrandState struct {
 
 //go:generate counterfeiter -o ./fakes/set_errand_state_service.go --fake-name SetErrandStateService . setErrandStateService
 type setErrandStateService interface {
-	Find(productName string) (api.StagedProductsFindOutput, error)
+	GetStagedProductByName(productName string) (api.StagedProductsFindOutput, error)
 	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
 }
 
@@ -43,7 +43,7 @@ func (s SetErrandState) Execute(args []string) error {
 		return fmt.Errorf("could not parse set-errand-state flags: %s", err)
 	}
 
-	findOutput, err := s.service.Find(s.Options.ProductName)
+	findOutput, err := s.service.GetStagedProductByName(s.Options.ProductName)
 	if err != nil {
 		return fmt.Errorf("failed to find staged product %q: %s", s.Options.ProductName, err)
 	}

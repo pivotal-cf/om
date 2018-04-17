@@ -21,7 +21,7 @@ var _ = Describe("Set errand state", func() {
 	BeforeEach(func() {
 		fakeService = &fakes.SetErrandStateService{}
 
-		fakeService.FindReturns(api.StagedProductsFindOutput{
+		fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{GUID: "some-product-guid", Type: "some-type"},
 		}, nil)
 
@@ -38,8 +38,8 @@ var _ = Describe("Set errand state", func() {
 			})
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(fakeService.FindCallCount()).To(Equal(1))
-			Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product-name"))
+			Expect(fakeService.GetStagedProductByNameCallCount()).To(Equal(1))
+			Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product-name"))
 
 			Expect(fakeService.UpdateStagedProductErrandsCallCount()).To(Equal(1))
 
@@ -108,7 +108,7 @@ var _ = Describe("Set errand state", func() {
 
 			Context("when the staged products finder fails", func() {
 				It("returns an error", func() {
-					fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
+					fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",

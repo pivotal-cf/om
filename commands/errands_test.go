@@ -39,7 +39,7 @@ var _ = Describe("Errands", func() {
 				},
 			}, nil)
 
-			fakeService.FindReturns(api.StagedProductsFindOutput{
+			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 				Product: api.StagedProduct{
 					Type: "some-product-name",
 					GUID: "some-product-id",
@@ -49,8 +49,8 @@ var _ = Describe("Errands", func() {
 			err := command.Execute([]string{"--product-name", "some-product-name"})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeService.FindCallCount()).To(Equal(1))
-			Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product-name"))
+			Expect(fakeService.GetStagedProductByNameCallCount()).To(Equal(1))
+			Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product-name"))
 
 			Expect(fakeService.ListStagedProductErrandsCallCount()).To(Equal(1))
 			Expect(fakeService.ListStagedProductErrandsArgsForCall(0)).To(Equal("some-product-id"))
@@ -76,7 +76,7 @@ var _ = Describe("Errands", func() {
 
 			Context("when the staged products finder fails", func() {
 				It("returns an error", func() {
-					fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
+					fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
 					err := command.Execute([]string{"--product-name", "some-product"})
 					Expect(err).To(MatchError("failed to find staged product \"some-product\": there was an error"))
 				})

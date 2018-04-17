@@ -93,16 +93,16 @@ type ConfigureDirectorService struct {
 	updateStagedProductJobResourceConfigReturnsOnCall map[int]struct {
 		result1 error
 	}
-	FindStub        func(name string) (api.StagedProductsFindOutput, error)
-	findMutex       sync.RWMutex
-	findArgsForCall []struct {
+	GetStagedProductByNameStub        func(name string) (api.StagedProductsFindOutput, error)
+	getStagedProductByNameMutex       sync.RWMutex
+	getStagedProductByNameArgsForCall []struct {
 		name string
 	}
-	findReturns struct {
+	getStagedProductByNameReturns struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}
-	findReturnsOnCall map[int]struct {
+	getStagedProductByNameReturnsOnCall map[int]struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}
@@ -468,52 +468,52 @@ func (fake *ConfigureDirectorService) UpdateStagedProductJobResourceConfigReturn
 	}{result1}
 }
 
-func (fake *ConfigureDirectorService) Find(name string) (api.StagedProductsFindOutput, error) {
-	fake.findMutex.Lock()
-	ret, specificReturn := fake.findReturnsOnCall[len(fake.findArgsForCall)]
-	fake.findArgsForCall = append(fake.findArgsForCall, struct {
+func (fake *ConfigureDirectorService) GetStagedProductByName(name string) (api.StagedProductsFindOutput, error) {
+	fake.getStagedProductByNameMutex.Lock()
+	ret, specificReturn := fake.getStagedProductByNameReturnsOnCall[len(fake.getStagedProductByNameArgsForCall)]
+	fake.getStagedProductByNameArgsForCall = append(fake.getStagedProductByNameArgsForCall, struct {
 		name string
 	}{name})
-	fake.recordInvocation("Find", []interface{}{name})
-	fake.findMutex.Unlock()
-	if fake.FindStub != nil {
-		return fake.FindStub(name)
+	fake.recordInvocation("GetStagedProductByName", []interface{}{name})
+	fake.getStagedProductByNameMutex.Unlock()
+	if fake.GetStagedProductByNameStub != nil {
+		return fake.GetStagedProductByNameStub(name)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.findReturns.result1, fake.findReturns.result2
+	return fake.getStagedProductByNameReturns.result1, fake.getStagedProductByNameReturns.result2
 }
 
-func (fake *ConfigureDirectorService) FindCallCount() int {
-	fake.findMutex.RLock()
-	defer fake.findMutex.RUnlock()
-	return len(fake.findArgsForCall)
+func (fake *ConfigureDirectorService) GetStagedProductByNameCallCount() int {
+	fake.getStagedProductByNameMutex.RLock()
+	defer fake.getStagedProductByNameMutex.RUnlock()
+	return len(fake.getStagedProductByNameArgsForCall)
 }
 
-func (fake *ConfigureDirectorService) FindArgsForCall(i int) string {
-	fake.findMutex.RLock()
-	defer fake.findMutex.RUnlock()
-	return fake.findArgsForCall[i].name
+func (fake *ConfigureDirectorService) GetStagedProductByNameArgsForCall(i int) string {
+	fake.getStagedProductByNameMutex.RLock()
+	defer fake.getStagedProductByNameMutex.RUnlock()
+	return fake.getStagedProductByNameArgsForCall[i].name
 }
 
-func (fake *ConfigureDirectorService) FindReturns(result1 api.StagedProductsFindOutput, result2 error) {
-	fake.FindStub = nil
-	fake.findReturns = struct {
+func (fake *ConfigureDirectorService) GetStagedProductByNameReturns(result1 api.StagedProductsFindOutput, result2 error) {
+	fake.GetStagedProductByNameStub = nil
+	fake.getStagedProductByNameReturns = struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ConfigureDirectorService) FindReturnsOnCall(i int, result1 api.StagedProductsFindOutput, result2 error) {
-	fake.FindStub = nil
-	if fake.findReturnsOnCall == nil {
-		fake.findReturnsOnCall = make(map[int]struct {
+func (fake *ConfigureDirectorService) GetStagedProductByNameReturnsOnCall(i int, result1 api.StagedProductsFindOutput, result2 error) {
+	fake.GetStagedProductByNameStub = nil
+	if fake.getStagedProductByNameReturnsOnCall == nil {
+		fake.getStagedProductByNameReturnsOnCall = make(map[int]struct {
 			result1 api.StagedProductsFindOutput
 			result2 error
 		})
 	}
-	fake.findReturnsOnCall[i] = struct {
+	fake.getStagedProductByNameReturnsOnCall[i] = struct {
 		result1 api.StagedProductsFindOutput
 		result2 error
 	}{result1, result2}
@@ -587,8 +587,8 @@ func (fake *ConfigureDirectorService) Invocations() map[string][][]interface{} {
 	defer fake.getStagedProductJobResourceConfigMutex.RUnlock()
 	fake.updateStagedProductJobResourceConfigMutex.RLock()
 	defer fake.updateStagedProductJobResourceConfigMutex.RUnlock()
-	fake.findMutex.RLock()
-	defer fake.findMutex.RUnlock()
+	fake.getStagedProductByNameMutex.RLock()
+	defer fake.getStagedProductByNameMutex.RUnlock()
 	fake.getStagedProductManifestMutex.RLock()
 	defer fake.getStagedProductManifestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

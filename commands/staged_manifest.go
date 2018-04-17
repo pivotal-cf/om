@@ -17,7 +17,7 @@ type StagedManifest struct {
 
 //go:generate counterfeiter -o ./fakes/staged_manifest_service.go --fake-name StagedManifestService . stagedManifestService
 type stagedManifestService interface {
-	Find(product string) (api.StagedProductsFindOutput, error)
+	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
 	GetStagedProductManifest(guid string) (string, error)
 }
 
@@ -33,7 +33,7 @@ func (sm StagedManifest) Execute(args []string) error {
 		return fmt.Errorf("could not parse staged-manifest flags: %s", err)
 	}
 
-	output, err := sm.service.Find(sm.Options.ProductName)
+	output, err := sm.service.GetStagedProductByName(sm.Options.ProductName)
 	if err != nil {
 		return fmt.Errorf("failed to find product: %s", err)
 	}

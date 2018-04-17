@@ -28,9 +28,10 @@ type ConfigureProduct struct {
 //go:generate counterfeiter -o ./fakes/configure_product_service.go --fake-name ConfigureProductService . configureProductService
 type configureProductService interface {
 	ListStagedProducts() (api.StagedProductsOutput, error)
-	Configure(api.ProductsConfigurationInput) error
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
+	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
+	UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput) error
 	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
 }
 
@@ -218,9 +219,9 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 
 func (cp ConfigureProduct) configureProperties(productProperties string, productGUID string) error {
 	cp.logger.Printf("setting properties")
-	err := cp.service.Configure(api.ProductsConfigurationInput{
-		GUID:          productGUID,
-		Configuration: productProperties,
+	err := cp.service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+		GUID:       productGUID,
+		Properties: productProperties,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to configure product: %s", err)
@@ -231,9 +232,9 @@ func (cp ConfigureProduct) configureProperties(productProperties string, product
 
 func (cp ConfigureProduct) configureNetwork(networkProperties string, productGUID string) error {
 	cp.logger.Printf("setting up network")
-	err := cp.service.Configure(api.ProductsConfigurationInput{
-		GUID:    productGUID,
-		Network: networkProperties,
+	err := cp.service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
+		GUID:           productGUID,
+		NetworksAndAZs: networkProperties,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to configure product: %s", err)

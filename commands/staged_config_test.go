@@ -51,7 +51,7 @@ var _ = Describe("StagedConfig", func() {
 				},
 			}, nil)
 
-		fakeService.FindReturns(api.StagedProductsFindOutput{
+		fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{
 				GUID: "some-product-guid",
 			},
@@ -76,8 +76,8 @@ var _ = Describe("StagedConfig", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeService.FindCallCount()).To(Equal(1))
-			Expect(fakeService.FindArgsForCall(0)).To(Equal("some-product"))
+			Expect(fakeService.GetStagedProductByNameCallCount()).To(Equal(1))
+			Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product"))
 
 			Expect(fakeService.GetStagedProductPropertiesCallCount()).To(Equal(1))
 			Expect(fakeService.GetStagedProductPropertiesArgsForCall(0)).To(Equal("some-product-guid"))
@@ -133,7 +133,7 @@ resource-config:
 
 		Context("when looking up the product GUID fails", func() {
 			BeforeEach(func() {
-				fakeService.FindReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
+				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {

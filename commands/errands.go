@@ -12,7 +12,7 @@ import (
 
 //go:generate counterfeiter -o ./fakes/errands_service.go --fake-name ErrandsService . errandsService
 type errandsService interface {
-	Find(productName string) (api.StagedProductsFindOutput, error)
+	GetStagedProductByName(productName string) (api.StagedProductsFindOutput, error)
 	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
 }
 
@@ -36,7 +36,7 @@ func (e Errands) Execute(args []string) error {
 		return fmt.Errorf("could not parse errands flags: %s", err)
 	}
 
-	findOutput, err := e.service.Find(e.Options.ProductName)
+	findOutput, err := e.service.GetStagedProductByName(e.Options.ProductName)
 	if err != nil {
 		return fmt.Errorf("failed to find staged product %q: %s", e.Options.ProductName, err)
 	}
