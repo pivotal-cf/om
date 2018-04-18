@@ -19,12 +19,13 @@ type StagedConfig struct {
 
 //go:generate counterfeiter -o ./fakes/staged_config_service.go --fake-name StagedConfigService . stagedConfigService
 type stagedConfigService interface {
-	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
-	ListStagedProductJobs(productGUID string) (map[string]string, error)
-	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
-	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
-	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
 	GetDeployedProductCredential(input api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
+	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
+	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
+	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
+	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
+	ListStagedProductJobs(productGUID string) (map[string]string, error)
 }
 
 func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
@@ -45,6 +46,23 @@ func (ec StagedConfig) Usage() jhanda.Usage {
 func (ec StagedConfig) Execute(args []string) error {
 	if _, err := jhanda.Parse(&ec.Options, args); err != nil {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
+	}
+
+	if ec.Options.IncludeCredentials {
+		deployedProducts, err := ec.service.ListDeployedProducts()
+		if err != nil {
+			return err
+		}
+		var productDeployed bool
+		for _, p := range deployedProducts {
+			if p.Type == ec.Options.Product {
+				productDeployed = true
+				break
+			}
+		}
+		if !productDeployed {
+			return fmt.Errorf("cannot retrieve credentials for product '%s': deploy the product and retry", ec.Options.Product)
+		}
 	}
 
 	findOutput, err := ec.service.GetStagedProductByName(ec.Options.Product)

@@ -33,6 +33,11 @@ var _ = Describe("staged-config command", func() {
 					{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
 					{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0"}
 				]`))
+			case "/api/v0/deployed/products":
+				w.Write([]byte(`[
+					{"guid":"p-bosh-guid","type":"p-bosh"},
+					{"guid":"some-product-guid","type":"some-product"}
+				]`))
 			case "/api/v0/staged/products/some-product-guid/properties":
 				w.Write([]byte(`{
           "properties": {

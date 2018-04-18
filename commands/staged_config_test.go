@@ -123,6 +123,13 @@ resource-config:
 
 	Context("when --include-credentials is used", func() {
 		BeforeEach(func() {
+			fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
+				{
+					Type: "some-product",
+					GUID: "some-product-guid",
+				},
+			}, nil)
+
 			fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 				Credential: api.Credential{
 					Type: "some-secret-type",
@@ -166,6 +173,57 @@ resource-config:
       id: automatic
 `)))
 		})
+
+		Context("and the product has not yet been deployed", func() {
+			BeforeEach(func() {
+				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
+			})
+			It("errors with a helpful message to the operator", func() {
+				command := commands.NewStagedConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--include-credentials",
+				})
+				Expect(err).To(MatchError("cannot retrieve credentials for product 'some-product': deploy the product and retry"))
+			})
+		})
+
+		Context("and listing deployed products fails", func() {
+			BeforeEach(func() {
+				fakeService.ListDeployedProductsReturns(
+					[]api.DeployedProductOutput{},
+					errors.New("some-error"),
+				)
+			})
+
+			It("returns an error", func() {
+				command := commands.NewStagedConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--include-credentials",
+				})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
+		Context("and looking up a credential fails", func() {
+			BeforeEach(func() {
+				fakeService.GetDeployedProductCredentialReturns(
+					api.GetDeployedProductCredentialOutput{},
+					errors.New("some-error"),
+				)
+			})
+
+			It("returns an error", func() {
+				command := commands.NewStagedConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--include-credentials",
+				})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
 	})
 
 	Context("failure cases", func() {
@@ -255,29 +313,13 @@ resource-config:
 			})
 		})
 
-		Context("when looking up a credential fails", func() {
-			BeforeEach(func() {
-				fakeService.GetDeployedProductCredentialReturns(
-					api.GetDeployedProductCredentialOutput{},
-					errors.New("some-error"),
-				)
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-					"--include-credentials",
-				})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
 	})
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
+
 			command := commands.NewStagedConfig(nil, nil)
+
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command generates a config from a staged product that can be passed in to om configure-product (Note: credentials are not available and will appear as '***')",
 				ShortDescription: "generates a config from a staged product",
