@@ -39,6 +39,13 @@ var _ = Describe("StagedConfig", func() {
 					IsCredential: true,
 					Configurable: true,
 				},
+				".properties.some-non-configurable-secret-property": api.ResponseProperty{
+					Value: map[string]interface{}{
+						"some-secret-type": "***",
+					},
+					IsCredential: true,
+					Configurable: false,
+				},
 				".properties.some-null-property": api.ResponseProperty{
 					Value:        nil,
 					Configurable: true,
@@ -102,6 +109,53 @@ product-properties:
   .properties.some-secret-property:
     value:
       some-secret-type: "***"
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+resource-config:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+`)))
+		})
+	})
+
+	Context("when --include-credentials is used", func() {
+		BeforeEach(func() {
+			fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
+				Credential: api.Credential{
+					Type: "some-secret-type",
+					Value: map[string]string{
+						"some-secret-key": "some-secret-value",
+					},
+				},
+			}, nil)
+		})
+
+		It("includes secret values in the output", func() {
+			command := commands.NewStagedConfig(fakeService, logger)
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--include-credentials",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(1))
+			Expect(fakeService.GetDeployedProductCredentialArgsForCall(0)).To(Equal(api.GetDeployedProductCredentialInput{
+				DeployedGUID:        "some-product-guid",
+				CredentialReference: ".properties.some-secret-property",
+			}))
+
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`---
+product-properties:
+  .properties.some-string-property:
+    value: some-value
+  .properties.some-secret-property:
+    value:
+      some-secret-key: some-secret-value
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -200,6 +254,25 @@ resource-config:
 				Expect(err).To(MatchError("some-error"))
 			})
 		})
+
+		Context("when looking up a credential fails", func() {
+			BeforeEach(func() {
+				fakeService.GetDeployedProductCredentialReturns(
+					api.GetDeployedProductCredentialOutput{},
+					errors.New("some-error"),
+				)
+			})
+
+			It("returns an error", func() {
+				command := commands.NewStagedConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--include-credentials",
+				})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
 	})
 
 	Describe("Usage", func() {

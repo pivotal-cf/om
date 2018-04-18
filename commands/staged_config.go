@@ -12,7 +12,8 @@ type StagedConfig struct {
 	logger  logger
 	service stagedConfigService
 	Options struct {
-		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
+		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
+		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
 	}
 }
 
@@ -23,6 +24,7 @@ type stagedConfigService interface {
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
 	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
+	GetDeployedProductCredential(input api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
 }
 
 func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
@@ -60,7 +62,18 @@ func (ec StagedConfig) Execute(args []string) error {
 
 	for name, property := range properties {
 		if property.Configurable && property.Value != nil {
-			configurableProperties[name] = map[string]interface{}{"value": property.Value}
+			if property.IsCredential && ec.Options.IncludeCredentials {
+				output, err := ec.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+					DeployedGUID:        productGUID,
+					CredentialReference: name,
+				})
+				if err != nil {
+					return err
+				}
+				configurableProperties[name] = map[string]interface{}{"value": output.Credential.Value}
+			} else {
+				configurableProperties[name] = map[string]interface{}{"value": property.Value}
+			}
 		}
 	}
 

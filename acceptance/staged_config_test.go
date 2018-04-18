@@ -55,7 +55,7 @@ var _ = Describe("staged-config command", func() {
               "configurable": true,
               "credential": true,
               "value": {
-                "some-secret-type": "***"
+                "some-secret-key": "***"
               },
               "optional": true
             }
@@ -101,6 +101,15 @@ var _ = Describe("staged-config command", func() {
 						"internet_connected": true,
 						"elb_names": ["my-elb"]
 					}`))
+			case "/api/v0/deployed/products/some-product-guid/credentials/.properties.some-secret-property":
+				w.Write([]byte(`{
+						"credential": {
+							"type": "some-secret-type",
+							"value": {
+								"some-secret-key": "some-secret-value"
+							}
+						}
+					}`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -130,7 +139,7 @@ product-properties:
     value: some-configurable-value
   .properties.some-secret-property:
     value:
-      some-secret-type: "***"
+      some-secret-key: "***"
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -147,5 +156,48 @@ resource-config:
     elb_names: ["my-elb"]
     internet_connected: true
 `))
+	})
+
+	Context("when --include-credentials is used", func() {
+		It("outputs the secret values in the template", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"staged-config",
+				"--product-name", "some-product",
+				"--include-credentials",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session, "10s").Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchYAML(`---
+product-properties:
+  .properties.some-configurable-property:
+    value: some-configurable-value
+  .properties.some-secret-property:
+    value:
+      some-secret-key: some-secret-value
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+  other_availability_zones:
+    - name: az-two
+    - name: az-three
+  network:
+    name: network-one
+resource-config:
+  some-job:
+    instances: 1
+    persistent_disk: { size_mb: "20480" }
+    instance_type: { id: automatic }
+    elb_names: ["my-elb"]
+    internet_connected: true
+`))
+		})
 	})
 })
