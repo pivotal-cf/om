@@ -21,7 +21,7 @@ type Credentials struct {
 
 //go:generate counterfeiter -o ./fakes/credentials_service.go --fake-name CredentialsService . credentialsService
 type credentialsService interface {
-	GetDeployedProductCredential(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
+	GetDeployedProductCredential(api.GetDeployedProductCredentialInput) (api.CredentialOutput, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
@@ -50,7 +50,10 @@ func (cs Credentials) Execute(args []string) error {
 		return fmt.Errorf("failed to fetch credential: %q is not deployed", cs.Options.Product)
 	}
 
-	output, err := cs.service.GetDeployedProductCredential(deployedProductGUID, cs.Options.CredentialReference)
+	output, err := cs.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+		DeployedGUID:        deployedProductGUID,
+		CredentialReference: cs.Options.CredentialReference,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to fetch credential for %q: %s", cs.Options.CredentialReference, err)
 	}

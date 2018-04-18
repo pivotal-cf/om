@@ -55,6 +55,12 @@ var _ = Describe("Credentials", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
+				Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(1))
+				Expect(fakeService.GetDeployedProductCredentialArgsForCall(0)).To(Equal(api.GetDeployedProductCredentialInput{
+					DeployedGUID:        "some-deployed-product-guid",
+					CredentialReference: ".properties.some-credentials",
+				}))
+
 				Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(1))
 				Expect(fakePresenter.PresentCredentialsArgsForCall(0)).To(Equal(
 

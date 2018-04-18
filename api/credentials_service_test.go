@@ -104,7 +104,10 @@ var _ = Describe("Credentials", func() {
 					),
 				}, nil
 			}
-			output, err := service.GetDeployedProductCredential("some-deployed-product-guid", ".properties.some-credentials")
+			output, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+				DeployedGUID:        "some-deployed-product-guid",
+				CredentialReference: ".properties.some-credentials",
+			})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(path).To(Equal("/api/v0/deployed/products/some-deployed-product-guid/credentials/.properties.some-credentials"))
@@ -116,7 +119,9 @@ var _ = Describe("Credentials", func() {
 			Context("the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.GetDeployedProductCredential("invalid-product", "")
+					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+						DeployedGUID: "invalid-product-guid",
+					})
 					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
 				})
 			})
@@ -128,7 +133,9 @@ var _ = Describe("Credentials", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					_, err := service.GetDeployedProductCredential("invalid-product", "")
+					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+						DeployedGUID: "invalid-product-guid",
+					})
 					Expect(err).To(MatchError(ContainSubstring("request failed")))
 				})
 			})
@@ -140,7 +147,9 @@ var _ = Describe("Credentials", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
 					}, nil)
 
-					_, err := service.GetDeployedProductCredential("some-deployed-product-guid", "")
+					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+						DeployedGUID: "some-deployed-product-guid",
+					})
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 				})
 			})

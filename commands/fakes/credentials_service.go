@@ -8,11 +8,10 @@ import (
 )
 
 type CredentialsService struct {
-	GetDeployedProductCredentialStub        func(deployedProductGUID, credentialReference string) (api.CredentialOutput, error)
+	GetDeployedProductCredentialStub        func(api.GetDeployedProductCredentialInput) (api.CredentialOutput, error)
 	getDeployedProductCredentialMutex       sync.RWMutex
 	getDeployedProductCredentialArgsForCall []struct {
-		deployedProductGUID string
-		credentialReference string
+		arg1 api.GetDeployedProductCredentialInput
 	}
 	getDeployedProductCredentialReturns struct {
 		result1 api.CredentialOutput
@@ -37,17 +36,16 @@ type CredentialsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CredentialsService) GetDeployedProductCredential(deployedProductGUID string, credentialReference string) (api.CredentialOutput, error) {
+func (fake *CredentialsService) GetDeployedProductCredential(arg1 api.GetDeployedProductCredentialInput) (api.CredentialOutput, error) {
 	fake.getDeployedProductCredentialMutex.Lock()
 	ret, specificReturn := fake.getDeployedProductCredentialReturnsOnCall[len(fake.getDeployedProductCredentialArgsForCall)]
 	fake.getDeployedProductCredentialArgsForCall = append(fake.getDeployedProductCredentialArgsForCall, struct {
-		deployedProductGUID string
-		credentialReference string
-	}{deployedProductGUID, credentialReference})
-	fake.recordInvocation("GetDeployedProductCredential", []interface{}{deployedProductGUID, credentialReference})
+		arg1 api.GetDeployedProductCredentialInput
+	}{arg1})
+	fake.recordInvocation("GetDeployedProductCredential", []interface{}{arg1})
 	fake.getDeployedProductCredentialMutex.Unlock()
 	if fake.GetDeployedProductCredentialStub != nil {
-		return fake.GetDeployedProductCredentialStub(deployedProductGUID, credentialReference)
+		return fake.GetDeployedProductCredentialStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -61,10 +59,10 @@ func (fake *CredentialsService) GetDeployedProductCredentialCallCount() int {
 	return len(fake.getDeployedProductCredentialArgsForCall)
 }
 
-func (fake *CredentialsService) GetDeployedProductCredentialArgsForCall(i int) (string, string) {
+func (fake *CredentialsService) GetDeployedProductCredentialArgsForCall(i int) api.GetDeployedProductCredentialInput {
 	fake.getDeployedProductCredentialMutex.RLock()
 	defer fake.getDeployedProductCredentialMutex.RUnlock()
-	return fake.getDeployedProductCredentialArgsForCall[i].deployedProductGUID, fake.getDeployedProductCredentialArgsForCall[i].credentialReference
+	return fake.getDeployedProductCredentialArgsForCall[i].arg1
 }
 
 func (fake *CredentialsService) GetDeployedProductCredentialReturns(result1 api.CredentialOutput, result2 error) {

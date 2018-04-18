@@ -7,6 +7,11 @@ import (
 	"net/http"
 )
 
+type GetDeployedProductCredentialInput struct {
+	DeployedGUID        string
+	CredentialReference string
+}
+
 type CredentialOutput struct {
 	Credential Credential `json:"credential"`
 }
@@ -20,8 +25,8 @@ type Credential struct {
 	Value map[string]string `json:"value"`
 }
 
-func (a Api) GetDeployedProductCredential(deployedGUID, credential string) (CredentialOutput, error) {
-	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", deployedGUID, credential)
+func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInput) (CredentialOutput, error) {
+	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", input.DeployedGUID, input.CredentialReference)
 	req, err := http.NewRequest("GET", path, nil)
 	if err != nil {
 		return CredentialOutput{}, err
