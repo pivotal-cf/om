@@ -8,17 +8,17 @@ import (
 )
 
 type CredentialsService struct {
-	GetDeployedProductCredentialStub        func(api.GetDeployedProductCredentialInput) (api.CredentialOutput, error)
+	GetDeployedProductCredentialStub        func(api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
 	getDeployedProductCredentialMutex       sync.RWMutex
 	getDeployedProductCredentialArgsForCall []struct {
 		arg1 api.GetDeployedProductCredentialInput
 	}
 	getDeployedProductCredentialReturns struct {
-		result1 api.CredentialOutput
+		result1 api.GetDeployedProductCredentialOutput
 		result2 error
 	}
 	getDeployedProductCredentialReturnsOnCall map[int]struct {
-		result1 api.CredentialOutput
+		result1 api.GetDeployedProductCredentialOutput
 		result2 error
 	}
 	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
@@ -36,7 +36,7 @@ type CredentialsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CredentialsService) GetDeployedProductCredential(arg1 api.GetDeployedProductCredentialInput) (api.CredentialOutput, error) {
+func (fake *CredentialsService) GetDeployedProductCredential(arg1 api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error) {
 	fake.getDeployedProductCredentialMutex.Lock()
 	ret, specificReturn := fake.getDeployedProductCredentialReturnsOnCall[len(fake.getDeployedProductCredentialArgsForCall)]
 	fake.getDeployedProductCredentialArgsForCall = append(fake.getDeployedProductCredentialArgsForCall, struct {
@@ -65,24 +65,24 @@ func (fake *CredentialsService) GetDeployedProductCredentialArgsForCall(i int) a
 	return fake.getDeployedProductCredentialArgsForCall[i].arg1
 }
 
-func (fake *CredentialsService) GetDeployedProductCredentialReturns(result1 api.CredentialOutput, result2 error) {
+func (fake *CredentialsService) GetDeployedProductCredentialReturns(result1 api.GetDeployedProductCredentialOutput, result2 error) {
 	fake.GetDeployedProductCredentialStub = nil
 	fake.getDeployedProductCredentialReturns = struct {
-		result1 api.CredentialOutput
+		result1 api.GetDeployedProductCredentialOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CredentialsService) GetDeployedProductCredentialReturnsOnCall(i int, result1 api.CredentialOutput, result2 error) {
+func (fake *CredentialsService) GetDeployedProductCredentialReturnsOnCall(i int, result1 api.GetDeployedProductCredentialOutput, result2 error) {
 	fake.GetDeployedProductCredentialStub = nil
 	if fake.getDeployedProductCredentialReturnsOnCall == nil {
 		fake.getDeployedProductCredentialReturnsOnCall = make(map[int]struct {
-			result1 api.CredentialOutput
+			result1 api.GetDeployedProductCredentialOutput
 			result2 error
 		})
 	}
 	fake.getDeployedProductCredentialReturnsOnCall[i] = struct {
-		result1 api.CredentialOutput
+		result1 api.GetDeployedProductCredentialOutput
 		result2 error
 	}{result1, result2}
 }

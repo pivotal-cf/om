@@ -12,7 +12,7 @@ type GetDeployedProductCredentialInput struct {
 	CredentialReference string
 }
 
-type CredentialOutput struct {
+type GetDeployedProductCredentialOutput struct {
 	Credential Credential `json:"credential"`
 }
 
@@ -25,32 +25,32 @@ type Credential struct {
 	Value map[string]string `json:"value"`
 }
 
-func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInput) (CredentialOutput, error) {
+func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInput) (GetDeployedProductCredentialOutput, error) {
 	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", input.DeployedGUID, input.CredentialReference)
 	req, err := http.NewRequest("GET", path, nil)
 	if err != nil {
-		return CredentialOutput{}, err
+		return GetDeployedProductCredentialOutput{}, err
 	}
 
 	resp, err := a.client.Do(req)
 	if err != nil {
-		return CredentialOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %s", err)
+		return GetDeployedProductCredentialOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if err = validateStatusOK(resp); err != nil {
-		return CredentialOutput{}, err
+		return GetDeployedProductCredentialOutput{}, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return CredentialOutput{}, err
+		return GetDeployedProductCredentialOutput{}, err
 	}
 
-	var credentialOutput CredentialOutput
+	var credentialOutput GetDeployedProductCredentialOutput
 	err = json.Unmarshal(respBody, &credentialOutput)
 	if err != nil {
-		return CredentialOutput{}, fmt.Errorf("could not unmarshal credentials response: %s", err)
+		return GetDeployedProductCredentialOutput{}, fmt.Errorf("could not unmarshal credentials response: %s", err)
 	}
 
 	return credentialOutput, nil

@@ -39,7 +39,7 @@ var _ = Describe("Credentials", func() {
 			It("outputs the credentials alphabetically", func() {
 				command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-				fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{
+				fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{
@@ -95,7 +95,7 @@ var _ = Describe("Credentials", func() {
 
 			Context("when the credential reference cannot be found", func() {
 				BeforeEach(func() {
-					fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, nil)
+					fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{}, nil)
 				})
 
 				It("returns an error", func() {
@@ -113,7 +113,7 @@ var _ = Describe("Credentials", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-					fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{}, errors.New("could not fetch credentials"))
+					fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{}, errors.New("could not fetch credentials"))
 
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -164,7 +164,7 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting an individual credential value", func() {
 			BeforeEach(func() {
-				fakeService.GetDeployedProductCredentialReturns(api.CredentialOutput{
+				fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
 						Type: "simple_credentials",
 						Value: map[string]string{
