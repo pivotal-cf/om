@@ -322,7 +322,7 @@ resource-config:
 
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command generates a config from a staged product that can be passed in to om configure-product (Note: credentials are not available and will appear as '***')",
-				ShortDescription: "generates a config from a staged product",
+				ShortDescription: "**EXPERIMENTAL** generates a config from a staged product",
 				Flags:            command.Options,
 			}))
 		})

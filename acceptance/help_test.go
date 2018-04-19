@@ -60,7 +60,7 @@ Commands:
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   set-errand-state                sets state for a product's errand
   stage-product                   stages a given product in the Ops Manager targeted
-  staged-config                   generates a config from a staged product
+  staged-config                   **EXPERIMENTAL** generates a config from a staged product
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
   unstage-product                 unstages a given product from the Ops Manager targeted
