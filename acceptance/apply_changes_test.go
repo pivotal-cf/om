@@ -100,7 +100,7 @@ var _ = Describe("apply-changes command", func() {
 		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
 	})
 
-	It("successfully re-attaches to an existing deploying", func() {
+	It("successfully re-attaches to an existing deployment", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
