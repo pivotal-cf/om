@@ -56,7 +56,7 @@ Commands:
   installation-log                output installation logs
   installations                   list recent installation events
   pending-changes                 lists pending changes
-  regenerate-certificates         deletes all non-configurable certificates in Ops Manager
+  regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   set-errand-state                sets state for a product's errand
   stage-product                   stages a given product in the Ops Manager targeted

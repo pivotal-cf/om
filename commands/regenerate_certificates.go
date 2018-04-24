@@ -29,7 +29,7 @@ func (r RegenerateCertificates) Execute(_ []string) error {
 
 func (r RegenerateCertificates) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command deletes all non-configurable certificates in Ops Manager",
-		ShortDescription: "deletes all non-configurable certificates in Ops Manager",
+		Description:      "This authenticated command deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
+		ShortDescription: "deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
 	}
 }

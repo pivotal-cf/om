@@ -39,8 +39,8 @@ var _ = Describe("RegenerateCertificates", func() {
 		It("returns usage info", func() {
 			usage := command.Usage()
 			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command deletes all non-configurable certificates in Ops Manager",
-				ShortDescription: "deletes all non-configurable certificates in Ops Manager",
+				Description:      "This authenticated command deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
+				ShortDescription: "deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
 			}))
 		})
 	})
