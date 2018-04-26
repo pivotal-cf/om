@@ -41,9 +41,9 @@ type UpdateStagedProductNetworksAndAZsInput struct {
 }
 
 type ResponseProperty struct {
-	Value        interface{} `json:"value"`
-	Configurable bool        `json:"configurable"`
-	IsCredential bool        `json:"credential"`
+	Value        interface{}
+	Configurable bool
+	IsCredential bool `yaml:"credential"`
 }
 
 type UpgradeRequest struct {
@@ -264,10 +264,16 @@ func (a Api) GetStagedProductProperties(product string) (map[string]ResponseProp
 	}
 	defer respBody.Close()
 
+	body, err := ioutil.ReadAll(respBody)
+	if err != nil {
+		return nil, err
+	}
+
 	propertiesResponse := struct {
-		Properties map[string]ResponseProperty `json:"properties"`
+		Properties map[string]ResponseProperty
 	}{}
-	if err = json.NewDecoder(respBody).Decode(&propertiesResponse); err != nil {
+
+	if err = yaml.Unmarshal(body, &propertiesResponse); err != nil {
 		return nil, fmt.Errorf("could not parse json: %s", err)
 	}
 

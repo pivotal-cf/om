@@ -726,6 +726,10 @@ key-4: 2147483648
 									},
 									"configurable": true,
 									"credential": true
+								},
+								".properties.some-property-with-a-large-number-value": {
+									"value": 2147483648,
+									"configurable": true
 								}
 							}
 						}`)),
@@ -738,21 +742,29 @@ key-4: 2147483648
 		It("returns the configuration for a product", func() {
 			config, err := service.GetStagedProductProperties("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
+
 			Expect(config).To(Equal(map[string]api.ResponseProperty{
 				".properties.some-configurable-property": api.ResponseProperty{
 					Value:        "some-value",
 					Configurable: true,
+					IsCredential: false,
 				},
 				".properties.some-non-configurable-property": api.ResponseProperty{
 					Value:        "some-value",
 					Configurable: false,
+					IsCredential: false,
 				},
 				".properties.some-secret-property": api.ResponseProperty{
-					Value: map[string]interface{}{
+					Value: map[interface{}]interface{}{
 						"some-secret-type": "***",
 					},
 					Configurable: true,
 					IsCredential: true,
+				},
+				".properties.some-property-with-a-large-number-value": api.ResponseProperty{
+					Value:        2147483648,
+					Configurable: true,
+					IsCredential: false,
 				},
 			}))
 		})
