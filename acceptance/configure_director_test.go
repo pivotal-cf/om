@@ -179,6 +179,9 @@ var _ = Describe("configure-director command", func() {
 
 				w.Write([]byte(`{}`))
 
+			case "/api/v0/deployed/director/credentials":
+				w.WriteHeader(http.StatusNotFound)
+
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
