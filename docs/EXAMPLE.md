@@ -27,110 +27,86 @@ om \
       --decryption-passphrase my-passphrase
 ```
 
-## 3. Configure the BOSH Director.
+## 3. Configure the Director.
 
 This command will fill out the configuration details for the director tile that came with your Ops Manager VM.
 The specific configuration for the director changes based on what IAAS you are targetting.
-More documentation for the `configure-bosh` command along with IAAS-specific details can be found
-[here](https://github.com/pivotal-cf/om/blob/master/docs/configure-bosh/README.md).
+More documentation for the `configure-director` command along with IAAS-specific details can be found
+[here](configure-director/README.md).
 
 ```shell
 om \
   --target https://opsman.example.com \
   --user my-user \
   --password my-password \
-    configure-bosh \
+    configure-director \
       --iaas-configuration '{
-        "vcenter_host": "some-vcenter-host",
-        "vcenter_username": "my-vcenter-username",
-        "vcenter_password": "my-vcenter-password",
-        "datacenter": "some-datacenter-name",
-        "disk_type": "some-virtual-disk-type",
-        "ephemeral_datastores_string": "some,ephemeral,datastores",
-        "persistent_datastores_string": "some,persistent,datastores",
-        "bosh_vm_folder": "some-vm-folder",
-        "bosh_template_folder": "some-template-folder",
-        "bosh_disk_path": "some-disk-path"
+        "project": "my-foo-project",
+        "default_deployment_tag": "foo-vms",
+        "auth_json": "{\"some-key\":\"some-value\"}"
       }' \
       --director-configuration '{
-        "ntp_servers_string": "10.0.0.1"
+        "ntp_servers_string": "169.254.169.254"
       }' \
       --security-configuration '{
-        "trusted_certificates": "some-trusted-certificates",
-        "vm_password_type": "generate"
+        "trusted_certificates": "some-trusted-certificates"
       }' \
-      --az-configuration '{
-        "availability_zones": [
-          {
-            "name": "az-1",
-            "cluster": "cluster-1",
-            "resource_pool": "pool-1"
-          },
-          {
-            "name": "az-2",
-            "cluster": "cluster-2",
-            "resource_pool": "pool-2"
-          },
-          {
-            "name": "az-3",
-            "cluster": "cluster-3",
-            "resource_pool": "pool-3"
-          },
-        ]
-      }' \
+      --az-configuration '[
+        {"name": "us-central1-a"},
+        {"name": "us-central1-b"},
+        {"name": "us-central1-c"}
+      ]' \
       --network-configuration '{
         "icmp_checks_enabled": false,
         "networks": [
           {
             "name": "opsman-network",
-            "service_network": false,
             "subnets": [
               {
-                "iaas_identifier": "vsphere-network-name",
+                "iaas_identifier": "some-network/opsman-subnet/us-central1",
                 "cidr": "10.0.0.0/24",
                 "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
                 "dns": "8.8.8.8",
                 "gateway": "10.0.0.1",
-                "availability_zones": [
-                  "az-1",
-                  "az-2",
-                  "az-3"
+                "availability_zone_names": [
+                  "us-central1-a",
+                  "us-central1-b",
+                  "us-central1-c"
                 ]
               }
             ]
-          }
+          },
           {
             "name": "ert-network",
-            "service_network": false,
             "subnets": [
               {
-                "iaas_identifier": "vsphere-network-name",
-                "cidr": "10.0.4.0/24",
+                "iaas_identifier": "some-network/ert-subnet/us-central1",
+                "cidr": "10.0.4.0/22",
                 "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
                 "dns": "8.8.8.8",
                 "gateway": "10.0.4.1",
-                "availability_zones": [
-                  "az-1",
-                  "az-2",
-                  "az-3"
+                "availability_zone_names": [
+                  "us-central1-a",
+                  "us-central1-b",
+                  "us-central1-c"
                 ]
               }
             ]
-          }
+          },
           {
             "name": "services-network",
-            "service_network": false,
+            "service_network": true,
             "subnets": [
               {
-                "iaas_identifier": "vsphere-network-name",
-                "cidr": "10.0.8.0/24",
+                "iaas_identifier": "some-network/services-subnet/us-central1",
+                "cidr": "10.0.8.0/22",
                 "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
                 "dns": "8.8.8.8",
                 "gateway": "10.0.8.1",
-                "availability_zones": [
-                  "az-1",
-                  "az-2",
-                  "az-3"
+                "availability_zone_names": [
+                  "us-central1-a",
+                  "us-central1-b",
+                  "us-central1-c"
                 ]
               }
             ]
@@ -138,8 +114,12 @@ om \
         ]
       }' \
       --network-assignment '{
-        "singleton_availability_zone": "az-1",
-        "network": "opsman-network"
+        "singleton_availability_zone": {
+          "name": "us-central1-a"
+        },
+        "network": {
+          "name": "opsman-network"
+        }
       }'
 ```
 

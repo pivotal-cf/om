@@ -611,8 +611,8 @@ var _ = Describe("ConfigureBosh", func() {
 			command := commands.NewConfigureBosh(nil, nil, nil, nil)
 
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "configures the bosh director that is deployed by the Ops Manager",
-				ShortDescription: "configures Ops Manager deployed bosh director",
+				Description:      "**DEPRECATED** configures the bosh director that is deployed by the Ops Manager",
+				ShortDescription: "**DEPRECATED** configures Ops Manager deployed bosh director",
 				Flags:            command.Options,
 			}))
 		})
