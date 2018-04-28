@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"io/ioutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/api"
@@ -115,6 +117,133 @@ var _ = Describe("ConfigureDirector", func() {
 			formatStr, formatArg := logger.PrintfArgsForCall(10)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
 			Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
+		})
+
+		Context("when the --config flag is set", func() {
+			Context("when other flags are set", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--config", "test.yml", "--az-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--networks-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--network-assignment", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--director-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--iaas-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--security-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--syslog-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+					err = command.Execute([]string{"--config", "test.yml", "--resource-configuration", "{}"})
+					Expect(err).To(MatchError("config flag can not be passed with another configuration flags"))
+				})
+			})
+
+			Context("with an invalid config", func() {
+				It("configures the director", func() {
+					configYAML := `invalidYAML`
+
+					configFile, err := ioutil.TempFile("", "config.yaml")
+					Expect(err).ToNot(HaveOccurred())
+					_, err = configFile.WriteString(configYAML)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(configFile.Close()).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`could not be parsed as valid configuration: yaml: unmarshal errors`))
+				})
+			})
+
+			Context("with a valid config", func() {
+				It("configures the director", func() {
+					configYAML := `
+---
+network-assignment:
+  network: {"name": "network"}
+  singleton_availability_zone: {"name": "singleton"}
+az-configuration: [{"some-az-assignment": "az"}]
+networks-configuration: {"network": "network-1"}
+director-configuration: {"some-director-assignment": "director"}
+iaas-configuration: {"some-iaas-assignment": "iaas"}
+security-configuration: {"some-security-assignment": "security"}
+syslog-configuration: {"some-syslog-assignment": "syslog"}
+resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
+
+					configFile, err := ioutil.TempFile("", "config.yaml")
+					Expect(err).ToNot(HaveOccurred())
+					_, err = configFile.WriteString(configYAML)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(configFile.Close()).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedDirectorAvailabilityZonesArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
+						AvailabilityZones: json.RawMessage(`[{"some-az-assignment":"az"}]`),
+					}))
+
+					Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(json.RawMessage(`{"network":"network-1"}`)))
+
+					Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedDirectorNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
+						NetworkAZ: json.RawMessage(`{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`),
+					}))
+
+					Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
+						DirectorConfiguration: json.RawMessage(`{"some-director-assignment":"director"}`),
+						IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment":"iaas"}`),
+						SecurityConfiguration: json.RawMessage(`{"some-security-assignment":"security"}`),
+						SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment":"syslog"}`),
+					}))
+
+					Expect(service.GetStagedProductByNameCallCount()).To(Equal(1))
+					Expect(service.GetStagedProductByNameArgsForCall(0)).To(Equal("p-bosh"))
+
+					Expect(service.ListStagedProductJobsCallCount()).To(Equal(1))
+					Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("p-bosh-guid"))
+
+					Expect(service.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
+					productGUID, instanceGroupGUID := service.GetStagedProductJobResourceConfigArgsForCall(0)
+					Expect(productGUID).To(Equal("p-bosh-guid"))
+					Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
+
+					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
+					productGUID, instanceGroupGUID, jobConfiguration := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
+					Expect(productGUID).To(Equal("p-bosh-guid"))
+					Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
+					Expect(jobConfiguration).To(Equal(api.JobProperties{
+						InstanceType: api.InstanceType{
+							ID: "some-type",
+						},
+						FloatingIPs: "1.2.3.4",
+					}))
+
+					Expect(logger.PrintfCallCount()).To(Equal(12))
+					Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring availability zone options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(4)).To(Equal("started configuring network options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring network assignment options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring network assignment options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(8)).To(Equal("started configuring resource options for bosh tile"))
+					Expect(logger.PrintfArgsForCall(9)).To(Equal("applying resource configuration for the following jobs:"))
+					formatStr, formatArg := logger.PrintfArgsForCall(10)
+					Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
+					Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
+				})
+			})
 		})
 
 		Context("when no director configuration flags are provided", func() {

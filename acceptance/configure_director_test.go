@@ -34,6 +34,11 @@ var _ = Describe("configure-director command", func() {
 	)
 
 	BeforeEach(func() {
+		azPutCallCount = 0
+		directorPropertiesCallCount = 0
+		networkAZCallCount = 0
+		networksConfigurationCallCount = 0
+
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
@@ -187,76 +192,77 @@ var _ = Describe("configure-director command", func() {
 		}))
 	})
 
-	It("configures the BOSH director using the API", func() {
-		command := exec.Command(pathToMain,
-			"--target", server.URL,
-			"--username", "some-username",
-			"--password", "some-password",
-			"--skip-ssl-validation",
-			"configure-director",
-			"--iaas-configuration",
-			`{
+	Context("when using command line arguments", func() {
+		It("configures the BOSH director using the API", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"configure-director",
+				"--iaas-configuration",
+				`{
 				"project": "some-project",
 				"default_deployment_tag": "my-vms",
 				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
 			}`,
-			"--az-configuration",
-			`[ {"name": "some-az-1"}, {"name": "some-existing-az"} ]`,
-			"--networks-configuration",
-			`{
+				"--az-configuration",
+				`[ {"name": "some-az-1"}, {"name": "some-existing-az"} ]`,
+				"--networks-configuration",
+				`{
 				"networks": [{"network": "network-1"}],
 				"top-level": "the-top"
 			}`,
-			"--network-assignment",
-			`{
+				"--network-assignment",
+				`{
 				"network": { "name": "some-network"},
 				"singleton_availability_zone": {"name": "some-az"}
 			}`,
-			"--director-configuration",
-			`{
+				"--director-configuration",
+				`{
 				"ntp_servers_string": "us.example.org, time.something.com",
 				"resurrector_enabled": false,
 				"director_hostname": "foo.example.com",
 				"max_threads": 5
 			 }`,
-			"--security-configuration",
-			`{
+				"--security-configuration",
+				`{
 				"trusted_certificates": "some-certificate",
 				"generate_vm_passwords": true
 			}`,
-			"--syslog-configuration", `{
+				"--syslog-configuration", `{
 				"syslogconfig": "awesome"
 			}`,
-			"--resource-configuration", `{
+				"--resource-configuration", `{
 				"compilation": {
 					"instance_type": {
 						"id": "m4.xlarge"
 					}
 				}
 			}`,
-		)
+			)
 
-		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session, "40s").Should(gexec.Exit(0))
+			Eventually(session, "40s").Should(gexec.Exit(0))
 
-		Expect(azPutCallCount).To(Equal(1))
-		Expect(azConfigurationMethod).To(Equal("PUT"))
-		Expect(azPutConfigurationBody).To(MatchJSON(`{
+			Expect(azPutCallCount).To(Equal(1))
+			Expect(azConfigurationMethod).To(Equal("PUT"))
+			Expect(azPutConfigurationBody).To(MatchJSON(`{
 			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
 		}`))
 
-		Expect(networksConfigurationCallCount).To(Equal(1))
-		Expect(networksConfigurationMethod).To(Equal("PUT"))
-		Expect(networksConfigurationBody).To(MatchJSON(`{
+			Expect(networksConfigurationCallCount).To(Equal(1))
+			Expect(networksConfigurationMethod).To(Equal("PUT"))
+			Expect(networksConfigurationBody).To(MatchJSON(`{
 			"networks": [{"network": "network-1"}],
 			"top-level": "the-top"
 		}`))
 
-		Expect(networkAZCallCount).To(Equal(1))
-		Expect(networkAZConfigurationMethod).To(Equal("PUT"))
-		Expect(networkAZConfigurationBody).To(MatchJSON(`{
+			Expect(networkAZCallCount).To(Equal(1))
+			Expect(networkAZConfigurationMethod).To(Equal("PUT"))
+			Expect(networkAZConfigurationBody).To(MatchJSON(`{
 			"network_and_az": {
 				 "network": {
 					 "name": "some-network"
@@ -267,9 +273,9 @@ var _ = Describe("configure-director command", func() {
 			}
 		}`))
 
-		Expect(directorPropertiesCallCount).To(Equal(1))
-		Expect(directorPropertiesMethod).To(Equal("PUT"))
-		Expect(directorPropertiesBody).To(MatchJSON(`{
+			Expect(directorPropertiesCallCount).To(Equal(1))
+			Expect(directorPropertiesMethod).To(Equal("PUT"))
+			Expect(directorPropertiesBody).To(MatchJSON(`{
 			"iaas_configuration": {
 				"project": "some-project",
 				"default_deployment_tag": "my-vms",
@@ -290,8 +296,8 @@ var _ = Describe("configure-director command", func() {
 			}
 	  }`))
 
-		Expect(resourceConfigMethod).To(Equal("PUT"))
-		Expect(resourceConfigBody).To(MatchJSON(`{
+			Expect(resourceConfigMethod).To(Equal("PUT"))
+			Expect(resourceConfigBody).To(MatchJSON(`{
 			"instances": 1,
 			"instance_type": {
 				"id": "m4.xlarge"
@@ -302,6 +308,131 @@ var _ = Describe("configure-director command", func() {
 			"internet_connected": true,
 			"elb_names": ["my-elb"]
 	  }`))
+		})
 	})
 
+	Context("when specifying a config file", func() {
+		It("configures the BOSH director using the API", func() {
+			configYAML := []byte(`
+---
+iaas-configuration:
+  project: some-project
+  default_deployment_tag: my-vms
+  auth_json: |
+    {
+      "some-auth-field": "some-service-key",
+      "some-private_key": "some-key"
+    }
+az-configuration:
+- name: some-az-1
+- name: some-existing-az
+networks-configuration:
+  networks:
+  - network: network-1
+  top-level: the-top
+network-assignment:
+  network:
+    name: some-network
+  singleton_availability_zone:
+    name: some-az
+director-configuration:
+  ntp_servers_string: us.example.org, time.something.com
+  resurrector_enabled: false
+  director_hostname: foo.example.com
+  max_threads: 5
+security-configuration:
+  trusted_certificates: some-certificate
+  generate_vm_passwords: true
+syslog-configuration:
+  syslogconfig: awesome
+resource-configuration:
+  compilation:
+    instance_type:
+      id: m4.xlarge
+`)
+
+			tempfile, err := ioutil.TempFile("", "config.yaml")
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = tempfile.Write(configYAML)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(tempfile.Close()).ToNot(HaveOccurred())
+
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"configure-director",
+				"--config", tempfile.Name(),
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session, "40s").Should(gexec.Exit(0))
+
+			Expect(azPutCallCount).To(Equal(1))
+			Expect(azConfigurationMethod).To(Equal("PUT"))
+			Expect(azPutConfigurationBody).To(MatchJSON(`{
+			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
+		}`))
+
+			Expect(networksConfigurationCallCount).To(Equal(1))
+			Expect(networksConfigurationMethod).To(Equal("PUT"))
+			Expect(networksConfigurationBody).To(MatchJSON(`{
+			"networks": [{"network": "network-1"}],
+			"top-level": "the-top"
+		}`))
+
+			Expect(networkAZCallCount).To(Equal(1))
+			Expect(networkAZConfigurationMethod).To(Equal("PUT"))
+			Expect(networkAZConfigurationBody).To(MatchJSON(`{
+			"network_and_az": {
+				 "network": {
+					 "name": "some-network"
+				 },
+				 "singleton_availability_zone": {
+					 "name": "some-az"
+				 }
+			}
+		}`))
+
+			Expect(directorPropertiesCallCount).To(Equal(1))
+			Expect(directorPropertiesMethod).To(Equal("PUT"))
+			Expect(directorPropertiesBody).To(MatchJSON(`{
+			"iaas_configuration": {
+				"project": "some-project",
+				"default_deployment_tag": "my-vms",
+				"auth_json": "{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n" 
+			},
+			"director_configuration": {
+				"ntp_servers_string": "us.example.org, time.something.com",
+				"resurrector_enabled": false,
+				"director_hostname": "foo.example.com",
+				"max_threads": 5
+			},
+			"security_configuration": {
+				"trusted_certificates": "some-certificate",
+				"generate_vm_passwords": true
+			},
+			"syslog_configuration": {
+				"syslogconfig": "awesome"
+			}
+	  }`))
+
+			Expect(resourceConfigMethod).To(Equal("PUT"))
+			Expect(resourceConfigBody).To(MatchJSON(`{
+			"instances": 1,
+			"instance_type": {
+				"id": "m4.xlarge"
+			},
+			"persistent_disk": {
+				"size_mb": "20480"
+			},
+			"internet_connected": true,
+			"elb_names": ["my-elb"]
+	  }`))
+		})
+	})
 })

@@ -7,12 +7,15 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type ConfigureDirector struct {
 	service configureDirectorService
 	logger  logger
 	Options struct {
+		ConfigFile            string `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
 		AZConfiguration       string `short:"a" long:"az-configuration" description:"configures network availability zones"`
 		NetworksConfiguration string `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
 		NetworkAssignment     string `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
@@ -48,6 +51,71 @@ func (c ConfigureDirector) Execute(args []string) error {
 
 	c.logger.Printf("started configuring director options for bosh tile")
 
+	if c.Options.ConfigFile != "" {
+		if c.Options.AZConfiguration != "" || c.Options.NetworksConfiguration != "" || c.Options.NetworkAssignment != "" || c.Options.DirectorConfiguration != "" || c.Options.IAASConfiguration != "" || c.Options.SecurityConfiguration != "" || c.Options.SyslogConfiguration != "" || c.Options.ResourceConfiguration != "" {
+			return fmt.Errorf("config flag can not be passed with another configuration flags")
+		}
+		var config map[string]interface{}
+		configContents, err := ioutil.ReadFile(c.Options.ConfigFile)
+		if err != nil {
+			return err
+		}
+
+		err = yaml.Unmarshal(configContents, &config)
+		if err != nil {
+			return fmt.Errorf("%s could not be parsed as valid configuration: %s", c.Options.ConfigFile, err)
+		}
+
+		if config["network-assignment"] != nil {
+			c.Options.NetworkAssignment, err = getJSONProperties(config["network-assignment"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["az-configuration"] != nil {
+			c.Options.AZConfiguration, err = getJSONProperties(config["az-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["networks-configuration"] != nil {
+			c.Options.NetworksConfiguration, err = getJSONProperties(config["networks-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["director-configuration"] != nil {
+			c.Options.DirectorConfiguration, err = getJSONProperties(config["director-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["iaas-configuration"] != nil {
+			c.Options.IAASConfiguration, err = getJSONProperties(config["iaas-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["security-configuration"] != nil {
+			c.Options.SecurityConfiguration, err = getJSONProperties(config["security-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["syslog-configuration"] != nil {
+			c.Options.SyslogConfiguration, err = getJSONProperties(config["syslog-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["resource-configuration"] != nil {
+			c.Options.ResourceConfiguration, err = getJSONProperties(config["resource-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	err := c.service.UpdateStagedDirectorProperties(api.DirectorProperties{
 		DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
 		IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
@@ -63,7 +131,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.AZConfiguration != "" {
 		c.logger.Printf("started configuring availability zone options for bosh tile")
 
-		err = c.service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+		err := c.service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 			AvailabilityZones: json.RawMessage(c.Options.AZConfiguration),
 		})
 		if err != nil {
@@ -76,7 +144,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.NetworksConfiguration != "" {
 		c.logger.Printf("started configuring network options for bosh tile")
 
-		err = c.service.UpdateStagedDirectorNetworks(json.RawMessage(c.Options.NetworksConfiguration))
+		err := c.service.UpdateStagedDirectorNetworks(json.RawMessage(c.Options.NetworksConfiguration))
 		if err != nil {
 			return fmt.Errorf("networks configuration could not be applied: %s", err)
 		}
@@ -87,7 +155,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.NetworkAssignment != "" {
 		c.logger.Printf("started configuring network assignment options for bosh tile")
 
-		err = c.service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
+		err := c.service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
 			NetworkAZ: json.RawMessage(c.Options.NetworkAssignment),
 		})
 		if err != nil {
