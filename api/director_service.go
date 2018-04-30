@@ -79,6 +79,11 @@ func (a Api) UpdateStagedDirectorNetworks(input json.RawMessage) error {
 }
 
 func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) error {
+	_, err := a.sendAPIRequest("GET", "/api/v0/deployed/director/credentials", nil)
+	if err == nil {
+		a.logger.Println("unable to set network assignment for director as it has already been deployed")
+		return err
+	}
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
 		return fmt.Errorf("could not marshal json: %s", err)

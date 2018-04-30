@@ -27,10 +27,6 @@ var _ = Describe("Director", func() {
 			Client: client,
 			Logger: stderr,
 		})
-
-		client.DoReturns(&http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 	})
 
 	Describe("AZConfiguration", func() {
@@ -269,6 +265,10 @@ var _ = Describe("Director", func() {
 
 	Describe("NetworksConfiguration", func() {
 		It("configures networks", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
 			err := service.UpdateStagedDirectorNetworks(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
 			Expect(err).NotTo(HaveOccurred())
 
@@ -311,6 +311,9 @@ var _ = Describe("Director", func() {
 
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
+			client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusNotFound}, nil)
+			client.DoReturnsOnCall(1, &http.Response{StatusCode: http.StatusOK}, nil)
+
 			err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
 				NetworkAZ: json.RawMessage(`{
 					"network": {"name": "network_name"},
@@ -320,8 +323,8 @@ var _ = Describe("Director", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
+			Expect(client.DoCallCount()).To(Equal(2))
+			req := client.DoArgsForCall(1)
 
 			Expect(req.Method).To(Equal("PUT"))
 			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/network_and_az"))
@@ -339,6 +342,28 @@ var _ = Describe("Director", func() {
 				   }
 				}
 			}`))
+		})
+
+		Context("when the director has already been deployed", func() {
+			It("issues a warning and doesn't configure the endpoint", func() {
+				client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusOK}, nil)
+
+				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
+					NetworkAZ: json.RawMessage(`{
+					"network": {"name": "network_name"},
+					"singleton_availability_zone": {"name": "availability_zone_name"}
+				}`),
+				})
+
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(1))
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/deployed/director/credentials"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+			})
 		})
 
 		Context("failure cases", func() {
@@ -364,6 +389,12 @@ var _ = Describe("Director", func() {
 	})
 
 	Describe("Properties", func() {
+		BeforeEach(func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+		})
+
 		It("assigns director configuration properties", func() {
 			err := service.UpdateStagedDirectorProperties(api.DirectorProperties{
 				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
