@@ -7,15 +7,17 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/formcontent"
+	"strconv"
 )
 
 type UploadStemcell struct {
 	multipart multipart
 	logger    logger
 	service   uploadStemcellService
-	Options   struct {
+	Options struct {
 		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
 		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
+		Floating bool   `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
 	}
 }
 
@@ -74,6 +76,11 @@ func (us UploadStemcell) Execute(args []string) error {
 	}
 
 	err := us.multipart.AddFile("stemcell[file]", us.Options.Stemcell)
+	if err != nil {
+		return fmt.Errorf("failed to load stemcell: %s", err)
+	}
+
+	err = us.multipart.AddField("stemcell[floating]", strconv.FormatBool(us.Options.Floating))
 	if err != nil {
 		return fmt.Errorf("failed to load stemcell: %s", err)
 	}

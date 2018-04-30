@@ -29,42 +29,93 @@ var _ = Describe("UploadStemcell", func() {
 		logger = &fakes.Logger{}
 	})
 
-	It("uploads the stemcell", func() {
-		submission := formcontent.ContentSubmission{
-			Length:      10,
-			Content:     ioutil.NopCloser(strings.NewReader("")),
-			ContentType: "some content-type",
-		}
-		multipart.FinalizeReturns(submission, nil)
+	Context("uploads the stemcell", func() {
+		It("to all compatible products", func() {
+			submission := formcontent.ContentSubmission{
+				Length:      10,
+				Content:     ioutil.NopCloser(strings.NewReader("")),
+				ContentType: "some content-type",
+			}
+			multipart.FinalizeReturns(submission, nil)
 
-		fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
-		command := commands.NewUploadStemcell(multipart, fakeService, logger)
+			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-		err := command.Execute([]string{
-			"--stemcell", "/path/to/stemcell.tgz",
+			err := command.Execute([]string{
+				"--stemcell", "/path/to/stemcell.tgz",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			key, file := multipart.AddFileArgsForCall(0)
+			Expect(key).To(Equal("stemcell[file]"))
+			Expect(file).To(Equal("/path/to/stemcell.tgz"))
+
+			key, value := multipart.AddFieldArgsForCall(0)
+			Expect(key).To(Equal("stemcell[floating]"))
+			Expect(value).To(Equal("true"))
+
+			Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+				ContentLength: 10,
+				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+			}))
+
+			Expect(multipart.FinalizeCallCount()).To(Equal(1))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
+
+			format, v = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+
+			format, v = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
 		})
-		Expect(err).NotTo(HaveOccurred())
 
-		key, file := multipart.AddFileArgsForCall(0)
-		Expect(key).To(Equal("stemcell[file]"))
-		Expect(file).To(Equal("/path/to/stemcell.tgz"))
-		Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
-			ContentLength: 10,
-			Stemcell:      ioutil.NopCloser(strings.NewReader("")),
-			ContentType:   "some content-type",
-		}))
+		It("disables floating", func() {
+			submission := formcontent.ContentSubmission{
+				Length:      10,
+				Content:     ioutil.NopCloser(strings.NewReader("")),
+				ContentType: "some content-type",
+			}
+			multipart.FinalizeReturns(submission, nil)
 
-		Expect(multipart.FinalizeCallCount()).To(Equal(1))
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
-		format, v := logger.PrintfArgsForCall(0)
-		Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
+			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-		format, v = logger.PrintfArgsForCall(1)
-		Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+			err := command.Execute([]string{
+				"--stemcell", "/path/to/stemcell.tgz",
+				"--floating=false",
+			})
+			Expect(err).NotTo(HaveOccurred())
 
-		format, v = logger.PrintfArgsForCall(2)
-		Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+			key, file := multipart.AddFileArgsForCall(0)
+			Expect(key).To(Equal("stemcell[file]"))
+			Expect(file).To(Equal("/path/to/stemcell.tgz"))
+
+			key, value := multipart.AddFieldArgsForCall(0)
+			Expect(key).To(Equal("stemcell[floating]"))
+			Expect(value).To(Equal("false"))
+
+			Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+				ContentLength: 10,
+				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+			}))
+
+			Expect(multipart.FinalizeCallCount()).To(Equal(1))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
+
+			format, v = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+
+			format, v = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+		})
 	})
 
 	Context("when the stemcell already exists", func() {
