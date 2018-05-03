@@ -29,6 +29,7 @@ Usage: om [options] configure-director [<args>]
 
 Command Arguments:
   --az-configuration, -a        string  configures network availability zones
+  --config, -c                  string  path to yml file containing all config fields (see docs/configure-director/README.md for format)
   --director-configuration, -d  string  properties for director configuration
   --iaas-configuration, -i      string  iaas specific JSON configuration for the bosh director
   --network-assignment, -na     string  assigns networks and AZs
@@ -36,4 +37,37 @@ Command Arguments:
   --resource-configuration, -r  string
   --security-configuration, -s  string
   --syslog-configuration, -l    string
+```
+
+### Configuring via file
+
+The `--config` flag is available for convenience to allow you to pass a single
+file with all the configuration required to configure your director.
+
+When providing a single config file each of the other individual flags maps to a
+top-level element in the YAML file.
+
+#### Example YAML:
+```yaml
+---
+az-configuration:
+- name: some-az
+director-configuration:
+  max_threads: 5
+iaas-configuration:
+  iaas_specific_key: some-value
+network-assignment:
+  network:
+    name: some-network
+networks-configuration:
+  networks:
+  - network: network-1
+resource-configuration:
+  compilation:
+    instance_type:
+      id: m4.xlarge
+security-configuration:
+  trusted_certificates: some-certificate
+syslog-configuration:
+  syslogconfig: awesome
 ```
