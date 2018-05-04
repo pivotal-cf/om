@@ -7,53 +7,26 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
 type SetupInput struct {
-	IdentityProvider                 string
-	AdminUserName                    string
-	AdminPassword                    string
-	AdminPasswordConfirmation        string
-	DecryptionPassphrase             string
-	DecryptionPassphraseConfirmation string
-	EULAAccepted                     bool
-	HTTPProxyURL                     string
-	HTTPSProxyURL                    string
-	NoProxy                          string
+	IdentityProvider                 string `json:"identity_provider"`
+	AdminUserName                    string `json:"admin_user_name,omitempty"`
+	AdminPassword                    string `json:"admin_password,omitempty"`
+	AdminPasswordConfirmation        string `json:"admin_password_confirmation,omitempty"`
+	DecryptionPassphrase             string `json:"decryption_passphrase"`
+	DecryptionPassphraseConfirmation string `json:"decryption_passphrase_confirmation"`
+	EULAAccepted                     bool   `json:"eula_accepted"`
+	HTTPProxyURL                     string `json:"http_proxy,omitempty"`
+	HTTPSProxyURL                    string `json:"https_proxy,omitempty"`
+	NoProxy                          string `json:"no_proxy,omitempty"`
 }
 
 type SetupOutput struct{}
 
 func (a Api) Setup(input SetupInput) (SetupOutput, error) {
-	var setup struct {
-		Setup struct {
-			IdentityProvider                 string `json:"identity_provider"`
-			AdminUserName                    string `json:"admin_user_name"`
-			AdminPassword                    string `json:"admin_password"`
-			AdminPasswordConfirmation        string `json:"admin_password_confirmation"`
-			DecryptionPassphrase             string `json:"decryption_passphrase"`
-			DecryptionPassphraseConfirmation string `json:"decryption_passphrase_confirmation"`
-			EULAAccepted                     string `json:"eula_accepted"`
-			HTTPProxyURL                     string `json:"http_proxy,omitempty"`
-			HTTPSProxyURL                    string `json:"https_proxy,omitempty"`
-			NoProxy                          string `json:"no_proxy,omitempty"`
-		} `json:"setup"`
-	}
-
-	setup.Setup.IdentityProvider = input.IdentityProvider
-	setup.Setup.AdminUserName = input.AdminUserName
-	setup.Setup.AdminPassword = input.AdminPassword
-	setup.Setup.AdminPasswordConfirmation = input.AdminPasswordConfirmation
-	setup.Setup.DecryptionPassphrase = input.DecryptionPassphrase
-	setup.Setup.DecryptionPassphraseConfirmation = input.DecryptionPassphraseConfirmation
-	setup.Setup.HTTPProxyURL = input.HTTPProxyURL
-	setup.Setup.HTTPSProxyURL = input.HTTPSProxyURL
-	setup.Setup.NoProxy = input.NoProxy
-	setup.Setup.EULAAccepted = strconv.FormatBool(input.EULAAccepted)
-
-	payload, err := json.Marshal(setup)
+	payload, err := json.Marshal(input)
 	if err != nil {
 		return SetupOutput{}, err
 	}
