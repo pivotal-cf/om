@@ -60,6 +60,60 @@ var _ = Describe("ConfigureAuthentication", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
 		})
 
+		//It("defaults to internal authentication", func() {
+		//
+		//})
+
+		Context("when provided flags for SAML authentication", func() {
+			It("configures SAML authentication", func() {
+				service := &fakes.ConfigureAuthenticationService{}
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+
+				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+				}
+
+				logger := &fakes.Logger{}
+
+				command := commands.NewConfigureAuthentication(service, logger)
+				err := command.Execute([]string{
+					"--decryption-passphrase", "some-passphrase",
+					"--saml-idp-metadata", "https://saml.example.com:8080",
+					"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
+					"--saml-rbac-admin-group", "opsman.full_control",
+					"--saml-rbac-groups-attribute", "myenterprise",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "saml",
+					DecryptionPassphrase:             "some-passphrase",
+					DecryptionPassphraseConfirmation: "some-passphrase",
+					EULAAccepted:                     true,
+					IDPMetadata:                      "https://saml.example.com:8080",
+					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
+					RBACAdminGroup:                   "opsman.full_control",
+					RBACGroupsAttribute:              "myenterprise",
+				}))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+			})
+		})
+
 		Context("when the authentication setup has already been configured", func() {
 			It("returns without configuring the authentication system", func() {
 				service := &fakes.ConfigureAuthenticationService{}
@@ -172,7 +226,67 @@ var _ = Describe("ConfigureAuthentication", func() {
 				})
 			})
 
-			Context("when the --username flag is missing", func() {
+			Context("when the --saml-idp-metadata field is not configured with others", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--decryption-passphrase", "some-passphrase",
+						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
+						"--saml-rbac-admin-group", "opsman.full_control",
+						"--saml-rbac-groups-attribute", "myenterprise",
+					})
+					Expect(err).To(HaveOccurred())
+
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--saml-idp-metadata\""))
+				})
+			})
+
+			Context("when the --saml-bosh-idp-metadata field is not configured with others", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--decryption-passphrase", "some-passphrase",
+						"--saml-idp-metadata", "https://saml.example.com:8080",
+						"--saml-rbac-admin-group", "opsman.full_control",
+						"--saml-rbac-groups-attribute", "myenterprise",
+					})
+					Expect(err).To(HaveOccurred())
+
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--saml-bosh-idp-metadata\""))
+				})
+			})
+
+			Context("when the --saml-rbac-admin-group field is not configured with others", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--decryption-passphrase", "some-passphrase",
+						"--saml-idp-metadata", "https://saml.example.com:8080",
+						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
+						"--saml-rbac-groups-attribute", "myenterprise",
+					})
+					Expect(err).To(HaveOccurred())
+
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--saml-rbac-admin-group\""))
+				})
+			})
+
+			Context("when the --saml-rbac-groups-attribute field is not configured with others", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(nil, nil)
+					err := command.Execute([]string{
+						"--decryption-passphrase", "some-passphrase",
+						"--saml-idp-metadata", "https://saml.example.com:8080",
+						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
+						"--saml-rbac-admin-group", "opsman.full_control",
+					})
+					Expect(err).To(HaveOccurred())
+
+					Expect(err).To(MatchError("could not parse configure-authentication flags: missing required flag \"--saml-rbac-groups-attribute\""))
+				})
+			})
+
+			Context("when the --username flag is missing without SAML options", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -183,7 +297,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 				})
 			})
 
-			Context("when the --password flag is missing", func() {
+			Context("when the --password flag is missing without SAML options", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(nil, nil)
 					err := command.Execute([]string{

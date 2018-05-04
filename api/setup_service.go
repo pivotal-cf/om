@@ -21,12 +21,20 @@ type SetupInput struct {
 	HTTPProxyURL                     string `json:"http_proxy,omitempty"`
 	HTTPSProxyURL                    string `json:"https_proxy,omitempty"`
 	NoProxy                          string `json:"no_proxy,omitempty"`
+	IDPMetadata                      string `json:"idp_metadata,omitempty"`
+	BoshIDPMetadata                  string `json:"bosh_idp_metadata,omitempty"`
+	RBACAdminGroup                   string `json:"rbac_saml_admin_group,omitempty"`
+	RBACGroupsAttribute              string `json:"rbac_saml_groups_attribute,omitempty"`
 }
 
 type SetupOutput struct{}
 
+type setup struct {
+	SetupInput `json:"setup"`
+}
+
 func (a Api) Setup(input SetupInput) (SetupOutput, error) {
-	payload, err := json.Marshal(input)
+	payload, err := json.Marshal(setup{input})
 	if err != nil {
 		return SetupOutput{}, err
 	}

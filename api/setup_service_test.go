@@ -64,7 +64,7 @@ var _ = Describe("Setup", func() {
 					"admin_password_confirmation": "some-password-confirmation",
 					"decryption_passphrase": "some-passphrase",
 					"decryption_passphrase_confirmation":"some-passphrase-confirmation",
-					"eula_accepted": "true",
+					"eula_accepted": true,
 					"http_proxy": "http://http-proxy.com",
 					"https_proxy": "http://https-proxy.com",
 					"no_proxy": "10.10.10.10,11.11.11.11"
