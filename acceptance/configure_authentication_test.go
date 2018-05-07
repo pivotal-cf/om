@@ -75,7 +75,7 @@ var _ = Describe("configure-authentication command", func() {
 		Expect(auth.Setup.AdminPasswordConfirmation).To(Equal("password"))
 		Expect(auth.Setup.DecryptionPassphrase).To(Equal("passphrase"))
 		Expect(auth.Setup.DecryptionPassphraseConfirmation).To(Equal("passphrase"))
-		Expect(auth.Setup.EULAAccepted).To(Equal(true))
+		Expect(auth.Setup.EULAAccepted).To(Equal("true"))
 		Expect(auth.Setup.HTTPProxyURL).To(Equal("http://http-proxy.com"))
 		Expect(auth.Setup.HTTPSProxyURL).To(Equal("http://https-proxy.com"))
 		Expect(auth.Setup.NoProxy).To(Equal("10.10.10.10,11.11.11.11"))

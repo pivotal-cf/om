@@ -45,7 +45,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 				AdminPasswordConfirmation:        "some-password",
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
-				EULAAccepted:                     true,
+				EULAAccepted:                     "true",
 			}))
 
 			Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
@@ -94,7 +94,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 					IdentityProvider:                 "saml",
 					DecryptionPassphrase:             "some-passphrase",
 					DecryptionPassphraseConfirmation: "some-passphrase",
-					EULAAccepted:                     true,
+					EULAAccepted:                     "true",
 					IDPMetadata:                      "https://saml.example.com:8080",
 					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
 					RBACAdminGroup:                   "opsman.full_control",

@@ -116,7 +116,7 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 			HTTPProxyURL:                     ca.Options.HTTPProxyURL,
 			HTTPSProxyURL:                    ca.Options.HTTPSProxyURL,
 			NoProxy:                          ca.Options.NoProxy,
-			EULAAccepted:                     true,
+			EULAAccepted:                     "true",
 			IDPMetadata:                      ca.Options.IDPMetadata,
 			BoshIDPMetadata:                  ca.Options.BoshIDPMetadata,
 			RBACAdminGroup:                   ca.Options.RBACAdminGroup,
@@ -139,7 +139,7 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 			HTTPProxyURL:                     ca.Options.HTTPProxyURL,
 			HTTPSProxyURL:                    ca.Options.HTTPSProxyURL,
 			NoProxy:                          ca.Options.NoProxy,
-			EULAAccepted:                     true,
+			EULAAccepted:                     "true",
 		})
 		if err != nil {
 			return fmt.Errorf("could not configure authentication: %s", err)

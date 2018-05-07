@@ -17,7 +17,7 @@ type SetupInput struct {
 	AdminPasswordConfirmation        string `json:"admin_password_confirmation,omitempty"`
 	DecryptionPassphrase             string `json:"decryption_passphrase"`
 	DecryptionPassphraseConfirmation string `json:"decryption_passphrase_confirmation"`
-	EULAAccepted                     bool   `json:"eula_accepted"`
+	EULAAccepted                     string `json:"eula_accepted"`
 	HTTPProxyURL                     string `json:"http_proxy,omitempty"`
 	HTTPSProxyURL                    string `json:"https_proxy,omitempty"`
 	NoProxy                          string `json:"no_proxy,omitempty"`
