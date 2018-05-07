@@ -21,6 +21,7 @@ Usage: om [options] <command> [<args>]
   --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
   --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
   --target, -t               string  location of the Ops Manager VM
+  --target-config-file, -tc  string  YAML file specifying om global parameters
   --trace, -tr               bool    prints HTTP requests and response payloads
   --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)
   --version, -v              bool    prints the om release version (default: false)
@@ -82,6 +83,7 @@ Usage: om [options] configure-authentication [<args>]
   --request-timeout, -r      int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
   --skip-ssl-validation, -k  bool    skip ssl certificate validation during http requests (default: false)
   --target, -t               string  location of the Ops Manager VM
+  --target-config-file, -tc  string  YAML file specifying om global parameters
   --trace, -tr               bool    prints HTTP requests and response payloads
   --username, -u             string  admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)
   --version, -v              bool    prints the om release version (default: false)
