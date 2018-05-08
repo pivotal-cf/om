@@ -4,11 +4,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"io/ioutil"
+	"time"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/gosuri/uilive"
 	"github.com/olekukonko/tablewriter"
-
-	"time"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -33,28 +35,72 @@ func main() {
 	stdout := log.New(os.Stdout, "", 0)
 	stderr := log.New(os.Stderr, "", 0)
 
-	var global struct {
-		ClientID          string `short:"c"  long:"client-id"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_ID)"`
-		ClientSecret      string `short:"s"  long:"client-secret"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_SECRET)"`
-		Format            string `short:"f"  long:"format"              default:"table" description:"Format to print as (options: table,json)"`
-		Help              bool   `short:"h"  long:"help"                default:"false" description:"prints this usage information"`
-		Password          string `short:"p"  long:"password"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands, $OM_PASSWORD)"`
-		RequestTimeout    int    `short:"r"  long:"request-timeout"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
-		SkipSSLValidation bool   `short:"k"  long:"skip-ssl-validation" default:"false" description:"skip ssl certificate validation during http requests"`
-		Target            string `short:"t"  long:"target"                              description:"location of the Ops Manager VM"`
-		Trace             bool   `short:"tr" long:"trace"                               description:"prints HTTP requests and response payloads"`
-		Username          string `short:"u"  long:"username"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)"`
-		Version           bool   `short:"v"  long:"version"             default:"false" description:"prints the om release version"`
+	type globalFlags struct {
+		ConfigFile        string `                           short:"tc" long:"target-config-file"                  description:"YAML file specifying om global parameters"`
+		ClientID          string `yaml:"client-id"           short:"c"  long:"client-id"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_ID)"`
+		ClientSecret      string `yaml:"client-secret"       short:"s"  long:"client-secret"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_SECRET)"`
+		Format            string `yaml:"format"              short:"f"  long:"format"              default:"table" description:"Format to print as (options: table,json)"`
+		Help              bool   `                           short:"h"  long:"help"                default:"false" description:"prints this usage information"`
+		Password          string `yaml:"password"            short:"p"  long:"password"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands, $OM_PASSWORD)"`
+		RequestTimeout    int    `yaml:"request-timeout"     short:"r"  long:"request-timeout"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
+		SkipSSLValidation bool   `yaml:"skip-ssl-validation" short:"k"  long:"skip-ssl-validation" default:"false" description:"skip ssl certificate validation during http requests"`
+		Target            string `yaml:"target"              short:"t"  long:"target"                              description:"location of the Ops Manager VM"`
+		Trace             bool   `yaml:"trace"               short:"tr" long:"trace"                               description:"prints HTTP requests and response payloads"`
+		Username          string `yaml:"username"            short:"u"  long:"username"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)"`
+		Version           bool   `                           short:"v"  long:"version"             default:"false" description:"prints the om release version"`
 	}
 
-	args, err := jhanda.Parse(&global, os.Args[1:])
+	var configFlags globalFlags
+
+	args, err := jhanda.Parse(&configFlags, os.Args[1:])
 	if err != nil {
 		stdout.Fatal(err)
 	}
 
-	globalFlagsUsage, err := jhanda.PrintUsage(global)
+	globalFlagsUsage, err := jhanda.PrintUsage(configFlags)
 	if err != nil {
 		stdout.Fatal(err)
+	}
+
+	if configFlags.ConfigFile != "" {
+		fileContents, err := ioutil.ReadFile(configFlags.ConfigFile)
+		if err != nil {
+			stdout.Fatal(err)
+		}
+
+		var fileFlags globalFlags
+		err = yaml.Unmarshal(fileContents, &fileFlags)
+		if err != nil {
+			stdout.Fatal(err)
+		}
+
+		if configFlags.ClientID == "" {
+			configFlags.ClientID = fileFlags.ClientID
+		}
+		if configFlags.ClientSecret == "" {
+			configFlags.ClientSecret = fileFlags.ClientSecret
+		}
+		if configFlags.Format == "" {
+			configFlags.Format = fileFlags.Format
+		}
+		if configFlags.Password == "" {
+			configFlags.Password = fileFlags.Password
+		}
+		if configFlags.RequestTimeout == 1800 {
+			configFlags.RequestTimeout = fileFlags.RequestTimeout
+		}
+		if !configFlags.SkipSSLValidation {
+			configFlags.SkipSSLValidation = fileFlags.SkipSSLValidation
+		}
+		if configFlags.Target == "" {
+			configFlags.Target = fileFlags.Target
+		}
+		if !configFlags.Trace {
+			configFlags.Trace = fileFlags.Trace
+		}
+		if configFlags.Username == "" {
+			configFlags.Username = fileFlags.Username
+		}
 	}
 
 	var command string
@@ -62,11 +108,11 @@ func main() {
 		command, args = args[0], args[1:]
 	}
 
-	if global.Version {
+	if configFlags.Version {
 		command = "version"
 	}
 
-	if global.Help {
+	if configFlags.Help {
 		command = "help"
 	}
 
@@ -74,31 +120,31 @@ func main() {
 		command = "help"
 	}
 
-	if global.Username == "" {
-		global.Username = os.Getenv("OM_USERNAME")
+	if configFlags.Username == "" {
+		configFlags.Username = os.Getenv("OM_USERNAME")
 	}
 
-	if global.Password == "" {
-		global.Password = os.Getenv("OM_PASSWORD")
+	if configFlags.Password == "" {
+		configFlags.Password = os.Getenv("OM_PASSWORD")
 	}
 
-	if global.ClientID == "" {
-		global.ClientID = os.Getenv("OM_CLIENT_ID")
+	if configFlags.ClientID == "" {
+		configFlags.ClientID = os.Getenv("OM_CLIENT_ID")
 	}
 
-	if global.ClientSecret == "" {
-		global.ClientSecret = os.Getenv("OM_CLIENT_SECRET")
+	if configFlags.ClientSecret == "" {
+		configFlags.ClientSecret = os.Getenv("OM_CLIENT_SECRET")
 	}
 
-	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
+	requestTimeout := time.Duration(configFlags.RequestTimeout) * time.Second
 
 	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
-	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout)
+	unauthenticatedClient = network.NewUnauthenticatedClient(configFlags.Target, configFlags.SkipSSLValidation, requestTimeout)
+	authedClient, err = network.NewOAuthClient(configFlags.Target, configFlags.Username, configFlags.Password, configFlags.ClientID, configFlags.ClientSecret, configFlags.SkipSSLValidation, false, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
-	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, true, requestTimeout)
+	authedCookieClient, err = network.NewOAuthClient(configFlags.Target, configFlags.Username, configFlags.Password, configFlags.ClientID, configFlags.ClientSecret, configFlags.SkipSSLValidation, true, requestTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
@@ -108,7 +154,7 @@ func main() {
 	unauthenticatedProgressClient = network.NewProgressClient(unauthenticatedClient, progress.NewBar(), liveWriter)
 	authedProgressClient = network.NewProgressClient(authedClient, progress.NewBar(), liveWriter)
 
-	if global.Trace {
+	if configFlags.Trace {
 		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stderr)
 		unauthenticatedProgressClient = network.NewTraceClient(unauthenticatedProgressClient, os.Stderr)
 		authedClient = network.NewTraceClient(authedClient, os.Stderr)
@@ -137,7 +183,7 @@ func main() {
 	metadataExtractor := extractor.MetadataExtractor{}
 
 	var presenter presenters.Presenter
-	switch global.Format {
+	switch configFlags.Format {
 	case "table":
 		presenter = presenters.NewTablePresenter(tableWriter)
 	case "json":
