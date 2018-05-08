@@ -215,9 +215,9 @@ network-properties:
   singleton_availability_zone:
     name: us-west-2a
 resource-config:
-  diego-cell:
+  diego_cell:
     instances: 3
-  diego-brain:
+  diego_brain:
     elb_names:
     - some-elb
 ```
