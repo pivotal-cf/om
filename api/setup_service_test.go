@@ -40,7 +40,7 @@ var _ = Describe("Setup", func() {
 				AdminPasswordConfirmation:        "some-password-confirmation",
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase-confirmation",
-				EULAAccepted:                     true,
+				EULAAccepted:                     "true",
 				HTTPProxyURL:                     "http://http-proxy.com",
 				HTTPSProxyURL:                    "http://https-proxy.com",
 				NoProxy:                          "10.10.10.10,11.11.11.11",

@@ -91,8 +91,12 @@ Command Arguments:
   --http-proxy-url              string             proxy for outbound HTTP network traffic
   --https-proxy-url             string             proxy for outbound HTTPS network traffic
   --no-proxy                    string             comma-separated list of hosts that do not go through the proxy
-  --password, -p                string (required)  admin password
-  --username, -u                string (required)  admin username
+  --password, -p                string             Internal Authentication: admin password
+  --saml-bosh-idp-metadata      string             SAML Authentication: XML, or URL to XML, for the IDP that BOSH should use
+  --saml-idp-metadata           string             SAML Authentication: XML, or URL to XML, for the IDP that Ops Manager should use
+  --saml-rbac-admin-group       string             SAML Authentication: If SAML is specified, please provide the admin group for your SAML
+  --saml-rbac-groups-attribute  string             SAML Authentication: If SAML is specified, please provide the groups attribute for your SAML
+  --username, -u                string             Internal Authentication: admin username
 `
 
 var _ = Describe("help", func() {
