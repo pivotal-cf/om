@@ -39,6 +39,7 @@ om helps you interact with an Ops Manager
 Usage: om [options] <command> [<args>]
   --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_ID)
   --client-secret, -s        string  Client Secret for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_SECRET)
+  --connect-timeout, -o      int     timeout in seconds to make TCP connections (default: 5)
   --format, -f               string  Format to print as (options: table,json) (default: table)
   --help, -h                 bool    prints this usage information (default: false)
   --password, -p             string  admin password for the Ops Manager VM (not required for unauthenticated commands, $OM_PASSWORD)
