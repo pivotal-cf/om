@@ -39,6 +39,7 @@ func main() {
 		Format            string `short:"f"  long:"format"              default:"table" description:"Format to print as (options: table,json)"`
 		Help              bool   `short:"h"  long:"help"                default:"false" description:"prints this usage information"`
 		Password          string `short:"p"  long:"password"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands, $OM_PASSWORD)"`
+		ConnectTimeout    int    `short:"o"  long:"connect-timeout"     default:"5"     description:"timeout in seconds to make TCP connections"`
 		RequestTimeout    int    `short:"r"  long:"request-timeout"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
 		SkipSSLValidation bool   `short:"k"  long:"skip-ssl-validation" default:"false" description:"skip ssl certificate validation during http requests"`
 		Target            string `short:"t"  long:"target"                              description:"location of the Ops Manager VM"`
@@ -91,14 +92,15 @@ func main() {
 	}
 
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
+	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
 	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout)
-	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout)
+	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout)
+	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout, connectTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}
-	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, true, requestTimeout)
+	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, true, requestTimeout, connectTimeout)
 	if err != nil {
 		stdout.Fatal(err)
 	}

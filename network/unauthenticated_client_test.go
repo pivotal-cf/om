@@ -31,7 +31,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				w.Write([]byte("response"))
 			}))
 
-			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second)
+			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 
 			request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
 			Expect(err).NotTo(HaveOccurred())
@@ -70,7 +70,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				noScheme.Scheme = ""
 				finalURL := strings.Replace(noScheme.String(), "//", "", 1)
 
-				client := network.NewUnauthenticatedClient(finalURL, true, time.Duration(30)*time.Second)
+				client := network.NewUnauthenticatedClient(finalURL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 				Expect(err).NotTo(HaveOccurred())
 
 				request, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -87,7 +87,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 		Context("failure cases", func() {
 			Context("when the target url cannot be parsed", func() {
 				It("returns an error", func() {
-					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second)
+					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					_, err := client.Do(&http.Request{})
 					Expect(err).To(MatchError("could not parse target url: parse //%%%: invalid URL escape \"%%%\""))
 				})
@@ -95,7 +95,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 
 			Context("when the target url is empty", func() {
 				It("returns an error", func() {
-					client := network.NewUnauthenticatedClient("", false, time.Duration(30)*time.Second)
+					client := network.NewUnauthenticatedClient("", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					_, err := client.Do(&http.Request{})
 					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
 				})

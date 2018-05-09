@@ -15,7 +15,7 @@ type UnauthenticatedClient struct {
 	client *http.Client
 }
 
-func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTimeout time.Duration) UnauthenticatedClient {
+func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTimeout time.Duration, connectTimeout time.Duration) UnauthenticatedClient {
 	return UnauthenticatedClient{
 		target: target,
 		client: &http.Client{
@@ -28,7 +28,7 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTim
 					InsecureSkipVerify: insecureSkipVerify,
 				},
 				Dial: (&net.Dialer{
-					Timeout:   5 * time.Second,
+					Timeout:   connectTimeout,
 					KeepAlive: 30 * time.Second,
 				}).Dial,
 			},
