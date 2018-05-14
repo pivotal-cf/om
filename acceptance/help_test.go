@@ -37,6 +37,7 @@ Commands:
   configure-bosh                  **DEPRECATED** configures Ops Manager deployed bosh director
   configure-director              configures the director
   configure-product               configures a staged product
+  configure-saml-authentication   configures Ops Manager with SAML authentication
   create-certificate-authority    creates a certificate authority on the Ops Manager
   create-vm-extension             creates a VM extension
   credential-references           list credential references for a deployed product
@@ -71,8 +72,7 @@ Commands:
 `
 
 const CONFIGURE_AUTHENTICATION_USAGE = `ॐ  configure-authentication
-This unauthenticated command helps setup the authentication mechanism for your Ops Manager.
-The "internal" userstore mechanism is the only currently supported option.
+This unauthenticated command helps setup the internal userstore authentication mechanism for your Ops Manager.
 
 Usage: om [options] configure-authentication [<args>]
   --client-id, -c            string  Client ID for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_ID)
@@ -93,12 +93,8 @@ Command Arguments:
   --http-proxy-url              string             proxy for outbound HTTP network traffic
   --https-proxy-url             string             proxy for outbound HTTPS network traffic
   --no-proxy                    string             comma-separated list of hosts that do not go through the proxy
-  --password, -p                string             Internal Authentication: admin password
-  --saml-bosh-idp-metadata      string             SAML Authentication: XML, or URL to XML, for the IDP that BOSH should use
-  --saml-idp-metadata           string             SAML Authentication: XML, or URL to XML, for the IDP that Ops Manager should use
-  --saml-rbac-admin-group       string             SAML Authentication: If SAML is specified, please provide the admin group for your SAML
-  --saml-rbac-groups-attribute  string             SAML Authentication: If SAML is specified, please provide the groups attribute for your SAML
-  --username, -u                string             Internal Authentication: admin username
+  --password, -p                string (required)  admin password
+  --username, -u                string (required)  admin username
 `
 
 var _ = Describe("help", func() {
