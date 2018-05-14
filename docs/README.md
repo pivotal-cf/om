@@ -18,6 +18,7 @@ on a vSphere Ops Manager.
 | configure-bosh | **DEPRECATED** configures Ops Manager deployed bosh director
 | [configure-director](configure-director/README.md) |  configures the director
 | [configure-product](configure-product/README.md) |  configures a staged product
+| [configure-saml-authentication](configure-saml-authentication/README.md) |  configures Ops Manager with SAML authentication
 | create-certificate-authority |  creates a certificate authority on the Ops Manager
 | create-vm-extension |  creates a VM extension
 | credential-references |  list credential references for a deployed product
