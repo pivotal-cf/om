@@ -158,6 +158,7 @@ func main() {
 	commandSet["configure-bosh"] = commands.NewConfigureBosh(ui, api, stdout, stderr)
 	commandSet["configure-director"] = commands.NewConfigureDirector(api, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(api, stdout)
+	commandSet["configure-saml-authentication"] = commands.NewConfigureSAMLAuthentication(api, stdout)
 	commandSet["config-template"] = commands.NewConfigTemplate(metadataExtractor, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(api, presenter)
 	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(api, stdout)
