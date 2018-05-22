@@ -14,6 +14,40 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/bmatcuk/doublestar"
+  packages = ["."]
+  revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
+  version = "v1.0.9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/charlievieth/fs"
+  packages = ["."]
+  revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
+
+[[projects]]
+  name = "github.com/cloudfoundry/bosh-cli"
+  packages = ["director/template"]
+  revision = "712bfd7271b478ba03c3f604339e2eefbec4647c"
+  version = "v3.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cloudfoundry/bosh-utils"
+  packages = [
+    "errors",
+    "logger",
+    "system"
+  ]
+  revision = "fad7a5ad622c066cf1b36eb44b9612cec680e48c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cppforlife/go-patch"
+  packages = ["patch"]
+  revision = "250da0e0e68ce3367b4302f34218f6c064eb9559"
+
+[[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
@@ -198,6 +232,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c2fbb8aa0768d65d596891d3731f24a99c125e9874ece005a272b658839603b9"
+  inputs-digest = "c1f9baab291c56f4c7f4aac00844550b2319199d63139d8689f68730f5131e39"
   solver-name = "gps-cdcl"
   solver-version = 1

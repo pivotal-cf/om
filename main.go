@@ -179,6 +179,7 @@ func main() {
 	commandSet["import-installation"] = commands.NewImportInstallation(form, api, stdout)
 	commandSet["installation-log"] = commands.NewInstallationLog(api, stdout)
 	commandSet["installations"] = commands.NewInstallations(api, presenter)
+	commandSet["interpolate"] = commands.NewInterpolate(stdout)
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)

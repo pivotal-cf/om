@@ -57,6 +57,7 @@ Commands:
   import-installation             imports a given installation to the Ops Manager targeted
   installation-log                output installation logs
   installations                   list recent installation events
+  interpolate                     Interpolates variables into a manifest
   pending-changes                 lists pending changes
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
