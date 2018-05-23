@@ -60,6 +60,15 @@ product-properties:
       password: example-new-password
 `
 
+const productPropertiesWithVariables = `---
+product-properties:
+  .properties.something:
+    value: configure-me
+  .a-job.job-property:
+    value:
+      identity: username
+      password: ((password))`
+
 const networkPropertiesFile = `---
 network-properties:
   singleton_availability_zone:
@@ -329,6 +338,48 @@ var _ = Describe("ConfigureProduct", func() {
 
 			AfterEach(func() {
 				os.RemoveAll(configFile.Name())
+			})
+
+			Context("when the config file contains variables", func() {
+				It("returns an error of missing variables ", func() {
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(productPropertiesWithVariables)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+				})
+
+				It("can interpolate variables into the configuration", func() {
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(productPropertiesWithVariables)
+					Expect(err).NotTo(HaveOccurred())
+
+					varsFile, err := ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = varsFile.WriteString(`password: something-secure`)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+						"--vars-file", varsFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+				})
 			})
 
 			Context("when the config file only contains product properties", func() {

@@ -3,25 +3,25 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"sort"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 
 	yamlConverter "github.com/ghodss/yaml"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type ConfigureProduct struct {
 	service configureProductService
 	logger  logger
 	Options struct {
-		ProductName       string `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
-		ConfigFile        string `long:"config"             short:"c"                  description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)"`
-		ProductProperties string `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
-		NetworkProperties string `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
-		ProductResources  string `long:"product-resources"  short:"pr"                 description:"resource configurations in JSON format"`
+		ProductName       string   `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
+		ConfigFile        string   `long:"config"             short:"c"                  description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)"`
+		VarsFile          []string `long:"vars-file"  description:"Load variables from a YAML file"`
+		ProductProperties string   `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
+		NetworkProperties string   `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
+		ProductResources  string   `long:"product-resources"  short:"pr"                 description:"resource configurations in JSON format"`
 	}
 }
 
@@ -85,7 +85,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	if cp.Options.ConfigFile != "" {
 		var config map[string]interface{}
-		configContents, err := ioutil.ReadFile(cp.Options.ConfigFile)
+		configContents, err := interpolate(cp.Options.ConfigFile, cp.Options.VarsFile)
 		if err != nil {
 			return err
 		}
