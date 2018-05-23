@@ -27,32 +27,7 @@ func (c Interpolate) Execute(args []string) error {
 		return fmt.Errorf("could not parse interpolate flags: %s", err)
 	}
 
-	contents, err := ioutil.ReadFile(c.Options.ConfigFile)
-	if err != nil {
-		return err
-	}
-
-	tpl := boshtpl.NewTemplate(contents)
-	vars := []boshtpl.Variables{}
-
-	for _, path := range c.Options.VarsFile {
-		payload, err := ioutil.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("could not read template variables file (%s): %s", path, err.Error())
-		}
-		var staticVars boshtpl.StaticVariables
-		err = yaml.Unmarshal(payload, &staticVars)
-		if err != nil {
-			return fmt.Errorf("could not unmarhsal template variables file (%s): %s", path, err.Error())
-		}
-		vars = append(vars, staticVars)
-	}
-	evalOpts := boshtpl.EvaluateOpts{
-		UnescapedMultiline: true,
-		ExpectAllKeys: true,
-	}
-
-	bytes, err := tpl.Evaluate(boshtpl.NewMultiVars(vars), nil, evalOpts)
+	bytes, err := interpolate(c.Options.ConfigFile, c.Options.VarsFile)
 	if err != nil {
 		return err
 	}
@@ -68,4 +43,38 @@ func (c Interpolate) Usage() jhanda.Usage {
 		ShortDescription: "Interpolates variables into a manifest",
 		Flags:            c.Options,
 	}
+}
+
+func interpolate(templateFile string, varsFiles []string) ([]byte, error) {
+	contents, err := ioutil.ReadFile(templateFile)
+	if err != nil {
+		return nil, err
+	}
+
+	tpl := boshtpl.NewTemplate(contents)
+	vars := []boshtpl.Variables{}
+
+	for _, path := range varsFiles {
+		payload, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("could not read template variables file (%s): %s", path, err.Error())
+		}
+		var staticVars boshtpl.StaticVariables
+		err = yaml.Unmarshal(payload, &staticVars)
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarhsal template variables file (%s): %s", path, err.Error())
+		}
+		vars = append(vars, staticVars)
+	}
+	evalOpts := boshtpl.EvaluateOpts{
+		UnescapedMultiline: true,
+		ExpectAllKeys: true,
+	}
+
+	bytes, err := tpl.Evaluate(boshtpl.NewMultiVars(vars), nil, evalOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
 }
