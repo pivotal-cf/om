@@ -52,6 +52,7 @@ var _ = Describe("StagedConfig", func() {
 				},
 				".properties.some-selector": api.ResponseProperty{
 					Value:        "internal",
+					Type:         "selector",
 					Configurable: true,
 				},
 				".properties.some-selector.not-internal.some-string-property": api.ResponseProperty{

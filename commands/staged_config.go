@@ -5,7 +5,8 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 type StagedConfig struct {
