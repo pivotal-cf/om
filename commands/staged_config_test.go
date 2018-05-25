@@ -50,6 +50,15 @@ var _ = Describe("StagedConfig", func() {
 					Value:        nil,
 					Configurable: true,
 				},
+				".properties.some-selector": api.ResponseProperty{
+					Value:        "internal",
+					Type:         "selector",
+					Configurable: true,
+				},
+				".properties.some-selector.not-internal.some-string-property": api.ResponseProperty{
+					Value:        "some-value",
+					Configurable: true,
+				},
 			}, nil)
 		fakeService.GetStagedProductNetworksAndAZsReturns(
 			map[string]interface{}{
@@ -109,6 +118,8 @@ product-properties:
   .properties.some-secret-property:
     value:
       some-secret-type: "***"
+  .properties.some-selector:
+    value: internal
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -163,6 +174,8 @@ product-properties:
   .properties.some-secret-property:
     value:
       some-secret-key: some-secret-value
+  .properties.some-selector:
+    value: internal
 network-properties:
   singleton_availability_zone:
     name: az-one

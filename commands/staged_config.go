@@ -5,7 +5,8 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 type StagedConfig struct {
@@ -77,9 +78,13 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 
 	configurableProperties := map[string]interface{}{}
+	selectorProperties := map[string]string{}
 
 	for name, property := range properties {
 		if property.Configurable && property.Value != nil {
+			if property.Type == "selector" {
+				selectorProperties[name] = property.Value.(string)
+			}
 			if property.IsCredential && ec.Options.IncludeCredentials {
 				output, err := ec.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 					DeployedGUID:        productGUID,
@@ -92,6 +97,17 @@ func (ec StagedConfig) Execute(args []string) error {
 			} else {
 				configurableProperties[name] = map[string]interface{}{"value": property.Value}
 			}
+		}
+	}
+
+	for name := range configurableProperties {
+		components := strings.Split(name, ".")[1:] // the 0th item is an empty string due to `.some.other`
+		if len(components) == 2 {
+			continue
+		}
+		selector := "." + strings.Join(components[:2], ".")
+		if val, ok := selectorProperties[selector]; ok && components[2] != val {
+			delete(configurableProperties, name)
 		}
 	}
 
