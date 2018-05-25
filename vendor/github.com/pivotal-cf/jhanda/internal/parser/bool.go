@@ -3,6 +3,7 @@ package parser
 import (
 	"flag"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 )
@@ -31,6 +32,20 @@ func NewBool(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*F
 		set.BoolVar(field.Addr().Interface().(*bool), long, defaultValue, "")
 		f.flags = append(f.flags, set.Lookup(long))
 		f.name = fmt.Sprintf("--%s", long)
+	}
+
+	env, ok := tags.Lookup("env")
+	if ok {
+		envStr := os.Getenv(env)
+		if envStr != "" {
+			envValue, err := strconv.ParseBool(envStr)
+			if err != nil {
+				return &Flag{}, fmt.Errorf("could not parse bool environment variable %s value %q: %s", env, envStr, err)
+			}
+
+			field.SetBool(envValue)
+			f.set = true
+		}
 	}
 
 	_, f.required = tags.Lookup("required")
