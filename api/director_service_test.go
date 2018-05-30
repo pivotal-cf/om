@@ -264,16 +264,37 @@ var _ = Describe("Director", func() {
 	})
 
 	Describe("NetworksConfiguration", func() {
-		It("configures networks", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+		BeforeEach(func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				if req.Method == "GET" {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(strings.NewReader(
+							`{"networks": [{"guid": "existing-network-guid", "name": "existing-network"}]}`,
+						))}, nil
+				} else {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+				}
+			}
+		})
 
-			err := service.UpdateStagedDirectorNetworks(json.RawMessage(`{"networks": [{"network_property": "yup"}]}`))
+		It("configures networks", func() {
+			err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+				Networks: json.RawMessage(`{"networks": [{"name": "yup"}]}`),
+			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
+			Expect(client.DoCallCount()).To(Equal(2))
+
+			getReq := client.DoArgsForCall(0)
+
+			Expect(getReq.Method).To(Equal("GET"))
+			Expect(getReq.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			Expect(getReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			req := client.DoArgsForCall(1)
 
 			Expect(req.Method).To(Equal("PUT"))
 			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/networks"))
@@ -283,7 +304,76 @@ var _ = Describe("Director", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jsonBody).To(MatchJSON(`{
 				"networks": [
-					{"network_property": "yup"}
+					{"name": "yup"}
+				]
+			}`))
+		})
+
+		It("configures networks and associates existing guids", func() {
+			err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+				Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network"}]}`),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(2))
+
+			getReq := client.DoArgsForCall(0)
+
+			Expect(getReq.Method).To(Equal("GET"))
+			Expect(getReq.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			Expect(getReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			req := client.DoArgsForCall(1)
+
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+				"icmp_checks_enabled":false,
+				"networks": [
+					{
+						"name": "existing-network",
+						"guid": "existing-network-guid"
+					}
+				]
+			}`))
+		})
+
+		It("configures networks and associates existing guids and no guid for new network", func() {
+			err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+				Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network"},{"name":"new-network"}]}`),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(2))
+
+			getReq := client.DoArgsForCall(0)
+
+			Expect(getReq.Method).To(Equal("GET"))
+			Expect(getReq.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			Expect(getReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			req := client.DoArgsForCall(1)
+
+			Expect(req.Method).To(Equal("PUT"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err := ioutil.ReadAll(req.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+				"icmp_checks_enabled":false,
+				"networks": [
+					{
+						"name": "existing-network",
+						"guid": "existing-network-guid"
+					},
+					{
+						"name": "new-network"
+					}
 				]
 			}`))
 		})
@@ -294,16 +384,28 @@ var _ = Describe("Director", func() {
 					StatusCode: http.StatusInternalServerError,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := service.UpdateStagedDirectorNetworks(json.RawMessage("{}"))
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage("{}"),
+				})
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
 			It("returns an error when the api endpoint fails", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{"networks": []}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed")
+					}
+				}
 
-				err := service.UpdateStagedDirectorNetworks(json.RawMessage("{}"))
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage("{}"),
+				})
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/networks: api endpoint failed"))
 			})
 		})

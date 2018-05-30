@@ -15,20 +15,19 @@ import (
 
 var _ = Describe("configure-director command", func() {
 	var (
-		azPutCallCount                 int
-		azPutConfigurationBody         []byte
-		azConfigurationMethod          string
-		directorPropertiesBody         []byte
-		directorPropertiesCallCount    int
-		directorPropertiesMethod       string
-		networkAZCallCount             int
-		networkAZConfigurationBody     []byte
-		networkAZConfigurationMethod   string
-		networksConfigurationBody      []byte
-		networksConfigurationCallCount int
-		networksConfigurationMethod    string
-		resourceConfigMethod           string
-		resourceConfigBody             []byte
+		azPutCallCount               int
+		azPutConfigurationBody       []byte
+		azConfigurationMethod        string
+		directorPropertiesBody       []byte
+		directorPropertiesCallCount  int
+		directorPropertiesMethod     string
+		networkAZCallCount           int
+		networkAZConfigurationBody   []byte
+		networkAZConfigurationMethod string
+		networksConfigurationBody    []byte
+		networksPutCallCount         int
+		resourceConfigMethod         string
+		resourceConfigBody           []byte
 
 		server *httptest.Server
 	)
@@ -37,7 +36,7 @@ var _ = Describe("configure-director command", func() {
 		azPutCallCount = 0
 		directorPropertiesCallCount = 0
 		networkAZCallCount = 0
-		networksConfigurationCallCount = 0
+		networksPutCallCount = 0
 
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -85,20 +84,23 @@ var _ = Describe("configure-director command", func() {
 				}
 
 			case "/api/v0/staged/director/networks":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
+				if req.Method == "GET" {
+					w.Write([]byte(`"networks": [{"guid": "existing-network-guid", "name": "network-1"}]`))
+				} else if req.Method == "PUT" {
+					auth := req.Header.Get("Authorization")
+					if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+
+					var err error
+					networksConfigurationBody, err = ioutil.ReadAll(req.Body)
+					Expect(err).NotTo(HaveOccurred())
+
+					networksPutCallCount++
+
+					w.Write([]byte(`{}`))
 				}
-
-				var err error
-				networksConfigurationBody, err = ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
-				networksConfigurationMethod = req.Method
-
-				networksConfigurationCallCount++
-
-				w.Write([]byte(`{}`))
 			case "/api/v0/staged/director/network_and_az":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
@@ -106,7 +108,7 @@ var _ = Describe("configure-director command", func() {
 					return
 				}
 
-				if azPutCallCount == 0 || networksConfigurationCallCount == 0 {
+				if azPutCallCount == 0 || networksPutCallCount == 0 {
 					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
@@ -213,7 +215,7 @@ var _ = Describe("configure-director command", func() {
 				`[ {"name": "some-az-1"}, {"name": "some-existing-az"} ]`,
 				"--networks-configuration",
 				`{
-				"networks": [{"network": "network-1"}],
+				"networks": [{"name": "network-1"}],
 				"top-level": "the-top"
 			}`,
 				"--network-assignment",
@@ -256,10 +258,9 @@ var _ = Describe("configure-director command", func() {
 			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
 		}`))
 
-			Expect(networksConfigurationCallCount).To(Equal(1))
-			Expect(networksConfigurationMethod).To(Equal("PUT"))
+			Expect(networksPutCallCount).To(Equal(1))
 			Expect(networksConfigurationBody).To(MatchJSON(`{
-			"networks": [{"network": "network-1"}],
+			"networks": [{"guid": "existing-network-guid","name": "network-1"}],
 			"top-level": "the-top"
 		}`))
 
@@ -331,7 +332,7 @@ az-configuration:
 - name: some-existing-az
 networks-configuration:
   networks:
-  - network: network-1
+  - name: network-1
   top-level: the-top
 network-assignment:
   network:
@@ -381,10 +382,9 @@ resource-configuration:
 			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
 		}`))
 
-			Expect(networksConfigurationCallCount).To(Equal(1))
-			Expect(networksConfigurationMethod).To(Equal("PUT"))
+			Expect(networksPutCallCount).To(Equal(1))
 			Expect(networksConfigurationBody).To(MatchJSON(`{
-			"networks": [{"network": "network-1"}],
+			"networks": [{"guid": "existing-network-guid","name": "network-1"}],
 			"top-level": "the-top"
 		}`))
 
@@ -407,7 +407,7 @@ resource-configuration:
 			"iaas_configuration": {
 				"project": "some-project",
 				"default_deployment_tag": "my-vms",
-				"auth_json": "{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n" 
+				"auth_json": "{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n"
 			},
 			"director_configuration": {
 				"ntp_servers_string": "us.example.org, time.something.com",

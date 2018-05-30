@@ -66,7 +66,9 @@ var _ = Describe("ConfigureDirector", func() {
 			}))
 
 			Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
-			Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(json.RawMessage(`{"network": "network-1"}`)))
+			Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
+				Networks: json.RawMessage(`{"network": "network-1"}`),
+			}))
 
 			Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
@@ -191,7 +193,9 @@ resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
 					}))
 
 					Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
-					Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(json.RawMessage(`{"network":"network-1"}`)))
+					Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
+						Networks: json.RawMessage(`{"network":"network-1"}`),
+					}))
 
 					Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(1))
 					Expect(service.UpdateStagedDirectorNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{

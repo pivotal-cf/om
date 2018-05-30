@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"sort"
 
+	"io/ioutil"
+
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 type ConfigureDirector struct {
@@ -30,7 +31,7 @@ type ConfigureDirector struct {
 //go:generate counterfeiter -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
 type configureDirectorService interface {
 	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput) error
-	UpdateStagedDirectorNetworks(json.RawMessage) error
+	UpdateStagedDirectorNetworks(api.NetworkInput) error
 	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
 	UpdateStagedDirectorProperties(api.DirectorProperties) error
 	ListStagedProductJobs(string) (map[string]string, error)
@@ -144,7 +145,9 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.NetworksConfiguration != "" {
 		c.logger.Printf("started configuring network options for bosh tile")
 
-		err := c.service.UpdateStagedDirectorNetworks(json.RawMessage(c.Options.NetworksConfiguration))
+		err := c.service.UpdateStagedDirectorNetworks(api.NetworkInput{
+			Networks: json.RawMessage(c.Options.NetworksConfiguration),
+		})
 		if err != nil {
 			return fmt.Errorf("networks configuration could not be applied: %s", err)
 		}
