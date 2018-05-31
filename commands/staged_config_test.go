@@ -24,29 +24,66 @@ var _ = Describe("StagedConfig", func() {
 		fakeService = &fakes.StagedConfigService{}
 		fakeService.GetStagedProductPropertiesReturns(
 			map[string]api.ResponseProperty{
-				".properties.some-string-property": api.ResponseProperty{
+				".properties.some-string-property": {
 					Value:        "some-value",
 					Configurable: true,
 				},
-				".properties.some-non-configurable-property": api.ResponseProperty{
+				".properties.some-non-configurable-property": {
 					Value:        "some-value",
 					Configurable: false,
 				},
-				".properties.some-secret-property": api.ResponseProperty{
+				".properties.some-secret-property": {
+					Type: "secret",
 					Value: map[string]interface{}{
-						"some-secret-type": "***",
+						"secret": "***",
 					},
 					IsCredential: true,
 					Configurable: true,
 				},
-				".properties.some-non-configurable-secret-property": api.ResponseProperty{
+				".properties.simple-credentials": {
+					Type: "simple_credentials",
+					Value: map[string]interface{}{
+						"identity": "***",
+						"password": "***",
+					},
+					IsCredential: true,
+					Configurable: true,
+				},
+				".properties.rsa-cert-credentials": {
+					Type: "rsa_cert_credentials",
+					Value: map[string]interface{}{
+						"cert_pem":        "***",
+						"private_key_pem": "***",
+					},
+					IsCredential: true,
+					Configurable: true,
+				},
+				".properties.rsa-pkey-credentials": {
+					Type: "rsa_pkey_credentials",
+					Value: map[string]interface{}{
+						"private_key_pem": "***",
+					},
+					IsCredential: true,
+					Configurable: true,
+				},
+				".properties.salted-credentials": {
+					Type: "salted_credentials",
+					Value: map[string]interface{}{
+						"identity": "***",
+						"salt": "***",
+						"password": "***",
+					},
+					IsCredential: true,
+					Configurable: true,
+				},
+				".properties.some-non-configurable-secret-property": {
 					Value: map[string]interface{}{
 						"some-secret-type": "***",
 					},
 					IsCredential: true,
 					Configurable: false,
 				},
-				".properties.some-null-property": api.ResponseProperty{
+				".properties.some-null-property": {
 					Value:        nil,
 					Configurable: true,
 				},
@@ -106,9 +143,52 @@ var _ = Describe("StagedConfig", func() {
 product-properties:
   .properties.some-string-property:
     value: some-value
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+resource-config:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+`)))
+		})
+	})
+
+	Context("when --include-placeholder is used", func() {
+		It("replace *** with interpolatable placeholder", func() {
+			command := commands.NewStagedConfig(fakeService, logger)
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--include-placeholder",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`---
+product-properties:
+  .properties.some-string-property:
+    value: some-value
   .properties.some-secret-property:
     value:
-      some-secret-type: "***"
+      secret: ((.properties.some-secret-property.secret))
+  .properties.simple-credentials:
+    value:
+      identity: ((.properties.simple-credentials.identity))
+      password: ((.properties.simple-credentials.password))
+  .properties.rsa-cert-credentials:
+    value:
+      cert_pem: ((.properties.rsa-cert-credentials.cert_pem))
+      private_key_pem: ((.properties.rsa-cert-credentials.private_key_pem))
+  .properties.rsa-pkey-credentials:
+    value:
+      private_key_pem: ((.properties.rsa-pkey-credentials.private_key_pem))
+  .properties.salted-credentials:
+    value:
+      identity: ((.properties.salted-credentials.identity))
+      password: ((.properties.salted-credentials.password))
+      salt: ((.properties.salted-credentials.salt))
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -148,11 +228,7 @@ resource-config:
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(1))
-			Expect(fakeService.GetDeployedProductCredentialArgsForCall(0)).To(Equal(api.GetDeployedProductCredentialInput{
-				DeployedGUID:        "some-product-guid",
-				CredentialReference: ".properties.some-secret-property",
-			}))
+			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(5))
 
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
@@ -161,6 +237,18 @@ product-properties:
   .properties.some-string-property:
     value: some-value
   .properties.some-secret-property:
+    value:
+      some-secret-key: some-secret-value
+  .properties.simple-credentials:
+    value:
+      some-secret-key: some-secret-value
+  .properties.rsa-cert-credentials:
+    value:
+      some-secret-key: some-secret-value
+  .properties.rsa-pkey-credentials:
+    value:
+      some-secret-key: some-secret-value
+  .properties.salted-credentials:
     value:
       some-secret-key: some-secret-value
 network-properties:

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type StageProductInput struct {
@@ -43,7 +43,8 @@ type UpdateStagedProductNetworksAndAZsInput struct {
 type ResponseProperty struct {
 	Value        interface{}
 	Configurable bool
-	IsCredential bool `yaml:"credential"`
+	IsCredential bool   `yaml:"credential"`
+	Type         string `yaml:"type"`
 }
 
 type UpgradeRequest struct {
