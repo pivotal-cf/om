@@ -5,7 +5,7 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type StagedConfig struct {
@@ -14,6 +14,7 @@ type StagedConfig struct {
 	Options struct {
 		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
 		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
+		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
 }
 
@@ -89,6 +90,47 @@ func (ec StagedConfig) Execute(args []string) error {
 					return err
 				}
 				configurableProperties[name] = map[string]interface{}{"value": output.Credential.Value}
+			} else if ec.Options.IncludePlaceholder {
+				// do secrets first
+				switch property.Type {
+				case "secret":
+					configurableProperties[name] = map[string]interface{}{
+						"value": map[string]string{
+							"secret": fmt.Sprintf("((%s.secret))", name),
+						},
+					}
+				case "simple_credentials":
+					configurableProperties[name] = map[string]interface{}{
+						"value": map[string]string{
+							"identity": fmt.Sprintf("((%s.identity))", name),
+							"password": fmt.Sprintf("((%s.password))", name),
+						},
+					}
+				case "rsa_cert_credentials":
+					configurableProperties[name] = map[string]interface{}{
+						"value": map[string]string{
+							"cert_pem": fmt.Sprintf("((%s.cert_pem))", name),
+							"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+						},
+					}
+				case "rsa_pkey_credentials":
+					configurableProperties[name] = map[string]interface{}{
+						"value": map[string]string{
+							"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+						},
+					}
+				case "salted_credentials":
+					configurableProperties[name] = map[string]interface{}{
+						"value": map[string]string{
+							"identity": fmt.Sprintf("((%s.identity))", name),
+							"password": fmt.Sprintf("((%s.password))", name),
+							"salt": fmt.Sprintf("((%s.salt))", name),
+						},
+					}
+				default:
+					configurableProperties[name] = map[string]interface{}{"value": property.Value}
+				}
+
 			} else {
 				configurableProperties[name] = map[string]interface{}{"value": property.Value}
 			}
