@@ -143,25 +143,6 @@ var _ = Describe("StagedConfig", func() {
 product-properties:
   .properties.some-string-property:
     value: some-value
-  .properties.some-secret-property:
-    value:
-      secret: "***"
-  .properties.simple-credentials:
-    value:
-      identity: "***"
-      password: "***"
-  .properties.rsa-cert-credentials:
-    value:
-      cert_pem: "***"
-      private_key_pem: "***"
-  .properties.rsa-pkey-credentials:
-    value:
-      private_key_pem: "***"
-  .properties.salted-credentials:
-    value:
-      identity: "***"
-      password: "***"
-      salt: "***"
 network-properties:
   singleton_availability_zone:
     name: az-one

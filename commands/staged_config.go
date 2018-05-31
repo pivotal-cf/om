@@ -91,7 +91,6 @@ func (ec StagedConfig) Execute(args []string) error {
 				}
 				configurableProperties[name] = map[string]interface{}{"value": output.Credential.Value}
 			} else if ec.Options.IncludePlaceholder {
-				// do secrets first
 				switch property.Type {
 				case "secret":
 					configurableProperties[name] = map[string]interface{}{
@@ -132,7 +131,12 @@ func (ec StagedConfig) Execute(args []string) error {
 				}
 
 			} else {
-				configurableProperties[name] = map[string]interface{}{"value": property.Value}
+				switch property.Type {
+				case "secret","simple_credentials","rsa_cert_credentials","rsa_pkey_credentials","salted_credentials":
+				default:
+					configurableProperties[name] = map[string]interface{}{"value": property.Value}
+				}
+
 			}
 		}
 	}
