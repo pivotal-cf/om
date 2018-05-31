@@ -3,6 +3,7 @@ package parser
 import (
 	"flag"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 )
@@ -31,6 +32,20 @@ func NewInt(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Fl
 		set.IntVar(field.Addr().Interface().(*int), long, int(defaultValue), "")
 		f.flags = append(f.flags, set.Lookup(long))
 		f.name = fmt.Sprintf("--%s", long)
+	}
+
+	env, ok := tags.Lookup("env")
+	if ok {
+		envStr := os.Getenv(env)
+		if envStr != "" {
+			envValue, err := strconv.ParseInt(envStr, 0, 0)
+			if err != nil {
+				return &Flag{}, fmt.Errorf("could not parse int environment variable %s value %q: %s", env, envStr, err)
+			}
+
+			field.SetInt(envValue)
+			f.set = true
+		}
 	}
 
 	_, f.required = tags.Lookup("required")

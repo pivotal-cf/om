@@ -109,7 +109,7 @@
     ".",
     "internal/parser"
   ]
-  revision = "138431ae704a43b314d1fa808cd8f6725ae16866"
+  revision = "1b5ae1681a4554242f0daaea5c97bf1ea80aa761"
 
 [[projects]]
   branch = "master"

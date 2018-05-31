@@ -3,6 +3,7 @@ package parser
 import (
 	"flag"
 	"fmt"
+	"os"
 	"reflect"
 )
 
@@ -26,6 +27,15 @@ func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (
 		set.StringVar(field.Addr().Interface().(*string), long, defaultValue, "")
 		f.flags = append(f.flags, set.Lookup(long))
 		f.name = fmt.Sprintf("--%s", long)
+	}
+
+	env, ok := tags.Lookup("env")
+	if ok {
+		envStr, ok := os.LookupEnv(env)
+		if ok {
+			field.SetString(envStr)
+			f.set = true
+		}
 	}
 
 	_, f.required = tags.Lookup("required")

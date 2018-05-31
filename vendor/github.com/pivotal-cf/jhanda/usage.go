@@ -33,25 +33,33 @@ func PrintUsage(receiver interface{}) (string, error) {
 	var usage []string
 	var length int
 	for _, field := range fields {
-		var longShort string
+		var longShortEnv string
 		long, ok := field.Tag.Lookup("long")
 		if ok {
-			longShort += fmt.Sprintf("--%s", long)
+			longShortEnv += fmt.Sprintf("--%s", long)
 		}
 
 		short, ok := field.Tag.Lookup("short")
 		if ok {
-			if longShort != "" {
-				longShort += ", "
+			if longShortEnv != "" {
+				longShortEnv += ", "
 			}
-			longShort += fmt.Sprintf("-%s", short)
+			longShortEnv += fmt.Sprintf("-%s", short)
 		}
 
-		if len(longShort) > length {
-			length = len(longShort)
+		env, ok := field.Tag.Lookup("env")
+		if ok {
+			if longShortEnv != "" {
+				longShortEnv += ", "
+			}
+			longShortEnv += fmt.Sprintf("%s", env)
 		}
 
-		usage = append(usage, longShort)
+		if len(longShortEnv) > length {
+			length = len(longShortEnv)
+		}
+
+		usage = append(usage, longShortEnv)
 	}
 
 	for i, line := range usage {
