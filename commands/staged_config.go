@@ -90,53 +90,18 @@ func (ec StagedConfig) Execute(args []string) error {
 					return err
 				}
 				configurableProperties[name] = map[string]interface{}{"value": output.Credential.Value}
-			} else if ec.Options.IncludePlaceholder {
-				switch property.Type {
-				case "secret":
-					configurableProperties[name] = map[string]interface{}{
-						"value": map[string]string{
-							"secret": fmt.Sprintf("((%s.secret))", name),
-						},
-					}
-				case "simple_credentials":
-					configurableProperties[name] = map[string]interface{}{
-						"value": map[string]string{
-							"identity": fmt.Sprintf("((%s.identity))", name),
-							"password": fmt.Sprintf("((%s.password))", name),
-						},
-					}
-				case "rsa_cert_credentials":
-					configurableProperties[name] = map[string]interface{}{
-						"value": map[string]string{
-							"cert_pem": fmt.Sprintf("((%s.cert_pem))", name),
-							"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
-						},
-					}
-				case "rsa_pkey_credentials":
-					configurableProperties[name] = map[string]interface{}{
-						"value": map[string]string{
-							"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
-						},
-					}
-				case "salted_credentials":
-					configurableProperties[name] = map[string]interface{}{
-						"value": map[string]string{
-							"identity": fmt.Sprintf("((%s.identity))", name),
-							"password": fmt.Sprintf("((%s.password))", name),
-							"salt": fmt.Sprintf("((%s.salt))", name),
-						},
-					}
-				default:
-					configurableProperties[name] = map[string]interface{}{"value": property.Value}
-				}
+				continue
+			}
 
-			} else {
-				switch property.Type {
-				case "secret","simple_credentials","rsa_cert_credentials","rsa_pkey_credentials","salted_credentials":
-				default:
-					configurableProperties[name] = map[string]interface{}{"value": property.Value}
-				}
+			if ec.Options.IncludePlaceholder {
+				addSecretPlaceholder(property.Value, property.Type, configurableProperties, name)
+				continue
+			}
 
+			switch property.Type {
+			case "secret", "simple_credentials", "rsa_cert_credentials", "rsa_pkey_credentials", "salted_credentials":
+			default:
+				configurableProperties[name] = map[string]interface{}{"value": property.Value}
 			}
 		}
 	}
@@ -179,4 +144,45 @@ func (ec StagedConfig) Execute(args []string) error {
 	ec.logger.Println(string(output))
 
 	return nil
+}
+
+func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {
+	switch t {
+	case "secret":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"secret": fmt.Sprintf("((%s.secret))", name),
+			},
+		}
+	case "simple_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"identity": fmt.Sprintf("((%s.identity))", name),
+				"password": fmt.Sprintf("((%s.password))", name),
+			},
+		}
+	case "rsa_cert_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name),
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+			},
+		}
+	case "rsa_pkey_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+			},
+		}
+	case "salted_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"identity": fmt.Sprintf("((%s.identity))", name),
+				"password": fmt.Sprintf("((%s.password))", name),
+				"salt":     fmt.Sprintf("((%s.salt))", name),
+			},
+		}
+	default:
+		configurableProperties[name] = map[string]interface{}{"value": value}
+	}
 }

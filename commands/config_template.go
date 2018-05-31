@@ -6,14 +6,15 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/kiln/proofing"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
 	logger            logger
-	Options           struct {
-		Product string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
+	Options struct {
+		Product            string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
+		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
 }
 
@@ -65,6 +66,11 @@ func (ct ConfigTemplate) Execute(args []string) error {
 			continue
 		}
 
+		if ct.Options.IncludePlaceholder {
+			addSecretPlaceholder(pb.Default, pb.Type, configTemplateProperties, pb.Property)
+			continue
+		}
+
 		switch pb.Type {
 		case "simple_credentials":
 			configTemplateProperties[pb.Property] = map[string]map[string]string{
@@ -78,6 +84,7 @@ func (ct ConfigTemplate) Execute(args []string) error {
 				"value": pb.Default,
 			}
 		}
+
 	}
 
 	configTemplate := map[string]interface{}{
