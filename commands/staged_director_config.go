@@ -18,11 +18,39 @@ func NewStagedDirectorConfig(service stagedConfigService, logger logger) StagedD
 	}
 }
 
-
 func (ec StagedDirectorConfig) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
 		ShortDescription: "**EXPERIMENTAL** generates a config from a staged director",
 		Flags:            ec.Options,
 	}
+}
+
+func (ec StagedDirectorConfig) Execute(args []string) error {
+	str := `---
+az-configuration:
+- name: some-az
+director-configuration:
+ max_threads: 5
+iaas-configuration:
+ iaas_specific_key: some-value
+network-assignment:
+ network:
+   name: some-network
+networks-configuration:
+ networks:
+ - network: network-1
+resource-configuration:
+ compilation:
+   instance_type:
+     id: m4.xlarge
+security-configuration:
+ trusted_certificates: some-certificate
+syslog-configuration:
+ syslogconfig: awesome
+`
+
+	ec.logger.Println(string(str))
+
+	return nil
 }
