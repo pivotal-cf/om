@@ -5,7 +5,8 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 type StagedConfig struct {
@@ -14,6 +15,7 @@ type StagedConfig struct {
 	Options struct {
 		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
 		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
+		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
 }
 
@@ -77,9 +79,13 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 
 	configurableProperties := map[string]interface{}{}
+	selectorProperties := map[string]string{}
 
 	for name, property := range properties {
 		if property.Configurable && property.Value != nil {
+			if property.Type == "selector" {
+				selectorProperties[name] = property.Value.(string)
+			}
 			if property.IsCredential && ec.Options.IncludeCredentials {
 				output, err := ec.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 					DeployedGUID:        productGUID,
@@ -89,9 +95,30 @@ func (ec StagedConfig) Execute(args []string) error {
 					return err
 				}
 				configurableProperties[name] = map[string]interface{}{"value": output.Credential.Value}
-			} else {
+				continue
+			}
+
+			if ec.Options.IncludePlaceholder {
+				addSecretPlaceholder(property.Value, property.Type, configurableProperties, name)
+				continue
+			}
+
+			switch property.Type {
+			case "secret", "simple_credentials", "rsa_cert_credentials", "rsa_pkey_credentials", "salted_credentials":
+			default:
 				configurableProperties[name] = map[string]interface{}{"value": property.Value}
 			}
+		}
+	}
+
+	for name := range configurableProperties {
+		components := strings.Split(name, ".")[1:] // the 0th item is an empty string due to `.some.other`
+		if len(components) == 2 {
+			continue
+		}
+		selector := "." + strings.Join(components[:2], ".")
+		if val, ok := selectorProperties[selector]; ok && components[2] != val {
+			delete(configurableProperties, name)
 		}
 	}
 
@@ -133,4 +160,45 @@ func (ec StagedConfig) Execute(args []string) error {
 	ec.logger.Println(string(output))
 
 	return nil
+}
+
+func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {
+	switch t {
+	case "secret":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"secret": fmt.Sprintf("((%s.secret))", name),
+			},
+		}
+	case "simple_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"identity": fmt.Sprintf("((%s.identity))", name),
+				"password": fmt.Sprintf("((%s.password))", name),
+			},
+		}
+	case "rsa_cert_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name),
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+			},
+		}
+	case "rsa_pkey_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+			},
+		}
+	case "salted_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"identity": fmt.Sprintf("((%s.identity))", name),
+				"password": fmt.Sprintf("((%s.password))", name),
+				"salt":     fmt.Sprintf("((%s.salt))", name),
+			},
+		}
+	default:
+		configurableProperties[name] = map[string]interface{}{"value": value}
+	}
 }
