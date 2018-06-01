@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"sort"
 
-	"io/ioutil"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
@@ -16,15 +14,16 @@ type ConfigureDirector struct {
 	service configureDirectorService
 	logger  logger
 	Options struct {
-		ConfigFile            string `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
-		AZConfiguration       string `short:"a" long:"az-configuration" description:"configures network availability zones"`
-		NetworksConfiguration string `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
-		NetworkAssignment     string `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
-		DirectorConfiguration string `short:"d" long:"director-configuration" description:"properties for director configuration"`
-		IAASConfiguration     string `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
-		SecurityConfiguration string `short:"s" long:"security-configuration" decription:"security configuration properties for director"`
-		SyslogConfiguration   string `short:"l" long:"syslog-configuration" decription:"syslog configuration properties for director"`
-		ResourceConfiguration string `short:"r" long:"resource-configuration" decription:"resource configuration properties for director"`
+		ConfigFile            string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
+		VarsFile              []string `long:"vars-file"  description:"Load variables from a YAML file"`
+		AZConfiguration       string   `short:"a" long:"az-configuration" description:"configures network availability zones"`
+		NetworksConfiguration string   `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
+		NetworkAssignment     string   `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
+		DirectorConfiguration string   `short:"d" long:"director-configuration" description:"properties for director configuration"`
+		IAASConfiguration     string   `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
+		SecurityConfiguration string   `short:"s" long:"security-configuration" decription:"security configuration properties for director"`
+		SyslogConfiguration   string   `short:"l" long:"syslog-configuration" decription:"syslog configuration properties for director"`
+		ResourceConfiguration string   `short:"r" long:"resource-configuration" decription:"resource configuration properties for director"`
 	}
 }
 
@@ -57,7 +56,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 			return fmt.Errorf("config flag can not be passed with another configuration flags")
 		}
 		var config map[string]interface{}
-		configContents, err := ioutil.ReadFile(c.Options.ConfigFile)
+		configContents, err := interpolate(c.Options.ConfigFile, c.Options.VarsFile)
 		if err != nil {
 			return err
 		}

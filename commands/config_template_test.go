@@ -104,8 +104,8 @@ property_blueprints:
 			})
 		})
 
-		Context("when the property is a simple credential type", func() {
-			It("prints out an identity and password field", func() {
+		Context("when the property is a credential type", func() {
+			BeforeEach(func() {
 				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
 					Raw: []byte(`---
 property_blueprints:
@@ -115,9 +115,29 @@ property_blueprints:
   configurable: true
 `),
 				}, nil)
-
 				command = commands.NewConfigTemplate(metadataExtractor, logger)
+			})
 
+			Context("and --include-placeholder is used", func() {
+				It("prints a bosh variable placeholder for the credential", func() {
+					err := command.Execute([]string{
+						"--product", "/path/to/a/product.pivotal",
+						"--include-placeholder",
+					})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(logger.PrintlnCallCount()).To(Equal(1))
+					output := logger.PrintlnArgsForCall(0)
+					Expect(output).To(ContainElement(MatchYAML(`---
+product-properties:
+  .properties.some-name:
+    value:
+      identity: ((.properties.some-name.identity))
+      password: ((.properties.some-name.password))
+`)))
+				})
+			})
+
+			It("prints out an identity and password field", func() {
 				err := command.Execute([]string{
 					"--product", "/path/to/a/product.pivotal",
 				})
