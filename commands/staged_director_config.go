@@ -1,17 +1,26 @@
 package commands
 
-import "github.com/pivotal-cf/jhanda"
+import (
+	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/api"
+	"fmt"
+)
+
 
 type StagedDirectorConfig struct {
 	logger  logger
-	service stagedConfigService
-	Options struct {
-		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
-		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
-	}
+	service stagedDirectorConfigService
+	Options struct {}
 }
 
-func NewStagedDirectorConfig(service stagedConfigService, logger logger) StagedDirectorConfig {
+//go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
+type stagedDirectorConfigService interface {
+	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
+	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
+}
+
+
+func NewStagedDirectorConfig(service stagedDirectorConfigService, logger logger) StagedDirectorConfig {
 	return StagedDirectorConfig{
 		logger:  logger,
 		service: service,
@@ -27,6 +36,22 @@ func (ec StagedDirectorConfig) Usage() jhanda.Usage {
 }
 
 func (ec StagedDirectorConfig) Execute(args []string) error {
+	if _, err := jhanda.Parse(&ec.Options, args); err != nil {
+		return fmt.Errorf("could not parse staged-config flags: %s", err)
+	}
+
+	findOutput, err := ec.service.GetStagedProductByName("p-bosh")
+	if err != nil {
+		return err
+	}
+
+	productGUID := findOutput.Product.GUID
+
+	_, err = ec.service.GetStagedProductProperties(productGUID)
+	if err != nil {
+		return err
+	}
+
 	str := `---
 az-configuration:
 - name: some-az
