@@ -34,6 +34,28 @@ type StagedDirectorConfigService struct {
 		result1 map[string]api.ResponseProperty
 		result2 error
 	}
+	GetStagedDirectorAZStub        func() ([]interface{}, error)
+	getStagedDirectorAZMutex       sync.RWMutex
+	getStagedDirectorAZArgsForCall []struct{}
+	getStagedDirectorAZReturns     struct {
+		result1 []interface{}
+		result2 error
+	}
+	getStagedDirectorAZReturnsOnCall map[int]struct {
+		result1 []interface{}
+		result2 error
+	}
+	GetStagedDirectorPropertiesStub        func() (map[string]interface{}, error)
+	getStagedDirectorPropertiesMutex       sync.RWMutex
+	getStagedDirectorPropertiesArgsForCall []struct{}
+	getStagedDirectorPropertiesReturns     struct {
+		result1 map[string]interface{}
+		result2 error
+	}
+	getStagedDirectorPropertiesReturnsOnCall map[int]struct {
+		result1 map[string]interface{}
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -140,6 +162,92 @@ func (fake *StagedDirectorConfigService) GetStagedProductPropertiesReturnsOnCall
 	}{result1, result2}
 }
 
+func (fake *StagedDirectorConfigService) GetStagedDirectorAZ() ([]interface{}, error) {
+	fake.getStagedDirectorAZMutex.Lock()
+	ret, specificReturn := fake.getStagedDirectorAZReturnsOnCall[len(fake.getStagedDirectorAZArgsForCall)]
+	fake.getStagedDirectorAZArgsForCall = append(fake.getStagedDirectorAZArgsForCall, struct{}{})
+	fake.recordInvocation("GetStagedDirectorAZ", []interface{}{})
+	fake.getStagedDirectorAZMutex.Unlock()
+	if fake.GetStagedDirectorAZStub != nil {
+		return fake.GetStagedDirectorAZStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.getStagedDirectorAZReturns.result1, fake.getStagedDirectorAZReturns.result2
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorAZCallCount() int {
+	fake.getStagedDirectorAZMutex.RLock()
+	defer fake.getStagedDirectorAZMutex.RUnlock()
+	return len(fake.getStagedDirectorAZArgsForCall)
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorAZReturns(result1 []interface{}, result2 error) {
+	fake.GetStagedDirectorAZStub = nil
+	fake.getStagedDirectorAZReturns = struct {
+		result1 []interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorAZReturnsOnCall(i int, result1 []interface{}, result2 error) {
+	fake.GetStagedDirectorAZStub = nil
+	if fake.getStagedDirectorAZReturnsOnCall == nil {
+		fake.getStagedDirectorAZReturnsOnCall = make(map[int]struct {
+			result1 []interface{}
+			result2 error
+		})
+	}
+	fake.getStagedDirectorAZReturnsOnCall[i] = struct {
+		result1 []interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorProperties() (map[string]interface{}, error) {
+	fake.getStagedDirectorPropertiesMutex.Lock()
+	ret, specificReturn := fake.getStagedDirectorPropertiesReturnsOnCall[len(fake.getStagedDirectorPropertiesArgsForCall)]
+	fake.getStagedDirectorPropertiesArgsForCall = append(fake.getStagedDirectorPropertiesArgsForCall, struct{}{})
+	fake.recordInvocation("GetStagedDirectorProperties", []interface{}{})
+	fake.getStagedDirectorPropertiesMutex.Unlock()
+	if fake.GetStagedDirectorPropertiesStub != nil {
+		return fake.GetStagedDirectorPropertiesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.getStagedDirectorPropertiesReturns.result1, fake.getStagedDirectorPropertiesReturns.result2
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCallCount() int {
+	fake.getStagedDirectorPropertiesMutex.RLock()
+	defer fake.getStagedDirectorPropertiesMutex.RUnlock()
+	return len(fake.getStagedDirectorPropertiesArgsForCall)
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturns(result1 map[string]interface{}, result2 error) {
+	fake.GetStagedDirectorPropertiesStub = nil
+	fake.getStagedDirectorPropertiesReturns = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+	fake.GetStagedDirectorPropertiesStub = nil
+	if fake.getStagedDirectorPropertiesReturnsOnCall == nil {
+		fake.getStagedDirectorPropertiesReturnsOnCall = make(map[int]struct {
+			result1 map[string]interface{}
+			result2 error
+		})
+	}
+	fake.getStagedDirectorPropertiesReturnsOnCall[i] = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -147,6 +255,10 @@ func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{
 	defer fake.getStagedProductByNameMutex.RUnlock()
 	fake.getStagedProductPropertiesMutex.RLock()
 	defer fake.getStagedProductPropertiesMutex.RUnlock()
+	fake.getStagedDirectorAZMutex.RLock()
+	defer fake.getStagedDirectorAZMutex.RUnlock()
+	fake.getStagedDirectorPropertiesMutex.RLock()
+	defer fake.getStagedDirectorPropertiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
