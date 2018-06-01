@@ -6,12 +6,14 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"fmt"
 	"gopkg.in/yaml.v2"
+	"os"
 )
 
 type Interpolate struct {
 	logger  logger
 	Options struct {
 		ConfigFile string `long:"config" short:"c" required:"true" description:"path for file to be interpolated"`
+		OutputFile string `long:"output-file" short:"o" description:"output file for interpolated YAML"`
 		VarsFile []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
 	}
 }
@@ -32,6 +34,9 @@ func (c Interpolate) Execute(args []string) error {
 		return err
 	}
 
+	if c.Options.OutputFile != "" {
+		return ioutil.WriteFile(c.Options.OutputFile, bytes, os.ModePerm)
+	}
 	c.logger.Println(string(bytes))
 
 	return nil
