@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("StagedConfig", func() {
+var _ = FDescribe("StagedConfig", func() {
 	var (
 		logger      *fakes.Logger
 		fakeService *fakes.StagedConfigService
@@ -70,10 +70,40 @@ var _ = Describe("StagedConfig", func() {
 					Type: "salted_credentials",
 					Value: map[string]interface{}{
 						"identity": "***",
-						"salt": "***",
+						"salt":     "***",
 						"password": "***",
 					},
 					IsCredential: true,
+					Configurable: true,
+				},
+				".properties.collection": {
+					Type: "collection",
+					Value: []interface{}{
+						map[string]api.ResponseProperty{
+							"certificate": {
+								Type:         "rsa_cert_credentials",
+								Configurable: true,
+								IsCredential: true,
+								Value: map[string]interface{}{
+									"cert_pem":        "***",
+									"private_key_pem": "***",
+								},
+							},
+						},
+						map[string]api.ResponseProperty{
+							"certificate2": {
+								Type:         "rsa_cert_credentials",
+								Configurable: true,
+								IsCredential: true,
+								Value: map[string]interface{}{
+									"cert_pem":        "***",
+									"private_key_pem": "***",
+								},
+							},
+						},
+					},
+
+					IsCredential: false,
 					Configurable: true,
 				},
 				".properties.some-non-configurable-secret-property": {
@@ -122,7 +152,7 @@ var _ = Describe("StagedConfig", func() {
 	})
 
 	Describe("Execute", func() {
-		It("writes a config file to output", func() {
+		FIt("writes a config file to output", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
@@ -202,6 +232,16 @@ product-properties:
       identity: ((.properties.salted-credentials.identity))
       password: ((.properties.salted-credentials.password))
       salt: ((.properties.salted-credentials.salt))
+  .properties.collection:
+    value:
+    - certificate:
+        value:
+          private_key_pem: ((.properties.collection.0.certificate.private_key_pem)) 
+          cert_pem: ((.properties.collection.0.certificate.cert_pem))
+    - certificate2:
+        value:
+          private_key_pem: ((.properties.collection.1.certificate2.private_key_pem)) 
+          cert_pem: ((.properties.collection.1.certificate2.cert_pem))
 network-properties:
   singleton_availability_zone:
     name: az-one

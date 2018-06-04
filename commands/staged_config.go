@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 	"strings"
+	"strconv"
 )
 
 type StagedConfig struct {
@@ -197,6 +198,31 @@ func addSecretPlaceholder(value interface{}, t string, configurableProperties ma
 				"password": fmt.Sprintf("((%s.password))", name),
 				"salt":     fmt.Sprintf("((%s.salt))", name),
 			},
+		}
+	case "collection":
+		collectionValue := value.([]interface{})
+		finalValue := []interface{}{}
+		for index, item := range collectionValue {
+			collectionValueItems := item.(map[string]api.ResponseProperty)
+
+			for key, val := range collectionValueItems {
+				collectionName := name + "." + strconv.Itoa(index) + "." + key
+				placeholder := map[string]interface{}{}
+				addSecretPlaceholder(val.Value, val.Type, placeholder, collectionName)
+
+				for _, temp2 := range placeholder {
+					temp2Typed := temp2.(map[string]interface{})
+					finalValue = append(finalValue, map[string]interface{}{
+						key: map[string]interface{}{
+							"value": temp2Typed["value"],
+						},
+					})
+				}
+
+			}
+			configurableProperties[name] = map[string]interface{}{
+				"value": finalValue,
+			}
 		}
 	default:
 		configurableProperties[name] = map[string]interface{}{"value": value}
