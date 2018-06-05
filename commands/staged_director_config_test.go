@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/api"
 	"errors"
+	"io/ioutil"
 )
 
 var _ bool = Describe("StagedDirectorConfig", func() {
@@ -24,7 +25,7 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 
 	Describe("Execute", func() {
 
-		It("Writes a complete config file to output", func() {
+		BeforeEach(func() {
 			expectedDirectorAZs := map[string][]map[string]interface{}{
 				"availability_zones": {
 					{
@@ -87,7 +88,9 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 					ID: "automatic",
 				},
 			}, nil)
+		})
 
+		It("Writes a complete config file to output", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, logger)
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -120,6 +123,48 @@ security-configuration:
 syslog-configuration:
   syslogconfig: awesome
 `)))
+		})
+
+		It("writes the config to a file", func() {
+			outFile, err := ioutil.TempFile("", "")
+			Expect(err).ToNot(HaveOccurred())
+
+			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			err = command.Execute([]string{
+				"-o", outFile.Name(),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			output, err := ioutil.ReadFile(outFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(string(output)).To(MatchYAML(`
+az-configuration:
+- name: some-az
+  guid: some-az-guid
+director-configuration:
+  max_threads: 5
+iaas-configuration:
+  iaas_specific_key: some-value
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: "some-az"
+networks-configuration:
+  networks:
+  - name: network-1
+    guid: network-1-guid
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+security-configuration:
+  trusted_certificates: some-certificate
+syslog-configuration:
+  syslogconfig: awesome
+`))
 		})
 	})
 
@@ -222,7 +267,6 @@ syslog-configuration:
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-
 			command := commands.NewStagedDirectorConfig(nil, nil)
 
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
