@@ -5,9 +5,9 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	"gopkg.in/yaml.v2"
-	"strings"
 	"strconv"
+	"strings"
+	"gopkg.in/yaml.v2"
 )
 
 type StagedConfig struct {
@@ -83,17 +83,18 @@ func (ec StagedConfig) Execute(args []string) error {
 	selectorProperties := map[string]string{}
 
 	for name, property := range properties {
-		if property.Configurable && property.Value != nil {
-			if property.Type == "selector" {
-				selectorProperties[name] = property.Value.(string)
-			}
-			output, err := ec.parseProperties(productGUID, name, property)
-			if err != nil {
-				return err
-			}
-			if output != nil && len(output) > 0 {
-				configurableProperties[name] = output
-			}
+		if property.Value == nil {
+			continue
+		}
+		if property.Type == "selector" {
+			selectorProperties[name] = property.Value.(string)
+		}
+		output, err := ec.parseProperties(productGUID, name, property)
+		if err != nil {
+			return err
+		}
+		if output != nil && len(output) > 0 {
+			configurableProperties[name] = output
 		}
 	}
 
@@ -125,7 +126,6 @@ func (ec StagedConfig) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
-
 		resourceConfig[name] = jobProperties
 	}
 
@@ -144,51 +144,54 @@ func (ec StagedConfig) Execute(args []string) error {
 		return fmt.Errorf("failed to unmarshal config: %s", err) // un-tested
 	}
 	ec.logger.Println(string(output))
-
 	return nil
 }
 
 func (ec StagedConfig) parseProperties(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+	if !property.Configurable {
+		return nil, nil
+	}
 	if property.IsCredential {
 		return ec.handleCredential(productGUID, name, property)
-	} else if property.Type == "collection" {
-		var valueItems []map[string]interface{}
-		for index, valueItem := range property.Value.([]interface{}) {
-			valueItemTyped := valueItem.(map[interface{}]interface{})
-			tempMap := make(map[string]interface{})
-			for itemKey, itemVal := range valueItemTyped {
-				itemValTyped := itemVal.(map[interface{}]interface{})
+	}
+	if property.Type == "collection" {
+		return ec.handleCollection(productGUID, name, property)
+	}
+	return map[string]interface{}{"value": property.Value}, nil
+}
 
-				apiRes := api.ResponseProperty{
-					Value: itemValTyped["value"],
-					Configurable: itemValTyped["configurable"].(bool),
-					IsCredential: itemValTyped["credential"].(bool),
-					Type: itemValTyped["type"].(string),
-				}
+func (ec StagedConfig) handleCollection(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+	var valueItems []map[string]interface{}
 
-				if !apiRes.Configurable {
-					continue
-				}
-				valueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + itemKey.(string)
-				retVal, err := ec.parseProperties(productGUID, valueNamePrefix, apiRes)
-				if err != nil {
-					return nil, err
-				}
-				if retVal != nil && len(retVal) > 0 {
-					tempMap[itemKey.(string)] = retVal
-				}
+	for index, item := range property.Value.([]interface{}) {
+		typeAssertedItem := item.(map[interface{}]interface{})
+		innerProperties := make(map[string]interface{})
+
+		for innerKey, innerVal := range typeAssertedItem {
+			typeAssertedInnerValue := innerVal.(map[interface{}]interface{})
+
+			innerValueProperty := api.ResponseProperty{
+				Value:        typeAssertedInnerValue["value"],
+				Configurable: typeAssertedInnerValue["configurable"].(bool),
+				IsCredential: typeAssertedInnerValue["credential"].(bool),
+				Type:         typeAssertedInnerValue["type"].(string),
 			}
-			if len(tempMap) >0 {
-				valueItems = append(valueItems, tempMap)
+
+			innerValueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + innerKey.(string)
+			returnValue, err := ec.parseProperties(productGUID, innerValueNamePrefix, innerValueProperty)
+			if err != nil {
+				return nil, err
+			}
+			if returnValue != nil && len(returnValue) > 0 {
+				innerProperties[innerKey.(string)] = returnValue
 			}
 		}
-		if len(valueItems) > 0 {
-			return map[string]interface{}{"value": valueItems}, nil
-		} else {
-			return nil, nil
+		if len(innerProperties) > 0 {
+			valueItems = append(valueItems, innerProperties)
 		}
-	} else {
-		return map[string]interface{}{"value": property.Value}, nil
+	}
+	if len(valueItems) > 0 {
+		return map[string]interface{}{"value": valueItems}, nil
 	}
 	return nil, nil
 }
@@ -205,7 +208,9 @@ func (ec StagedConfig) handleCredential(productGUID string, name string, propert
 			return nil, err
 		}
 		output = map[string]interface{}{"value": apiOutput.Credential.Value}
-	} else if ec.Options.IncludePlaceholder {
+		return output, nil
+	}
+	if ec.Options.IncludePlaceholder {
 		switch property.Type {
 		case "secret":
 			output = map[string]interface{}{
@@ -242,11 +247,10 @@ func (ec StagedConfig) handleCredential(productGUID string, name string, propert
 				},
 			}
 		}
-	} else {
-		output = nil
+		return output, nil
 	}
 
-	return output, nil
+	return nil, nil
 }
 
 func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {
