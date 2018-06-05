@@ -1,9 +1,9 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	"fmt"
 	"gopkg.in/yaml.v2"
 )
 
@@ -15,10 +15,15 @@ type StagedDirectorConfig struct {
 
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
 type stagedDirectorConfigService interface {
-	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
-	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
-	GetStagedDirectorAZ() ([]interface{}, error) // /api/v0/staged/director/network_and_az
-	GetStagedDirectorProperties() (map[string]interface{}, error)// /api/v0/staged/director/properties
+	GetStagedDirectorProperties() (map[string]map[string]interface{}, error)
+	GetStagedDirectorAvailabilityZones() (map[string][]map[string]interface{}, error)
+	GetStagedDirectorNetworks() (map[string]interface{}, error)
+
+	GetStagedProductByName(productName string) (api.StagedProductsFindOutput, error)
+	GetStagedProductNetworksAndAZs(productGUID string) (map[string]interface{}, error)
+
+	ListStagedProductJobs(productGUID string) (map[string]string, error)
+	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 }
 
 func NewStagedDirectorConfig(service stagedDirectorConfigService, logger logger) StagedDirectorConfig {
@@ -48,47 +53,49 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 
 	productGUID := findOutput.Product.GUID
 
-	_, err = ec.service.GetStagedProductProperties(productGUID)
+	azs, err := ec.service.GetStagedDirectorAvailabilityZones()
 	if err != nil {
 		return err
 	}
 
-	azConfiguration, err := ec.service.GetStagedDirectorAZ()
+	properties, err := ec.service.GetStagedDirectorProperties()
+	if err != nil {
+		return err
+	}
 
-	directorProperties, err := ec.service.GetStagedDirectorProperties()
+	networks, err := ec.service.GetStagedDirectorNetworks()
+	if err != nil {
+		return err
+	}
 
+	assignedNetworkAZ, err := ec.service.GetStagedProductNetworksAndAZs(productGUID)
+	if err != nil {
+		return err
+	}
+
+	jobs, err := ec.service.ListStagedProductJobs(productGUID)
+	if err != nil {
+		return err
+	}
 
 	config := map[string]interface{}{}
-	str := `---
-az-configuration:
-- name: some-az
-director-configuration:
- max_threads: 5
-iaas-configuration:
- iaas_specific_key: some-value
-network-assignment:
- network:
-   name: some-network
-networks-configuration:
- networks:
- - network: network-1
-resource-configuration:
- compilation:
-   instance_type:
-     id: m4.xlarge
-security-configuration:
- trusted_certificates: some-certificate
-syslog-configuration:
- syslogconfig: awesome
-`
+	config["az-configuration"] = azs["availability_zones"]
+	config["director-configuration"] = properties["director_configuration"]
+	config["iaas-configuration"] = properties["iaas_configuration"]
+	config["syslog-configuration"] = properties["syslog_configuration"]
+	config["security-configuration"] = properties["security_configuration"]
+	config["network-assignment"] = assignedNetworkAZ
+	config["networks-configuration"] = networks
 
-	err = yaml.Unmarshal([]byte(str), &config)
-	if err != nil {
-		return err
+	resourceConfigs := map[string]api.JobProperties{}
+	for name, jobGUID := range jobs {
+		resourceConfig, err := ec.service.GetStagedProductJobResourceConfig(productGUID, jobGUID)
+		if err != nil {
+			return err
+		}
+		resourceConfigs[name] = resourceConfig
 	}
-
-	config["az-configuration"] = azConfiguration
-	config["director-configuration"] = directorProperties
+	config["resource-configuration"] = resourceConfigs
 
 	configYaml, err := yaml.Marshal(config)
 	if err != nil {

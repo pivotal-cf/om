@@ -64,6 +64,7 @@ Commands:
   set-errand-state                sets state for a product's errand
   stage-product                   stages a given product in the Ops Manager targeted
   staged-config                   **EXPERIMENTAL** generates a config from a staged product
+  staged-director-config          **EXPERIMENTAL** generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
   unstage-product                 unstages a given product from the Ops Manager targeted
