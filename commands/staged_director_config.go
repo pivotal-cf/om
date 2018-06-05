@@ -5,12 +5,16 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 )
 
 type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
-	Options struct{}
+	Options struct{
+		OutputFile      string `long:"output-file"      short:"o"  description:"output path to write config to"`
+	}
 }
 
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
@@ -102,7 +106,10 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
-	ec.logger.Println(string(configYaml))
+	if ec.Options.OutputFile != "" {
+		return ioutil.WriteFile(ec.Options.OutputFile, configYaml, os.ModePerm)
+	}
 
+	ec.logger.Println(string(configYaml))
 	return nil
 }
