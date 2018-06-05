@@ -87,27 +87,12 @@ func (ec StagedConfig) Execute(args []string) error {
 			if property.Type == "selector" {
 				selectorProperties[name] = property.Value.(string)
 			}
-			if property.IsCredential && ec.Options.IncludeCredentials {
-				output, err := ec.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-					DeployedGUID:        productGUID,
-					CredentialReference: name,
-				})
-				if err != nil {
-					return err
-				}
-				configurableProperties[name] = map[string]interface{}{"value": output.Credential.Value}
-				continue
+			output, err := ec.parseProperties(productGUID, name, property)
+			if err != nil {
+				return err
 			}
-
-			if ec.Options.IncludePlaceholder {
-				addSecretPlaceholder(property.Value, property.Type, configurableProperties, name)
-				continue
-			}
-
-			switch property.Type {
-			case "secret", "simple_credentials", "rsa_cert_credentials", "rsa_pkey_credentials", "salted_credentials":
-			default:
-				configurableProperties[name] = map[string]interface{}{"value": property.Value}
+			if output != nil && len(output) > 0 {
+				configurableProperties[name] = output
 			}
 		}
 	}
@@ -161,6 +146,91 @@ func (ec StagedConfig) Execute(args []string) error {
 	ec.logger.Println(string(output))
 
 	return nil
+}
+
+func (ec StagedConfig) parseProperties(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+	if property.IsCredential {
+		return ec.handleCredential(productGUID, name, property)
+	} else if property.Type == "collection" {
+		var valueItems []map[string]interface{}
+		for index, valueItem := range property.Value.([]interface{}) {
+			valueItemTyped := valueItem.(map[string]api.ResponseProperty)
+			for itemKey, itemVal := range valueItemTyped {
+				valueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + itemKey
+				retVal, err := ec.parseProperties(productGUID, valueNamePrefix, itemVal)
+				if err != nil {
+					return nil, err
+				}
+				if retVal != nil && len(retVal) > 0 {
+					valueItems = append(valueItems, map[string]interface{}{itemKey: retVal})
+				}
+			}
+		}
+		if len(valueItems) > 0 {
+			return map[string]interface{}{"value": valueItems}, nil
+		} else {
+			return nil, nil
+		}
+	} else {
+		return map[string]interface{}{"value": property.Value}, nil
+	}
+	return nil, nil
+}
+
+func (ec StagedConfig) handleCredential(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+	var output map[string]interface{}
+
+	if ec.Options.IncludeCredentials {
+		apiOutput, err := ec.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+			DeployedGUID:        productGUID,
+			CredentialReference: name,
+		})
+		if err != nil {
+			return nil, err
+		}
+		output = map[string]interface{}{"value": apiOutput.Credential.Value}
+	} else if ec.Options.IncludePlaceholder {
+		switch property.Type {
+		case "secret":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"secret": fmt.Sprintf("((%s.secret))", name),
+				},
+			}
+		case "simple_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"identity": fmt.Sprintf("((%s.identity))", name),
+					"password": fmt.Sprintf("((%s.password))", name),
+				},
+			}
+		case "rsa_cert_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name),
+					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+				},
+			}
+		case "rsa_pkey_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+				},
+			}
+		case "salted_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"identity": fmt.Sprintf("((%s.identity))", name),
+					"password": fmt.Sprintf("((%s.password))", name),
+					"salt":     fmt.Sprintf("((%s.salt))", name),
+				},
+			}
+		}
+	} else {
+		output = nil
+	}
+
+	return output, nil
 }
 
 func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {

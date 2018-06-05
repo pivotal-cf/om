@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("StagedConfig", func() {
+var _ = Describe("StagedConfig", func() {
 	var (
 		logger      *fakes.Logger
 		fakeService *fakes.StagedConfigService
@@ -152,7 +152,7 @@ var _ = FDescribe("StagedConfig", func() {
 	})
 
 	Describe("Execute", func() {
-		FIt("writes a config file to output", func() {
+		It("writes a config file to output", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
@@ -236,12 +236,12 @@ product-properties:
     value:
     - certificate:
         value:
-          private_key_pem: ((.properties.collection.0.certificate.private_key_pem)) 
-          cert_pem: ((.properties.collection.0.certificate.cert_pem))
+          private_key_pem: ((.properties.collection[0].certificate.private_key_pem)) 
+          cert_pem: ((.properties.collection[0].certificate.cert_pem))
     - certificate2:
         value:
-          private_key_pem: ((.properties.collection.1.certificate2.private_key_pem)) 
-          cert_pem: ((.properties.collection.1.certificate2.cert_pem))
+          private_key_pem: ((.properties.collection[1].certificate2.private_key_pem)) 
+          cert_pem: ((.properties.collection[1].certificate2.cert_pem))
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -281,12 +281,19 @@ resource-config:
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(5))
+			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(7))
 
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
-			Expect(output).To(ContainElement(MatchYAML(`---
-product-properties:
+			Expect(output).To(ContainElement(MatchYAML(`product-properties:
+  .properties.collection:
+    value:
+    - certificate:
+        value:
+          some-secret-key: some-secret-value
+    - certificate2:
+        value:
+          some-secret-key: some-secret-value
   .properties.some-string-property:
     value: some-value
   .properties.some-secret-property:
