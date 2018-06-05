@@ -84,15 +84,14 @@ var _ = Describe("configure-director command", func() {
 				}
 
 			case "/api/v0/staged/director/networks":
+				auth := req.Header.Get("Authorization")
+				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
 				if req.Method == "GET" {
 					w.Write([]byte(`"networks": [{"guid": "existing-network-guid", "name": "network-1"}]`))
 				} else if req.Method == "PUT" {
-					auth := req.Header.Get("Authorization")
-					if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
 					var err error
 					networksConfigurationBody, err = ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
