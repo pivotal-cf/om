@@ -7,6 +7,8 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 	"strings"
+	"io/ioutil"
+	"os"
 )
 
 type StagedConfig struct {
@@ -15,6 +17,7 @@ type StagedConfig struct {
 	Options struct {
 		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
 		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
+		OutputFile      string `long:"output-file"      short:"o"  description:"output path to write config to"`
 		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
 }
@@ -157,8 +160,12 @@ func (ec StagedConfig) Execute(args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal config: %s", err) // un-tested
 	}
-	ec.logger.Println(string(output))
 
+	if ec.Options.OutputFile != "" {
+		return ioutil.WriteFile(ec.Options.OutputFile, output, os.ModePerm)
+	}
+
+	ec.logger.Println(string(output))
 	return nil
 }
 

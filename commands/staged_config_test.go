@@ -10,6 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
 )
 
 var _ = Describe("StagedConfig", func() {
@@ -211,6 +212,37 @@ resource-config:
     instance_type:
       id: automatic
 `)))
+		})
+
+		It("writes the config to an output file", func() {
+			outFile, err := ioutil.TempFile("", "")
+			Expect(err).ToNot(HaveOccurred())
+
+			command := commands.NewStagedConfig(fakeService, logger)
+			err = command.Execute([]string{
+				"--product-name", "some-product",
+				"-o", outFile.Name(),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			output, err := ioutil.ReadFile(outFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(string(output)).To(MatchYAML(`
+product-properties:
+  .properties.some-string-property:
+    value: some-value
+  .properties.some-selector:
+    value: internal
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+resource-config:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+`))
 		})
 	})
 
