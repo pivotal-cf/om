@@ -95,6 +95,12 @@ var _ = Describe("StagedConfig", func() {
 								"credential": false,
 								"value": "Certificate",
 							},
+							"non-configurable": map[interface{}]interface{}{
+								"type": "string",
+								"configurable": false,
+								"credential": false,
+								"value": "non-configurable",
+							},
 						},
 						map[interface{}]interface{}{
 							"certificate2": map[interface{}]interface{}{
@@ -208,7 +214,7 @@ resource-config:
 	})
 
 	Context("when --include-placeholder is used", func() {
-		It("replace *** with interpolatable placeholder", func() {
+		It("replace *** with interpolatable placeholder and removes non-configurable properties", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",

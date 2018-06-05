@@ -165,6 +165,10 @@ func (ec StagedConfig) parseProperties(productGUID string, name string, property
 					IsCredential: itemValTyped["credential"].(bool),
 					Type: itemValTyped["type"].(string),
 				}
+
+				if !apiRes.Configurable {
+					continue
+				}
 				valueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + itemKey.(string)
 				retVal, err := ec.parseProperties(productGUID, valueNamePrefix, apiRes)
 				if err != nil {
