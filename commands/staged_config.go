@@ -164,10 +164,8 @@ func (ec StagedConfig) handleCollection(productGUID string, name string, propert
 	var valueItems []map[string]interface{}
 
 	for index, item := range property.Value.([]interface{}) {
-		typeAssertedItem := item.(map[interface{}]interface{})
 		innerProperties := make(map[string]interface{})
-
-		for innerKey, innerVal := range typeAssertedItem {
+		for innerKey, innerVal := range item.(map[interface{}]interface{}) {
 			typeAssertedInnerValue := innerVal.(map[interface{}]interface{})
 
 			innerValueProperty := api.ResponseProperty{
