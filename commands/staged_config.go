@@ -154,16 +154,28 @@ func (ec StagedConfig) parseProperties(productGUID string, name string, property
 	} else if property.Type == "collection" {
 		var valueItems []map[string]interface{}
 		for index, valueItem := range property.Value.([]interface{}) {
-			valueItemTyped := valueItem.(map[string]api.ResponseProperty)
+			valueItemTyped := valueItem.(map[interface{}]interface{})
+			tempMap := make(map[string]interface{})
 			for itemKey, itemVal := range valueItemTyped {
-				valueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + itemKey
-				retVal, err := ec.parseProperties(productGUID, valueNamePrefix, itemVal)
+				itemValTyped := itemVal.(map[interface{}]interface{})
+
+				apiRes := api.ResponseProperty{
+					Value: itemValTyped["value"],
+					Configurable: itemValTyped["configurable"].(bool),
+					IsCredential: itemValTyped["credential"].(bool),
+					Type: itemValTyped["type"].(string),
+				}
+				valueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + itemKey.(string)
+				retVal, err := ec.parseProperties(productGUID, valueNamePrefix, apiRes)
 				if err != nil {
 					return nil, err
 				}
 				if retVal != nil && len(retVal) > 0 {
-					valueItems = append(valueItems, map[string]interface{}{itemKey: retVal})
+					tempMap[itemKey.(string)] = retVal
 				}
+			}
+			if len(tempMap) >0 {
+				valueItems = append(valueItems, tempMap)
 			}
 		}
 		if len(valueItems) > 0 {

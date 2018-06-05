@@ -79,27 +79,34 @@ var _ = Describe("StagedConfig", func() {
 				".properties.collection": {
 					Type: "collection",
 					Value: []interface{}{
-						map[string]api.ResponseProperty{
-							"certificate": {
-								Type:         "rsa_cert_credentials",
-								Configurable: true,
-								IsCredential: true,
-								Value: map[string]interface{}{
+						map[interface{}]interface{}{
+							"certificate": map[interface{}]interface{}{
+								"type":         "rsa_cert_credentials",
+								"configurable": true,
+								"credential": true,
+								"value": map[interface{}]interface{}{
 									"cert_pem":        "***",
 									"private_key_pem": "***",
 								},
+							},
+							"name": map[interface{}]interface{}{
+								"type": "string",
+								"configurable": true,
+								"credential": false,
+								"value": "Certificate",
 							},
 						},
-						map[string]api.ResponseProperty{
-							"certificate2": {
-								Type:         "rsa_cert_credentials",
-								Configurable: true,
-								IsCredential: true,
-								Value: map[string]interface{}{
+						map[interface{}]interface{}{
+							"certificate2": map[interface{}]interface{}{
+								"type":         "rsa_cert_credentials",
+								"configurable": true,
+								"credential": true,
+								"value": map[interface{}]interface{}{
 									"cert_pem":        "***",
 									"private_key_pem": "***",
 								},
 							},
+
 						},
 					},
 
@@ -180,6 +187,10 @@ var _ = Describe("StagedConfig", func() {
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
 product-properties:
+  .properties.collection:
+    value:
+    - name:
+        value: Certificate
   .properties.some-string-property:
     value: some-value
   .properties.some-selector:
@@ -209,39 +220,41 @@ resource-config:
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
 product-properties:
-  .properties.some-string-property:
+  ".properties.some-string-property":
     value: some-value
-  .properties.some-secret-property:
+  ".properties.some-secret-property":
     value:
-      secret: ((.properties.some-secret-property.secret))
-  .properties.some-selector:
+      secret: "((.properties.some-secret-property.secret))"
+  ".properties.some-selector":
     value: internal
-  .properties.simple-credentials:
+  ".properties.simple-credentials":
     value:
-      identity: ((.properties.simple-credentials.identity))
-      password: ((.properties.simple-credentials.password))
-  .properties.rsa-cert-credentials:
+      identity: "((.properties.simple-credentials.identity))"
+      password: "((.properties.simple-credentials.password))"
+  ".properties.rsa-cert-credentials":
     value:
-      cert_pem: ((.properties.rsa-cert-credentials.cert_pem))
-      private_key_pem: ((.properties.rsa-cert-credentials.private_key_pem))
-  .properties.rsa-pkey-credentials:
+      cert_pem: "((.properties.rsa-cert-credentials.cert_pem))"
+      private_key_pem: "((.properties.rsa-cert-credentials.private_key_pem))"
+  ".properties.rsa-pkey-credentials":
     value:
-      private_key_pem: ((.properties.rsa-pkey-credentials.private_key_pem))
-  .properties.salted-credentials:
+      private_key_pem: "((.properties.rsa-pkey-credentials.private_key_pem))"
+  ".properties.salted-credentials":
     value:
-      identity: ((.properties.salted-credentials.identity))
-      password: ((.properties.salted-credentials.password))
-      salt: ((.properties.salted-credentials.salt))
-  .properties.collection:
+      identity: "((.properties.salted-credentials.identity))"
+      password: "((.properties.salted-credentials.password))"
+      salt: "((.properties.salted-credentials.salt))"
+  ".properties.collection":
     value:
     - certificate:
         value:
-          private_key_pem: ((.properties.collection[0].certificate.private_key_pem)) 
-          cert_pem: ((.properties.collection[0].certificate.cert_pem))
+          private_key_pem: "((.properties.collection[0].certificate.private_key_pem))"
+          cert_pem: "((.properties.collection[0].certificate.cert_pem))"
+      name:
+        value: Certificate
     - certificate2:
         value:
-          private_key_pem: ((.properties.collection[1].certificate2.private_key_pem)) 
-          cert_pem: ((.properties.collection[1].certificate2.cert_pem))
+          private_key_pem: "((.properties.collection[1].certificate2.private_key_pem))"
+          cert_pem: "((.properties.collection[1].certificate2.cert_pem))"
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -250,6 +263,7 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+
 `)))
 		})
 	})
@@ -291,6 +305,8 @@ resource-config:
     - certificate:
         value:
           some-secret-key: some-secret-value
+      name:
+        value: "Certificate"
     - certificate2:
         value:
           some-secret-key: some-secret-value
