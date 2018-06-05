@@ -162,7 +162,7 @@ var _ = Describe("ConfigureDirector", func() {
 			})
 
 			Context("with a valid config", func() {
-				ExepectDirectorToBeConfiguredCorrectly := func() {
+				ExpectDirectorToBeConfiguredCorrectly := func() {
 					Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(1))
 					Expect(service.UpdateStagedDirectorAvailabilityZonesArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
 						AvailabilityZones: json.RawMessage(`[{"some-az-assignment":"az"}]`),
@@ -249,7 +249,7 @@ resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					ExepectDirectorToBeConfiguredCorrectly()
+					ExpectDirectorToBeConfiguredCorrectly()
 				})
 
 				It("returns an error of missing variables", func() {
@@ -304,7 +304,7 @@ resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					ExepectDirectorToBeConfiguredCorrectly()
+					ExpectDirectorToBeConfiguredCorrectly()
 				})
 			})
 		})
