@@ -185,6 +185,7 @@ func main() {
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(api)
 	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
+	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
