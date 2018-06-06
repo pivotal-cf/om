@@ -44,6 +44,7 @@ on a vSphere Ops Manager.
 | set-errand-state |  sets state for a product's errand
 | [stage-product](stage-product/README.md) |  stages a given product in the Ops Manager targeted
 | [staged-config](staged-config/README.md) |  **EXPERIMENTAL** generates a config from a staged product
+| [staged-director-config](staged-director-config/README.md) |  **EXPERIMENTAL** generates a config from a staged director
 | [staged-manifest](staged-manifest/README.md) |  prints the staged manifest for a product
 | staged-products |  lists staged products
 | unstage-product |  unstages a given product from the Ops Manager targeted
