@@ -378,7 +378,68 @@ var _ = Describe("Director", func() {
 			}`))
 		})
 
+		Context("when the Ops Manager does not support retrieving existing networks", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					statusCode := http.StatusOK
+					if req.Method == "GET" {
+						statusCode = http.StatusNotFound
+					}
+					return &http.Response{
+						StatusCode: statusCode,
+						Body:       ioutil.NopCloser(strings.NewReader(`{"errors": "some error"}`)),
+					}, nil
+				}
+			})
+
+			It("continues to configure the networks", func() {
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage(`{"networks": [
+          {"name": "new-network"}
+        ]}`),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(2))
+
+				putReq := client.DoArgsForCall(1)
+
+				Expect(putReq.Method).To(Equal("PUT"))
+				Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/networks"))
+			})
+
+			It("prints a warning to the operator", func() {
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage(`{"networks":[
+          {"name": "new-network"}
+        ]}`),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(stderr.PrintlnCallCount()).To(Equal(1))
+				warning := stderr.PrintlnArgsForCall(0)
+				Expect(warning[0]).To(Equal(
+					"unable to retrieve existing network configuration, attempting to configure anyway"))
+			})
+		})
+
 		Context("failure cases", func() {
+			It("returns an error when the provided network config is malformed", func() {
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage("{malformed"),
+				})
+				Expect(client.DoCallCount()).To(Equal(0))
+				Expect(err).To(MatchError(HavePrefix("provided networks config is not well-formed JSON")))
+			})
+
+			It("returns an error when the provided network config does not include a name", func() {
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage(`{"networks":[{}]}`),
+				})
+				Expect(client.DoCallCount()).To(Equal(0))
+				Expect(err).To(MatchError(HavePrefix("provided networks config [0] does not specify the network 'name'")))
+			})
+
 			It("returns an error when the http status is non-200", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusInternalServerError,

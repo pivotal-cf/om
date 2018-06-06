@@ -18,6 +18,7 @@ type AvailabilityZoneInput struct {
 type NetworkInput struct {
 	Networks json.RawMessage `json:"networks"`
 }
+
 type Networks struct {
 	Fields   map[string]interface{} `yaml:",inline"`
 	Networks []*Network             `yaml:"networks"`
@@ -86,12 +87,12 @@ func (a Api) UpdateStagedDirectorNetworks(input NetworkInput) error {
 	networks := Networks{}
 	err := yaml.Unmarshal(input.Networks, &networks)
 	if err != nil {
-		return fmt.Errorf("provided Network config is not well-formed JSON: %s", err)
+		return fmt.Errorf("provided networks config is not well-formed JSON: %s", err)
 	}
 
 	for i, network := range networks.Networks {
 		if network.Name == "" {
-			return fmt.Errorf("provided Networks config [%d] does not specify the Network 'name'", i)
+			return fmt.Errorf("provided networks config [%d] does not specify the network 'name'", i)
 		}
 	}
 
