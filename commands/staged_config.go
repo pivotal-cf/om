@@ -190,7 +190,7 @@ func (ec StagedConfig) handleCollection(productGUID string, name string, propert
 				return nil, err
 			}
 			if returnValue != nil && len(returnValue) > 0 {
-				innerProperties[innerKey.(string)] = returnValue
+				innerProperties[innerKey.(string)] = returnValue["value"]
 			}
 		}
 		if len(innerProperties) > 0 {

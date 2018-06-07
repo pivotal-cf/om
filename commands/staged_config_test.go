@@ -196,8 +196,7 @@ var _ = Describe("StagedConfig", func() {
 product-properties:
   .properties.collection:
     value:
-    - name:
-        value: Certificate
+    - name: Certificate
   .properties.some-string-property:
     value: some-value
   .properties.some-selector:
@@ -253,15 +252,12 @@ product-properties:
   ".properties.collection":
     value:
     - certificate:
-        value:
-          private_key_pem: "((.properties.collection[0].certificate.private_key_pem))"
-          cert_pem: "((.properties.collection[0].certificate.cert_pem))"
-      name:
-        value: Certificate
+        private_key_pem: "((.properties.collection[0].certificate.private_key_pem))"
+        cert_pem: "((.properties.collection[0].certificate.cert_pem))"
+      name: Certificate
     - certificate2:
-        value:
-          private_key_pem: "((.properties.collection[1].certificate2.private_key_pem))"
-          cert_pem: "((.properties.collection[1].certificate2.cert_pem))"
+        private_key_pem: "((.properties.collection[1].certificate2.private_key_pem))"
+        cert_pem: "((.properties.collection[1].certificate2.cert_pem))"
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -292,8 +288,7 @@ resource-config:
 product-properties:
   .properties.collection:
     value:
-    - name:
-        value: Certificate
+    - name: Certificate
   .properties.some-string-property:
     value: some-value
   .properties.some-selector:
@@ -345,13 +340,10 @@ resource-config:
   .properties.collection:
     value:
     - certificate:
-        value:
-          some-secret-key: some-secret-value
-      name:
-        value: "Certificate"
+        some-secret-key: some-secret-value
+      name: Certificate
     - certificate2:
-        value:
-          some-secret-key: some-secret-value
+        some-secret-key: some-secret-value
   .properties.some-string-property:
     value: some-value
   .properties.some-secret-property:
