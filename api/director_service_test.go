@@ -84,13 +84,7 @@ var _ = Describe("Director", func() {
 			err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[
           {
-            "name": "some-az",
-            "clusters": [
-              {
-                "cluster": "some-cluster",
-                "resource_pool": "some-resource-pool"
-              }
-            ]
+            "name": "some-az"
           }
         ]`),
 			})
@@ -114,13 +108,7 @@ var _ = Describe("Director", func() {
 			Expect(jsonBody).To(MatchJSON(`{
         "availability_zones": [
           {
-            "name": "some-az",
-            "clusters": [
-              {
-                "cluster": "some-cluster",
-                "resource_pool": "some-resource-pool"
-              }
-            ]
+            "name": "some-az"
           }
         ]
 			}`))
