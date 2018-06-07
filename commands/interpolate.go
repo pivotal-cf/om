@@ -2,11 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"io/ioutil"
+
 	boshtpl "github.com/cloudfoundry/bosh-cli/director/template"
 	"github.com/pivotal-cf/jhanda"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
 )
 
 type Interpolate struct {
@@ -35,7 +35,7 @@ func (c Interpolate) Execute(args []string) error {
 	}
 
 	if c.Options.OutputFile != "" {
-		return ioutil.WriteFile(c.Options.OutputFile, bytes, os.ModePerm)
+		return ioutil.WriteFile(c.Options.OutputFile, bytes, 0600)
 	}
 	c.logger.Println(string(bytes))
 

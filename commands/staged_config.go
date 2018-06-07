@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"io/ioutil"
-	"os"
 	"strconv"
 	"strings"
 
@@ -149,7 +148,7 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 
 	if ec.Options.OutputFile != "" {
-		return ioutil.WriteFile(ec.Options.OutputFile, output, os.ModePerm)
+		return ioutil.WriteFile(ec.Options.OutputFile, output, 0600)
 	}
 
 	ec.logger.Println(string(output))

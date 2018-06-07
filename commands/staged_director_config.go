@@ -2,11 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"io/ioutil"
+
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
 )
 
 type StagedDirectorConfig struct {
@@ -107,7 +107,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 
 	if ec.Options.OutputFile != "" {
-		return ioutil.WriteFile(ec.Options.OutputFile, configYaml, os.ModePerm)
+		return ioutil.WriteFile(ec.Options.OutputFile, configYaml, 0600)
 	}
 
 	ec.logger.Println(string(configYaml))

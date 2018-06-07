@@ -1,15 +1,18 @@
 package commands_test
 
 import (
+	"os"
+
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
 	"errors"
+	"io/ioutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/api"
-	"io/ioutil"
 )
 
 var _ bool = Describe("StagedDirectorConfig", func() {
@@ -90,7 +93,7 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 			}, nil)
 		})
 
-		It("Writes a complete config file to output", func() {
+		It("Writes a complete config file to stdout", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, logger)
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -129,11 +132,18 @@ syslog-configuration:
 			outFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
+			err = os.Remove(outFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+
 			command := commands.NewStagedDirectorConfig(fakeService, logger)
 			err = command.Execute([]string{
 				"-o", outFile.Name(),
 			})
 			Expect(err).NotTo(HaveOccurred())
+
+			fileInfo, err := os.Stat(outFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fileInfo.Mode()).To(Equal(os.FileMode(0600)))
 
 			output, err := ioutil.ReadFile(outFile.Name())
 			Expect(err).ToNot(HaveOccurred())

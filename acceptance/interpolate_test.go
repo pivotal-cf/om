@@ -1,13 +1,14 @@
 package acceptance
 
 import (
+	"io/ioutil"
+	"os"
+	"os/exec"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
-	"io/ioutil"
-	"os"
-	"os/exec"
 )
 
 var _ = Describe("interpolate command", func() {
@@ -33,10 +34,13 @@ var _ = Describe("interpolate command", func() {
 			Eventually(session.Out, 5).Should(gbytes.Say("age: 100\nname: bob"))
 		})
 
-		Context("with a output file is provided", func() {
+		Context("when an output file is provided", func() {
 			It("writes the YAML to that file", func() {
 				yamlFile := createFile("---\nname: bob\nage: 100")
 				outputFile, err := ioutil.TempFile("", "")
+				Expect(err).ToNot(HaveOccurred())
+
+				err = os.Remove(outputFile.Name())
 				Expect(err).ToNot(HaveOccurred())
 
 				command := exec.Command(pathToMain,
@@ -48,6 +52,10 @@ var _ = Describe("interpolate command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session, 5).Should(gexec.Exit(0))
+
+				fileInfo, err := os.Stat(outputFile.Name())
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fileInfo.Mode()).To(Equal(os.FileMode(0600)))
 
 				contents, err := ioutil.ReadFile(outputFile.Name())
 				Expect(err).ToNot(HaveOccurred())

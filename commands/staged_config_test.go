@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"errors"
+	"os"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -166,7 +167,7 @@ var _ = Describe("StagedConfig", func() {
 	})
 
 	Describe("Execute", func() {
-		It("writes a config file to output", func() {
+		It("writes a config file to stdout", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
@@ -273,6 +274,8 @@ resource-config:
 		It("writes the config to an output file", func() {
 			outFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
+			err = os.Remove(outFile.Name())
+			Expect(err).ToNot(HaveOccurred())
 
 			command := commands.NewStagedConfig(fakeService, logger)
 			err = command.Execute([]string{
@@ -280,6 +283,10 @@ resource-config:
 				"-o", outFile.Name(),
 			})
 			Expect(err).NotTo(HaveOccurred())
+
+			fileInfo, err := os.Stat(outFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fileInfo.Mode()).To(Equal(os.FileMode(0600)))
 
 			output, err := ioutil.ReadFile(outFile.Name())
 			Expect(err).ToNot(HaveOccurred())
