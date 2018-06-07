@@ -142,9 +142,6 @@ var _ = Describe("staged-config command", func() {
 product-properties:
   .properties.some-configurable-property:
     value: some-configurable-value
-  .properties.some-secret-property:
-    value:
-      some-secret-key: "***"
 network-properties:
   singleton_availability_zone:
     name: az-one

@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 func (a Api) GetStagedDirectorProperties() (map[string]map[string]interface{}, error) {

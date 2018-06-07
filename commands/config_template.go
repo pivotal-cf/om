@@ -12,7 +12,7 @@ import (
 type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
 	logger            logger
-	Options struct {
+	Options           struct {
 		Product            string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
 		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
@@ -122,5 +122,46 @@ func (ct ConfigTemplate) Usage() jhanda.Usage {
 		Description:      "**EXPERIMENTAL** This command generates a configuration template that can be passed in to om configure-product",
 		ShortDescription: "**EXPERIMENTAL** generates a config template for the product",
 		Flags:            ct.Options,
+	}
+}
+
+func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {
+	switch t {
+	case "secret":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"secret": fmt.Sprintf("((%s.secret))", name),
+			},
+		}
+	case "simple_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"identity": fmt.Sprintf("((%s.identity))", name),
+				"password": fmt.Sprintf("((%s.password))", name),
+			},
+		}
+	case "rsa_cert_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name),
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+			},
+		}
+	case "rsa_pkey_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+			},
+		}
+	case "salted_credentials":
+		configurableProperties[name] = map[string]interface{}{
+			"value": map[string]string{
+				"identity": fmt.Sprintf("((%s.identity))", name),
+				"password": fmt.Sprintf("((%s.password))", name),
+				"salt":     fmt.Sprintf("((%s.salt))", name),
+			},
+		}
+	default:
+		configurableProperties[name] = map[string]interface{}{"value": value}
 	}
 }

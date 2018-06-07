@@ -5,10 +5,10 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/api"
-	"errors"
 	"io/ioutil"
 )
 

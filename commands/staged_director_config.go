@@ -12,8 +12,8 @@ import (
 type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
-	Options struct{
-		OutputFile      string `long:"output-file"      short:"o"  description:"output path to write config to"`
+	Options struct {
+		OutputFile string `long:"output-file"      short:"o"  description:"output path to write config to"`
 	}
 }
 

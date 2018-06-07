@@ -8,9 +8,10 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
+	"io/ioutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
 )
 
 var _ = Describe("StagedConfig", func() {
@@ -71,10 +72,52 @@ var _ = Describe("StagedConfig", func() {
 					Type: "salted_credentials",
 					Value: map[string]interface{}{
 						"identity": "***",
-						"salt": "***",
+						"salt":     "***",
 						"password": "***",
 					},
 					IsCredential: true,
+					Configurable: true,
+				},
+				".properties.collection": {
+					Type: "collection",
+					Value: []interface{}{
+						map[interface{}]interface{}{
+							"certificate": map[interface{}]interface{}{
+								"type":         "rsa_cert_credentials",
+								"configurable": true,
+								"credential":   true,
+								"value": map[interface{}]interface{}{
+									"cert_pem":        "***",
+									"private_key_pem": "***",
+								},
+							},
+							"name": map[interface{}]interface{}{
+								"type":         "string",
+								"configurable": true,
+								"credential":   false,
+								"value":        "Certificate",
+							},
+							"non-configurable": map[interface{}]interface{}{
+								"type":         "string",
+								"configurable": false,
+								"credential":   false,
+								"value":        "non-configurable",
+							},
+						},
+						map[interface{}]interface{}{
+							"certificate2": map[interface{}]interface{}{
+								"type":         "rsa_cert_credentials",
+								"configurable": true,
+								"credential":   true,
+								"value": map[interface{}]interface{}{
+									"cert_pem":        "***",
+									"private_key_pem": "***",
+								},
+							},
+						},
+					},
+
+					IsCredential: false,
 					Configurable: true,
 				},
 				".properties.some-non-configurable-secret-property": {
@@ -151,6 +194,10 @@ var _ = Describe("StagedConfig", func() {
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
 product-properties:
+  .properties.collection:
+    value:
+    - name:
+        value: Certificate
   .properties.some-string-property:
     value: some-value
   .properties.some-selector:
@@ -168,7 +215,7 @@ resource-config:
 	})
 
 	Context("when --include-placeholder is used", func() {
-		It("replace *** with interpolatable placeholder", func() {
+		It("replace *** with interpolatable placeholder and removes non-configurable properties", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
@@ -180,29 +227,41 @@ resource-config:
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
 product-properties:
-  .properties.some-string-property:
+  ".properties.some-string-property":
     value: some-value
-  .properties.some-secret-property:
+  ".properties.some-secret-property":
     value:
-      secret: ((.properties.some-secret-property.secret))
-  .properties.some-selector:
+      secret: "((.properties.some-secret-property.secret))"
+  ".properties.some-selector":
     value: internal
-  .properties.simple-credentials:
+  ".properties.simple-credentials":
     value:
-      identity: ((.properties.simple-credentials.identity))
-      password: ((.properties.simple-credentials.password))
-  .properties.rsa-cert-credentials:
+      identity: "((.properties.simple-credentials.identity))"
+      password: "((.properties.simple-credentials.password))"
+  ".properties.rsa-cert-credentials":
     value:
-      cert_pem: ((.properties.rsa-cert-credentials.cert_pem))
-      private_key_pem: ((.properties.rsa-cert-credentials.private_key_pem))
-  .properties.rsa-pkey-credentials:
+      cert_pem: "((.properties.rsa-cert-credentials.cert_pem))"
+      private_key_pem: "((.properties.rsa-cert-credentials.private_key_pem))"
+  ".properties.rsa-pkey-credentials":
     value:
-      private_key_pem: ((.properties.rsa-pkey-credentials.private_key_pem))
-  .properties.salted-credentials:
+      private_key_pem: "((.properties.rsa-pkey-credentials.private_key_pem))"
+  ".properties.salted-credentials":
     value:
-      identity: ((.properties.salted-credentials.identity))
-      password: ((.properties.salted-credentials.password))
-      salt: ((.properties.salted-credentials.salt))
+      identity: "((.properties.salted-credentials.identity))"
+      password: "((.properties.salted-credentials.password))"
+      salt: "((.properties.salted-credentials.salt))"
+  ".properties.collection":
+    value:
+    - certificate:
+        value:
+          private_key_pem: "((.properties.collection[0].certificate.private_key_pem))"
+          cert_pem: "((.properties.collection[0].certificate.cert_pem))"
+      name:
+        value: Certificate
+    - certificate2:
+        value:
+          private_key_pem: "((.properties.collection[1].certificate2.private_key_pem))"
+          cert_pem: "((.properties.collection[1].certificate2.cert_pem))"
 network-properties:
   singleton_availability_zone:
     name: az-one
@@ -211,6 +270,7 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+
 `)))
 		})
 
@@ -230,6 +290,10 @@ resource-config:
 
 			Expect(string(output)).To(MatchYAML(`
 product-properties:
+  .properties.collection:
+    value:
+    - name:
+        value: Certificate
   .properties.some-string-property:
     value: some-value
   .properties.some-selector:
@@ -273,12 +337,21 @@ resource-config:
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(5))
+			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(7))
 
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
-			Expect(output).To(ContainElement(MatchYAML(`---
-product-properties:
+			Expect(output).To(ContainElement(MatchYAML(`product-properties:
+  .properties.collection:
+    value:
+    - certificate:
+        value:
+          some-secret-key: some-secret-value
+      name:
+        value: "Certificate"
+    - certificate2:
+        value:
+          some-secret-key: some-secret-value
   .properties.some-string-property:
     value: some-value
   .properties.some-secret-property:

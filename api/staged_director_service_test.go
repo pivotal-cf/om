@@ -370,11 +370,11 @@ var _ = Describe("StagedProducts", func() {
 			Expect(config["icmp_checks_enabled"]).To(Equal(true))
 
 			Expect(config["networks"]).To(ContainElement(Equal(
-				map[interface{}]interface{} {
+				map[interface{}]interface{}{
 					"name": "first-network",
 					"guid": "0d35c70db3c592cb1ac7",
 					"subnets": []interface{}{
-						map[interface{}]interface{} {"guid": "433d16d727706e3be752",
+						map[interface{}]interface{}{"guid": "433d16d727706e3be752",
 							"iaas_identifier":    "hinterlands-1",
 							"cidr":               "10.85.41.0/24",
 							"dns":                "10.87.8.10",

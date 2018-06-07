@@ -1,14 +1,13 @@
 package acceptance
 
-import
-(
+import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"os/exec"
-	"github.com/onsi/gomega/gexec"
-	"os"
-	"io/ioutil"
 	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+	"io/ioutil"
+	"os"
+	"os/exec"
 )
 
 var _ = Describe("interpolate command", func() {

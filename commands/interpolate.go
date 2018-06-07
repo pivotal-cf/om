@@ -1,20 +1,20 @@
 package commands
 
 import (
-	boshtpl "github.com/cloudfoundry/bosh-cli/director/template"
-	"io/ioutil"
-	"github.com/pivotal-cf/jhanda"
 	"fmt"
+	boshtpl "github.com/cloudfoundry/bosh-cli/director/template"
+	"github.com/pivotal-cf/jhanda"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 )
 
 type Interpolate struct {
 	logger  logger
 	Options struct {
-		ConfigFile string `long:"config" short:"c" required:"true" description:"path for file to be interpolated"`
-		OutputFile string `long:"output-file" short:"o" description:"output file for interpolated YAML"`
-		VarsFile []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
+		ConfigFile string   `long:"config" short:"c" required:"true" description:"path for file to be interpolated"`
+		OutputFile string   `long:"output-file" short:"o" description:"output file for interpolated YAML"`
+		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
 	}
 }
 
@@ -73,7 +73,7 @@ func interpolate(templateFile string, varsFiles []string) ([]byte, error) {
 	}
 	evalOpts := boshtpl.EvaluateOpts{
 		UnescapedMultiline: true,
-		ExpectAllKeys: true,
+		ExpectAllKeys:      true,
 	}
 
 	bytes, err := tpl.Evaluate(boshtpl.NewMultiVars(vars), nil, evalOpts)
