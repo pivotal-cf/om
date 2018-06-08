@@ -111,6 +111,7 @@ network-assignment:
   singleton_availability_zone:
     name: "some-az"
 networks-configuration:
+  icmp_checks_enabled: false
   networks:
   - name: network-1
 resource-configuration:
@@ -158,6 +159,7 @@ network-assignment:
   singleton_availability_zone:
     name: "some-az"
 networks-configuration:
+  icmp_checks_enabled: false
   networks:
   - name: network-1
 resource-configuration:

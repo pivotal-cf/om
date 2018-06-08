@@ -7,7 +7,7 @@ import (
 )
 
 type NetworksConfigurationOutput struct {
-	ICMP     bool `yaml:"icmp_checks_enabled,omitempty"`
+	ICMP     bool `yaml:"icmp_checks_enabled"`
 	Networks []NetworkConfigurationOutput
 }
 
