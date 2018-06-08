@@ -252,14 +252,12 @@ var _ = Describe("StagedProducts", func() {
 			config, err := service.GetStagedDirectorAvailabilityZones()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(config["availability_zones"]).To(Equal([]map[string]interface{}{
+			Expect(config.AvailabilityZones).To(Equal([]api.AvailabilityZoneOutput{
 				{
-					"name": "Availability Zone 1",
-					"guid": "guid-1",
+					Name: "Availability Zone 1",
 				},
 				{
-					"name": "Availability Zone 2",
-					"guid": "guid-4",
+					Name: "Availability Zone 2",
 				},
 			}))
 		})

@@ -29,11 +29,10 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 	Describe("Execute", func() {
 
 		BeforeEach(func() {
-			expectedDirectorAZs := map[string][]map[string]interface{}{
-				"availability_zones": {
-					{
-						"name": "some-az",
-						"guid": "some-az-guid",
+			expectedDirectorAZs := api.AvailabilityZonesOutput{
+				AvailabilityZones: []api.AvailabilityZoneOutput{
+					api.AvailabilityZoneOutput{
+						Name: "some-az",
 					},
 				},
 			}
@@ -210,7 +209,7 @@ syslog-configuration:
 
 		Context("when looking up the director azs fails", func() {
 			BeforeEach(func() {
-				fakeService.GetStagedDirectorAvailabilityZonesReturns(nil, errors.New("some-error"))
+				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {
