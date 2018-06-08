@@ -19,15 +19,15 @@ type StagedDirectorConfigService struct {
 		result1 map[string]map[string]interface{}
 		result2 error
 	}
-	GetStagedDirectorAvailabilityZonesStub        func() (map[string][]map[string]interface{}, error)
+	GetStagedDirectorAvailabilityZonesStub        func() (api.AvailabilityZonesOutput, error)
 	getStagedDirectorAvailabilityZonesMutex       sync.RWMutex
 	getStagedDirectorAvailabilityZonesArgsForCall []struct{}
 	getStagedDirectorAvailabilityZonesReturns     struct {
-		result1 map[string][]map[string]interface{}
+		result1 api.AvailabilityZonesOutput
 		result2 error
 	}
 	getStagedDirectorAvailabilityZonesReturnsOnCall map[int]struct {
-		result1 map[string][]map[string]interface{}
+		result1 api.AvailabilityZonesOutput
 		result2 error
 	}
 	GetStagedDirectorNetworksStub        func() (api.NetworksConfigurationOutput, error)
@@ -141,7 +141,7 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturnsOnCal
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZones() (map[string][]map[string]interface{}, error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZones() (api.AvailabilityZonesOutput, error) {
 	fake.getStagedDirectorAvailabilityZonesMutex.Lock()
 	ret, specificReturn := fake.getStagedDirectorAvailabilityZonesReturnsOnCall[len(fake.getStagedDirectorAvailabilityZonesArgsForCall)]
 	fake.getStagedDirectorAvailabilityZonesArgsForCall = append(fake.getStagedDirectorAvailabilityZonesArgsForCall, struct{}{})
@@ -162,24 +162,24 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesCallC
 	return len(fake.getStagedDirectorAvailabilityZonesArgsForCall)
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesReturns(result1 map[string][]map[string]interface{}, result2 error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesReturns(result1 api.AvailabilityZonesOutput, result2 error) {
 	fake.GetStagedDirectorAvailabilityZonesStub = nil
 	fake.getStagedDirectorAvailabilityZonesReturns = struct {
-		result1 map[string][]map[string]interface{}
+		result1 api.AvailabilityZonesOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesReturnsOnCall(i int, result1 map[string][]map[string]interface{}, result2 error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesReturnsOnCall(i int, result1 api.AvailabilityZonesOutput, result2 error) {
 	fake.GetStagedDirectorAvailabilityZonesStub = nil
 	if fake.getStagedDirectorAvailabilityZonesReturnsOnCall == nil {
 		fake.getStagedDirectorAvailabilityZonesReturnsOnCall = make(map[int]struct {
-			result1 map[string][]map[string]interface{}
+			result1 api.AvailabilityZonesOutput
 			result2 error
 		})
 	}
 	fake.getStagedDirectorAvailabilityZonesReturnsOnCall[i] = struct {
-		result1 map[string][]map[string]interface{}
+		result1 api.AvailabilityZonesOutput
 		result2 error
 	}{result1, result2}
 }

@@ -20,7 +20,7 @@ type StagedDirectorConfig struct {
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
 type stagedDirectorConfigService interface {
 	GetStagedDirectorProperties() (map[string]map[string]interface{}, error)
-	GetStagedDirectorAvailabilityZones() (map[string][]map[string]interface{}, error)
+	GetStagedDirectorAvailabilityZones() (api.AvailabilityZonesOutput, error)
 	GetStagedDirectorNetworks() (api.NetworksConfigurationOutput, error)
 
 	GetStagedProductByName(productName string) (api.StagedProductsFindOutput, error)
@@ -57,14 +57,9 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 
 	directorGUID := stagedDirector.Product.GUID
 
-	azResponse, err := ec.service.GetStagedDirectorAvailabilityZones()
+	azs, err := ec.service.GetStagedDirectorAvailabilityZones()
 	if err != nil {
 		return err
-	}
-
-	azs := azResponse["availability_zones"]
-	for _, az := range azs {
-		delete(az, "guid")
 	}
 
 	properties, err := ec.service.GetStagedDirectorProperties()
@@ -77,7 +72,6 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
-
 	assignedNetworkAZ, err := ec.service.GetStagedProductNetworksAndAZs(directorGUID)
 	if err != nil {
 		return err
@@ -89,7 +83,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 
 	config := map[string]interface{}{}
-	config["az-configuration"] = azs
+	config["az-configuration"] = azs.AvailabilityZones
 	config["director-configuration"] = properties["director_configuration"]
 	config["iaas-configuration"] = properties["iaas_configuration"]
 	config["syslog-configuration"] = properties["syslog_configuration"]
