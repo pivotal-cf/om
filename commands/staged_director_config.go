@@ -21,7 +21,7 @@ type StagedDirectorConfig struct {
 type stagedDirectorConfigService interface {
 	GetStagedDirectorProperties() (map[string]map[string]interface{}, error)
 	GetStagedDirectorAvailabilityZones() (map[string][]map[string]interface{}, error)
-	GetStagedDirectorNetworks() (map[string]interface{}, error)
+	GetStagedDirectorNetworks() (api.NetworksConfigurationOutput, error)
 
 	GetStagedProductByName(productName string) (api.StagedProductsFindOutput, error)
 	GetStagedProductNetworksAndAZs(productGUID string) (map[string]interface{}, error)
@@ -50,16 +50,21 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
 	}
 
-	findOutput, err := ec.service.GetStagedProductByName("p-bosh")
+	stagedDirector, err := ec.service.GetStagedProductByName("p-bosh")
 	if err != nil {
 		return err
 	}
 
-	productGUID := findOutput.Product.GUID
+	directorGUID := stagedDirector.Product.GUID
 
-	azs, err := ec.service.GetStagedDirectorAvailabilityZones()
+	azResponse, err := ec.service.GetStagedDirectorAvailabilityZones()
 	if err != nil {
 		return err
+	}
+
+	azs := azResponse["availability_zones"]
+	for _, az := range azs {
+		delete(az, "guid")
 	}
 
 	properties, err := ec.service.GetStagedDirectorProperties()
@@ -72,18 +77,19 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
-	assignedNetworkAZ, err := ec.service.GetStagedProductNetworksAndAZs(productGUID)
+
+	assignedNetworkAZ, err := ec.service.GetStagedProductNetworksAndAZs(directorGUID)
 	if err != nil {
 		return err
 	}
 
-	jobs, err := ec.service.ListStagedProductJobs(productGUID)
+	jobs, err := ec.service.ListStagedProductJobs(directorGUID)
 	if err != nil {
 		return err
 	}
 
 	config := map[string]interface{}{}
-	config["az-configuration"] = azs["availability_zones"]
+	config["az-configuration"] = azs
 	config["director-configuration"] = properties["director_configuration"]
 	config["iaas-configuration"] = properties["iaas_configuration"]
 	config["syslog-configuration"] = properties["syslog_configuration"]
@@ -93,7 +99,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 
 	resourceConfigs := map[string]api.JobProperties{}
 	for name, jobGUID := range jobs {
-		resourceConfig, err := ec.service.GetStagedProductJobResourceConfig(productGUID, jobGUID)
+		resourceConfig, err := ec.service.GetStagedProductJobResourceConfig(directorGUID, jobGUID)
 		if err != nil {
 			return err
 		}

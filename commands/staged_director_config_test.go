@@ -54,15 +54,14 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 				},
 			}
 			fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
-
-			expectedNetworks := map[string]interface{}{
-				"networks": []interface{}{
-					map[string]string{
-						"name": "network-1",
-						"guid": "network-1-guid",
+			expectedNetworks := api.NetworksConfigurationOutput{
+				Networks: []api.NetworkConfigurationOutput{
+					{
+						Name: "network-1",
 					},
 				},
 			}
+
 			fakeService.GetStagedDirectorNetworksReturns(expectedNetworks, nil)
 
 			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
@@ -102,7 +101,6 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  guid: some-az-guid
 director-configuration:
   max_threads: 5
 iaas-configuration:
@@ -115,7 +113,6 @@ network-assignment:
 networks-configuration:
   networks:
   - name: network-1
-    guid: network-1-guid
 resource-configuration:
   some-job:
     instances: 1
@@ -151,7 +148,6 @@ syslog-configuration:
 			Expect(string(output)).To(MatchYAML(`
 az-configuration:
 - name: some-az
-  guid: some-az-guid
 director-configuration:
   max_threads: 5
 iaas-configuration:
@@ -164,7 +160,6 @@ network-assignment:
 networks-configuration:
   networks:
   - name: network-1
-    guid: network-1-guid
 resource-configuration:
   some-job:
     instances: 1
@@ -225,7 +220,7 @@ syslog-configuration:
 
 		Context("when looking up the director networks fails", func() {
 			BeforeEach(func() {
-				fakeService.GetStagedDirectorNetworksReturns(nil, errors.New("some-error"))
+				fakeService.GetStagedDirectorNetworksReturns(api.NetworksConfigurationOutput{}, errors.New("some-error"))
 			})
 
 			It("returns an error", func() {

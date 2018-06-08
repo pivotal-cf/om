@@ -30,15 +30,15 @@ type StagedDirectorConfigService struct {
 		result1 map[string][]map[string]interface{}
 		result2 error
 	}
-	GetStagedDirectorNetworksStub        func() (map[string]interface{}, error)
+	GetStagedDirectorNetworksStub        func() (api.NetworksConfigurationOutput, error)
 	getStagedDirectorNetworksMutex       sync.RWMutex
 	getStagedDirectorNetworksArgsForCall []struct{}
 	getStagedDirectorNetworksReturns     struct {
-		result1 map[string]interface{}
+		result1 api.NetworksConfigurationOutput
 		result2 error
 	}
 	getStagedDirectorNetworksReturnsOnCall map[int]struct {
-		result1 map[string]interface{}
+		result1 api.NetworksConfigurationOutput
 		result2 error
 	}
 	GetStagedProductByNameStub        func(productName string) (api.StagedProductsFindOutput, error)
@@ -184,7 +184,7 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesRetur
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorNetworks() (map[string]interface{}, error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorNetworks() (api.NetworksConfigurationOutput, error) {
 	fake.getStagedDirectorNetworksMutex.Lock()
 	ret, specificReturn := fake.getStagedDirectorNetworksReturnsOnCall[len(fake.getStagedDirectorNetworksArgsForCall)]
 	fake.getStagedDirectorNetworksArgsForCall = append(fake.getStagedDirectorNetworksArgsForCall, struct{}{})
@@ -205,24 +205,24 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksCallCount() in
 	return len(fake.getStagedDirectorNetworksArgsForCall)
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksReturns(result1 map[string]interface{}, result2 error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksReturns(result1 api.NetworksConfigurationOutput, result2 error) {
 	fake.GetStagedDirectorNetworksStub = nil
 	fake.getStagedDirectorNetworksReturns = struct {
-		result1 map[string]interface{}
+		result1 api.NetworksConfigurationOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksReturnsOnCall(i int, result1 api.NetworksConfigurationOutput, result2 error) {
 	fake.GetStagedDirectorNetworksStub = nil
 	if fake.getStagedDirectorNetworksReturnsOnCall == nil {
 		fake.getStagedDirectorNetworksReturnsOnCall = make(map[int]struct {
-			result1 map[string]interface{}
+			result1 api.NetworksConfigurationOutput
 			result2 error
 		})
 	}
 	fake.getStagedDirectorNetworksReturnsOnCall[i] = struct {
-		result1 map[string]interface{}
+		result1 api.NetworksConfigurationOutput
 		result2 error
 	}{result1, result2}
 }
