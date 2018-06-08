@@ -367,23 +367,24 @@ var _ = Describe("StagedProducts", func() {
 			config, err := service.GetStagedDirectorNetworks()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(config["icmp_checks_enabled"]).To(Equal(true))
+			Expect(config.ICMP).To(Equal(true))
 
-			Expect(config["networks"]).To(ContainElement(Equal(
-				map[interface{}]interface{}{
-					"name": "first-network",
-					"guid": "0d35c70db3c592cb1ac7",
-					"subnets": []interface{}{
-						map[interface{}]interface{}{"guid": "433d16d727706e3be752",
-							"iaas_identifier":    "hinterlands-1",
-							"cidr":               "10.85.41.0/24",
-							"dns":                "10.87.8.10",
-							"gateway":            "10.85.41.1",
-							"reserved_ip_ranges": "10.85.41.1-10.85.41.97,10.85.41.117-10.85.41.255",
-							"availability_zone_names": []interface{}{
+			Expect(config.Networks).To(ContainElement(Equal(
+				api.NetworkConfigurationOutput{
+					Name: "first-network",
+					Subnets: []api.SubnetOutput{
+						api.SubnetOutput{
+							IAASIdentifier:   "hinterlands-1",
+							CIDR:             "10.85.41.0/24",
+							DNS:              "10.87.8.10",
+							Gateway:          "10.85.41.1",
+							ReservedIPRanges: "10.85.41.1-10.85.41.97,10.85.41.117-10.85.41.255",
+							AvailabilityZones: []string{
 								"first-az",
 								"second-az",
-							}}},
+							},
+						},
+					},
 				},
 			)))
 		})
