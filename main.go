@@ -34,18 +34,18 @@ func main() {
 	stderr := log.New(os.Stderr, "", 0)
 
 	var global struct {
-		ClientID          string `short:"c"  long:"client-id"           env:"OM_CLIENT_ID"                 description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
-		ClientSecret      string `short:"s"  long:"client-secret"                                          description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands, $OM_CLIENT_SECRET)"`
-		Format            string `short:"f"  long:"format"                                 default:"table" description:"Format to print as (options: table,json)"`
-		Help              bool   `short:"h"  long:"help"                                   default:"false" description:"prints this usage information"`
-		Password          string `short:"p"  long:"password"                                               description:"admin password for the Ops Manager VM (not required for unauthenticated commands, $OM_PASSWORD)"`
-		ConnectTimeout    int    `short:"o"  long:"connect-timeout"                        default:"5"     description:"timeout in seconds to make TCP connections"`
-		RequestTimeout    int    `short:"r"  long:"request-timeout"                        default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
-		SkipSSLValidation bool   `short:"k"  long:"skip-ssl-validation"                    default:"false" description:"skip ssl certificate validation during http requests"`
-		Target            string `short:"t"  long:"target"                                                 description:"location of the Ops Manager VM ($OM_TARGET)"`
-		Trace             bool   `short:"tr" long:"trace"                                                  description:"prints HTTP requests and response payloads"`
-		Username          string `short:"u"  long:"username"                                               description:"admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)"`
-		Version           bool   `short:"v"  long:"version"                                default:"false" description:"prints the om release version"`
+		ClientID          string `short:"c"  long:"client-id"           env:"OM_CLIENT_ID"                     description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
+		ClientSecret      string `short:"s"  long:"client-secret"       env:"OM_CLIENT_SECRET"                 description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
+		Format            string `short:"f"  long:"format"                                     default:"table" description:"Format to print as (options: table,json)"`
+		Help              bool   `short:"h"  long:"help"                                       default:"false" description:"prints this usage information"`
+		Password          string `short:"p"  long:"password"            env:"OM_PASSWORD"                      description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
+		ConnectTimeout    int    `short:"o"  long:"connect-timeout"                            default:"5"     description:"timeout in seconds to make TCP connections"`
+		RequestTimeout    int    `short:"r"  long:"request-timeout"                            default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
+		SkipSSLValidation bool   `short:"k"  long:"skip-ssl-validation"                        default:"false" description:"skip ssl certificate validation during http requests"`
+		Target            string `short:"t"  long:"target"              env:"OM_TARGET"                        description:"location of the Ops Manager VM"`
+		Trace             bool   `short:"tr" long:"trace"                                                      description:"prints HTTP requests and response payloads"`
+		Username          string `short:"u"  long:"username"            env:"OM_USERNAME"                      description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
+		Version           bool   `short:"v"  long:"version"                                    default:"false" description:"prints the om release version"`
 	}
 
 	args, err := jhanda.Parse(&global, os.Args[1:])
