@@ -92,7 +92,9 @@ func (ec StagedConfig) Execute(args []string) error {
 		if property.Type == "selector" {
 			selectorProperties[name] = property.Value.(string)
 		}
-		output, err := ec.parseProperties(productGUID, name, property)
+		output, err := ec.parseProperties(productGUID, propertyName{
+			prefix: name,
+		}, property)
 		if err != nil {
 			return err
 		}
@@ -155,13 +157,41 @@ func (ec StagedConfig) Execute(args []string) error {
 	return nil
 }
 
-func (ec StagedConfig) parseProperties(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+type propertyName struct {
+	prefix         string
+	index          int
+	collectionName string
+}
+
+func (n *propertyName) credentialName() string {
+	if n.collectionName != "" {
+		return n.prefix + "[" + strconv.Itoa(n.index) + "]." + n.collectionName
+	}
+
+	return n.prefix
+}
+
+func (n *propertyName) placeholderName() string {
+	name := n.prefix
+	if n.collectionName != "" {
+		name = n.prefix + "_" + strconv.Itoa(n.index) + "_" + n.collectionName
+	}
+
+	return strings.Replace(
+		strings.TrimLeft(
+			name,
+			".",
+		),
+		".",
+		"_",
+		-1,
+	)
+}
+
+func (ec StagedConfig) parseProperties(productGUID string, name propertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 	if !property.Configurable {
 		return nil, nil
 	}
-
-
-
 	if property.IsCredential {
 		return ec.handleCredential(productGUID, name, property)
 	}
@@ -171,7 +201,7 @@ func (ec StagedConfig) parseProperties(productGUID string, name string, property
 	return map[string]interface{}{"value": property.Value}, nil
 }
 
-func (ec StagedConfig) handleCollection(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+func (ec StagedConfig) handleCollection(productGUID string, name propertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 	var valueItems []map[string]interface{}
 
 	for index, item := range property.Value.([]interface{}) {
@@ -185,9 +215,11 @@ func (ec StagedConfig) handleCollection(productGUID string, name string, propert
 				IsCredential: typeAssertedInnerValue["credential"].(bool),
 				Type:         typeAssertedInnerValue["type"].(string),
 			}
-
-			innerValueNamePrefix := name + "_" + strconv.Itoa(index) + "_" + innerKey.(string)
-			returnValue, err := ec.parseProperties(productGUID, innerValueNamePrefix, innerValueProperty)
+			returnValue, err := ec.parseProperties(productGUID, propertyName{
+				prefix:         name.prefix,
+				index:          index,
+				collectionName: innerKey.(string),
+			}, innerValueProperty)
 			if err != nil {
 				return nil, err
 			}
@@ -205,13 +237,13 @@ func (ec StagedConfig) handleCollection(productGUID string, name string, propert
 	return nil, nil
 }
 
-func (ec StagedConfig) handleCredential(productGUID string, name string, property api.ResponseProperty) (map[string]interface{}, error) {
+func (ec StagedConfig) handleCredential(productGUID string, name propertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 	var output map[string]interface{}
 
 	if ec.Options.IncludeCredentials {
 		apiOutput, err := ec.service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 			DeployedGUID:        productGUID,
-			CredentialReference: name,
+			CredentialReference: name.credentialName(),
 		})
 		if err != nil {
 			return nil, err
@@ -220,40 +252,39 @@ func (ec StagedConfig) handleCredential(productGUID string, name string, propert
 		return output, nil
 	}
 	if ec.Options.IncludePlaceholder {
-		name = strings.Replace(strings.TrimLeft(name, "."), ".", "_", -1)
 		switch property.Type {
 		case "secret":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"secret": fmt.Sprintf("((%s.secret))", name),
+					"secret": fmt.Sprintf("((%s.secret))", name.placeholderName()),
 				},
 			}
 		case "simple_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"identity": fmt.Sprintf("((%s.identity))", name),
-					"password": fmt.Sprintf("((%s.password))", name),
+					"identity": fmt.Sprintf("((%s.identity))", name.placeholderName()),
+					"password": fmt.Sprintf("((%s.password))", name.placeholderName()),
 				},
 			}
 		case "rsa_cert_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name),
-					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+					"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name.placeholderName()),
+					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name.placeholderName()),
 				},
 			}
 		case "rsa_pkey_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name.placeholderName()),
 				},
 			}
 		case "salted_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"identity": fmt.Sprintf("((%s.identity))", name),
-					"password": fmt.Sprintf("((%s.password))", name),
-					"salt":     fmt.Sprintf("((%s.salt))", name),
+					"identity": fmt.Sprintf("((%s.identity))", name.placeholderName()),
+					"password": fmt.Sprintf("((%s.password))", name.placeholderName()),
+					"salt":     fmt.Sprintf("((%s.salt))", name.placeholderName()),
 				},
 			}
 		}
