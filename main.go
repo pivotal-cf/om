@@ -75,6 +75,10 @@ func main() {
 		command = "help"
 	}
 
+	if global.Target == "" {
+		global.Target = os.Getenv("OM_TARGET")
+	}
+
 	if global.Username == "" {
 		global.Username = os.Getenv("OM_USERNAME")
 	}
