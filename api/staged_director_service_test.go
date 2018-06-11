@@ -234,7 +234,8 @@ var _ = Describe("StagedProducts", func() {
   "availability_zones": [
     {
       "name": "Availability Zone 1",
-      "guid": "guid-1"
+      "guid": "guid-1",
+      "iaas_configuration_guid": "iaas-configuration-guid"
     },
     {
       "name": "Availability Zone 2",
@@ -255,6 +256,7 @@ var _ = Describe("StagedProducts", func() {
 			Expect(config.AvailabilityZones).To(Equal([]api.AvailabilityZoneOutput{
 				{
 					Name: "Availability Zone 1",
+					IAASConfigurationGUID: "iaas-configuration-guid",
 				},
 				{
 					Name: "Availability Zone 2",

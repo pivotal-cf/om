@@ -31,8 +31,9 @@ type AvailabilityZonesOutput struct {
 }
 
 type AvailabilityZoneOutput struct {
-	Name     string                 `yaml:"name"`
-	Clusters []ClusterOutput        `yaml:"clusters,omitempty"`
+	Name                  string          `yaml:"name"`
+	Clusters              []ClusterOutput `yaml:"clusters,omitempty"`
+	IAASConfigurationGUID string          `yaml:"iaas_configuration_guid,omitempty"`
 }
 
 type ClusterOutput struct {
