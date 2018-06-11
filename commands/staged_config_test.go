@@ -231,34 +231,34 @@ product-properties:
     value: some-value
   ".properties.some-secret-property":
     value:
-      secret: "((.properties.some-secret-property.secret))"
+      secret: "((properties_some-secret-property.secret))"
   ".properties.some-selector":
     value: internal
   ".properties.simple-credentials":
     value:
-      identity: "((.properties.simple-credentials.identity))"
-      password: "((.properties.simple-credentials.password))"
+      identity: "((properties_simple-credentials.identity))"
+      password: "((properties_simple-credentials.password))"
   ".properties.rsa-cert-credentials":
     value:
-      cert_pem: "((.properties.rsa-cert-credentials.cert_pem))"
-      private_key_pem: "((.properties.rsa-cert-credentials.private_key_pem))"
+      cert_pem: "((properties_rsa-cert-credentials.cert_pem))"
+      private_key_pem: "((properties_rsa-cert-credentials.private_key_pem))"
   ".properties.rsa-pkey-credentials":
     value:
-      private_key_pem: "((.properties.rsa-pkey-credentials.private_key_pem))"
+      private_key_pem: "((properties_rsa-pkey-credentials.private_key_pem))"
   ".properties.salted-credentials":
     value:
-      identity: "((.properties.salted-credentials.identity))"
-      password: "((.properties.salted-credentials.password))"
-      salt: "((.properties.salted-credentials.salt))"
+      identity: "((properties_salted-credentials.identity))"
+      password: "((properties_salted-credentials.password))"
+      salt: "((properties_salted-credentials.salt))"
   ".properties.collection":
     value:
     - certificate:
-        private_key_pem: "((.properties.collection[0].certificate.private_key_pem))"
-        cert_pem: "((.properties.collection[0].certificate.cert_pem))"
+        private_key_pem: "((properties_collection_0_certificate.private_key_pem))"
+        cert_pem: "((properties_collection_0_certificate.cert_pem))"
       name: Certificate
     - certificate2:
-        private_key_pem: "((.properties.collection[1].certificate2.private_key_pem))"
-        cert_pem: "((.properties.collection[1].certificate2.cert_pem))"
+        private_key_pem: "((properties_collection_1_certificate2.private_key_pem))"
+        cert_pem: "((properties_collection_1_certificate2.cert_pem))"
 network-properties:
   singleton_availability_zone:
     name: az-one

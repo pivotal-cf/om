@@ -159,6 +159,9 @@ func (ec StagedConfig) parseProperties(productGUID string, name string, property
 	if !property.Configurable {
 		return nil, nil
 	}
+
+
+
 	if property.IsCredential {
 		return ec.handleCredential(productGUID, name, property)
 	}
@@ -183,7 +186,7 @@ func (ec StagedConfig) handleCollection(productGUID string, name string, propert
 				Type:         typeAssertedInnerValue["type"].(string),
 			}
 
-			innerValueNamePrefix := name + "[" + strconv.Itoa(index) + "]." + innerKey.(string)
+			innerValueNamePrefix := name + "_" + strconv.Itoa(index) + "_" + innerKey.(string)
 			returnValue, err := ec.parseProperties(productGUID, innerValueNamePrefix, innerValueProperty)
 			if err != nil {
 				return nil, err
@@ -217,6 +220,7 @@ func (ec StagedConfig) handleCredential(productGUID string, name string, propert
 		return output, nil
 	}
 	if ec.Options.IncludePlaceholder {
+		name = strings.Replace(strings.TrimLeft(name, "."), ".", "_", -1)
 		switch property.Type {
 		case "secret":
 			output = map[string]interface{}{
