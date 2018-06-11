@@ -49,8 +49,6 @@ func (c ConfigureDirector) Execute(args []string) error {
 		return fmt.Errorf("could not parse configure-director flags: %s", err)
 	}
 
-	c.logger.Printf("started configuring director options for bosh tile")
-
 	if c.Options.ConfigFile != "" {
 		if c.Options.AZConfiguration != "" || c.Options.NetworksConfiguration != "" || c.Options.NetworkAssignment != "" || c.Options.DirectorConfiguration != "" || c.Options.IAASConfiguration != "" || c.Options.SecurityConfiguration != "" || c.Options.SyslogConfiguration != "" || c.Options.ResourceConfiguration != "" {
 			return fmt.Errorf("config flag can not be passed with another configuration flags")
@@ -116,17 +114,22 @@ func (c ConfigureDirector) Execute(args []string) error {
 		}
 	}
 
-	err := c.service.UpdateStagedDirectorProperties(api.DirectorProperties{
-		DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
-		IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
-		SecurityConfiguration: json.RawMessage(c.Options.SecurityConfiguration),
-		SyslogConfiguration:   json.RawMessage(c.Options.SyslogConfiguration),
-	})
-	if err != nil {
-		return fmt.Errorf("properties could not be applied: %s", err)
-	}
+	if c.Options.DirectorConfiguration != "" || c.Options.IAASConfiguration != "" || c.Options.SecurityConfiguration != "" || c.Options.SyslogConfiguration != "" {
+		c.logger.Printf("started configuring director options for bosh tile")
 
-	c.logger.Printf("finished configuring director options for bosh tile")
+		err := c.service.UpdateStagedDirectorProperties(api.DirectorProperties{
+			DirectorConfiguration: json.RawMessage(c.Options.DirectorConfiguration),
+			IAASConfiguration:     json.RawMessage(c.Options.IAASConfiguration),
+			SecurityConfiguration: json.RawMessage(c.Options.SecurityConfiguration),
+			SyslogConfiguration:   json.RawMessage(c.Options.SyslogConfiguration),
+		})
+
+		if err != nil {
+			return fmt.Errorf("properties could not be applied: %s", err)
+		}
+
+		c.logger.Printf("finished configuring director options for bosh tile")
+	}
 
 	if c.Options.AZConfiguration != "" {
 		c.logger.Printf("started configuring availability zone options for bosh tile")

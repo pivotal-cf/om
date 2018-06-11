@@ -309,20 +309,30 @@ resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
 			})
 		})
 
+		Context("when some director configuration flags are provided", func() {
+			It("only updates the config for the provided flags", func() {
+				err := command.Execute([]string{
+					"--networks-configuration", `{"network": "network-1"}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(0))
+				Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
+				Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
+					Networks: json.RawMessage(`{"network": "network-1"}`),
+				}))
+				Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(0))
+				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(0))
+			})
+		})
+
 		Context("when no director configuration flags are provided", func() {
-			It("only calls the properties function once", func() {
+			It("does not call the properties function ", func() {
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(0))
 				Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(0))
 				Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(0))
-				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
-				Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
-					IAASConfiguration:     json.RawMessage(``),
-					DirectorConfiguration: json.RawMessage(``),
-					SecurityConfiguration: json.RawMessage(``),
-					SyslogConfiguration:   json.RawMessage(``),
-				}))
+				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(0))
 			})
 		})
 
