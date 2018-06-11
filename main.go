@@ -75,22 +75,6 @@ func main() {
 		command = "help"
 	}
 
-	if global.Target == "" {
-		global.Target = os.Getenv("OM_TARGET")
-	}
-
-	if global.Username == "" {
-		global.Username = os.Getenv("OM_USERNAME")
-	}
-
-	if global.Password == "" {
-		global.Password = os.Getenv("OM_PASSWORD")
-	}
-
-	if global.ClientSecret == "" {
-		global.ClientSecret = os.Getenv("OM_CLIENT_SECRET")
-	}
-
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
