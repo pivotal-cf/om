@@ -31,8 +31,12 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 		BeforeEach(func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
-					api.AvailabilityZoneOutput{
+					{
 						Name: "some-az",
+						IAASConfigurationGUID: "some-iaas-guid",
+					},
+					{
+						Name: "some-other-az",
 					},
 				},
 			}
@@ -100,6 +104,8 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
 director-configuration:
   max_threads: 5
 iaas-configuration:
@@ -148,6 +154,8 @@ syslog-configuration:
 			Expect(string(output)).To(MatchYAML(`
 az-configuration:
 - name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
 director-configuration:
   max_threads: 5
 iaas-configuration:
