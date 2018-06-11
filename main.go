@@ -42,7 +42,7 @@ func main() {
 		ConnectTimeout    int    `short:"o"  long:"connect-timeout"     default:"5"     description:"timeout in seconds to make TCP connections"`
 		RequestTimeout    int    `short:"r"  long:"request-timeout"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
 		SkipSSLValidation bool   `short:"k"  long:"skip-ssl-validation" default:"false" description:"skip ssl certificate validation during http requests"`
-		Target            string `short:"t"  long:"target"                              description:"location of the Ops Manager VM"`
+		Target            string `short:"t"  long:"target"                              description:"location of the Ops Manager VM ($OM_TARGET)"`
 		Trace             bool   `short:"tr" long:"trace"                               description:"prints HTTP requests and response payloads"`
 		Username          string `short:"u"  long:"username"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands, $OM_USERNAME)"`
 		Version           bool   `short:"v"  long:"version"             default:"false" description:"prints the om release version"`
