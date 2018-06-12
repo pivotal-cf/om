@@ -341,41 +341,6 @@ resource-config:
 
 			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(7))
 
-			apiInputs := []api.GetDeployedProductCredentialInput{}
-			for i := 0; i < 7; i++ {
-				apiInputs = append(apiInputs, fakeService.GetDeployedProductCredentialArgsForCall(i))
-			}
-			Expect(apiInputs).To(ConsistOf([]api.GetDeployedProductCredentialInput{
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.some-secret-property",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.salted-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.collection[0].certificate",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.collection[1].certificate2",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.simple-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.rsa-cert-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.rsa-pkey-credentials",
-				},
-			}))
-
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`product-properties:
