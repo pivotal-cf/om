@@ -96,6 +96,8 @@ var _ = Describe("interpolate command", func() {
 					"-c", yamlFile.Name(),
 					"-l", varsFile.Name(),
 				)
+				defer varsFile.Close()
+				defer yamlFile.Close()
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
@@ -104,12 +106,34 @@ var _ = Describe("interpolate command", func() {
 				Eventually(session.Out, 5).Should(gbytes.Say("age: 500\nname: moe"))
 			})
 
+			It("replaces the vars based on the order precedence of the vars file", func() {
+				vars1File := createFile("---\nname1: moe\nage1: 500")
+				vars2File := createFile("---\nname1: bob")
+				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
+				command := exec.Command(pathToMain,
+					"interpolate",
+					"-c", yamlFile.Name(),
+					"-l", vars1File.Name(),
+					"-l", vars2File.Name(),
+				)
+				defer vars1File.Close()
+				defer vars2File.Close()
+				defer yamlFile.Close()
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(0))
+				Eventually(session.Out, 5).Should(gbytes.Say("age: 500\nname: bob"))
+			})
+
 			It("errors when no vars are provided", func() {
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				command := exec.Command(pathToMain,
 					"interpolate",
 					"-c", yamlFile.Name(),
 				)
+				defer yamlFile.Close()
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
