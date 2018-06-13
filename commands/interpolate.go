@@ -59,7 +59,8 @@ func interpolate(templateFile string, varsFiles []string) ([]byte, error) {
 	tpl := boshtpl.NewTemplate(contents)
 	vars := []boshtpl.Variables{}
 
-	for _, path := range varsFiles {
+	for i := len(varsFiles) - 1; i >= 0; i-=1 {
+		path := varsFiles[i]
 		payload, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, fmt.Errorf("could not read template variables file (%s): %s", path, err.Error())
