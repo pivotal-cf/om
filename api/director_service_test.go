@@ -37,7 +37,11 @@ var _ = Describe("Director", func() {
 					return &http.Response{
 						StatusCode: http.StatusOK,
 						Body: ioutil.NopCloser(strings.NewReader(
-							`{"availability_zones": [{"guid": "existing-az-guid", "name": "existing-az"}]}`,
+							`{"availability_zones": [
+									{"guid": "existing-az-guid",
+									 "name": "existing-az",
+									 "clusters":
+										[{"cluster":"pizza", "guid":"pepperoni"}]}]}`,
 						))}, nil
 				} else {
 					return &http.Response{
@@ -50,7 +54,7 @@ var _ = Describe("Director", func() {
 		It("configures availability zones", func() {
 			err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[
-          {"name": "existing-az"},
+          {"clusters":[{"cluster":"pizza"}],"name":"existing-az"},
           {"name": "new-az"}
         ]`),
 			})
@@ -74,7 +78,7 @@ var _ = Describe("Director", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jsonBody).To(MatchJSON(`{
         "availability_zones": [
-         {"guid": "existing-az-guid", "name": "existing-az"},
+         {"guid": "existing-az-guid","name":"existing-az","clusters":[{"cluster":"pizza","guid":"pepperoni"}]},
          {"name": "new-az"}
         ]
 			}`))
