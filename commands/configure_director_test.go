@@ -18,30 +18,7 @@ var _ = Describe("ConfigureDirector", func() {
 		logger  *fakes.Logger
 		service *fakes.ConfigureDirectorService
 		command commands.ConfigureDirector
-
-		azConfiguration       []interface{}
-		networkAssignment     map[string]interface{}
-		iaasConfiguration     map[string]interface{}
-		syslogConfiguration   map[string]interface{}
-		networksConfiguration map[string]interface{}
-		directorConfiguration map[string]interface{}
-		securityConfiguration map[string]interface{}
-		resourceConfiguration map[string]interface{}
-
-		templateNetworkAssign map[string]interface{}
-
-		azConfigurationJSON       string
-		networkAssignmentJSON     string
-		iaasConfigurationJSON     string
-		syslogConfigurationJSON   string
-		networksConfigurationJSON string
-		directorConfigurationJSON string
-		securityConfigurationJSON string
-		resourceConfigurationJSON string
-
-		configurationMAP          map[string]interface{}
-		completeConfigurationJSON []byte
-		templateConfigurationJSON []byte
+		err     error
 	)
 
 	BeforeEach(func() {
@@ -63,87 +40,6 @@ var _ = Describe("ConfigureDirector", func() {
 		}, nil)
 
 		command = commands.NewConfigureDirector(service, logger)
-
-		azConfiguration = []interface{}{map[string]interface{}{
-			"name": "AZ1",
-			"clusters": []interface{}{map[string]interface{}{
-				"cluster": "pizza-boxes",
-			}},
-		}}
-		iaasConfiguration = map[string]interface{}{
-			"some-iaas-assignment": "iaas",
-		}
-		networkAssignment = map[string]interface{}{
-			"network": map[string]interface{}{
-				"name": "network",
-			},
-			"singleton_availability_zone": map[string]interface{}{
-				"name": "singleton",
-			},
-		}
-		syslogConfiguration = map[string]interface{}{
-			"some-syslog-assignment": "syslog",
-		}
-		networksConfiguration = map[string]interface{}{
-			"network": "network-1",
-		}
-		directorConfiguration = map[string]interface{}{
-			"some-director-assignment": "director",
-		}
-		securityConfiguration = map[string]interface{}{
-			"some-security-assignment": "security",
-		}
-		resourceConfiguration = map[string]interface{}{
-			"resource": map[string]interface{}{
-				"instance_type": map[string]interface{}{
-					"id": "some-type",
-				},
-			},
-		}
-
-		templateNetworkAssign = map[string]interface{}{
-			"network": map[string]interface{}{
-				"name": "((network_name))",
-			},
-			"singleton_availability_zone": map[string]interface{}{
-				"name": "singleton",
-			},
-		}
-
-		azConfigurationByte, err := json.Marshal(azConfiguration)
-		iaasConfigurationByte, err := json.Marshal(iaasConfiguration)
-		networkAssignmentByte, err := json.Marshal(networkAssignment)
-		syslogConfigurationByte, err := json.Marshal(syslogConfiguration)
-		networksConfigurationByte, err := json.Marshal(networksConfiguration)
-		directorConfigurationByte, err := json.Marshal(directorConfiguration)
-		securityConfigurationByte, err := json.Marshal(securityConfiguration)
-		resourceConfigurationByte, err := json.Marshal(resourceConfiguration)
-
-		azConfigurationJSON = string(azConfigurationByte)
-		iaasConfigurationJSON = string(iaasConfigurationByte)
-		networkAssignmentJSON = string(networkAssignmentByte)
-		syslogConfigurationJSON = string(syslogConfigurationByte)
-		networksConfigurationJSON = string(networksConfigurationByte)
-		directorConfigurationJSON = string(directorConfigurationByte)
-		securityConfigurationJSON = string(securityConfigurationByte)
-		resourceConfigurationJSON = string(resourceConfigurationByte)
-
-		configurationMAP = map[string]interface{}{}
-		configurationMAP["network-assignment"] = networkAssignment
-		configurationMAP["az-configuration"] = azConfiguration
-		configurationMAP["networks-configuration"] = networksConfiguration
-		configurationMAP["director-configuration"] = directorConfiguration
-		configurationMAP["iaas-configuration"] = iaasConfiguration
-		configurationMAP["security-configuration"] = securityConfiguration
-		configurationMAP["syslog-configuration"] = syslogConfiguration
-		configurationMAP["resource-configuration"] = resourceConfiguration
-
-		completeConfigurationJSON, err = json.Marshal(configurationMAP)
-		Expect(err).NotTo(HaveOccurred())
-
-		configurationMAP["network-assignment"] = templateNetworkAssign
-		templateConfigurationJSON, err = json.Marshal(configurationMAP)
-		Expect(err).NotTo(HaveOccurred())
 	})
 
 	Describe("Execute", func() {
@@ -204,14 +100,14 @@ var _ = Describe("ConfigureDirector", func() {
 
 		It("configures the director", func() {
 			err := command.Execute([]string{
-				"--az-configuration", azConfigurationJSON,
-				"--network-assignment", networkAssignmentJSON,
-				"--iaas-configuration", iaasConfigurationJSON,
-				"--syslog-configuration", syslogConfigurationJSON,
-				"--networks-configuration", networksConfigurationJSON,
-				"--director-configuration", directorConfigurationJSON,
-				"--security-configuration", securityConfigurationJSON,
-				"--resource-configuration", resourceConfigurationJSON,
+				"--network-assignment", `{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`,
+				"--az-configuration", `[{"clusters":[{"cluster":"pizza-boxes"}],"name":"AZ1"}]`,
+				"--networks-configuration", `{"network":"network-1"}`,
+				"--director-configuration", `{"some-director-assignment":"director"}`,
+				"--iaas-configuration", `{"some-iaas-assignment":"iaas"}`,
+				"--security-configuration", `{"some-security-assignment":"security"}`,
+				"--syslog-configuration", `{"some-syslog-assignment":"syslog"}`,
+				"--resource-configuration", `{"resource":{"instance_type":{"id":"some-type"}}}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -259,6 +155,75 @@ var _ = Describe("ConfigureDirector", func() {
 			})
 
 			Context("with a valid config", func() {
+				var (
+					completeConfigurationJSON []byte
+					templateConfigurationJSON []byte
+				)
+
+				BeforeEach(func() {
+					azConfiguration := []interface{}{map[string]interface{}{
+						"name": "AZ1",
+						"clusters": []interface{}{map[string]interface{}{
+							"cluster": "pizza-boxes",
+						}},
+					}}
+					iaasConfiguration := map[string]interface{}{
+						"some-iaas-assignment": "iaas",
+					}
+					networkAssignment := map[string]interface{}{
+						"network": map[string]interface{}{
+							"name": "network",
+						},
+						"singleton_availability_zone": map[string]interface{}{
+							"name": "singleton",
+						},
+					}
+					syslogConfiguration := map[string]interface{}{
+						"some-syslog-assignment": "syslog",
+					}
+					networksConfiguration := map[string]interface{}{
+						"network": "network-1",
+					}
+					directorConfiguration := map[string]interface{}{
+						"some-director-assignment": "director",
+					}
+					securityConfiguration := map[string]interface{}{
+						"some-security-assignment": "security",
+					}
+					resourceConfiguration := map[string]interface{}{
+						"resource": map[string]interface{}{
+							"instance_type": map[string]interface{}{
+								"id": "some-type",
+							},
+						},
+					}
+
+					templateNetworkAssign := map[string]interface{}{
+						"network": map[string]interface{}{
+							"name": "((network_name))",
+						},
+						"singleton_availability_zone": map[string]interface{}{
+							"name": "singleton",
+						},
+					}
+
+					configurationMAP := map[string]interface{}{}
+					configurationMAP["network-assignment"] = networkAssignment
+					configurationMAP["az-configuration"] = azConfiguration
+					configurationMAP["networks-configuration"] = networksConfiguration
+					configurationMAP["director-configuration"] = directorConfiguration
+					configurationMAP["iaas-configuration"] = iaasConfiguration
+					configurationMAP["security-configuration"] = securityConfiguration
+					configurationMAP["syslog-configuration"] = syslogConfiguration
+					configurationMAP["resource-configuration"] = resourceConfiguration
+
+					completeConfigurationJSON, err = json.Marshal(configurationMAP)
+					Expect(err).NotTo(HaveOccurred())
+
+					configurationMAP["network-assignment"] = templateNetworkAssign
+					templateConfigurationJSON, err = json.Marshal(configurationMAP)
+					Expect(err).NotTo(HaveOccurred())
+				})
 				It("can interpolate variables into the configuration", func() {
 					configFile, err := ioutil.TempFile("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
