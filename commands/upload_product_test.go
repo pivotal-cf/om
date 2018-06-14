@@ -152,17 +152,6 @@ var _ = Describe("UploadProduct", func() {
 			file.WriteString("testing-shasum")
 
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
-			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
-				Name:    "cf",
-				Version: "1.5.0",
-			}, nil)
-			fakeService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
-				if name == "cf" && version == "1.5.0" {
-					return true, nil
-				}
-				return false, errors.New("unknown")
-			}
-
 			err = command.Execute([]string{
 				"--product", file.Name(),
 				"--shasum", "not-the-correct-shasum",
