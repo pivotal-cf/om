@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -12,9 +11,7 @@ import (
 type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
-	Options struct {
-		OutputFile string `long:"output-file"      short:"o"  description:"output path to write config to"`
-	}
+	Options struct{}
 }
 
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
@@ -104,10 +101,6 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	configYaml, err := yaml.Marshal(config)
 	if err != nil {
 		return err
-	}
-
-	if ec.Options.OutputFile != "" {
-		return ioutil.WriteFile(ec.Options.OutputFile, configYaml, 0600)
 	}
 
 	ec.logger.Println(string(configYaml))
