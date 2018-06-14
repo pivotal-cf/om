@@ -13,10 +13,10 @@ type UploadProduct struct {
 	multipart multipart
 	logger    logger
 	service   uploadProductService
-	Options   struct {
+	Options struct {
 		Product         string `long:"product"          short:"p"  required:"true" description:"path to product"`
 		PollingInterval int    `long:"polling-interval" short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
-		Shasum          string `long:"shasum" short:"s" description:"shasum of the provided product file to be used for validation"`
+		Shasum          string `long:"shasum" short:"sha" description:"shasum of the provided product file to be used for validation"`
 	}
 	metadataExtractor metadataExtractor
 }
