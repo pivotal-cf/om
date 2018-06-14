@@ -13,7 +13,7 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 )
 
-var _ = FDescribe("ConfigureDirector", func() {
+var _ = Describe("ConfigureDirector", func() {
 	var (
 		logger  *fakes.Logger
 		service *fakes.ConfigureDirectorService
@@ -25,7 +25,7 @@ var _ = FDescribe("ConfigureDirector", func() {
 		syslogConfiguration   map[string]interface{}
 		networksConfiguration map[string]interface{}
 		directorConfiguration map[string]interface{}
-		securityConviguration map[string]interface{}
+		securityConfiguration map[string]interface{}
 		resourceConfiguration map[string]interface{}
 
 		templateNetworkAssign map[string]interface{}
@@ -36,7 +36,7 @@ var _ = FDescribe("ConfigureDirector", func() {
 		syslogConfigurationJSON   string
 		networksConfigurationJSON string
 		directorConfigurationJSON string
-		securityConvigurationJSON string
+		securityConfigurationJSON string
 		resourceConfigurationJSON string
 
 		configurationMAP          map[string]interface{}
@@ -65,7 +65,10 @@ var _ = FDescribe("ConfigureDirector", func() {
 		command = commands.NewConfigureDirector(service, logger)
 
 		azConfiguration = []interface{}{map[string]interface{}{
-			"some-az-assignment": "az",
+			"name": "AZ1",
+			"clusters": []interface{}{map[string]interface{}{
+				"cluster": "pizza-boxes",
+			}},
 		}}
 		iaasConfiguration = map[string]interface{}{
 			"some-iaas-assignment": "iaas",
@@ -87,7 +90,7 @@ var _ = FDescribe("ConfigureDirector", func() {
 		directorConfiguration = map[string]interface{}{
 			"some-director-assignment": "director",
 		}
-		securityConviguration = map[string]interface{}{
+		securityConfiguration = map[string]interface{}{
 			"some-security-assignment": "security",
 		}
 		resourceConfiguration = map[string]interface{}{
@@ -100,21 +103,30 @@ var _ = FDescribe("ConfigureDirector", func() {
 
 		templateNetworkAssign = map[string]interface{}{
 			"network": map[string]interface{}{
-				"name":"((network_name))",
+				"name": "((network_name))",
 			},
 			"singleton_availability_zone": map[string]interface{}{
 				"name": "singleton",
 			},
 		}
 
-		azConfigurationJSON = `[{"some-az-assignment":"az"}]`
-		iaasConfigurationJSON = `{"some-iaas-assignment":"iaas"}`
-		networkAssignmentJSON = `{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`
-		syslogConfigurationJSON = `{"some-syslog-assignment":"syslog"}`
-		networksConfigurationJSON = `{"network":"network-1"}`
-		directorConfigurationJSON = `{"some-director-assignment":"director"}`
-		securityConvigurationJSON = `{"some-security-assignment":"security"}`
-		resourceConfigurationJSON = `{"resource":{"instance_type":{"id":"some-type"}}}`
+		azConfigurationByte, err := json.Marshal(azConfiguration)
+		iaasConfigurationByte, err := json.Marshal(iaasConfiguration)
+		networkAssignmentByte, err := json.Marshal(networkAssignment)
+		syslogConfigurationByte, err := json.Marshal(syslogConfiguration)
+		networksConfigurationByte, err := json.Marshal(networksConfiguration)
+		directorConfigurationByte, err := json.Marshal(directorConfiguration)
+		securityConfigurationByte, err := json.Marshal(securityConfiguration)
+		resourceConfigurationByte, err := json.Marshal(resourceConfiguration)
+
+		azConfigurationJSON = string(azConfigurationByte)
+		iaasConfigurationJSON = string(iaasConfigurationByte)
+		networkAssignmentJSON = string(networkAssignmentByte)
+		syslogConfigurationJSON = string(syslogConfigurationByte)
+		networksConfigurationJSON = string(networksConfigurationByte)
+		directorConfigurationJSON = string(directorConfigurationByte)
+		securityConfigurationJSON = string(securityConfigurationByte)
+		resourceConfigurationJSON = string(resourceConfigurationByte)
 
 		configurationMAP = map[string]interface{}{}
 		configurationMAP["network-assignment"] = networkAssignment
@@ -122,11 +134,10 @@ var _ = FDescribe("ConfigureDirector", func() {
 		configurationMAP["networks-configuration"] = networksConfiguration
 		configurationMAP["director-configuration"] = directorConfiguration
 		configurationMAP["iaas-configuration"] = iaasConfiguration
-		configurationMAP["security-configuration"] = securityConviguration
+		configurationMAP["security-configuration"] = securityConfiguration
 		configurationMAP["syslog-configuration"] = syslogConfiguration
 		configurationMAP["resource-configuration"] = resourceConfiguration
 
-		var err error
 		completeConfigurationJSON, err = json.Marshal(configurationMAP)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -139,7 +150,7 @@ var _ = FDescribe("ConfigureDirector", func() {
 		ExpectDirectorToBeConfiguredCorrectly := func() {
 			Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorAvailabilityZonesArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
-				AvailabilityZones: json.RawMessage(`[{"some-az-assignment":"az"}]`),
+				AvailabilityZones: json.RawMessage(`[{"clusters":[{"cluster":"pizza-boxes"}],"name":"AZ1"}]`),
 			}))
 			Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
@@ -192,7 +203,6 @@ var _ = FDescribe("ConfigureDirector", func() {
 		}
 
 		It("configures the director", func() {
-
 			err := command.Execute([]string{
 				"--az-configuration", azConfigurationJSON,
 				"--network-assignment", networkAssignmentJSON,
@@ -200,7 +210,7 @@ var _ = FDescribe("ConfigureDirector", func() {
 				"--syslog-configuration", syslogConfigurationJSON,
 				"--networks-configuration", networksConfigurationJSON,
 				"--director-configuration", directorConfigurationJSON,
-				"--security-configuration", securityConvigurationJSON,
+				"--security-configuration", securityConfigurationJSON,
 				"--resource-configuration", resourceConfigurationJSON,
 			})
 			Expect(err).NotTo(HaveOccurred())
