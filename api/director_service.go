@@ -203,6 +203,7 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 		for _, existingAZ := range existingAZs.AvailabilityZones {
 			if az.Name == existingAZ.Name {
 				az.GUID = existingAZ.GUID
+				az.Fields = existingAZ.Fields
 				break
 			}
 		}
