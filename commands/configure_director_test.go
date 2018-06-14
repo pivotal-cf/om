@@ -13,11 +13,35 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 )
 
-var _ = Describe("ConfigureDirector", func() {
+var _ = FDescribe("ConfigureDirector", func() {
 	var (
+		logger  *fakes.Logger
 		service *fakes.ConfigureDirectorService
 		command commands.ConfigureDirector
-		logger  *fakes.Logger
+
+		azConfiguration       []interface{}
+		networkAssignment     map[string]interface{}
+		iaasConfiguration     map[string]interface{}
+		syslogConfiguration   map[string]interface{}
+		networksConfiguration map[string]interface{}
+		directorConfiguration map[string]interface{}
+		securityConviguration map[string]interface{}
+		resourceConfiguration map[string]interface{}
+
+		templateNetworkAssign map[string]interface{}
+
+		azConfigurationJSON       string
+		networkAssignmentJSON     string
+		iaasConfigurationJSON     string
+		syslogConfigurationJSON   string
+		networksConfigurationJSON string
+		directorConfigurationJSON string
+		securityConvigurationJSON string
+		resourceConfigurationJSON string
+
+		configurationMAP          map[string]interface{}
+		completeConfigurationJSON []byte
+		templateConfigurationJSON []byte
 	)
 
 	BeforeEach(func() {
@@ -39,61 +63,108 @@ var _ = Describe("ConfigureDirector", func() {
 		}, nil)
 
 		command = commands.NewConfigureDirector(service, logger)
+
+		azConfiguration = []interface{}{map[string]interface{}{
+			"some-az-assignment": "az",
+		}}
+		iaasConfiguration = map[string]interface{}{
+			"some-iaas-assignment": "iaas",
+		}
+		networkAssignment = map[string]interface{}{
+			"network": map[string]interface{}{
+				"name": "network",
+			},
+			"singleton_availability_zone": map[string]interface{}{
+				"name": "singleton",
+			},
+		}
+		syslogConfiguration = map[string]interface{}{
+			"some-syslog-assignment": "syslog",
+		}
+		networksConfiguration = map[string]interface{}{
+			"network": "network-1",
+		}
+		directorConfiguration = map[string]interface{}{
+			"some-director-assignment": "director",
+		}
+		securityConviguration = map[string]interface{}{
+			"some-security-assignment": "security",
+		}
+		resourceConfiguration = map[string]interface{}{
+			"resource": map[string]interface{}{
+				"instance_type": map[string]interface{}{
+					"id": "some-type",
+				},
+			},
+		}
+
+		templateNetworkAssign = map[string]interface{}{
+			"network": map[string]interface{}{
+				"name":"((network_name))",
+			},
+			"singleton_availability_zone": map[string]interface{}{
+				"name": "singleton",
+			},
+		}
+
+		azConfigurationJSON = `[{"some-az-assignment":"az"}]`
+		iaasConfigurationJSON = `{"some-iaas-assignment":"iaas"}`
+		networkAssignmentJSON = `{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`
+		syslogConfigurationJSON = `{"some-syslog-assignment":"syslog"}`
+		networksConfigurationJSON = `{"network":"network-1"}`
+		directorConfigurationJSON = `{"some-director-assignment":"director"}`
+		securityConvigurationJSON = `{"some-security-assignment":"security"}`
+		resourceConfigurationJSON = `{"resource":{"instance_type":{"id":"some-type"}}}`
+
+		configurationMAP = map[string]interface{}{}
+		configurationMAP["network-assignment"] = networkAssignment
+		configurationMAP["az-configuration"] = azConfiguration
+		configurationMAP["networks-configuration"] = networksConfiguration
+		configurationMAP["director-configuration"] = directorConfiguration
+		configurationMAP["iaas-configuration"] = iaasConfiguration
+		configurationMAP["security-configuration"] = securityConviguration
+		configurationMAP["syslog-configuration"] = syslogConfiguration
+		configurationMAP["resource-configuration"] = resourceConfiguration
+
+		var err error
+		completeConfigurationJSON, err = json.Marshal(configurationMAP)
+		Expect(err).NotTo(HaveOccurred())
+
+		configurationMAP["network-assignment"] = templateNetworkAssign
+		templateConfigurationJSON, err = json.Marshal(configurationMAP)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	Describe("Execute", func() {
-		It("configures the director", func() {
-			networkAssignmentJSON := `{
-				"network": {"name": "network"},
-				"singleton_availability_zone": {"name": "singleton"}
-			}`
-
-			err := command.Execute([]string{
-				"--network-assignment", networkAssignmentJSON,
-				"--az-configuration", `[{"some-az-assignment": "az"}]`,
-				"--networks-configuration", `{"network": "network-1"}`,
-				"--director-configuration", `{"some-director-assignment": "director"}`,
-				"--iaas-configuration", `{"some-iaas-assignment": "iaas"}`,
-				"--security-configuration", `{"some-security-assignment": "security"}`,
-				"--syslog-configuration", `{"some-syslog-assignment": "syslog"}`,
-				"--resource-configuration", `{"resource": {"instance_type": {"id": "some-type"}}}`,
-			})
-			Expect(err).NotTo(HaveOccurred())
-
+		ExpectDirectorToBeConfiguredCorrectly := func() {
 			Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorAvailabilityZonesArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
-				AvailabilityZones: json.RawMessage(`[{"some-az-assignment": "az"}]`),
+				AvailabilityZones: json.RawMessage(`[{"some-az-assignment":"az"}]`),
 			}))
-
 			Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
-				Networks: json.RawMessage(`{"network": "network-1"}`),
+				Networks: json.RawMessage(`{"network":"network-1"}`),
 			}))
 
 			Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
-				NetworkAZ: json.RawMessage(networkAssignmentJSON),
+				NetworkAZ: json.RawMessage(`{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`),
 			}))
-
 			Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
 			Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
-				DirectorConfiguration: json.RawMessage(`{"some-director-assignment": "director"}`),
-				IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment": "iaas"}`),
-				SecurityConfiguration: json.RawMessage(`{"some-security-assignment": "security"}`),
-				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment": "syslog"}`),
+				DirectorConfiguration: json.RawMessage(`{"some-director-assignment":"director"}`),
+				IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment":"iaas"}`),
+				SecurityConfiguration: json.RawMessage(`{"some-security-assignment":"security"}`),
+				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment":"syslog"}`),
 			}))
-
 			Expect(service.GetStagedProductByNameCallCount()).To(Equal(1))
 			Expect(service.GetStagedProductByNameArgsForCall(0)).To(Equal("p-bosh"))
-
 			Expect(service.ListStagedProductJobsCallCount()).To(Equal(1))
 			Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("p-bosh-guid"))
-
 			Expect(service.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
 			productGUID, instanceGroupGUID := service.GetStagedProductJobResourceConfigArgsForCall(0)
 			Expect(productGUID).To(Equal("p-bosh-guid"))
 			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
-
 			Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
 			productGUID, instanceGroupGUID, jobConfiguration := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
 			Expect(productGUID).To(Equal("p-bosh-guid"))
@@ -104,7 +175,6 @@ var _ = Describe("ConfigureDirector", func() {
 				},
 				FloatingIPs: "1.2.3.4",
 			}))
-
 			Expect(logger.PrintfCallCount()).To(Equal(12))
 			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
@@ -119,6 +189,23 @@ var _ = Describe("ConfigureDirector", func() {
 			formatStr, formatArg := logger.PrintfArgsForCall(10)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
 			Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
+		}
+
+		It("configures the director", func() {
+
+			err := command.Execute([]string{
+				"--az-configuration", azConfigurationJSON,
+				"--network-assignment", networkAssignmentJSON,
+				"--iaas-configuration", iaasConfigurationJSON,
+				"--syslog-configuration", syslogConfigurationJSON,
+				"--networks-configuration", networksConfigurationJSON,
+				"--director-configuration", directorConfigurationJSON,
+				"--security-configuration", securityConvigurationJSON,
+				"--resource-configuration", resourceConfigurationJSON,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			ExpectDirectorToBeConfiguredCorrectly()
 		})
 
 		Context("when the --config flag is set", func() {
@@ -162,78 +249,10 @@ var _ = Describe("ConfigureDirector", func() {
 			})
 
 			Context("with a valid config", func() {
-				ExpectDirectorToBeConfiguredCorrectly := func() {
-					Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(1))
-					Expect(service.UpdateStagedDirectorAvailabilityZonesArgsForCall(0)).To(Equal(api.AvailabilityZoneInput{
-						AvailabilityZones: json.RawMessage(`[{"some-az-assignment":"az"}]`),
-					}))
-					Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
-					Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
-						Networks: json.RawMessage(`{"network":"network-1"}`),
-					}))
-
-					Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(1))
-					Expect(service.UpdateStagedDirectorNetworkAndAZArgsForCall(0)).To(Equal(api.NetworkAndAZConfiguration{
-						NetworkAZ: json.RawMessage(`{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`),
-					}))
-					Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
-					Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
-						DirectorConfiguration: json.RawMessage(`{"some-director-assignment":"director"}`),
-						IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment":"iaas"}`),
-						SecurityConfiguration: json.RawMessage(`{"some-security-assignment":"security"}`),
-						SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment":"syslog"}`),
-					}))
-					Expect(service.GetStagedProductByNameCallCount()).To(Equal(1))
-					Expect(service.GetStagedProductByNameArgsForCall(0)).To(Equal("p-bosh"))
-					Expect(service.ListStagedProductJobsCallCount()).To(Equal(1))
-					Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("p-bosh-guid"))
-					Expect(service.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
-					productGUID, instanceGroupGUID := service.GetStagedProductJobResourceConfigArgsForCall(0)
-					Expect(productGUID).To(Equal("p-bosh-guid"))
-					Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
-					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
-					productGUID, instanceGroupGUID, jobConfiguration := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
-					Expect(productGUID).To(Equal("p-bosh-guid"))
-					Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
-					Expect(jobConfiguration).To(Equal(api.JobProperties{
-						InstanceType: api.InstanceType{
-							ID: "some-type",
-						},
-						FloatingIPs: "1.2.3.4",
-					}))
-					Expect(logger.PrintfCallCount()).To(Equal(12))
-					Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring availability zone options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(4)).To(Equal("started configuring network options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring network assignment options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring network assignment options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(8)).To(Equal("started configuring resource options for bosh tile"))
-					Expect(logger.PrintfArgsForCall(9)).To(Equal("applying resource configuration for the following jobs:"))
-					formatStr, formatArg := logger.PrintfArgsForCall(10)
-					Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
-					Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
-				}
-
 				It("can interpolate variables into the configuration", func() {
-					configYAML := `
----
-network-assignment:
-  network: {"name": ((network_name)) }
-  singleton_availability_zone: {"name": "singleton"}
-az-configuration: [{"some-az-assignment": "az"}]
-networks-configuration: {"network": "network-1"}
-director-configuration: {"some-director-assignment": "director"}
-iaas-configuration: {"some-iaas-assignment": "iaas"}
-security-configuration: {"some-security-assignment": "security"}
-syslog-configuration: {"some-syslog-assignment": "syslog"}
-resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
-
 					configFile, err := ioutil.TempFile("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.WriteString(configYAML)
+					_, err = configFile.Write(templateConfigurationJSON)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(configFile.Close()).ToNot(HaveOccurred())
 
@@ -253,22 +272,9 @@ resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
 				})
 
 				It("returns an error of missing variables", func() {
-					configYAML := `
----
-network-assignment:
-  network: {"name": ((network_name)) }
-  singleton_availability_zone: {"name": "singleton"}
-az-configuration: [{"some-az-assignment": "az"}]
-networks-configuration: {"network": "network-1"}
-director-configuration: {"some-director-assignment": "director"}
-iaas-configuration: {"some-iaas-assignment": "iaas"}
-security-configuration: {"some-security-assignment": "security"}
-syslog-configuration: {"some-syslog-assignment": "syslog"}
-resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
-
 					configFile, err := ioutil.TempFile("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.WriteString(configYAML)
+					_, err = configFile.Write(templateConfigurationJSON)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(configFile.Close()).ToNot(HaveOccurred())
 
@@ -280,22 +286,9 @@ resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
 				})
 
 				It("configures the director", func() {
-					configYAML := `
----
-network-assignment:
-  network: {"name": "network"}
-  singleton_availability_zone: {"name": "singleton"}
-az-configuration: [{"some-az-assignment": "az"}]
-networks-configuration: {"network": "network-1"}
-director-configuration: {"some-director-assignment": "director"}
-iaas-configuration: {"some-iaas-assignment": "iaas"}
-security-configuration: {"some-security-assignment": "security"}
-syslog-configuration: {"some-syslog-assignment": "syslog"}
-resource-configuration: {"resource": {"instance_type": {"id": "some-type"}}}`
-
 					configFile, err := ioutil.TempFile("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.WriteString(configYAML)
+					_, err = configFile.Write(completeConfigurationJSON)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(configFile.Close()).ToNot(HaveOccurred())
 
