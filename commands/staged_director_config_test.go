@@ -1,14 +1,11 @@
 package commands_test
 
 import (
-	"os"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
 	"errors"
-	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -129,56 +126,6 @@ security-configuration:
 syslog-configuration:
   syslogconfig: awesome
 `)))
-		})
-
-		It("writes the config to a file", func() {
-			outFile, err := ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = os.Remove(outFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			command := commands.NewStagedDirectorConfig(fakeService, logger)
-			err = command.Execute([]string{
-				"-o", outFile.Name(),
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			fileInfo, err := os.Stat(outFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-			Expect(fileInfo.Mode()).To(Equal(os.FileMode(0600)))
-
-			output, err := ioutil.ReadFile(outFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(string(output)).To(MatchYAML(`
-az-configuration:
-- name: some-az
-  iaas_configuration_guid: some-iaas-guid
-- name: some-other-az
-director-configuration:
-  max_threads: 5
-iaas-configuration:
-  iaas_specific_key: some-value
-network-assignment:
-  network:
-    name: network-1
-  singleton_availability_zone:
-    name: "some-az"
-networks-configuration:
-  icmp_checks_enabled: false
-  networks:
-  - name: network-1
-resource-configuration:
-  some-job:
-    instances: 1
-    instance_type:
-      id: automatic
-security-configuration:
-  trusted_certificates: some-certificate
-syslog-configuration:
-  syslogconfig: awesome
-`))
 		})
 	})
 

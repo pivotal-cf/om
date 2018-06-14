@@ -2,14 +2,11 @@ package commands_test
 
 import (
 	"errors"
-	"os"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-
-	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -269,46 +266,6 @@ resource-config:
       id: automatic
 
 `)))
-		})
-
-		It("writes the config to an output file", func() {
-			outFile, err := ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
-			err = os.Remove(outFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			command := commands.NewStagedConfig(fakeService, logger)
-			err = command.Execute([]string{
-				"--product-name", "some-product",
-				"-o", outFile.Name(),
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			fileInfo, err := os.Stat(outFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-			Expect(fileInfo.Mode()).To(Equal(os.FileMode(0600)))
-
-			output, err := ioutil.ReadFile(outFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(string(output)).To(MatchYAML(`
-product-properties:
-  .properties.collection:
-    value:
-    - name: Certificate
-  .properties.some-string-property:
-    value: some-value
-  .properties.some-selector:
-    value: internal
-network-properties:
-  singleton_availability_zone:
-    name: az-one
-resource-config:
-  some-job:
-    instances: 1
-    instance_type:
-      id: automatic
-`))
 		})
 	})
 
