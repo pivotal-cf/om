@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/pivotal-cf/jhanda"
@@ -104,6 +105,80 @@ var _ = Describe("UploadProduct", func() {
 
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done."))
+		})
+	})
+
+	Context("when the --shasum flag is defined", func() {
+		It("proceeds normally when the sha sums match", func() {
+			file, err := ioutil.TempFile("", "test-file.yaml")
+			Expect(err).ToNot(HaveOccurred())
+
+			file.Close()
+			defer os.Remove(file.Name())
+
+			file.WriteString("testing-shasum")
+
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+				Name:    "cf",
+				Version: "1.5.0",
+			}, nil)
+			fakeService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
+				if name == "cf" && version == "1.5.0" {
+					return true, nil
+				}
+				return false, errors.New("unknown")
+			}
+
+			err = command.Execute([]string{
+				"--product", file.Name(),
+				"--shasum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
+			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches product shasum."))
+		})
+
+		It("returns an error when the sha sums don't match", func() {
+			file, err := ioutil.TempFile("", "test-file.yaml")
+			Expect(err).ToNot(HaveOccurred())
+
+			file.Close()
+			defer os.Remove(file.Name())
+
+			file.WriteString("testing-shasum")
+
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+				Name:    "cf",
+				Version: "1.5.0",
+			}, nil)
+			fakeService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
+				if name == "cf" && version == "1.5.0" {
+					return true, nil
+				}
+				return false, errors.New("unknown")
+			}
+
+			err = command.Execute([]string{
+				"--product", file.Name(),
+				"--shasum", "not-the-correct-shasum",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
+		})
+
+		It("fails when the file can not calculate a shasum", func() {
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+			err := command.Execute([]string{
+				"--product", "/path/to/testing.tgz",
+				"--shasum", "not-the-correct-shasum",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError("open /path/to/testing.tgz: no such file or directory"))
 		})
 	})
 
