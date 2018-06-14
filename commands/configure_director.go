@@ -182,7 +182,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 		var userProvidedConfig map[string]json.RawMessage
 		err = json.Unmarshal([]byte(c.Options.ResourceConfiguration), &userProvidedConfig)
 		if err != nil {
-			return fmt.Errorf("could not decode resource-configuration json: %s", err)
+			return fmt.Errorf("could not decode resource-configuration json: %s", c.Options.ResourceConfiguration)
 		}
 
 		jobs, err := c.service.ListStagedProductJobs(productGUID)
