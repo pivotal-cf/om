@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	yamlConverter "github.com/ghodss/yaml"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type AvailabilityZoneInput struct {
@@ -30,10 +30,17 @@ type Network struct {
 	Fields map[string]interface{} `yaml:",inline"`
 }
 
-type AZ struct {
+type Cluster struct {
 	GUID   string                 `yaml:"guid,omitempty"`
-	Name   string                 `yaml:"name"`
+	Name   string                 `yaml:"cluster"`
 	Fields map[string]interface{} `yaml:",inline"`
+}
+
+type AZ struct {
+	GUID     string                 `yaml:"guid,omitempty"`
+	Name     string                 `yaml:"name"`
+	Clusters []*Cluster             `yaml:"clusters,omitempty"`
+	Fields   map[string]interface{} `yaml:",inline"`
 }
 
 type AvailabilityZones struct {
@@ -203,7 +210,16 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 		for _, existingAZ := range existingAZs.AvailabilityZones {
 			if az.Name == existingAZ.Name {
 				az.GUID = existingAZ.GUID
-				az.Fields = existingAZ.Fields
+
+				for _, cluster := range az.Clusters {
+					for _, existingCluster := range existingAZ.Clusters {
+						if cluster.Name == existingCluster.Name {
+							cluster.GUID = existingCluster.GUID
+							break
+						}
+					}
+				}
+
 				break
 			}
 		}
