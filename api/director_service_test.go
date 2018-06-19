@@ -41,7 +41,9 @@ var _ = Describe("Director", func() {
 									{"guid": "existing-az-guid",
 									 "name": "existing-az",
 									 "clusters":
-										[{"cluster":"pizza", "guid":"pepperoni"}]}]}`,
+										[{"cluster":"pizza", 
+                                          "guid":"pepperoni",
+                                          "res_pool":"dcba"}]}]}`,
 						))}, nil
 				} else {
 					return &http.Response{
@@ -54,10 +56,9 @@ var _ = Describe("Director", func() {
 		It("configures availability zones", func() {
 			err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 				AvailabilityZones: json.RawMessage(`[
-          {"clusters":[{"cluster":"pizza"}],"name":"existing-az"},
-          {"name": "new-az"}
-        ]`),
-			})
+          			{"clusters":[{"cluster":"pizza","res_pool":"abcd"}],"name":"existing-az","a_field":"some_val"},
+          			{"name": "new-az"}
+          			  ]`)})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stderr.Invocations()).To(HaveLen(0))
 
@@ -77,11 +78,11 @@ var _ = Describe("Director", func() {
 			jsonBody, err := ioutil.ReadAll(putReq.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jsonBody).To(MatchJSON(`{
-        "availability_zones": [
-         {"guid": "existing-az-guid","name":"existing-az","clusters":[{"cluster":"pizza","guid":"pepperoni"}]},
-         {"name": "new-az"}
-        ]
-			}`))
+        		"availability_zones": [
+        		 {"a_field":"some_val","guid": "existing-az-guid","name":"existing-az",
+        		     "clusters":[{"cluster":"pizza","guid":"pepperoni","res_pool":"abcd"}]},
+        		 {"name": "new-az"}
+        		]}`))
 		})
 
 		It("preserves all provided fields", func() {
