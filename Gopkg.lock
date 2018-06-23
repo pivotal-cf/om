@@ -48,6 +48,12 @@
   revision = "250da0e0e68ce3367b4302f34218f6c064eb9559"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/donovanhide/eventsource"
+  packages = ["."]
+  revision = "3ed64d21fb0b6bd8b49bcfec08f3004daee8723d"
+
+[[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
@@ -232,6 +238,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c1f9baab291c56f4c7f4aac00844550b2319199d63139d8689f68730f5131e39"
+  inputs-digest = "c840480c4c36fd3f221d688cbb813f0e193fa5b8a534d99352aadded4e2594ae"
   solver-name = "gps-cdcl"
   solver-version = 1
