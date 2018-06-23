@@ -266,6 +266,37 @@ var _ = Describe("InstallationsService", func() {
 		})
 	})
 
+	Describe("GetCurrentInstallationLogs", func() {
+		It("grabs the logs from the currently running installation", func() {
+			logData := `
+event:step_info
+data:[{"id":"bosh_product.deploying","description":"Installing BOSH"}]
+
+event:step_state_changed
+data:{"type":"step_started","id":"bosh_product.deploying"}
+
+data:This is some data; I do not know what it is; But I do not care.
+
+event:exit
+data:{"type":"exit","code":1}
+
+`
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(logData)),
+			}, nil)
+
+			output, err := service.GetCurrentInstallationLogs()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(<-output.LogChan).To(ContainSubstring("This is some data; I do not know what it is; But I do not care"))
+			Expect(<-output.ErrorChan).To(MatchError("installation was unsuccessful"))
+
+			req := client.DoArgsForCall(0)
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.URL.Path).To(Equal("/api/v0/installations/current_log"))
+		})
+	})
+
 	Context("when an error occurs", func() {
 		Context("when the client has an error during the request", func() {
 			It("returns an error", func() {

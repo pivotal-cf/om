@@ -70,6 +70,20 @@ var _ = Describe("apply-changes command", func() {
 
 				w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
 				installationsLogsCallCount++
+			case "/api/v0/installations/current_log":
+				w.Write([]byte(`
+event:step_info
+data:[{"id":"bosh_product.deploying","description":"Installing BOSH"}]
+
+event:step_state_changed
+data:{"type":"step_started","id":"bosh_product.deploying"}
+
+data:This is some data; I do not know what it is; But I do not care.
+
+event:exit
+data:{"type":"exit","code":0}
+
+`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -91,13 +105,8 @@ var _ = Describe("apply-changes command", func() {
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
-		Expect(installationsStatusCallCount).To(Equal(3))
-		Expect(installationsStatusCallCount).To(Equal(3))
-
-		Expect(session.Out).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #0"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
+		Expect(session.Out).To(gbytes.Say(`attempting to apply changes to the targeted Ops Manager`))
+		Expect(session.Out).To(gbytes.Say("This is some data; I do not know what it is; But I do not care."))
 	})
 
 	It("successfully re-attaches to an existing deployment", func() {
@@ -114,13 +123,8 @@ var _ = Describe("apply-changes command", func() {
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
-		Expect(installationsStatusCallCount).To(Equal(3))
-		Expect(installationsStatusCallCount).To(Equal(3))
-
 		Expect(session.Out).To(gbytes.Say(`found already running installation...re-attaching \(Installation ID: 42, Started: Thu Mar  2 06:50:32 UTC 2017\)`))
-		Expect(session.Out).To(gbytes.Say("something logged for call #0"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
+		Expect(session.Out).To(gbytes.Say("This is some data; I do not know what it is; But I do not care."))
 	})
 
 })

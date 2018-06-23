@@ -134,7 +134,7 @@ func main() {
 
 	commandSet := jhanda.CommandSet{}
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)
-	commandSet["apply-changes"] = commands.NewApplyChanges(api, logWriter, stdout, applySleepSeconds)
+	commandSet["apply-changes"] = commands.NewApplyChanges(api, stdout)
 	commandSet["available-products"] = commands.NewAvailableProducts(api, presenter, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)

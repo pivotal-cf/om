@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 type ApplyChanges struct {
 	service      applyChangesService
 	logger       logger
-	logWriter    logWriter
 	waitDuration int
 	Options      struct {
 		IgnoreWarnings     bool `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
@@ -23,10 +21,8 @@ type ApplyChanges struct {
 //go:generate counterfeiter -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
 type applyChangesService interface {
 	CreateInstallation(bool, bool) (api.InstallationsServiceOutput, error)
-	GetInstallation(id int) (api.InstallationsServiceOutput, error)
-	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
-	ListInstallations() ([]api.InstallationsServiceOutput, error)
+	GetCurrentInstallationLogs() (api.InstallationsServiceOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
@@ -34,12 +30,10 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(service applyChangesService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
+func NewApplyChanges(service applyChangesService, logger logger) ApplyChanges {
 	return ApplyChanges{
-		service:      service,
-		logger:       logger,
-		logWriter:    logWriter,
-		waitDuration: waitDuration,
+		service: service,
+		logger:  logger,
 	}
 }
 
@@ -65,30 +59,25 @@ func (ac ApplyChanges) Execute(args []string) error {
 		ac.logger.Printf("found already running installation...re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
 	}
 
-	for {
-		current, err := ac.service.GetInstallation(installation.ID)
-		if err != nil {
-			return fmt.Errorf("installation failed to get status: %s", err)
-		}
-
-		install, err := ac.service.GetInstallationLogs(installation.ID)
-		if err != nil {
-			return fmt.Errorf("installation failed to get logs: %s", err)
-		}
-
-		err = ac.logWriter.Flush(install.Logs)
-		if err != nil {
-			return fmt.Errorf("installation failed to flush logs: %s", err)
-		}
-
-		if current.Status == api.StatusSucceeded {
-			return nil
-		} else if current.Status == api.StatusFailed {
-			return errors.New("installation was unsuccessful")
-		}
-
-		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
+	install, err := ac.service.GetCurrentInstallationLogs()
+	if err != nil {
+		return fmt.Errorf("installation failed to get logs: %s", err)
 	}
+
+	for {
+		content, ok := <-install.LogChan
+		if ok {
+			ac.logger.Println(content)
+		} else {
+			break
+		}
+	}
+
+	if err, ok := <-install.ErrorChan; ok {
+		return err
+	}
+
+	return nil
 }
 
 func (ac ApplyChanges) Usage() jhanda.Usage {
