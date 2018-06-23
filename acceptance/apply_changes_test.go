@@ -17,9 +17,7 @@ import (
 var _ = Describe("apply-changes command", func() {
 	var (
 		server                       *httptest.Server
-		installationsStatusCallCount int
-		installationsLogsCallCount   int
-		logLines                     string
+
 	)
 
 	BeforeEach(func() {
@@ -55,21 +53,6 @@ var _ = Describe("apply-changes command", func() {
 				} else {
 					w.Write([]byte(`{ "install": { "id": 42 } }`))
 				}
-			case "/api/v0/installations/42":
-				if installationsStatusCallCount == 3 {
-					w.Write([]byte(`{ "status": "succeeded" }`))
-					return
-				}
-
-				installationsStatusCallCount++
-				w.Write([]byte(`{ "status": "running" }`))
-			case "/api/v0/installations/42/logs":
-				if installationsLogsCallCount != 3 {
-					logLines += fmt.Sprintf("something logged for call #%d\n", installationsLogsCallCount)
-				}
-
-				w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
-				installationsLogsCallCount++
 			case "/api/v0/installations/current_log":
 				w.Write([]byte(`
 event:step_info

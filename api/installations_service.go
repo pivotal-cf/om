@@ -17,6 +17,8 @@ const (
 	StatusFailed    = "failed"
 )
 
+var InstallFailed = errors.New("installation was unsuccessful")
+
 type InstallationsServiceOutput struct {
 	ID         int
 	Status     string
@@ -229,7 +231,7 @@ func writeLog(r io.ReadCloser, logChan chan string, errChan chan error) {
 				close(logChan)
 				status := exitStatus{}
 				if err := json.Unmarshal([]byte(event.Data()), &status); err != nil || status.Code != 0 {
-					errChan <- errors.New("installation was unsuccessful")
+					errChan <- InstallFailed
 				}
 				close(errChan)
 				return

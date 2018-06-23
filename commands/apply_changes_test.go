@@ -17,7 +17,6 @@ var _ = Describe("ApplyChanges", func() {
 	var (
 		service     *fakes.ApplyChangesService
 		logger      *fakes.Logger
-		writer      *fakes.LogWriter
 		logsOutputs []api.InstallationsServiceOutput
 		logsErrors  []error
 		statusCount int
@@ -27,7 +26,6 @@ var _ = Describe("ApplyChanges", func() {
 	BeforeEach(func() {
 		service = &fakes.ApplyChangesService{}
 		logger = &fakes.Logger{}
-		writer = &fakes.LogWriter{}
 
 		statusCount = 0
 		logsCount = 0

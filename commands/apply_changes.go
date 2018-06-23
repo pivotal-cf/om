@@ -25,11 +25,6 @@ type applyChangesService interface {
 	GetCurrentInstallationLogs() (api.InstallationsServiceOutput, error)
 }
 
-//go:generate counterfeiter -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
-type logWriter interface {
-	Flush(logs string) error
-}
-
 func NewApplyChanges(service applyChangesService, logger logger) ApplyChanges {
 	return ApplyChanges{
 		service: service,
