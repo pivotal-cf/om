@@ -3,7 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/donovanhide/eventsource"
+	"io"
 	"net/http"
 	"time"
 )
@@ -14,10 +17,14 @@ const (
 	StatusFailed    = "failed"
 )
 
+var InstallFailed = errors.New("installation was unsuccessful")
+
 type InstallationsServiceOutput struct {
 	ID         int
 	Status     string
 	Logs       string
+	LogChan    chan string
+	ErrorChan  chan error
 	StartedAt  *time.Time `json:"started_at"`
 	FinishedAt *time.Time `json:"finished_at"`
 	UserName   string     `json:"user_name"`
@@ -157,4 +164,84 @@ func (a Api) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
 	}
 
 	return InstallationsServiceOutput{Logs: output.Logs}, nil
+}
+
+func (a Api) GetCurrentInstallationLogs() (InstallationsServiceOutput, error) {
+	req, err := http.NewRequest("GET", "/api/v0/installations/current_log", nil)
+	if err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Accept", "text/event-stream")
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to current installation logs endpoint: %s", err)
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
+	output := InstallationsServiceOutput{}
+	output.LogChan = make(chan string)
+	output.ErrorChan = make(chan error)
+
+	go writeLog(resp.Body, output.LogChan, output.ErrorChan)
+
+	return output, nil
+}
+
+func receiveEvents(r io.ReadCloser, events chan eventsource.Event, errors chan error) {
+	defer r.Close()
+	defer close(events)
+	defer close(errors)
+
+	decoder := eventsource.NewDecoder(r)
+	for {
+		ev, err := decoder.Decode()
+		if err != nil {
+			errors <- err
+			return
+		}
+		events <- ev
+	}
+}
+
+func writeLog(r io.ReadCloser, logChan chan string, errChan chan error) {
+	type exitStatus struct {
+		Code int `json:"code"`
+	}
+
+	eventChan := make(chan eventsource.Event)
+	eventErrChan := make(chan error)
+
+	go receiveEvents(r, eventChan, eventErrChan)
+
+	for {
+		select {
+		case event := <-eventChan:
+			// maybe handle more event types
+			// https://pcf.pcf-installer.pcf-installer.norm.cf-app.com/docs#streaming-current-installation-log
+			switch event.Event() {
+			case "":
+				logChan <- event.Data()
+			case "exit":
+				close(logChan)
+				status := exitStatus{}
+				if err := json.Unmarshal([]byte(event.Data()), &status); err != nil || status.Code != 0 {
+					errChan <- InstallFailed
+				}
+				close(errChan)
+				return
+			}
+		case err := <-eventErrChan:
+			close(logChan)
+			errChan <- fmt.Errorf("installation failed to stream logs: %s", err)
+			close(errChan)
+			return
+		}
+
+	}
 }

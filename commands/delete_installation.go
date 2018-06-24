@@ -1,35 +1,28 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
-	"time"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"errors"
 )
 
 type DeleteInstallation struct {
-	service      deleteInstallationService
-	logger       logger
-	logWriter    logWriter
-	waitDuration int
+	service deleteInstallationService
+	logger  logger
 }
 
 //go:generate counterfeiter -o ./fakes/delete_installation_service.go --fake-name DeleteInstallationService . deleteInstallationService
 type deleteInstallationService interface {
 	DeleteInstallationAssetCollection() (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
-	GetInstallation(id int) (api.InstallationsServiceOutput, error)
-	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
+	GetCurrentInstallationLogs() (api.InstallationsServiceOutput, error)
 }
 
-func NewDeleteInstallation(service deleteInstallationService, logWriter logWriter, logger logger, waitDuration int) DeleteInstallation {
+func NewDeleteInstallation(service deleteInstallationService, logger logger) DeleteInstallation {
 	return DeleteInstallation{
-		service:      service,
-		logger:       logger,
-		logWriter:    logWriter,
-		waitDuration: waitDuration,
+		service: service,
+		logger:  logger,
 	}
 }
 
@@ -52,30 +45,28 @@ func (ac DeleteInstallation) Execute(args []string) error {
 		ac.logger.Printf("found already running deletion...attempting to re-attach")
 	}
 
+	install, err := ac.service.GetCurrentInstallationLogs()
+	if err != nil {
+		return fmt.Errorf("installation failed to get logs: %s", err)
+	}
+
 	for {
-		current, err := ac.service.GetInstallation(installation.ID)
-		if err != nil {
-			return fmt.Errorf("installation failed to get status: %s", err)
+		content, ok := <-install.LogChan
+		if ok {
+			ac.logger.Println(content)
+		} else {
+			break
 		}
+	}
 
-		install, err := ac.service.GetInstallationLogs(installation.ID)
-		if err != nil {
-			return fmt.Errorf("installation failed to get logs: %s", err)
-		}
-
-		err = ac.logWriter.Flush(install.Logs)
-		if err != nil {
-			return fmt.Errorf("installation failed to flush logs: %s", err)
-		}
-
-		if current.Status == api.StatusSucceeded {
-			return nil
-		} else if current.Status == api.StatusFailed {
+	if err, ok := <-install.ErrorChan; ok {
+		if err == api.InstallFailed{
 			return errors.New("deleting the installation was unsuccessful")
 		}
-
-		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
+		return err
 	}
+
+	return nil
 }
 
 func (ac DeleteInstallation) Usage() jhanda.Usage {

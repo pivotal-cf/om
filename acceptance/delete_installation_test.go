@@ -7,7 +7,6 @@ import (
 	"net/http/httputil"
 	"os/exec"
 
-	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
@@ -17,9 +16,6 @@ import (
 var _ = Describe("delete-installation command", func() {
 	var (
 		server                       *httptest.Server
-		installationsStatusCallCount int
-		installationsLogsCallCount   int
-		logLines                     string
 	)
 
 	BeforeEach(func() {
@@ -43,21 +39,20 @@ var _ = Describe("delete-installation command", func() {
 				}
 
 				w.Write([]byte(`{ "install": { "id": 42 } }`))
-			case "/api/v0/installations/42":
-				if installationsStatusCallCount == 3 {
-					w.Write([]byte(`{ "status": "succeeded" }`))
-					return
-				}
+			case "/api/v0/installations/current_log":
+				w.Write([]byte(`
+event:step_info
+data:[{"id":"bosh_product.deploying","description":"Installing BOSH"}]
 
-				installationsStatusCallCount++
-				w.Write([]byte(`{ "status": "running" }`))
-			case "/api/v0/installations/42/logs":
-				if installationsLogsCallCount != 3 {
-					logLines += fmt.Sprintf("something logged for call #%d\n", installationsLogsCallCount)
-				}
+event:step_state_changed
+data:{"type":"step_started","id":"bosh_product.deploying"}
 
-				w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
-				installationsLogsCallCount++
+data:This is some data; I do not know what it is; But I do not care.
+
+event:exit
+data:{"type":"exit","code":0}
+
+`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -79,12 +74,5 @@ var _ = Describe("delete-installation command", func() {
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
-		Expect(installationsStatusCallCount).To(Equal(3))
-		Expect(installationsStatusCallCount).To(Equal(3))
-
-		Expect(session.Out).To(gbytes.Say("attempting to delete the installation on the targeted Ops Manager"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #0"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
 	})
 })

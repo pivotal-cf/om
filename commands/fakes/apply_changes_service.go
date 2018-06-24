@@ -22,32 +22,6 @@ type ApplyChangesService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	GetInstallationStub        func(id int) (api.InstallationsServiceOutput, error)
-	getInstallationMutex       sync.RWMutex
-	getInstallationArgsForCall []struct {
-		id int
-	}
-	getInstallationReturns struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}
-	getInstallationReturnsOnCall map[int]struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}
-	GetInstallationLogsStub        func(id int) (api.InstallationsServiceOutput, error)
-	getInstallationLogsMutex       sync.RWMutex
-	getInstallationLogsArgsForCall []struct {
-		id int
-	}
-	getInstallationLogsReturns struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}
-	getInstallationLogsReturnsOnCall map[int]struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}
 	RunningInstallationStub        func() (api.InstallationsServiceOutput, error)
 	runningInstallationMutex       sync.RWMutex
 	runningInstallationArgsForCall []struct{}
@@ -59,15 +33,15 @@ type ApplyChangesService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	ListInstallationsStub        func() ([]api.InstallationsServiceOutput, error)
-	listInstallationsMutex       sync.RWMutex
-	listInstallationsArgsForCall []struct{}
-	listInstallationsReturns     struct {
-		result1 []api.InstallationsServiceOutput
+	GetCurrentInstallationLogsStub        func() (api.InstallationsServiceOutput, error)
+	getCurrentInstallationLogsMutex       sync.RWMutex
+	getCurrentInstallationLogsArgsForCall []struct{}
+	getCurrentInstallationLogsReturns     struct {
+		result1 api.InstallationsServiceOutput
 		result2 error
 	}
-	listInstallationsReturnsOnCall map[int]struct {
-		result1 []api.InstallationsServiceOutput
+	getCurrentInstallationLogsReturnsOnCall map[int]struct {
+		result1 api.InstallationsServiceOutput
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -126,108 +100,6 @@ func (fake *ApplyChangesService) CreateInstallationReturnsOnCall(i int, result1 
 	}{result1, result2}
 }
 
-func (fake *ApplyChangesService) GetInstallation(id int) (api.InstallationsServiceOutput, error) {
-	fake.getInstallationMutex.Lock()
-	ret, specificReturn := fake.getInstallationReturnsOnCall[len(fake.getInstallationArgsForCall)]
-	fake.getInstallationArgsForCall = append(fake.getInstallationArgsForCall, struct {
-		id int
-	}{id})
-	fake.recordInvocation("GetInstallation", []interface{}{id})
-	fake.getInstallationMutex.Unlock()
-	if fake.GetInstallationStub != nil {
-		return fake.GetInstallationStub(id)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.getInstallationReturns.result1, fake.getInstallationReturns.result2
-}
-
-func (fake *ApplyChangesService) GetInstallationCallCount() int {
-	fake.getInstallationMutex.RLock()
-	defer fake.getInstallationMutex.RUnlock()
-	return len(fake.getInstallationArgsForCall)
-}
-
-func (fake *ApplyChangesService) GetInstallationArgsForCall(i int) int {
-	fake.getInstallationMutex.RLock()
-	defer fake.getInstallationMutex.RUnlock()
-	return fake.getInstallationArgsForCall[i].id
-}
-
-func (fake *ApplyChangesService) GetInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
-	fake.GetInstallationStub = nil
-	fake.getInstallationReturns = struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *ApplyChangesService) GetInstallationReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
-	fake.GetInstallationStub = nil
-	if fake.getInstallationReturnsOnCall == nil {
-		fake.getInstallationReturnsOnCall = make(map[int]struct {
-			result1 api.InstallationsServiceOutput
-			result2 error
-		})
-	}
-	fake.getInstallationReturnsOnCall[i] = struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *ApplyChangesService) GetInstallationLogs(id int) (api.InstallationsServiceOutput, error) {
-	fake.getInstallationLogsMutex.Lock()
-	ret, specificReturn := fake.getInstallationLogsReturnsOnCall[len(fake.getInstallationLogsArgsForCall)]
-	fake.getInstallationLogsArgsForCall = append(fake.getInstallationLogsArgsForCall, struct {
-		id int
-	}{id})
-	fake.recordInvocation("GetInstallationLogs", []interface{}{id})
-	fake.getInstallationLogsMutex.Unlock()
-	if fake.GetInstallationLogsStub != nil {
-		return fake.GetInstallationLogsStub(id)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.getInstallationLogsReturns.result1, fake.getInstallationLogsReturns.result2
-}
-
-func (fake *ApplyChangesService) GetInstallationLogsCallCount() int {
-	fake.getInstallationLogsMutex.RLock()
-	defer fake.getInstallationLogsMutex.RUnlock()
-	return len(fake.getInstallationLogsArgsForCall)
-}
-
-func (fake *ApplyChangesService) GetInstallationLogsArgsForCall(i int) int {
-	fake.getInstallationLogsMutex.RLock()
-	defer fake.getInstallationLogsMutex.RUnlock()
-	return fake.getInstallationLogsArgsForCall[i].id
-}
-
-func (fake *ApplyChangesService) GetInstallationLogsReturns(result1 api.InstallationsServiceOutput, result2 error) {
-	fake.GetInstallationLogsStub = nil
-	fake.getInstallationLogsReturns = struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *ApplyChangesService) GetInstallationLogsReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
-	fake.GetInstallationLogsStub = nil
-	if fake.getInstallationLogsReturnsOnCall == nil {
-		fake.getInstallationLogsReturnsOnCall = make(map[int]struct {
-			result1 api.InstallationsServiceOutput
-			result2 error
-		})
-	}
-	fake.getInstallationLogsReturnsOnCall[i] = struct {
-		result1 api.InstallationsServiceOutput
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *ApplyChangesService) RunningInstallation() (api.InstallationsServiceOutput, error) {
 	fake.runningInstallationMutex.Lock()
 	ret, specificReturn := fake.runningInstallationReturnsOnCall[len(fake.runningInstallationArgsForCall)]
@@ -271,45 +143,45 @@ func (fake *ApplyChangesService) RunningInstallationReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
-func (fake *ApplyChangesService) ListInstallations() ([]api.InstallationsServiceOutput, error) {
-	fake.listInstallationsMutex.Lock()
-	ret, specificReturn := fake.listInstallationsReturnsOnCall[len(fake.listInstallationsArgsForCall)]
-	fake.listInstallationsArgsForCall = append(fake.listInstallationsArgsForCall, struct{}{})
-	fake.recordInvocation("ListInstallations", []interface{}{})
-	fake.listInstallationsMutex.Unlock()
-	if fake.ListInstallationsStub != nil {
-		return fake.ListInstallationsStub()
+func (fake *ApplyChangesService) GetCurrentInstallationLogs() (api.InstallationsServiceOutput, error) {
+	fake.getCurrentInstallationLogsMutex.Lock()
+	ret, specificReturn := fake.getCurrentInstallationLogsReturnsOnCall[len(fake.getCurrentInstallationLogsArgsForCall)]
+	fake.getCurrentInstallationLogsArgsForCall = append(fake.getCurrentInstallationLogsArgsForCall, struct{}{})
+	fake.recordInvocation("GetCurrentInstallationLogs", []interface{}{})
+	fake.getCurrentInstallationLogsMutex.Unlock()
+	if fake.GetCurrentInstallationLogsStub != nil {
+		return fake.GetCurrentInstallationLogsStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listInstallationsReturns.result1, fake.listInstallationsReturns.result2
+	return fake.getCurrentInstallationLogsReturns.result1, fake.getCurrentInstallationLogsReturns.result2
 }
 
-func (fake *ApplyChangesService) ListInstallationsCallCount() int {
-	fake.listInstallationsMutex.RLock()
-	defer fake.listInstallationsMutex.RUnlock()
-	return len(fake.listInstallationsArgsForCall)
+func (fake *ApplyChangesService) GetCurrentInstallationLogsCallCount() int {
+	fake.getCurrentInstallationLogsMutex.RLock()
+	defer fake.getCurrentInstallationLogsMutex.RUnlock()
+	return len(fake.getCurrentInstallationLogsArgsForCall)
 }
 
-func (fake *ApplyChangesService) ListInstallationsReturns(result1 []api.InstallationsServiceOutput, result2 error) {
-	fake.ListInstallationsStub = nil
-	fake.listInstallationsReturns = struct {
-		result1 []api.InstallationsServiceOutput
+func (fake *ApplyChangesService) GetCurrentInstallationLogsReturns(result1 api.InstallationsServiceOutput, result2 error) {
+	fake.GetCurrentInstallationLogsStub = nil
+	fake.getCurrentInstallationLogsReturns = struct {
+		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ApplyChangesService) ListInstallationsReturnsOnCall(i int, result1 []api.InstallationsServiceOutput, result2 error) {
-	fake.ListInstallationsStub = nil
-	if fake.listInstallationsReturnsOnCall == nil {
-		fake.listInstallationsReturnsOnCall = make(map[int]struct {
-			result1 []api.InstallationsServiceOutput
+func (fake *ApplyChangesService) GetCurrentInstallationLogsReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
+	fake.GetCurrentInstallationLogsStub = nil
+	if fake.getCurrentInstallationLogsReturnsOnCall == nil {
+		fake.getCurrentInstallationLogsReturnsOnCall = make(map[int]struct {
+			result1 api.InstallationsServiceOutput
 			result2 error
 		})
 	}
-	fake.listInstallationsReturnsOnCall[i] = struct {
-		result1 []api.InstallationsServiceOutput
+	fake.getCurrentInstallationLogsReturnsOnCall[i] = struct {
+		result1 api.InstallationsServiceOutput
 		result2 error
 	}{result1, result2}
 }
@@ -319,14 +191,10 @@ func (fake *ApplyChangesService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createInstallationMutex.RLock()
 	defer fake.createInstallationMutex.RUnlock()
-	fake.getInstallationMutex.RLock()
-	defer fake.getInstallationMutex.RUnlock()
-	fake.getInstallationLogsMutex.RLock()
-	defer fake.getInstallationLogsMutex.RUnlock()
 	fake.runningInstallationMutex.RLock()
 	defer fake.runningInstallationMutex.RUnlock()
-	fake.listInstallationsMutex.RLock()
-	defer fake.listInstallationsMutex.RUnlock()
+	fake.getCurrentInstallationLogsMutex.RLock()
+	defer fake.getCurrentInstallationLogsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -23,8 +23,6 @@ import (
 
 var version = "unknown"
 
-const applySleepSeconds = 10
-
 type httpClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
@@ -112,7 +110,6 @@ func main() {
 	ui := ui.New(ui.UiInput{
 		Client: authedCookieClient,
 	})
-	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
 
 	form, err := formcontent.NewForm()
@@ -134,7 +131,7 @@ func main() {
 
 	commandSet := jhanda.CommandSet{}
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)
-	commandSet["apply-changes"] = commands.NewApplyChanges(api, logWriter, stdout, applySleepSeconds)
+	commandSet["apply-changes"] = commands.NewApplyChanges(api, stdout)
 	commandSet["available-products"] = commands.NewAvailableProducts(api, presenter, stdout)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
@@ -150,7 +147,7 @@ func main() {
 	commandSet["credentials"] = commands.NewCredentials(api, presenter, stdout)
 	commandSet["curl"] = commands.NewCurl(api, stdout, stderr)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(api, stdout)
-	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, applySleepSeconds)
+	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, stdout)
 	commandSet["delete-product"] = commands.NewDeleteProduct(api)
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
