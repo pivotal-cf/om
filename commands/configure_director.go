@@ -16,6 +16,7 @@ type ConfigureDirector struct {
 	Options struct {
 		ConfigFile            string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
 		VarsFile              []string `long:"vars-file"  description:"Load variables from a YAML file"`
+		OpsFile               []string `long:"ops-file"  description:"YAML operations file"`
 		AZConfiguration       string   `short:"a" long:"az-configuration" description:"configures network availability zones"`
 		NetworksConfiguration string   `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
 		NetworkAssignment     string   `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
@@ -54,7 +55,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 			return fmt.Errorf("config flag can not be passed with another configuration flags")
 		}
 		var config map[string]interface{}
-		configContents, err := interpolate(c.Options.ConfigFile, c.Options.VarsFile)
+		configContents, err := interpolate(c.Options.ConfigFile, c.Options.VarsFile, c.Options.OpsFile)
 		if err != nil {
 			return err
 		}
