@@ -59,34 +59,25 @@ func interpolate(templateFile string, varsFiles []string, opsFiles []string) ([]
 	}
 
 	tpl := boshtpl.NewTemplate(contents)
-	vars := []boshtpl.Variables{}
+	staticVars := boshtpl.StaticVariables{}
 	ops := patch.Ops{}
 
-	for i := len(varsFiles) - 1; i >= 0; i -= 1 {
-		path := varsFiles[i]
-		payload, err := ioutil.ReadFile(path)
+	for _, path := range varsFiles {
+		var fileVars boshtpl.StaticVariables
+		err = readYAMLFile(path, &fileVars)
 		if err != nil {
-			return nil, fmt.Errorf("could not read template variables file (%s): %s", path, err.Error())
+			return nil, err
 		}
-		var staticVars boshtpl.StaticVariables
-		err = yaml.Unmarshal(payload, &staticVars)
-		if err != nil {
-			return nil, fmt.Errorf("could not unmarhsal template variables file (%s): %s", path, err.Error())
+		for k, v := range fileVars {
+			staticVars[k] = v
 		}
-		vars = append(vars, staticVars)
 	}
 
-	for i := len(opsFiles) - 1; i >= 0; i -= 1 {
-		path := opsFiles[i]
-		payload, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil, fmt.Errorf("could not read template variables file (%s): %s", path, err.Error())
-		}
+	for _, path := range opsFiles {
 		var opDefs []patch.OpDefinition
-
-		err = yaml.Unmarshal(payload, &opDefs)
+		err = readYAMLFile(path, &opDefs)
 		if err != nil {
-			return nil, fmt.Errorf("could not unmarhsal template variables file (%s): %s", path, err.Error())
+			return nil, err
 		}
 		op, err := patch.NewOpsFromDefinitions(opDefs)
 		if err != nil {
@@ -99,10 +90,23 @@ func interpolate(templateFile string, varsFiles []string, opsFiles []string) ([]
 		ExpectAllKeys:      true,
 	}
 
-	bytes, err := tpl.Evaluate(boshtpl.NewMultiVars(vars), ops, evalOpts)
+	bytes, err := tpl.Evaluate(staticVars, ops, evalOpts)
 	if err != nil {
 		return nil, err
 	}
 
 	return bytes, nil
+}
+
+func readYAMLFile(path string, dataType interface{}) error {
+	payload, err := ioutil.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("could not read file (%s): %s", path, err.Error())
+	}
+	err = yaml.Unmarshal(payload, dataType)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal file (%s): %s", path, err.Error())
+	}
+
+	return nil
 }
