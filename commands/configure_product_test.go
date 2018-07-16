@@ -28,25 +28,25 @@ const networkProperties = `{
 
 const resourceConfig = `{
   "some-job": {
-	  "instances": 1,
-		"persistent_disk": { "size_mb": "20480" },
+    "instances": 1,
+    "persistent_disk": { "size_mb": "20480" },
     "instance_type": { "id": "m1.medium" },
-		"internet_connected": true,
-		"elb_names": ["some-lb"]
+    "internet_connected": true,
+    "elb_names": ["some-lb"]
   },
   "some-other-job": {
-		"persistent_disk": { "size_mb": "20480" },
+    "persistent_disk": { "size_mb": "20480" },
     "instance_type": { "id": "m1.medium" }
   }
 }`
 
 const automaticResourceConfig = `{
   "some-job": {
-	  "instances": "automatic",
-		"persistent_disk": { "size_mb": "20480" },
+    "instances": "automatic",
+    "persistent_disk": { "size_mb": "20480" },
     "instance_type": { "id": "m1.medium" },
-		"internet_connected": true,
-		"elb_names": ["some-lb"]
+    "internet_connected": true,
+    "elb_names": ["some-lb"]
   }
 }`
 
@@ -98,6 +98,28 @@ resource-config:
     instance_type:
       id: m1.medium
 `
+
+const ymlProductProperties = `---
+product-properties:
+  .properties.something:
+    value: configure-me
+  .a-job.job-property:
+    value:
+      identity: username
+      password: example-new-password
+`
+
+const productOpsFile = `---
+- type: replace
+  path: /product-properties?/.some.property/value
+  value: some-value
+`
+
+const productPropertiesWithOpsFileInterpolated = `{
+  ".properties.something": {"value": "configure-me"},
+  ".a-job.job-property": {"value": {"identity": "username", "password": "example-new-password"} },
+  ".some.property": {"value": "some-value"}
+}`
 
 var _ = Describe("ConfigureProduct", func() {
 	Describe("Execute", func() {
@@ -341,23 +363,6 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 
 			Context("when the config file contains variables", func() {
-				It("returns an error of missing variables ", func() {
-					client := commands.NewConfigureProduct(service, logger)
-
-					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					_, err = configFile.WriteString(productPropertiesWithVariables)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = client.Execute([]string{
-						"--product-name", "cf",
-						"--config", configFile.Name(),
-					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
-				})
-
 				It("can interpolate variables into the configuration", func() {
 					client := commands.NewConfigureProduct(service, logger)
 
@@ -379,6 +384,77 @@ var _ = Describe("ConfigureProduct", func() {
 						"--vars-file", varsFile.Name(),
 					})
 					Expect(err).NotTo(HaveOccurred())
+				})
+
+				It("returns an error if missing variables ", func() {
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(productPropertiesWithVariables)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+				})
+			})
+
+			Context("when an ops-file is provided", func() {
+				It("can interpolate ops-files into the configuration", func() {
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(ymlProductProperties)
+					Expect(err).NotTo(HaveOccurred())
+
+					opsFile, err := ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = opsFile.WriteString(productOpsFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+						"--ops-file", opsFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedProductPropertiesCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).GUID).To(Equal("some-product-guid"))
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).Properties).To(MatchJSON(productPropertiesWithOpsFileInterpolated))
+				})
+
+				It("returns an error if the ops file is invalid", func() {
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(ymlProductProperties)
+					Expect(err).NotTo(HaveOccurred())
+
+					opsFile, err := ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = opsFile.WriteString(`%%%`)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"-n", "cf",
+						"-c", configFile.Name(),
+						"-o", opsFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("could not find expected directive name"))
 				})
 			})
 
