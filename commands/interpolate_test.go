@@ -3,7 +3,6 @@ package commands_test
 import (
 	"io/ioutil"
 	"os"
-	"path"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -41,10 +40,25 @@ var _ = Describe("Interpolate", func() {
 		)
 
 		BeforeEach(func() {
-			inputFile = path.Join(os.TempDir(), "input.yml")
-			varsFile = path.Join(os.TempDir(), "vars.yml")
-			varsFile2 = path.Join(os.TempDir(), "vars2.yml")
-			opsFile = path.Join(os.TempDir(), "ops.yml")
+			tmpFile, err := ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			inputFile = tmpFile.Name()
+
+			tmpFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			varsFile = tmpFile.Name()
+
+			tmpFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			varsFile2 = tmpFile.Name()
+
+			tmpFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			opsFile = tmpFile.Name()
 		})
 
 		AfterEach(func() {
