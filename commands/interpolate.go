@@ -13,10 +13,9 @@ import (
 type Interpolate struct {
 	logger  logger
 	Options struct {
-		ConfigFile string   `long:"config" short:"c" required:"true" description:"path for file to be interpolated"`
-		OutputFile string   `long:"output-file" short:"o" description:"output file for interpolated YAML"`
-		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
-		OpsFile    []string `long:"ops-file" short:"ops" description:"YAML operations files"`
+		ConfigFile string   `long:"config"    short:"c" required:"true" description:"path for file to be interpolated"`
+		VarsFile   []string `long:"vars-file" short:"l"                 description:"Load variables from a YAML file"`
+		OpsFile    []string `long:"ops-file"  short:"o"                 description:"YAML operations files"`
 	}
 }
 
@@ -36,9 +35,6 @@ func (c Interpolate) Execute(args []string) error {
 		return err
 	}
 
-	if c.Options.OutputFile != "" {
-		return ioutil.WriteFile(c.Options.OutputFile, bytes, 0600)
-	}
 	c.logger.Println(string(bytes))
 
 	return nil
@@ -85,6 +81,7 @@ func interpolate(templateFile string, varsFiles []string, opsFiles []string) ([]
 		}
 		ops = append(ops, op)
 	}
+
 	evalOpts := boshtpl.EvaluateOpts{
 		UnescapedMultiline: true,
 		ExpectAllKeys:      true,

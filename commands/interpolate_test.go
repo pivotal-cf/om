@@ -28,55 +28,56 @@ var _ = Describe("Interpolate", func() {
 	)
 
 	BeforeEach(func() {
+		logger = &fakes.Logger{}
 		command = commands.NewInterpolate(logger)
 	})
 
 	Describe("Execute", func() {
 		var (
-			inputFile  string
-			outputFile string
-			varsFile   string
-			varsFile2  string
-			opsFile    string
+			inputFile string
+			varsFile  string
+			varsFile2 string
+			opsFile   string
 		)
+
 		BeforeEach(func() {
 			inputFile = path.Join(os.TempDir(), "input.yml")
-			outputFile = path.Join(os.TempDir(), "output.yml")
 			varsFile = path.Join(os.TempDir(), "vars.yml")
 			varsFile2 = path.Join(os.TempDir(), "vars2.yml")
 			opsFile = path.Join(os.TempDir(), "ops.yml")
 		})
+
 		AfterEach(func() {
 			os.Remove(inputFile)
-			os.Remove(outputFile)
 			os.Remove(varsFile)
 			os.Remove(varsFile2)
 			os.Remove(opsFile)
 		})
+
 		Context("no vars or ops file inputs", func() {
 			It("succeeds", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
 				Expect(err).NotTo(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
-					"--output-file", outputFile,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				output, err := ioutil.ReadFile(outputFile)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(output)).Should(MatchYAML("hello: world"))
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
+
 			It("fails when all parameters are not specified", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
 				Expect(err).NotTo(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
-					"--output-file", outputFile,
 				})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).Should(ContainSubstring("Expected to find variables: hello"))
 			})
 		})
+
 		Context("with vars file input", func() {
 			It("succeeds", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
@@ -85,14 +86,14 @@ var _ = Describe("Interpolate", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
-					"--output-file", outputFile,
 					"--vars-file", varsFile,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				output, err := ioutil.ReadFile(outputFile)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(output)).Should(MatchYAML("hello: world"))
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
+
 			It("succeeds when multiple vars files", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
 				Expect(err).NotTo(HaveOccurred())
@@ -102,14 +103,13 @@ var _ = Describe("Interpolate", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
-					"--output-file", outputFile,
 					"--vars-file", varsFile,
 					"--vars-file", varsFile2,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				output, err := ioutil.ReadFile(outputFile)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(output)).Should(MatchYAML("hello: new world"))
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: new world"))
 			})
 		})
 
@@ -121,13 +121,12 @@ var _ = Describe("Interpolate", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
-					"--output-file", outputFile,
 					"--ops-file", opsFile,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				output, err := ioutil.ReadFile(outputFile)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(output)).Should(MatchYAML(`foo: bar
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML(`foo: bar
 hello: world`))
 			})
 		})
@@ -137,7 +136,6 @@ hello: world`))
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--config", "foo.yml",
-						"--output-file", "bar.yml",
 					})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).Should(ContainSubstring("no such file or directory"))
