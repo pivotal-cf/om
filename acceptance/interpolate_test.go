@@ -34,59 +34,6 @@ var _ = Describe("interpolate command", func() {
 			Eventually(session.Out, 5).Should(gbytes.Say("age: 100\nname: bob"))
 		})
 
-		Context("when an output file is provided", func() {
-			It("writes the YAML to that file", func() {
-				yamlFile := createFile("---\nname: bob\nage: 100")
-				outputFile, err := ioutil.TempFile("", "")
-				Expect(err).ToNot(HaveOccurred())
-
-				err = os.Remove(outputFile.Name())
-				Expect(err).ToNot(HaveOccurred())
-
-				command := exec.Command(pathToMain,
-					"interpolate",
-					"-c", yamlFile.Name(),
-					"-o", outputFile.Name(),
-				)
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, 5).Should(gexec.Exit(0))
-
-				fileInfo, err := os.Stat(outputFile.Name())
-				Expect(err).ToNot(HaveOccurred())
-				Expect(fileInfo.Mode()).To(Equal(os.FileMode(0600)))
-
-				contents, err := ioutil.ReadFile(outputFile.Name())
-				Expect(err).ToNot(HaveOccurred())
-				Expect(contents).To(MatchYAML("age: 100\nname: bob"))
-				Consistently(session.Out, 5).ShouldNot(gbytes.Say("age: 100\nname: bob"))
-			})
-
-			It("errors when the file does not exist", func() {
-				yamlFile := createFile("---\nname: bob\nage: 100")
-				outputFile, err := ioutil.TempFile("", "")
-				Expect(err).ToNot(HaveOccurred())
-				outputFile.Close()
-				Expect(os.Remove(outputFile.Name())).ToNot(HaveOccurred())
-
-				command := exec.Command(pathToMain,
-					"interpolate",
-					"-c", yamlFile.Name(),
-					"-o", outputFile.Name(),
-				)
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, 5).Should(gexec.Exit(0))
-
-				contents, err := ioutil.ReadFile(outputFile.Name())
-				Expect(err).ToNot(HaveOccurred())
-				Expect(contents).To(MatchYAML("age: 100\nname: bob"))
-				Consistently(session.Out, 5).ShouldNot(gbytes.Say("age: 100\nname: bob"))
-			})
-		})
-
 		Context("with vars defined in the manifest", func() {
 			It("successfully replaces the vars", func() {
 				varsFile := createFile("---\nname1: moe\nage1: 500")
