@@ -91,6 +91,9 @@ Check in both the manifest changes and the file additions in the vendor director
    in just as the team would like to see them, but we'll try not to hold up a pull
    request for a long period of time due to minor changes.
 
+NOTE: With any significant change in behavior to `om` that should be noted in
+the next release's release notes, you should also add a note to [CHANGELOG.md](./CHANGELOG.md).
+
 ## Design Goals
 
 - a [small sharp tool](https://brandur.org/small-sharp-tools) for fast, reliable interaction with the Operations Manager API via the command line
