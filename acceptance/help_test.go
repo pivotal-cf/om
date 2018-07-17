@@ -95,8 +95,8 @@ Command Arguments:
   --http-proxy-url              string             proxy for outbound HTTP network traffic
   --https-proxy-url             string             proxy for outbound HTTPS network traffic
   --no-proxy                    string             comma-separated list of hosts that do not go through the proxy
-  --password, -p                string (required)  admin password
-  --username, -u                string (required)  admin username
+  --password, -p, OM_PASSWORD   string (required)  admin password
+  --username, -u, OM_USERNAME   string (required)  admin username
 `
 
 var _ = Describe("help", func() {

@@ -18,12 +18,12 @@ type ConfigureAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
-		Username             string `long:"username"              short:"u"  required:"true" description:"admin username"`
-		Password             string `long:"password"              short:"p"  required:"true" description:"admin password"`
-		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL         string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL        string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
-		NoProxy              string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
+		Username             string `long:"username"              short:"u"  env:"OM_USERNAME"  required:"true" description:"admin username"`
+		Password             string `long:"password"              short:"p"  env:"OM_PASSWORD"  required:"true" description:"admin password"`
+		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp"                    required:"true" description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL         string `long:"http-proxy-url"                                                      description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL        string `long:"https-proxy-url"                                                     description:"proxy for outbound HTTPS network traffic"`
+		NoProxy              string `long:"no-proxy"                                                            description:"comma-separated list of hosts that do not go through the proxy"`
 	}
 }
 

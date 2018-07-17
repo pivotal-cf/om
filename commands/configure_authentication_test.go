@@ -14,9 +14,18 @@ import (
 )
 
 var _ = Describe("ConfigureAuthentication", func() {
+	var (
+		logger  *fakes.Logger
+		service *fakes.ConfigureAuthenticationService
+	)
+
+	BeforeEach(func() {
+		service = &fakes.ConfigureAuthenticationService{}
+		logger = &fakes.Logger{}
+	})
+
 	Describe("Execute", func() {
 		It("sets up a user with the specified configuration information, waiting for the setup to complete", func() {
-			service := &fakes.ConfigureAuthenticationService{}
 			eaOutputs := []api.EnsureAvailabilityOutput{
 				{Status: api.EnsureAvailabilityStatusUnstarted},
 				{Status: api.EnsureAvailabilityStatusPending},
@@ -27,8 +36,6 @@ var _ = Describe("ConfigureAuthentication", func() {
 			service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 				return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
 			}
-
-			logger := &fakes.Logger{}
 
 			command := commands.NewConfigureAuthentication(service, logger)
 			err := command.Execute([]string{
@@ -62,12 +69,9 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 		Context("when the authentication setup has already been configured", func() {
 			It("returns without configuring the authentication system", func() {
-				service := &fakes.ConfigureAuthenticationService{}
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
 				}, nil)
-
-				logger := &fakes.Logger{}
 
 				command := commands.NewConfigureAuthentication(service, logger)
 				err := command.Execute([]string{
@@ -88,7 +92,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-authentication flags: flag provided but not defined: -banana"))
 				})
@@ -96,10 +100,9 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -111,12 +114,11 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the initial configuration status is unknown", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnknown,
 					}, nil)
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -128,14 +130,13 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the setup service encounters an error", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnstarted,
 					}, nil)
 
 					service.SetupReturns(api.SetupOutput{}, errors.New("could not setup"))
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
@@ -147,8 +148,6 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Context("when the final configuration status cannot be determined", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
-
 					eaOutputs := []api.EnsureAvailabilityOutput{
 						{Status: api.EnsureAvailabilityStatusUnstarted},
 						{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -162,7 +161,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 						return eaOutputs[service.EnsureAvailabilityCallCount()-1], eaErrors[service.EnsureAvailabilityCallCount()-1]
 					}
 
-					command := commands.NewConfigureAuthentication(service, &fakes.Logger{})
+					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{
 						"--username", "some-username",
 						"--password", "some-password",
