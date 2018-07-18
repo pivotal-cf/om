@@ -90,7 +90,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
@@ -134,7 +134,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--ignore-warnings"})
 				Expect(err).NotTo(HaveOccurred())
 
-				ignoreWarnings, _ := service.CreateInstallationArgsForCall(0)
+				ignoreWarnings, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
 			})
 		})
@@ -164,8 +164,28 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--skip-deploy-products"})
 				Expect(err).NotTo(HaveOccurred())
 
-				_, deployProducts := service.CreateInstallationArgsForCall(0)
+				_, deployProducts, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
+			})
+
+			It("fails if product names were specified", func() {
+				command := commands.NewApplyChanges(service, writer, logger, 1)
+				err := command.Execute([]string{"--skip-deploy-products", "--product-name", "product1"})
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		Context("when passed the product-name flag", func() {
+			It("passes product names to the installation service", func() {
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("error"))
+				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
+
+				command := commands.NewApplyChanges(service, writer, logger, 1)
+				err := command.Execute([]string{"--product-name", "product1", "--product-name", "product2"})
+				Expect(err).To(HaveOccurred())
+
+				_, _, productNames := service.CreateInstallationArgsForCall(0)
+				Expect(productNames).To(ConsistOf("product1", "product2"))
 			})
 		})
 

@@ -15,14 +15,15 @@ type ApplyChanges struct {
 	logWriter    logWriter
 	waitDuration int
 	Options      struct {
-		IgnoreWarnings     bool `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
-		SkipDeployProducts bool `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
+		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
+		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
+		ProductNames       []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
 }
 
 //go:generate counterfeiter -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
 type applyChangesService interface {
-	CreateInstallation(bool, bool) (api.InstallationsServiceOutput, error)
+	CreateInstallation(bool, bool, []string) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
@@ -48,6 +49,10 @@ func (ac ApplyChanges) Execute(args []string) error {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
 
+	if ac.Options.SkipDeployProducts && len(ac.Options.ProductNames) > 0 {
+		return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
+	}
+
 	installation, err := ac.service.RunningInstallation()
 	if err != nil {
 		return fmt.Errorf("could not check for any already running installation: %s", err)
@@ -56,7 +61,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
 		deployProducts := !ac.Options.SkipDeployProducts
-		installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts)
+		installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts, ac.Options.ProductNames)
 		if err != nil {
 			return fmt.Errorf("installation failed to trigger: %s", err)
 		}

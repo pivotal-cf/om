@@ -8,11 +8,12 @@ import (
 )
 
 type ApplyChangesService struct {
-	CreateInstallationStub        func(bool, bool) (api.InstallationsServiceOutput, error)
+	CreateInstallationStub        func(bool, bool, []string) (api.InstallationsServiceOutput, error)
 	createInstallationMutex       sync.RWMutex
 	createInstallationArgsForCall []struct {
 		arg1 bool
 		arg2 bool
+		arg3 []string
 	}
 	createInstallationReturns struct {
 		result1 api.InstallationsServiceOutput
@@ -74,17 +75,23 @@ type ApplyChangesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool) (api.InstallationsServiceOutput, error) {
+func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool, arg3 []string) (api.InstallationsServiceOutput, error) {
+	var arg3Copy []string
+	if arg3 != nil {
+		arg3Copy = make([]string, len(arg3))
+		copy(arg3Copy, arg3)
+	}
 	fake.createInstallationMutex.Lock()
 	ret, specificReturn := fake.createInstallationReturnsOnCall[len(fake.createInstallationArgsForCall)]
 	fake.createInstallationArgsForCall = append(fake.createInstallationArgsForCall, struct {
 		arg1 bool
 		arg2 bool
-	}{arg1, arg2})
-	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2})
+		arg3 []string
+	}{arg1, arg2, arg3Copy})
+	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2, arg3Copy})
 	fake.createInstallationMutex.Unlock()
 	if fake.CreateInstallationStub != nil {
-		return fake.CreateInstallationStub(arg1, arg2)
+		return fake.CreateInstallationStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -98,10 +105,10 @@ func (fake *ApplyChangesService) CreateInstallationCallCount() int {
 	return len(fake.createInstallationArgsForCall)
 }
 
-func (fake *ApplyChangesService) CreateInstallationArgsForCall(i int) (bool, bool) {
+func (fake *ApplyChangesService) CreateInstallationArgsForCall(i int) (bool, bool, []string) {
 	fake.createInstallationMutex.RLock()
 	defer fake.createInstallationMutex.RUnlock()
-	return fake.createInstallationArgsForCall[i].arg1, fake.createInstallationArgsForCall[i].arg2
+	return fake.createInstallationArgsForCall[i].arg1, fake.createInstallationArgsForCall[i].arg2, fake.createInstallationArgsForCall[i].arg3
 }
 
 func (fake *ApplyChangesService) CreateInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
