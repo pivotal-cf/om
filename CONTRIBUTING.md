@@ -109,7 +109,7 @@ features that may become feasible as new features are made available in the API.
 
 ## Technical Design Guidelines
 
-In general, features are driven by acceptance and unit tests. Acceptance tests execute the compiled binary and exercise the feature including user facing errors.  Take a look at the code around and be consistent. Feel free
+In general, features are driven by acceptance and unit tests. Acceptance tests execute the compiled binary and exercise the feature including user facing errors. Unit tests document and specify the behavior of smaller components that make up that feature. Take a look at the code around and be consistent. Feel free
 to ask questions along the way or to create a pull request early to get feedback
 on code that is a work in progress.
 
