@@ -64,6 +64,7 @@ var _ = Describe("ApplyChanges", func() {
 
 	Describe("Execute", func() {
 		It("applies changes to the Ops Manager", func() {
+			service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 			service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
@@ -111,6 +112,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		Context("when passed the ignore-warnings flag", func() {
 			It("applies changes while ignoring warnings", func() {
+				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
 				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
@@ -141,6 +143,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		Context("when passed the skip-deploy-products flag", func() {
 			It("applies changes while not deploying products", func() {
+				service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
@@ -177,6 +180,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		Context("when passed the product-name flag", func() {
 			It("passes product names to the installation service", func() {
+				service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 				service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("error"))
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
@@ -257,6 +261,19 @@ var _ = Describe("ApplyChanges", func() {
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("could not check for any already running installation: some error"))
+				})
+			})
+
+			Context("when --product-name is used with an old version of ops manager", func() {
+				It("returns an error", func() {
+					versions := []string{"2.1-build.326", "1.12-build99"}
+					for _, version := range versions {
+						service.InfoReturns(api.Info{Version: version}, nil)
+
+						command := commands.NewApplyChanges(service, writer, logger, 1)
+						err := command.Execute([]string{"--product-name", "p-mysql"})
+						Expect(err).To(MatchError(fmt.Sprintf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", version)))
+					}
 				})
 			})
 

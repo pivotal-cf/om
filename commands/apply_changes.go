@@ -3,6 +3,8 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pivotal-cf/jhanda"
@@ -26,6 +28,7 @@ type applyChangesService interface {
 	CreateInstallation(bool, bool, []string) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
+	Info() (api.Info, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
@@ -49,8 +52,17 @@ func (ac ApplyChanges) Execute(args []string) error {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
 
-	if ac.Options.SkipDeployProducts && len(ac.Options.ProductNames) > 0 {
-		return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
+	if len(ac.Options.ProductNames) > 0 {
+		if ac.Options.SkipDeployProducts {
+			return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
+		}
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if !versionAtLeast(info.Version, 2, 2) {
+			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+		}
 	}
 
 	installation, err := ac.service.RunningInstallation()
@@ -102,4 +114,26 @@ func (ac ApplyChanges) Usage() jhanda.Usage {
 		ShortDescription: "triggers an install on the Ops Manager targeted",
 		Flags:            ac.Options,
 	}
+}
+
+func versionAtLeast(version string, major, minor int) bool {
+	// Given: X.Y-build.Z
+	// Extract X and Y
+	i := strings.Index(version, ".")
+	majv := version[:i]                                // take substring up to '.'
+	minv := version[i+1 : strings.Index(version, "-")] // take substring between '.' and '-'
+
+	maj, err := strconv.Atoi(majv)
+	if err != nil {
+		panic("invalid version: " + version)
+	}
+	min, err := strconv.Atoi(minv)
+	if err != nil {
+		panic("invalid version: " + version)
+	}
+
+	if maj < major || (maj == major && min < minor) {
+		return false
+	}
+	return true
 }
