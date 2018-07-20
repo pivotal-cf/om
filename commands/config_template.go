@@ -8,12 +8,15 @@ import (
 	"github.com/pivotal-cf/kiln/proofing"
 	"github.com/pivotal-cf/om/config"
 	"gopkg.in/yaml.v2"
+	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/configparser"
+	"log"
 )
 
 type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
 	logger            logger
-	Options           struct {
+	Options struct {
 		Product            string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
 		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
@@ -61,31 +64,33 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not parse metadata: %s", err)
 	}
 
-	configTemplateProperties := map[string]interface{}{}
+	properties := map[string]api.ResponseProperty{}
 	for _, pb := range template.AllPropertyBlueprints() {
-		if !pb.Configurable {
+
+		name, prop := transform(pb)
+		properties[name] = prop
+	}
+
+	configTemplateProperties := map[string]interface{}{}
+
+	parser := configparser.NewConfigParser()
+
+	for name, prop := range properties {
+		if !prop.Configurable {
 			continue
 		}
 
-		if ct.Options.IncludePlaceholder {
-			addSecretPlaceholder(pb.Default, pb.Type, configTemplateProperties, pb.Property)
-			continue
+		log.Println(name)
+
+		propertyName := configparser.NewPropertyName(name)
+		output, err := parser.ParseProperties("", propertyName, prop, ct.chooseCredentialHandler())
+		if err != nil {
+			return err
 		}
 
-		switch pb.Type {
-		case "simple_credentials":
-			configTemplateProperties[pb.Property] = map[string]map[string]string{
-				"value": map[string]string{
-					"identity": "",
-					"password": "",
-				},
-			}
-		default:
-			configTemplateProperties[pb.Property] = map[string]interface{}{
-				"value": pb.Default,
-			}
+		if output != nil && len(output) > 0 {
+			configTemplateProperties[name] = output
 		}
-
 	}
 
 	configTemplate := config.ProductConfiguration{
@@ -126,49 +131,62 @@ func (ct ConfigTemplate) Usage() jhanda.Usage {
 	}
 }
 
-func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {
-	formattedName := formatKeyName(name)
-
-	switch t {
-	case "secret":
-		configurableProperties[name] = map[string]interface{}{
-			"value": map[string]string{
-				"secret": fmt.Sprintf("((%s.secret))", formattedName),
-			},
-		}
-	case "simple_credentials":
-		configurableProperties[name] = map[string]interface{}{
-			"value": map[string]string{
-				"identity": fmt.Sprintf("((%s.identity))", formattedName),
-				"password": fmt.Sprintf("((%s.password))", formattedName),
-			},
-		}
-	case "rsa_cert_credentials":
-		configurableProperties[name] = map[string]interface{}{
-			"value": map[string]string{
-				"cert_pem":        fmt.Sprintf("((%s.cert_pem))", formattedName),
-				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", formattedName),
-			},
-		}
-	case "rsa_pkey_credentials":
-		configurableProperties[name] = map[string]interface{}{
-			"value": map[string]string{
-				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", formattedName),
-			},
-		}
-	case "salted_credentials":
-		configurableProperties[name] = map[string]interface{}{
-			"value": map[string]string{
-				"identity": fmt.Sprintf("((%s.identity))", formattedName),
-				"password": fmt.Sprintf("((%s.password))", formattedName),
-				"salt":     fmt.Sprintf("((%s.salt))", formattedName),
-			},
-		}
-	default:
-		configurableProperties[name] = map[string]interface{}{"value": value}
+func (ct ConfigTemplate) chooseCredentialHandler() configparser.CredentialHandler {
+	if ct.Options.IncludePlaceholder {
+		return configparser.PlaceholderHandler()
 	}
+
+	return configparser.KeyOnlyHandler()
 }
 
-func formatKeyName(name string) string {
-	return strings.Replace(name,".","_",-1)[1:]
+func isCredential(t string) bool {
+	switch t {
+	case "secret":
+		return true
+	case "simple_credentials":
+		return true
+	case "rsa_cert_credentials":
+		return true
+	case "rsa_pkey_credentials":
+		return true
+	case "salted_credentials":
+		return true
+	}
+	return false
+}
+
+func transformCollection(raw proofing.NormalizedPropertyBlueprint) (string, api.ResponseProperty) {
+	name := raw.Property
+
+	prop := api.ResponseProperty{
+		Value:        make([]interface{}, 0),
+		Configurable: raw.Configurable,
+		Type:         raw.Type,
+		IsCredential: isCredential(raw.Type),
+	}
+
+	//
+	//
+	//if raw.Default != nil {
+	//	prop.Value = raw.Default
+	//	return name, prop
+	//}
+
+	return name, prop
+}
+
+func transform(raw proofing.NormalizedPropertyBlueprint) (string, api.ResponseProperty) {
+	if raw.Type == "collection" {
+		return transformCollection(raw)
+	}
+
+	name := raw.Property
+	prop := api.ResponseProperty{
+		Value:        raw.Default,
+		Configurable: raw.Configurable,
+		Type:         raw.Type,
+		IsCredential: isCredential(raw.Type),
+	}
+
+	return name, prop
 }

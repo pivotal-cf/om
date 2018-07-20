@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ConfigTemplate", func() {
+var _ = FDescribe("ConfigTemplate", func() {
 	var (
 		logger            *fakes.Logger
 		metadataExtractor *fakes.MetadataExtractor
