@@ -131,8 +131,8 @@ property_blueprints:
 product-properties:
   .properties.some-name:
     value:
-      identity: ((.properties.some-name.identity))
-      password: ((.properties.some-name.password))
+      identity: ((properties_some-name.identity))
+      password: ((properties_some-name.password))
 `)))
 				})
 			})
