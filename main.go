@@ -14,6 +14,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/configparser"
 	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
@@ -101,6 +102,8 @@ func main() {
 		authedProgressClient = network.NewTraceClient(authedProgressClient, os.Stderr)
 	}
 
+	parser := configparser.NewConfigParser()
+
 	api := api.New(api.ApiInput{
 		Client:                 authedClient,
 		UnauthedClient:         unauthenticatedClient,
@@ -159,7 +162,7 @@ func main() {
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
 	commandSet["set-errand-state"] = commands.NewSetErrandState(api)
-	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
+	commandSet["staged-config"] = commands.NewStagedConfig(api, parser, stdout)
 	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)

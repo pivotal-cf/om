@@ -1,144 +1,45 @@
 package commands_test
 
 import (
-	"errors"
-
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/configparser"
+	"reflect"
 )
 
 var _ = Describe("StagedConfig", func() {
 	var (
-		logger      *fakes.Logger
-		fakeService *fakes.StagedConfigService
+		logger         *fakes.Logger
+		fakeConfParser *fakes.ConfigParser
+		fakeService    *fakes.StagedConfigService
 	)
+
+	valuePtr := func(t interface{}) interface{} {
+		return reflect.ValueOf(t).Pointer()
+	}
 
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
 
+		fakeConfParser = &fakes.ConfigParser{}
+
 		fakeService = &fakes.StagedConfigService{}
+
 		fakeService.GetStagedProductPropertiesReturns(
 			map[string]api.ResponseProperty{
 				".properties.some-string-property": {
 					Value:        "some-value",
 					Configurable: true,
 				},
-				".properties.some-non-configurable-property": {
-					Value:        "some-value",
-					Configurable: false,
-				},
-				".properties.some-secret-property": {
-					Type: "secret",
-					Value: map[string]interface{}{
-						"secret": "***",
-					},
-					IsCredential: true,
-					Configurable: true,
-				},
-				".properties.simple-credentials": {
-					Type: "simple_credentials",
-					Value: map[string]interface{}{
-						"identity": "***",
-						"password": "***",
-					},
-					IsCredential: true,
-					Configurable: true,
-				},
-				".properties.rsa-cert-credentials": {
-					Type: "rsa_cert_credentials",
-					Value: map[string]interface{}{
-						"cert_pem":        "***",
-						"private_key_pem": "***",
-					},
-					IsCredential: true,
-					Configurable: true,
-				},
-				".properties.rsa-pkey-credentials": {
-					Type: "rsa_pkey_credentials",
-					Value: map[string]interface{}{
-						"private_key_pem": "***",
-					},
-					IsCredential: true,
-					Configurable: true,
-				},
-				".properties.salted-credentials": {
-					Type: "salted_credentials",
-					Value: map[string]interface{}{
-						"identity": "***",
-						"salt":     "***",
-						"password": "***",
-					},
-					IsCredential: true,
-					Configurable: true,
-				},
-				".properties.collection": {
-					Type: "collection",
-					Value: []interface{}{
-						map[interface{}]interface{}{
-							"certificate": map[interface{}]interface{}{
-								"type":         "rsa_cert_credentials",
-								"configurable": true,
-								"credential":   true,
-								"value": map[interface{}]interface{}{
-									"cert_pem":        "***",
-									"private_key_pem": "***",
-								},
-							},
-							"name": map[interface{}]interface{}{
-								"type":         "string",
-								"configurable": true,
-								"credential":   false,
-								"value":        "Certificate",
-							},
-							"non-configurable": map[interface{}]interface{}{
-								"type":         "string",
-								"configurable": false,
-								"credential":   false,
-								"value":        "non-configurable",
-							},
-						},
-						map[interface{}]interface{}{
-							"certificate2": map[interface{}]interface{}{
-								"type":         "rsa_cert_credentials",
-								"configurable": true,
-								"credential":   true,
-								"value": map[interface{}]interface{}{
-									"cert_pem":        "***",
-									"private_key_pem": "***",
-								},
-							},
-						},
-					},
+			}, nil,
+		)
 
-					IsCredential: false,
-					Configurable: true,
-				},
-				".properties.some-non-configurable-secret-property": {
-					Value: map[string]interface{}{
-						"some-secret-type": "***",
-					},
-					IsCredential: true,
-					Configurable: false,
-				},
-				".properties.some-null-property": {
-					Value:        nil,
-					Configurable: true,
-				},
-				".properties.some-selector": api.ResponseProperty{
-					Value:        "internal",
-					Type:         "selector",
-					Configurable: true,
-				},
-				".properties.some-selector.not-internal.some-string-property": api.ResponseProperty{
-					Value:        "some-value",
-					Configurable: true,
-				},
-			}, nil)
 		fakeService.GetStagedProductNetworksAndAZsReturns(
 			map[string]interface{}{
 				"singleton_availability_zone": map[string]string{
@@ -155,6 +56,7 @@ var _ = Describe("StagedConfig", func() {
 		fakeService.ListStagedProductJobsReturns(map[string]string{
 			"some-job": "some-job-guid",
 		}, nil)
+
 		fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
 			InstanceType: api.InstanceType{
 				ID: "automatic",
@@ -164,8 +66,19 @@ var _ = Describe("StagedConfig", func() {
 	})
 
 	Describe("Execute", func() {
+		It("uses the default config parser creds handler", func() {
+			command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			_, _, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
+			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.NilHandler())))
+		})
+
 		It("writes a config file to stdout", func() {
-			command := commands.NewStagedConfig(fakeService, logger)
+			command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 			})
@@ -190,83 +103,28 @@ var _ = Describe("StagedConfig", func() {
 
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
-			Expect(output).To(ContainElement(MatchYAML(`---
-product-properties:
-  .properties.collection:
-    value:
-    - name: Certificate
-  .properties.some-string-property:
-    value: some-value
-  .properties.some-selector:
-    value: internal
-network-properties:
-  singleton_availability_zone:
-    name: az-one
-resource-config:
-  some-job:
-    instances: 1
-    instance_type:
-      id: automatic
-`)))
+			Expect(output).To(ContainElement(ContainSubstring("product-properties:")))
+			Expect(output).To(ContainElement(ContainSubstring("{}")))
+			Expect(output).To(ContainElement(ContainSubstring("network-properties:")))
+			Expect(output).To(ContainElement(ContainSubstring("az-one")))
+			Expect(output).To(ContainElement(ContainSubstring("resource-config:")))
+			Expect(output).To(ContainElement(ContainSubstring("some-job")))
 		})
 	})
 
 	Context("when --include-placeholder is used", func() {
-		It("replace *** with interpolatable placeholder and removes non-configurable properties", func() {
-			command := commands.NewStagedConfig(fakeService, logger)
+		It("uses the with placeholder config parser creds handler", func() {
+			command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 				"--include-placeholder",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(logger.PrintlnCallCount()).To(Equal(1))
-			output := logger.PrintlnArgsForCall(0)
-			Expect(output).To(ContainElement(MatchYAML(`---
-product-properties:
-  ".properties.some-string-property":
-    value: some-value
-  ".properties.some-secret-property":
-    value:
-      secret: "((properties_some-secret-property.secret))"
-  ".properties.some-selector":
-    value: internal
-  ".properties.simple-credentials":
-    value:
-      identity: "((properties_simple-credentials.identity))"
-      password: "((properties_simple-credentials.password))"
-  ".properties.rsa-cert-credentials":
-    value:
-      cert_pem: "((properties_rsa-cert-credentials.cert_pem))"
-      private_key_pem: "((properties_rsa-cert-credentials.private_key_pem))"
-  ".properties.rsa-pkey-credentials":
-    value:
-      private_key_pem: "((properties_rsa-pkey-credentials.private_key_pem))"
-  ".properties.salted-credentials":
-    value:
-      identity: "((properties_salted-credentials.identity))"
-      password: "((properties_salted-credentials.password))"
-      salt: "((properties_salted-credentials.salt))"
-  ".properties.collection":
-    value:
-    - certificate:
-        private_key_pem: "((properties_collection_0_certificate.private_key_pem))"
-        cert_pem: "((properties_collection_0_certificate.cert_pem))"
-      name: Certificate
-    - certificate2:
-        private_key_pem: "((properties_collection_1_certificate2.private_key_pem))"
-        cert_pem: "((properties_collection_1_certificate2.cert_pem))"
-network-properties:
-  singleton_availability_zone:
-    name: az-one
-resource-config:
-  some-job:
-    instances: 1
-    instance_type:
-      id: automatic
-
-`)))
+			_, _, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
+			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.PlaceholderHandler())))
 		})
+
 	})
 
 	Context("when --include-credentials is used", func() {
@@ -288,97 +146,25 @@ resource-config:
 			}, nil)
 		})
 
-		It("includes secret values in the output", func() {
-			command := commands.NewStagedConfig(fakeService, logger)
+		It("uses the with credential config parser creds handler", func() {
+			command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 				"--include-credentials",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(7))
-
-			apiInputs := []api.GetDeployedProductCredentialInput{}
-			for i := 0; i < 7; i++ {
-				apiInputs = append(apiInputs, fakeService.GetDeployedProductCredentialArgsForCall(i))
-			}
-			Expect(apiInputs).To(ConsistOf([]api.GetDeployedProductCredentialInput{
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.some-secret-property",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.salted-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.collection[0].certificate",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.collection[1].certificate2",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.simple-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.rsa-cert-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.rsa-pkey-credentials",
-				},
-			}))
-
-			Expect(logger.PrintlnCallCount()).To(Equal(1))
-			output := logger.PrintlnArgsForCall(0)
-			Expect(output).To(ContainElement(MatchYAML(`product-properties:
-  .properties.collection:
-    value:
-    - certificate:
-        some-secret-key: some-secret-value
-      name: Certificate
-    - certificate2:
-        some-secret-key: some-secret-value
-  .properties.some-string-property:
-    value: some-value
-  .properties.some-secret-property:
-    value:
-      some-secret-key: some-secret-value
-  .properties.simple-credentials:
-    value:
-      some-secret-key: some-secret-value
-  .properties.rsa-cert-credentials:
-    value:
-      some-secret-key: some-secret-value
-  .properties.rsa-pkey-credentials:
-    value:
-      some-secret-key: some-secret-value
-  .properties.salted-credentials:
-    value:
-      some-secret-key: some-secret-value
-  .properties.some-selector:
-    value: internal
-network-properties:
-  singleton_availability_zone:
-    name: az-one
-resource-config:
-  some-job:
-    instances: 1
-    instance_type:
-      id: automatic
-`)))
+			_, _, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
+			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.GetCredentialHandler(nil))))
 		})
 
 		Context("and the product has not yet been deployed", func() {
 			BeforeEach(func() {
 				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
 			})
+
 			It("errors with a helpful message to the operator", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 					"--include-credentials",
@@ -396,7 +182,7 @@ resource-config:
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 					"--include-credentials",
@@ -404,31 +190,12 @@ resource-config:
 				Expect(err).To(MatchError("some-error"))
 			})
 		})
-
-		Context("and looking up a credential fails", func() {
-			BeforeEach(func() {
-				fakeService.GetDeployedProductCredentialReturns(
-					api.GetDeployedProductCredentialOutput{},
-					errors.New("some-error"),
-				)
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-					"--include-credentials",
-				})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
 	})
 
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
 			})
@@ -436,7 +203,7 @@ resource-config:
 
 		Context("when product name is not provided", func() {
 			It("returns an error and prints out usage", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse staged-config flags: missing required flag \"--product-name\""))
 			})
@@ -448,7 +215,7 @@ resource-config:
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -462,7 +229,7 @@ resource-config:
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -476,7 +243,7 @@ resource-config:
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -490,7 +257,7 @@ resource-config:
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
@@ -504,20 +271,19 @@ resource-config:
 			})
 
 			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
+				command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
 			})
 		})
-
 	})
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
 
-			command := commands.NewStagedConfig(nil, nil)
+			command := commands.NewStagedConfig(nil, nil, nil)
 
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command generates a config from a staged product that can be passed in to om configure-product (Note: credentials are not available and will appear as '***')",

@@ -16,7 +16,7 @@ type UploadStemcell struct {
 	multipart multipart
 	logger    logger
 	service   uploadStemcellService
-	Options struct {
+	Options   struct {
 		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
 		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
 		Floating bool   `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
