@@ -1,0 +1,167 @@
+package configparser
+
+import (
+	"github.com/pivotal-cf/om/api"
+	"strconv"
+	"strings"
+	"fmt"
+)
+
+type getCredential interface {
+	GetDeployedProductCredential(input api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
+}
+
+type CredentialHandler func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error)
+
+type PropertyName struct {
+	prefix         string
+	index          int
+	collectionName string
+}
+
+func NewPropertyName(prefix string) PropertyName {
+	return PropertyName{
+		prefix: prefix,
+	}
+}
+
+func (n *PropertyName) credentialName() string {
+	if n.collectionName != "" {
+		return n.prefix + "[" + strconv.Itoa(n.index) + "]." + n.collectionName
+	}
+
+	return n.prefix
+}
+
+func (n *PropertyName) placeholderName() string {
+	name := n.prefix
+	if n.collectionName != "" {
+		name = n.prefix + "_" + strconv.Itoa(n.index) + "_" + n.collectionName
+	}
+
+	return strings.Replace(
+		strings.TrimLeft(
+			name,
+			".",
+		),
+		".",
+		"_",
+		-1,
+	)
+}
+
+func ParseProperties(productGUID string, name PropertyName, property api.ResponseProperty, handler CredentialHandler) (map[string]interface{}, error) {
+	if !property.Configurable {
+		return nil, nil
+	}
+	if property.IsCredential {
+		return handler(productGUID, name, property)
+	}
+	if property.Type == "collection" {
+		return handleCollection(productGUID, name, property, handler)
+	}
+	return map[string]interface{}{"value": property.Value}, nil
+}
+
+func handleCollection(productGUID string, name PropertyName, property api.ResponseProperty, handler CredentialHandler) (map[string]interface{}, error) {
+	var valueItems []map[string]interface{}
+
+	for index, item := range property.Value.([]interface{}) {
+		innerProperties := make(map[string]interface{})
+		for innerKey, innerVal := range item.(map[interface{}]interface{}) {
+			typeAssertedInnerValue := innerVal.(map[interface{}]interface{})
+
+			innerValueProperty := api.ResponseProperty{
+				Value:        typeAssertedInnerValue["value"],
+				Configurable: typeAssertedInnerValue["configurable"].(bool),
+				IsCredential: typeAssertedInnerValue["credential"].(bool),
+				Type:         typeAssertedInnerValue["type"].(string),
+			}
+			returnValue, err := ParseProperties(productGUID, PropertyName{
+				prefix:         name.prefix,
+				index:          index,
+				collectionName: innerKey.(string),
+			}, innerValueProperty, handler)
+			if err != nil {
+				return nil, err
+			}
+			if returnValue != nil && len(returnValue) > 0 {
+				innerProperties[innerKey.(string)] = returnValue["value"]
+			}
+		}
+		if len(innerProperties) > 0 {
+			valueItems = append(valueItems, innerProperties)
+		}
+	}
+	if len(valueItems) > 0 {
+		return map[string]interface{}{"value": valueItems}, nil
+	}
+	return nil, nil
+}
+
+func DefaultHandleCredentialFunc() CredentialHandler {
+	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+		return nil, nil
+	}
+}
+
+func WithPlaceholderHandleCredentialFunc() CredentialHandler {
+	var output map[string]interface{}
+
+	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+		switch property.Type {
+
+		case "secret":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"secret": fmt.Sprintf("((%s.secret))", name.placeholderName()),
+				},
+			}
+		case "simple_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"identity": fmt.Sprintf("((%s.identity))", name.placeholderName()),
+					"password": fmt.Sprintf("((%s.password))", name.placeholderName()),
+				},
+			}
+		case "rsa_cert_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name.placeholderName()),
+					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name.placeholderName()),
+				},
+			}
+		case "rsa_pkey_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name.placeholderName()),
+				},
+			}
+		case "salted_credentials":
+			output = map[string]interface{}{
+				"value": map[string]string{
+					"identity": fmt.Sprintf("((%s.identity))", name.placeholderName()),
+					"password": fmt.Sprintf("((%s.password))", name.placeholderName()),
+					"salt":     fmt.Sprintf("((%s.salt))", name.placeholderName()),
+				},
+			}
+		}
+		return output, nil
+	}
+}
+
+func WithCredentialHandleCredentialFunc(apiService getCredential) CredentialHandler {
+	var output map[string]interface{}
+
+	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+		apiOutput, err := apiService.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+			DeployedGUID:        productGUID,
+			CredentialReference: name.credentialName(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		output = map[string]interface{}{"value": apiOutput.Credential.Value}
+		return output, nil
+	}
+}
