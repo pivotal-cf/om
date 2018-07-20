@@ -3,8 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/pivotal-cf/jhanda"
@@ -60,7 +58,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if err != nil {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
-		if !versionAtLeast(info.Version, 2, 2) {
+		if !info.VersionAtLeast(2, 2) {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 	}
@@ -114,26 +112,4 @@ func (ac ApplyChanges) Usage() jhanda.Usage {
 		ShortDescription: "triggers an install on the Ops Manager targeted",
 		Flags:            ac.Options,
 	}
-}
-
-func versionAtLeast(version string, major, minor int) bool {
-	// Given: X.Y-build.Z
-	// Extract X and Y
-	i := strings.Index(version, ".")
-	majv := version[:i]                                // take substring up to '.'
-	minv := version[i+1 : strings.Index(version, "-")] // take substring between '.' and '-'
-
-	maj, err := strconv.Atoi(majv)
-	if err != nil {
-		panic("invalid version: " + version)
-	}
-	min, err := strconv.Atoi(minv)
-	if err != nil {
-		panic("invalid version: " + version)
-	}
-
-	if maj < major || (maj == major && min < minor) {
-		return false
-	}
-	return true
 }
