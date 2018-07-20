@@ -8,6 +8,7 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -122,7 +123,7 @@ func (ec StagedConfig) Execute(args []string) error {
 		return err
 	}
 
-	resourceConfig := map[string]api.JobProperties{}
+	resourceConfig := map[string]interface{}{}
 
 	for name, jobGUID := range jobs {
 		jobProperties, err := ec.service.GetStagedProductJobResourceConfig(productGUID, jobGUID)
@@ -132,12 +133,8 @@ func (ec StagedConfig) Execute(args []string) error {
 		resourceConfig[name] = jobProperties
 	}
 
-	config := struct {
-		Properties               map[string]interface{}       `yaml:"product-properties"`
-		NetworkProperties        map[string]interface{}       `yaml:"network-properties"`
-		ResourceConfigProperties map[string]api.JobProperties `yaml:"resource-config"`
-	}{
-		Properties:               configurableProperties,
+	config := config.ProductConfiguration{
+		ProductProperties:        configurableProperties,
 		NetworkProperties:        networks,
 		ResourceConfigProperties: resourceConfig,
 	}

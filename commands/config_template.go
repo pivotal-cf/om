@@ -6,6 +6,7 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/kiln/proofing"
+	"github.com/pivotal-cf/om/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -87,8 +88,8 @@ func (ct ConfigTemplate) Execute(args []string) error {
 
 	}
 
-	configTemplate := map[string]interface{}{
-		"product-properties": configTemplateProperties,
+	configTemplate := config.ProductConfiguration{
+		ProductProperties: configTemplateProperties,
 	}
 
 	output, err := yaml.Marshal(configTemplate)

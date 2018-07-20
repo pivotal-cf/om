@@ -7,6 +7,7 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/config"
 
 	yamlConverter "github.com/ghodss/yaml"
 	"gopkg.in/yaml.v2"
@@ -85,33 +86,33 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	)
 
 	if cp.Options.ConfigFile != "" {
-		var config map[string]interface{}
+		var cfg config.ProductConfiguration
 		configContents, err := interpolate(cp.Options.ConfigFile, cp.Options.VarsFile, cp.Options.OpsFile)
 		if err != nil {
 			return err
 		}
 
-		err = yaml.Unmarshal(configContents, &config)
+		err = yaml.Unmarshal(configContents, &cfg)
 		if err != nil {
 			return fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
 		}
 
-		if config["network-properties"] != nil {
-			networkProperties, err = getJSONProperties(config["network-properties"])
+		if cfg.NetworkProperties != nil {
+			networkProperties, err = getJSONProperties(cfg.NetworkProperties)
 			if err != nil {
 				return err
 			}
 		}
 
-		if config["product-properties"] != nil {
-			productProperties, err = getJSONProperties(config["product-properties"])
+		if cfg.ProductProperties != nil {
+			productProperties, err = getJSONProperties(cfg.ProductProperties)
 			if err != nil {
 				return err
 			}
 		}
 
-		if config["resource-config"] != nil {
-			productResources, err = getJSONProperties(config["resource-config"])
+		if cfg.ResourceConfigProperties != nil {
+			productResources, err = getJSONProperties(cfg.ResourceConfigProperties)
 			if err != nil {
 				return err
 			}
