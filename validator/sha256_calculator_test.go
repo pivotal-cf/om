@@ -1,7 +1,6 @@
 package validator_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -24,7 +23,6 @@ var _ = Describe("FileSHA256HashCalculator", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		fileToSHA256 = filepath.Join(tempDir, "file-to-sum")
-		fmt.Println(fileToSHA256)
 		err = ioutil.WriteFile(fileToSHA256, []byte("file contents"), 0644)
 		Expect(err).NotTo(HaveOccurred())
 	})
