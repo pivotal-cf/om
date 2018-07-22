@@ -14,7 +14,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/pivotal-cf/om/formcontent"
+	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
@@ -115,7 +115,7 @@ func main() {
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
 
-	form, err := formcontent.NewForm()
+	form := formcontent.NewForm()
 	if err != nil {
 		stdout.Fatal(err)
 	}

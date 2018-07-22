@@ -12,7 +12,7 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/pivotal-cf/om/formcontent"
+	"github.com/fredwangwang/formcontent"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,11 +35,11 @@ var _ = Describe("UploadProduct", func() {
 
 	It("uploads a product", func() {
 		submission := formcontent.ContentSubmission{
-			Length:      10,
+			ContentLength:      10,
 			Content:     ioutil.NopCloser(strings.NewReader("")),
 			ContentType: "some content-type",
 		}
-		multipart.FinalizeReturns(submission, nil)
+		multipart.FinalizeReturns(submission)
 
 		command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
