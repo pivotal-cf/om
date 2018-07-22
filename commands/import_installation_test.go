@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"github.com/pivotal-cf/om/formcontent"
+	"github.com/fredwangwang/formcontent"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -31,11 +31,11 @@ var _ = Describe("ImportInstallation", func() {
 
 	It("imports an installation", func() {
 		submission := formcontent.ContentSubmission{
-			Length:      10,
-			Content:     ioutil.NopCloser(strings.NewReader("")),
-			ContentType: "some content-type",
+			Content:       ioutil.NopCloser(strings.NewReader("")),
+			ContentType:   "some content-type",
+			ContentLength: 10,
 		}
-		multipart.FinalizeReturns(submission, nil)
+		multipart.FinalizeReturns(submission)
 
 		eaOutputs := []api.EnsureAvailabilityOutput{
 			{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -91,11 +91,11 @@ var _ = Describe("ImportInstallation", func() {
 	Context("when polling interval is specified", func() {
 		It("passes the value to the installation service", func() {
 			submission := formcontent.ContentSubmission{
-				Length:      10,
-				Content:     ioutil.NopCloser(strings.NewReader("")),
-				ContentType: "some content-type",
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+				ContentLength: 10,
 			}
-			multipart.FinalizeReturns(submission, nil)
+			multipart.FinalizeReturns(submission)
 
 			eaOutputs := []api.EnsureAvailabilityOutput{
 				{Status: api.EnsureAvailabilityStatusUnstarted},

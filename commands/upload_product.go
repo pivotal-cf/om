@@ -90,7 +90,7 @@ func (up UploadProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to load product: %s", err)
 	}
 
-	submission, err := up.multipart.Finalize()
+	submission := up.multipart.Finalize()
 	if err != nil {
 		return fmt.Errorf("failed to create multipart form: %s", err)
 	}
@@ -98,9 +98,9 @@ func (up UploadProduct) Execute(args []string) error {
 	up.logger.Printf("beginning product upload to Ops Manager")
 
 	_, err = up.service.UploadAvailableProduct(api.UploadAvailableProductInput{
-		ContentLength:   submission.Length,
 		Product:         submission.Content,
 		ContentType:     submission.ContentType,
+		ContentLength:   submission.ContentLength,
 		PollingInterval: up.Options.PollingInterval,
 	})
 	if err != nil {

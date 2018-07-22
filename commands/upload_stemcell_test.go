@@ -11,7 +11,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"github.com/pivotal-cf/om/formcontent"
+	"github.com/fredwangwang/formcontent"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,11 +33,11 @@ var _ = Describe("UploadStemcell", func() {
 	Context("uploads the stemcell", func() {
 		It("to all compatible products", func() {
 			submission := formcontent.ContentSubmission{
-				Length:      10,
-				Content:     ioutil.NopCloser(strings.NewReader("")),
-				ContentType: "some content-type",
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+				ContentLength: 10,
 			}
-			multipart.FinalizeReturns(submission, nil)
+			multipart.FinalizeReturns(submission)
 
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
@@ -76,11 +76,11 @@ var _ = Describe("UploadStemcell", func() {
 
 		It("disables floating", func() {
 			submission := formcontent.ContentSubmission{
-				Length:      10,
-				Content:     ioutil.NopCloser(strings.NewReader("")),
-				ContentType: "some content-type",
+				ContentLength: 10,
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
 			}
-			multipart.FinalizeReturns(submission, nil)
+			multipart.FinalizeReturns(submission)
 
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
@@ -123,11 +123,11 @@ var _ = Describe("UploadStemcell", func() {
 		Context("and force is not specified", func() {
 			It("exits successfully without uploading", func() {
 				submission := formcontent.ContentSubmission{
-					Length:      10,
-					Content:     ioutil.NopCloser(strings.NewReader("")),
-					ContentType: "some content-type",
+					ContentLength: 10,
+					Content:       ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
 				}
-				multipart.FinalizeReturns(submission, nil)
+				multipart.FinalizeReturns(submission)
 
 				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					Stemcells: []string{"stemcell.tgz"},
@@ -148,11 +148,11 @@ var _ = Describe("UploadStemcell", func() {
 		Context("and force is specified", func() {
 			It("uploads the stemcell", func() {
 				submission := formcontent.ContentSubmission{
-					Length:      10,
-					Content:     ioutil.NopCloser(strings.NewReader("")),
-					ContentType: "some content-type",
+					Content:       ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
+					ContentLength: 10,
 				}
-				multipart.FinalizeReturns(submission, nil)
+				multipart.FinalizeReturns(submission)
 
 				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
 					Stemcells: []string{"stemcell.tgz"},
@@ -197,11 +197,11 @@ var _ = Describe("UploadStemcell", func() {
 			file.WriteString("testing-shasum")
 
 			submission := formcontent.ContentSubmission{
-				Length:      10,
-				Content:     ioutil.NopCloser(strings.NewReader("")),
-				ContentType: "some content-type",
+				ContentLength: 10,
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
 			}
-			multipart.FinalizeReturns(submission, nil)
+			multipart.FinalizeReturns(submission)
 
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
@@ -246,11 +246,11 @@ var _ = Describe("UploadStemcell", func() {
 	Context("when the diagnostic report is unavailable", func() {
 		It("uploads the stemcell", func() {
 			submission := formcontent.ContentSubmission{
-				Length:      10,
-				Content:     ioutil.NopCloser(strings.NewReader("")),
-				ContentType: "some content-type",
+				ContentLength: 10,
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
 			}
-			multipart.FinalizeReturns(submission, nil)
+			multipart.FinalizeReturns(submission)
 
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, api.DiagnosticReportUnavailable{})
 

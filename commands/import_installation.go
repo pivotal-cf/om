@@ -67,7 +67,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("failed to insert passphrase: %s", err)
 	}
 
-	submission, err := ii.multipart.Finalize()
+	submission := ii.multipart.Finalize()
 	if err != nil {
 		return fmt.Errorf("failed to create multipart form: %s", err)
 	}
@@ -75,9 +75,9 @@ func (ii ImportInstallation) Execute(args []string) error {
 	ii.logger.Printf("beginning installation import to Ops Manager")
 
 	err = ii.service.UploadInstallationAssetCollection(api.ImportInstallationInput{
-		ContentLength:   submission.Length,
 		Installation:    submission.Content,
 		ContentType:     submission.ContentType,
+		ContentLength:   submission.ContentLength,
 		PollingInterval: ii.Options.PollingInterval,
 	})
 	if err != nil {

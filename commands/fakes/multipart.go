@@ -4,20 +4,18 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotal-cf/om/formcontent"
+	"github.com/fredwangwang/formcontent"
 )
 
 type Multipart struct {
-	FinalizeStub        func() (formcontent.ContentSubmission, error)
+	FinalizeStub        func() formcontent.ContentSubmission
 	finalizeMutex       sync.RWMutex
 	finalizeArgsForCall []struct{}
 	finalizeReturns     struct {
 		result1 formcontent.ContentSubmission
-		result2 error
 	}
 	finalizeReturnsOnCall map[int]struct {
 		result1 formcontent.ContentSubmission
-		result2 error
 	}
 	AddFileStub        func(key, path string) error
 	addFileMutex       sync.RWMutex
@@ -47,7 +45,7 @@ type Multipart struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Multipart) Finalize() (formcontent.ContentSubmission, error) {
+func (fake *Multipart) Finalize() formcontent.ContentSubmission {
 	fake.finalizeMutex.Lock()
 	ret, specificReturn := fake.finalizeReturnsOnCall[len(fake.finalizeArgsForCall)]
 	fake.finalizeArgsForCall = append(fake.finalizeArgsForCall, struct{}{})
@@ -57,9 +55,9 @@ func (fake *Multipart) Finalize() (formcontent.ContentSubmission, error) {
 		return fake.FinalizeStub()
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fake.finalizeReturns.result1, fake.finalizeReturns.result2
+	return fake.finalizeReturns.result1
 }
 
 func (fake *Multipart) FinalizeCallCount() int {
@@ -68,26 +66,23 @@ func (fake *Multipart) FinalizeCallCount() int {
 	return len(fake.finalizeArgsForCall)
 }
 
-func (fake *Multipart) FinalizeReturns(result1 formcontent.ContentSubmission, result2 error) {
+func (fake *Multipart) FinalizeReturns(result1 formcontent.ContentSubmission) {
 	fake.FinalizeStub = nil
 	fake.finalizeReturns = struct {
 		result1 formcontent.ContentSubmission
-		result2 error
-	}{result1, result2}
+	}{result1}
 }
 
-func (fake *Multipart) FinalizeReturnsOnCall(i int, result1 formcontent.ContentSubmission, result2 error) {
+func (fake *Multipart) FinalizeReturnsOnCall(i int, result1 formcontent.ContentSubmission) {
 	fake.FinalizeStub = nil
 	if fake.finalizeReturnsOnCall == nil {
 		fake.finalizeReturnsOnCall = make(map[int]struct {
 			result1 formcontent.ContentSubmission
-			result2 error
 		})
 	}
 	fake.finalizeReturnsOnCall[i] = struct {
 		result1 formcontent.ContentSubmission
-		result2 error
-	}{result1, result2}
+	}{result1}
 }
 
 func (fake *Multipart) AddFile(key string, path string) error {

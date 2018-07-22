@@ -6,7 +6,7 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/formcontent"
+	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/om/validator"
 
 	"strconv"
@@ -26,7 +26,7 @@ type UploadStemcell struct {
 
 //go:generate counterfeiter -o ./fakes/multipart.go --fake-name Multipart . multipart
 type multipart interface {
-	Finalize() (formcontent.ContentSubmission, error)
+	Finalize() (formcontent.ContentSubmission)
 	AddFile(key, path string) error
 	AddField(key, value string) error
 }
@@ -103,7 +103,7 @@ func (us UploadStemcell) Execute(args []string) error {
 		return fmt.Errorf("failed to load stemcell: %s", err)
 	}
 
-	submission, err := us.multipart.Finalize()
+	submission := us.multipart.Finalize()
 	if err != nil {
 		return fmt.Errorf("failed to create multipart form: %s", err)
 	}
@@ -111,9 +111,9 @@ func (us UploadStemcell) Execute(args []string) error {
 	us.logger.Printf("beginning stemcell upload to Ops Manager")
 
 	_, err = us.service.UploadStemcell(api.StemcellUploadInput{
-		ContentLength: submission.Length,
 		Stemcell:      submission.Content,
 		ContentType:   submission.ContentType,
+		ContentLength: submission.ContentLength,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to upload stemcell: %s", err)
