@@ -9,15 +9,16 @@ import (
 
 type CertificateAuthority struct {
 	service   certificateAuthoritiesService
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
 		ID      string `long:"id"       required:"true" description:"ID of certificate to display"`
 		CertPEM bool   `long:"cert-pem"                 description:"Display the cert pem"`
+		Format  string `short:"f" long:"format" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
-func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.Presenter, logger logger) CertificateAuthority {
+func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.FormattedPresenter, logger logger) CertificateAuthority {
 	return CertificateAuthority{
 		service:   certificateAuthoritiesService,
 		presenter: presenter,
@@ -29,6 +30,7 @@ func (c CertificateAuthority) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse certificate-authority flags: %s", err)
 	}
+	c.presenter.SetFormat(c.Options.Format)
 
 	cas, err := c.service.ListCertificateAuthorities()
 	if err != nil {

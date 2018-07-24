@@ -10,11 +10,11 @@ import (
 
 	"time"
 
+	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
@@ -122,15 +122,8 @@ func main() {
 
 	metadataExtractor := extractor.MetadataExtractor{}
 
-	var presenter presenters.Presenter
-	switch global.Format {
-	case "table":
-		presenter = presenters.NewTablePresenter(tableWriter)
-	case "json":
-		presenter = presenters.NewJSONPresenter(os.Stdout)
-	default:
-		stdout.Fatal("Format not supported")
-	}
+	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
+	presenter.SetFormat(global.Format)
 
 	commandSet := jhanda.CommandSet{}
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)

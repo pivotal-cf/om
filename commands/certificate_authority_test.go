@@ -17,13 +17,13 @@ var _ = Describe("Certificate Authority", func() {
 	var (
 		certificateAuthority              commands.CertificateAuthority
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
-		fakePresenter                     *presenterfakes.Presenter
+		fakePresenter                     *presenterfakes.FormattedPresenter
 		fakeLogger                        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeLogger = &fakes.Logger{}
 		certificateAuthority = commands.NewCertificateAuthority(fakeCertificateAuthoritiesService, fakePresenter, fakeLogger)
 
@@ -68,6 +68,8 @@ var _ = Describe("Certificate Authority", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+			Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("table"))
 			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(api.CA{
 				GUID:      "other-guid",
@@ -90,6 +92,19 @@ var _ = Describe("Certificate Authority", func() {
 				Expect(fakeLogger.PrintlnCallCount()).To(Equal(1))
 				output := fakeLogger.PrintlnArgsForCall(0)
 				Expect(output).To(ConsistOf("-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI...."))
+			})
+		})
+
+		Context("when the format flag is provided", func() {
+			It("calls the presenter to set the json format", func() {
+				err := certificateAuthority.Execute([]string{
+					"--id", "other-guid",
+					"--format", "json",
+				})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+				Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			})
 		})
 
