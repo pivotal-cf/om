@@ -11,10 +11,11 @@ import (
 
 type CredentialReferences struct {
 	service   credentialReferencesService
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
 		Product string `long:"product-name" short:"p" required:"true" description:"name of deployed product"`
+		Format  string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
@@ -24,7 +25,7 @@ type credentialReferencesService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
-func NewCredentialReferences(crService credentialReferencesService, presenter presenters.Presenter, logger logger) CredentialReferences {
+func NewCredentialReferences(crService credentialReferencesService, presenter presenters.FormattedPresenter, logger logger) CredentialReferences {
 	return CredentialReferences{service: crService, presenter: presenter, logger: logger}
 }
 
@@ -60,6 +61,7 @@ func (cr CredentialReferences) Execute(args []string) error {
 		return nil
 	}
 
+	cr.presenter.SetFormat(cr.Options.Format)
 	cr.presenter.PresentCredentialReferences(output.Credentials)
 
 	return nil
