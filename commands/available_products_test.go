@@ -89,7 +89,7 @@ var _ = Describe("AvailableProducts", func() {
 			})
 		})
 
-		Context("error cases", func() {
+		Context("when the service fails to return the list", func() {
 			It("returns the error", func() {
 				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
@@ -97,6 +97,13 @@ var _ = Describe("AvailableProducts", func() {
 
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("blargh"))
+			})
+		})
+
+		Context("when an unknown flag is passed", func() {
+			It("returns an error", func() {
+				err := command.Execute([]string{"--unknown-flag"})
+				Expect(err).To(MatchError("could not parse available-products flags: flag provided but not defined: -unknown-flag"))
 			})
 		})
 	})
