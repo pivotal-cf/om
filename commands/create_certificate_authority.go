@@ -10,10 +10,11 @@ import (
 
 type CreateCertificateAuthority struct {
 	service   createCertificateAuthorityService
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	Options   struct {
 		CertPem    string `long:"certificate-pem" required:"true" description:"certificate"`
 		PrivateKey string `long:"private-key-pem" required:"true" description:"private key"`
+		Format     string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
@@ -22,7 +23,7 @@ type createCertificateAuthorityService interface {
 	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.CA, error)
 }
 
-func NewCreateCertificateAuthority(service createCertificateAuthorityService, presenter presenters.Presenter) CreateCertificateAuthority {
+func NewCreateCertificateAuthority(service createCertificateAuthorityService, presenter presenters.FormattedPresenter) CreateCertificateAuthority {
 	return CreateCertificateAuthority{service: service, presenter: presenter}
 }
 
@@ -39,6 +40,7 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 		return err
 	}
 
+	c.presenter.SetFormat(c.Options.Format)
 	c.presenter.PresentCertificateAuthority(ca)
 
 	return nil

@@ -14,13 +14,13 @@ import (
 
 var _ = Describe("CreateCertificateAuthority", func() {
 	var (
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 		fakeService   *fakes.CreateCertificateAuthorityService
 		command       commands.CreateCertificateAuthority
 	)
 
 	BeforeEach(func() {
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeService = &fakes.CreateCertificateAuthorityService{}
 		command = commands.NewCreateCertificateAuthority(fakeService, fakePresenter)
 	})
@@ -60,6 +60,20 @@ var _ = Describe("CreateCertificateAuthority", func() {
 
 			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(ca))
+		})
+
+		Context("when the format flag is provided", func() {
+			It("sets the format on the presenter", func() {
+				err := command.Execute([]string{
+					"--format", "json",
+					"--certificate-pem", "some CertPem",
+					"--private-key-pem", "some PrivateKey",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
 		})
 
 		Context("failure cases", func() {
