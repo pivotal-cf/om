@@ -17,20 +17,22 @@ import (
 var _ = Describe("AvailableProducts", func() {
 	var (
 		apService     *fakes.AvailableProductsService
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 		logger        *fakes.Logger
+
+		command commands.AvailableProducts
 	)
 
 	BeforeEach(func() {
 		apService = &fakes.AvailableProductsService{}
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		logger = &fakes.Logger{}
+
+		command = commands.NewAvailableProducts(apService, fakePresenter, logger)
 	})
 
 	Describe("Execute", func() {
-		It("lists the available products", func() {
-			command := commands.NewAvailableProducts(apService, fakePresenter, logger)
-
+		BeforeEach(func() {
 			apService.ListAvailableProductsReturns(api.AvailableProductsOutput{
 				ProductsList: []api.ProductInfo{
 					api.ProductInfo{
@@ -43,7 +45,9 @@ var _ = Describe("AvailableProducts", func() {
 					},
 				},
 			}, nil)
+		})
 
+		It("lists the available products", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -59,6 +63,16 @@ var _ = Describe("AvailableProducts", func() {
 					Version: "4.5.6",
 				},
 			))
+		})
+
+		Context("when the json flag is provided", func() {
+			It("sets the format to json on the presenter", func() {
+				err := command.Execute([]string{"--format", "json"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
 		})
 
 		Context("when there are no products to list", func() {
