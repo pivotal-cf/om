@@ -63,7 +63,7 @@ var _ = Describe("ApplyChanges", func() {
 	})
 
 	Describe("Execute", func() {
-		It("applies changes to the Ops Manager", func() {
+		BeforeEach(func() {
 			service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 			service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
@@ -83,7 +83,9 @@ var _ = Describe("ApplyChanges", func() {
 			}
 
 			logsErrors = []error{nil, nil, nil}
+		})
 
+		It("applies changes to the Ops Manager", func() {
 			command := commands.NewApplyChanges(service, writer, logger, 1)
 
 			err := command.Execute([]string{})
@@ -113,24 +115,7 @@ var _ = Describe("ApplyChanges", func() {
 		Context("when passed the ignore-warnings flag", func() {
 			It("applies changes while ignoring warnings", func() {
 				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
-				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
-				statusOutputs = []api.InstallationsServiceOutput{
-					{Status: "running"},
-					{Status: "running"},
-					{Status: "succeeded"},
-				}
-
-				statusErrors = []error{nil, nil, nil}
-
-				logsOutputs = []api.InstallationsServiceOutput{
-					{Logs: "start of logs"},
-					{Logs: "these logs"},
-					{Logs: "some other logs"},
-				}
-
-				logsErrors = []error{nil, nil, nil}
 				command := commands.NewApplyChanges(service, writer, logger, 1)
 
 				err := command.Execute([]string{"--ignore-warnings"})
@@ -143,25 +128,6 @@ var _ = Describe("ApplyChanges", func() {
 
 		Context("when passed the skip-deploy-products flag", func() {
 			It("applies changes while not deploying products", func() {
-				service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
-				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
-
-				statusOutputs = []api.InstallationsServiceOutput{
-					{Status: "running"},
-					{Status: "running"},
-					{Status: "succeeded"},
-				}
-
-				statusErrors = []error{nil, nil, nil}
-
-				logsOutputs = []api.InstallationsServiceOutput{
-					{Logs: "start of logs"},
-					{Logs: "these logs"},
-					{Logs: "some other logs"},
-				}
-
-				logsErrors = []error{nil, nil, nil}
 				command := commands.NewApplyChanges(service, writer, logger, 1)
 
 				err := command.Execute([]string{"--skip-deploy-products"})
@@ -201,22 +167,6 @@ var _ = Describe("ApplyChanges", func() {
 				Status:    "running",
 				StartedAt: &installationStartedAt,
 			}, nil)
-
-			statusOutputs = []api.InstallationsServiceOutput{
-				{Status: "running"},
-				{Status: "running"},
-				{Status: "succeeded"},
-			}
-
-			statusErrors = []error{nil, nil, nil}
-
-			logsOutputs = []api.InstallationsServiceOutput{
-				{Logs: "start of logs"},
-				{Logs: "these logs"},
-				{Logs: "some other logs"},
-			}
-
-			logsErrors = []error{nil, nil, nil}
 
 			command := commands.NewApplyChanges(service, writer, logger, 1)
 
