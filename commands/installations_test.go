@@ -28,17 +28,17 @@ var _ = Describe("Installations", func() {
 	var (
 		command       commands.Installations
 		fakeService   *fakes.InstallationsService
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 	)
 
 	BeforeEach(func() {
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeService = &fakes.InstallationsService{}
 		command = commands.NewInstallations(fakeService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
-		It("lists recent installations as a table", func() {
+		BeforeEach(func() {
 			fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{
 				{
 					ID:         1,
@@ -54,7 +54,9 @@ var _ = Describe("Installations", func() {
 					StartedAt: parseTime("2017-05-25T23:38:37.316Z"),
 				},
 			}, nil)
+		})
 
+		It("lists recent installations as a table", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -76,7 +78,24 @@ var _ = Describe("Installations", func() {
 				}))
 		})
 
+		Context("when the format flag is provided", func() {
+			It("sets the format on the presenter", func() {
+				err := command.Execute([]string{"--format", "json"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
+		})
+
 		Context("Failure cases", func() {
+			Context("when an unknown flag is passed", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--unknown-flag"})
+					Expect(err).To(MatchError("could not parse installations flags: flag provided but not defined: -unknown-flag"))
+				})
+			})
+
 			Context("when the api fails to list installations", func() {
 				It("returns an error", func() {
 					fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
