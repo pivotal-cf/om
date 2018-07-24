@@ -37,6 +37,7 @@ func NewPresenter(tablePresenter Presenter, jsonPresenter Presenter) *MultiPrese
 	return &MultiPresenter{
 		tablePresenter: tablePresenter,
 		jsonPresenter:  jsonPresenter,
+		format:         "table",
 	}
 }
 
