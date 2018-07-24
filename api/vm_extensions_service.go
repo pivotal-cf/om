@@ -24,8 +24,8 @@ func (a Api) CreateStagedVMExtension(input CreateVMExtension) error {
 		return fmt.Errorf("could not marshal json: %s", err)
 	}
 
-	verb := "POST"
-	endpoint := "/api/v0/staged/vm_extensions"
+	verb := "PUT"
+	endpoint := fmt.Sprintf("/api/v0/staged/vm_extensions/%s", input.Name)
 	req, err := http.NewRequest(verb, endpoint, bytes.NewReader(jsonData))
 	if err != nil {
 		return fmt.Errorf("could not create api request %s %s: %s", verb, endpoint, err.Error())

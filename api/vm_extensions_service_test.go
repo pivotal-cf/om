@@ -41,8 +41,8 @@ var _ = Describe("VMExtensions", func() {
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)
 
-		Expect(req.Method).To(Equal("POST"))
-		Expect(req.URL.Path).To(Equal("/api/v0/staged/vm_extensions"))
+		Expect(req.Method).To(Equal("PUT"))
+		Expect(req.URL.Path).To(Equal("/api/v0/staged/vm_extensions/some-vm-extension"))
 		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 		jsonBody, err := ioutil.ReadAll(req.Body)
@@ -78,7 +78,7 @@ var _ = Describe("VMExtensions", func() {
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			})
 
-			Expect(err).To(MatchError("could not send api request to POST /api/v0/staged/vm_extensions: api endpoint failed"))
+			Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/vm_extensions/some-vm-extension: api endpoint failed"))
 		})
 	})
 })
