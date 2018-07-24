@@ -92,8 +92,8 @@ var _ = Describe("credentials command", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"credentials",
+				"--format", "json",
 				"--product-name", "some-product",
 				"--credential-reference", "some-credential")
 

@@ -16,14 +16,18 @@ import (
 var _ = Describe("Credentials", func() {
 	var (
 		fakeService   *fakes.CredentialsService
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 		logger        *fakes.Logger
+
+		command commands.Credentials
 	)
 
 	BeforeEach(func() {
 		fakeService = &fakes.CredentialsService{}
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		logger = &fakes.Logger{}
+
+		command = commands.NewCredentials(fakeService, fakePresenter, logger)
 	})
 
 	Describe("Execute", func() {
@@ -33,22 +37,20 @@ var _ = Describe("Credentials", func() {
 					Type: "some-product",
 					GUID: "some-deployed-product-guid",
 				}}, nil)
+
+			fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
+				Credential: api.Credential{
+					Type: "simple_credentials",
+					Value: map[string]string{
+						"password": "some-password",
+						"identity": "some-identity",
+					},
+				},
+			}, nil)
 		})
 
 		Describe("outputting all values for a credential", func() {
 			It("outputs the credentials alphabetically", func() {
-				command := commands.NewCredentials(fakeService, fakePresenter, logger)
-
-				fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
-					Credential: api.Credential{
-						Type: "simple_credentials",
-						Value: map[string]string{
-							"password": "some-password",
-							"identity": "some-identity",
-						},
-					},
-				}, nil)
-
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 					"--credential-reference", ".properties.some-credentials",
@@ -61,9 +63,10 @@ var _ = Describe("Credentials", func() {
 					CredentialReference: ".properties.some-credentials",
 				}))
 
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("table"))
+
 				Expect(fakePresenter.PresentCredentialsCallCount()).To(Equal(1))
 				Expect(fakePresenter.PresentCredentialsArgsForCall(0)).To(Equal(
-
 					map[string]string{
 						"password": "some-password",
 						"identity": "some-identity",
@@ -71,10 +74,21 @@ var _ = Describe("Credentials", func() {
 				))
 			})
 
+			Context("when the format flag is provided", func() {
+				It("sets the format on the presenter", func() {
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+						"--credential-reference", "some-credential",
+						"--format", "json",
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+				})
+			})
+
 			Context("when the --product-name flag is missing", func() {
 				It("returns an error", func() {
-					command := commands.NewCredentials(fakeService, fakePresenter, logger)
-
 					err := command.Execute([]string{
 						"--credential-reference", "some-credential",
 					})
