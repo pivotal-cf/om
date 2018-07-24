@@ -15,49 +15,72 @@ import (
 
 var _ = Describe("DeployedProducts", func() {
 	var (
-		presenter   *presenterfakes.Presenter
+		presenter   *presenterfakes.FormattedPresenter
 		fakeService *fakes.DeployedProductsService
 		command     commands.DeployedProducts
 	)
 
 	BeforeEach(func() {
-		presenter = &presenterfakes.Presenter{}
+		presenter = &presenterfakes.FormattedPresenter{}
 		fakeService = &fakes.DeployedProductsService{}
 		command = commands.NewDeployedProducts(presenter, fakeService)
 	})
 
-	It("lists the deployed products", func() {
-		deployedProducts := []api.DiagnosticProduct{
-			{
-				Name:    "nonsense-product",
-				Version: "nonsense-number",
-			},
-			{
-				Name:    "acme-product",
-				Version: "googleplex",
-			},
-		}
+	Describe("Execute", func() {
+		var deployedProducts []api.DiagnosticProduct
 
-		fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
-			DeployedProducts: deployedProducts,
-		}, nil)
+		BeforeEach(func() {
+			deployedProducts = []api.DiagnosticProduct{
+				{
+					Name:    "nonsense-product",
+					Version: "nonsense-number",
+				},
+				{
+					Name:    "acme-product",
+					Version: "googleplex",
+				},
+			}
 
-		err := command.Execute([]string{})
-		Expect(err).NotTo(HaveOccurred())
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
+				DeployedProducts: deployedProducts,
+			}, nil)
+		})
 
-		Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
+		It("lists the deployed products", func() {
+			err := command.Execute([]string{})
+			Expect(err).NotTo(HaveOccurred())
 
-		Expect(presenter.PresentDeployedProductsCallCount()).To(Equal(1))
-		Expect(presenter.PresentDeployedProductsArgsForCall(0)).To(Equal(deployedProducts))
-	})
+			Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
 
-	Context("failure cases", func() {
-		Context("when fetching the diagnostic report fails", func() {
-			It("returns an error", func() {
-				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
 
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("failed to retrieve deployed products beep boop"))
+			Expect(presenter.PresentDeployedProductsCallCount()).To(Equal(1))
+			Expect(presenter.PresentDeployedProductsArgsForCall(0)).To(Equal(deployedProducts))
+		})
+
+		Context("when the format flag is provided", func() {
+			It("sets the format on the presenter", func() {
+				err := command.Execute([]string{"--format", "json"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
+		})
+
+		Context("failure cases", func() {
+			Context("when an unknown flag is passed", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--unknown-flag"})
+					Expect(err).To(MatchError("could not parse deployed-products flags: flag provided but not defined: -unknown-flag"))
+				})
+			})
+
+			Context("when fetching the diagnostic report fails", func() {
+				It("returns an error", func() {
+					fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("failed to retrieve deployed products beep boop"))
+				})
 			})
 		})
 	})
