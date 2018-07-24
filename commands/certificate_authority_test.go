@@ -53,20 +53,13 @@ var _ = Describe("Certificate Authority", func() {
 	})
 
 	Describe("Execute", func() {
-		It("requests certificate authorities from the server", func() {
-			err := certificateAuthority.Execute([]string{
-				"--id", "other-guid",
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
-		})
-
-		It("prints the certificate authorities to a table", func() {
+		It("requests CAs from the server and prints to a table", func() {
 			err := certificateAuthority.Execute([]string{
 				"--id", "other-guid",
 			})
 			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
 
 			Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 			Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("table"))
