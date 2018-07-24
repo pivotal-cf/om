@@ -116,12 +116,12 @@ var _ = Describe("pending_changes command", func() {
 	Context("when JSON format is requrested", func() {
 		It("lists the pending changes in JSON format", func() {
 			command := exec.Command(pathToMain,
-				"--format", "json",
 				"--target", server.URL,
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"pending-changes")
+				"pending-changes",
+				"--format", "json")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
