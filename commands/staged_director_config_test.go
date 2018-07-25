@@ -12,7 +12,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-var _ bool = Describe("StagedDirectorConfig", func() {
+var _ = Describe("StagedDirectorConfig", func() {
 	var (
 		logger      *fakes.Logger
 		fakeService *fakes.StagedDirectorConfigService
@@ -29,7 +29,7 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
 					{
-						Name: "some-az",
+						Name:                  "some-az",
 						IAASConfigurationGUID: "some-iaas-guid",
 					},
 					{
@@ -41,10 +41,20 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 
 			expectedDirectorProperties := map[string]map[string]interface{}{
 				"director_configuration": {
-					"max_threads": 5,
+					"filtered_key": "filtered_key",
+					"max_threads":  5,
+					"encryption": map[string]interface{}{
+						"providers": map[string]interface{}{
+							"partition_password": "some_password",
+							"client_certificate": "user_provided_cert",
+							"client_key":         "user_provided_key",
+							"client_user":        "user",
+						},
+					},
 				},
 				"iaas_configuration": {
-					"iaas_specific_key": "some-value",
+					"project": "project-id",
+					"key": "some-key",
 				},
 				"syslog_configuration": {
 					"syslogconfig": "awesome",
@@ -92,7 +102,7 @@ var _ bool = Describe("StagedDirectorConfig", func() {
 			}, nil)
 		})
 
-		It("Writes a complete config file to stdout", func() {
+		It("Writes a complete config file with filtered sensitive fields to stdout", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, logger)
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -105,13 +115,14 @@ az-configuration:
 - name: some-other-az
 director-configuration:
   max_threads: 5
-iaas-configuration:
-  iaas_specific_key: some-value
+  encryption:
+    providers:
+      client_certificate: user_provided_cert
 network-assignment:
   network:
     name: network-1
   singleton_availability_zone:
-    name: "some-az"
+    name: some-az
 networks-configuration:
   icmp_checks_enabled: false
   networks:
@@ -127,6 +138,103 @@ syslog-configuration:
   syslogconfig: awesome
 `)))
 		})
+
+		Describe("with --include-credentials", func() {
+			It("Includes the filtered fields when printing to stdout", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-credentials",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+director-configuration:
+  filtered_key: filtered_key
+  max_threads: 5
+  encryption:
+    providers:
+      client_certificate: user_provided_cert
+      partition_password: some_password
+      client_key: user_provided_key
+      client_user: user
+iaas-configuration:
+  key: some-key
+  project: project-id
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+security-configuration:
+  trusted_certificates: some-certificate
+syslog-configuration:
+  syslogconfig: awesome
+`)))
+			})
+		})
+
+		Describe("with --include-placeholder", func() {
+			It("Includes the placeholder fields when printing to stdout", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-placeholder",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+director-configuration:
+  filtered_key: ((director-configuration_filtered_key))
+  encryption:
+    providers:
+      client_certificate: user_provided_cert
+      client_key: ((director-configuration_encryption_providers_client_key))
+      client_user: ((director-configuration_encryption_providers_client_user))
+      partition_password: ((director-configuration_encryption_providers_partition_password))
+  max_threads: 5
+iaas-configuration:
+  project: ((iaas-configuration_project))
+  key: ((iaas-configuration_key))
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+security-configuration:
+  trusted_certificates: some-certificate
+syslog-configuration:
+  syslogconfig: awesome
+`)))
+			})
+		})
+
 	})
 
 	Describe("failure cases", func() {
