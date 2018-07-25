@@ -21,15 +21,6 @@ type ConfigTemplate struct {
 	}
 }
 
-type propertyBlueprint struct {
-	Name         string              `yaml:"name"`
-	Optional     bool                `yaml:"optional"`
-	Configurable bool                `yaml:"configurable"`
-	Type         string              `yaml:"type"`
-	Default      interface{}         `yaml:"default"`
-	Properties   []propertyBlueprint `yaml:"property_blueprints"`
-}
-
 func NewConfigTemplate(metadataExtractor metadataExtractor, logger logger) ConfigTemplate {
 	return ConfigTemplate{
 		metadataExtractor: metadataExtractor,
