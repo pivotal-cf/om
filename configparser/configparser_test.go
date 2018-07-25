@@ -27,7 +27,7 @@ var _ = Describe("Config Parser", func() {
 
 			propertyName := configparser.NewPropertyName(name)
 			parser := configparser.NewConfigParser()
-			output, err := parser.ParseProperties(productGUID, propertyName, property, handler)
+			output, err := parser.ParseProperties(propertyName, property, handler)
 			if err != nil {
 				return "", err
 			}
@@ -243,7 +243,7 @@ var _ = Describe("Config Parser", func() {
 				},
 			}, nil)
 
-			output, err := getOutput(configparser.GetCredentialHandler(fakeCredService))
+			output, err := getOutput(configparser.GetCredentialHandler(productGUID, fakeCredService))
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakeCredService.GetDeployedProductCredentialCallCount()).To(Equal(7))
@@ -322,7 +322,7 @@ var _ = Describe("Config Parser", func() {
 						api.GetDeployedProductCredentialOutput{},
 						errors.New("some-error"),
 					)
-					_, err := getOutput(configparser.GetCredentialHandler(fakeCredService))
+					_, err := getOutput(configparser.GetCredentialHandler(productGUID, fakeCredService))
 					Expect(err).To(MatchError("some-error"))
 				})
 			})
