@@ -321,6 +321,7 @@ var _ = Describe("configure-director command", func() {
 iaas-configuration:
   project: some-project
   default_deployment_tag: my-vms
+  associated_service_account: some-service-account
   auth_json: |
     {
       "some-auth-field": "some-service-key",
@@ -406,6 +407,7 @@ resource-configuration:
 			"iaas_configuration": {
 				"project": "some-project",
 				"default_deployment_tag": "my-vms",
+				"associated_service_account": "some-service-account",
 				"auth_json": "{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n"
 			},
 			"director_configuration": {

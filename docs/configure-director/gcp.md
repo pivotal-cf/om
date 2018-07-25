@@ -12,6 +12,7 @@ If you have configured your OpsMan VM to have an attached Service Account, then 
 {
   "project": "my-foo-project",
   "default_deployment_tag": "foo-vms",
+  "associated_service_account": "some-service-account",
   "auth_json": "{\"some-key\":\"some-value\"}"
 }
 ```

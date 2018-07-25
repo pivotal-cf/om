@@ -7,9 +7,10 @@ type CommonConfiguration struct {
 }
 
 type GCPIaaSConfiguration struct {
-	Project              string `url:"iaas_configuration[project],omitempty" json:"project"`
-	DefaultDeploymentTag string `url:"iaas_configuration[default_deployment_tag],omitempty" json:"default_deployment_tag"`
-	AuthJSON             string `url:"iaas_configuration[auth_json],omitempty" json:"auth_json"`
+	Project                  string `url:"iaas_configuration[project],omitempty" json:"project"`
+	DefaultDeploymentTag     string `url:"iaas_configuration[default_deployment_tag],omitempty" json:"default_deployment_tag"`
+	AssociatedServiceAccount string `url:"iaas_configuration[associated_service_account],omitempty" json:"associated_service_account"`
+	AuthJSON                 string `url:"iaas_configuration[auth_json],omitempty" json:"auth_json"`
 }
 
 type AzureIaaSConfiguration struct {
