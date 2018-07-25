@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -11,7 +13,10 @@ import (
 type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
-	Options struct{}
+	Options struct {
+		IncludeCredentials bool `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
+		IncludePlaceholder bool `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
+	}
 }
 
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
@@ -98,6 +103,20 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 	config["resource-configuration"] = resourceConfigs
 
+	if !ec.Options.IncludeCredentials && !ec.Options.IncludePlaceholder {
+		delete(config, "iaas-configuration")
+	}
+
+	for key, value := range config {
+		returnedVal, err := ec.filterSecrets(key, key, value)
+		if err != nil {
+			return err
+		}
+		if returnedVal != nil {
+			config[key] = returnedVal
+		}
+	}
+
 	configYaml, err := yaml.Marshal(config)
 	if err != nil {
 		return err
@@ -105,4 +124,64 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 
 	ec.logger.Println(string(configYaml))
 	return nil
+}
+
+func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, value interface{}) (interface{}, error) {
+	filters := []string{"password", "user", "key"}
+	switch typedValue := value.(type) {
+	case map[string]interface{}:
+		return ec.handleMap(prefix, typedValue)
+
+	case []interface{}:
+		return ec.handleSlice (prefix, typedValue)
+
+	case string, nil:
+		if strings.Contains(prefix, "iaas-configuration") {
+			if ec.Options.IncludePlaceholder {
+				return "((" + prefix + "))", nil
+			}
+		}
+
+		for _, filter := range filters {
+			if strings.Contains(keyName, filter) {
+				if ec.Options.IncludePlaceholder {
+					return "((" + prefix + "))", nil
+				}
+				if ec.Options.IncludeCredentials {
+					return value, nil
+				}
+				return nil, nil
+			}
+		}
+	}
+	return value, nil
+}
+
+func (ec StagedDirectorConfig) handleMap(prefix string, value map[string]interface{}) (interface{}, error) {
+	newValue := map[string]interface{}{}
+	for innerKey, innerVal := range value {
+		returnedVal, err := ec.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
+
+		if err != nil {
+			return nil, err
+		}
+		if returnedVal != nil {
+			newValue[innerKey] = returnedVal
+		}
+	}
+	return newValue, nil
+}
+
+func (ec StagedDirectorConfig) handleSlice(prefix string, value []interface{}) (interface{}, error) {
+	var newValue []interface{}
+	for innerIndex, innerVal := range value {
+		returnedVal, err := ec.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
+		if err != nil {
+			return nil, err
+		}
+		if returnedVal != nil {
+			newValue = append(newValue, returnedVal)
+		}
+	}
+	return newValue, nil
 }
