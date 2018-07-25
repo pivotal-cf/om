@@ -9,13 +9,12 @@ import (
 )
 
 type ConfigParser struct {
-	ParsePropertiesStub        func(productGUID string, name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
+	ParsePropertiesStub        func(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
 	parsePropertiesMutex       sync.RWMutex
 	parsePropertiesArgsForCall []struct {
-		productGUID string
-		name        configparser.PropertyName
-		property    api.ResponseProperty
-		handler     configparser.CredentialHandler
+		name     configparser.PropertyName
+		property api.ResponseProperty
+		handler  configparser.CredentialHandler
 	}
 	parsePropertiesReturns struct {
 		result1 map[string]interface{}
@@ -29,19 +28,18 @@ type ConfigParser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ConfigParser) ParseProperties(productGUID string, name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error) {
+func (fake *ConfigParser) ParseProperties(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error) {
 	fake.parsePropertiesMutex.Lock()
 	ret, specificReturn := fake.parsePropertiesReturnsOnCall[len(fake.parsePropertiesArgsForCall)]
 	fake.parsePropertiesArgsForCall = append(fake.parsePropertiesArgsForCall, struct {
-		productGUID string
-		name        configparser.PropertyName
-		property    api.ResponseProperty
-		handler     configparser.CredentialHandler
-	}{productGUID, name, property, handler})
-	fake.recordInvocation("ParseProperties", []interface{}{productGUID, name, property, handler})
+		name     configparser.PropertyName
+		property api.ResponseProperty
+		handler  configparser.CredentialHandler
+	}{name, property, handler})
+	fake.recordInvocation("ParseProperties", []interface{}{name, property, handler})
 	fake.parsePropertiesMutex.Unlock()
 	if fake.ParsePropertiesStub != nil {
-		return fake.ParsePropertiesStub(productGUID, name, property, handler)
+		return fake.ParsePropertiesStub(name, property, handler)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -55,10 +53,10 @@ func (fake *ConfigParser) ParsePropertiesCallCount() int {
 	return len(fake.parsePropertiesArgsForCall)
 }
 
-func (fake *ConfigParser) ParsePropertiesArgsForCall(i int) (string, configparser.PropertyName, api.ResponseProperty, configparser.CredentialHandler) {
+func (fake *ConfigParser) ParsePropertiesArgsForCall(i int) (configparser.PropertyName, api.ResponseProperty, configparser.CredentialHandler) {
 	fake.parsePropertiesMutex.RLock()
 	defer fake.parsePropertiesMutex.RUnlock()
-	return fake.parsePropertiesArgsForCall[i].productGUID, fake.parsePropertiesArgsForCall[i].name, fake.parsePropertiesArgsForCall[i].property, fake.parsePropertiesArgsForCall[i].handler
+	return fake.parsePropertiesArgsForCall[i].name, fake.parsePropertiesArgsForCall[i].property, fake.parsePropertiesArgsForCall[i].handler
 }
 
 func (fake *ConfigParser) ParsePropertiesReturns(result1 map[string]interface{}, result2 error) {

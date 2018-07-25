@@ -73,11 +73,15 @@ var _ = Describe("StagedConfig", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			_, _, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
+			_, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
 			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.NilHandler())))
 		})
 
 		It("writes a config file to stdout", func() {
+			fakeConfParser.ParsePropertiesReturnsOnCall(0, map[string]interface{}{
+				".properties.some-string-property": "some-value",
+			}, nil)
+
 			command := commands.NewStagedConfig(fakeService, fakeConfParser, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
@@ -104,7 +108,6 @@ var _ = Describe("StagedConfig", func() {
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(ContainSubstring("product-properties:")))
-			Expect(output).To(ContainElement(ContainSubstring("{}")))
 			Expect(output).To(ContainElement(ContainSubstring("network-properties:")))
 			Expect(output).To(ContainElement(ContainSubstring("az-one")))
 			Expect(output).To(ContainElement(ContainSubstring("resource-config:")))
@@ -121,7 +124,7 @@ var _ = Describe("StagedConfig", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			_, _, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
+			_, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
 			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.PlaceholderHandler())))
 		})
 
@@ -154,8 +157,8 @@ var _ = Describe("StagedConfig", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			_, _, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
-			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.GetCredentialHandler(nil))))
+			_, _, handler := fakeConfParser.ParsePropertiesArgsForCall(0)
+			Expect(valuePtr(handler)).To(Equal(valuePtr(configparser.GetCredentialHandler("", nil))))
 		})
 
 		Context("and the product has not yet been deployed", func() {

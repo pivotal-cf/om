@@ -7,12 +7,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/fredwangwang/formcontent"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,9 +35,9 @@ var _ = Describe("UploadProduct", func() {
 
 	It("uploads a product", func() {
 		submission := formcontent.ContentSubmission{
-			ContentLength:      10,
-			Content:     ioutil.NopCloser(strings.NewReader("")),
-			ContentType: "some content-type",
+			ContentLength: 10,
+			Content:       ioutil.NopCloser(strings.NewReader("")),
+			ContentType:   "some content-type",
 		}
 		multipart.FinalizeReturns(submission)
 

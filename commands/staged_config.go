@@ -7,8 +7,8 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/configparser"
 	"github.com/pivotal-cf/om/config"
+	"github.com/pivotal-cf/om/configparser"
 	"gopkg.in/yaml.v2"
 )
 
@@ -36,7 +36,7 @@ type stagedConfigService interface {
 
 //go:generate counterfeiter -o ./fakes/config_parser.go --fake-name ConfigParser . configParser
 type configParser interface {
-	ParseProperties(productGUID string, name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
+	ParseProperties(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
 }
 
 func NewStagedConfig(service stagedConfigService, parser configParser, logger logger) StagedConfig {
@@ -101,7 +101,7 @@ func (ec StagedConfig) Execute(args []string) error {
 		var output map[string]interface{}
 
 		propertyName := configparser.NewPropertyName(name)
-		output, err = ec.parser.ParseProperties(productGUID, propertyName, property, ec.chooseCredentialHandler())
+		output, err = ec.parser.ParseProperties(propertyName, property, ec.chooseCredentialHandler(productGUID))
 
 		if err != nil {
 			return err
@@ -157,13 +157,13 @@ func (ec StagedConfig) Execute(args []string) error {
 	return nil
 }
 
-func (ec StagedConfig) chooseCredentialHandler() configparser.CredentialHandler {
+func (ec StagedConfig) chooseCredentialHandler(productGUID string) configparser.CredentialHandler {
 	if ec.Options.IncludePlaceholder {
 		return configparser.PlaceholderHandler()
 	}
 
 	if ec.Options.IncludeCredentials {
-		return configparser.GetCredentialHandler(ec.service)
+		return configparser.GetCredentialHandler(productGUID, ec.service)
 	}
 
 	return configparser.NilHandler()

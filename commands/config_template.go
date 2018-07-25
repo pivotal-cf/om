@@ -6,16 +6,16 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/kiln/proofing"
-	"github.com/pivotal-cf/om/config"
-	"gopkg.in/yaml.v2"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/config"
 	"github.com/pivotal-cf/om/configparser"
+	"gopkg.in/yaml.v2"
 )
 
 type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
 	logger            logger
-	Options struct {
+	Options           struct {
 		Product            string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
 		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
@@ -62,7 +62,7 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		}
 
 		propertyName := configparser.NewPropertyName(name)
-		output, err := parser.ParseProperties("", propertyName, prop, ct.chooseCredentialHandler())
+		output, err := parser.ParseProperties(propertyName, prop, ct.chooseCredentialHandler())
 		if err != nil {
 			return err
 		}

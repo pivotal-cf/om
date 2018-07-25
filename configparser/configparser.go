@@ -11,7 +11,7 @@ type getCredential interface {
 	GetDeployedProductCredential(input api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
 }
 
-type CredentialHandler func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error)
+type CredentialHandler func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error)
 
 type PropertyName struct {
 	prefix         string
@@ -56,20 +56,20 @@ func NewConfigParser() *configParser {
 	return &configParser{}
 }
 
-func (p *configParser) ParseProperties(productGUID string, name PropertyName, property api.ResponseProperty, handler CredentialHandler) (map[string]interface{}, error) {
+func (p *configParser) ParseProperties(name PropertyName, property api.ResponseProperty, handler CredentialHandler) (map[string]interface{}, error) {
 	if !property.Configurable {
 		return nil, nil
 	}
 	if property.IsCredential {
-		return handler(productGUID, name, property)
+		return handler(name, property)
 	}
 	if property.Type == "collection" {
-		return p.handleCollection(productGUID, name, property, handler)
+		return p.handleCollection(name, property, handler)
 	}
 	return map[string]interface{}{"value": property.Value}, nil
 }
 
-func (p *configParser) handleCollection(productGUID string, name PropertyName, property api.ResponseProperty, handler CredentialHandler) (map[string]interface{}, error) {
+func (p *configParser) handleCollection(name PropertyName, property api.ResponseProperty, handler CredentialHandler) (map[string]interface{}, error) {
 	var valueItems []map[string]interface{}
 
 	for index, item := range property.Value.([]interface{}) {
@@ -83,7 +83,7 @@ func (p *configParser) handleCollection(productGUID string, name PropertyName, p
 				IsCredential: typeAssertedInnerValue["credential"].(bool),
 				Type:         typeAssertedInnerValue["type"].(string),
 			}
-			returnValue, err := p.ParseProperties(productGUID, PropertyName{
+			returnValue, err := p.ParseProperties(PropertyName{
 				prefix:         name.prefix,
 				index:          index,
 				collectionName: innerKey.(string),
@@ -106,7 +106,7 @@ func (p *configParser) handleCollection(productGUID string, name PropertyName, p
 }
 
 func NilHandler() CredentialHandler {
-	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 		return nil, nil
 	}
 }
@@ -115,7 +115,7 @@ func NilHandler() CredentialHandler {
 func KeyOnlyHandler() CredentialHandler {
 	var output map[string]interface{}
 
-	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 		switch property.Type {
 
 		case "secret":
@@ -160,7 +160,7 @@ func KeyOnlyHandler() CredentialHandler {
 func PlaceholderHandler() CredentialHandler {
 	var output map[string]interface{}
 
-	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 		switch property.Type {
 
 		case "secret":
@@ -202,10 +202,10 @@ func PlaceholderHandler() CredentialHandler {
 	}
 }
 
-func GetCredentialHandler(apiService getCredential) CredentialHandler {
+func GetCredentialHandler(productGUID string, apiService getCredential) CredentialHandler {
 	var output map[string]interface{}
 
-	return func(productGUID string, name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
+	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 		apiOutput, err := apiService.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 			DeployedGUID:        productGUID,
 			CredentialReference: name.credentialName(),

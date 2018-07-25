@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/om/validator"
 
 	"strconv"
@@ -26,7 +26,7 @@ type UploadStemcell struct {
 
 //go:generate counterfeiter -o ./fakes/multipart.go --fake-name Multipart . multipart
 type multipart interface {
-	Finalize() (formcontent.ContentSubmission)
+	Finalize() formcontent.ContentSubmission
 	AddFile(key, path string) error
 	AddField(key, value string) error
 }
