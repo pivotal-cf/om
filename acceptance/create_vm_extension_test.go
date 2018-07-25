@@ -27,8 +27,8 @@ var _ = Describe("create VM extension", func() {
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
-			case "/api/v0/staged/vm_extensions":
-				Expect(req.Method).To(Equal(http.MethodPost))
+			case "/api/v0/staged/vm_extensions/some-vm-extension":
+				Expect(req.Method).To(Equal(http.MethodPut))
 
 				body, err := ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
@@ -70,6 +70,6 @@ var _ = Describe("create VM extension", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
-		Expect(string(session.Out.Contents())).To(Equal("VM Extension 'some-vm-extension' created\n"))
+		Expect(string(session.Out.Contents())).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
 	})
 })
