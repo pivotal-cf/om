@@ -35,6 +35,7 @@ type configureProductService interface {
 	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
 	UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput) error
 	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
+	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
 }
 
 func NewConfigureProduct(service configureProductService, logger logger) ConfigureProduct {
@@ -83,6 +84,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		networkProperties string
 		productProperties string
 		productResources  string
+		errandConfigs     map[string]config.ErrandConfig
 	)
 
 	if cp.Options.ConfigFile != "" {
@@ -117,6 +119,10 @@ func (cp ConfigureProduct) Execute(args []string) error {
 				return err
 			}
 		}
+
+		if cfg.ErrandConfigs != nil {
+			errandConfigs = cfg.ErrandConfigs
+		}
 	} else {
 		if cp.Options.NetworkProperties != "" {
 			networkProperties = cp.Options.NetworkProperties
@@ -147,6 +153,13 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	if productResources != "" {
 		err = cp.configureResources(productResources, productGUID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(errandConfigs) > 0 {
+		err = cp.configureErrands(errandConfigs, productGUID)
 		if err != nil {
 			return err
 		}
@@ -242,5 +255,26 @@ func (cp ConfigureProduct) configureNetwork(networkProperties string, productGUI
 		return fmt.Errorf("failed to configure product: %s", err)
 	}
 	cp.logger.Printf("finished setting up network")
+	return nil
+}
+
+func (cp ConfigureProduct) configureErrands(errandConfigs map[string]config.ErrandConfig, productGUID string) error {
+	var names []string
+	for name := range errandConfigs {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+
+	cp.logger.Printf("applying errand configuration for the following errands:")
+	for _, name := range names {
+		cp.logger.Printf("\t%s", name)
+
+		errandConfig := errandConfigs[name]
+		err := cp.service.UpdateStagedProductErrands(productGUID, name, errandConfig.PostDeployState, errandConfig.PreDeleteState)
+		if err != nil {
+			return fmt.Errorf("failed to set errand state for errand %s: %s", name, err)
+		}
+	}
 	return nil
 }

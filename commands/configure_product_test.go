@@ -121,6 +121,16 @@ const productPropertiesWithOpsFileInterpolated = `{
   ".some.property": {"value": "some-value"}
 }`
 
+const errandConfigFile = `---
+errand-config:
+  smoke_tests:
+    post-deploy-state: true
+    pre-delete-state: default
+  push-usage-service:
+    post-deploy-state: false
+    pre-delete-state: when-changed
+`
+
 var _ = Describe("ConfigureProduct", func() {
 	Describe("Execute", func() {
 		var (
@@ -601,6 +611,58 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
 				})
 			})
+
+			Context("when the config file contains only errand properties", func() {
+				It("configures only the errand properties", func() {
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(errandConfigFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
+					Expect(service.UpdateStagedProductPropertiesCallCount()).To(Equal(0))
+					Expect(service.UpdateStagedProductNetworksAndAZsCallCount()).To(Equal(0))
+					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(0))
+
+					Expect(service.UpdateStagedProductErrandsCallCount()).To(Equal(2))
+
+					argProductGUID, argErrandName, argPostDeployState, argPreDeleteState := service.UpdateStagedProductErrandsArgsForCall(0)
+					Expect(argProductGUID).To(Equal("some-product-guid"))
+					Expect(argErrandName).To(Equal("push-usage-service"))
+					Expect(argPostDeployState).To(Equal(false))
+					Expect(argPreDeleteState).To(Equal("when-changed"))
+
+					argProductGUID, argErrandName, argPostDeployState, argPreDeleteState = service.UpdateStagedProductErrandsArgsForCall(1)
+					Expect(argProductGUID).To(Equal("some-product-guid"))
+					Expect(argErrandName).To(Equal("smoke_tests"))
+					Expect(argPostDeployState).To(Equal(true))
+					Expect(argPreDeleteState).To(Equal("default"))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("applying errand configuration for the following errands:"))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("\tpush-usage-service"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("\tsmoke_tests"))
+
+					format, content = logger.PrintfArgsForCall(4)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+				})
+			})
 		})
 
 		Context("when the instance count is not an int", func() {
@@ -875,6 +937,39 @@ var _ = Describe("ConfigureProduct", func() {
 
 					err := command.Execute([]string{"--product-name", "some-product", "--product-properties", "{}", "--product-network", "anything"})
 					Expect(err).To(MatchError("failed to configure product: some product error"))
+				})
+			})
+			Context("when errand config errors", func() {
+				var (
+					configFile *os.File
+					err        error
+				)
+				BeforeEach(func() {
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+							{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+						},
+					}, nil)
+				})
+				AfterEach(func() {
+					os.RemoveAll(configFile.Name())
+				})
+				It("errors when calling api", func() {
+					service.UpdateStagedProductErrandsReturns(errors.New("error configuring errand"))
+					client := commands.NewConfigureProduct(service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(errandConfigFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--product-name", "cf",
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(MatchError("failed to set errand state for errand push-usage-service: error configuring errand"))
 				})
 			})
 		})
