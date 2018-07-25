@@ -115,8 +115,8 @@ var _ = Describe("installations command", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
-				"installations")
+				"installations",
+				"--format", "json")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())

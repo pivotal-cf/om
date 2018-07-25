@@ -16,14 +16,18 @@ import (
 var _ = Describe("CredentialReferences", func() {
 	var (
 		fakeService   *fakes.CredentialReferencesService
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 		logger        *fakes.Logger
+
+		command commands.CredentialReferences
 	)
 
 	BeforeEach(func() {
 		fakeService = &fakes.CredentialReferencesService{}
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		logger = &fakes.Logger{}
+
+		command = commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 	})
 
 	Describe("Execute", func() {
@@ -33,10 +37,6 @@ var _ = Describe("CredentialReferences", func() {
 					Type: "some-product",
 					GUID: "other-deployed-product-guid",
 				}}, nil)
-		})
-
-		It("lists the credential references in alphabetical order", func() {
-			command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 
 			fakeService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{
 				Credentials: []string{
@@ -45,7 +45,9 @@ var _ = Describe("CredentialReferences", func() {
 					".my-job.some-credentials",
 				},
 			}, nil)
+		})
 
+		It("lists the credential references in alphabetical order", func() {
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 			})
@@ -57,6 +59,19 @@ var _ = Describe("CredentialReferences", func() {
 				".our-job.some-other-credential",
 				".properties.some-credentials",
 			))
+		})
+
+		Context("when the format flag is provided", func() {
+			It("sets format on the presenter", func() {
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--format", "json",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
 		})
 
 		Context("failure cases", func() {

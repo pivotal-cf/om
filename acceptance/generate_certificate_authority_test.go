@@ -100,8 +100,8 @@ var _ = Describe("generate certificate authority", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"generate-certificate-authority",
+				"--format", "json",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

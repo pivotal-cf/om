@@ -9,15 +9,16 @@ import (
 
 type CertificateAuthority struct {
 	service   certificateAuthoritiesService
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
-		ID      string `long:"id"       required:"true" description:"ID of certificate to display"`
-		CertPEM bool   `long:"cert-pem"                 description:"Display the cert pem"`
+		ID      string `long:"id" required:"true" description:"ID of certificate to display"`
+		CertPEM bool   `long:"cert-pem" description:"Display the cert pem"`
+		Format  string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
-func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.Presenter, logger logger) CertificateAuthority {
+func NewCertificateAuthority(certificateAuthoritiesService certificateAuthoritiesService, presenter presenters.FormattedPresenter, logger logger) CertificateAuthority {
 	return CertificateAuthority{
 		service:   certificateAuthoritiesService,
 		presenter: presenter,
@@ -40,6 +41,7 @@ func (c CertificateAuthority) Execute(args []string) error {
 			if c.Options.CertPEM {
 				c.logger.Println(ca.CertPEM)
 			} else {
+				c.presenter.SetFormat(c.Options.Format)
 				c.presenter.PresentCertificateAuthority(ca)
 			}
 			return nil

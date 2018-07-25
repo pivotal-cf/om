@@ -10,12 +10,13 @@ import (
 
 type Credentials struct {
 	service   credentialsService
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
 		Product             string `long:"product-name"         short:"p" required:"true" description:"name of deployed product"`
 		CredentialReference string `long:"credential-reference" short:"c" required:"true" description:"name of credential reference"`
 		CredentialField     string `long:"credential-field"     short:"f"                 description:"single credential field to output"`
+		Format              string `long:"format"               short:"t" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
@@ -25,7 +26,7 @@ type credentialsService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
-func NewCredentials(csService credentialsService, presenter presenters.Presenter, logger logger) Credentials {
+func NewCredentials(csService credentialsService, presenter presenters.FormattedPresenter, logger logger) Credentials {
 	return Credentials{service: csService, presenter: presenter, logger: logger}
 }
 
@@ -63,6 +64,7 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	if cs.Options.CredentialField == "" {
+		cs.presenter.SetFormat(cs.Options.Format)
 		cs.presenter.PresentCredentials(output.Credential.Value)
 	} else {
 		if value, ok := output.Credential.Value[cs.Options.CredentialField]; ok {

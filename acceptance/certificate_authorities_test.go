@@ -153,8 +153,8 @@ var _ = Describe("certificate-authorities", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
-				"certificate-authorities")
+				"certificate-authorities",
+				"--format", "json")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())

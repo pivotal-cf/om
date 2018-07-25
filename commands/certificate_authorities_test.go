@@ -17,37 +17,20 @@ var _ = Describe("Certificate Authorities", func() {
 	var (
 		certificateAuthorities            commands.CertificateAuthorities
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
-		fakePresenter                     *presenterfakes.Presenter
+		fakePresenter                     *presenterfakes.FormattedPresenter
 	)
 
 	BeforeEach(func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		certificateAuthorities = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
-		It("requests certificate authorities from the server", func() {
-			err := certificateAuthorities.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+		var certificateAuthoritiesOutput []api.CA
 
-			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
-		})
-
-		Context("when request for certificate authorities fails", func() {
-			It("returns an error", func() {
-				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
-					api.CertificateAuthoritiesOutput{},
-					fmt.Errorf("could not get certificate authorities"),
-				)
-
-				err := certificateAuthorities.Execute([]string{})
-				Expect(err).To(MatchError("could not get certificate authorities"))
-			})
-		})
-
-		It("prints the certificate authorities to a table", func() {
-			certificateAuthoritiesOutput := []api.CA{
+		BeforeEach(func() {
+			certificateAuthoritiesOutput = []api.CA{
 				{
 					GUID:      "some-guid",
 					Issuer:    "Pivotal",
@@ -70,12 +53,49 @@ var _ = Describe("Certificate Authorities", func() {
 				api.CertificateAuthoritiesOutput{certificateAuthoritiesOutput},
 				nil,
 			)
+		})
 
+		It("prints the certificate authorities to a table", func() {
 			err := certificateAuthorities.Execute([]string{})
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
+
 			Expect(fakePresenter.PresentCertificateAuthoritiesCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCertificateAuthoritiesArgsForCall(0)).To(Equal(certificateAuthoritiesOutput))
+		})
+
+		Context("when the format flag is provided", func() {
+			It("calls the presenter to set the json format", func() {
+				err := certificateAuthorities.Execute([]string{
+					"--format", "json",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
+		})
+
+		Context("when the flag cannot parsed", func() {
+			It("returns an error", func() {
+				err := certificateAuthorities.Execute([]string{"--bogus", "nothing"})
+				Expect(err).To(MatchError(
+					"could not parse certificate-authorities flags: flag provided but not defined: -bogus",
+				))
+			})
+		})
+
+		Context("when request for certificate authorities fails", func() {
+			It("returns an error", func() {
+				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
+					api.CertificateAuthoritiesOutput{},
+					fmt.Errorf("could not get certificate authorities"),
+				)
+
+				err := certificateAuthorities.Execute([]string{})
+				Expect(err).To(MatchError("could not get certificate authorities"))
+			})
 		})
 	})
 

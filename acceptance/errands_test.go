@@ -94,8 +94,8 @@ var _ = Describe("errands command", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"errands",
+				"--format", "json",
 				"--product-name", "some-product")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

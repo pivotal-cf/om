@@ -17,13 +17,13 @@ var _ = Describe("Certificate Authority", func() {
 	var (
 		certificateAuthority              commands.CertificateAuthority
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
-		fakePresenter                     *presenterfakes.Presenter
+		fakePresenter                     *presenterfakes.FormattedPresenter
 		fakeLogger                        *fakes.Logger
 	)
 
 	BeforeEach(func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeLogger = &fakes.Logger{}
 		certificateAuthority = commands.NewCertificateAuthority(fakeCertificateAuthoritiesService, fakePresenter, fakeLogger)
 
@@ -53,21 +53,16 @@ var _ = Describe("Certificate Authority", func() {
 	})
 
 	Describe("Execute", func() {
-		It("requests certificate authorities from the server", func() {
-			err := certificateAuthority.Execute([]string{
-				"--id", "other-guid",
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
-		})
-
-		It("prints the certificate authorities to a table", func() {
+		It("requests CAs from the server and prints to a table", func() {
 			err := certificateAuthority.Execute([]string{
 				"--id", "other-guid",
 			})
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
+
+			Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+			Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("table"))
 			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(api.CA{
 				GUID:      "other-guid",
@@ -90,6 +85,19 @@ var _ = Describe("Certificate Authority", func() {
 				Expect(fakeLogger.PrintlnCallCount()).To(Equal(1))
 				output := fakeLogger.PrintlnArgsForCall(0)
 				Expect(output).To(ConsistOf("-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBBhI...."))
+			})
+		})
+
+		Context("when the format flag is provided", func() {
+			It("calls the presenter to set the json format", func() {
+				err := certificateAuthority.Execute([]string{
+					"--id", "other-guid",
+					"--format", "json",
+				})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+				Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			})
 		})
 

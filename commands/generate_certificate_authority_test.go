@@ -14,27 +14,22 @@ import (
 
 var _ = Describe("GenerateCertificateAuthority", func() {
 	var (
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 		fakeService   *fakes.GenerateCertificateAuthorityService
 		command       commands.GenerateCertificateAuthority
 	)
 
 	BeforeEach(func() {
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeService = &fakes.GenerateCertificateAuthorityService{}
 		command = commands.NewGenerateCertificateAuthority(fakeService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
-		It("makes a request to the Opsman to generate a certificate authority", func() {
-			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+		var certificateAuthority api.CA
 
-			Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
-		})
-
-		It("prints a table containing the certificate authority that was generated", func() {
-			certificateAuthority := api.CA{
+		BeforeEach(func() {
+			certificateAuthority = api.CA{
 				GUID:      "some GUID",
 				Issuer:    "some Issuer",
 				CreatedOn: "2017-09-12",
@@ -44,16 +39,38 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 			}
 
 			fakeService.GenerateCertificateAuthorityReturns(certificateAuthority, nil)
+		})
 
+		It("makes a request to the Opsman to generate a certificate authority and prints to a table", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
+
 			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(certificateAuthority))
+		})
 
+		Context("when the format flag is provided", func() {
+			It("sets the format on the presenter", func() {
+				err := command.Execute([]string{
+					"--format", "json",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
 		})
 
 		Context("failure cases", func() {
+			Context("when an unknown flag is passed", func() {
+				It("returns an error", func() {
+					err := command.Execute([]string{"--unknown-flag"})
+					Expect(err).To(MatchError("could not parse generate-certificate-authority flags: flag provided but not defined: -unknown-flag"))
+				})
+			})
+
 			It("returns an error when the service fails to generate a certificate", func() {
 				fakeService.GenerateCertificateAuthorityReturns(api.CA{}, errors.New("failed to generate certificate"))
 

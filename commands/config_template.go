@@ -127,42 +127,48 @@ func (ct ConfigTemplate) Usage() jhanda.Usage {
 }
 
 func addSecretPlaceholder(value interface{}, t string, configurableProperties map[string]interface{}, name string) {
+	formattedName := formatKeyName(name)
+
 	switch t {
 	case "secret":
 		configurableProperties[name] = map[string]interface{}{
 			"value": map[string]string{
-				"secret": fmt.Sprintf("((%s.secret))", name),
+				"secret": fmt.Sprintf("((%s.secret))", formattedName),
 			},
 		}
 	case "simple_credentials":
 		configurableProperties[name] = map[string]interface{}{
 			"value": map[string]string{
-				"identity": fmt.Sprintf("((%s.identity))", name),
-				"password": fmt.Sprintf("((%s.password))", name),
+				"identity": fmt.Sprintf("((%s.identity))", formattedName),
+				"password": fmt.Sprintf("((%s.password))", formattedName),
 			},
 		}
 	case "rsa_cert_credentials":
 		configurableProperties[name] = map[string]interface{}{
 			"value": map[string]string{
-				"cert_pem":        fmt.Sprintf("((%s.cert_pem))", name),
-				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+				"cert_pem":        fmt.Sprintf("((%s.cert_pem))", formattedName),
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", formattedName),
 			},
 		}
 	case "rsa_pkey_credentials":
 		configurableProperties[name] = map[string]interface{}{
 			"value": map[string]string{
-				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name),
+				"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", formattedName),
 			},
 		}
 	case "salted_credentials":
 		configurableProperties[name] = map[string]interface{}{
 			"value": map[string]string{
-				"identity": fmt.Sprintf("((%s.identity))", name),
-				"password": fmt.Sprintf("((%s.password))", name),
-				"salt":     fmt.Sprintf("((%s.salt))", name),
+				"identity": fmt.Sprintf("((%s.identity))", formattedName),
+				"password": fmt.Sprintf("((%s.password))", formattedName),
+				"salt":     fmt.Sprintf("((%s.salt))", formattedName),
 			},
 		}
 	default:
 		configurableProperties[name] = map[string]interface{}{"value": value}
 	}
+}
+
+func formatKeyName(name string) string {
+	return strings.Replace(name,".","_",-1)[1:]
 }

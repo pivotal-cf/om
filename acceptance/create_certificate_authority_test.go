@@ -166,8 +166,8 @@ c8Ltdl0ms92X6z4Qh2GiA/URKQLC7yV/kSQfgPEwyITXv4cCqm3o
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"create-certificate-authority",
+				"--format", "json",
 				"--certificate-pem", certificatePEM,
 				"--private-key-pem", privateKeyPEM,
 			)

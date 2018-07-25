@@ -17,14 +17,15 @@ type errandsService interface {
 }
 
 type Errands struct {
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	service   errandsService
 	Options   struct {
 		ProductName string `long:"product-name" short:"p" required:"true" description:"name of product"`
+		Format      string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
-func NewErrands(presenter presenters.Presenter, service errandsService) Errands {
+func NewErrands(presenter presenters.FormattedPresenter, service errandsService) Errands {
 	return Errands{
 		presenter: presenter,
 		service:   service,
@@ -55,6 +56,7 @@ func (e Errands) Execute(args []string) error {
 		})
 	}
 
+	e.presenter.SetFormat(e.Options.Format)
 	e.presenter.PresentErrands(errands)
 
 	return nil

@@ -87,8 +87,8 @@ var _ = Describe("deployed-products command", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"deployed-products",
+				"--format", "json",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

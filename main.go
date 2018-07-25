@@ -10,11 +10,11 @@ import (
 
 	"time"
 
+	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
@@ -36,7 +36,6 @@ func main() {
 	var global struct {
 		ClientID          string `short:"c"  long:"client-id"           env:"OM_CLIENT_ID"                     description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
 		ClientSecret      string `short:"s"  long:"client-secret"       env:"OM_CLIENT_SECRET"                 description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
-		Format            string `short:"f"  long:"format"                                     default:"table" description:"Format to print as (options: table,json)"`
 		Help              bool   `short:"h"  long:"help"                                       default:"false" description:"prints this usage information"`
 		Password          string `short:"p"  long:"password"            env:"OM_PASSWORD"                      description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 		ConnectTimeout    int    `short:"o"  long:"connect-timeout"                            default:"5"     description:"timeout in seconds to make TCP connections"`
@@ -122,15 +121,7 @@ func main() {
 
 	metadataExtractor := extractor.MetadataExtractor{}
 
-	var presenter presenters.Presenter
-	switch global.Format {
-	case "table":
-		presenter = presenters.NewTablePresenter(tableWriter)
-	case "json":
-		presenter = presenters.NewJSONPresenter(os.Stdout)
-	default:
-		stdout.Fatal("Format not supported")
-	}
+	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
 
 	commandSet := jhanda.CommandSet{}
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)

@@ -9,8 +9,11 @@ import (
 )
 
 type StagedProducts struct {
-	presenter presenters.Presenter
+	presenter presenters.FormattedPresenter
 	service   stagedProductsService
+	Options   struct {
+		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
+	}
 }
 
 //go:generate counterfeiter -o ./fakes/staged_products_service.go --fake-name StagedProductsService . stagedProductsService
@@ -18,7 +21,7 @@ type stagedProductsService interface {
 	GetDiagnosticReport() (api.DiagnosticReport, error)
 }
 
-func NewStagedProducts(presenter presenters.Presenter, service stagedProductsService) StagedProducts {
+func NewStagedProducts(presenter presenters.FormattedPresenter, service stagedProductsService) StagedProducts {
 	return StagedProducts{
 		presenter: presenter,
 		service:   service,
@@ -26,6 +29,10 @@ func NewStagedProducts(presenter presenters.Presenter, service stagedProductsSer
 }
 
 func (sp StagedProducts) Execute(args []string) error {
+	if _, err := jhanda.Parse(&sp.Options, args); err != nil {
+		return fmt.Errorf("could not parse staged-products flags: %s", err)
+	}
+
 	diagnosticReport, err := sp.service.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve staged products %s", err)
@@ -33,7 +40,9 @@ func (sp StagedProducts) Execute(args []string) error {
 
 	stagedProducts := diagnosticReport.StagedProducts
 
+	sp.presenter.SetFormat(sp.Options.Format)
 	sp.presenter.PresentStagedProducts(stagedProducts)
+
 	return nil
 }
 

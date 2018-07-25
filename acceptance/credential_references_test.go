@@ -88,8 +88,8 @@ var _ = Describe("credential references command", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"credential-references",
+				"--format", "json",
 				"--product-name", "some-product")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

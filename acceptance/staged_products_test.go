@@ -84,12 +84,12 @@ var _ = Describe("staged-products command", func() {
 	Context("when json format is requested", func() {
 		It("lists the staged products on Ops Manager", func() {
 			command := exec.Command(pathToMain,
-				"--format", "json",
 				"--target", server.URL,
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
 				"staged-products",
+				"--format", "json",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

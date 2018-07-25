@@ -87,9 +87,9 @@ var _ = Describe("available-products command", func() {
 				"--target", server.URL,
 				"--username", "some-username",
 				"--password", "some-password",
-				"--format", "json",
 				"--skip-ssl-validation",
-				"available-products")
+				"available-products",
+				"--format", "json")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())

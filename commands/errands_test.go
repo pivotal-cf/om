@@ -16,19 +16,19 @@ import (
 
 var _ = Describe("Errands", func() {
 	var (
-		fakePresenter *presenterfakes.Presenter
+		fakePresenter *presenterfakes.FormattedPresenter
 		fakeService   *fakes.ErrandsService
 		command       commands.Errands
 	)
 
 	BeforeEach(func() {
-		fakePresenter = &presenterfakes.Presenter{}
+		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeService = &fakes.ErrandsService{}
 		command = commands.NewErrands(fakePresenter, fakeService)
 	})
 
 	Describe("Execute", func() {
-		It("lists the available products", func() {
+		BeforeEach(func() {
 			fakeService.ListStagedProductErrandsReturns(api.ErrandsListOutput{
 				Errands: []api.Errand{
 					{Name: "first-errand", PostDeploy: "true"},
@@ -45,7 +45,9 @@ var _ = Describe("Errands", func() {
 					GUID: "some-product-id",
 				},
 			}, nil)
+		})
 
+		It("lists the available products", func() {
 			err := command.Execute([]string{"--product-name", "some-product-name"})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -55,6 +57,7 @@ var _ = Describe("Errands", func() {
 			Expect(fakeService.ListStagedProductErrandsCallCount()).To(Equal(1))
 			Expect(fakeService.ListStagedProductErrandsArgsForCall(0)).To(Equal("some-product-id"))
 
+			Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("table"))
 			Expect(fakePresenter.PresentErrandsCallCount()).To(Equal(1))
 			errands := fakePresenter.PresentErrandsArgsForCall(0)
 			Expect(errands).To(ConsistOf(
@@ -64,6 +67,19 @@ var _ = Describe("Errands", func() {
 				models.Errand{Name: "will-not-appear"},
 				models.Errand{Name: "also-bad"},
 			))
+		})
+
+		Context("when the format flag is provided", func() {
+			It("sets the format on the presenter", func() {
+				err := command.Execute([]string{
+					"--product-name", "some-product-name",
+					"--format", "json",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
+			})
 		})
 
 		Context("failure cases", func() {

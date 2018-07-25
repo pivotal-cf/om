@@ -148,8 +148,8 @@ var _ = Describe("certificate-authority", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--format", "json",
 				"certificate-authority",
+				"--format", "json",
 				"--id",
 				"other-guid",
 			)
