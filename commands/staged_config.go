@@ -14,7 +14,6 @@ import (
 
 type StagedConfig struct {
 	service stagedConfigService
-	parser  configParser
 	logger  logger
 	Options struct {
 		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
@@ -39,10 +38,9 @@ type configParser interface {
 	ParseProperties(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
 }
 
-func NewStagedConfig(service stagedConfigService, parser configParser, logger logger) StagedConfig {
+func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
 	return StagedConfig{
 		service: service,
-		parser:  parser,
 		logger:  logger,
 	}
 }
@@ -100,8 +98,9 @@ func (ec StagedConfig) Execute(args []string) error {
 		}
 		var output map[string]interface{}
 
+		parser := configparser.NewConfigParser()
 		propertyName := configparser.NewPropertyName(name)
-		output, err = ec.parser.ParseProperties(propertyName, property, ec.chooseCredentialHandler(productGUID))
+		output, err = parser.ParseProperties(propertyName, property, ec.chooseCredentialHandler(productGUID))
 
 		if err != nil {
 			return err

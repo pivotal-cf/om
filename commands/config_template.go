@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-cf/om/config"
 	"github.com/pivotal-cf/om/configparser"
 	"gopkg.in/yaml.v2"
-	)
+)
 
 type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
@@ -148,15 +148,7 @@ func makePropertyBluePrintPair(template *proofing.ProductTemplate) []propertyBlu
 
 func isCredential(t string) bool {
 	switch t {
-	case "secret":
-		return true
-	case "simple_credentials":
-		return true
-	case "rsa_cert_credentials":
-		return true
-	case "rsa_pkey_credentials":
-		return true
-	case "salted_credentials":
+	case "secret", "simple_credentials", "rsa_cert_credentials", "rsa_pkey_credentials", "salted_credentials":
 		return true
 	}
 	return false
