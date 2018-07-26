@@ -206,6 +206,7 @@ var _ = Describe("Config Parser", func() {
     private_key_pem: "((properties_rsa-cert-credentials.private_key_pem))"
 ".properties.rsa-pkey-credentials":
   value:
+    public_key_pem: "((properties_rsa-pkey-credentials.public_key_pem))"
     private_key_pem: "((properties_rsa-pkey-credentials.private_key_pem))"
 ".properties.salted-credentials":
   value:
