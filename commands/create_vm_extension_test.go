@@ -47,12 +47,8 @@ var _ = Describe("CreateVMExtension", func() {
 	})
 
 	AfterEach(func() {
-		if configFile != nil {
-			os.RemoveAll(configFile.Name())
-		}
-		if varsFile != nil {
-			os.RemoveAll(varsFile.Name())
-		}
+		os.RemoveAll(configFile.Name())
+		os.RemoveAll(varsFile.Name())
 	})
 
 	Describe("Execute", func() {
