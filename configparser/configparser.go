@@ -141,6 +141,7 @@ func KeyOnlyHandler() CredentialHandler {
 		case "rsa_pkey_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
+					"public_key_pem": "",
 					"private_key_pem": "",
 				},
 			}
@@ -186,6 +187,7 @@ func PlaceholderHandler() CredentialHandler {
 		case "rsa_pkey_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
+					"public_key_pem": fmt.Sprintf("((%s.public_key_pem))", name.placeholderName()),
 					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name.placeholderName()),
 				},
 			}
