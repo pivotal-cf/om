@@ -155,7 +155,7 @@ var _ = Describe("Set errand state", func() {
 			command := commands.NewSetErrandState(nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command sets the state of a product's errand.",
-				ShortDescription: "sets state for a product's errand",
+				ShortDescription: "**DEPRECATED** (use configure-product instead) sets state for a product's errand",
 				Flags:            command.Options,
 			}))
 		})

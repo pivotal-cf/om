@@ -221,4 +221,11 @@ resource-config:
   diego_brain:
     elb_names:
     - some-elb
+errand-config:
+  smoke_tests:
+    post-deploy-state: true
+    pre-delete-state: default
+  push-usage-service:
+    post-deploy-state: false
+    pre-delete-state: default
 ```

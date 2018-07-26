@@ -85,7 +85,7 @@ func (s SetErrandState) Execute(args []string) error {
 func (s SetErrandState) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command sets the state of a product's errand.",
-		ShortDescription: "sets state for a product's errand",
+		ShortDescription: "**DEPRECATED** (use configure-product instead) sets state for a product's errand",
 		Flags:            s.Options,
 	}
 }
