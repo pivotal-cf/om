@@ -111,13 +111,11 @@ func NilHandler() CredentialHandler {
 	}
 }
 
-// untested
 func KeyOnlyHandler() CredentialHandler {
 	var output map[string]interface{}
 
 	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 		switch property.Type {
-
 		case "secret":
 			output = map[string]interface{}{
 				"value": map[string]string{
@@ -141,7 +139,7 @@ func KeyOnlyHandler() CredentialHandler {
 		case "rsa_pkey_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"public_key_pem": "",
+					"public_key_pem":  "",
 					"private_key_pem": "",
 				},
 			}
@@ -187,7 +185,7 @@ func PlaceholderHandler() CredentialHandler {
 		case "rsa_pkey_credentials":
 			output = map[string]interface{}{
 				"value": map[string]string{
-					"public_key_pem": fmt.Sprintf("((%s.public_key_pem))", name.placeholderName()),
+					"public_key_pem":  fmt.Sprintf("((%s.public_key_pem))", name.placeholderName()),
 					"private_key_pem": fmt.Sprintf("((%s.private_key_pem))", name.placeholderName()),
 				},
 			}

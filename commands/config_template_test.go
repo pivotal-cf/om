@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("ConfigTemplate", func() {
+var _ = Describe("ConfigTemplate", func() {
 	var (
 		logger            *fakes.Logger
 		metadataExtractor *fakes.MetadataExtractor
@@ -87,7 +87,8 @@ property_blueprints:
 product-properties:
   .properties.some-name1:
     value: true # required
-`)))			})
+`)))
+			})
 		})
 
 		Context("optional property", func() {
