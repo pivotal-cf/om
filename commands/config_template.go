@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-cf/om/config"
 	"github.com/pivotal-cf/om/configparser"
 	"gopkg.in/yaml.v2"
-)
+	)
 
 type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
@@ -19,6 +19,11 @@ type ConfigTemplate struct {
 		Product            string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
 		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
 	}
+}
+
+type propertyBluePrintPair struct {
+	proofing.NormalizedPropertyBlueprint
+	proofing.PropertyBlueprint
 }
 
 func NewConfigTemplate(metadataExtractor metadataExtractor, logger logger) ConfigTemplate {
@@ -44,23 +49,14 @@ func (ct ConfigTemplate) Execute(args []string) error {
 		return fmt.Errorf("could not parse metadata: %s", err)
 	}
 
-	propertiesPair := makeProp(&template)
-
-	properties := map[string]api.ResponseProperty{}
-	for _, propTuple := range propertiesPair {
-		name, prop := transform(propTuple)
-		properties[name] = prop
-	}
+	propertyPairs := makePropertyBluePrintPair(&template)
+	nameApiResponseMaps := transformAll(propertyPairs)
 
 	configTemplateProperties := map[string]interface{}{}
 
 	parser := configparser.NewConfigParser()
 
-	for name, prop := range properties {
-		if !prop.Configurable {
-			continue
-		}
-
+	for name, prop := range nameApiResponseMaps {
 		propertyName := configparser.NewPropertyName(name)
 		output, err := parser.ParseProperties(propertyName, prop, ct.chooseCredentialHandler())
 		if err != nil {
@@ -78,58 +74,27 @@ func (ct ConfigTemplate) Execute(args []string) error {
 
 	output, err := yaml.Marshal(configTemplate)
 	if err != nil {
-		return fmt.Errorf("could not marshal config template: %s", err) // NOTE: this cannot happen
+		return fmt.Errorf("could not marshal config template: %s", err)
 	}
 
-	ct.logger.Println(ct.concatenateRequiredProperties(output, template))
+	// post-processing
+	ct.logger.Println(concatenateRequiredProperties(output, propertyPairs))
 
 	return nil
 }
 
-type propertyBlueprintTuple struct {
-	proofing.NormalizedPropertyBlueprint
-	proofing.PropertyBlueprint
-}
-
-func makeProp(template *proofing.ProductTemplate) []propertyBlueprintTuple {
-	var output []propertyBlueprintTuple
-
-	for _, pb := range template.PropertyBlueprints {
-		normalizedPBs := pb.Normalize(".properties")
-		for _, normalizedPB := range normalizedPBs {
-			output = append(output, propertyBlueprintTuple{
-				NormalizedPropertyBlueprint: normalizedPB,
-				PropertyBlueprint:           pb,
-			})
-		}
+func concatenateRequiredProperties(output []byte, propertyPairs []propertyBluePrintPair) string {
+	// convert list to map to avoid n^2 double for loop
+	namePropertyMaps := map[string]proofing.NormalizedPropertyBlueprint{}
+	for _, pbp := range propertyPairs {
+		namePropertyMaps[pbp.Property] = pbp.NormalizedPropertyBlueprint
 	}
 
-	for _, jobType := range template.JobTypes {
-		for _, pb := range jobType.PropertyBlueprints {
-			prefix := fmt.Sprintf(".%s", jobType.Name)
-			normalizedPBs := pb.Normalize(prefix)
-			for _, normalizedPB := range normalizedPBs {
-				output = append(output, propertyBlueprintTuple{
-					NormalizedPropertyBlueprint: normalizedPB,
-					PropertyBlueprint:           pb,
-				})
-			}
-		}
-	}
-
-	return output
-}
-
-func (ConfigTemplate) concatenateRequiredProperties(output []byte, template proofing.ProductTemplate) string {
 	lines := strings.Split(string(output), "\n")
 	for i, line := range lines {
-		for _, pb := range template.AllPropertyBlueprints() {
-			propertyName := strings.TrimSpace(strings.Split(line, ":")[0])
-			if pb.Property == propertyName {
-				if pb.Required {
-					lines[i+1] = lines[i+1] + " # required"
-				}
-			}
+		propertyName := strings.TrimSpace(strings.Split(line, ":")[0])
+		if v, ok := namePropertyMaps[propertyName]; ok && v.Required {
+			lines[i+1] = lines[i+1] + " # required"
 		}
 	}
 
@@ -152,6 +117,35 @@ func (ct ConfigTemplate) chooseCredentialHandler() configparser.CredentialHandle
 	return configparser.KeyOnlyHandler()
 }
 
+func makePropertyBluePrintPair(template *proofing.ProductTemplate) []propertyBluePrintPair {
+	var output []propertyBluePrintPair
+
+	for _, pb := range template.PropertyBlueprints {
+		normalizedPBs := pb.Normalize(".properties")
+		for _, normalizedPB := range normalizedPBs {
+			output = append(output, propertyBluePrintPair{
+				NormalizedPropertyBlueprint: normalizedPB,
+				PropertyBlueprint:           pb,
+			})
+		}
+	}
+
+	for _, jobType := range template.JobTypes {
+		for _, pb := range jobType.PropertyBlueprints {
+			prefix := fmt.Sprintf(".%s", jobType.Name)
+			normalizedPBs := pb.Normalize(prefix)
+			for _, normalizedPB := range normalizedPBs {
+				output = append(output, propertyBluePrintPair{
+					NormalizedPropertyBlueprint: normalizedPB,
+					PropertyBlueprint:           pb,
+				})
+			}
+		}
+	}
+
+	return output
+}
+
 func isCredential(t string) bool {
 	switch t {
 	case "secret":
@@ -168,25 +162,25 @@ func isCredential(t string) bool {
 	return false
 }
 
-func transformCollection(pbt propertyBlueprintTuple) (string, api.ResponseProperty) {
-	collectionPB := pbt.PropertyBlueprint.(proofing.CollectionPropertyBlueprint)
+func transformCollection(pbp propertyBluePrintPair) (string, api.ResponseProperty) {
+	collectionPB := pbp.PropertyBlueprint.(proofing.CollectionPropertyBlueprint)
 
-	name := pbt.Property
+	name := pbp.Property
 	prop := api.ResponseProperty{
-		Configurable: pbt.Configurable,
-		Type:         pbt.Type,
-		IsCredential: isCredential(pbt.Type),
+		Configurable: pbp.Configurable,
+		Type:         pbp.Type,
+		IsCredential: isCredential(pbp.Type),
 	}
 
 	propertyBlueprintList := collectionPB.PropertyBlueprints
 
 	values := make([]interface{}, 0)
 
-	if pbt.Default == nil {
+	if pbp.Default == nil {
 		value := map[interface{}]interface{}{}
 		for _, pb := range propertyBlueprintList {
 			value[pb.Name] = map[interface{}]interface{}{
-				"value":        nil,
+				"value":        pb.Default,
 				"configurable": true,
 				"type":         pb.Type,
 				"credential":   isCredential(pb.Type),
@@ -194,7 +188,7 @@ func transformCollection(pbt propertyBlueprintTuple) (string, api.ResponseProper
 		}
 		values = append(values, value)
 	} else {
-		for _, defaultValue := range pbt.Default.([]interface{}) {
+		for _, defaultValue := range pbp.Default.([]interface{}) {
 			value := map[interface{}]interface{}{}
 			innerMap := defaultValue.(map[interface{}]interface{})
 			for _, pb := range propertyBlueprintList {
@@ -223,18 +217,27 @@ func transformCollection(pbt propertyBlueprintTuple) (string, api.ResponseProper
 	return name, prop
 }
 
-func transform(pbt propertyBlueprintTuple) (string, api.ResponseProperty) {
-	if pbt.Type == "collection" {
-		return transformCollection(pbt)
+func transform(pbp propertyBluePrintPair) (string, api.ResponseProperty) {
+	if pbp.Type == "collection" {
+		return transformCollection(pbp)
 	}
 
-	name := pbt.Property
+	name := pbp.Property
 	prop := api.ResponseProperty{
-		Value:        pbt.Default,
-		Configurable: pbt.Configurable,
-		Type:         pbt.Type,
-		IsCredential: isCredential(pbt.Type),
+		Value:        pbp.Default,
+		Configurable: pbp.Configurable,
+		Type:         pbp.Type,
+		IsCredential: isCredential(pbp.Type),
 	}
 
 	return name, prop
+}
+
+func transformAll(pbps []propertyBluePrintPair) map[string]api.ResponseProperty {
+	properties := map[string]api.ResponseProperty{}
+	for _, propTuple := range pbps {
+		name, prop := transform(propTuple)
+		properties[name] = prop
+	}
+	return properties
 }
