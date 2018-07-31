@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -57,39 +58,9 @@ func main() {
 		stdout.Fatal(err)
 	}
 
-	if global.Env != "" {
-		var opts options
-		file, _ := os.Open(global.Env)
-		contents, _ := ioutil.ReadAll(file)
-		yaml.Unmarshal(contents, &opts)
-
-		if global.ClientID == "" {
-			global.ClientID = opts.ClientID
-		}
-		if global.ClientSecret == "" {
-			global.ClientSecret = opts.ClientSecret
-		}
-		if global.Password == "" {
-			global.Password = opts.Password
-		}
-		if global.ConnectTimeout == 5 && opts.ConnectTimeout != 0 {
-			global.ConnectTimeout = opts.ConnectTimeout
-		}
-		if global.RequestTimeout == 1800 && opts.RequestTimeout != 0 {
-			global.RequestTimeout = opts.RequestTimeout
-		}
-		if global.SkipSSLValidation == false {
-			global.SkipSSLValidation = opts.SkipSSLValidation
-		}
-		if global.Target == "" {
-			global.Target = opts.Target
-		}
-		if global.Trace == false {
-			global.Trace = opts.Trace
-		}
-		if global.Username == "" {
-			global.Username = opts.Username
-		}
+	err = setEnvFileProperties(&global)
+	if err != nil {
+		stderr.Fatal(err)
 	}
 
 	globalFlagsUsage, err := jhanda.PrintUsage(global)
@@ -155,9 +126,6 @@ func main() {
 	tableWriter := tablewriter.NewWriter(os.Stdout)
 
 	form := formcontent.NewForm()
-	if err != nil {
-		stdout.Fatal(err)
-	}
 
 	metadataExtractor := extractor.MetadataExtractor{}
 
@@ -213,4 +181,53 @@ func main() {
 	if err != nil {
 		stderr.Fatal(err)
 	}
+}
+
+func setEnvFileProperties(global *options) error {
+	if global.Env != "" {
+		var opts options
+		file, err := os.Open(global.Env)
+		if err != nil {
+			return fmt.Errorf("env file does not exist: %s", err)
+		}
+
+		contents, err := ioutil.ReadAll(file)
+		if err != nil {
+			return fmt.Errorf("cannot read env file: %s", err)
+		}
+
+		err = yaml.Unmarshal(contents, &opts)
+		if err != nil {
+			return fmt.Errorf("could not parse env file: %s", err)
+		}
+
+		if global.ClientID == "" {
+			global.ClientID = opts.ClientID
+		}
+		if global.ClientSecret == "" {
+			global.ClientSecret = opts.ClientSecret
+		}
+		if global.Password == "" {
+			global.Password = opts.Password
+		}
+		if global.ConnectTimeout == 5 && opts.ConnectTimeout != 0 {
+			global.ConnectTimeout = opts.ConnectTimeout
+		}
+		if global.RequestTimeout == 1800 && opts.RequestTimeout != 0 {
+			global.RequestTimeout = opts.RequestTimeout
+		}
+		if global.SkipSSLValidation == false {
+			global.SkipSSLValidation = opts.SkipSSLValidation
+		}
+		if global.Target == "" {
+			global.Target = opts.Target
+		}
+		if global.Trace == false {
+			global.Trace = opts.Trace
+		}
+		if global.Username == "" {
+			global.Username = opts.Username
+		}
+	}
+	return nil
 }
