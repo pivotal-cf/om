@@ -19,7 +19,7 @@ var _ = Describe("global flags", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
-			Expect(session.Out).Should(gbytes.Say("flag provided but not defined: -?"))
+			Expect(session.Err).Should(gbytes.Say("flag provided but not defined: -?"))
 		})
 	})
 

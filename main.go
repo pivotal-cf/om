@@ -55,7 +55,7 @@ func main() {
 
 	args, err := jhanda.Parse(&global, os.Args[1:])
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 
 	err = setEnvFileProperties(&global)
@@ -65,7 +65,7 @@ func main() {
 
 	globalFlagsUsage, err := jhanda.PrintUsage(global)
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 
 	var command string
@@ -92,11 +92,11 @@ func main() {
 	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout)
 	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout, connectTimeout)
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, true, requestTimeout, connectTimeout)
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 
 	liveWriter := uilive.New()
