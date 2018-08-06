@@ -72,7 +72,7 @@ var _ = Describe("env var creds", func() {
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 	})
 
-	It("overwrites the env file", func() {
+	It("takes precedence over the env file values", func() {
 		var err error
 		var configFile *os.File
 		configContent := `

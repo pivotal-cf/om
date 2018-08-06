@@ -43,7 +43,7 @@ var _ = Describe("global flags", func() {
 		})
 	})
 
-	It("overwrites the env vars", func() {
+	It("takes precedence over the env var values", func() {
 		server := testServer(true)
 
 		command := exec.Command(pathToMain,
