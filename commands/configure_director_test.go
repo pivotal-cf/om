@@ -38,6 +38,10 @@ var _ = Describe("ConfigureDirector", func() {
 			},
 			FloatingIPs: "1.2.3.4",
 		}, nil)
+		service.ListStagedVMExtensionsReturns([]api.VMExtension{
+			api.VMExtension{Name: "some_vm_extension"},
+			api.VMExtension{Name: "some_other_vm_extension"},
+		}, nil)
 
 		command = commands.NewConfigureDirector(
 			func() []string { return []string{} },
@@ -85,7 +89,23 @@ var _ = Describe("ConfigureDirector", func() {
 				},
 				FloatingIPs: "1.2.3.4",
 			}))
-			Expect(logger.PrintfCallCount()).To(Equal(12))
+
+			Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(1))
+			Expect(service.CreateStagedVMExtensionCallCount()).To(Equal(2))
+			Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+				Name:            "a_vm_extension",
+				CloudProperties: json.RawMessage(`{"cloud_properties":{"source_dest_check":false}}`),
+			}))
+			Expect(service.CreateStagedVMExtensionArgsForCall(1)).To(Equal(api.CreateVMExtension{
+				Name:            "another_vm_extension",
+				CloudProperties: json.RawMessage(`{"cloud_properties":{"foo":"bar"}}`),
+			}))
+
+			Expect(service.DeleteVMExtensionCallCount()).To(Equal(2))
+			Expect(service.DeleteVMExtensionArgsForCall(0)).To(Equal("some_other_vm_extension"))
+			Expect(service.DeleteVMExtensionArgsForCall(1)).To(Equal("some_vm_extension"))
+
+			Expect(logger.PrintfCallCount()).To(Equal(21))
 			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
@@ -99,6 +119,21 @@ var _ = Describe("ConfigureDirector", func() {
 			formatStr, formatArg := logger.PrintfArgsForCall(10)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
 			Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(12)).To(Equal("started configuring vm extensions"))
+			Expect(logger.PrintfArgsForCall(13)).To(Equal("applying vm-extensions configuration for the following:"))
+			formatStr, formatArg = logger.PrintfArgsForCall(14)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"a_vm_extension"}}))
+			formatStr, formatArg = logger.PrintfArgsForCall(15)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"another_vm_extension"}}))
+			formatStr, formatArg = logger.PrintfArgsForCall(16)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"deleting vm extension %s", []interface{}{"some_other_vm_extension"}}))
+			formatStr, formatArg = logger.PrintfArgsForCall(17)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"done deleting vm extension %s", []interface{}{"some_other_vm_extension"}}))
+			formatStr, formatArg = logger.PrintfArgsForCall(18)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"deleting vm extension %s", []interface{}{"some_vm_extension"}}))
+			formatStr, formatArg = logger.PrintfArgsForCall(19)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"done deleting vm extension %s", []interface{}{"some_vm_extension"}}))
+			Expect(logger.PrintfArgsForCall(20)).To(Equal("finished configuring vm extensions"))
 		}
 
 		It("configures the director", func() {
@@ -111,6 +146,7 @@ var _ = Describe("ConfigureDirector", func() {
 				"--security-configuration", `{"some-security-assignment":"security"}`,
 				"--syslog-configuration", `{"some-syslog-assignment":"syslog"}`,
 				"--resource-configuration", `{"resource":{"instance_type":{"id":"some-type"}}}`,
+				"--vmextensions-configuration", `{"a_vm_extension":{"cloud_properties":{"source_dest_check":false}},"another_vm_extension":{"cloud_properties":{"foo":"bar"}}}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -200,6 +236,18 @@ var _ = Describe("ConfigureDirector", func() {
 							},
 						},
 					}
+					vmextensionConfig := map[string]interface{}{
+						"a_vm_extension": map[string]interface{}{
+							"cloud_properties": map[string]interface{}{
+								"source_dest_check": false,
+							},
+						},
+						"another_vm_extension": map[string]interface{}{
+							"cloud_properties": map[string]interface{}{
+								"foo": "bar",
+							},
+						},
+					}
 
 					templateNetworkAssign := map[string]interface{}{
 						"network": map[string]interface{}{
@@ -219,6 +267,7 @@ var _ = Describe("ConfigureDirector", func() {
 					configurationMAP["security-configuration"] = securityConfiguration
 					configurationMAP["syslog-configuration"] = syslogConfiguration
 					configurationMAP["resource-configuration"] = resourceConfiguration
+					configurationMAP["vmextensions-configuration"] = vmextensionConfig
 
 					completeConfigurationJSON, err = json.Marshal(configurationMAP)
 					Expect(err).NotTo(HaveOccurred())
@@ -314,6 +363,44 @@ var _ = Describe("ConfigureDirector", func() {
 			})
 		})
 
+		Context("when no vm_extension configuration is provided", func() {
+			It("does not list, create or delete vm extensions", func() {
+				configurationMAP := map[string]interface{}{}
+
+				completeConfigurationJSON, err := json.Marshal(configurationMAP)
+				Expect(err).NotTo(HaveOccurred())
+				configFile, err := ioutil.TempFile("", "config.yaml")
+				Expect(err).ToNot(HaveOccurred())
+				_, err = configFile.Write(completeConfigurationJSON)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(configFile.Close()).ToNot(HaveOccurred())
+
+				err = command.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(0))
+				Expect(service.CreateStagedVMExtensionCallCount()).To(Equal(0))
+				Expect(service.DeleteVMExtensionCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("when empty vm_extension configuration is provided", func() {
+			It("should delete existing vm extensions", func() {
+				configFile, err := ioutil.TempFile("", "config.yaml")
+				Expect(err).ToNot(HaveOccurred())
+				_, err = configFile.Write([]byte(`vmextensions-configuration: {}`))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(configFile.Close()).ToNot(HaveOccurred())
+
+				err = command.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(1))
+				Expect(service.DeleteVMExtensionCallCount()).To(Equal(2))
+			})
+		})
 		Context("when some director configuration flags are provided", func() {
 			It("only updates the config for the provided flags", func() {
 				err := command.Execute([]string{

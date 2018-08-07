@@ -74,6 +74,13 @@ security-configuration:
   trusted_certificates: some-certificate
 syslog-configuration:
   syslogconfig: awesome
+vmextensions-configuration:
+  some_vm_extension:
+    cloud_properties:
+      source_dest_check: false
+  some_other_vm_extension:
+    cloud_properties:
+      foo: bar
 ```
 
 #### Variables
