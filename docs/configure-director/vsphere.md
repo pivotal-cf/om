@@ -166,3 +166,16 @@ No additional security configuration is strictly required.
   }
 }
 ```
+
+#### --vmextensions-configuration
+
+##### Minimal example
+```json
+{
+  "some_vm_extension": {
+    "cloud_properties": {
+      "source_dest_check": false
+    }
+  }
+}
+```

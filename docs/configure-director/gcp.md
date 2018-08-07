@@ -127,3 +127,17 @@ This flag will set the network assignment for the BOSH Director tile itself.
   }
 }
 ```
+
+
+#### --vmextensions-configuration
+
+##### Minimal example
+```json
+{
+  "some_vm_extension": {
+    "cloud_properties": {
+      "source_dest_check": false
+    }
+  }
+}
+```
