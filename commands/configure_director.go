@@ -14,17 +14,18 @@ type ConfigureDirector struct {
 	service configureDirectorService
 	logger  logger
 	Options struct {
-		ConfigFile            string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
-		VarsFile              []string `long:"vars-file"  description:"Load variables from a YAML file"`
-		OpsFile               []string `long:"ops-file"  description:"YAML operations file"`
-		AZConfiguration       string   `short:"a" long:"az-configuration" description:"configures network availability zones"`
-		NetworksConfiguration string   `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
-		NetworkAssignment     string   `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
-		DirectorConfiguration string   `short:"d" long:"director-configuration" description:"properties for director configuration"`
-		IAASConfiguration     string   `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
-		SecurityConfiguration string   `short:"s" long:"security-configuration" decription:"security configuration properties for director"`
-		SyslogConfiguration   string   `short:"l" long:"syslog-configuration" decription:"syslog configuration properties for director"`
-		ResourceConfiguration string   `short:"r" long:"resource-configuration" decription:"resource configuration properties for director"`
+		ConfigFile                string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
+		VarsFile                  []string `long:"vars-file"  description:"Load variables from a YAML file"`
+		OpsFile                   []string `long:"ops-file"  description:"YAML operations file"`
+		AZConfiguration           string   `short:"a" long:"az-configuration" description:"configures network availability zones"`
+		NetworksConfiguration     string   `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
+		NetworkAssignment         string   `short:"na" long:"network-assignment" description:"assigns networks and AZs"`
+		DirectorConfiguration     string   `short:"d" long:"director-configuration" description:"properties for director configuration"`
+		IAASConfiguration         string   `short:"i" long:"iaas-configuration" description:"iaas specific JSON configuration for the bosh director"`
+		SecurityConfiguration     string   `short:"s" long:"security-configuration" decription:"security configuration properties for director"`
+		SyslogConfiguration       string   `short:"l" long:"syslog-configuration" decription:"syslog configuration properties for director"`
+		ResourceConfiguration     string   `short:"r" long:"resource-configuration" decription:"resource configuration properties for director"`
+		VMExtensionsConfiguration string   `short:"v" long:"vmextensions-configuration" decription:"vm extensions configuration properties"`
 	}
 }
 
@@ -39,6 +40,9 @@ type configureDirectorService interface {
 	UpdateStagedProductJobResourceConfig(string, string, api.JobProperties) error
 	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
 	GetStagedProductManifest(guid string) (manifest string, err error)
+	CreateStagedVMExtension(api.CreateVMExtension) error
+	ListStagedVMExtensions() ([]api.VMExtension, error)
+	DeleteVMExtension(name string) error
 }
 
 func NewConfigureDirector(service configureDirectorService, logger logger) ConfigureDirector {
@@ -109,6 +113,12 @@ func (c ConfigureDirector) Execute(args []string) error {
 		}
 		if config["resource-configuration"] != nil {
 			c.Options.ResourceConfiguration, err = getJSONProperties(config["resource-configuration"])
+			if err != nil {
+				return err
+			}
+		}
+		if config["vmextensions-configuration"] != nil {
+			c.Options.VMExtensionsConfiguration, err = getJSONProperties(config["vmextensions-configuration"])
 			if err != nil {
 				return err
 			}
@@ -223,6 +233,63 @@ func (c ConfigureDirector) Execute(args []string) error {
 		}
 
 		c.logger.Printf("finished configuring resource options for bosh tile")
+	}
+
+	if c.Options.VMExtensionsConfiguration != "" {
+		c.logger.Printf("started configuring vm extensions")
+
+		existingVMExtensionNames := make(map[string]api.VMExtension)
+		existingVMExtensions, err := c.service.ListStagedVMExtensions()
+		if err != nil {
+			return err
+		}
+		for _, vmextension := range existingVMExtensions {
+			existingVMExtensionNames[vmextension.Name] = vmextension
+		}
+		var userProvidedConfig map[string]json.RawMessage
+		err = json.Unmarshal([]byte(c.Options.VMExtensionsConfiguration), &userProvidedConfig)
+		if err != nil {
+			return fmt.Errorf("could not decode vmextensions-configuration json: %s", c.Options.VMExtensionsConfiguration)
+		}
+
+		var names []string
+		for name, _ := range userProvidedConfig {
+			names = append(names, name)
+		}
+
+		sort.Strings(names)
+
+		c.logger.Printf("applying vm-extensions configuration for the following:")
+		for _, name := range names {
+			c.logger.Printf("\t%s", name)
+
+			err := c.service.CreateStagedVMExtension(api.CreateVMExtension{
+				Name:            name,
+				CloudProperties: userProvidedConfig[name],
+			})
+			delete(existingVMExtensionNames, name)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		var namesToDelete []string
+		for extensionToDelete := range existingVMExtensionNames {
+			namesToDelete = append(namesToDelete, extensionToDelete)
+		}
+
+		sort.Strings(namesToDelete)
+		for _, extensionToDelete := range namesToDelete {
+			c.logger.Printf("deleting vm extension %s", extensionToDelete)
+			err = c.service.DeleteVMExtension(extensionToDelete)
+			if err != nil {
+				return err
+			}
+			c.logger.Printf("done deleting vm extension %s", extensionToDelete)
+		}
+
+		c.logger.Printf("finished configuring vm extensions")
 	}
 
 	return nil

@@ -24,10 +24,34 @@ var _ = Describe("VMExtensions", func() {
 		service = api.New(api.ApiInput{
 			Client: client,
 		})
-
-		client.DoReturns(&http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+		client.DoStub = func(req *http.Request) (*http.Response, error) {
+			if req.Method == "GET" {
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(strings.NewReader(
+						`{
+  "vm_extensions": [
+    {
+      "name": "vm_ext1",
+      "cloud_properties": {
+        "source_dest_check": false
+      }
+    },
+    {
+      "name": "vm_ext2",
+      "cloud_properties": {
+        "key_name": "operations_keypair"
+      }
+    }
+  ]
+}`,
+					))}, nil
+			} else {
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+			}
+		}
 	})
 
 	It("creates a VM Extension", func() {
@@ -53,6 +77,35 @@ var _ = Describe("VMExtensions", func() {
 		}`))
 	})
 
+	It("lists VM Extensions", func() {
+		vmextensions, err := service.ListStagedVMExtensions()
+
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(client.DoCallCount()).To(Equal(1))
+		req := client.DoArgsForCall(0)
+
+		Expect(req.Method).To(Equal("GET"))
+		Expect(req.URL.Path).To(Equal("/api/v0/staged/vm_extensions"))
+		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+		Expect(len(vmextensions)).Should(Equal(2))
+		Expect(vmextensions[0].Name).Should(Equal("vm_ext1"))
+		Expect(vmextensions[1].Name).Should(Equal("vm_ext2"))
+	})
+
+	It("deletes a VM Extension", func() {
+		err := service.DeleteVMExtension("some-vm-extension")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(client.DoCallCount()).To(Equal(1))
+		req := client.DoArgsForCall(0)
+
+		Expect(req.Method).To(Equal("DELETE"))
+		Expect(req.URL.Path).To(Equal("/api/v0/staged/vm_extensions/some-vm-extension"))
+		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+	})
+
 	Context("failure cases", func() {
 		It("returns an error when the http status is non-200", func() {
 
@@ -65,6 +118,25 @@ var _ = Describe("VMExtensions", func() {
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 			})
 
+			Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+		})
+		It("returns an error when the http status is non-200 for listing vm extensions", func() {
+
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+			_, err := service.ListStagedVMExtensions()
+
+			Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+		})
+		It("returns an error when the http status is non-200 for deleting vm extensions", func() {
+
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+
+			err := service.DeleteVMExtension("some-vm-extension")
 			Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 		})
 

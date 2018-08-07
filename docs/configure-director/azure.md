@@ -99,3 +99,17 @@ Azure does not configure or manage AZs and so this configuration is not required
   }
 }
 ```
+
+
+#### --vmextensions-configuration
+
+##### Minimal example
+```json
+{
+  "some_vm_extension": {
+    "cloud_properties": {
+      "source_dest_check": false
+    }
+  }
+}
+```
