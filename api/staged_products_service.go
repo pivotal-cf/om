@@ -178,8 +178,57 @@ func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
 	}, nil
 }
 
+func (a Api) isCollection(propertyName string, configuredProperties map[string]ResponseProperty) bool {
+	if val, ok := configuredProperties[propertyName]; ok {
+		if strings.EqualFold(val.Type, "collection") {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
+func (a Api) collectionElementGUID(propertyName, elementName string, configuredProperties map[string]ResponseProperty) string {
+	collection := configuredProperties[propertyName].Value
+	collectionArray := collection.([]interface{})
+	for _, element := range collectionArray {
+		elementMap := element.(map[interface{}]interface{})
+		if element, ok := elementMap["name"]; ok {
+			if strings.EqualFold(element.(map[interface{}]interface{})["value"].(string), elementName) {
+				return elementMap["guid"].(map[interface{}]interface{})["value"].(string)
+			}
+		}
+	}
+	return ""
+}
+
 func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesInput) error {
-	body := bytes.NewBufferString(fmt.Sprintf(`{"properties": %s}`, input.Properties))
+	currentConfiguredProperties, err := a.GetStagedProductProperties(input.GUID)
+	if err != nil {
+		return err
+	}
+
+	newProperties := make(map[string]interface{})
+	err = json.Unmarshal([]byte(input.Properties), &newProperties)
+	if err != nil {
+		return err
+	}
+	for propertyName, property := range newProperties {
+		if a.isCollection(propertyName, currentConfiguredProperties) {
+			collectionValue := property.(map[string]interface{})["value"].([]interface{})
+			for _, collectionElement := range collectionValue {
+				name := collectionElement.(map[string]interface{})["name"].(string)
+				guid := a.collectionElementGUID(propertyName, name, currentConfiguredProperties)
+				collectionElement.(map[string]interface{})["guid"] = guid
+			}
+		}
+	}
+
+	propertyJson, err := json.Marshal(newProperties)
+	if err != nil {
+		return err
+	}
+	body := bytes.NewBufferString(fmt.Sprintf(`{"properties": %s}`, propertyJson))
 	req, err := http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/properties", input.GUID), body)
 	if err != nil {
 		return err

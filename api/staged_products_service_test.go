@@ -476,9 +476,58 @@ var _ = Describe("StagedProducts", func() {
 				var resp *http.Response
 				switch req.URL.Path {
 				case "/api/v0/staged/products/some-product-guid/properties":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+					if req.Method == "GET" {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(bytes.NewBufferString(`{
+  "properties": {
+    "sample": {
+      "type": "string",
+      "configurable": false,
+      "credential": false,
+      "value": "account",
+      "optional": false
+    },
+    "some_collection": {
+      "type": "collection",
+      "configurable": true,
+      "credential": false,
+      "value": [
+        {
+          "guid": {
+            "type": "uuid",
+            "configurable": false,
+            "credential": false,
+            "value": "28bab1d3-4a4b-48d5-8dac-796adf078100",
+            "optional": false
+          },
+          "name": {
+            "type": "string",
+            "configurable": true,
+            "credential": false,
+            "value": "the_name",
+            "optional": false
+          },
+          "some_property": {
+            "type": "boolean",
+            "configurable": true,
+            "credential": false,
+            "value": true,
+            "optional": false
+          }
+        }
+      ],
+      "optional": false
+    },
+  }
+}
+`)),
+						}
+					} else {
+						resp = &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+						}
 					}
 				default:
 					Fail(fmt.Sprintf("unexpected request to '%s'", req.URL.Path))
@@ -497,8 +546,8 @@ var _ = Describe("StagedProducts", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("configuring the product properties")
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
+			Expect(client.DoCallCount()).To(Equal(2))
+			req := client.DoArgsForCall(1)
 			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
 			Expect(req.Method).To(Equal("PUT"))
 			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
@@ -510,6 +559,89 @@ var _ = Describe("StagedProducts", func() {
 					"key": "value"
 				}
 			}`))
+		})
+		Context("configure product contains collection", func() {
+			It("adds the guid for elements that exist", func() {
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
+					"key": "value",
+					"some_collection": {
+						"value": [
+							{
+								"name": "the_name",
+								"some_property": "property_value"
+							}
+						]
+					}
+				}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				By("configuring the product properties")
+				Expect(client.DoCallCount()).To(Equal(2))
+				req := client.DoArgsForCall(1)
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				reqBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reqBody).To(MatchJSON(`{
+				"properties": {
+					"key": "value",
+					"some_collection": {
+						"value": [
+							{
+								"name": "the_name",
+								"some_property": "property_value",
+								"guid": "28bab1d3-4a4b-48d5-8dac-796adf078100"
+							}
+						]
+					}
+				}
+			}`))
+			})
+			XIt("no guid added", func() {
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
+					"key": "value",
+					"some_collection": {
+						"value": [
+							{
+								"name": "other_name",
+								"some_property": "property_value"
+							}
+						]
+					}
+				}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				By("configuring the product properties")
+				Expect(client.DoCallCount()).To(Equal(2))
+				req := client.DoArgsForCall(1)
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				reqBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reqBody).To(MatchJSON(`{
+				"properties": {
+					"key": "value",
+					"some_collection": {
+						"value": [
+							{
+								"name": "other_name",
+								"some_property": "property_value"
+							}
+						]
+					}
+				}
+			}`))
+			})
 		})
 
 		Context("failure cases", func() {
