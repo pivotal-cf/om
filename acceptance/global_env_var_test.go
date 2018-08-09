@@ -1,9 +1,12 @@
 package acceptance
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"os"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -67,6 +70,43 @@ var _ = Describe("env var creds", func() {
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
+	})
+
+	It("takes precedence over the env file values", func() {
+		var err error
+		var configFile *os.File
+		configContent := `
+---
+password: some-env-provided-password
+username: some-env-provided-username
+target: %s
+skip-ssl-validation: true
+connect-timeout: 10
+`
+
+		server := testServer(true)
+
+		configFile, err = ioutil.TempFile("", "config.yml")
+		Expect(err).NotTo(HaveOccurred())
+
+		_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))
+		Expect(err).NotTo(HaveOccurred())
+
+		err = configFile.Close()
+		Expect(err).NotTo(HaveOccurred())
+
+		command := exec.Command(pathToMain,
+			"--env", configFile.Name(),
+			"curl",
+			"-p", "/api/v0/available_products",
+		)
+
+		command.Env = append(command.Env, "OM_USERNAME=invalid-username")
+		command.Env = append(command.Env, "OM_PASSWORD=invalid-password")
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+		Eventually(session).Should(gexec.Exit(1))
 	})
 })
 

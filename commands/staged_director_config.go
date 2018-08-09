@@ -133,7 +133,7 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 		return ec.handleMap(prefix, typedValue)
 
 	case []interface{}:
-		return ec.handleSlice (prefix, typedValue)
+		return ec.handleSlice(prefix, typedValue)
 
 	case string, nil:
 		if strings.Contains(prefix, "iaas-configuration") {

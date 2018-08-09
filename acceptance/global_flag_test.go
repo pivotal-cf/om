@@ -19,7 +19,7 @@ var _ = Describe("global flags", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
-			Expect(session.Out).Should(gbytes.Say("flag provided but not defined: -?"))
+			Expect(session.Err).Should(gbytes.Say("flag provided but not defined: -?"))
 		})
 	})
 
@@ -41,5 +41,25 @@ var _ = Describe("global flags", func() {
 
 			Eventually(session).Should(gexec.Exit(0))
 		})
+	})
+
+	It("takes precedence over the env var values", func() {
+		server := testServer(true)
+
+		command := exec.Command(pathToMain,
+			"--username", "some-env-provided-username",
+			"--password", "some-env-provided-password",
+			"--skip-ssl-validation",
+			"curl",
+			"-p", "/api/v0/available_products",
+		)
+		command.Env = append(command.Env, "OM_TARGET="+server.URL)
+		command.Env = append(command.Env, "PASSWORD=bogus")
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 	})
 })
