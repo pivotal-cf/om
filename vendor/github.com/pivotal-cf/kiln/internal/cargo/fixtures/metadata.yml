@@ -1,0 +1,60 @@
+---
+releases:
+- name: some-release-name
+  version: some-release-version
+
+stemcell_criteria:
+  os: some-stemcell-os
+  version: some-stemcell-version
+
+serial: true
+
+variables:
+- name: some-variable-name
+  options: some-variable-options
+  type: some-variable-type
+
+job_types:
+- name: some-job-type-name
+  instance_definition:
+    default: 0
+  templates:
+  - name: some-template-name
+    release: some-release-name
+    provides: |
+      client:
+        as: some-client
+        shared: true
+      server:
+        as: some-server
+        shared: true
+    consumes: |
+      client:
+        from: some-client
+      server:
+        from: some-server
+    manifest: |
+      key-1: value-1
+      key-2:
+        key-3: value-2
+  manifest: |
+    key-4: value-3
+    key-5:
+      key-6: value-4
+
+- name: other-job-type-name
+  errand: true
+  instance_definition:
+    default: 2
+  templates:
+  - name: other-template-name
+    release: some-release-name
+    consumes: |
+      client:
+        from: some-client
+      server:
+        from: some-server
+    manifest: |
+      key-1: value-1
+      key-2:
+        key-3: value-2

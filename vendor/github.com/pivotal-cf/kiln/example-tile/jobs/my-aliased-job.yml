@@ -1,0 +1,6 @@
+name: my-job
+alias: my-aliased-job
+release: my-release
+manifest: |
+  job-properties:
+    example: "alias-example"

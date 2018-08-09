@@ -1,0 +1,17 @@
+---
+post_deploy_errands:
+- colocated: true
+  description: some-description
+  instances:
+  - control/first
+  label: some-label
+  name: some-name
+  run_default: true
+pre_delete_errands:
+- colocated: true
+  description: some-description
+  instances:
+  - control/first
+  label: some-label
+  name: some-name
+  run_default: true

@@ -2,314 +2,176 @@
 
 
 [[projects]]
-  digest = "1:d043e5ae59276188d876090c261c311e146792c0908e08e67e766b1020a72d00"
   name = "github.com/PuerkitoBio/goquery"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "a86ea073017a6beddef78c8659e7224e8ca634b0"
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:fc86904a62ac4bfff8cfbe94f42231ce3d8cea8fe2506d5293eaef468f8eaecf"
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "901648c87902174f774fac311d7f176f8647bdaa"
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:0d47d0ff8f835c21bb6119829aab978468b921a57aa49622f7de6a88ae6df10c"
   name = "github.com/bmatcuk/doublestar"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
   version = "v1.0.9"
 
 [[projects]]
   branch = "master"
-  digest = "1:58927c45bfdcd6550e5f1ab008eeeb6951474a232afa1dc690583f26c5f92cbd"
   name = "github.com/charlievieth/fs"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
 
 [[projects]]
-  digest = "1:34649cbdc8f75148581f0f7398b14c1ce3ac774719694bc4a929e0b2f00b732d"
   name = "github.com/cloudfoundry/bosh-cli"
   packages = ["director/template"]
-  pruneopts = "NUT"
   revision = "712bfd7271b478ba03c3f604339e2eefbec4647c"
   version = "v3.0.1"
 
 [[projects]]
   branch = "master"
-  digest = "1:071f0379869c818446f9d685b132d1a3955ef8487e4aad5f5cf025787e33465c"
   name = "github.com/cloudfoundry/bosh-utils"
-  packages = [
-    "errors",
-    "logger",
-    "system",
-  ]
-  pruneopts = "NUT"
+  packages = ["errors","logger","system"]
   revision = "fad7a5ad622c066cf1b36eb44b9612cec680e48c"
 
 [[projects]]
   branch = "master"
-  digest = "1:71570cb9af58f4981cd3b6ac9902b37e978e1f3c34f35a04a3a4837ea542500f"
   name = "github.com/cppforlife/go-patch"
   packages = ["patch"]
-  pruneopts = "NUT"
   revision = "250da0e0e68ce3367b4302f34218f6c064eb9559"
 
 [[projects]]
   branch = "threaded"
-  digest = "1:abe37043b0ba1a2e3a306dcd66e63c822614a0e87a413e224b40e559fcc57c31"
   name = "github.com/fredwangwang/formcontent"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "693fd491b02cbc57ea30b399611245ff2a5d9c9e"
 
 [[projects]]
-  digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
   name = "github.com/ghodss/yaml"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:9f35c1344b56e5868d511d231f215edd0650aa572664f856444affdd256e43e4"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  pruneopts = "NUT"
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
   name = "github.com/google/go-querystring"
   packages = ["query"]
-  pruneopts = "NUT"
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
   branch = "master"
-  digest = "1:b87f828d0392f61272dbfd2f5f5d39cdad674a4b604441e3fc4119c2e98ac92d"
   name = "github.com/gosuri/uilive"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "ac356e6e42cd31fcef8e6aec13ae9ed6fe87713e"
 
 [[projects]]
-  digest = "1:bc4f7eec3b7be8c6cb1f0af6c1e3333d5bb71072951aaaae2f05067b0803f287"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
 
 [[projects]]
-  digest = "1:cb591533458f6eb6e2c1065ff3eac6b50263d7847deb23fc9f79b25bc608970e"
   name = "github.com/mattn/go-runewidth"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
   version = "v0.0.2"
 
 [[projects]]
   branch = "master"
-  digest = "1:8ba3f1b3c0cb6d601b3a8d3dfc3a899768614e77ff89a30c6eefdc34f75ff5ee"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "f15292f7a699fcc1a38a80977f80a046874ba8ac"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/pointerstructure"
+  packages = ["."]
+  revision = "f2329fcfa9e280bdb5a3f2544aec815a508ad72f"
+
+[[projects]]
+  branch = "master"
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
-  digest = "1:1db9a4493430dbd0eb8ce02483e7db6a94f80b4c58a7e901e4a9cf2be227b27e"
   name = "github.com/onsi/ginkgo"
-  packages = [
-    ".",
-    "config",
-    "extensions/table",
-    "internal/codelocation",
-    "internal/containernode",
-    "internal/failer",
-    "internal/leafnodes",
-    "internal/remote",
-    "internal/spec",
-    "internal/spec_iterator",
-    "internal/specrunner",
-    "internal/suite",
-    "internal/testingtproxy",
-    "internal/writer",
-    "reporters",
-    "reporters/stenographer",
-    "reporters/stenographer/support/go-colorable",
-    "reporters/stenographer/support/go-isatty",
-    "types",
-  ]
-  pruneopts = "NUT"
+  packages = [".","config","extensions/table","internal/codelocation","internal/containernode","internal/failer","internal/leafnodes","internal/remote","internal/spec","internal/spec_iterator","internal/specrunner","internal/suite","internal/testingtproxy","internal/writer","reporters","reporters/stenographer","reporters/stenographer/support/go-colorable","reporters/stenographer/support/go-isatty","types"]
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:32b6e270bb2709e5dee469d2319b90ee73137eb2b153b33f8093bd170aa1b999"
   name = "github.com/onsi/gomega"
-  packages = [
-    ".",
-    "format",
-    "gbytes",
-    "gexec",
-    "internal/assertion",
-    "internal/asyncassertion",
-    "internal/oraclematcher",
-    "internal/testingtsupport",
-    "matchers",
-    "matchers/support/goraph/bipartitegraph",
-    "matchers/support/goraph/edge",
-    "matchers/support/goraph/node",
-    "matchers/support/goraph/util",
-    "types",
-  ]
-  pruneopts = "NUT"
+  packages = [".","format","gbytes","gexec","internal/assertion","internal/asyncassertion","internal/oraclematcher","internal/testingtsupport","matchers","matchers/support/goraph/bipartitegraph","matchers/support/goraph/edge","matchers/support/goraph/node","matchers/support/goraph/util","types"]
   revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
   version = "v1.3.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:dafa5a11eca4a8af372af47a61cbb1bd0bc8d5560b4fe5107fd6438f8b92998c"
   name = "github.com/pivotal-cf/jhanda"
-  packages = [
-    ".",
-    "internal/parser",
-  ]
-  pruneopts = "NUT"
+  packages = [".","internal/parser"]
   revision = "1b5ae1681a4554242f0daaea5c97bf1ea80aa761"
 
 [[projects]]
   branch = "master"
-  digest = "1:0acb8dfe68c725924028244697d888424efb93c83dc4846387c12954dccaa378"
   name = "github.com/pivotal-cf/kiln"
   packages = ["proofing"]
-  pruneopts = "NUT"
   revision = "9c0f5ac8553d4e981aec5d24d55f14936bfb7d3c"
 
 [[projects]]
   branch = "master"
-  digest = "1:2db735e26033656283519bf752a6c8b5065c8564952f36c8929a267f06869049"
   name = "golang.org/x/net"
-  packages = [
-    "context",
-    "context/ctxhttp",
-    "html",
-    "html/atom",
-    "html/charset",
-  ]
-  pruneopts = "NUT"
+  packages = ["context","context/ctxhttp","html","html/atom","html/charset"]
   revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
-  digest = "1:a3babe25b178a29383a5e0a1d61630815aa7474acaa8f28e254d34376f51afd0"
   name = "golang.org/x/oauth2"
-  packages = [
-    ".",
-    "clientcredentials",
-    "internal",
-  ]
-  pruneopts = "NUT"
+  packages = [".","clientcredentials","internal"]
   revision = "fdc9e635145ae97e6c2cb777c48305600cf515cb"
 
 [[projects]]
   branch = "master"
-  digest = "1:99e2680036a6e92ede18602debb98bb8e620a7d67ca11b3fc21a9c9ab5be3e79"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  pruneopts = "NUT"
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
-  digest = "1:f7ca85eff16bc0c23cdbed0f3b5a97cc40a62e167fbf0aab861dfc7600820d2c"
   name = "golang.org/x/text"
-  packages = [
-    "encoding",
-    "encoding/charmap",
-    "encoding/htmlindex",
-    "encoding/internal",
-    "encoding/internal/identifier",
-    "encoding/japanese",
-    "encoding/korean",
-    "encoding/simplifiedchinese",
-    "encoding/traditionalchinese",
-    "encoding/unicode",
-    "internal/gen",
-    "internal/tag",
-    "internal/utf8internal",
-    "language",
-    "runes",
-    "transform",
-    "unicode/cldr",
-  ]
-  pruneopts = "NUT"
+  packages = ["encoding","encoding/charmap","encoding/htmlindex","encoding/internal","encoding/internal/identifier","encoding/japanese","encoding/korean","encoding/simplifiedchinese","encoding/traditionalchinese","encoding/unicode","internal/gen","internal/tag","internal/utf8internal","language","runes","transform","unicode/cldr"]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:c673a656f14b2433d5d9b6e06371073b0066de710a252616bc884db3b6fa51f9"
   name = "google.golang.org/appengine"
-  packages = [
-    "internal",
-    "internal/base",
-    "internal/datastore",
-    "internal/log",
-    "internal/remote_api",
-    "internal/urlfetch",
-    "urlfetch",
-  ]
-  pruneopts = "NUT"
+  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:829600691c61c34b821dd7454dc3e7de5a01a4cecc727ddaa1ae323ef725f614"
   name = "gopkg.in/cheggaaa/pb.v1"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "72b964305fba1230d3d818711138195f22b9ceea"
   version = "v1.0.22"
 
 [[projects]]
-  digest = "1:7c95b35057a0ff2e19f707173cc1a947fa43a6eb5c4d300d196ece0334046082"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  pruneopts = "NUT"
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/PuerkitoBio/goquery",
-    "github.com/cloudfoundry/bosh-cli/director/template",
-    "github.com/cppforlife/go-patch/patch",
-    "github.com/fredwangwang/formcontent",
-    "github.com/ghodss/yaml",
-    "github.com/google/go-querystring/query",
-    "github.com/gosuri/uilive",
-    "github.com/olekukonko/tablewriter",
-    "github.com/onsi/ginkgo",
-    "github.com/onsi/ginkgo/extensions/table",
-    "github.com/onsi/gomega",
-    "github.com/onsi/gomega/gbytes",
-    "github.com/onsi/gomega/gexec",
-    "github.com/pivotal-cf/jhanda",
-    "github.com/pivotal-cf/kiln/proofing",
-    "golang.org/x/oauth2",
-    "golang.org/x/oauth2/clientcredentials",
-    "gopkg.in/cheggaaa/pb.v1",
-    "gopkg.in/yaml.v2",
-  ]
+  inputs-digest = "23e4661c05a15b446912ca7e739c58bba684e2cb5fc39e22ca786b377ba848ad"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -602,12 +602,12 @@ var _ = Describe("StagedProducts", func() {
 				}
 			}`))
 			})
-			XIt("no guid added", func() {
+			It("no guid added", func() {
 				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
 					GUID: "some-product-guid",
 					Properties: `{
 					"key": "value",
-					"some_collection": {
+					"some_other_collection": {
 						"value": [
 							{
 								"name": "other_name",
@@ -631,7 +631,7 @@ var _ = Describe("StagedProducts", func() {
 				Expect(reqBody).To(MatchJSON(`{
 				"properties": {
 					"key": "value",
-					"some_collection": {
+					"some_other_collection": {
 						"value": [
 							{
 								"name": "other_name",
