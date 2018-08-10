@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mitchellh/pointerstructure"
 	"gopkg.in/yaml.v2"
 )
 
@@ -184,31 +183,67 @@ func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
 }
 
 func (a Api) getString(element interface{}, key string) (string, error) {
-	value, err := pointerstructure.Get(element, key)
+	value, err := a.get(element, key)
 	if err != nil {
 		return "", err
 	}
-	return value.(string), nil
+	strVal, ok := value.(string)
+	if ok {
+		return strVal, nil
+	}
+	return "", fmt.Errorf("element %v with key %s is not a string", element, key)
+}
+
+func (a Api) set(element interface{}, key, value string) error {
+	mapString, ok := element.(map[string]interface{})
+	if ok {
+		mapString[key] = value
+		return nil
+	}
+	mapInterface, ok := element.(map[interface{}]interface{})
+	if ok {
+		mapInterface[key] = value
+		return nil
+	}
+	return fmt.Errorf("Unexpected type %v", element)
+}
+
+func (a Api) get(element interface{}, key string) (interface{}, error) {
+	mapString, ok := element.(map[string]interface{})
+	if ok {
+		return mapString[key], nil
+	}
+	mapInterface, ok := element.(map[interface{}]interface{})
+	if ok {
+		return mapInterface[key], nil
+	}
+	return nil, fmt.Errorf("Unexpected type %v", element)
 }
 
 func (a Api) collectionElementGUID(propertyName, elementName string, configuredProperties map[string]ResponseProperty) (string, error) {
 	collection := configuredProperties[propertyName].Value
 	collectionArray := collection.([]interface{})
 	for _, collectionElement := range collectionArray {
-		element, err := pointerstructure.Get(collectionElement, "/name")
-		if err == nil {
-			currentElement, err := a.getString(element, "/value")
+		element, err := a.get(collectionElement, "name")
+		if err != nil {
+			return "", err
+		}
+		currentElement, err := a.getString(element, "value")
+		if err != nil {
+			return "", err
+		}
+		if currentElement == elementName {
+			guidElement, err := a.get(collectionElement, "guid")
 			if err != nil {
 				return "", err
 			}
-			if currentElement == elementName {
-				guid, err := a.getString(collectionElement, "/guid/value")
-				if err != nil {
-					return "", err
-				}
-				return guid, nil
+			guid, err := a.getString(guidElement, "value")
+			if err != nil {
+				return "", err
 			}
+			return guid, nil
 		}
+
 	}
 	return "", nil
 }
@@ -227,12 +262,12 @@ func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesIn
 	for propertyName, property := range newProperties {
 		configuredProperty := currentConfiguredProperties[propertyName]
 		if configuredProperty.isCollection() {
-			collectionValue, err := pointerstructure.Get(property, "/value")
+			collectionValue, err := a.get(property, "value")
 			if err != nil {
 				return err
 			}
 			for _, collectionElement := range collectionValue.([]interface{}) {
-				name, err := a.getString(collectionElement, "/name")
+				name, err := a.getString(collectionElement, "name")
 				if err != nil {
 					return err
 				}
@@ -240,7 +275,7 @@ func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesIn
 				if err != nil {
 					return err
 				}
-				_, err = pointerstructure.Set(collectionElement, "/guid", guid)
+				err = a.set(collectionElement, "guid", guid)
 				if err != nil {
 					return err
 				}

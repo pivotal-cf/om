@@ -87,18 +87,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/mitchellh/mapstructure"
-  packages = ["."]
-  revision = "f15292f7a699fcc1a38a80977f80a046874ba8ac"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/mitchellh/pointerstructure"
-  packages = ["."]
-  revision = "f2329fcfa9e280bdb5a3f2544aec815a508ad72f"
-
-[[projects]]
-  branch = "master"
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
   revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
@@ -172,6 +160,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "23e4661c05a15b446912ca7e739c58bba684e2cb5fc39e22ca786b377ba848ad"
+  inputs-digest = "96d45ae4c487d377682d911125ffe53d025211f21f4cce3ad0c693c1222cb155"
   solver-name = "gps-cdcl"
   solver-version = 1
