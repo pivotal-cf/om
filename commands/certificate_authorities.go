@@ -49,5 +49,6 @@ func (c CertificateAuthorities) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "lists certificates managed by Ops Manager",
 		ShortDescription: "lists certificates managed by Ops Manager",
+		Flags:            c.Options,
 	}
 }
