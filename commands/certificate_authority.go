@@ -51,9 +51,10 @@ func (c CertificateAuthority) Execute(args []string) error {
 	return fmt.Errorf("could not find a certificate authority with ID: %q", c.Options.ID)
 }
 
-func (CertificateAuthority) Usage() jhanda.Usage {
+func (c CertificateAuthority) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "prints requested certificate authority",
 		ShortDescription: "prints requested certificate authority",
+		Flags:            c.Options,
 	}
 }

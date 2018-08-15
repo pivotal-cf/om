@@ -152,6 +152,7 @@ var _ = Describe("Certificate Authority", func() {
 			Expect(certificateAuthority.Usage()).To(Equal(jhanda.Usage{
 				Description:      "prints requested certificate authority",
 				ShortDescription: "prints requested certificate authority",
+				Flags:            certificateAuthority.Options,
 			}))
 		})
 	})
