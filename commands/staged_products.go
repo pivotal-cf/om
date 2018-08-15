@@ -50,5 +50,6 @@ func (sp StagedProducts) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command lists all staged products.",
 		ShortDescription: "lists staged products",
+		Flags:            sp.Options,
 	}
 }
