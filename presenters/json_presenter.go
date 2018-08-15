@@ -46,6 +46,10 @@ func (j JSONPresenter) PresentCertificateAuthority(certificateAuthority api.CA) 
 	j.encodeJSON(certificateAuthority)
 }
 
+func (j JSONPresenter) PresentSSLCertificate(certificate api.SSLCertificate) {
+	j.encodeJSON(certificate)
+}
+
 func (j JSONPresenter) PresentInstallations(installations []models.Installation) {
 	j.encodeJSON(installations)
 }

@@ -46,6 +46,7 @@ Commands:
   delete-certificate-authority    deletes a certificate authority on the Ops Manager
   delete-installation             deletes all the products on the Ops Manager targeted
   delete-product                  deletes a product from the Ops Manager
+  delete-ssl-certificate          deletes certificate applied to Ops Manager
   delete-unused-products          deletes unused products on the Ops Manager targeted
   deployed-manifest               prints the deployed manifest for a product
   deployed-products               lists deployed products
@@ -62,12 +63,14 @@ Commands:
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   set-errand-state                **DEPRECATED** (use configure-product instead) sets state for a product's errand
+  ssl-certificate                 gets certificates applied to Ops Manager
   stage-product                   stages a given product in the Ops Manager targeted
   staged-config                   **EXPERIMENTAL** generates a config from a staged product
   staged-director-config          **EXPERIMENTAL** generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
   unstage-product                 unstages a given product from the Ops Manager targeted
+  update-ssl-certificate          updates the SSL Certificate on the Ops Manager
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted
   version                         prints the om release version
