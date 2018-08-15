@@ -25,6 +25,11 @@ type Presenter struct {
 	presentCertificateAuthorityArgsForCall []struct {
 		arg1 api.CA
 	}
+	PresentSSLCertificateStub        func(api.SSLCertificate)
+	presentSSLCertificateMutex       sync.RWMutex
+	presentSSLCertificateArgsForCall []struct {
+		arg1 api.SSLCertificate
+	}
 	PresentCredentialReferencesStub        func([]string)
 	presentCredentialReferencesMutex       sync.RWMutex
 	presentCredentialReferencesArgsForCall []struct {
@@ -165,6 +170,30 @@ func (fake *Presenter) PresentCertificateAuthorityArgsForCall(i int) api.CA {
 	defer fake.presentCertificateAuthorityMutex.RUnlock()
 	argsForCall := fake.presentCertificateAuthorityArgsForCall[i]
 	return argsForCall.arg1
+}
+
+func (fake *Presenter) PresentSSLCertificate(arg1 api.SSLCertificate) {
+	fake.presentSSLCertificateMutex.Lock()
+	fake.presentSSLCertificateArgsForCall = append(fake.presentSSLCertificateArgsForCall, struct {
+		arg1 api.SSLCertificate
+	}{arg1})
+	fake.recordInvocation("PresentSSLCertificate", []interface{}{arg1})
+	fake.presentSSLCertificateMutex.Unlock()
+	if fake.PresentSSLCertificateStub != nil {
+		fake.PresentSSLCertificateStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentSSLCertificateCallCount() int {
+	fake.presentSSLCertificateMutex.RLock()
+	defer fake.presentSSLCertificateMutex.RUnlock()
+	return len(fake.presentSSLCertificateArgsForCall)
+}
+
+func (fake *Presenter) PresentSSLCertificateArgsForCall(i int) api.SSLCertificate {
+	fake.presentSSLCertificateMutex.RLock()
+	defer fake.presentSSLCertificateMutex.RUnlock()
+	return fake.presentSSLCertificateArgsForCall[i].arg1
 }
 
 func (fake *Presenter) PresentCredentialReferences(arg1 []string) {
@@ -423,6 +452,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
 	fake.presentCertificateAuthorityMutex.RLock()
 	defer fake.presentCertificateAuthorityMutex.RUnlock()
+	fake.presentSSLCertificateMutex.RLock()
+	defer fake.presentSSLCertificateMutex.RUnlock()
 	fake.presentCredentialReferencesMutex.RLock()
 	defer fake.presentCredentialReferencesMutex.RUnlock()
 	fake.presentCredentialsMutex.RLock()

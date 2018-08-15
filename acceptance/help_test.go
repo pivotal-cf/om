@@ -49,6 +49,7 @@ Commands:
   delete-certificate-authority    deletes a certificate authority on the Ops Manager
   delete-installation             deletes all the products on the Ops Manager targeted
   delete-product                  deletes a product from the Ops Manager
+  delete-ssl-certificate          deletes certificate applied to Ops Manager
   delete-unused-products          deletes unused products on the Ops Manager targeted
   deployed-manifest               prints the deployed manifest for a product
   deployed-products               lists deployed products
@@ -65,6 +66,7 @@ Commands:
   pending-changes                 lists pending changes
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
+  ssl-certificate                 gets certificate applied to Ops Manager
   stage-product                   stages a given product in the Ops Manager targeted
   staged-config                   **EXPERIMENTAL** generates a config from a staged product
   staged-director-config          **EXPERIMENTAL** generates a config from a staged director
@@ -72,6 +74,7 @@ Commands:
   staged-products                 lists staged products
   tile-metadata                   prints tile metadata
   unstage-product                 unstages a given product from the Ops Manager targeted
+  update-ssl-certificate          updates the SSL Certificate on the Ops Manager
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted
   version                         prints the om release version
@@ -103,7 +106,6 @@ Command Arguments:
   --no-proxy                    string             comma-separated list of hosts that do not go through the proxy
   --password, -p, OM_PASSWORD   string (required)  admin password
   --username, -u, OM_USERNAME   string (required)  admin username
-
 `
 
 var _ = Describe("help", func() {
