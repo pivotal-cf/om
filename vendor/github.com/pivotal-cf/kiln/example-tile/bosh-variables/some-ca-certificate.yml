@@ -1,5 +1,0 @@
-- name: some-ca-certificate
-  type: certificate
-  options:
-    common_name: 'ca.example.com'
-    is_ca: true

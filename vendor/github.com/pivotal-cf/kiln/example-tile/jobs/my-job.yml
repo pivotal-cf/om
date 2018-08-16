@@ -1,5 +1,0 @@
-name: my-job
-release: my-release
-manifest: |
-  job-properties:
-    example: "example"

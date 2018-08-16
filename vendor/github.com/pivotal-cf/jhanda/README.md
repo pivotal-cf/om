@@ -1,3 +1,0 @@
-# Jhanda
-
-Flag parsing library.

@@ -1,5 +1,0 @@
-name: my-runtime-config
-runtime_config: |
-  releases:
-  - name: my-release
-    version: 1.2.3
