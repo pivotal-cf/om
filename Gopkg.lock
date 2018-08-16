@@ -18,7 +18,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:0d47d0ff8f835c21bb6119829aab978468b921a57aa49622f7de6a88ae6df10c"
+  digest = "1:69b95d47eef70cba62af2aa3d33bd5f9ffe9fa0be66d79d79150c38796c6eac1"
   name = "github.com/bmatcuk/doublestar"
   packages = ["."]
   pruneopts = "NUT"
@@ -34,7 +34,7 @@
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
 
 [[projects]]
-  digest = "1:34649cbdc8f75148581f0f7398b14c1ce3ac774719694bc4a929e0b2f00b732d"
+  digest = "1:24fc51072bca32204c162b79ede835505b3c5c5cce4e2e0cd6184ff2376486c9"
   name = "github.com/cloudfoundry/bosh-cli"
   packages = ["director/template"]
   pruneopts = "NUT"
@@ -43,7 +43,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:071f0379869c818446f9d685b132d1a3955ef8487e4aad5f5cf025787e33465c"
+  digest = "1:6b48145085df4401bc70473cc4da1a3b9f98a79232fe59855083eaaea90567c5"
   name = "github.com/cloudfoundry/bosh-utils"
   packages = [
     "errors",
@@ -63,11 +63,11 @@
 
 [[projects]]
   branch = "threaded"
-  digest = "1:abe37043b0ba1a2e3a306dcd66e63c822614a0e87a413e224b40e559fcc57c31"
+  digest = "1:98b20ab737949ad7e1f922bbbcfb8599aacb954b36fe89efffcb9c11e59ff314"
   name = "github.com/fredwangwang/formcontent"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "693fd491b02cbc57ea30b399611245ff2a5d9c9e"
+  revision = "399803444952249b6f88be8c4a2adc4dae5f5270"
 
 [[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
@@ -126,7 +126,7 @@
   revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
-  digest = "1:1db9a4493430dbd0eb8ce02483e7db6a94f80b4c58a7e901e4a9cf2be227b27e"
+  digest = "1:10621c39d6d019314d0ef4d28de9a9f6a065449398f06f73ac3c6a5ae0b6f44e"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -154,7 +154,7 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:32b6e270bb2709e5dee469d2319b90ee73137eb2b153b33f8093bd170aa1b999"
+  digest = "1:c1c74479c219daed94a374e5ba7cdab754a279532e76c00df29cc616ebc0ce59"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -178,7 +178,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dafa5a11eca4a8af372af47a61cbb1bd0bc8d5560b4fe5107fd6438f8b92998c"
+  digest = "1:622460e872a1d6c8e7545df51795441cb88115705d097b3321600e77b89d4159"
   name = "github.com/pivotal-cf/jhanda"
   packages = [
     ".",
@@ -197,7 +197,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2db735e26033656283519bf752a6c8b5065c8564952f36c8929a267f06869049"
+  digest = "1:f93cddc43b49e792b425587f67b6b95013b37d2eb649ad350dadc0717d626904"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -211,7 +211,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a3babe25b178a29383a5e0a1d61630815aa7474acaa8f28e254d34376f51afd0"
+  digest = "1:201a5caa901db0b0bca066c6d0c0279b1fdd385ae5e91af5a70029c273313962"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
@@ -230,7 +230,7 @@
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
-  digest = "1:f7ca85eff16bc0c23cdbed0f3b5a97cc40a62e167fbf0aab861dfc7600820d2c"
+  digest = "1:7c61a813b250ba8bb02bebb0382e6c3d00e04da2b577dc58985b86312fb89ffd"
   name = "golang.org/x/text"
   packages = [
     "encoding",
@@ -256,7 +256,7 @@
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:c673a656f14b2433d5d9b6e06371073b0066de710a252616bc884db3b6fa51f9"
+  digest = "1:f229c599a645bffd97518107ac89955adfa6d5e5e4efa3e8cadb29789219639f"
   name = "google.golang.org/appengine"
   packages = [
     "internal",
