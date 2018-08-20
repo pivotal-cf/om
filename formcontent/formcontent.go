@@ -27,7 +27,7 @@ type ContentSubmission struct {
 	ContentLength int64
 }
 
-func NewForm() (*Form) {
+func NewForm() *Form {
 	buf := &bytes.Buffer{}
 
 	pr, pw := io.Pipe()
@@ -80,7 +80,7 @@ func (f *Form) AddFile(key string, path string) error {
 	return nil
 }
 
-func (f *Form) Finalize() (ContentSubmission) {
+func (f *Form) Finalize() ContentSubmission {
 	f.formWriter.Close()
 
 	// add the length of form fields, including trailing boundary

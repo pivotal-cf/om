@@ -62,14 +62,6 @@
   revision = "250da0e0e68ce3367b4302f34218f6c064eb9559"
 
 [[projects]]
-  branch = "threaded"
-  digest = "1:98b20ab737949ad7e1f922bbbcfb8599aacb954b36fe89efffcb9c11e59ff314"
-  name = "github.com/fredwangwang/formcontent"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "399803444952249b6f88be8c4a2adc4dae5f5270"
-
-[[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
   name = "github.com/ghodss/yaml"
   packages = ["."]
@@ -301,7 +293,6 @@
     "github.com/PuerkitoBio/goquery",
     "github.com/cloudfoundry/bosh-cli/director/template",
     "github.com/cppforlife/go-patch/patch",
-    "github.com/fredwangwang/formcontent",
     "github.com/ghodss/yaml",
     "github.com/google/go-querystring/query",
     "github.com/gosuri/uilive",

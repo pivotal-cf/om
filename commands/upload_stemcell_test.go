@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/formcontent"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/validator"
 
 	"strconv"

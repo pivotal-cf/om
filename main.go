@@ -13,11 +13,11 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
 
-	"github.com/fredwangwang/formcontent"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
+	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
