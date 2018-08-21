@@ -172,6 +172,7 @@ func main() {
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
+	commandSet["tile-metadata"] = commands.NewTileMetadata(stdout)
 	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, api, stdout)
