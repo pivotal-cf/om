@@ -33,6 +33,13 @@ var _ = Describe("TileMetadata", func() {
 			productFile, err = ioutil.TempFile("", "fake-tile")
 			z := zip.NewWriter(productFile)
 
+			// https://github.com/pivotal-cf/om/issues/239
+			// writing a "directory" as well, because some tiles seem to
+			// have this as a separate file in the zip, which influences the regexp
+			// needed to capture the metadata file
+			_, err := z.Create("metadata/")
+			Expect(err).NotTo(HaveOccurred())
+
 			f, err := z.Create("metadata/fake-tile.yml")
 			Expect(err).NotTo(HaveOccurred())
 
