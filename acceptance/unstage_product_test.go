@@ -17,7 +17,6 @@ import (
 
 var _ = Describe("unstage-product command", func() {
 	var (
-		stageRequest       string
 		stageRequestMethod string
 		server             *httptest.Server
 	)
@@ -60,9 +59,8 @@ var _ = Describe("unstage-product command", func() {
 					}
 					responseString = `{}`
 					stageRequestMethod = req.Method
-					reqBody, err := ioutil.ReadAll(req.Body)
+					_, err := ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
-					stageRequest = string(reqBody)
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())
@@ -115,9 +113,8 @@ var _ = Describe("unstage-product command", func() {
 					}
 					responseString = `[]`
 					stageRequestMethod = req.Method
-					reqBody, err := ioutil.ReadAll(req.Body)
+					_, err := ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
-					stageRequest = string(reqBody)
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())

@@ -74,7 +74,7 @@ var _ = Describe("export-installation command", func() {
 		Eventually(session, 5).Should(gexec.Exit(0))
 		Expect(session.Err).To(gbytes.Say("exporting installation"))
 		Expect(session.Err).To(gbytes.Say("waiting for response"))
-		Expect(session.Err).To(gbytes.Say(`100(\.\d+)?%`))
+		Expect(session.Err).To(gbytes.Say(`100(\.\d+)?`))
 		Expect(session.Err).To(gbytes.Say("finished exporting installation"))
 
 		content, err := ioutil.ReadFile(outputFileName)

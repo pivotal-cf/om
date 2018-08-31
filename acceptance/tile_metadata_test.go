@@ -15,11 +15,12 @@ import (
 var _ = Describe("tile-metadata command", func() {
 	var (
 		productFile *os.File
-		err         error
 	)
 
 	BeforeEach(func() {
+		var err error
 		productFile, err = ioutil.TempFile("", "fake-tile")
+		Expect(err).NotTo(HaveOccurred())
 		z := zip.NewWriter(productFile)
 
 		f, err := z.Create("metadata/fake-tile.yml")
