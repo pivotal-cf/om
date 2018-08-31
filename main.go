@@ -89,7 +89,9 @@ func main() {
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
 	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout)
+	retryCount := 2
+	retryDelay := 5 * time.Second
+	unauthenticatedClient = network.NewRetryClient(network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout), retryCount, retryDelay)
 	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout, connectTimeout)
 	if err != nil {
 		stderr.Fatal(err)
