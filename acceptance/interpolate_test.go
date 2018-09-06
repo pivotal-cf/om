@@ -25,7 +25,7 @@ var _ = Describe("interpolate command", func() {
 		It("outputs a YAML file", func() {
 			yamlFile := createFile("---\nname: bob\nage: 100")
 			command := exec.Command(pathToMain,
-				"interpolate", "-c", yamlFile.Name(),
+				"interpolate", "--config", yamlFile.Name(),
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -44,8 +44,8 @@ name: bob
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				command := exec.Command(pathToMain,
 					"interpolate",
-					"-c", yamlFile.Name(),
-					"-l", varsFile.Name(),
+					"--config", yamlFile.Name(),
+					"--vars-file", varsFile.Name(),
 				)
 				defer varsFile.Close()
 				defer yamlFile.Close()
@@ -66,9 +66,9 @@ name: moe
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				command := exec.Command(pathToMain,
 					"interpolate",
-					"-c", yamlFile.Name(),
-					"-l", vars1File.Name(),
-					"-l", vars2File.Name(),
+					"--config", yamlFile.Name(),
+					"--vars-file", vars1File.Name(),
+					"--vars-file", vars2File.Name(),
 				)
 				defer vars1File.Close()
 				defer vars2File.Close()
@@ -228,7 +228,7 @@ hash:
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				command := exec.Command(pathToMain,
 					"interpolate",
-					"-c", yamlFile.Name(),
+					"--config", yamlFile.Name(),
 				)
 				defer yamlFile.Close()
 
