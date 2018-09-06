@@ -1,6 +1,6 @@
 &larr; [back to Commands](../README.md)
 
-# `om staged-product`
+# `om staged-config`
 
 The `staged-config` command will export a YAML config file that can be used with `configure-product`.
 
@@ -13,7 +13,7 @@ Usage: om [options] staged-config [<args>]
   --client-id, -c, OM_CLIENT_ID          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
   --connect-timeout, -o                  int     timeout in seconds to make TCP connections (default: 5)
-  --format, -f                           string  Format to print as (options: table,json) (default: table)
+  --env, -e                              string  env file with login credentials
   --help, -h                             bool    prints this usage information (default: false)
   --password, -p, OM_PASSWORD            string  admin password for the Ops Manager VM (not required for unauthenticated commands)
   --request-timeout, -r                  int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
@@ -26,6 +26,5 @@ Usage: om [options] staged-config [<args>]
 Command Arguments:
   --include-credentials, -c  bool               include credentials. note: requires product to have been deployed
   --include-placeholder, -r  bool               replace obscured credentials to interpolatable placeholder
-  --output-file, -o          string             output path to write config to
   --product-name, -p         string (required)  name of product
 ```
