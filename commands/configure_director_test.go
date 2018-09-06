@@ -39,7 +39,10 @@ var _ = Describe("ConfigureDirector", func() {
 			FloatingIPs: "1.2.3.4",
 		}, nil)
 
-		command = commands.NewConfigureDirector(service, logger)
+		command = commands.NewConfigureDirector(
+			func() []string { return []string{} },
+			service,
+			logger)
 	})
 
 	Describe("Execute", func() {
@@ -224,41 +227,6 @@ var _ = Describe("ConfigureDirector", func() {
 					templateConfigurationJSON, err = json.Marshal(configurationMAP)
 					Expect(err).NotTo(HaveOccurred())
 				})
-				It("can interpolate variables into the configuration", func() {
-					configFile, err := ioutil.TempFile("", "config.yaml")
-					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.Write(templateConfigurationJSON)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(configFile.Close()).ToNot(HaveOccurred())
-
-					varsFile, err := ioutil.TempFile("", "vars.yaml")
-					Expect(err).ToNot(HaveOccurred())
-					_, err = varsFile.WriteString(`network_name: network`)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(varsFile.Close()).ToNot(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--config", configFile.Name(),
-						"--vars-file", varsFile.Name(),
-					})
-					Expect(err).NotTo(HaveOccurred())
-
-					ExpectDirectorToBeConfiguredCorrectly()
-				})
-
-				It("returns an error of missing variables", func() {
-					configFile, err := ioutil.TempFile("", "config.yaml")
-					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.Write(templateConfigurationJSON)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(configFile.Close()).ToNot(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--config", configFile.Name(),
-					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
-				})
 
 				It("configures the director", func() {
 					configFile, err := ioutil.TempFile("", "config.yaml")
@@ -274,6 +242,75 @@ var _ = Describe("ConfigureDirector", func() {
 
 					ExpectDirectorToBeConfiguredCorrectly()
 				})
+
+				Context("when the config file(s) contain variables", func() {
+
+					Context("not provided", func() {
+						It("returns an error", func() {
+							configFile, err := ioutil.TempFile("", "config.yaml")
+							Expect(err).ToNot(HaveOccurred())
+							_, err = configFile.Write(templateConfigurationJSON)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(configFile.Close()).ToNot(HaveOccurred())
+
+							err = command.Execute([]string{
+								"--config", configFile.Name(),
+							})
+							Expect(err).To(HaveOccurred())
+							Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+						})
+					})
+
+					Context("passed in a file (--vars-file)", func() {
+						It("interpolates variables into the configuration", func() {
+							configFile, err := ioutil.TempFile("", "config.yaml")
+							Expect(err).ToNot(HaveOccurred())
+							_, err = configFile.Write(templateConfigurationJSON)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(configFile.Close()).ToNot(HaveOccurred())
+
+							varsFile, err := ioutil.TempFile("", "vars.yaml")
+							Expect(err).ToNot(HaveOccurred())
+							_, err = varsFile.WriteString(`network_name: network`)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(varsFile.Close()).ToNot(HaveOccurred())
+
+							err = command.Execute([]string{
+								"--config", configFile.Name(),
+								"--vars-file", varsFile.Name(),
+							})
+							Expect(err).NotTo(HaveOccurred())
+
+							ExpectDirectorToBeConfiguredCorrectly()
+						})
+					})
+
+					Context("passed as environment variables (--vars-env)", func() {
+						It("interpolates variables into the configuration", func() {
+
+							command = commands.NewConfigureDirector(
+								func() []string { return []string{"OM_VAR_network_name=network"} },
+								service,
+								logger)
+
+							configFile, err := ioutil.TempFile("", "config.yaml")
+							Expect(err).ToNot(HaveOccurred())
+							_, err = configFile.Write(templateConfigurationJSON)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(configFile.Close()).ToNot(HaveOccurred())
+
+							err = command.Execute([]string{
+								"--config", configFile.Name(),
+								"--vars-env", "OM_VAR",
+							})
+							Expect(err).NotTo(HaveOccurred())
+
+							ExpectDirectorToBeConfiguredCorrectly()
+						})
+					})
+
+				})
+
 			})
 		})
 

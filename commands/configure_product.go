@@ -14,12 +14,14 @@ import (
 )
 
 type ConfigureProduct struct {
-	service configureProductService
-	logger  logger
-	Options struct {
+	environFunc func() []string
+	service     configureProductService
+	logger      logger
+	Options     struct {
 		ProductName       string   `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
 		ConfigFile        string   `long:"config"             short:"c"                  description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)"`
 		VarsFile          []string `long:"vars-file"          short:"l"                  description:"Load variables from a YAML file"`
+		VarsEnv           []string `long:"vars-env"                                      description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
 		OpsFile           []string `long:"ops-file"           short:"o"                  description:"YAML operations file"`
 		ProductProperties string   `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
 		NetworkProperties string   `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
@@ -38,10 +40,11 @@ type configureProductService interface {
 	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
 }
 
-func NewConfigureProduct(service configureProductService, logger logger) ConfigureProduct {
+func NewConfigureProduct(environFunc func() []string, service configureProductService, logger logger) ConfigureProduct {
 	return ConfigureProduct{
-		service: service,
-		logger:  logger,
+		environFunc: environFunc,
+		service:     service,
+		logger:      logger,
 	}
 }
 
@@ -89,7 +92,13 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	if cp.Options.ConfigFile != "" {
 		var cfg config.ProductConfiguration
-		configContents, err := interpolate(cp.Options.ConfigFile, cp.Options.VarsFile, cp.Options.OpsFile)
+		configContents, err := interpolate(interpolateOptions{
+			templateFile: cp.Options.ConfigFile,
+			varsFiles:    cp.Options.VarsFile,
+			environFunc:  cp.environFunc,
+			varsEnvs:     cp.Options.VarsEnv,
+			opsFiles:     cp.Options.OpsFile,
+		})
 		if err != nil {
 			return err
 		}

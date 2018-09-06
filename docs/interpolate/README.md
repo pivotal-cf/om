@@ -1,15 +1,20 @@
 &larr; [back to Commands](../README.md)
 
-# `om create-vm-extension`
+# `om interpolate`
 
-The `create-vm-extension` command will create or update an existing vm extension.
+The `interpolate` command allows you to test template interpolation in
+isolation.
+
+For example if you are modifying a product configuration template you can use
+`om interpolate` to verify that the generated config looks correct before
+running `om configure-product`.
 
 ## Command Usage
 ```
-ॐ  create-vm-extension
-This creates/updates a VM extension
+ॐ  interpolate
+Interpolates variables into a manifest
 
-Usage: om [options] create-vm-extension [<args>]
+Usage: om [options] interpolate [<args>]
   --client-id, -c, OM_CLIENT_ID          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
   --connect-timeout, -o                  int     timeout in seconds to make TCP connections (default: 5)
@@ -24,34 +29,19 @@ Usage: om [options] create-vm-extension [<args>]
   --version, -v                          bool    prints the om release version (default: false)
 
 Command Arguments:
-  --cloud-properties, -cp  string             cloud properties in JSON format
-  --config, -c             string             path to yml file containing all config fields (see docs/create-vm-extension/README.md for format)
-  --name, -n               string             VM extension name
-  --ops-file, -o           string (variadic)  YAML operations file
-  --vars-env               string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l          string (variadic)  Load variables from a YAML file
+  --config, -c     string (required)  path for file to be interpolated
+  --ops-file, -o   string (variadic)  YAML operations files
+  --vars-env       string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l  string (variadic)  Load variables from a YAML file
 ```
 
-### Configuring via file
+## Interpolation
 
-#### Example YAML:
-```yaml
-vm-extension-config:
-  name: some_vm_extension
-  cloud_properties:
-    source_dest_check: false
-```
-
-#### Variables
-
-The `create-vm-extension` command now supports variable substitution inside the config template:
+Given a template file with a variable reference:
 
 ```yaml
 # config.yml
-vm-extension-config:
-  name: some_vm_extension
-  cloud_properties:
-    source_dest_check: ((enable_source_dest_check))
+key: ((variable_name))
 ```
 
 Values can be provided from a separate variables yaml file (`--vars-file`) or from environment variables (`--vars-env`).
@@ -60,11 +50,11 @@ To load variables from a file use the `--vars-file` flag.
 
 ```yaml
 # vars.yml
-enable_source_dest_check: false
+variable_name: some_value
 ```
 
 ```
-om create-vm-extension \
+om interpolate \
   --config config.yml \
   --vars-file vars.yml
 ```
@@ -73,7 +63,7 @@ To load variables from a set of environment variables, specify the common
 environment variable prefix with the `--vars-env` flag.
 
 ```
-OM_VAR_enable_source_dest_check=false om create-vm-extension \
+OM_VAR_variable_name=some_value om interpolate \
   --config config.yml \
   --vars-env OM_VAR
 ```
