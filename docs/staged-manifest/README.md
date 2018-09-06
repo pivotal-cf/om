@@ -13,7 +13,7 @@ Usage: om [options] staged-manifest [<args>]
   --client-id, -c, OM_CLIENT_ID          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
   --connect-timeout, -o                  int     timeout in seconds to make TCP connections (default: 5)
-  --format, -f                           string  Format to print as (options: table,json) (default: table)
+  --env, -e                              string  env file with login credentials
   --help, -h                             bool    prints this usage information (default: false)
   --password, -p, OM_PASSWORD            string  admin password for the Ops Manager VM (not required for unauthenticated commands)
   --request-timeout, -r                  int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
