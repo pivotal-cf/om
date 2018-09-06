@@ -28,7 +28,7 @@ var _ = Describe("Interpolate", func() {
 
 	BeforeEach(func() {
 		logger = &fakes.Logger{}
-		command = commands.NewInterpolate(logger)
+		command = commands.NewInterpolate(func() []string { return nil }, logger)
 	})
 
 	Describe("Execute", func() {
@@ -146,6 +146,7 @@ hello: world`))
 		})
 
 		Context("Failure cases", func() {
+
 			Context("when there is no input file", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
@@ -155,12 +156,51 @@ hello: world`))
 					Expect(err.Error()).Should(ContainSubstring("no such file or directory"))
 				})
 			})
+
+			Context("when the environment is not provided in the expected format", func() {
+
+				It("returns an error", func() {
+					command = commands.NewInterpolate(
+						func() []string { return []string{"not-an-environment-variable"} },
+						logger)
+
+					err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", inputFile,
+						"--vars-env", "OM_VAR",
+					})
+					Expect(err).To(MatchError("Expected environment variable to be key-value pair"))
+				})
+
+			})
+
+			Context("when an environment variable is not well-formed YAML", func() {
+
+				It("returns an error", func() {
+					command = commands.NewInterpolate(
+						func() []string { return []string{"OM_VAR_malformed={"} },
+						logger)
+
+					err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", inputFile,
+						"--vars-env", "OM_VAR",
+					})
+					Expect(err).To(MatchError(`Could not deserialize YAML from environment variable "OM_VAR_malformed"`))
+				})
+
+			})
+
 		})
 	})
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewInterpolate(nil)
+			command := commands.NewInterpolate(os.Environ, nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "Interpolates variables into a manifest",
 				ShortDescription: "Interpolates variables into a manifest",
