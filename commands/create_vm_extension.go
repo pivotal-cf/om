@@ -48,7 +48,7 @@ func (c CreateVMExtension) Execute(args []string) error {
 		cloudProperties json.RawMessage
 	)
 	if c.Options.ConfigFile != "" {
-		var cfg config.VMExtenstionConfig
+		var cfg config.VMExtensionConfig
 		configContents, err := interpolate(interpolateOptions{
 			templateFile: c.Options.ConfigFile,
 			varsFiles:    c.Options.VarsFile,
