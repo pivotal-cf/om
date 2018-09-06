@@ -12,7 +12,7 @@ type ErrandConfig struct {
 	PreDeleteState  interface{} `yaml:"pre-delete-state,omitempty"`
 }
 
-type VMExtenstionConfig struct {
+type VMExtensionConfig struct {
 	VMExtension struct {
 		Name            string                 `yaml:"name"`
 		CloudProperties map[string]interface{} `yaml:"cloud_properties,omitempty"`
