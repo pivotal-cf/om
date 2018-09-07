@@ -12,6 +12,7 @@ type ImportInstallation struct {
 	logger    logger
 	service   importInstallationService
 	Options   struct {
+		ConfigFile      string `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
 		Passphrase      string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase for Ops Manager to decrypt the installation"`
 		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
@@ -41,7 +42,8 @@ func (ii ImportInstallation) Usage() jhanda.Usage {
 }
 
 func (ii ImportInstallation) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ii.Options, args); err != nil {
+	err := loadConfigFile(args, &ii.Options)
+	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
 	}
 
