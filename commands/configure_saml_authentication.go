@@ -12,6 +12,7 @@ type ConfigureSAMLAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
+		ConfigFile           string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
 		HTTPProxyURL         string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
 		HTTPSProxyURL        string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
@@ -31,7 +32,8 @@ func NewConfigureSAMLAuthentication(service configureAuthenticationService, logg
 }
 
 func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ca.Options, args); err != nil {
+	err := loadConfigFile(args, &ca.Options)
+	if err != nil {
 		return fmt.Errorf("could not parse configure-saml-authentication flags: %s", err)
 	}
 

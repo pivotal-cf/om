@@ -11,6 +11,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
+	"os"
 )
 
 var _ = Describe("ConfigureSAMLAuthentication", func() {
@@ -90,12 +92,130 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 			})
 		})
 
+		Context("when config file is provided", func() {
+			var configFile *os.File
+
+			BeforeEach(func() {
+				var err error
+				configContent := `
+saml-idp-metadata: https://saml.example.com:8080
+saml-bosh-idp-metadata: https://bosh-saml.example.com:8080
+saml-rbac-admin-group: opsman.full_control
+saml-rbac-groups-attribute: myenterprise
+decryption-passphrase: some-passphrase
+`
+				configFile, err = ioutil.TempFile("", "")
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = configFile.WriteString(configContent)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("reads configuration from config file", func() {
+				service := &fakes.ConfigureAuthenticationService{}
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+
+				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+				}
+
+				logger := &fakes.Logger{}
+
+				command := commands.NewConfigureSAMLAuthentication(service, logger)
+				err := command.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "saml",
+					DecryptionPassphrase:             "some-passphrase",
+					DecryptionPassphraseConfirmation: "some-passphrase",
+					EULAAccepted:                     "true",
+					IDPMetadata:                      "https://saml.example.com:8080",
+					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
+					RBACAdminGroup:                   "opsman.full_control",
+					RBACGroupsAttribute:              "myenterprise",
+				}))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+			})
+
+			It("is overridden by commandline flags", func() {
+				service := &fakes.ConfigureAuthenticationService{}
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+
+				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+				}
+
+				logger := &fakes.Logger{}
+
+				command := commands.NewConfigureSAMLAuthentication(service, logger)
+				err := command.Execute([]string{
+					"--config", configFile.Name(),
+					"--saml-idp-metadata", "https://super.example.com:6543",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "saml",
+					DecryptionPassphrase:             "some-passphrase",
+					DecryptionPassphraseConfirmation: "some-passphrase",
+					EULAAccepted:                     "true",
+					IDPMetadata:                      "https://super.example.com:6543",
+					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
+					RBACAdminGroup:                   "opsman.full_control",
+					RBACGroupsAttribute:              "myenterprise",
+				}))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: flag provided but not defined: -banana"))
+				})
+			})
+
+			Context("when config file cannot be opened", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
+					err := command.Execute([]string{"--config", "something"})
+					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: failed to read config file something: open something: no such file or directory"))
+
 				})
 			})
 
