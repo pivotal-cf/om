@@ -14,6 +14,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"os"
 )
 
 var _ = Describe("ImportInstallation", func() {
@@ -144,12 +145,113 @@ var _ = Describe("ImportInstallation", func() {
 		})
 	})
 
+	Context("when config file is provided", func() {
+		var configFile *os.File
+
+		BeforeEach(func() {
+			var err error
+			configContent := `
+installation: /path/to/some-installation
+decryption-passphrase: some-passphrase
+`
+			configFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configContent)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("reads configuration from config file", func() {
+			submission := formcontent.ContentSubmission{
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+				ContentLength: 10,
+			}
+			multipart.FinalizeReturns(submission)
+
+			eaOutputs := []api.EnsureAvailabilityOutput{
+				{Status: api.EnsureAvailabilityStatusUnstarted},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusComplete},
+			}
+
+			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
+			}
+
+			command := commands.NewImportInstallation(multipart, fakeService, logger)
+
+			err := command.Execute([]string{
+				"--config", configFile.Name(),
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
+
+			key, file := multipart.AddFileArgsForCall(0)
+			Expect(key).To(Equal("installation[file]"))
+			Expect(file).To(Equal("/path/to/some-installation"))
+
+			key, val := multipart.AddFieldArgsForCall(0)
+			Expect(key).To(Equal("passphrase"))
+			Expect(val).To(Equal("some-passphrase"))
+		})
+
+		It("is overridden by commandline flags", func() {
+			submission := formcontent.ContentSubmission{
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+				ContentLength: 10,
+			}
+			multipart.FinalizeReturns(submission)
+
+			eaOutputs := []api.EnsureAvailabilityOutput{
+				{Status: api.EnsureAvailabilityStatusUnstarted},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusComplete},
+			}
+
+			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
+			}
+
+			command := commands.NewImportInstallation(multipart, fakeService, logger)
+
+			err := command.Execute([]string{
+				"--config", configFile.Name(),
+				"--decryption-passphrase", "some-passphrase-1",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
+
+			key, file := multipart.AddFileArgsForCall(0)
+			Expect(key).To(Equal("installation[file]"))
+			Expect(file).To(Equal("/path/to/some-installation"))
+
+			key, val := multipart.AddFieldArgsForCall(0)
+			Expect(key).To(Equal("passphrase"))
+			Expect(val).To(Equal("some-passphrase-1"))
+		})
+	})
+
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse import-installation flags: flag provided but not defined: -badflag"))
+			})
+		})
+
+		Context("when config file cannot be opened", func() {
+			It("returns an error", func() {
+				command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
+				err := command.Execute([]string{"--config", "something"})
+				Expect(err).To(MatchError("could not parse configure-saml-authentication flags: failed to read config file something: open something: no such file or directory"))
+
 			})
 		})
 
