@@ -29,7 +29,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
 					{
-						Name:                  "some-az",
+						Name: "some-az",
 						IAASConfigurationGUID: "some-iaas-guid",
 					},
 					{
@@ -54,7 +54,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 				},
 				"iaas_configuration": {
 					"project": "project-id",
-					"key": "some-key",
+					"key":     "some-key",
 				},
 				"syslog_configuration": {
 					"syslogconfig": "awesome",
