@@ -199,6 +199,15 @@ decryption-passphrase: some-passphrase
 				})
 			})
 
+			Context("when config file cannot be opened", func() {
+				It("returns an error", func() {
+					command := commands.NewConfigureAuthentication(service, logger)
+					err := command.Execute([]string{"--config", "something"})
+					Expect(err).To(MatchError("could not parse configure-authentication flags: failed to read config file something: open something: no such file or directory"))
+
+				})
+			})
+
 			Context("when the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))

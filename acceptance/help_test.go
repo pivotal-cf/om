@@ -92,13 +92,14 @@ Usage: om [options] configure-authentication [<args>]
   --version, -v                          bool    prints the om release version (default: false)
 
 Command Arguments:
-  --config, -c                  string  path to yml file containing authentication configuration
-  --decryption-passphrase, -dp  string  passphrase used to encrypt the installation
-  --http-proxy-url              string  proxy for outbound HTTP network traffic
-  --https-proxy-url             string  proxy for outbound HTTPS network traffic
-  --no-proxy                    string  comma-separated list of hosts that do not go through the proxy
-  --password, -p, OM_PASSWORD   string  admin password
-  --username, -u, OM_USERNAME   string  admin username
+  --config, -c                  string             path to yml file for configuration (keys must match the following command line flags)
+  --decryption-passphrase, -dp  string (required)  passphrase used to encrypt the installation
+  --http-proxy-url              string             proxy for outbound HTTP network traffic
+  --https-proxy-url             string             proxy for outbound HTTPS network traffic
+  --no-proxy                    string             comma-separated list of hosts that do not go through the proxy
+  --password, -p, OM_PASSWORD   string (required)  admin password
+  --username, -u, OM_USERNAME   string (required)  admin username
+
 `
 
 var _ = Describe("help", func() {

@@ -8,6 +8,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"reflect"
 )
 
 //go:generate counterfeiter -o ./fakes/configure_authentication_service.go --fake-name ConfigureAuthenticationService . configureAuthenticationService
@@ -20,13 +21,13 @@ type ConfigureAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
-		ConfigFile           string `                             long:"config"                short:"c"                    description:"path to yml file containing authentication configuration"`
-		Username             string `yaml:"username"              long:"username"              short:"u"  env:"OM_USERNAME" description:"admin username"`
-		Password             string `yaml:"password"              long:"password"              short:"p"  env:"OM_PASSWORD" description:"admin password"`
-		DecryptionPassphrase string `yaml:"decryption-passphrase" long:"decryption-passphrase" short:"dp"                   description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL         string `yaml:"http-proxy-url"        long:"http-proxy-url"                                     description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL        string `yaml:"https-proxy-url"       long:"https-proxy-url"                                    description:"proxy for outbound HTTPS network traffic"`
-		NoProxy              string `yaml:"no-proxy"              long:"no-proxy"                                           description:"comma-separated list of hosts that do not go through the proxy"`
+		ConfigFile           string `long:"config"                short:"c"                    description:"path to yml file for configuration (keys must match the following command line flags)"`
+		Username             string `long:"username"              short:"u"  env:"OM_USERNAME" description:"admin username" required:"true"`
+		Password             string `long:"password"              short:"p"  env:"OM_PASSWORD" description:"admin password" required:"true"`
+		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp"                   description:"passphrase used to encrypt the installation" required:"true"`
+		HTTPProxyURL         string `long:"http-proxy-url"                                     description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL        string `long:"https-proxy-url"                                    description:"proxy for outbound HTTPS network traffic"`
+		NoProxy              string `long:"no-proxy"                                           description:"comma-separated list of hosts that do not go through the proxy"`
 	}
 }
 
@@ -38,15 +39,8 @@ func NewConfigureAuthentication(service configureAuthenticationService, logger l
 }
 
 func (ca ConfigureAuthentication) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ca.Options, args); err != nil {
-		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
-	}
-
-	if err := ca.LoadConfigFile(); err != nil {
-		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
-	}
-
-	if err := ca.ValidateRequiredProperties(); err != nil {
+	err := loadConfigFile(args, &ca.Options)
+	if err != nil {
 		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
 	}
 
@@ -103,52 +97,33 @@ func (ca ConfigureAuthentication) Usage() jhanda.Usage {
 	}
 }
 
-func (ca *ConfigureAuthentication) LoadConfigFile() error {
-	if ca.Options.ConfigFile == "" {
-		return nil
-	}
+func loadConfigFile(args []string, command interface{}) error {
+	_, err := jhanda.Parse(command, args)
 
-	configContent, err := ioutil.ReadFile(ca.Options.ConfigFile)
-	if err != nil {
-		return fmt.Errorf("failed to read config file %s: %s", ca.Options.ConfigFile, err)
-	}
+	configFile := reflect.ValueOf(command).Elem().FieldByName("ConfigFile").String()
 
-	options := ConfigureAuthentication{}
-	if err := yaml.Unmarshal(configContent, &options.Options); err != nil {
-		return err
-	}
+	if configFile != "" {
+		var (
+			options  map[string]string
+			contents []byte
+		)
 
-	if ca.Options.Username == "" {
-		ca.Options.Username = options.Options.Username
-	}
-	if ca.Options.Password == "" {
-		ca.Options.Password = options.Options.Password
-	}
-	if ca.Options.DecryptionPassphrase == "" {
-		ca.Options.DecryptionPassphrase = options.Options.DecryptionPassphrase
-	}
-	if ca.Options.HTTPProxyURL == "" {
-		ca.Options.HTTPProxyURL = options.Options.HTTPProxyURL
-	}
-	if ca.Options.HTTPSProxyURL == "" {
-		ca.Options.HTTPSProxyURL = options.Options.HTTPSProxyURL
-	}
-	if ca.Options.NoProxy == "" {
-		ca.Options.NoProxy = options.Options.NoProxy
-	}
+		contents, err = ioutil.ReadFile(configFile)
+		if err != nil {
+			return fmt.Errorf("failed to read config file %s: %s", configFile, err)
+		}
 
-	return nil
-}
+		err = yaml.Unmarshal(contents, &options)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal config file %s: %s", configFile, err)
+		}
 
-func (ca ConfigureAuthentication) ValidateRequiredProperties() error {
-	if ca.Options.Username == "" {
-		return fmt.Errorf("missing required flag \"--username\"")
+		var fileArgs []string
+		for k, v := range options {
+			fileArgs = append(fileArgs, fmt.Sprintf("--%s", k), v)
+		}
+		fileArgs = append(fileArgs, args...)
+		_, err = jhanda.Parse(command, fileArgs)
 	}
-	if ca.Options.Password == "" {
-		return fmt.Errorf("missing required flag \"--password\"")
-	}
-	if ca.Options.DecryptionPassphrase == "" {
-		return fmt.Errorf("missing required flag \"--decryption-passphrase\"")
-	}
-	return nil
+	return err
 }
