@@ -6,6 +6,8 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 //go:generate counterfeiter -o ./fakes/configure_authentication_service.go --fake-name ConfigureAuthenticationService . configureAuthenticationService
@@ -18,12 +20,13 @@ type ConfigureAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
-		Username             string `long:"username"              short:"u"  env:"OM_USERNAME"  required:"true" description:"admin username"`
-		Password             string `long:"password"              short:"p"  env:"OM_PASSWORD"  required:"true" description:"admin password"`
-		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp"                    required:"true" description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL         string `long:"http-proxy-url"                                                      description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL        string `long:"https-proxy-url"                                                     description:"proxy for outbound HTTPS network traffic"`
-		NoProxy              string `long:"no-proxy"                                                            description:"comma-separated list of hosts that do not go through the proxy"`
+		ConfigFile           string `                             long:"config"                short:"c"                    description:"path to yml file containing authentication configuration"`
+		Username             string `yaml:"username"              long:"username"              short:"u"  env:"OM_USERNAME" description:"admin username"`
+		Password             string `yaml:"password"              long:"password"              short:"p"  env:"OM_PASSWORD" description:"admin password"`
+		DecryptionPassphrase string `yaml:"decryption-passphrase" long:"decryption-passphrase" short:"dp"                   description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL         string `yaml:"http-proxy-url"        long:"http-proxy-url"                                     description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL        string `yaml:"https-proxy-url"       long:"https-proxy-url"                                    description:"proxy for outbound HTTPS network traffic"`
+		NoProxy              string `yaml:"no-proxy"              long:"no-proxy"                                           description:"comma-separated list of hosts that do not go through the proxy"`
 	}
 }
 
@@ -36,6 +39,14 @@ func NewConfigureAuthentication(service configureAuthenticationService, logger l
 
 func (ca ConfigureAuthentication) Execute(args []string) error {
 	if _, err := jhanda.Parse(&ca.Options, args); err != nil {
+		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
+	}
+
+	if err := ca.LoadConfigFile(); err != nil {
+		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
+	}
+
+	if err := ca.ValidateRequiredProperties(); err != nil {
 		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
 	}
 
@@ -90,4 +101,54 @@ func (ca ConfigureAuthentication) Usage() jhanda.Usage {
 		ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
 		Flags:            ca.Options,
 	}
+}
+
+func (ca *ConfigureAuthentication) LoadConfigFile() error {
+	if ca.Options.ConfigFile == "" {
+		return nil
+	}
+
+	configContent, err := ioutil.ReadFile(ca.Options.ConfigFile)
+	if err != nil {
+		return fmt.Errorf("failed to read config file %s: %s", ca.Options.ConfigFile, err)
+	}
+
+	options := ConfigureAuthentication{}
+	if err := yaml.Unmarshal(configContent, &options.Options); err != nil {
+		return err
+	}
+
+	if ca.Options.Username == "" {
+		ca.Options.Username = options.Options.Username
+	}
+	if ca.Options.Password == "" {
+		ca.Options.Password = options.Options.Password
+	}
+	if ca.Options.DecryptionPassphrase == "" {
+		ca.Options.DecryptionPassphrase = options.Options.DecryptionPassphrase
+	}
+	if ca.Options.HTTPProxyURL == "" {
+		ca.Options.HTTPProxyURL = options.Options.HTTPProxyURL
+	}
+	if ca.Options.HTTPSProxyURL == "" {
+		ca.Options.HTTPSProxyURL = options.Options.HTTPSProxyURL
+	}
+	if ca.Options.NoProxy == "" {
+		ca.Options.NoProxy = options.Options.NoProxy
+	}
+
+	return nil
+}
+
+func (ca ConfigureAuthentication) ValidateRequiredProperties() error {
+	if ca.Options.Username == "" {
+		return fmt.Errorf("missing required flag \"--username\"")
+	}
+	if ca.Options.Password == "" {
+		return fmt.Errorf("missing required flag \"--password\"")
+	}
+	if ca.Options.DecryptionPassphrase == "" {
+		return fmt.Errorf("missing required flag \"--decryption-passphrase\"")
+	}
+	return nil
 }

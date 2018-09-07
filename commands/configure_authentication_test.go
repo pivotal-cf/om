@@ -11,6 +11,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
+	"os"
 )
 
 var _ = Describe("ConfigureAuthentication", func() {
@@ -86,6 +88,105 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 				format, content := logger.PrintfArgsForCall(0)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration previously completed, skipping configuration"))
+			})
+		})
+
+		Context("when config file is provided", func() {
+			var configFile *os.File
+
+			BeforeEach(func() {
+				var err error
+				configContent := `
+username: some-username
+password: some-password
+decryption-passphrase: some-passphrase
+`
+				configFile, err = ioutil.TempFile("", "")
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = configFile.WriteString(configContent)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("reads configuration from config file", func() {
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+
+				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+				}
+
+				command := commands.NewConfigureAuthentication(service, logger)
+				err := command.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "internal",
+					AdminUserName:                    "some-username",
+					AdminPassword:                    "some-password",
+					AdminPasswordConfirmation:        "some-password",
+					DecryptionPassphrase:             "some-passphrase",
+					DecryptionPassphraseConfirmation: "some-passphrase",
+					EULAAccepted:                     "true",
+				}))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring internal userstore..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+			})
+
+			It("is overridden by commandline flags", func() {
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+
+				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+				}
+
+				command := commands.NewConfigureAuthentication(service, logger)
+				err := command.Execute([]string{
+					"--config", configFile.Name(),
+					"--password", "some-password-1",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "internal",
+					AdminUserName:                    "some-username",
+					AdminPassword:                    "some-password-1",
+					AdminPasswordConfirmation:        "some-password-1",
+					DecryptionPassphrase:             "some-passphrase",
+					DecryptionPassphraseConfirmation: "some-passphrase",
+					EULAAccepted:                     "true",
+				}))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring internal userstore..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
 			})
 		})
 
