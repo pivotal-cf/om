@@ -51,6 +51,7 @@ const automaticResourceConfig = `{
 }`
 
 const productPropertiesFile = `---
+product-name: cf
 product-properties:
   .properties.something:
     value: configure-me
@@ -370,6 +371,47 @@ var _ = Describe("ConfigureProduct", func() {
 
 			AfterEach(func() {
 				os.RemoveAll(configFile.Name())
+			})
+
+			Context("when the config file contains product-name", func() {
+				It("reads product-name from config file", func() {
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(productPropertiesFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).GUID).To(Equal("some-product-guid"))
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).Properties).To(MatchJSON(productProperties))
+
+				})
+			})
+
+			Context("when the config file contains product-name and is passed as a flag", func() {
+				It("overrides the config value with the flag value", func() {
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(productPropertiesFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = client.Execute([]string{
+						"--config", configFile.Name(),
+						"--product-name", "something-else",
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.UpdateStagedProductPropertiesArgsForCall(0).GUID).To(Equal("not-the-guid-you-are-looking-for"))
+				})
 			})
 
 			Context("when the config file contains variables", func() {
@@ -875,13 +917,15 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the --config flag is passed", func() {
 				Context("when the config flag is passed with the product-properties, product-network or product-resources flag", func() {
 					It("returns an error", func() {
+						file, err := ioutil.TempFile("", "")
+						Expect(err).NotTo(HaveOccurred())
 						command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
 						service.ListStagedProductsReturns(api.StagedProductsOutput{
 							Products: []api.StagedProduct{
 								{GUID: "some-product-guid", Type: "cf"},
 							},
 						}, nil)
-						err := command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig, "--config", "some/path.yml"})
+						err = command.Execute([]string{"--product-name", "cf", "--product-resources", resourceConfig, "--config", file.Name()})
 						Expect(err).To(MatchError("config flag can not be passed with the product-properties, product-network or product-resources flag"))
 					})
 				})
@@ -895,7 +939,7 @@ var _ = Describe("ConfigureProduct", func() {
 							},
 						}, nil)
 						err := command.Execute([]string{"--product-name", "cf", "--config", "some/non-existant/path.yml"})
-						Expect(err).To(MatchError("open some/non-existant/path.yml: no such file or directory"))
+						Expect(err.Error()).To(ContainSubstring("open some/non-existant/path.yml: no such file or directory"))
 					})
 				})
 

@@ -11,6 +11,7 @@ import (
 
 	yamlConverter "github.com/ghodss/yaml"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type ConfigureProduct struct {
@@ -49,6 +50,11 @@ func NewConfigureProduct(environFunc func() []string, service configureProductSe
 }
 
 func (cp ConfigureProduct) Execute(args []string) error {
+	args, err := cp.loadProductName(args)
+	if err != nil {
+		return fmt.Errorf("could not parse configure-product flags: %s", err)
+	}
+
 	if _, err := jhanda.Parse(&cp.Options, args); err != nil {
 		return fmt.Errorf("could not parse configure-product flags: %s", err)
 	}
@@ -286,4 +292,46 @@ func (cp ConfigureProduct) configureErrands(errandConfigs map[string]config.Erra
 		}
 	}
 	return nil
+}
+
+func (cp ConfigureProduct) loadProductName(args []string) ([]string, error) {
+	type productName struct {
+		Name string `yaml:"product-name"`
+	}
+
+	jhanda.Parse(&cp.Options, args)
+
+	flagSet := cp.checkIfProductNameFlagSet()
+	if flagSet {
+		return args, nil
+	}
+
+	configSet := cp.checkConfigSet()
+	if !configSet {
+		return args, nil
+	}
+
+	configContent, err := ioutil.ReadFile(cp.Options.ConfigFile)
+	if err != nil {
+		return args, err
+	}
+
+	name := productName{}
+	err = yaml.Unmarshal(configContent, &name)
+	if err != nil {
+		return args, fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
+	}
+	if name.Name != "" {
+		return append(args, "--product-name", name.Name), nil
+
+	}
+	return args, nil
+}
+
+func (cp ConfigureProduct) checkIfProductNameFlagSet() bool {
+	return cp.Options.ProductName != ""
+}
+
+func (cp ConfigureProduct) checkConfigSet() bool {
+	return cp.Options.ConfigFile != ""
 }
