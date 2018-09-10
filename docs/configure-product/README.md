@@ -45,6 +45,7 @@ A real product may have many more product properties to configure but this gives
 you the general structure of the file:
 
 ```yaml
+product-name: sample-product
 product-properties:
   .cloud_controller.apps_domain:
     value: apps.example.com
