@@ -1,4 +1,10 @@
 ---
+resource_types:
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
+
 resources:
 - name: om
   type: git
@@ -11,6 +17,13 @@ resources:
     - docs
     - ci
     private_key: ((om_private_key.private_key))
+
+- name: om-pr
+  type: pull-request
+  tags: [pull-request]
+  source:
+    repo: pivotal-cf/om
+    access_token: ((om_private_key.private_key))
 
 jobs:
 - name: test-om
@@ -90,3 +103,64 @@ jobs:
     params:
       repository: om-updated-readme/om
       rebase: true
+
+- name: test-om-pr
+  public: true
+  plan:
+  - get: om-pr
+    tags: [pull-request]
+    trigger: true
+    version: every
+  - put: om-pr
+    tags: [pull-request]
+    params:
+      path: om-pr
+      status: pending
+  - task: unit-test
+    input_mapping:
+      om: om-pr
+    tags: [pull-request]
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: golang
+      inputs:
+        - name: om
+          path: go/src/github.com/pivotal-cf/om
+      run:
+        path: "/bin/bash"
+        args:
+        - "-c"
+        - |
+          set -exu
+          export GOPATH="$(pwd)/go"
+
+          go install github.com/pivotal-cf/om/vendor/github.com/onsi/ginkgo/ginkgo
+
+          export PATH="${PATH}:${GOPATH}/bin"
+
+          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+            ginkgo \
+              -r \
+              -p \
+              -race \
+              -succinct \
+              -randomizeAllSpecs \
+              -randomizeSuites \
+              -failOnPending \
+              .
+          popd > /dev/null
+    on_failure:
+      put: om-pr
+      tags: [pull-request]
+      params:
+        path: om-pr
+        status: failure
+    on_success:
+      put: om-pr
+      tags: [pull-request]
+      params:
+        path: om-pr
+        status: success
