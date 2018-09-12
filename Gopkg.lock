@@ -126,12 +126,19 @@
   revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
-  digest = "1:10621c39d6d019314d0ef4d28de9a9f6a065449398f06f73ac3c6a5ae0b6f44e"
+  digest = "1:831e7951ac89dbdbddac0e1a92e2af9bc4ffe7982117d0624e9a06e2ad12cbb4"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
     "config",
     "extensions/table",
+    "ginkgo",
+    "ginkgo/convert",
+    "ginkgo/interrupthandler",
+    "ginkgo/nodot",
+    "ginkgo/testrunner",
+    "ginkgo/testsuite",
+    "ginkgo/watch",
     "internal/codelocation",
     "internal/containernode",
     "internal/failer",
@@ -301,6 +308,7 @@
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/ginkgo/extensions/table",
+    "github.com/onsi/ginkgo/ginkgo",
     "github.com/onsi/gomega",
     "github.com/onsi/gomega/gbytes",
     "github.com/onsi/gomega/gexec",
