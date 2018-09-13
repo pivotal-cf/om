@@ -54,7 +54,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 				},
 				"iaas_configuration": {
 					"project": "project-id",
-					"key": "some-key",
+					"key":     "some-key",
 				},
 				"syslog_configuration": {
 					"syslogconfig": "awesome",

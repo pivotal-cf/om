@@ -12,12 +12,12 @@ import (
 
 type ConfigureDirector struct {
 	environFunc func() []string
-	service configureDirectorService
-	logger  logger
-	Options struct {
+	service     configureDirectorService
+	logger      logger
+	Options     struct {
 		ConfigFile                string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
 		VarsFile                  []string `long:"vars-file"  description:"Load variables from a YAML file"`
-		VarsEnv               []string `long:"vars-env"   description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		VarsEnv                   []string `long:"vars-env"   description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
 		OpsFile                   []string `long:"ops-file"  description:"YAML operations file"`
 		AZConfiguration           string   `short:"a" long:"az-configuration" description:"configures network availability zones"`
 		NetworksConfiguration     string   `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
@@ -250,60 +250,86 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if c.Options.VMExtensionsConfiguration != "" {
 		c.logger.Printf("started configuring vm extensions")
 
-		existingVMExtensionNames := make(map[string]api.VMExtension)
-		existingVMExtensions, err := c.service.ListStagedVMExtensions()
+		currentExtensions, err := c.getExistingExtensions()
 		if err != nil {
 			return err
 		}
-		for _, vmextension := range existingVMExtensions {
-			existingVMExtensionNames[vmextension.Name] = vmextension
+
+		if c.Options.VMExtensionsConfiguration == "{}" {
+			err = c.deleteExtensions(currentExtensions)
+			if err != nil {
+				return err
+			}
+			return nil
 		}
-		var userProvidedConfig map[string]json.RawMessage
-		err = json.Unmarshal([]byte(c.Options.VMExtensionsConfiguration), &userProvidedConfig)
+
+		extensionsToDelete, err := c.addNewExtensions(currentExtensions)
 		if err != nil {
-			return fmt.Errorf("could not decode vmextensions-configuration json: %s", c.Options.VMExtensionsConfiguration)
+			return err
 		}
 
-		var names []string
-		for name, _ := range userProvidedConfig {
-			names = append(names, name)
-		}
-
-		sort.Strings(names)
-
-		c.logger.Printf("applying vm-extensions configuration for the following:")
-		for _, name := range names {
-			c.logger.Printf("\t%s", name)
-
-			err := c.service.CreateStagedVMExtension(api.CreateVMExtension{
-				Name:            name,
-				CloudProperties: userProvidedConfig[name],
-			})
-			delete(existingVMExtensionNames, name)
-
-			if err != nil {
-				return err
-			}
-		}
-
-		var namesToDelete []string
-		for extensionToDelete := range existingVMExtensionNames {
-			namesToDelete = append(namesToDelete, extensionToDelete)
-		}
-
-		sort.Strings(namesToDelete)
-		for _, extensionToDelete := range namesToDelete {
-			c.logger.Printf("deleting vm extension %s", extensionToDelete)
-			err = c.service.DeleteVMExtension(extensionToDelete)
-			if err != nil {
-				return err
-			}
-			c.logger.Printf("done deleting vm extension %s", extensionToDelete)
+		err = c.deleteExtensions(extensionsToDelete)
+		if err != nil {
+			return err
 		}
 
 		c.logger.Printf("finished configuring vm extensions")
 	}
 
+	return nil
+}
+
+func (c ConfigureDirector) addNewExtensions(extensionsToDelete map[string]api.VMExtension) (map[string]api.VMExtension, error) {
+	var newVMExtensions []api.VMExtension
+	err := json.Unmarshal([]byte(c.Options.VMExtensionsConfiguration), &newVMExtensions)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshall vmextensions-configuration json: %s. Full Error: %s", c.Options.VMExtensionsConfiguration, err)
+	}
+
+	c.logger.Printf("applying vm-extensions configuration for the following:")
+	for _, newExtension := range newVMExtensions {
+		c.logger.Printf("\t%s", newExtension.Name)
+
+		err := c.service.CreateStagedVMExtension(api.CreateVMExtension{
+			Name:            newExtension.Name,
+			CloudProperties: newExtension.CloudProperties,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for name := range extensionsToDelete {
+			if name == newExtension.Name {
+				delete(extensionsToDelete, name)
+			}
+		}
+	}
+	return extensionsToDelete, nil
+}
+
+func (c ConfigureDirector) getExistingExtensions() (map[string]api.VMExtension, error) {
+	existingVMExtensions, err := c.service.ListStagedVMExtensions()
+	if err != nil {
+		return nil, err
+	}
+
+	extensionsToDelete := make(map[string]api.VMExtension)
+	for _, vmExtension := range existingVMExtensions {
+		extensionsToDelete[vmExtension.Name] = vmExtension
+	}
+
+	return extensionsToDelete, nil
+}
+
+func (c ConfigureDirector) deleteExtensions(extensionsToDelete map[string]api.VMExtension) error {
+	for _, extensionToDelete := range extensionsToDelete {
+		c.logger.Printf("deleting vm extension %s", extensionToDelete.Name)
+		err := c.service.DeleteVMExtension(extensionToDelete.Name)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("done deleting vm extension %s", extensionToDelete.Name)
+	}
 	return nil
 }
 
