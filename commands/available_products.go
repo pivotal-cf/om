@@ -61,5 +61,6 @@ func (ap AvailableProducts) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command lists all available products.",
 		ShortDescription: "list available products",
+		Flags:            ap.Options,
 	}
 }

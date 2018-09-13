@@ -43,7 +43,7 @@ var _ = Describe("CreateVMExtension", func() {
 	BeforeEach(func() {
 		fakeService = &fakes.CreateVMExtensionService{}
 		fakeLogger = &fakes.Logger{}
-		command = commands.NewCreateVMExtension(fakeService, fakeLogger)
+		command = commands.NewCreateVMExtension(func() []string { return nil }, fakeService, fakeLogger)
 	})
 
 	AfterEach(func() {
@@ -73,33 +73,72 @@ var _ = Describe("CreateVMExtension", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
 		})
 
-		It("makes a request to the OpsMan to create a VM extension from a config file", func() {
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+		Context("when using a config file", func() {
 
-			varsFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Context("with a vars file", func() {
 
-			_, err = configFile.WriteString(ymlVMExtensionFile)
-			Expect(err).NotTo(HaveOccurred())
+				It("makes a request to the OpsMan to create a VM extension", func() {
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
 
-			_, err = varsFile.WriteString(`vm_extension_name: some-vm-extension`)
-			Expect(err).NotTo(HaveOccurred())
+					varsFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
 
-			err := command.Execute([]string{
-				"--config", configFile.Name(),
-				"--vars-file", varsFile.Name(),
+					_, err = configFile.WriteString(ymlVMExtensionFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = varsFile.WriteString(`vm_extension_name: some-vm-extension`)
+					Expect(err).NotTo(HaveOccurred())
+
+					err := command.Execute([]string{
+						"--config", configFile.Name(),
+						"--vars-file", varsFile.Name(),
+					})
+
+					Expect(err).NotTo(HaveOccurred())
+					Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+						Name:            "some-vm-extension",
+						CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
+					}))
+
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					format, content := fakeLogger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
+				})
+
 			})
 
-			Expect(err).NotTo(HaveOccurred())
-			Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
-				Name:            "some-vm-extension",
-				CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
-			}))
+			Context("with environment variables", func() {
 
-			Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
-			format, content := fakeLogger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
+				It("makes a request to the OpsMan to create a VM extension", func() {
+					command = commands.NewCreateVMExtension(
+						func() []string { return []string{"OM_VAR_vm_extension_name=some-vm-extension"} },
+						fakeService,
+						fakeLogger)
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(ymlVMExtensionFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err := command.Execute([]string{
+						"--config", configFile.Name(),
+						"--vars-env", "OM_VAR",
+					})
+
+					Expect(err).NotTo(HaveOccurred())
+					Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+						Name:            "some-vm-extension",
+						CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
+					}))
+
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					format, content := fakeLogger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
+				})
+
+			})
+
 		})
 
 		Context("failure cases", func() {
@@ -185,7 +224,7 @@ var _ = Describe("CreateVMExtension", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewCreateVMExtension(nil, nil)
+			command := commands.NewCreateVMExtension(nil, nil, nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This creates/updates a VM extension",
 				ShortDescription: "creates/updates a VM extension",

@@ -14,6 +14,10 @@
   version = "v1.0.0"
 
 [[projects]]
+<<<<<<< HEAD
+=======
+  digest = "1:69b95d47eef70cba62af2aa3d33bd5f9ffe9fa0be66d79d79150c38796c6eac1"
+>>>>>>> upstream/master
   name = "github.com/bmatcuk/doublestar"
   packages = ["."]
   revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
@@ -26,6 +30,10 @@
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
 
 [[projects]]
+<<<<<<< HEAD
+=======
+  digest = "1:24fc51072bca32204c162b79ede835505b3c5c5cce4e2e0cd6184ff2376486c9"
+>>>>>>> upstream/master
   name = "github.com/cloudfoundry/bosh-cli"
   packages = ["director/template"]
   revision = "712bfd7271b478ba03c3f604339e2eefbec4647c"
@@ -33,6 +41,10 @@
 
 [[projects]]
   branch = "master"
+<<<<<<< HEAD
+=======
+  digest = "1:6b48145085df4401bc70473cc4da1a3b9f98a79232fe59855083eaaea90567c5"
+>>>>>>> upstream/master
   name = "github.com/cloudfoundry/bosh-utils"
   packages = ["errors","logger","system"]
   revision = "fad7a5ad622c066cf1b36eb44b9612cec680e48c"
@@ -45,9 +57,11 @@
 
 [[projects]]
   branch = "threaded"
+  digest = "1:98b20ab737949ad7e1f922bbbcfb8599aacb954b36fe89efffcb9c11e59ff314"
   name = "github.com/fredwangwang/formcontent"
   packages = ["."]
-  revision = "693fd491b02cbc57ea30b399611245ff2a5d9c9e"
+  pruneopts = "NUT"
+  revision = "399803444952249b6f88be8c4a2adc4dae5f5270"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -92,12 +106,50 @@
   revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
+<<<<<<< HEAD
   name = "github.com/onsi/ginkgo"
   packages = [".","config","extensions/table","internal/codelocation","internal/containernode","internal/failer","internal/leafnodes","internal/remote","internal/spec","internal/spec_iterator","internal/specrunner","internal/suite","internal/testingtproxy","internal/writer","reporters","reporters/stenographer","reporters/stenographer/support/go-colorable","reporters/stenographer/support/go-isatty","types"]
+=======
+  digest = "1:831e7951ac89dbdbddac0e1a92e2af9bc4ffe7982117d0624e9a06e2ad12cbb4"
+  name = "github.com/onsi/ginkgo"
+  packages = [
+    ".",
+    "config",
+    "extensions/table",
+    "ginkgo",
+    "ginkgo/convert",
+    "ginkgo/interrupthandler",
+    "ginkgo/nodot",
+    "ginkgo/testrunner",
+    "ginkgo/testsuite",
+    "ginkgo/watch",
+    "internal/codelocation",
+    "internal/containernode",
+    "internal/failer",
+    "internal/leafnodes",
+    "internal/remote",
+    "internal/spec",
+    "internal/spec_iterator",
+    "internal/specrunner",
+    "internal/suite",
+    "internal/testingtproxy",
+    "internal/writer",
+    "reporters",
+    "reporters/stenographer",
+    "reporters/stenographer/support/go-colorable",
+    "reporters/stenographer/support/go-isatty",
+    "types",
+  ]
+  pruneopts = "NUT"
+>>>>>>> upstream/master
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
   version = "v1.4.0"
 
 [[projects]]
+<<<<<<< HEAD
+=======
+  digest = "1:c1c74479c219daed94a374e5ba7cdab754a279532e76c00df29cc616ebc0ce59"
+>>>>>>> upstream/master
   name = "github.com/onsi/gomega"
   packages = [".","format","gbytes","gexec","internal/assertion","internal/asyncassertion","internal/oraclematcher","internal/testingtsupport","matchers","matchers/support/goraph/bipartitegraph","matchers/support/goraph/edge","matchers/support/goraph/node","matchers/support/goraph/util","types"]
   revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
@@ -105,6 +157,10 @@
 
 [[projects]]
   branch = "master"
+<<<<<<< HEAD
+=======
+  digest = "1:622460e872a1d6c8e7545df51795441cb88115705d097b3321600e77b89d4159"
+>>>>>>> upstream/master
   name = "github.com/pivotal-cf/jhanda"
   packages = [".","internal/parser"]
   revision = "1b5ae1681a4554242f0daaea5c97bf1ea80aa761"
@@ -117,12 +173,20 @@
 
 [[projects]]
   branch = "master"
+<<<<<<< HEAD
+=======
+  digest = "1:f93cddc43b49e792b425587f67b6b95013b37d2eb649ad350dadc0717d626904"
+>>>>>>> upstream/master
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","html","html/atom","html/charset"]
   revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
+<<<<<<< HEAD
+=======
+  digest = "1:201a5caa901db0b0bca066c6d0c0279b1fdd385ae5e91af5a70029c273313962"
+>>>>>>> upstream/master
   name = "golang.org/x/oauth2"
   packages = [".","clientcredentials","internal"]
   revision = "fdc9e635145ae97e6c2cb777c48305600cf515cb"
@@ -134,12 +198,20 @@
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
+<<<<<<< HEAD
+=======
+  digest = "1:7c61a813b250ba8bb02bebb0382e6c3d00e04da2b577dc58985b86312fb89ffd"
+>>>>>>> upstream/master
   name = "golang.org/x/text"
   packages = ["encoding","encoding/charmap","encoding/htmlindex","encoding/internal","encoding/internal/identifier","encoding/japanese","encoding/korean","encoding/simplifiedchinese","encoding/traditionalchinese","encoding/unicode","internal/gen","internal/tag","internal/utf8internal","language","runes","transform","unicode/cldr"]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
+<<<<<<< HEAD
+=======
+  digest = "1:f229c599a645bffd97518107ac89955adfa6d5e5e4efa3e8cadb29789219639f"
+>>>>>>> upstream/master
   name = "google.golang.org/appengine"
   packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
@@ -160,6 +232,31 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
+<<<<<<< HEAD
   inputs-digest = "e14d41026086b39e73533e7885d8c843e83d87b1279991421949adb67a36d7c4"
+=======
+  input-imports = [
+    "github.com/PuerkitoBio/goquery",
+    "github.com/cloudfoundry/bosh-cli/director/template",
+    "github.com/cppforlife/go-patch/patch",
+    "github.com/fredwangwang/formcontent",
+    "github.com/ghodss/yaml",
+    "github.com/google/go-querystring/query",
+    "github.com/gosuri/uilive",
+    "github.com/olekukonko/tablewriter",
+    "github.com/onsi/ginkgo",
+    "github.com/onsi/ginkgo/extensions/table",
+    "github.com/onsi/ginkgo/ginkgo",
+    "github.com/onsi/gomega",
+    "github.com/onsi/gomega/gbytes",
+    "github.com/onsi/gomega/gexec",
+    "github.com/pivotal-cf/jhanda",
+    "github.com/pivotal-cf/kiln/proofing",
+    "golang.org/x/oauth2",
+    "golang.org/x/oauth2/clientcredentials",
+    "gopkg.in/cheggaaa/pb.v1",
+    "gopkg.in/yaml.v2",
+  ]
+>>>>>>> upstream/master
   solver-name = "gps-cdcl"
   solver-version = 1

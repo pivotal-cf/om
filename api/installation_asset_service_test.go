@@ -37,16 +37,12 @@ var _ = Describe("InstallationAssetService", func() {
 	Describe("DownloadInstallationAssetCollection", func() {
 		var (
 			outputFile *os.File
-			bar        *fakes.Progress
-			liveWriter *fakes.LiveWriter
 		)
 
 		BeforeEach(func() {
 			var err error
-			liveWriter = &fakes.LiveWriter{}
 			outputFile, err = ioutil.TempFile("", "")
 			Expect(err).NotTo(HaveOccurred())
-			bar = &fakes.Progress{}
 		})
 
 		AfterEach(func() {

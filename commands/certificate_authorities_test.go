@@ -106,6 +106,7 @@ var _ = Describe("Certificate Authorities", func() {
 			Expect(usage).To(Equal(jhanda.Usage{
 				Description:      "lists certificates managed by Ops Manager",
 				ShortDescription: "lists certificates managed by Ops Manager",
+				Flags:            certificateAuthorities.Options,
 			}))
 		})
 	})

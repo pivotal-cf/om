@@ -48,5 +48,6 @@ func (pc PendingChanges) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command lists all pending changes.",
 		ShortDescription: "lists pending changes",
+		Flags:            pc.Options,
 	}
 }

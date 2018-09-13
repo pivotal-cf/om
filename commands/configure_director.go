@@ -11,11 +11,13 @@ import (
 )
 
 type ConfigureDirector struct {
-	service configureDirectorService
-	logger  logger
-	Options struct {
+	environFunc func() []string
+	service     configureDirectorService
+	logger      logger
+	Options     struct {
 		ConfigFile            string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
 		VarsFile              []string `long:"vars-file"  description:"Load variables from a YAML file"`
+		VarsEnv               []string `long:"vars-env"   description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
 		OpsFile               []string `long:"ops-file"  description:"YAML operations file"`
 		AZConfiguration       string   `short:"a" long:"az-configuration" description:"configures network availability zones"`
 		NetworksConfiguration string   `short:"n" long:"networks-configuration" description:"configures networks for the bosh director"`
@@ -41,8 +43,12 @@ type configureDirectorService interface {
 	GetStagedProductManifest(guid string) (manifest string, err error)
 }
 
-func NewConfigureDirector(service configureDirectorService, logger logger) ConfigureDirector {
-	return ConfigureDirector{service: service, logger: logger}
+func NewConfigureDirector(environFunc func() []string, service configureDirectorService, logger logger) ConfigureDirector {
+	return ConfigureDirector{
+		environFunc: environFunc,
+		service:     service,
+		logger:      logger,
+	}
 }
 
 func (c ConfigureDirector) Execute(args []string) error {
@@ -55,7 +61,13 @@ func (c ConfigureDirector) Execute(args []string) error {
 			return fmt.Errorf("config flag can not be passed with another configuration flags")
 		}
 		var config map[string]interface{}
-		configContents, err := interpolate(c.Options.ConfigFile, c.Options.VarsFile, c.Options.OpsFile)
+		configContents, err := interpolate(interpolateOptions{
+			templateFile: c.Options.ConfigFile,
+			varsFiles:    c.Options.VarsFile,
+			environFunc:  c.environFunc,
+			varsEnvs:     c.Options.VarsEnv,
+			opsFiles:     c.Options.OpsFile,
+		})
 		if err != nil {
 			return err
 		}

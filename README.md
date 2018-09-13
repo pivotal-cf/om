@@ -91,6 +91,7 @@ Commands:
   staged-director-config          **EXPERIMENTAL** generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
+  tile-metadata                   prints tile metadata
   unstage-product                 unstages a given product from the Ops Manager targeted
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted

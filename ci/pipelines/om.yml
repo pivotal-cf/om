@@ -1,0 +1,166 @@
+---
+resource_types:
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
+
+resources:
+- name: om
+  type: git
+  source:
+    uri: git@github.com:pivotal-cf/om.git
+    branch: master
+    ignore_paths:
+    - version
+    - README.md
+    - docs
+    - ci
+    private_key: ((om_private_key.private_key))
+
+- name: om-pr
+  type: pull-request
+  tags: [pull-request]
+  source:
+    repo: pivotal-cf/om
+    access_token: ((om_private_key.private_key))
+
+jobs:
+- name: test-om
+  plan:
+  - aggregate:
+    - get: om
+      trigger: true
+  - task: test
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: golang
+      inputs:
+        - name: om
+          path: go/src/github.com/pivotal-cf/om
+      run:
+        path: "/bin/bash"
+        args:
+        - "-c"
+        - |
+          set -exu
+          export GOPATH="$(pwd)/go"
+
+          go install github.com/pivotal-cf/om/vendor/github.com/onsi/ginkgo/ginkgo
+
+          export PATH="${PATH}:${GOPATH}/bin"
+
+          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+            ginkgo \
+              -r \
+              -p \
+              -race \
+              -succinct \
+              -randomizeAllSpecs \
+              -randomizeSuites \
+              -failOnPending \
+              .
+          popd > /dev/null
+  - task: write-readme
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: golang
+      inputs:
+        - name: om
+          path: go/src/github.com/pivotal-cf/om
+      run:
+        path: "/bin/bash"
+        args:
+        - "-c"
+        - |
+          set -exu
+
+          cwd="${PWD}"
+          export GOPATH="$(pwd)/go"
+
+          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+            sed '/## Current Commands/q' README.md > /tmp/readme
+            mv /tmp/readme README.md
+            echo '```' >> README.md
+            go run main.go --help >> README.md
+            echo '```' >> README.md
+            git config user.email "witchcraft@example.com"
+            git config user.name "bot"
+            git add .
+            git commit -m"Automatically updated README.md" || true
+          popd > /dev/null
+
+          cp -r $GOPATH/src/github.com/pivotal-cf/om $cwd/om-updated-readme
+      outputs:
+        - name: om-updated-readme
+  - put: om
+    params:
+      repository: om-updated-readme/om
+      rebase: true
+
+- name: test-om-pr
+  public: true
+  plan:
+  - get: om-pr
+    tags: [pull-request]
+    trigger: true
+    version: every
+  - put: om-pr
+    tags: [pull-request]
+    params:
+      path: om-pr
+      status: pending
+  - task: unit-test
+    input_mapping:
+      om: om-pr
+    tags: [pull-request]
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: golang
+      inputs:
+        - name: om
+          path: go/src/github.com/pivotal-cf/om
+      run:
+        path: "/bin/bash"
+        args:
+        - "-c"
+        - |
+          set -exu
+          export GOPATH="$(pwd)/go"
+
+          go install github.com/pivotal-cf/om/vendor/github.com/onsi/ginkgo/ginkgo
+
+          export PATH="${PATH}:${GOPATH}/bin"
+
+          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+            ginkgo \
+              -r \
+              -p \
+              -race \
+              -succinct \
+              -randomizeAllSpecs \
+              -randomizeSuites \
+              -failOnPending \
+              .
+          popd > /dev/null
+    on_failure:
+      put: om-pr
+      tags: [pull-request]
+      params:
+        path: om-pr
+        status: failure
+    on_success:
+      put: om-pr
+      tags: [pull-request]
+      params:
+        path: om-pr
+        status: success

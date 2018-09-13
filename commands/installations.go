@@ -60,5 +60,6 @@ func (i Installations) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command lists all recent installation events.",
 		ShortDescription: "list recent installation events",
+		Flags:            i.Options,
 	}
 }

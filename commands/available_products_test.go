@@ -114,6 +114,7 @@ var _ = Describe("AvailableProducts", func() {
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all available products.",
 				ShortDescription: "list available products",
+				Flags:            command.Options,
 			}))
 		})
 	})

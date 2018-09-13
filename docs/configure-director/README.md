@@ -18,7 +18,7 @@ Usage: om [options] configure-director [<args>]
   --client-id, -c, OM_CLIENT_ID          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
   --connect-timeout, -o                  int     timeout in seconds to make TCP connections (default: 5)
-  --format, -f                           string  Format to print as (options: table,json) (default: table)
+  --env, -e                              string  env file with login credentials
   --help, -h                             bool    prints this usage information (default: false)
   --password, -p, OM_PASSWORD            string  admin password for the Ops Manager VM (not required for unauthenticated commands)
   --request-timeout, -r                  int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
@@ -29,15 +29,18 @@ Usage: om [options] configure-director [<args>]
   --version, -v                          bool    prints the om release version (default: false)
 
 Command Arguments:
-  --az-configuration, -a        string  configures network availability zones
-  --config, -c                  string  path to yml file containing all config fields (see docs/configure-director/README.md for format)
-  --director-configuration, -d  string  properties for director configuration
-  --iaas-configuration, -i      string  iaas specific JSON configuration for the bosh director
-  --network-assignment, -na     string  assigns networks and AZs
-  --networks-configuration, -n  string  configures networks for the bosh director
+  --az-configuration, -a        string             configures network availability zones
+  --config, -c                  string             path to yml file containing all config fields (see docs/configure-director/README.md for format)
+  --director-configuration, -d  string             properties for director configuration
+  --iaas-configuration, -i      string             iaas specific JSON configuration for the bosh director
+  --network-assignment, -na     string             assigns networks and AZs
+  --networks-configuration, -n  string             configures networks for the bosh director
+  --ops-file                    string (variadic)  YAML operations file
   --resource-configuration, -r  string
   --security-configuration, -s  string
   --syslog-configuration, -l    string
+  --vars-env                    string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-file                   string (variadic)  Load variables from a YAML file
 ```
 
 ### Configuring via file
@@ -72,3 +75,42 @@ security-configuration:
 syslog-configuration:
   syslogconfig: awesome
 ```
+
+#### Variables
+
+The `configure-director` command now supports variable substitution inside the config template:
+
+```yaml
+# config.yml
+network-assignment:
+  network:
+    name: ((network_name))
+```
+
+Values can be provided from a separate variables yaml file (`--vars-file`) or from environment variables (`--vars-env`).
+
+To load variables from a file use the `--vars-file` flag.
+
+```yaml
+# vars.yml
+network_name: some-network
+```
+
+```
+om configure-director \
+  --config config.yml \
+  --vars-file vars.yml
+```
+
+To load variables from a set of environment variables, specify the common
+environment variable prefix with the `--vars-env` flag.
+
+```
+OM_VAR_network_name=some-network om configure-director \
+  --config config.yml \
+  --vars-env OM_VAR
+```
+
+The interpolation support is inspired by similar features in BOSH. You can
+[refer to the BOSH documentation](https://bosh.io/docs/cli-int/) for details on how interpolation
+is performed.

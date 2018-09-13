@@ -98,6 +98,7 @@ var _ = Describe("PendingChanges", func() {
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all pending changes.",
 				ShortDescription: "lists pending changes",
+				Flags:            command.Options,
 			}))
 		})
 	})

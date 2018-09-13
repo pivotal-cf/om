@@ -91,6 +91,7 @@ var _ = Describe("DeployedProducts", func() {
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all deployed products.",
 				ShortDescription: "lists deployed products",
+				Flags:            command.Options,
 			}))
 		})
 	})

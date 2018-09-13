@@ -45,5 +45,6 @@ func (g GenerateCertificateAuthority) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command generates a certificate authority on the Ops Manager",
 		ShortDescription: "generates a certificate authority on the Opsman",
+		Flags:            g.Options,
 	}
 }

@@ -86,6 +86,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 			Expect(usage).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command generates a certificate authority on the Ops Manager",
 				ShortDescription: "generates a certificate authority on the Opsman",
+				Flags:            command.Options,
 			}))
 		})
 	})

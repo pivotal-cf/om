@@ -89,7 +89,9 @@ func main() {
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
 	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout)
+	retryCount := 2
+	retryDelay := 5 * time.Second
+	unauthenticatedClient = network.NewRetryClient(network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout), retryCount, retryDelay)
 	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout, connectTimeout)
 	if err != nil {
 		stderr.Fatal(err)
@@ -139,12 +141,12 @@ func main() {
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(api, stdout)
 	commandSet["configure-bosh"] = commands.NewConfigureBosh(ui, api, stdout, stderr)
-	commandSet["configure-director"] = commands.NewConfigureDirector(api, stdout)
-	commandSet["configure-product"] = commands.NewConfigureProduct(api, stdout)
+	commandSet["configure-director"] = commands.NewConfigureDirector(os.Environ, api, stdout)
+	commandSet["configure-product"] = commands.NewConfigureProduct(os.Environ, api, stdout)
 	commandSet["configure-saml-authentication"] = commands.NewConfigureSAMLAuthentication(api, stdout)
 	commandSet["config-template"] = commands.NewConfigTemplate(metadataExtractor, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(api, presenter)
-	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(api, stdout)
+	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(os.Environ, api, stdout)
 	commandSet["credential-references"] = commands.NewCredentialReferences(api, presenter, stdout)
 	commandSet["credentials"] = commands.NewCredentials(api, presenter, stdout)
 	commandSet["curl"] = commands.NewCurl(api, stdout, stderr)
@@ -162,7 +164,7 @@ func main() {
 	commandSet["import-installation"] = commands.NewImportInstallation(form, api, stdout)
 	commandSet["installation-log"] = commands.NewInstallationLog(api, stdout)
 	commandSet["installations"] = commands.NewInstallations(api, presenter)
-	commandSet["interpolate"] = commands.NewInterpolate(stdout)
+	commandSet["interpolate"] = commands.NewInterpolate(os.Environ, stdout)
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
@@ -172,6 +174,7 @@ func main() {
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
+	commandSet["tile-metadata"] = commands.NewTileMetadata(stdout)
 	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, api, stdout)

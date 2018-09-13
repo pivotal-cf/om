@@ -1,3 +1,7 @@
+required=[
+  "github.com/onsi/ginkgo/ginkgo"
+]
+
 [prune]
   non-go = true
   unused-packages = true
@@ -12,3 +16,6 @@
 [[constraint]]
   name = "github.com/fredwangwang/formcontent"
   branch = "threaded"
+[[constraint]]
+  name = "github.com/onsi/ginkgo"
+  version = "1.4.0"

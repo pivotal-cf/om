@@ -50,5 +50,6 @@ func (dp DeployedProducts) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This authenticated command lists all deployed products.",
 		ShortDescription: "lists deployed products",
+		Flags:            dp.Options,
 	}
 }

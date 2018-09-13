@@ -113,6 +113,7 @@ var _ = Describe("Installations", func() {
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command lists all recent installation events.",
 				ShortDescription: "list recent installation events",
+				Flags:            command.Options,
 			}))
 		})
 	})
