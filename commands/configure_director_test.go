@@ -94,16 +94,17 @@ var _ = Describe("ConfigureDirector", func() {
 			Expect(service.CreateStagedVMExtensionCallCount()).To(Equal(2))
 			Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 				Name:            "a_vm_extension",
-				CloudProperties: json.RawMessage(`{"cloud_properties":{"source_dest_check":false}}`),
+				CloudProperties: json.RawMessage(`{"source_dest_check":false}`),
 			}))
 			Expect(service.CreateStagedVMExtensionArgsForCall(1)).To(Equal(api.CreateVMExtension{
 				Name:            "another_vm_extension",
-				CloudProperties: json.RawMessage(`{"cloud_properties":{"foo":"bar"}}`),
+				CloudProperties: json.RawMessage(`{"foo":"bar"}`),
 			}))
 
 			Expect(service.DeleteVMExtensionCallCount()).To(Equal(2))
-			Expect(service.DeleteVMExtensionArgsForCall(0)).To(Equal("some_other_vm_extension"))
-			Expect(service.DeleteVMExtensionArgsForCall(1)).To(Equal("some_vm_extension"))
+			deletedExtensions := []string{service.DeleteVMExtensionArgsForCall(0), service.DeleteVMExtensionArgsForCall(1)}
+			Expect(deletedExtensions).To(ContainElement("some_other_vm_extension"))
+			Expect(deletedExtensions).To(ContainElement("some_vm_extension"))
 
 			Expect(logger.PrintfCallCount()).To(Equal(21))
 			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
@@ -125,14 +126,21 @@ var _ = Describe("ConfigureDirector", func() {
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"a_vm_extension"}}))
 			formatStr, formatArg = logger.PrintfArgsForCall(15)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"another_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(16)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"deleting vm extension %s", []interface{}{"some_other_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(17)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"done deleting vm extension %s", []interface{}{"some_other_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(18)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"deleting vm extension %s", []interface{}{"some_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(19)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"done deleting vm extension %s", []interface{}{"some_vm_extension"}}))
+
+			expectedLogs := make(map[interface{}][]string)
+			formatStr1, formatArg := logger.PrintfArgsForCall(16)
+			formatStr2, formatArg := logger.PrintfArgsForCall(17)
+			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
+			formatStr1, formatArg = logger.PrintfArgsForCall(18)
+			formatStr2, formatArg = logger.PrintfArgsForCall(19)
+			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
+			Expect(expectedLogs).To(HaveKey("some_other_vm_extension"))
+			Expect(expectedLogs).To(HaveKey("some_vm_extension"))
+			Expect(expectedLogs["some_vm_extension"]).To(ContainElement("deleting vm extension %s"))
+			Expect(expectedLogs["some_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
+			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("deleting vm extension %s"))
+			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
+
 			Expect(logger.PrintfArgsForCall(20)).To(Equal("finished configuring vm extensions"))
 		}
 
@@ -146,7 +154,7 @@ var _ = Describe("ConfigureDirector", func() {
 				"--security-configuration", `{"some-security-assignment":"security"}`,
 				"--syslog-configuration", `{"some-syslog-assignment":"syslog"}`,
 				"--resource-configuration", `{"resource":{"instance_type":{"id":"some-type"}}}`,
-				"--vmextensions-configuration", `{"a_vm_extension":{"cloud_properties":{"source_dest_check":false}},"another_vm_extension":{"cloud_properties":{"foo":"bar"}}}`,
+				"--vmextensions-configuration", `[{"name":"a_vm_extension","cloud_properties":{"source_dest_check":false}},{"name":"another_vm_extension", "cloud_properties":{"foo":"bar"}}]`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -236,13 +244,16 @@ var _ = Describe("ConfigureDirector", func() {
 							},
 						},
 					}
-					vmextensionConfig := map[string]interface{}{
-						"a_vm_extension": map[string]interface{}{
+					vmextensionConfig := []map[string]interface{}{
+						{
+							"name": "a_vm_extension",
 							"cloud_properties": map[string]interface{}{
 								"source_dest_check": false,
 							},
 						},
-						"another_vm_extension": map[string]interface{}{
+
+						{
+							"name": "another_vm_extension",
 							"cloud_properties": map[string]interface{}{
 								"foo": "bar",
 							},
