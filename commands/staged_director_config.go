@@ -30,6 +30,8 @@ type stagedDirectorConfigService interface {
 
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
+
+	ListStagedVMExtensions() ([]api.VMExtension, error)
 }
 
 func NewStagedDirectorConfig(service stagedDirectorConfigService, logger logger) StagedDirectorConfig {
@@ -84,6 +86,11 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
+	vmExtensions, err := ec.service.ListStagedVMExtensions()
+	if err != nil {
+		return err
+	}
+
 	config := map[string]interface{}{}
 	config["az-configuration"] = azs.AvailabilityZones
 	config["director-configuration"] = properties["director_configuration"]
@@ -92,6 +99,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	config["security-configuration"] = properties["security_configuration"]
 	config["network-assignment"] = assignedNetworkAZ
 	config["networks-configuration"] = networks
+	config["vmextensions-configuration"] = vmExtensions
 
 	resourceConfigs := map[string]api.JobProperties{}
 	for name, jobGUID := range jobs {

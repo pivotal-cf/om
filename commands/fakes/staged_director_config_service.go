@@ -94,6 +94,17 @@ type StagedDirectorConfigService struct {
 		result1 api.JobProperties
 		result2 error
 	}
+	ListStagedVMExtensionsStub        func() ([]api.VMExtension, error)
+	listStagedVMExtensionsMutex       sync.RWMutex
+	listStagedVMExtensionsArgsForCall []struct{}
+	listStagedVMExtensionsReturns     struct {
+		result1 []api.VMExtension
+		result2 error
+	}
+	listStagedVMExtensionsReturnsOnCall map[int]struct {
+		result1 []api.VMExtension
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -432,6 +443,49 @@ func (fake *StagedDirectorConfigService) GetStagedProductJobResourceConfigReturn
 	}{result1, result2}
 }
 
+func (fake *StagedDirectorConfigService) ListStagedVMExtensions() ([]api.VMExtension, error) {
+	fake.listStagedVMExtensionsMutex.Lock()
+	ret, specificReturn := fake.listStagedVMExtensionsReturnsOnCall[len(fake.listStagedVMExtensionsArgsForCall)]
+	fake.listStagedVMExtensionsArgsForCall = append(fake.listStagedVMExtensionsArgsForCall, struct{}{})
+	fake.recordInvocation("ListStagedVMExtensions", []interface{}{})
+	fake.listStagedVMExtensionsMutex.Unlock()
+	if fake.ListStagedVMExtensionsStub != nil {
+		return fake.ListStagedVMExtensionsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.listStagedVMExtensionsReturns.result1, fake.listStagedVMExtensionsReturns.result2
+}
+
+func (fake *StagedDirectorConfigService) ListStagedVMExtensionsCallCount() int {
+	fake.listStagedVMExtensionsMutex.RLock()
+	defer fake.listStagedVMExtensionsMutex.RUnlock()
+	return len(fake.listStagedVMExtensionsArgsForCall)
+}
+
+func (fake *StagedDirectorConfigService) ListStagedVMExtensionsReturns(result1 []api.VMExtension, result2 error) {
+	fake.ListStagedVMExtensionsStub = nil
+	fake.listStagedVMExtensionsReturns = struct {
+		result1 []api.VMExtension
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) ListStagedVMExtensionsReturnsOnCall(i int, result1 []api.VMExtension, result2 error) {
+	fake.ListStagedVMExtensionsStub = nil
+	if fake.listStagedVMExtensionsReturnsOnCall == nil {
+		fake.listStagedVMExtensionsReturnsOnCall = make(map[int]struct {
+			result1 []api.VMExtension
+			result2 error
+		})
+	}
+	fake.listStagedVMExtensionsReturnsOnCall[i] = struct {
+		result1 []api.VMExtension
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -449,6 +503,8 @@ func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{
 	defer fake.listStagedProductJobsMutex.RUnlock()
 	fake.getStagedProductJobResourceConfigMutex.RLock()
 	defer fake.getStagedProductJobResourceConfigMutex.RUnlock()
+	fake.listStagedVMExtensionsMutex.RLock()
+	defer fake.listStagedVMExtensionsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

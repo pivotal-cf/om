@@ -64,6 +64,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 				},
 			}
 			fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
+
 			expectedNetworks := api.NetworksConfigurationOutput{
 				Networks: []api.NetworkConfigurationOutput{
 					{
@@ -71,7 +72,6 @@ var _ = Describe("StagedDirectorConfig", func() {
 					},
 				},
 			}
-
 			fakeService.GetStagedDirectorNetworksReturns(expectedNetworks, nil)
 
 			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
@@ -100,6 +100,22 @@ var _ = Describe("StagedDirectorConfig", func() {
 					ID: "automatic",
 				},
 			}, nil)
+
+			expectedVMExtensions := []api.VMExtension{
+				{
+					Name: "vm_ext1",
+					CloudProperties: map[string]interface{}{
+						"source_dest_check": false,
+					},
+				},
+				{
+					Name: "vm_ext2",
+					CloudProperties: map[string]interface{}{
+						"key_name": "operations_keypair",
+					},
+				},
+			}
+			fakeService.ListStagedVMExtensionsReturns(expectedVMExtensions, nil)
 		})
 
 		It("Writes a complete config file with filtered sensitive fields to stdout", func() {
@@ -136,6 +152,13 @@ security-configuration:
   trusted_certificates: some-certificate
 syslog-configuration:
   syslogconfig: awesome
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
 `)))
 		})
 
@@ -183,6 +206,13 @@ security-configuration:
   trusted_certificates: some-certificate
 syslog-configuration:
   syslogconfig: awesome
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
 `)))
 			})
 		})
@@ -231,6 +261,13 @@ security-configuration:
   trusted_certificates: some-certificate
 syslog-configuration:
   syslogconfig: awesome
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
 `)))
 			})
 		})

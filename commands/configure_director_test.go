@@ -400,7 +400,7 @@ var _ = Describe("ConfigureDirector", func() {
 			It("should delete existing vm extensions", func() {
 				configFile, err := ioutil.TempFile("", "config.yaml")
 				Expect(err).ToNot(HaveOccurred())
-				_, err = configFile.Write([]byte(`vmextensions-configuration: {}`))
+				_, err = configFile.Write([]byte(`vmextensions-configuration: []`))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(configFile.Close()).ToNot(HaveOccurred())
 
