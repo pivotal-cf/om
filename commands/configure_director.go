@@ -255,14 +255,6 @@ func (c ConfigureDirector) Execute(args []string) error {
 			return err
 		}
 
-		if c.Options.VMExtensionsConfiguration == "{}" {
-			err = c.deleteExtensions(currentExtensions)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
 		extensionsToDelete, err := c.addNewExtensions(currentExtensions)
 		if err != nil {
 			return err
@@ -290,9 +282,14 @@ func (c ConfigureDirector) addNewExtensions(extensionsToDelete map[string]api.VM
 	for _, newExtension := range newVMExtensions {
 		c.logger.Printf("\t%s", newExtension.Name)
 
-		err := c.service.CreateStagedVMExtension(api.CreateVMExtension{
+		cloudProperties, err := json.Marshal(newExtension.CloudProperties)
+		if err != nil {
+			return nil, err
+		}
+
+		err = c.service.CreateStagedVMExtension(api.CreateVMExtension{
 			Name:            newExtension.Name,
-			CloudProperties: newExtension.CloudProperties,
+			CloudProperties: cloudProperties,
 		})
 		if err != nil {
 			return nil, err

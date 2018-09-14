@@ -11,9 +11,10 @@ import (
 type VMExtensionResponse struct {
 	VMExtensions []VMExtension `json:"vm_extensions"`
 }
+
 type VMExtension struct {
-	Name            string          `json:"name"`
-	CloudProperties json.RawMessage `json:"cloud_properties"`
+	Name            string                 `yaml:"name" json:"name"`
+	CloudProperties map[string]interface{} `yaml:"cloud_properties" json:"cloud_properties"`
 }
 
 type CreateVMExtension struct {
