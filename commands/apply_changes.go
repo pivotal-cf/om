@@ -10,14 +10,16 @@ import (
 )
 
 type ApplyChanges struct {
-	service      applyChangesService
-	logger       logger
-	logWriter    logWriter
-	waitDuration int
-	Options      struct {
-		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
-		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
-		ProductNames       []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
+	service        applyChangesService
+	pendingService pendingChangesService
+	logger         logger
+	logWriter      logWriter
+	waitDuration   int
+	Options        struct {
+		IgnoreWarnings        bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
+		SkipDeployProducts    bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
+		SkipUnchangedProducts bool     `short:"sup"   long:"skip-unchanged-products"         description:"skip deploying unchanged products - just run changed or new products --skip-unchanged-products (OM 2.2+)"`
+		ProductNames          []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
 }
 
@@ -36,12 +38,13 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(service applyChangesService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
+func NewApplyChanges(service applyChangesService, pendingService pendingChangesService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
 	return ApplyChanges{
-		service:      service,
-		logger:       logger,
-		logWriter:    logWriter,
-		waitDuration: waitDuration,
+		service:        service,
+		pendingService: pendingService,
+		logger:         logger,
+		logWriter:      logWriter,
+		waitDuration:   waitDuration,
 	}
 }
 
@@ -54,12 +57,30 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if ac.Options.SkipDeployProducts {
 			return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
 		}
+		if ac.Options.SkipUnchangedProducts {
+			return fmt.Errorf("product-name flag can not be passed with the skip-unchanged-products flag")
+		}
 		info, err := ac.service.Info()
 		if err != nil {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
 		if !info.VersionAtLeast(2, 2) {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+		}
+	}
+
+	if ac.Options.SkipUnchangedProducts {
+		s, err := ac.pendingService.ListStagedPendingChanges()
+		if err != nil {
+			return fmt.Errorf("could not check for any pending changes installation: %s", err)
+		}
+		if len(s.ChangeList) < 0 {
+			return fmt.Errorf("Change list was empty %s", err)
+		}
+		for _, p := range s.ChangeList {
+			if p.Action != "unchanged" {
+				ac.Options.ProductNames = append(ac.Options.ProductNames, p.Product)
+			}
 		}
 	}
 
