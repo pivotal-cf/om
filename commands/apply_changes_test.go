@@ -153,22 +153,16 @@ var _ = Describe("ApplyChanges", func() {
 						{
 							Product: "some-product",
 							Action:  "update",
-							Errands: []api.Errand{
-								{
-									Name:       "some-errand",
-									PostDeploy: "on",
-									PreDelete:  "false",
-								},
-								{
-									Name:       "some-errand-2",
-									PostDeploy: "when-change",
-									PreDelete:  "false",
-								},
-							},
+							Errands: []api.Errand{},
 						},
 						{
-							Product: "some-product-without-errand",
+							Product: "some-product-2",
 							Action:  "install",
+							Errands: []api.Errand{},
+						},
+						{
+							Product: "some-product-that-is-unchanged",
+							Action:  "unchanged",
 							Errands: []api.Errand{},
 						},
 					},
@@ -181,6 +175,7 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(err).NotTo(HaveOccurred())
 				_, _, productList := service.CreateInstallationArgsForCall(0)
 				Expect(productList).To(HaveLen(2))
+				Expect(productList).To(ConsistOf("some-product", "some-product-2"))
 			})
 
 			It("fails if product names were specified", func() {
