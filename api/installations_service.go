@@ -65,7 +65,10 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 		for _, productName := range productNames {
 			var guid string
 			for _, stagedProduct := range sp.Products {
-				if productName == stagedProduct.Type {
+				if productName == stagedProduct.GUID {
+					guid = stagedProduct.GUID
+					break
+				} else if productName == stagedProduct.Type {
 					guid = stagedProduct.GUID
 					break
 				}
@@ -87,7 +90,6 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}
-
 	req, err := http.NewRequest("POST", "/api/v0/installations", bytes.NewReader(data))
 	if err != nil {
 		return InstallationsServiceOutput{}, err

@@ -49,10 +49,12 @@ func NewApplyChanges(service applyChangesService, pendingService pendingChangesS
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
-	changedProducts := []string{}
 	if _, err := jhanda.Parse(&ac.Options, args); err != nil {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
+
+	changedProducts := []string{}
+	deployProducts := !ac.Options.SkipDeployProducts
 
 	if len(ac.Options.ProductNames) > 0 {
 		if ac.Options.SkipDeployProducts {
@@ -78,16 +80,22 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if err != nil {
 			return fmt.Errorf("could not check for any pending changes installation: %s", err)
 		}
-		if len(s.ChangeList) < 0 {
-			ac.logger.Print("Change list was empty")
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
-
+		if !info.VersionAtLeast(2, 2) {
+			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+		}
 		for _, p := range s.ChangeList {
 			ac.logger.Printf("Found product: %s with action of: %s", p.Product, p.Action)
 			if p.Action != "unchanged" {
 				changedProducts = append(changedProducts, p.Product)
 				ac.logger.Printf("Adding %s to ProductNames", p.Product)
 			}
+		}
+		if len(changedProducts) <= 0 {
+			deployProducts = false
 		}
 	}
 
@@ -98,7 +106,6 @@ func (ac ApplyChanges) Execute(args []string) error {
 
 	if installation == (api.InstallationsServiceOutput{}) {
 		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-		deployProducts := !ac.Options.SkipDeployProducts
 		installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts, changedProducts)
 		if err != nil {
 			return fmt.Errorf("installation failed to trigger: %s", err)

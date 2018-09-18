@@ -147,41 +147,74 @@ var _ = Describe("ApplyChanges", func() {
 		})
 
 		Context("when passed the skip-unchanged-products flag", func() {
-			JustBeforeEach(func() {
-				pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
-					ChangeList: []api.ProductChange{
-						{
-							Product: "some-product",
-							Action:  "update",
-							Errands: []api.Errand{},
+			Context("when there are valid pending products", func() {
+				var command commands.ApplyChanges
+				BeforeEach(func() {
+					pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								Product: "some-product",
+								Action:  "update",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-2",
+								Action:  "install",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-that-is-unchanged",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
 						},
-						{
-							Product: "some-product-2",
-							Action:  "install",
-							Errands: []api.Errand{},
-						},
-						{
-							Product: "some-product-that-is-unchanged",
-							Action:  "unchanged",
-							Errands: []api.Errand{},
-						},
-					},
-				}, nil)
-			})
-			It("applies changes to all unchanged products", func() {
-				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+					}, nil)
+					command = commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+				})
+				It("applies changes to all unchanged products", func() {
+					err := command.Execute([]string{"--skip-unchanged-products"})
+					Expect(err).NotTo(HaveOccurred())
+					_, _, productList := service.CreateInstallationArgsForCall(0)
+					Expect(productList).To(HaveLen(2))
+					Expect(productList).To(ConsistOf("some-product", "some-product-2"))
+				})
 
-				err := command.Execute([]string{"--skip-unchanged-products"})
-				Expect(err).NotTo(HaveOccurred())
-				_, _, productList := service.CreateInstallationArgsForCall(0)
-				Expect(productList).To(HaveLen(2))
-				Expect(productList).To(ConsistOf("some-product", "some-product-2"))
+				It("fails if product names were specified", func() {
+					err := command.Execute([]string{"--skip-unchanged-products", "--product-name", "product1"})
+					Expect(err).To(HaveOccurred())
+				})
 			})
+			Context("when there are no pending changes", func() {
+				JustBeforeEach(func() {
+					pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								Product: "some-product",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-2",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-that-is-unchanged",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+						},
+					}, nil)
+				})
+				It("deploys no products at all", func() {
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-			It("fails if product names were specified", func() {
-				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-				err := command.Execute([]string{"--skip-unchanged-products", "--product-name", "product1"})
-				Expect(err).To(HaveOccurred())
+					err := command.Execute([]string{"--skip-unchanged-products"})
+					Expect(err).NotTo(HaveOccurred())
+					_, deployProducts, productList := service.CreateInstallationArgsForCall(0)
+					Expect(productList).To(HaveLen(0))
+					Expect(deployProducts).To(Equal(false))
+				})
 			})
 		})
 
