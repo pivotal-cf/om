@@ -115,6 +115,18 @@ var _ = Describe("staged-config command", func() {
 							}
 						}
 					}`))
+			case "/api/v0/staged/products/some-product-guid/errands":
+				w.Write([]byte(`{ "errands": [
+                           {
+                             "name": "errand-1",
+                             "post_deploy": false,
+                             "label": "Errand 1 Label"
+                           },
+                           {
+                             "name": "errand-2",
+                             "pre_delete": true,
+                             "label": "Errand 2 Label"
+                           }]}`))
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -157,6 +169,11 @@ resource-config:
     instance_type: { id: automatic }
     elb_names: ["my-elb"]
     internet_connected: true
+errand-config:
+  errand-1:
+    post-deploy-state: false
+  errand-2:
+    pre-delete-state: true
 `))
 	})
 
@@ -199,6 +216,11 @@ resource-config:
     instance_type: { id: automatic }
     elb_names: ["my-elb"]
     internet_connected: true
+errand-config:
+  errand-1:
+    post-deploy-state: false
+  errand-2:
+    pre-delete-state: true
 `))
 		})
 	})
