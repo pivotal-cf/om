@@ -6,7 +6,7 @@ _is a mantra, or vibration, that is traditionally chanted_
 
 ## What is it?
 
-Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+ . 
+Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+.
 Currently being developed by RelEng, backlog link is [here](https://www.pivotaltracker.com/n/projects/2145041).
 
 ## Documentation
@@ -58,7 +58,6 @@ Commands:
   certificate-authority           prints requested certificate authority
   config-template                 **EXPERIMENTAL** generates a config template for the product
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
-  configure-bosh                  **DEPRECATED** configures Ops Manager deployed bosh director
   configure-director              configures the director
   configure-product               configures a staged product
   configure-saml-authentication   configures Ops Manager with SAML authentication

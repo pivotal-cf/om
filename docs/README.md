@@ -15,7 +15,6 @@ on a vSphere Ops Manager.
 | certificate-authority |  prints requested certificate authority
 | config-template | **EXPERIMENTAL** generates a config template for the product
 | [configure-authentication](configure-authentication/README.md) |  configures Ops Manager with an internal userstore and admin user account
-| configure-bosh | **DEPRECATED** configures Ops Manager deployed bosh director
 | [configure-director](configure-director/README.md) |  configures the director
 | [configure-product](configure-product/README.md) |  configures a staged product
 | [configure-saml-authentication](configure-saml-authentication/README.md) |  configures Ops Manager with SAML authentication
