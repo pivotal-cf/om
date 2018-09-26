@@ -25,6 +25,6 @@ Usage: om [options] staged-director-config [<args>]
   --version, -v                          bool    prints the om release version (default: false)
 
 Command Arguments:
-  --include-credentials, -c  bool  include credentials. note: requires product to have been deployed
-  --include-placeholder, -r  bool  replace obscured credentials to interpolatable placeholder
+  --include-credentials, -c   bool  include credentials. note: requires product to have been deployed
+  --include-placeholders, -r  bool  replace obscured credentials to interpolatable placeholders
 ```

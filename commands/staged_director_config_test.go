@@ -29,7 +29,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
 					{
-						Name: "some-az",
+						Name:                  "some-az",
 						IAASConfigurationGUID: "some-iaas-guid",
 					},
 					{
@@ -217,11 +217,11 @@ vmextensions-configuration:
 			})
 		})
 
-		Describe("with --include-placeholder", func() {
+		Describe("with --include-placeholders", func() {
 			It("Includes the placeholder fields when printing to stdout", func() {
 				command := commands.NewStagedDirectorConfig(fakeService, logger)
 				err := command.Execute([]string{
-					"--include-placeholder",
+					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 

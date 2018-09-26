@@ -211,12 +211,12 @@ resource-config:
 		})
 	})
 
-	Context("when --include-placeholder is used", func() {
-		It("replace *** with interpolatable placeholder and removes non-configurable properties", func() {
+	Context("when --include-placeholders is used", func() {
+		It("replaces *** with interpolatable placeholders and removes non-configurable properties", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
-				"--include-placeholder",
+				"--include-placeholders",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
