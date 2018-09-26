@@ -182,8 +182,8 @@ func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
 	}, nil
 }
 
-func (a Api) getString(element interface{}, key string) (string, error) {
-	value, err := a.get(element, key)
+func getString(element interface{}, key string) (string, error) {
+	value, err := get(element, key)
 	if err != nil {
 		return "", err
 	}
@@ -194,7 +194,7 @@ func (a Api) getString(element interface{}, key string) (string, error) {
 	return "", fmt.Errorf("element %v with key %s is not a string", element, key)
 }
 
-func (a Api) set(element interface{}, key, value string) error {
+func set(element interface{}, key, value string) error {
 	mapString, ok := element.(map[string]interface{})
 	if ok {
 		mapString[key] = value
@@ -208,7 +208,7 @@ func (a Api) set(element interface{}, key, value string) error {
 	return fmt.Errorf("Unexpected type %v", element)
 }
 
-func (a Api) get(element interface{}, key string) (interface{}, error) {
+func get(element interface{}, key string) (interface{}, error) {
 	mapString, ok := element.(map[string]interface{})
 	if ok {
 		return mapString[key], nil
@@ -220,24 +220,24 @@ func (a Api) get(element interface{}, key string) (interface{}, error) {
 	return nil, fmt.Errorf("Unexpected type %v", element)
 }
 
-func (a Api) collectionElementGUID(propertyName, elementName string, configuredProperties map[string]ResponseProperty) (string, error) {
+func collectionElementGUID(propertyName, elementName string, configuredProperties map[string]ResponseProperty) (string, error) {
 	collection := configuredProperties[propertyName].Value
 	collectionArray := collection.([]interface{})
 	for _, collectionElement := range collectionArray {
-		element, err := a.get(collectionElement, "name")
+		element, err := get(collectionElement, "name")
 		if err != nil {
 			return "", err
 		}
-		currentElement, err := a.getString(element, "value")
+		currentElement, err := getString(element, "value")
 		if err != nil {
 			return "", err
 		}
 		if currentElement == elementName {
-			guidElement, err := a.get(collectionElement, "guid")
+			guidElement, err := get(collectionElement, "guid")
 			if err != nil {
 				return "", err
 			}
-			guid, err := a.getString(guidElement, "value")
+			guid, err := getString(guidElement, "value")
 			if err != nil {
 				return "", err
 			}
@@ -262,20 +262,20 @@ func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesIn
 	for propertyName, property := range newProperties {
 		configuredProperty := currentConfiguredProperties[propertyName]
 		if configuredProperty.isCollection() {
-			collectionValue, err := a.get(property, "value")
+			collectionValue, err := get(property, "value")
 			if err != nil {
 				return err
 			}
 			for _, collectionElement := range collectionValue.([]interface{}) {
-				name, err := a.getString(collectionElement, "name")
+				name, err := getString(collectionElement, "name")
 				if err != nil {
 					return err
 				}
-				guid, err := a.collectionElementGUID(propertyName, name, currentConfiguredProperties)
+				guid, err := collectionElementGUID(propertyName, name, currentConfiguredProperties)
 				if err != nil {
 					return err
 				}
-				err = a.set(collectionElement, "guid", guid)
+				err = set(collectionElement, "guid", guid)
 				if err != nil {
 					return err
 				}
