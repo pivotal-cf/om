@@ -35,7 +35,6 @@ Commands:
   certificate-authority           prints requested certificate authority
   config-template                 **EXPERIMENTAL** generates a config template for the product
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
-  configure-bosh                  **DEPRECATED** configures Ops Manager deployed bosh director
   configure-director              configures the director
   configure-product               configures a staged product
   configure-saml-authentication   configures Ops Manager with SAML authentication

@@ -148,7 +148,6 @@ func main() {
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(api, stdout)
-	commandSet["configure-bosh"] = commands.NewConfigureBosh(ui, api, stdout, stderr)
 	commandSet["configure-director"] = commands.NewConfigureDirector(os.Environ, api, stdout)
 	commandSet["configure-product"] = commands.NewConfigureProduct(os.Environ, api, stdout)
 	commandSet["configure-saml-authentication"] = commands.NewConfigureSAMLAuthentication(api, stdout)
