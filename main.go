@@ -168,7 +168,6 @@ func main() {
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
-	commandSet["set-errand-state"] = commands.NewSetErrandState(api)
 	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
 	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
