@@ -16,8 +16,8 @@ type ConfigTemplate struct {
 	metadataExtractor metadataExtractor
 	logger            logger
 	Options           struct {
-		Product            string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
-		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
+		Product             string `long:"product"  short:"p"  required:"true" description:"path to product to generate config template for"`
+		IncludePlaceholders bool   `long:"include-placeholders" short:"r" description:"replace obscured credentials with interpolatable placeholders"`
 	}
 }
 
@@ -110,7 +110,7 @@ func (ct ConfigTemplate) Usage() jhanda.Usage {
 }
 
 func (ct ConfigTemplate) chooseCredentialHandler() configparser.CredentialHandler {
-	if ct.Options.IncludePlaceholder {
+	if ct.Options.IncludePlaceholders {
 		return configparser.PlaceholderHandler()
 	}
 

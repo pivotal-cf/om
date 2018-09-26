@@ -14,8 +14,8 @@ type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
 	Options struct {
-		IncludeCredentials bool `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
-		IncludePlaceholder bool `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
+		IncludeCredentials  bool `long:"include-credentials" short:"c" description:"include credentials. note: requires product to have been deployed"`
+		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"replace obscured credentials to interpolatable placeholders"`
 	}
 }
 
@@ -111,7 +111,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 	config["resource-configuration"] = resourceConfigs
 
-	if !ec.Options.IncludeCredentials && !ec.Options.IncludePlaceholder {
+	if !ec.Options.IncludeCredentials && !ec.Options.IncludePlaceholders {
 		delete(config, "iaas-configuration")
 	}
 
@@ -145,14 +145,14 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 
 	case string, nil:
 		if strings.Contains(prefix, "iaas-configuration") {
-			if ec.Options.IncludePlaceholder {
+			if ec.Options.IncludePlaceholders {
 				return "((" + prefix + "))", nil
 			}
 		}
 
 		for _, filter := range filters {
 			if strings.Contains(keyName, filter) {
-				if ec.Options.IncludePlaceholder {
+				if ec.Options.IncludePlaceholders {
 					return "((" + prefix + "))", nil
 				}
 				if ec.Options.IncludeCredentials {

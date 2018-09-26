@@ -327,8 +327,8 @@ product-properties:
 		})
 	})
 
-	Describe("with --include-placeholder flag", func() {
-		It("replace credential types to placeholders", func() {
+	Describe("with --include-placeholders flag", func() {
+		It("replaces credential types with placeholders", func() {
 			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
 				Raw: []byte(`---
 property_blueprints:

@@ -16,9 +16,9 @@ type StagedConfig struct {
 	service stagedConfigService
 	logger  logger
 	Options struct {
-		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
-		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
-		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
+		Product             string `long:"product-name" short:"p" required:"true" description:"name of product"`
+		IncludeCredentials  bool   `long:"include-credentials" short:"c" description:"include credentials. note: requires product to have been deployed"`
+		IncludePlaceholders bool   `long:"include-placeholders" short:"r" description:"replace obscured credentials with interpolatable placeholders"`
 	}
 }
 
@@ -157,7 +157,7 @@ func (ec StagedConfig) Execute(args []string) error {
 }
 
 func (ec StagedConfig) chooseCredentialHandler(productGUID string) configparser.CredentialHandler {
-	if ec.Options.IncludePlaceholder {
+	if ec.Options.IncludePlaceholders {
 		return configparser.PlaceholderHandler()
 	}
 
