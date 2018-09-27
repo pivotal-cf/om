@@ -19,7 +19,7 @@ var _ = Describe("version command", func() {
 
 		var err error
 		pathToMain, err = gexec.Build("github.com/pivotal-cf/om",
-			"--ldflags", fmt.Sprintf("-X main.version=%s", version))
+			"--ldflags", fmt.Sprintf("-X main.version=%s -X main.applySleepDurationString=1ms", version))
 		Expect(err).NotTo(HaveOccurred())
 	})
 

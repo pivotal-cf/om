@@ -13,7 +13,7 @@ type ApplyChanges struct {
 	service      applyChangesService
 	logger       logger
 	logWriter    logWriter
-	waitDuration int
+	waitDuration time.Duration
 	Options      struct {
 		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
 		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
@@ -36,7 +36,7 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(service applyChangesService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
+func NewApplyChanges(service applyChangesService, logWriter logWriter, logger logger, waitDuration time.Duration) ApplyChanges {
 	return ApplyChanges{
 		service:      service,
 		logger:       logger,
@@ -102,7 +102,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return errors.New("installation was unsuccessful")
 		}
 
-		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
+		time.Sleep(ac.waitDuration)
 	}
 }
 

@@ -93,7 +93,7 @@ var _ = Describe("apply-changes command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session, "40s").Should(gexec.Exit(0))
+		Eventually(session, "5s").Should(gexec.Exit(0))
 
 		Expect(installationsStatusCallCount).To(Equal(3))
 		Expect(installationsStatusCallCount).To(Equal(3))
@@ -116,9 +116,8 @@ var _ = Describe("apply-changes command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session, "40s").Should(gexec.Exit(0))
+		Eventually(session, "5s").Should(gexec.Exit(0))
 
-		Expect(installationsStatusCallCount).To(Equal(3))
 		Expect(installationsStatusCallCount).To(Equal(3))
 
 		Expect(session.Out).To(gbytes.Say(`found already running installation...re-attaching \(Installation ID: 42, Started: Thu Mar  2 06:50:32 UTC 2017\)`))

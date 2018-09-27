@@ -42,7 +42,7 @@ var _ = Describe("export-installation command", func() {
 				}`))
 
 			case "/api/v0/installation_asset_collection":
-				time.Sleep(2 * time.Second)
+				time.Sleep(1010 * time.Millisecond)
 				w.Write([]byte("some-installation"))
 
 			default:

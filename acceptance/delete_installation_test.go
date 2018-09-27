@@ -81,9 +81,8 @@ var _ = Describe("delete-installation command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session, "40s").Should(gexec.Exit(0))
+		Eventually(session, "5s").Should(gexec.Exit(0))
 
-		Expect(installationsStatusCallCount).To(Equal(3))
 		Expect(installationsStatusCallCount).To(Equal(3))
 
 		Expect(session.Out).To(gbytes.Say("attempting to delete the installation on the targeted Ops Manager"))
