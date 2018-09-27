@@ -135,6 +135,10 @@ var _ = Describe("staged-config command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("outputs a configuration template based on the staged product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

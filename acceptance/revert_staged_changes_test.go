@@ -68,6 +68,7 @@ var _ = Describe("revert-staged-changes command", func() {
 
 	AfterEach(func() {
 		Forms = []url.Values{}
+		server.Close()
 	})
 
 	var (

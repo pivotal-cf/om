@@ -69,6 +69,7 @@ var _ = Describe("import-installation command", func() {
 
 	AfterEach(func() {
 		os.Remove(content.Name())
+		server.Close()
 	})
 
 	It("successfully uploads an installation to the Ops Manager", func() {

@@ -70,6 +70,10 @@ var _ = Describe("errands command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("lists the errands belonging to the product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

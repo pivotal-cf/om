@@ -40,6 +40,10 @@ var _ = Describe("delete-product command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("deletes the speecified product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

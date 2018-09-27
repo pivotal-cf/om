@@ -65,6 +65,10 @@ var _ = Describe("available-products command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("lists the available products", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

@@ -56,6 +56,7 @@ var _ = Describe("export-installation command", func() {
 
 	AfterEach(func() {
 		os.Remove(outputFileName)
+		server.Close()
 	})
 
 	It("successfully exports the installation of the ops-manager", func() {

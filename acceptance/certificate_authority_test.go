@@ -101,6 +101,10 @@ var _ = Describe("certificate-authority", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("prints a table containing the certificate authority", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

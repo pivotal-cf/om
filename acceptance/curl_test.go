@@ -46,6 +46,10 @@ var _ = Describe("curl command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("issues an API with credentials", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

@@ -41,6 +41,10 @@ var _ = Describe("generate certificate", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("generates a certificate authority on the OpsMan", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

@@ -91,6 +91,7 @@ name: some-product`)
 
 	AfterEach(func() {
 		os.Remove(productFile.Name())
+		server.Close()
 	})
 
 	It("prints helpful debug output for http request", func() {

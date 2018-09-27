@@ -64,6 +64,10 @@ var _ = Describe("deployed-products command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("lists the deployed products on Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

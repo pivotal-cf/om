@@ -65,6 +65,10 @@ var _ = Describe("staged-products command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("lists the staged products on Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

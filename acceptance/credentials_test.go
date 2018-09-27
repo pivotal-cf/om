@@ -67,6 +67,10 @@ var _ = Describe("credentials command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("fetches a credential of a deployed product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

@@ -78,6 +78,10 @@ var _ = Describe("apply-changes command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("successfully applies the changes to the Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

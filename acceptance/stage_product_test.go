@@ -83,6 +83,10 @@ var _ = Describe("stage-product command", func() {
 			}))
 		})
 
+		AfterEach(func() {
+			server.Close()
+		})
+
 		It("successfully stages a product to the Ops Manager", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -187,6 +191,10 @@ var _ = Describe("stage-product command", func() {
 			}))
 		})
 
+		AfterEach(func() {
+			server.Close()
+		})
+
 		It("successfully stages a product to the Ops Manager", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -289,6 +297,10 @@ var _ = Describe("stage-product command", func() {
 			}))
 		})
 
+		AfterEach(func() {
+			server.Close()
+		})
+
 		It("successfully stages a product to the Ops Manager", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -369,6 +381,10 @@ var _ = Describe("stage-product command", func() {
 
 				w.Write([]byte(responseString))
 			}))
+		})
+
+		AfterEach(func() {
+			server.Close()
 		})
 
 		Context("when the product is not available", func() {

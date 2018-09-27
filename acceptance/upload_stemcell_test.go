@@ -80,6 +80,7 @@ var _ = Describe("upload-stemcell command", func() {
 
 	AfterEach(func() {
 		os.Remove(content.Name())
+		server.Close()
 	})
 
 	It("successfully sends the stemcell to the Ops Manager", func() {
@@ -138,6 +139,7 @@ var _ = Describe("upload-stemcell command", func() {
 			}`, filepath.Base(content.Name())))
 
 			server.StartTLS()
+			defer server.Close()
 
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

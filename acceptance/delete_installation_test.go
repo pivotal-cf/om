@@ -66,6 +66,10 @@ var _ = Describe("delete-installation command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("successfully deletes the installation on the Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

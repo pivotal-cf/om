@@ -55,6 +55,10 @@ var _ = Describe("create VM extension", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("creates a VM extension in OpsMan", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

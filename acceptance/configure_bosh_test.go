@@ -152,6 +152,7 @@ var _ = Describe("configure-bosh command", func() {
 
 	AfterEach(func() {
 		Forms = []url.Values{}
+		server.Close()
 	})
 
 	Context("GCP", func() {
