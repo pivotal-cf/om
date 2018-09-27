@@ -29,7 +29,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
 					{
-						Name:                  "some-az",
+						Name: "some-az",
 						IAASConfigurationGUID: "some-iaas-guid",
 					},
 					{
@@ -160,6 +160,49 @@ vmextensions-configuration:
     cloud_properties:
       key_name: operations_keypair
 `)))
+		})
+
+		Describe("when getting availability_zones returns an empty array", func() {
+			It("doesn't return the az in the config", func() {
+				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, nil)
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+director-configuration:
+  max_threads: 5
+  encryption:
+    providers:
+      client_certificate: user_provided_cert
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+security-configuration:
+  trusted_certificates: some-certificate
+syslog-configuration:
+  syslogconfig: awesome
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+`)))
+			})
 		})
 
 		Describe("with --include-credentials", func() {

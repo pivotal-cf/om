@@ -92,7 +92,9 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 
 	config := map[string]interface{}{}
-	config["az-configuration"] = azs.AvailabilityZones
+	if azs.AvailabilityZones != nil {
+		config["az-configuration"] = azs.AvailabilityZones
+	}
 	config["director-configuration"] = properties["director_configuration"]
 	config["iaas-configuration"] = properties["iaas_configuration"]
 	config["syslog-configuration"] = properties["syslog_configuration"]

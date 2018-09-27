@@ -222,7 +222,7 @@ var _ = Describe("StagedProducts", func() {
 	})
 
 	Describe("GetStagedDirectorAvailabilityZones", func() {
-		BeforeEach(func() {
+		It("returns all the configured availability zones", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
 				switch req.URL.Path {
@@ -248,20 +248,36 @@ var _ = Describe("StagedProducts", func() {
 				}
 				return resp, nil
 			}
-		})
-		It("returns all the configured availability zones", func() {
+
 			config, err := service.GetStagedDirectorAvailabilityZones()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(config.AvailabilityZones).To(Equal([]api.AvailabilityZoneOutput{
 				{
-					Name:                  "Availability Zone 1",
+					Name: "Availability Zone 1",
 					IAASConfigurationGUID: "iaas-configuration-guid",
 				},
 				{
 					Name: "Availability Zone 2",
 				},
 			}))
+		})
+		It("returns an empty list when status code is 405", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				switch req.URL.Path {
+				case "/api/v0/staged/director/availability_zones":
+					resp = &http.Response{
+						StatusCode: http.StatusMethodNotAllowed,
+					}
+				}
+				return resp, nil
+			}
+			config, err := service.GetStagedDirectorAvailabilityZones()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(config).To(Equal(api.AvailabilityZonesOutput{}))
+
 		})
 		Describe("failure cases", func() {
 			Context("when the properties request returns an error", func() {
