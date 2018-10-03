@@ -14,7 +14,7 @@ type ApplyChanges struct {
 	pendingService pendingChangesService
 	logger         logger
 	logWriter      logWriter
-	waitDuration   int
+	waitDuration   time.Duration
 	Options        struct {
 		IgnoreWarnings        bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
 		SkipDeployProducts    bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
@@ -63,7 +63,13 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if ac.Options.SkipUnchangedProducts {
 			return fmt.Errorf("product-name flag can not be passed with the skip-unchanged-products flag")
 		}
-		ValidateVersion(ac)
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if !info.VersionAtLeast(2, 2) {
+			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+		}
 		for _, product := range ac.Options.ProductNames {
 			changedProducts = append(changedProducts, product)
 		}
@@ -73,6 +79,13 @@ func (ac ApplyChanges) Execute(args []string) error {
 		s, err := ac.pendingService.ListStagedPendingChanges()
 		if err != nil {
 			return fmt.Errorf("could not check for any pending changes installation: %s", err)
+		}
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if !info.VersionAtLeast(2, 2) {
+			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 		for _, p := range s.ChangeList {
 			ac.logger.Printf("Found product: %s with action of: %s", p.Product, p.Action)
@@ -134,15 +147,4 @@ func (ac ApplyChanges) Usage() jhanda.Usage {
 		ShortDescription: "triggers an install on the Ops Manager targeted",
 		Flags:            ac.Options,
 	}
-}
-
-func (ac ApplyChanges) validateVersion() error {
-	info, err := ac.service.Info()
-	if err != nil {
-		return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
-	}
-	if !info.VersionAtLeast(2, 2) {
-		return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
-	}
-	return
 }
