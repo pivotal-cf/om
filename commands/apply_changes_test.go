@@ -28,19 +28,21 @@ func (ne netError) Timeout() bool {
 
 var _ = Describe("ApplyChanges", func() {
 	var (
-		service       *fakes.ApplyChangesService
-		logger        *fakes.Logger
-		writer        *fakes.LogWriter
-		statusOutputs []api.InstallationsServiceOutput
-		statusErrors  []error
-		logsOutputs   []api.InstallationsServiceOutput
-		logsErrors    []error
-		statusCount   int
-		logsCount     int
+		service        *fakes.ApplyChangesService
+		pendingService *fakes.PendingChangesService
+		logger         *fakes.Logger
+		writer         *fakes.LogWriter
+		statusOutputs  []api.InstallationsServiceOutput
+		statusErrors   []error
+		logsOutputs    []api.InstallationsServiceOutput
+		logsErrors     []error
+		statusCount    int
+		logsCount      int
 	)
 
 	BeforeEach(func() {
 		service = &fakes.ApplyChangesService{}
+		pendingService = &fakes.PendingChangesService{}
 		logger = &fakes.Logger{}
 		writer = &fakes.LogWriter{}
 
@@ -86,7 +88,7 @@ var _ = Describe("ApplyChanges", func() {
 		})
 
 		It("applies changes to the Ops Manager", func() {
-			command := commands.NewApplyChanges(service, writer, logger, 1)
+			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -116,7 +118,7 @@ var _ = Describe("ApplyChanges", func() {
 			It("applies changes while ignoring warnings", func() {
 				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
 
-				command := commands.NewApplyChanges(service, writer, logger, 1)
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{"--ignore-warnings"})
 				Expect(err).NotTo(HaveOccurred())
@@ -128,7 +130,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		Context("when passed the skip-deploy-products flag", func() {
 			It("applies changes while not deploying products", func() {
-				command := commands.NewApplyChanges(service, writer, logger, 1)
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{"--skip-deploy-products"})
 				Expect(err).NotTo(HaveOccurred())
@@ -138,9 +140,81 @@ var _ = Describe("ApplyChanges", func() {
 			})
 
 			It("fails if product names were specified", func() {
-				command := commands.NewApplyChanges(service, writer, logger, 1)
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 				err := command.Execute([]string{"--skip-deploy-products", "--product-name", "product1"})
 				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		Context("when passed the skip-unchanged-products flag", func() {
+			Context("when there are valid pending products", func() {
+				var command commands.ApplyChanges
+				BeforeEach(func() {
+					pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								Product: "some-product",
+								Action:  "update",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-2",
+								Action:  "install",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-that-is-unchanged",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+						},
+					}, nil)
+					command = commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+				})
+				It("applies changes to all unchanged products", func() {
+					err := command.Execute([]string{"--skip-unchanged-products"})
+					Expect(err).NotTo(HaveOccurred())
+					_, _, productList := service.CreateInstallationArgsForCall(0)
+					Expect(productList).To(HaveLen(2))
+					Expect(productList).To(ConsistOf("some-product", "some-product-2"))
+				})
+
+				It("fails if product names were specified", func() {
+					err := command.Execute([]string{"--skip-unchanged-products", "--product-name", "product1"})
+					Expect(err).To(HaveOccurred())
+				})
+			})
+			Context("when there are no pending changes", func() {
+				JustBeforeEach(func() {
+					pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								Product: "some-product",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-2",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+							{
+								Product: "some-product-that-is-unchanged",
+								Action:  "unchanged",
+								Errands: []api.Errand{},
+							},
+						},
+					}, nil)
+				})
+				It("deploys no products at all", func() {
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{"--skip-unchanged-products"})
+					Expect(err).NotTo(HaveOccurred())
+					_, deployProducts, productList := service.CreateInstallationArgsForCall(0)
+					Expect(productList).To(HaveLen(0))
+					Expect(deployProducts).To(Equal(false))
+				})
 			})
 		})
 
@@ -150,7 +224,7 @@ var _ = Describe("ApplyChanges", func() {
 				service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("error"))
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
-				command := commands.NewApplyChanges(service, writer, logger, 1)
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 				err := command.Execute([]string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
@@ -168,7 +242,7 @@ var _ = Describe("ApplyChanges", func() {
 				StartedAt: &installationStartedAt,
 			}, nil)
 
-			command := commands.NewApplyChanges(service, writer, logger, 1)
+			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -196,7 +270,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			logsErrors = []error{nil}
 
-			command := commands.NewApplyChanges(service, writer, logger, 1)
+			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 			err := command.Execute([]string{})
 			Expect(err).To(MatchError("installation was unsuccessful"))
@@ -207,7 +281,7 @@ var _ = Describe("ApplyChanges", func() {
 				It("returns an error", func() {
 					service.RunningInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
-					command := commands.NewApplyChanges(service, writer, logger, 1)
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("could not check for any already running installation: some error"))
@@ -220,7 +294,7 @@ var _ = Describe("ApplyChanges", func() {
 					for _, version := range versions {
 						service.InfoReturns(api.Info{Version: version}, nil)
 
-						command := commands.NewApplyChanges(service, writer, logger, 1)
+						command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 						err := command.Execute([]string{"--product-name", "p-mysql"})
 						Expect(err).To(MatchError(fmt.Sprintf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", version)))
 					}
@@ -231,7 +305,7 @@ var _ = Describe("ApplyChanges", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
-					command := commands.NewApplyChanges(service, writer, logger, 1)
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("installation failed to trigger: some error"))
@@ -246,7 +320,7 @@ var _ = Describe("ApplyChanges", func() {
 
 					statusErrors = []error{errors.New("another error")}
 
-					command := commands.NewApplyChanges(service, writer, logger, 1)
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("installation failed to get status: another error"))
@@ -267,7 +341,7 @@ var _ = Describe("ApplyChanges", func() {
 
 					logsErrors = []error{errors.New("no")}
 
-					command := commands.NewApplyChanges(service, writer, logger, 1)
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("installation failed to get logs: no"))
@@ -290,7 +364,7 @@ var _ = Describe("ApplyChanges", func() {
 
 					writer.FlushReturns(errors.New("yes"))
 
-					command := commands.NewApplyChanges(service, writer, logger, 1)
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("installation failed to flush logs: yes"))
@@ -301,7 +375,7 @@ var _ = Describe("ApplyChanges", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewApplyChanges(nil, nil, nil, 1)
+			command := commands.NewApplyChanges(nil, nil, nil, nil, 1)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
 				ShortDescription: "triggers an install on the Ops Manager targeted",
