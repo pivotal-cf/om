@@ -36,6 +36,10 @@ var _ = Describe("installation-log command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("displays the log output for the specified installation", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

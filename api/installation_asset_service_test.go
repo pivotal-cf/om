@@ -2,14 +2,12 @@ package api_test
 
 import (
 	"errors"
+	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/api/fakes"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -179,7 +177,6 @@ var _ = Describe("InstallationAssetService", func() {
 	Describe("DeleteInstallationAssetCollection", func() {
 		It("makes a request to delete the installation on the Ops Manager", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				time.Sleep(1 * time.Second)
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader(`{
 						"install": {
@@ -206,7 +203,6 @@ var _ = Describe("InstallationAssetService", func() {
 
 		It("gracefully quits when there is no installation to delete", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				time.Sleep(1 * time.Second)
 				return &http.Response{
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					StatusCode: http.StatusGone,

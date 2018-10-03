@@ -15,7 +15,7 @@ var (
 
 var _ = BeforeSuite(func() {
 	var err error
-	pathToMain, err = gexec.Build("github.com/pivotal-cf/om")
+	pathToMain, err = gexec.Build("github.com/pivotal-cf/om", "-ldflags", "-X main.applySleepDurationString=1ms")
 	Expect(err).NotTo(HaveOccurred())
 })
 

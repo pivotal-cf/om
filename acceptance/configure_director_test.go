@@ -196,6 +196,10 @@ var _ = Describe("configure-director command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	Context("when using command line arguments", func() {
 		It("configures the BOSH director using the API", func() {
 			command := exec.Command(pathToMain,

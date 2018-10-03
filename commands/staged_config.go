@@ -16,9 +16,9 @@ type StagedConfig struct {
 	service stagedConfigService
 	logger  logger
 	Options struct {
-		Product            string `long:"product-name" short:"p" required:"true" description:"name of product"`
-		IncludeCredentials bool   `short:"c" long:"include-credentials" description:"include credentials. note: requires product to have been deployed"`
-		IncludePlaceholder bool   `short:"r" long:"include-placeholder" description:"replace obscured credentials to interpolatable placeholder"`
+		Product             string `long:"product-name" short:"p" required:"true" description:"name of product"`
+		IncludeCredentials  bool   `long:"include-credentials" short:"c" description:"include credentials. note: requires product to have been deployed"`
+		IncludePlaceholders bool   `long:"include-placeholders" short:"r" description:"replace obscured credentials with interpolatable placeholders"`
 	}
 }
 
@@ -31,6 +31,7 @@ type stagedConfigService interface {
 	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
+	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
 }
 
 //go:generate counterfeiter -o ./fakes/config_parser.go --fake-name ConfigParser . configParser
@@ -141,10 +142,26 @@ func (ec StagedConfig) Execute(args []string) error {
 		resourceConfig[name] = jobProperties
 	}
 
+	errandsListOutput, err := ec.service.ListStagedProductErrands(productGUID)
+	if err != nil {
+		return err
+	}
+
+	errandConfigs := map[string]config.ErrandConfig{}
+
+	for _, errand := range errandsListOutput.Errands {
+		errandConfig := config.ErrandConfig{}
+		errandConfig.PostDeployState = errand.PostDeploy
+		errandConfig.PreDeleteState = errand.PreDelete
+
+		errandConfigs[errand.Name] = errandConfig
+	}
+
 	config := config.ProductConfiguration{
 		ProductProperties:        configurableProperties,
 		NetworkProperties:        networks,
 		ResourceConfigProperties: resourceConfig,
+		ErrandConfigs:            errandConfigs,
 	}
 
 	output, err := yaml.Marshal(config)
@@ -157,7 +174,7 @@ func (ec StagedConfig) Execute(args []string) error {
 }
 
 func (ec StagedConfig) chooseCredentialHandler(productGUID string) configparser.CredentialHandler {
-	if ec.Options.IncludePlaceholder {
+	if ec.Options.IncludePlaceholders {
 		return configparser.PlaceholderHandler()
 	}
 

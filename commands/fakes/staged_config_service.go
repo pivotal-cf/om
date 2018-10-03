@@ -98,6 +98,19 @@ type StagedConfigService struct {
 		result1 map[string]string
 		result2 error
 	}
+	ListStagedProductErrandsStub        func(productID string) (api.ErrandsListOutput, error)
+	listStagedProductErrandsMutex       sync.RWMutex
+	listStagedProductErrandsArgsForCall []struct {
+		productID string
+	}
+	listStagedProductErrandsReturns struct {
+		result1 api.ErrandsListOutput
+		result2 error
+	}
+	listStagedProductErrandsReturnsOnCall map[int]struct {
+		result1 api.ErrandsListOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -452,6 +465,57 @@ func (fake *StagedConfigService) ListStagedProductJobsReturnsOnCall(i int, resul
 	}{result1, result2}
 }
 
+func (fake *StagedConfigService) ListStagedProductErrands(productID string) (api.ErrandsListOutput, error) {
+	fake.listStagedProductErrandsMutex.Lock()
+	ret, specificReturn := fake.listStagedProductErrandsReturnsOnCall[len(fake.listStagedProductErrandsArgsForCall)]
+	fake.listStagedProductErrandsArgsForCall = append(fake.listStagedProductErrandsArgsForCall, struct {
+		productID string
+	}{productID})
+	fake.recordInvocation("ListStagedProductErrands", []interface{}{productID})
+	fake.listStagedProductErrandsMutex.Unlock()
+	if fake.ListStagedProductErrandsStub != nil {
+		return fake.ListStagedProductErrandsStub(productID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.listStagedProductErrandsReturns.result1, fake.listStagedProductErrandsReturns.result2
+}
+
+func (fake *StagedConfigService) ListStagedProductErrandsCallCount() int {
+	fake.listStagedProductErrandsMutex.RLock()
+	defer fake.listStagedProductErrandsMutex.RUnlock()
+	return len(fake.listStagedProductErrandsArgsForCall)
+}
+
+func (fake *StagedConfigService) ListStagedProductErrandsArgsForCall(i int) string {
+	fake.listStagedProductErrandsMutex.RLock()
+	defer fake.listStagedProductErrandsMutex.RUnlock()
+	return fake.listStagedProductErrandsArgsForCall[i].productID
+}
+
+func (fake *StagedConfigService) ListStagedProductErrandsReturns(result1 api.ErrandsListOutput, result2 error) {
+	fake.ListStagedProductErrandsStub = nil
+	fake.listStagedProductErrandsReturns = struct {
+		result1 api.ErrandsListOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedConfigService) ListStagedProductErrandsReturnsOnCall(i int, result1 api.ErrandsListOutput, result2 error) {
+	fake.ListStagedProductErrandsStub = nil
+	if fake.listStagedProductErrandsReturnsOnCall == nil {
+		fake.listStagedProductErrandsReturnsOnCall = make(map[int]struct {
+			result1 api.ErrandsListOutput
+			result2 error
+		})
+	}
+	fake.listStagedProductErrandsReturnsOnCall[i] = struct {
+		result1 api.ErrandsListOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StagedConfigService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -469,6 +533,8 @@ func (fake *StagedConfigService) Invocations() map[string][][]interface{} {
 	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.listStagedProductJobsMutex.RLock()
 	defer fake.listStagedProductJobsMutex.RUnlock()
+	fake.listStagedProductErrandsMutex.RLock()
+	defer fake.listStagedProductErrandsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -151,7 +151,12 @@ var _ = Describe("StagedConfig", func() {
 				GUID: "some-product-guid",
 			},
 		}, nil)
-
+		fakeService.ListStagedProductErrandsReturns(api.ErrandsListOutput{
+			Errands: []api.Errand{
+				{Name: "first-errand", PostDeploy: true, PreDelete: "do-something"},
+				{Name: "second-errand", PostDeploy: false},
+			},
+		}, nil)
 		fakeService.ListStagedProductJobsReturns(map[string]string{
 			"some-job": "some-job-guid",
 		}, nil)
@@ -207,16 +212,22 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+errand-config:
+  first-errand:
+    post-deploy-state: true
+    pre-delete-state: do-something
+  second-errand:
+    post-deploy-state: false
 `)))
 		})
 	})
 
-	Context("when --include-placeholder is used", func() {
-		It("replace *** with interpolatable placeholder and removes non-configurable properties", func() {
+	Context("when --include-placeholders is used", func() {
+		It("replaces *** with interpolatable placeholders and removes non-configurable properties", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
 			err := command.Execute([]string{
 				"--product-name", "some-product",
-				"--include-placeholder",
+				"--include-placeholders",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -265,7 +276,12 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
-
+errand-config:
+  first-errand:
+    post-deploy-state: true
+    pre-delete-state: do-something
+  second-errand:
+    post-deploy-state: false
 `)))
 		})
 	})
@@ -371,6 +387,12 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+errand-config:
+  first-errand:
+    post-deploy-state: true
+    pre-delete-state: do-something
+  second-errand:
+    post-deploy-state: false
 `)))
 		})
 

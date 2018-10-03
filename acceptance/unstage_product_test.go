@@ -71,6 +71,10 @@ var _ = Describe("unstage-product command", func() {
 			}))
 		})
 
+		AfterEach(func() {
+			server.Close()
+		})
+
 		It("successfully unstages a product from the Ops Manager", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -123,6 +127,10 @@ var _ = Describe("unstage-product command", func() {
 
 				w.Write([]byte(responseString))
 			}))
+		})
+
+		AfterEach(func() {
+			server.Close()
 		})
 
 		It("returns an error", func() {

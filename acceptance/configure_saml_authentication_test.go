@@ -52,6 +52,8 @@ var _ = Describe("configure-saml-authentication command", func() {
 			}
 		}))
 
+		defer server.Close()
+
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--skip-ssl-validation",

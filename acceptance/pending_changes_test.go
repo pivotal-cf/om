@@ -97,6 +97,10 @@ var _ = Describe("pending_changes command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("lists the pending changes belonging to the product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

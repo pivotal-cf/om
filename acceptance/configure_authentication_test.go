@@ -51,6 +51,7 @@ var _ = Describe("configure-authentication command", func() {
 				Fail(fmt.Sprintf("unexpected request: %s", out))
 			}
 		}))
+		defer server.Close()
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

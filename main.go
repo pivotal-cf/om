@@ -26,7 +26,7 @@ import (
 
 var version = "unknown"
 
-const applySleepSeconds = 10
+var applySleepDurationString = "10s"
 
 type httpClient interface {
 	Do(*http.Request) (*http.Response, error)
@@ -48,6 +48,8 @@ type options struct {
 }
 
 func main() {
+	applySleepDuration, _ := time.ParseDuration(applySleepDurationString)
+
 	stdout := log.New(os.Stdout, "", 0)
 	stderr := log.New(os.Stderr, "", 0)
 
@@ -151,7 +153,7 @@ func main() {
 	commandSet["credentials"] = commands.NewCredentials(api, presenter, stdout)
 	commandSet["curl"] = commands.NewCurl(api, stdout, stderr)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(api, stdout)
-	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, applySleepSeconds)
+	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, applySleepDuration)
 	commandSet["delete-product"] = commands.NewDeleteProduct(api)
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)

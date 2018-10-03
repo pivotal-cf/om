@@ -42,6 +42,10 @@ var _ = Describe("delete certificate authority", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("deletes a certificate authority", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

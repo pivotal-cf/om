@@ -93,6 +93,7 @@ name: some-product`)
 
 	AfterEach(func() {
 		os.Remove(productFile.Name())
+		server.Close()
 	})
 
 	It("successfully uploads a product to the Ops Manager", func() {

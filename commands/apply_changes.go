@@ -38,7 +38,7 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(service applyChangesService, pendingService pendingChangesService, logWriter logWriter, logger logger, waitDuration int) ApplyChanges {
+func NewApplyChanges(service applyChangesService, pendingService pendingChangesService, logWriter logWriter, logger logger, waitDuration time.Duration) ApplyChanges {
 	return ApplyChanges{
 		service:        service,
 		pendingService: pendingService,
@@ -124,7 +124,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return errors.New("installation was unsuccessful")
 		}
 
-		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
+		time.Sleep(ac.waitDuration)
 	}
 }
 

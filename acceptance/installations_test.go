@@ -92,6 +92,10 @@ var _ = Describe("installations command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("displays a list of recent installation events", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

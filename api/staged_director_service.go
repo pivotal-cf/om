@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 
 	"gopkg.in/yaml.v2"
 )
@@ -67,6 +68,10 @@ func (a Api) GetStagedDirectorAvailabilityZones() (AvailabilityZonesOutput, erro
 	resp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	var properties AvailabilityZonesOutput
 	if err != nil {
+		if resp.StatusCode == http.StatusMethodNotAllowed {
+			return properties, nil
+		}
+
 		return properties, err // un-tested
 	}
 

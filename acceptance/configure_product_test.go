@@ -188,6 +188,7 @@ var _ = Describe("configure-product command", func() {
 	AfterEach(func() {
 		resourceConfigMethod = []string{}
 		resourceConfigBody = [][]byte{}
+		server.Close()
 	})
 
 	It("successfully configures any product", func() {

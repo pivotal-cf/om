@@ -64,6 +64,10 @@ var _ = Describe("credential references command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("lists the credential references belonging to the deployed product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

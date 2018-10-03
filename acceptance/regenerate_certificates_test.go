@@ -36,6 +36,10 @@ var _ = Describe("regenerate certificates", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("regenerates certificates for an inactive certificate authority on the OpsMan", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

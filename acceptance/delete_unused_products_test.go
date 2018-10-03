@@ -44,6 +44,10 @@ var _ = Describe("delete-unused-products command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("successfully deletes unused products in Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

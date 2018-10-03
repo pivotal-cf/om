@@ -43,6 +43,10 @@ var _ = Describe("errands command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("sets the state for a given errands in a product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

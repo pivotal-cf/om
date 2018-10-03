@@ -13,7 +13,7 @@ type DeleteInstallation struct {
 	service      deleteInstallationService
 	logger       logger
 	logWriter    logWriter
-	waitDuration int
+	waitDuration time.Duration
 }
 
 //go:generate counterfeiter -o ./fakes/delete_installation_service.go --fake-name DeleteInstallationService . deleteInstallationService
@@ -24,7 +24,7 @@ type deleteInstallationService interface {
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 }
 
-func NewDeleteInstallation(service deleteInstallationService, logWriter logWriter, logger logger, waitDuration int) DeleteInstallation {
+func NewDeleteInstallation(service deleteInstallationService, logWriter logWriter, logger logger, waitDuration time.Duration) DeleteInstallation {
 	return DeleteInstallation{
 		service:      service,
 		logger:       logger,
@@ -74,7 +74,7 @@ func (ac DeleteInstallation) Execute(args []string) error {
 			return errors.New("deleting the installation was unsuccessful")
 		}
 
-		time.Sleep(time.Duration(ac.waitDuration) * time.Second)
+		time.Sleep(ac.waitDuration)
 	}
 }
 

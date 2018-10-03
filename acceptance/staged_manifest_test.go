@@ -51,6 +51,10 @@ var _ = Describe("staged-manifest command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("prints the manifest for the staged product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

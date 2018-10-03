@@ -49,6 +49,10 @@ var _ = Describe("deployed-manifest command", func() {
 		}))
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("prints the manifest for the deployed product", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
