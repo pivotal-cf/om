@@ -63,13 +63,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if ac.Options.SkipUnchangedProducts {
 			return fmt.Errorf("product-name flag can not be passed with the skip-unchanged-products flag")
 		}
-		info, err := ac.service.Info()
-		if err != nil {
-			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
-		}
-		if !info.VersionAtLeast(2, 2) {
-			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
-		}
+		ValidateVersion(ac)
 		for _, product := range ac.Options.ProductNames {
 			changedProducts = append(changedProducts, product)
 		}
@@ -140,4 +134,15 @@ func (ac ApplyChanges) Usage() jhanda.Usage {
 		ShortDescription: "triggers an install on the Ops Manager targeted",
 		Flags:            ac.Options,
 	}
+}
+
+func (ac ApplyChanges) validateVersion() error {
+	info, err := ac.service.Info()
+	if err != nil {
+		return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+	}
+	if !info.VersionAtLeast(2, 2) {
+		return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+	}
+	return
 }
