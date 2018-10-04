@@ -85,7 +85,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
 		if !info.VersionAtLeast(2, 2) {
-			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+			return fmt.Errorf("skip-unchanged-products is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 		for _, p := range s.ChangeList {
 			ac.logger.Printf("Found product: %s with action of: %s", p.Product, p.Action)
