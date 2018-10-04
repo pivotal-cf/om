@@ -78,6 +78,7 @@ func (c Curl) Execute(args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read api response body: %s", err)
 	}
+	defer output.Body.Close()
 
 	for _, contentType := range output.Headers["Content-Type"] {
 		if strings.HasPrefix(contentType, "application/json") {

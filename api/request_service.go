@@ -16,7 +16,7 @@ type RequestServiceCurlInput struct {
 type RequestServiceCurlOutput struct {
 	StatusCode int
 	Headers    http.Header
-	Body       io.Reader
+	Body       io.ReadCloser
 }
 
 func (a Api) Curl(input RequestServiceCurlInput) (RequestServiceCurlOutput, error) {

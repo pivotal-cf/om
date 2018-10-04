@@ -3,6 +3,7 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -23,6 +24,9 @@ func (er errReader) Read([]byte) (int, error) {
 }
 
 var _ = Describe("Curl", func() {
+	stringCloser := func(s string) io.ReadCloser {
+		return ioutil.NopCloser(strings.NewReader(s))
+	}
 	Describe("Execute", func() {
 		var (
 			command     commands.Curl
@@ -46,7 +50,7 @@ var _ = Describe("Curl", func() {
 					"Content-Type":   []string{"application/json"},
 					"Accept":         []string{"text/plain"},
 				},
-				Body: strings.NewReader(`{"some-response-key": "%some-response-value"}`),
+				Body: stringCloser(`{"some-response-key": "%some-response-value"}`),
 			}, nil)
 
 			err := command.Execute([]string{
@@ -81,7 +85,7 @@ var _ = Describe("Curl", func() {
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
 					},
-					Body: strings.NewReader("{}"),
+					Body: stringCloser("{}"),
 				}, nil)
 
 				err := command.Execute([]string{
@@ -100,7 +104,7 @@ var _ = Describe("Curl", func() {
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
 					},
-					Body: strings.NewReader("{}"),
+					Body: stringCloser("{}"),
 				}, nil)
 
 				err := command.Execute([]string{
@@ -119,7 +123,7 @@ var _ = Describe("Curl", func() {
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
 					},
-					Body: strings.NewReader("{}"),
+					Body: stringCloser("{}"),
 				}, nil)
 
 				err := command.Execute([]string{
@@ -145,7 +149,7 @@ var _ = Describe("Curl", func() {
 						"Content-Type":   []string{"application/json"},
 						"Accept":         []string{"text/plain"},
 					},
-					Body: strings.NewReader(`{"some-response-key": "%some-response-value"}`),
+					Body: stringCloser(`{"some-response-key": "%some-response-value"}`),
 				}, nil)
 
 				err := command.Execute([]string{
@@ -171,7 +175,7 @@ var _ = Describe("Curl", func() {
 							"Content-Length": []string{"33"},
 							"Content-Type":   []string{"application/json; charset=utf-8"},
 						},
-						Body: strings.NewReader(`{"some-response-key": "some-response-value"}`),
+						Body: stringCloser(`{"some-response-key": "some-response-value"}`),
 					}, nil)
 
 					err := command.Execute([]string{
@@ -193,7 +197,7 @@ var _ = Describe("Curl", func() {
 							"Content-Length": []string{"33"},
 							"Content-Type":   []string{"text/plain; charset=utf-8"},
 						},
-						Body: strings.NewReader(`{"some-response-key": "some-response-value"}`),
+						Body: stringCloser(`{"some-response-key": "some-response-value"}`),
 					}, nil)
 
 					err := command.Execute([]string{
@@ -242,7 +246,7 @@ var _ = Describe("Curl", func() {
 			Context("when the response body cannot be read", func() {
 				It("returns an error", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
-						Body: errReader{},
+						Body: ioutil.NopCloser(errReader{}),
 					}, nil)
 					err := command.Execute([]string{
 						"--path", "/api/v0/some/path",
@@ -257,7 +261,7 @@ var _ = Describe("Curl", func() {
 				It("returns an error", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						StatusCode: 401,
-						Body:       strings.NewReader(`{"some-response-key": "some-response-value"}`),
+						Body:       stringCloser(`{"some-response-key": "some-response-value"}`),
 					}, nil)
 
 					err := command.Execute([]string{
