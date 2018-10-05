@@ -222,6 +222,53 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
+	Context("when config file is provided", func() {
+		var configFile *os.File
+
+		BeforeEach(func() {
+			var err error
+			configContent := `
+version: 1.5.0
+product: will-be-overridden-by-command-line
+`
+			configFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configContent)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("reads configuration from config file", func() {
+			file, err := ioutil.TempFile("", "test-file.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			file.Close()
+			defer os.Remove(file.Name())
+
+			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+				Name:    "cf",
+				Version: "1.5.0",
+			}, nil)
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+			fakeService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
+				if name == "cf" && version == "1.5.0" {
+					return true, nil
+				}
+				return false, errors.New("unknown")
+			}
+
+			err = command.Execute([]string{
+				"--config", configFile.Name(),
+				"--product", file.Name(),
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
+			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected version matches product version."))
+		})
+	})
+
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
