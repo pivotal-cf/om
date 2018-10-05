@@ -108,7 +108,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the --shasum flag is defined", func() {
+	Context("when the --sha256 flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
@@ -132,7 +132,7 @@ var _ = Describe("UploadProduct", func() {
 
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--shasum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+				"--sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
@@ -154,7 +154,7 @@ var _ = Describe("UploadProduct", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--shasum", "not-the-correct-shasum",
+				"--sha256", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
@@ -164,10 +164,61 @@ var _ = Describe("UploadProduct", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err := command.Execute([]string{
 				"--product", "/path/to/testing.tgz",
-				"--shasum", "not-the-correct-shasum",
+				"--sha256", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("open /path/to/testing.tgz: no such file or directory"))
+		})
+	})
+
+	Context("when the --version flag is defined", func() {
+		It("proceeds normally when the versions match", func() {
+			file, err := ioutil.TempFile("", "test-file.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			file.Close()
+			defer os.Remove(file.Name())
+
+			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+				Name:    "cf",
+				Version: "1.5.0",
+			}, nil)
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+			fakeService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
+				if name == "cf" && version == "1.5.0" {
+					return true, nil
+				}
+				return false, errors.New("unknown")
+			}
+
+			err = command.Execute([]string{
+				"--product", file.Name(),
+				"--version", "1.5.0",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
+			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected version matches product version."))
+		})
+
+		It("returns an error when the versions don't match", func() {
+			file, err := ioutil.TempFile("", "test-file.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			file.Close()
+			defer os.Remove(file.Name())
+
+			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+				Name:    "cf",
+				Version: "1.5.0",
+			}, nil)
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+			err = command.Execute([]string{
+				"--product", file.Name(),
+				"--version", "2.5.0",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError("expected version 2.5.0 does not match product version 1.5.0"))
 		})
 	})
 

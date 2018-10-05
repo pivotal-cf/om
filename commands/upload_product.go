@@ -14,9 +14,10 @@ type UploadProduct struct {
 	logger    logger
 	service   uploadProductService
 	Options   struct {
-		Product         string `long:"product"          short:"p"  required:"true" description:"path to product"`
-		PollingInterval int    `long:"polling-interval" short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
-		Shasum          string `long:"shasum" short:"sha" description:"shasum of the provided product file to be used for validation"`
+		Product         string `long:"product"          short:"p"   description:"path to product" required:"true"`
+		PollingInterval int    `long:"polling-interval" short:"pi"  description:"interval (in seconds) at which to print status" default:"1"`
+		Sha256          string `long:"sha256"                       description:"sha256 of the provided product file to be used for validation"`
+		Version         string `long:"version"                      description:"version of the provided product file to be used for validation"`
 	}
 	metadataExtractor metadataExtractor
 }
@@ -54,7 +55,7 @@ func (up UploadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
 	}
 
-	if up.Options.Shasum != "" {
+	if up.Options.Sha256 != "" {
 		shaValidator := validator.NewSHA256Calculator()
 		shasum, err := shaValidator.Checksum(up.Options.Product)
 
@@ -62,8 +63,8 @@ func (up UploadProduct) Execute(args []string) error {
 			return err
 		}
 
-		if shasum != up.Options.Shasum {
-			return fmt.Errorf("expected shasum %s does not match file shasum %s", up.Options.Shasum, shasum)
+		if shasum != up.Options.Sha256 {
+			return fmt.Errorf("expected shasum %s does not match file shasum %s", up.Options.Sha256, shasum)
 		}
 
 		up.logger.Printf("expected shasum matches product shasum.")
@@ -72,6 +73,13 @@ func (up UploadProduct) Execute(args []string) error {
 	metadata, err := up.metadataExtractor.ExtractMetadata(up.Options.Product)
 	if err != nil {
 		return fmt.Errorf("failed to extract product metadata: %s", err)
+	}
+
+	if up.Options.Version != "" {
+		if up.Options.Version != metadata.Version {
+			return fmt.Errorf("expected version %s does not match product version %s", up.Options.Version, metadata.Version)
+		}
+		up.logger.Printf("expected version matches product version.")
 	}
 
 	prodAvailable, err := up.service.CheckProductAvailability(metadata.Name, metadata.Version)
