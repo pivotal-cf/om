@@ -158,6 +158,7 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 
 	config := config.ProductConfiguration{
+		ProductName:              ec.Options.Product,
 		ProductProperties:        configurableProperties,
 		NetworkProperties:        networks,
 		ResourceConfigProperties: resourceConfig,

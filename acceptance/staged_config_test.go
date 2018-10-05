@@ -155,6 +155,7 @@ var _ = Describe("staged-config command", func() {
 		Eventually(session, "10s").Should(gexec.Exit(0))
 
 		Expect(string(session.Out.Contents())).To(MatchYAML(`---
+product-name: some-product
 product-properties:
   .properties.some-configurable-property:
     value: some-configurable-value
@@ -199,6 +200,7 @@ errand-config:
 			Eventually(session, "10s").Should(gexec.Exit(0))
 
 			Expect(string(session.Out.Contents())).To(MatchYAML(`---
+product-name: some-product
 product-properties:
   .properties.some-configurable-property:
     value: some-configurable-value

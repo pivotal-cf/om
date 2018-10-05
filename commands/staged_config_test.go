@@ -196,6 +196,7 @@ var _ = Describe("StagedConfig", func() {
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
+product-name: some-product
 product-properties:
   .properties.collection:
     value:
@@ -234,6 +235,7 @@ errand-config:
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`---
+product-name: some-product
 product-properties:
   ".properties.some-string-property":
     value: some-value
@@ -352,7 +354,9 @@ errand-config:
 
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
-			Expect(output).To(ContainElement(MatchYAML(`product-properties:
+			Expect(output).To(ContainElement(MatchYAML(`
+product-name: some-product
+product-properties:
   .properties.collection:
     value:
     - certificate:

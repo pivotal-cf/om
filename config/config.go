@@ -1,6 +1,7 @@
 package config
 
 type ProductConfiguration struct {
+	ProductName              string                  `yaml:"product-name,omitempty"`
 	ProductProperties        map[string]interface{}  `yaml:"product-properties"`
 	NetworkProperties        map[string]interface{}  `yaml:"network-properties,omitempty"`
 	ResourceConfigProperties map[string]interface{}  `yaml:"resource-config,omitempty"`
