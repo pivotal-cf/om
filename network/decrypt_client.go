@@ -2,6 +2,7 @@ package network
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -57,72 +58,109 @@ func (c DecryptClient) decrypt() error {
 }
 
 func (c DecryptClient) waitUntilAvailable() error {
-	var status = "unknown"
-	var err error
-
 	var trial = 1
-	for status != "complete" {
+	for {
 		if trial == 2 {
 			c.writer.Write([]byte("Waiting for Ops Manager's auth systems to start. This may take a few minutes...\n"))
 		}
-		status, err = c.checkAvailability()
-		if err != nil {
+
+		err := c.checkAvailability()
+		if err == nil {
+			return nil
+		}
+
+		if !IsTemporary(err) {
 			return fmt.Errorf("could not check Ops Manager Status: %s", err)
 		}
-		trial += 1
+
+		trial++
 	}
 
 	return nil
 }
 
-func (c DecryptClient) checkAvailability() (string, error) {
+type RetryError struct {
+	Err       error
+	Retryable bool
+}
+
+func (e RetryError) Error() string {
+	return e.Err.Error()
+}
+
+func (e RetryError) Temporary() bool {
+	return e.Retryable
+}
+
+func RetryableError(err error) *RetryError {
+	if err == nil {
+		return nil
+	}
+	return &RetryError{Err: err, Retryable: true}
+}
+
+func NonRetryableError(err error) *RetryError {
+	if err == nil {
+		return nil
+	}
+	return &RetryError{Err: err, Retryable: false}
+}
+
+type temporary interface {
+	Temporary() bool
+}
+
+func IsTemporary(err error) bool {
+	te, ok := err.(temporary)
+	return ok && te.Temporary()
+}
+
+func (c DecryptClient) checkAvailability() error {
 	// the below code is copied from api/setup_service. Don't really want to import api here as it will break
 	// dag dependency graph. It's probably make sense to separate that logic from api package into a standalone one
 	// to just maintain the dependencies.
 
 	request, err := http.NewRequest("GET", "/login/ensure_availability", nil)
 	if err != nil {
-		return "", err
+		return NonRetryableError(err)
 	}
 
 	response, err := c.unauthedClient.Do(request)
 	if err != nil {
-		return "", fmt.Errorf("could not make request round trip: %s", err)
+		return NonRetryableError(fmt.Errorf("could not make request round trip: %s", err))
 	}
 
 	defer response.Body.Close()
 
-	status := "unknown"
-	switch {
-	case response.StatusCode == http.StatusFound:
+	switch response.StatusCode {
+	case http.StatusFound:
 		location, err := url.Parse(response.Header.Get("Location"))
 		if err != nil {
-			return "", fmt.Errorf("could not parse redirect url: %s", err)
+			return NonRetryableError(fmt.Errorf("could not parse redirect url: %s", err))
 		}
 
-		if location.Path == "/setup" {
-			status = "unstarted"
-		} else if location.Path == "/auth/cloudfoundry" {
-			status = "complete"
-		} else {
-			return "", fmt.Errorf("Unexpected redirect location: %s", location.Path)
+		switch location.Path {
+		case "/auth/cloudfoundry":
+			return nil
+		case "/setup":
+			return RetryableError(errors.New("Status was unstarted"))
+		default:
+			return NonRetryableError(fmt.Errorf("Unexpected redirect location: %s", location.Path))
 		}
 
-	case response.StatusCode == http.StatusOK:
+	case http.StatusOK:
 		respBody, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return "", err
+			return NonRetryableError(err)
 		}
 
 		if strings.Contains(string(respBody), "Waiting for authentication system to start...") {
-			status = "pending"
-		} else {
-			return "", fmt.Errorf("Received OK with an unexpected body: %s", string(respBody))
+			return RetryableError(errors.New("Status is pending"))
 		}
 
-	default:
-		return "", fmt.Errorf("Unexpected response code: %d %s", response.StatusCode, http.StatusText(response.StatusCode))
-	}
+		return NonRetryableError(fmt.Errorf("Received OK with an unexpected body: %s", string(respBody)))
 
-	return status, nil
+	default:
+		return NonRetryableError(fmt.Errorf("Unexpected response code: %d %s", response.StatusCode, http.StatusText(response.StatusCode)))
+	}
 }
