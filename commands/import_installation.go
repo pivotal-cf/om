@@ -8,13 +8,13 @@ import (
 )
 
 type ImportInstallation struct {
-	multipart multipart
-	logger    logger
-	service   importInstallationService
-	Options   struct {
+	multipart  multipart
+	logger     logger
+	service    importInstallationService
+	passphrase string
+	Options    struct {
 		ConfigFile      string `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
-		Passphrase      string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase for Ops Manager to decrypt the installation"`
 		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
 	}
 }
@@ -25,11 +25,12 @@ type importInstallationService interface {
 	EnsureAvailability(input api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
 }
 
-func NewImportInstallation(multipart multipart, service importInstallationService, logger logger) ImportInstallation {
+func NewImportInstallation(multipart multipart, service importInstallationService, passphrase string, logger logger) ImportInstallation {
 	return ImportInstallation{
-		multipart: multipart,
-		logger:    logger,
-		service:   service,
+		multipart:  multipart,
+		logger:     logger,
+		service:    service,
+		passphrase: passphrase,
 	}
 }
 
@@ -42,6 +43,10 @@ func (ii ImportInstallation) Usage() jhanda.Usage {
 }
 
 func (ii ImportInstallation) Execute(args []string) error {
+	if ii.passphrase == "" {
+		return fmt.Errorf("the global decryption-passphrase argument is required for this command")
+	}
+
 	err := loadConfigFile(args, &ii.Options)
 	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
@@ -64,7 +69,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("failed to load installation: %s", err)
 	}
 
-	err = ii.multipart.AddField("passphrase", ii.Options.Passphrase)
+	err = ii.multipart.AddField("passphrase", ii.passphrase)
 	if err != nil {
 		return fmt.Errorf("failed to insert passphrase: %s", err)
 	}

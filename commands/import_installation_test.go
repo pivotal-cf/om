@@ -50,11 +50,10 @@ var _ = Describe("ImportInstallation", func() {
 			return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 		}
 
-		command := commands.NewImportInstallation(multipart, fakeService, logger)
+		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 		err := command.Execute([]string{
 			"--installation", "/path/to/some-installation",
-			"--decryption-passphrase", "some-passphrase",
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
@@ -110,11 +109,10 @@ var _ = Describe("ImportInstallation", func() {
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			command := commands.NewImportInstallation(multipart, fakeService, logger)
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 			err := command.Execute([]string{
 				"--installation", "/path/to/some-installation",
-				"--decryption-passphrase", "some-passphrase",
 				"--polling-interval", "48",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -131,11 +129,10 @@ var _ = Describe("ImportInstallation", func() {
 				Status: api.EnsureAvailabilityStatusComplete,
 			}, nil)
 
-			command := commands.NewImportInstallation(multipart, fakeService, logger)
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 			err := command.Execute([]string{
 				"--installation", "/path/to/some-installation",
-				"--decryption-passphrase", "some-passphrase",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -152,7 +149,6 @@ var _ = Describe("ImportInstallation", func() {
 			var err error
 			configContent := `
 installation: /path/to/some-installation
-decryption-passphrase: some-passphrase
 `
 			configFile, err = ioutil.TempFile("", "")
 			Expect(err).NotTo(HaveOccurred())
@@ -181,7 +177,7 @@ decryption-passphrase: some-passphrase
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			command := commands.NewImportInstallation(multipart, fakeService, logger)
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 			err := command.Execute([]string{
 				"--config", configFile.Name(),
@@ -218,29 +214,37 @@ decryption-passphrase: some-passphrase
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			command := commands.NewImportInstallation(multipart, fakeService, logger)
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 			err := command.Execute([]string{
 				"--config", configFile.Name(),
-				"--decryption-passphrase", "some-passphrase-1",
+				"--installation", "/path/to/some-installation1",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 			key, file := multipart.AddFileArgsForCall(0)
 			Expect(key).To(Equal("installation[file]"))
-			Expect(file).To(Equal("/path/to/some-installation"))
+			Expect(file).To(Equal("/path/to/some-installation1"))
 
 			key, val := multipart.AddFieldArgsForCall(0)
 			Expect(key).To(Equal("passphrase"))
-			Expect(val).To(Equal("some-passphrase-1"))
+			Expect(val).To(Equal("some-passphrase"))
 		})
 	})
 
 	Context("failure cases", func() {
+		Context("when the global decryption-passphrase is not provided", func() {
+			It("returns an error", func() {
+				command := commands.NewImportInstallation(multipart, fakeService, "", logger)
+				err := command.Execute([]string{})
+				Expect(err).To(MatchError("the global decryption-passphrase argument is required for this command"))
+			})
+		})
+
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, logger)
+				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse import-installation flags: flag provided but not defined: -badflag"))
 			})
@@ -257,29 +261,17 @@ decryption-passphrase: some-passphrase
 
 		Context("when the --installation flag is missing", func() {
 			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, logger)
-				err := command.Execute([]string{
-					"--decryption-passphrase", "some-passphrase",
-				})
+				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--installation\""))
-			})
-		})
-
-		Context("when the --decryption-passphrase flag is missing", func() {
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, logger)
-				err := command.Execute([]string{
-					"--installation", "/some/path",
-				})
-				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--decryption-passphrase\""))
 			})
 		})
 
 		Context("when the ensure_availability endpoint returns an error", func() {
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
-				command := commands.NewImportInstallation(multipart, fakeService, logger)
-				err := command.Execute([]string{"--installation", "/some/path", "--decryption-passphrase", "some-passphrase"})
+				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+				err := command.Execute([]string{"--installation", "/some/path"})
 				Expect(err).To(MatchError("could not check Ops Manager status: some error"))
 			})
 		})
@@ -289,10 +281,10 @@ decryption-passphrase: some-passphrase
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusUnstarted,
 				}, nil)
-				command := commands.NewImportInstallation(multipart, fakeService, logger)
+				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
-				err := command.Execute([]string{"--installation", "/some/path", "--decryption-passphrase", "some-passphrase"})
+				err := command.Execute([]string{"--installation", "/some/path"})
 				Expect(err).To(MatchError("failed to load installation: bad file"))
 			})
 		})
@@ -302,10 +294,10 @@ decryption-passphrase: some-passphrase
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusUnstarted,
 				}, nil)
-				command := commands.NewImportInstallation(multipart, fakeService, logger)
+				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				fakeService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
 
-				err := command.Execute([]string{"--installation", "/some/path", "--decryption-passphrase", "some-passphrase"})
+				err := command.Execute([]string{"--installation", "/some/path"})
 				Expect(err).To(MatchError("failed to import installation: some installation error"))
 			})
 		})
@@ -313,7 +305,7 @@ decryption-passphrase: some-passphrase
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewImportInstallation(nil, nil, nil)
+			command := commands.NewImportInstallation(nil, nil, "", nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
 				ShortDescription: "imports a given installation to the Ops Manager targeted",
