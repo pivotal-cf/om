@@ -171,7 +171,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the --version flag is defined", func() {
+	Context("when the --product-version flag is defined", func() {
 		It("proceeds normally when the versions match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
@@ -192,7 +192,7 @@ var _ = Describe("UploadProduct", func() {
 
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--version", "1.5.0",
+				"--product-version", "1.5.0",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
@@ -215,7 +215,7 @@ var _ = Describe("UploadProduct", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--version", "2.5.0",
+				"--product-version", "2.5.0",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("expected version 2.5.0 does not match product version 1.5.0"))
@@ -228,7 +228,7 @@ var _ = Describe("UploadProduct", func() {
 		BeforeEach(func() {
 			var err error
 			configContent := `
-version: 1.5.0
+product-version: 1.5.0
 product: will-be-overridden-by-command-line
 `
 			configFile, err = ioutil.TempFile("", "")
