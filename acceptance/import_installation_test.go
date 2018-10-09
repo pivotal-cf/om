@@ -75,10 +75,10 @@ var _ = Describe("import-installation command", func() {
 	It("successfully uploads an installation to the Ops Manager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
+			"--decryption-passphrase", "fake-passphrase",
 			"--skip-ssl-validation",
 			"import-installation",
 			"--installation", content.Name(),
-			"--decryption-passphrase", "fake-passphrase",
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -116,10 +116,10 @@ var _ = Describe("import-installation command", func() {
 		It("returns an error", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
+				"--decryption-passphrase", "fake-passphrase",
 				"--skip-ssl-validation",
 				"import-installation",
 				"--installation", content.Name(),
-				"--decryption-passphrase", "fake-passphrase",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -148,10 +148,10 @@ var _ = Describe("import-installation command", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
+					"--decryption-passphrase", "fake-passphrase",
 					"--skip-ssl-validation",
 					"import-installation",
 					"--installation", emptyContent.Name(),
-					"--decryption-passphrase", "fake-passphrase",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -171,10 +171,10 @@ var _ = Describe("import-installation command", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
+					"--decryption-passphrase", "fake-passphrase",
 					"--skip-ssl-validation",
 					"import-installation",
 					"--installation", content.Name(),
-					"--decryption-passphrase", "fake-passphrase",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
