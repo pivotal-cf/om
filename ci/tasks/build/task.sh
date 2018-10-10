@@ -13,6 +13,8 @@ function main() {
       local name
       name="om-${OS}"
 
+      echo "building $OS"
+
       if [[ "${OS}" == "windows" ]]; then
         name="${name}.exe"
       fi

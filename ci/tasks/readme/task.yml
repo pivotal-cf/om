@@ -1,0 +1,33 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+inputs:
+- name: om
+  path: go/src/github.com/pivotal-cf/om
+run:
+  path: "/bin/bash"
+  args:
+  - "-c"
+  - |
+    set -exu
+
+    cwd="${PWD}"
+    export GOPATH="$(pwd)/go"
+
+    pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+      sed '/## Current Commands/q' README.md > /tmp/readme
+      mv /tmp/readme README.md
+      echo '```' >> README.md
+      go run main.go --help >> README.md
+      echo '```' >> README.md
+      git config user.email "witchcraft@example.com"
+      git config user.name "bot"
+      git add .
+      git commit -m"Automatically updated README.md" || true
+    popd > /dev/null
+
+    cp -r $GOPATH/src/github.com/pivotal-cf/om $cwd/om-updated-readme
+outputs:
+- name: om-updated-readme

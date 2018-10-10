@@ -1,0 +1,31 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+inputs:
+- name: om
+  path: go/src/github.com/pivotal-cf/om
+run:
+  path: "/bin/bash"
+  args:
+  - "-c"
+  - |
+    set -exu
+    export GOPATH="$(pwd)/go"
+
+    go install github.com/pivotal-cf/om/vendor/github.com/onsi/ginkgo/ginkgo
+
+    export PATH="${PATH}:${GOPATH}/bin"
+
+    pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+      ginkgo \
+        -r \
+        -p \
+        -race \
+        -succinct \
+        -randomizeAllSpecs \
+        -randomizeSuites \
+        -failOnPending \
+        .
+    popd > /dev/null
