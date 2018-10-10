@@ -15,15 +15,30 @@ resources:
     - version
     - README.md
     - docs
-    - ci
-    private_key: ((om_private_key.private_key))
+    private_key: ((om.private_key))
 
 - name: om-pr
   type: pull-request
-  tags: [pull-request]
   source:
     repo: pivotal-cf/om
-    access_token: ((om_private_key.private_key))
+    access_token: ((om.access_token))
+
+- name: om-version
+  type: semver
+  source:
+    initial_version: 0.0.0
+    driver: git
+    uri: git@github.com:pivotal-cf/om.git
+    branch: master
+    file: version
+    private_key: ((om.private_key))
+
+- name: om-release
+  type: github-release
+  source:
+    user: pivotal-cf
+    repository: om
+    access_token: ((om.access_token))
 
 jobs:
 - name: test-om
@@ -32,73 +47,9 @@ jobs:
     - get: om
       trigger: true
   - task: test
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: golang
-      inputs:
-        - name: om
-          path: go/src/github.com/pivotal-cf/om
-      run:
-        path: "/bin/bash"
-        args:
-        - "-c"
-        - |
-          set -exu
-          export GOPATH="$(pwd)/go"
-
-          go install github.com/pivotal-cf/om/vendor/github.com/onsi/ginkgo/ginkgo
-
-          export PATH="${PATH}:${GOPATH}/bin"
-
-          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
-            ginkgo \
-              -r \
-              -p \
-              -race \
-              -succinct \
-              -randomizeAllSpecs \
-              -randomizeSuites \
-              -failOnPending \
-              .
-          popd > /dev/null
+    file: om/ci/tasks/tests/task.yml
   - task: write-readme
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: golang
-      inputs:
-        - name: om
-          path: go/src/github.com/pivotal-cf/om
-      run:
-        path: "/bin/bash"
-        args:
-        - "-c"
-        - |
-          set -exu
-
-          cwd="${PWD}"
-          export GOPATH="$(pwd)/go"
-
-          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
-            sed '/## Current Commands/q' README.md > /tmp/readme
-            mv /tmp/readme README.md
-            echo '```' >> README.md
-            go run main.go --help >> README.md
-            echo '```' >> README.md
-            git config user.email "witchcraft@example.com"
-            git config user.name "bot"
-            git add .
-            git commit -m"Automatically updated README.md" || true
-          popd > /dev/null
-
-          cp -r $GOPATH/src/github.com/pivotal-cf/om $cwd/om-updated-readme
-      outputs:
-        - name: om-updated-readme
+    file: om/ci/tasks/readme/task.yml
   - put: om
     params:
       repository: om-updated-readme/om
@@ -107,60 +58,46 @@ jobs:
 - name: test-om-pr
   public: true
   plan:
+  - get: om
   - get: om-pr
-    tags: [pull-request]
     trigger: true
     version: every
   - put: om-pr
-    tags: [pull-request]
     params:
       path: om-pr
       status: pending
   - task: unit-test
     input_mapping:
       om: om-pr
-    tags: [pull-request]
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: golang
-      inputs:
-        - name: om
-          path: go/src/github.com/pivotal-cf/om
-      run:
-        path: "/bin/bash"
-        args:
-        - "-c"
-        - |
-          set -exu
-          export GOPATH="$(pwd)/go"
-
-          go install github.com/pivotal-cf/om/vendor/github.com/onsi/ginkgo/ginkgo
-
-          export PATH="${PATH}:${GOPATH}/bin"
-
-          pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
-            ginkgo \
-              -r \
-              -p \
-              -race \
-              -succinct \
-              -randomizeAllSpecs \
-              -randomizeSuites \
-              -failOnPending \
-              .
-          popd > /dev/null
+    file: om/ci/tasks/tests/task.yml
     on_failure:
       put: om-pr
-      tags: [pull-request]
       params:
         path: om-pr
         status: failure
     on_success:
       put: om-pr
-      tags: [pull-request]
       params:
         path: om-pr
         status: success
+
+- name: release-om
+  plan:
+  - aggregate:
+    - get: om
+      passed:
+      - test-om
+    - get: om-version
+      params:
+        bump: minor
+  - task: build
+    file: om/ci/tasks/build/task.yml
+  - put: om-release
+    params:
+      name: om-version/number
+      tag: om-version/number
+      globs:
+      - binaries/om-*
+  - put: om-version
+    params:
+      bump: minor
