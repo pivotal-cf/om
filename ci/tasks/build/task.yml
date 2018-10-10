@@ -1,0 +1,18 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+
+inputs:
+- name: om
+  path: go/src/github.com/pivotal-cf/om
+- name: om-version
+
+outputs:
+- name: binaries
+
+run:
+  path: go/src/github.com/pivotal-cf/om/ci/tasks/tooling/om/build/task.sh
