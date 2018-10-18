@@ -10,6 +10,14 @@
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:3ccf8ba7afe02fd470c4f07d6eea4d0e6875da3d129f95b925f2003ce5dd2024"
+  name = "github.com/StackExchange/wmi"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "5d049714c4a64225c3c79a7cf7d02f7fb5b96338"
+  version = "1.0.0"
+
+[[projects]]
   digest = "1:fc86904a62ac4bfff8cfbe94f42231ce3d8cea8fe2506d5293eaef468f8eaecf"
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
@@ -68,6 +76,17 @@
   pruneopts = "NUT"
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:cb4e216bd9f58866f42dc65893455b24f879b026fdaa1ecc3aafff625fdb5a66"
+  name = "github.com/go-ole/go-ole"
+  packages = [
+    ".",
+    "oleutil",
+  ]
+  pruneopts = "NUT"
+  revision = "a41e3c4b706f6ae8dfbff342b06e40fa4d2d0506"
+  version = "v1.2.1"
 
 [[projects]]
   digest = "1:9f35c1344b56e5868d511d231f215edd0650aa572664f856444affdd256e43e4"
@@ -176,6 +195,19 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:f713b10f301ba52808ab59a58373cc07ff9364eadfaa36c81e7367978d3d119b"
+  name = "github.com/pivotal-cf/go-pivnet"
+  packages = [
+    ".",
+    "download",
+    "logger",
+    "logger/loggerfakes",
+  ]
+  pruneopts = "NUT"
+  revision = "bb5747a2714fd4f8988796113abd61d2d33e702e"
+  version = "v0.0.49"
+
+[[projects]]
   branch = "master"
   digest = "1:622460e872a1d6c8e7545df51795441cb88115705d097b3321600e77b89d4159"
   name = "github.com/pivotal-cf/jhanda"
@@ -193,6 +225,25 @@
   packages = ["proofing"]
   pruneopts = "NUT"
   revision = "9c0f5ac8553d4e981aec5d24d55f14936bfb7d3c"
+
+[[projects]]
+  digest = "1:fc192ebc16c9c58fd4de83e8448bb9e9900f51662edd056624f0a0d9ddae8c43"
+  name = "github.com/pivotal-cf/pivnet-cli"
+  packages = ["filter"]
+  pruneopts = "NUT"
+  revision = "ae14d05bf21b657eefa68c52a97764a52d43d1f4"
+  version = "v0.0.55"
+
+[[projects]]
+  digest = "1:b372c73a3511a44b1c0937258f48dba29d22613d5f6190e91d8dd0bab40dd190"
+  name = "github.com/shirou/gopsutil"
+  packages = [
+    "disk",
+    "internal/common",
+  ]
+  pruneopts = "NUT"
+  revision = "8048a2e9c5773235122027dd585cf821b2af1249"
+  version = "v2.18.07"
 
 [[projects]]
   branch = "master"
@@ -222,9 +273,20 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:99e2680036a6e92ede18602debb98bb8e620a7d67ca11b3fc21a9c9ab5be3e79"
+  digest = "1:39ebcc2b11457b703ae9ee2e8cca0f68df21969c6102cb3b705f76cca0ea0239"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = "NUT"
+  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c1002df3205cb2d72159043e55a98401e8fa56d308b4340f9fbe92b2ab5b1152"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+  ]
   pruneopts = "NUT"
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
@@ -303,8 +365,12 @@
     "github.com/onsi/gomega",
     "github.com/onsi/gomega/gbytes",
     "github.com/onsi/gomega/gexec",
+    "github.com/pivotal-cf/go-pivnet",
+    "github.com/pivotal-cf/go-pivnet/logger",
+    "github.com/pivotal-cf/go-pivnet/logger/loggerfakes",
     "github.com/pivotal-cf/jhanda",
     "github.com/pivotal-cf/kiln/proofing",
+    "github.com/pivotal-cf/pivnet-cli/filter",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",
     "gopkg.in/cheggaaa/pb.v1",
