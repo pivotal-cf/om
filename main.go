@@ -13,6 +13,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
 
+	"github.com/pivotal-cf/go-pivnet/logshim"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -134,10 +135,13 @@ func main() {
 	})
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
+	pivnetLogWriter := logshim.NewLogShim(stdout, stdout, global.Trace)
 
 	form := formcontent.NewForm()
 
 	metadataExtractor := extractor.MetadataExtractor{}
+
+	pivnetFactory := commands.DefaultPivnetFactory
 
 	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
 
@@ -164,6 +168,7 @@ func main() {
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
+	commandSet["download-product"] = commands.NewDownloadProduct(pivnetLogWriter, os.Stdout, pivnetFactory)
 	commandSet["errands"] = commands.NewErrands(presenter, api)
 	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(api, stdout)

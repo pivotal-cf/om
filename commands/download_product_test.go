@@ -1,10 +1,12 @@
 package commands_test
 
 import (
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/go-pivnet"
+	log "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/go-pivnet/logger/loggerfakes"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
@@ -18,23 +20,24 @@ var _ = FDescribe("DownloadProduct", func() {
 	var (
 		command              commands.DownloadProduct
 		logger               *loggerfakes.FakeLogger
-		fakeFactory          *fakes.PivnetClientFactory
 		fakePivnetDownloader *fakes.PivnetDownloader
 		fakeWriter           *gbytes.Buffer
 		tempDir              string
 		err                  error
 	)
 
+	fakePivnetFactory := func(config pivnet.ClientConfig, logger log.Logger) commands.PivnetDownloader {
+		return fakePivnetDownloader
+	}
+
 	BeforeEach(func() {
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
-		fakeFactory = &fakes.PivnetClientFactory{}
-		fakeFactory.NewClientReturns(fakePivnetDownloader)
 		fakeWriter = gbytes.NewBuffer()
 	})
 
 	JustBeforeEach(func() {
-		command = commands.NewDownloadProduct(logger, fakeWriter, fakeFactory)
+		command = commands.NewDownloadProduct(logger, fakeWriter, fakePivnetFactory)
 	})
 
 	Context("given all the flags are set correctly", func() {
@@ -70,7 +73,6 @@ var _ = FDescribe("DownloadProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakeFactory.NewClientCallCount()).To(Equal(1))
 			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
 			Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
 			Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
@@ -115,7 +117,7 @@ var _ = FDescribe("DownloadProduct", func() {
 					"--output-directory", tempDir,
 				})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal(`the glob '*.pivotal' matches multiple files. Write your glob to match exactly one of the following: [cf-2.0-build.1.pivotal srt-2.0-build.1.pivotal]`))
+				Expect(err.Error()).To(ContainSubstring(`the glob '*.pivotal' matches multiple files. Write your glob to match exactly one of the following:`))
 			})
 		})
 	})
@@ -123,7 +125,6 @@ var _ = FDescribe("DownloadProduct", func() {
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewDownloadProduct(logger, fakeWriter, fakeFactory)
 				err := command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse download-product flags: flag provided but not defined: -badflag"))
 			})
@@ -131,16 +132,32 @@ var _ = FDescribe("DownloadProduct", func() {
 
 		Context("when a required flag is not provided", func() {
 			It("returns an error", func() {
-				command := commands.NewDownloadProduct(logger, fakeWriter, fakeFactory)
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--pivnet-api-token\""))
+			})
+		})
+
+		Context("when the release specified is not available", func() {
+			BeforeEach(func() {
+				fakePivnetDownloader.ReleaseForVersionReturns(pivnet.Release{}, fmt.Errorf("some-error"))
+			})
+
+			It("returns an error", func() {
+				err := command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("could not fetch the release for elastic-runtime 2.0.0: some-error"))
 			})
 		})
 	})
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewDownloadProduct(logger, fakeWriter, fakeFactory)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This command attempts to download a single product file from Pivotal Network. The API token used must be associated with a user account that has already accepted the EULA for the specified product",
 				ShortDescription: "downloads a specified product file from Pivotal Network",
