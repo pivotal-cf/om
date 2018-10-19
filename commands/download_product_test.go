@@ -16,7 +16,7 @@ import (
 	"path"
 )
 
-var _ = FDescribe("DownloadProduct", func() {
+var _ = Describe("DownloadProduct", func() {
 	var (
 		command              commands.DownloadProduct
 		logger               *loggerfakes.FakeLogger
@@ -163,6 +163,15 @@ var _ = FDescribe("DownloadProduct", func() {
 							Name: "Stemcells for PCF (Ubuntu Xenial)",
 						},
 					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199675,
+						Version: "97.9",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
 				}, nil)
 			})
 
@@ -182,6 +191,11 @@ var _ = FDescribe("DownloadProduct", func() {
 				Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(2))
 				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(2))
 				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(2))
+				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(2))
+
+				str, version := fakePivnetDownloader.ReleaseForVersionArgsForCall(1)
+				Expect(version).To(Equal("97.19"))
+				Expect(str).To(Equal("stemcells-ubuntu-xenial"))
 
 				file, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
 				Expect(file.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
@@ -189,6 +203,43 @@ var _ = FDescribe("DownloadProduct", func() {
 				Expect(releaseID).To(Equal(9999))
 				Expect(fileID).To(Equal(5678))
 			})
+
+			Context("when the product is not a tile", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
+						ID: 12345,
+					}, nil)
+
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.tgz",
+							Name:         "Example Cloud Foundry",
+						},
+					}, nil)
+				})
+
+				It("exit gracefully when the product is not a tile", func() {
+					err := command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.tgz",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--download-stemcell",
+						"stemcell-iaas", "google",
+					})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+
+					infoStr, _ := logger.InfoArgsForCall(1)
+					Expect(infoStr).To(Equal("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
+				})
+			})
+
 		})
 	})
 
@@ -221,7 +272,7 @@ var _ = FDescribe("DownloadProduct", func() {
 					"--output-directory", tempDir,
 				})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("could not fetch the release for elastic-runtime 2.0.0: some-error"))
+				Expect(err.Error()).To(ContainSubstring("could not fetch the release for elastic-runtime 2.0.0: some-error"))
 			})
 		})
 	})

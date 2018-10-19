@@ -32,6 +32,7 @@ type DownloadProduct struct {
 	logger         log.Logger
 	progressWriter io.Writer
 	pivnetFactory  PivnetFactory
+	client         PivnetDownloader
 	filter         *filter.Filter
 	Options        struct {
 		ConfigFile     string `long:"config"               short:"c"   description:"path to yml file for configuration (keys must match the following command line flags)"`
@@ -68,58 +69,26 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse download-product flags: %s", err)
 	}
 
-	config := pivnet.ClientConfig{
-		Host:              pivnet.DefaultHost,
-		Token:             c.Options.Token,
-		UserAgent:         "om",
-		SkipSSLValidation: false,
-	}
+	c.init()
 
-	client := c.pivnetFactory(config, c.logger)
-
-	release, err := client.ReleaseForVersion(c.Options.ProductSlug, c.Options.ProductVersion)
+	releaseID, productFileName, err := c.downloadProductFile(c.Options.ProductSlug, c.Options.ProductVersion, c.Options.FileGlob)
 	if err != nil {
-		return fmt.Errorf("could not fetch the release for %s %s: %s", c.Options.ProductSlug, c.Options.ProductVersion, err)
+		return fmt.Errorf("could not download product: %s", err)
 	}
 
-	productFileNames, err := client.ProductFilesForRelease(c.Options.ProductSlug, release.ID)
-	if err != nil {
-		return fmt.Errorf("could not fetch the product files for %s %s: %s", c.Options.ProductSlug, c.Options.ProductVersion, err)
-	}
-
-	productFileNames, err = c.filter.ProductFileKeysByGlobs(productFileNames, []string{c.Options.FileGlob})
-	if err != nil {
-		return fmt.Errorf("could not glob product files: %s", err)
-	}
-
-	if err := checkSingleProductFile(c.Options.FileGlob, productFileNames); err != nil {
-		return err
-	}
-
-	productFileName := productFileNames[0]
-
-	productFile, err := os.Create(path.Join(c.Options.OutputDir, path.Base(productFileName.AWSObjectKey)))
-	defer productFile.Close()
-
-	err = client.DownloadProductFile(productFile, c.Options.ProductSlug, release.ID, productFileName.ID, c.progressWriter)
-	if err != nil {
-		return fmt.Errorf("could not download product file %s %s: %s", c.Options.ProductSlug, c.Options.ProductVersion, err)
-	}
-
-	// Try downloading stemcell
 	if !c.Options.Stemcell {
 		return nil
 	}
 
 	c.logger.Info("Downloading stemcell")
 
-	nameParts := strings.Split(productFile.Name(), ".")
+	nameParts := strings.Split(productFileName, ".")
 	if nameParts[len(nameParts)-1] != "pivotal" {
 		c.logger.Info("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell.")
 		return nil
 	}
 
-	dependencies, err := client.ReleaseDependencies(c.Options.ProductSlug, release.ID)
+	dependencies, err := c.client.ReleaseDependencies(c.Options.ProductSlug, releaseID)
 	if err != nil {
 		return fmt.Errorf("could not fetch stemcell dependency for %s %s: %s", c.Options.ProductSlug, c.Options.ProductVersion, err)
 	}
@@ -159,35 +128,60 @@ func (c DownloadProduct) Execute(args []string) error {
 		}
 	}
 
-	stemcellRelease, err := client.ReleaseForVersion(stemcellSlug, stemcellVersion)
+	_, _, err = c.downloadProductFile(stemcellSlug, stemcellVersion, fmt.Sprintf("*%s*", c.Options.StemcellIaas))
 	if err != nil {
-		return fmt.Errorf("could not fetch the release for %s %s: %s", stemcellSlug, stemcellVersion, err)
+		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
-	stemcellFileNames, err := client.ProductFilesForRelease(stemcellSlug, stemcellRelease.ID)
-	if err != nil {
-		return fmt.Errorf("could not fetch the product files for %s %s: %s", stemcellSlug, stemcellVersion, err)
-	}
-
-	stemcellFileNames, err = c.filter.ProductFileKeysByGlobs(stemcellFileNames, []string{fmt.Sprintf("*%s*", c.Options.StemcellIaas)})
-	if err != nil {
-		return fmt.Errorf("could not glob product files: %s", err)
-	}
-
-	if err := checkSingleProductFile(c.Options.FileGlob, productFileNames); err != nil {
-		return err
-	}
-
-	stemcellFileName := stemcellFileNames[0]
-
-	stemcellFile, err := os.Create(path.Join(c.Options.OutputDir, path.Base(stemcellFileName.AWSObjectKey)))
-	defer stemcellFile.Close()
-
-	err = client.DownloadProductFile(stemcellFile, stemcellSlug, stemcellRelease.ID, stemcellFileName.ID, c.progressWriter)
-	if err != nil {
-		return fmt.Errorf("could not download product file %s %s: %s", stemcellSlug, stemcellVersion, err)
-	}
 	return nil
+}
+
+func (c *DownloadProduct) init() {
+	c.client = c.pivnetFactory(
+		pivnet.ClientConfig{
+			Host:              pivnet.DefaultHost,
+			Token:             c.Options.Token,
+			UserAgent:         fmt.Sprintf("om-download-product"),
+			SkipSSLValidation: false,
+		},
+		c.logger,
+	)
+}
+
+func (c *DownloadProduct) downloadProductFile(slug, version, glob string) (int, string, error) {
+	release, err := c.client.ReleaseForVersion(slug, version)
+	if err != nil {
+		return release.ID, "", fmt.Errorf("could not fetch the release for %s %s: %s", slug, version, err)
+	}
+
+	productFileNames, err := c.client.ProductFilesForRelease(slug, release.ID)
+	if err != nil {
+		return release.ID, "", fmt.Errorf("could not fetch the product files for %s %s: %s", slug, version, err)
+	}
+
+	productFileNames, err = c.filter.ProductFileKeysByGlobs(productFileNames, []string{glob})
+	if err != nil {
+		return release.ID, "", fmt.Errorf("could not glob product files: %s", err)
+	}
+
+	if err := checkSingleProductFile(glob, productFileNames); err != nil {
+		return release.ID, "", err
+	}
+
+	productFileName := productFileNames[0]
+
+	productFile, err := os.Create(path.Join(c.Options.OutputDir, path.Base(productFileName.AWSObjectKey)))
+	if err != nil {
+		return release.ID, "", fmt.Errorf("could not create file %s: %s", productFile.Name(), err)
+	}
+	defer productFile.Close()
+
+	err = c.client.DownloadProductFile(productFile, slug, release.ID, productFileName.ID, c.progressWriter)
+	if err != nil {
+		return release.ID, "", fmt.Errorf("could not download product file %s %s: %s", slug, version, err)
+	}
+
+	return release.ID, productFile.Name(), nil
 }
 
 func checkSingleProductFile(glob string, productFiles []pivnet.ProductFile) error {

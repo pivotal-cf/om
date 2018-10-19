@@ -254,7 +254,7 @@ var _ = Describe("StagedProducts", func() {
 
 			Expect(config.AvailabilityZones).To(Equal([]api.AvailabilityZoneOutput{
 				{
-					Name: "Availability Zone 1",
+					Name:                  "Availability Zone 1",
 					IAASConfigurationGUID: "iaas-configuration-guid",
 				},
 				{
