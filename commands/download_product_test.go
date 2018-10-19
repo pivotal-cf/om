@@ -40,17 +40,17 @@ var _ = FDescribe("DownloadProduct", func() {
 		command = commands.NewDownloadProduct(logger, fakeWriter, fakePivnetFactory)
 	})
 
-	Context("given all the flags are set correctly", func() {
+	Context("given the flags are set correctly", func() {
 		BeforeEach(func() {
-			fakePivnetDownloader.ReleaseForVersionReturns(pivnet.Release{
+			fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 				ID: 12345,
 			}, nil)
 
-			fakePivnetDownloader.ProductFilesForReleaseReturns([]pivnet.ProductFile{
+			fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
 				{
 					ID:           54321,
 					AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
-					Name:         "cf-2.0-build.1.pivotal",
+					Name:         "Example Cloud Foundry",
 				},
 			}, nil)
 
@@ -94,7 +94,7 @@ var _ = FDescribe("DownloadProduct", func() {
 
 		Context("when the globs returns multiple files", func() {
 			BeforeEach(func() {
-				fakePivnetDownloader.ProductFilesForReleaseReturns([]pivnet.ProductFile{
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
 					{
 						ID:           54321,
 						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
@@ -118,6 +118,76 @@ var _ = FDescribe("DownloadProduct", func() {
 				})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring(`the glob '*.pivotal' matches multiple files. Write your glob to match exactly one of the following:`))
+			})
+		})
+
+		Context("when the download-stemcell flag is set", func() {
+			BeforeEach(func() {
+				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(1, pivnet.Release{
+					ID: 9999,
+				}, nil)
+
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(1, []pivnet.ProductFile{
+					{
+						ID:           5678,
+						AWSObjectKey: "/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz",
+						Name:         "Example Stemcell For GCP",
+					},
+				}, nil)
+
+				fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+					{Release: pivnet.DependentRelease{
+						ID:      199678,
+						Version: "97.19",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199677,
+						Version: "97.18",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199676,
+						Version: "97.17",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+				}, nil)
+			})
+
+			It("grabs the latest stemcell for the product that matches the glob", func() {
+				err := command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+					"--download-stemcell",
+					"stemcell-iaas", "google",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePivnetDownloader.ReleaseDependenciesCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(2))
+				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(2))
+				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(2))
+
+				file, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
+				Expect(file.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
+				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
+				Expect(releaseID).To(Equal(9999))
+				Expect(fileID).To(Equal(5678))
 			})
 		})
 	})

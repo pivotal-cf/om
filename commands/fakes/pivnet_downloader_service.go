@@ -54,6 +54,20 @@ type PivnetDownloader struct {
 	downloadProductFileReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ReleaseDependenciesStub        func(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
+	releaseDependenciesMutex       sync.RWMutex
+	releaseDependenciesArgsForCall []struct {
+		productSlug string
+		releaseID   int
+	}
+	releaseDependenciesReturns struct {
+		result1 []pivnet.ReleaseDependency
+		result2 error
+	}
+	releaseDependenciesReturnsOnCall map[int]struct {
+		result1 []pivnet.ReleaseDependency
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -214,6 +228,58 @@ func (fake *PivnetDownloader) DownloadProductFileReturnsOnCall(i int, result1 er
 	}{result1}
 }
 
+func (fake *PivnetDownloader) ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error) {
+	fake.releaseDependenciesMutex.Lock()
+	ret, specificReturn := fake.releaseDependenciesReturnsOnCall[len(fake.releaseDependenciesArgsForCall)]
+	fake.releaseDependenciesArgsForCall = append(fake.releaseDependenciesArgsForCall, struct {
+		productSlug string
+		releaseID   int
+	}{productSlug, releaseID})
+	fake.recordInvocation("ReleaseDependencies", []interface{}{productSlug, releaseID})
+	fake.releaseDependenciesMutex.Unlock()
+	if fake.ReleaseDependenciesStub != nil {
+		return fake.ReleaseDependenciesStub(productSlug, releaseID)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.releaseDependenciesReturns.result1, fake.releaseDependenciesReturns.result2
+}
+
+func (fake *PivnetDownloader) ReleaseDependenciesCallCount() int {
+	fake.releaseDependenciesMutex.RLock()
+	defer fake.releaseDependenciesMutex.RUnlock()
+	return len(fake.releaseDependenciesArgsForCall)
+}
+
+func (fake *PivnetDownloader) ReleaseDependenciesArgsForCall(i int) (string, int) {
+	fake.releaseDependenciesMutex.RLock()
+	defer fake.releaseDependenciesMutex.RUnlock()
+	return fake.releaseDependenciesArgsForCall[i].productSlug, fake.releaseDependenciesArgsForCall[i].releaseID
+}
+
+func (fake *PivnetDownloader) ReleaseDependenciesReturns(result1 []pivnet.ReleaseDependency, result2 error) {
+	fake.ReleaseDependenciesStub = nil
+	fake.releaseDependenciesReturns = struct {
+		result1 []pivnet.ReleaseDependency
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *PivnetDownloader) ReleaseDependenciesReturnsOnCall(i int, result1 []pivnet.ReleaseDependency, result2 error) {
+	fake.ReleaseDependenciesStub = nil
+	if fake.releaseDependenciesReturnsOnCall == nil {
+		fake.releaseDependenciesReturnsOnCall = make(map[int]struct {
+			result1 []pivnet.ReleaseDependency
+			result2 error
+		})
+	}
+	fake.releaseDependenciesReturnsOnCall[i] = struct {
+		result1 []pivnet.ReleaseDependency
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *PivnetDownloader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -223,6 +289,8 @@ func (fake *PivnetDownloader) Invocations() map[string][][]interface{} {
 	defer fake.productFilesForReleaseMutex.RUnlock()
 	fake.downloadProductFileMutex.RLock()
 	defer fake.downloadProductFileMutex.RUnlock()
+	fake.releaseDependenciesMutex.RLock()
+	defer fake.releaseDependenciesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
