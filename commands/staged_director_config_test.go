@@ -29,7 +29,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
 					{
-						Name: "some-az",
+						Name:                  "some-az",
 						IAASConfigurationGUID: "some-iaas-guid",
 					},
 					{
