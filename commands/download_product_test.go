@@ -11,6 +11,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/validator"
 	"io/ioutil"
 	"os"
 	"path"
@@ -239,7 +240,49 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(infoStr).To(Equal("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
 				})
 			})
+		})
 
+		Context("when the file is already downloaded", func() {
+			BeforeEach(func() {
+				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
+				file, err := os.Create(filePath)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = file.WriteString("something-not-important")
+				Expect(err).NotTo(HaveOccurred())
+				err = file.Close()
+				Expect(err).NotTo(HaveOccurred())
+
+				validator := validator.NewSHA256Calculator()
+				sum, err := validator.Checksum(filePath)
+				Expect(err).NotTo(HaveOccurred())
+
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+					{
+						ID:           54321,
+						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
+						SHA256:       sum,
+						Name:         "Example Cloud Foundry",
+					},
+				}, nil)
+			})
+
+			It("does not download the file again", func() {
+				err := command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(0))
+
+				logStr, _ := logger.InfoArgsForCall(0)
+				Expect(logStr).To(ContainSubstring("already exists, skip downloading"))
+			})
 		})
 	})
 

@@ -3,8 +3,9 @@ package commands
 import (
 	"fmt"
 	"github.com/pivotal-cf/go-pivnet"
-	log "github.com/pivotal-cf/go-pivnet/logger"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/validator"
 	"github.com/pivotal-cf/pivnet-cli/filter"
 	"github.com/pivotal-cf/pivnet-cli/gp"
 	"io"
@@ -22,14 +23,14 @@ type PivnetDownloader interface {
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
 }
 
-type PivnetFactory func(config pivnet.ClientConfig, logger log.Logger) PivnetDownloader
+type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-func DefaultPivnetFactory(config pivnet.ClientConfig, logger log.Logger) PivnetDownloader {
+func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
 	return gp.NewClient(config, logger)
 }
 
 type DownloadProduct struct {
-	logger         log.Logger
+	logger         pivnetlog.Logger
 	progressWriter io.Writer
 	pivnetFactory  PivnetFactory
 	client         PivnetDownloader
@@ -46,7 +47,7 @@ type DownloadProduct struct {
 	}
 }
 
-func NewDownloadProduct(logger log.Logger, progressWriter io.Writer, factory PivnetFactory) DownloadProduct {
+func NewDownloadProduct(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory) DownloadProduct {
 	return DownloadProduct{
 		logger:         logger,
 		progressWriter: progressWriter,
@@ -170,9 +171,21 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob string) (int, 
 
 	productFileName := productFileNames[0]
 
-	productFile, err := os.Create(path.Join(c.Options.OutputDir, path.Base(productFileName.AWSObjectKey)))
+	productFilePath := path.Join(c.Options.OutputDir, path.Base(productFileName.AWSObjectKey))
+
+	exist, err := checkFileExists(productFilePath, productFileName.SHA256)
 	if err != nil {
-		return release.ID, "", fmt.Errorf("could not create file %s: %s", productFile.Name(), err)
+		return release.ID, productFilePath, err
+	}
+
+	if exist {
+		c.logger.Info(fmt.Sprintf("%s already exists, skip downloading", productFilePath))
+		return release.ID, productFilePath, nil
+	}
+
+	productFile, err := os.Create(productFilePath)
+	if err != nil {
+		return release.ID, "", fmt.Errorf("could not create file %s: %s", productFilePath, err)
 	}
 	defer productFile.Close()
 
@@ -181,7 +194,26 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob string) (int, 
 		return release.ID, "", fmt.Errorf("could not download product file %s %s: %s", slug, version, err)
 	}
 
-	return release.ID, productFile.Name(), nil
+	return release.ID, productFilePath, nil
+}
+
+func checkFileExists(path, expectedSum string) (bool, error) {
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		} else {
+			return false, fmt.Errorf("failed to get file information: %s", err)
+		}
+	}
+
+	validate := validator.NewSHA256Calculator()
+	sum, err := validate.Checksum(path)
+	if err != nil {
+		return false, fmt.Errorf("failed to calculate the checksum: %s", err)
+	}
+
+	return sum == expectedSum, nil
 }
 
 func checkSingleProductFile(glob string, productFiles []pivnet.ProductFile) error {
