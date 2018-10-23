@@ -120,7 +120,7 @@ func loadConfigFile(args []string, command interface{}) error {
 
 		var fileArgs []string
 		for k, v := range options {
-			fileArgs = append(fileArgs, fmt.Sprintf("--%s", k), v)
+			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", k, v))
 		}
 		fileArgs = append(fileArgs, args...)
 		_, err = jhanda.Parse(command, fileArgs)
