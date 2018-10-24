@@ -55,32 +55,98 @@ top-level element in the YAML file.
 ```yaml
 ---
 az-configuration:
-- name: some-az
+- name: us-east-1a
+  iaas_configuration_guid: ae31e369c92b6a647da0
 director-configuration:
-  max_threads: 5
+  allow_legacy_agents: true
+  blobstore_type: local
+  bosh_recreate_on_next_deploy: false
+  bosh_recreate_persistent_disks_on_next_deploy: false
+  database_type: internal
+  director_worker_count: 5
+  encryption:
+    keys: []
+    providers: []
+  excluded_recursors: []
+  hm_emailer_options:
+    enabled: false
+  hm_pager_duty_options:
+    enabled: false
+  identification_tags:
+    iaas: aws
+    proof: pudding
+  keep_unreachable_vms: false
+  local_blobstore_options:
+    tls_enabled: false
+  max_threads: 30
+  ntp_servers_string: 0.amazon.pool.ntp.org, 1.amazon.pool.ntp.org, 2.amazon.pool.ntp.org,
+    3.amazon.pool.ntp.org
+  post_deploy_enabled: false
+  resurrector_enabled: true
+  retry_bosh_deploys: true
 iaas-configuration:
-  iaas_specific_key: some-value
+  encrypted: false
+  guid: ((iaas-configuration_guid))
+  iam_instance_profile: ((iaas-configuration_iam_instance_profile))
+  key_pair_name: ((iaas-configuration_key_pair_name))
+  kms_key_arn: ((iaas-configuration_kms_key_arn))
+  name: ((iaas-configuration_name))
+  region: ((iaas-configuration_region))
+  security_group: ((iaas-configuration_security_group))
 network-assignment:
   network:
-    name: some-network
+    name: pcf-management-network
+  other_availability_zones: []
+  singleton_availability_zone:
+    name: us-east-1a
 networks-configuration:
+  icmp_checks_enabled: false
   networks:
-  - network: network-1
+  - name: pcf-management-network
+    subnets:
+    - iaas_identifier: subnet-05c15ea14334dfdf4 # You will need to change this to your subnet
+      cidr: 10.0.16.0/28
+      dns: 10.0.0.2
+      gateway: 10.0.16.1
+      reserved_ip_ranges: 10.0.16.0-10.0.16.4
+      availability_zone_names:
+      - us-east-1a
+  - name: pcf-pks-network
+    subnets:
+    - iaas_identifier: subnet-029592de0b99d3a18 # You will need to change this to your subnet
+      cidr: 10.0.4.0/24
+      dns: 10.0.0.2
+      gateway: 10.0.4.1
+      reserved_ip_ranges: 10.0.4.0-10.0.4.4
+      availability_zone_names:
+      - us-east-1a
+  - name: pcf-services-network
+    subnets:
+    - iaas_identifier: subnet-01f95dd2873535b85 # You will need to change this to your subnet
+      cidr: 10.0.8.0/24
+      dns: 10.0.0.2
+      gateway: 10.0.8.1
+      reserved_ip_ranges: 10.0.8.0-10.0.8.3
+      availability_zone_names:
+      - us-east-1a
 resource-configuration:
   compilation:
+    instances: automatic
     instance_type:
-      id: m4.xlarge
+      id: t2.small
+    internet_connected: false
+  director:
+    instances: automatic
+    persistent_disk:
+      size_mb: automatic
+    instance_type:
+      id: m4.large
+    internet_connected: false
 security-configuration:
-  trusted_certificates: some-certificate
+  generate_vm_passwords: true
 syslog-configuration:
-  syslogconfig: awesome
-vmextensions-configuration:
-  some_vm_extension:
-    cloud_properties:
-      source_dest_check: false
-  some_other_vm_extension:
-    cloud_properties:
-      foo: bar
+  enabled: false
+vmextensions-configuration: []
 ```
 
 #### Variables
