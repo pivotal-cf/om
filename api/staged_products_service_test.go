@@ -642,6 +642,45 @@ var _ = Describe("StagedProducts", func() {
 				}
 			}`))
 			})
+			It("does not contain a name in the collection element", func() {
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
+						"key": "value",
+						"some_collection": {
+							"value": [
+								{
+									"some_property": "property_value"
+								}
+							]
+						}
+					}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				By("configuring the product properties")
+				Expect(client.DoCallCount()).To(Equal(2))
+				req := client.DoArgsForCall(1)
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				reqBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reqBody).To(MatchJSON(`{
+					"properties": {
+						"key": "value",
+						"some_collection": {
+							"value": [
+								{
+									"some_property": "property_value"
+								}
+							]
+						}
+					}
+				}`))
+
+			})
 		})
 
 		Context("failure cases", func() {

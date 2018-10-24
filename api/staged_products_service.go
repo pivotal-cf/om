@@ -182,16 +182,21 @@ func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
 	}, nil
 }
 
+var errNotFound = fmt.Errorf("element not found")
+
 func getString(element interface{}, key string) (string, error) {
 	value, err := get(element, key)
 	if err != nil {
 		return "", err
 	}
+	if value == nil {
+		return "", errNotFound
+	}
 	strVal, ok := value.(string)
 	if ok {
 		return strVal, nil
 	}
-	return "", fmt.Errorf("element %v with key %s is not a string", element, key)
+	return "", fmt.Errorf("element %v (%T) with key %q is not a string", element, value, key)
 }
 
 func set(element interface{}, key, value string) error {
@@ -269,6 +274,9 @@ func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesIn
 			for _, collectionElement := range collectionValue.([]interface{}) {
 				name, err := getString(collectionElement, "name")
 				if err != nil {
+					if err == errNotFound {
+						continue
+					}
 					return err
 				}
 				guid, err := collectionElementGUID(propertyName, name, currentConfiguredProperties)
