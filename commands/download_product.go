@@ -30,25 +30,29 @@ func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) P
 }
 
 type DownloadProduct struct {
+	environFunc    func() []string
 	logger         pivnetlog.Logger
 	progressWriter io.Writer
 	pivnetFactory  PivnetFactory
 	client         PivnetDownloader
 	filter         *filter.Filter
 	Options        struct {
-		ConfigFile     string `long:"config"               short:"c"   description:"path to yml file for configuration (keys must match the following command line flags)"`
-		Token          string `long:"pivnet-api-token"                  required:"true"`
-		FileGlob       string `long:"pivnet-file-glob"     short:"f"   description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
-		ProductSlug    string `long:"pivnet-product-slug"  short:"p"   description:"Path to product" required:"true"`
-		ProductVersion string `long:"product-version"                  description:"version of the provided product file to be used for validation" required:"true"`
-		OutputDir      string `long:"output-directory"     short:"o"   description:"Directory path to which the file will be outputted. File name will be preserved from Pivotal Network" required:"true"`
-		Stemcell       bool   `long:"download-stemcell"                description:"If set, the latest available stemcell for the product will also be downloaded"`
-		StemcellIaas   string `long:"stemcell-iaas"                    description:"The stemcell for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+		ConfigFile     string   `long:"config"               short:"c"   description:"path to yml file for configuration (keys must match the following command line flags)"`
+		VarsFile       []string `long:"vars-file"            short:"l"   description:"Load variables from a YAML file"`
+		VarsEnv        []string `long:"vars-env"                         description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		Token          string   `long:"pivnet-api-token"                  required:"true"`
+		FileGlob       string   `long:"pivnet-file-glob"     short:"f"   description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
+		ProductSlug    string   `long:"pivnet-product-slug"  short:"p"   description:"Path to product" required:"true"`
+		ProductVersion string   `long:"product-version"                  description:"version of the provided product file to be used for validation" required:"true"`
+		OutputDir      string   `long:"output-directory"     short:"o"   description:"Directory path to which the file will be outputted. File name will be preserved from Pivotal Network" required:"true"`
+		Stemcell       bool     `long:"download-stemcell"                description:"If set, the latest available stemcell for the product will also be downloaded"`
+		StemcellIaas   string   `long:"stemcell-iaas"                    description:"The stemcell for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 	}
 }
 
-func NewDownloadProduct(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory) DownloadProduct {
+func NewDownloadProduct(environFunc func() []string, logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory) DownloadProduct {
 	return DownloadProduct{
+		environFunc:    environFunc,
 		logger:         logger,
 		progressWriter: progressWriter,
 		pivnetFactory:  factory,
@@ -65,7 +69,7 @@ func (c DownloadProduct) Usage() jhanda.Usage {
 }
 
 func (c DownloadProduct) Execute(args []string) error {
-	err := loadConfigFile(args, &c.Options)
+	err := loadConfigFile(args, &c.Options, c.environFunc)
 	if err != nil {
 		return fmt.Errorf("could not parse download-product flags: %s", err)
 	}

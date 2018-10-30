@@ -52,7 +52,7 @@ func (up UploadProduct) Usage() jhanda.Usage {
 }
 
 func (up UploadProduct) Execute(args []string) error {
-	err := loadConfigFile(args, &up.Options)
+	err := loadConfigFile(args, &up.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
 	}

@@ -47,7 +47,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 		return fmt.Errorf("the global decryption-passphrase argument is required for this command")
 	}
 
-	err := loadConfigFile(args, &ii.Options)
+	err := loadConfigFile(args, &ii.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
 	}

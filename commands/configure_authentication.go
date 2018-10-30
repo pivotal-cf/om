@@ -6,9 +6,6 @@ import (
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"reflect"
 )
 
 //go:generate counterfeiter -o ./fakes/configure_authentication_service.go --fake-name ConfigureAuthenticationService . configureAuthenticationService
@@ -39,7 +36,7 @@ func NewConfigureAuthentication(service configureAuthenticationService, logger l
 }
 
 func (ca ConfigureAuthentication) Execute(args []string) error {
-	err := loadConfigFile(args, &ca.Options)
+	err := loadConfigFile(args, &ca.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
 	}
@@ -95,35 +92,4 @@ func (ca ConfigureAuthentication) Usage() jhanda.Usage {
 		ShortDescription: "configures Ops Manager with an internal userstore and admin user account",
 		Flags:            ca.Options,
 	}
-}
-
-func loadConfigFile(args []string, command interface{}) error {
-	_, err := jhanda.Parse(command, args)
-
-	configFile := reflect.ValueOf(command).Elem().FieldByName("ConfigFile").String()
-
-	if configFile != "" {
-		var (
-			options  map[string]string
-			contents []byte
-		)
-
-		contents, err = ioutil.ReadFile(configFile)
-		if err != nil {
-			return fmt.Errorf("failed to read config file %s: %s", configFile, err)
-		}
-
-		err = yaml.Unmarshal(contents, &options)
-		if err != nil {
-			return fmt.Errorf("failed to unmarshal config file %s: %s", configFile, err)
-		}
-
-		var fileArgs []string
-		for k, v := range options {
-			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", k, v))
-		}
-		fileArgs = append(fileArgs, args...)
-		_, err = jhanda.Parse(command, fileArgs)
-	}
-	return err
 }
