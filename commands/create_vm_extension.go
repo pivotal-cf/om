@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/config"
@@ -55,7 +54,7 @@ func (c CreateVMExtension) Execute(args []string) error {
 			environFunc:  c.environFunc,
 			varsEnvs:     c.Options.VarsEnv,
 			opsFiles:     c.Options.OpsFile,
-		})
+		}, "")
 		if err != nil {
 			return err
 		}

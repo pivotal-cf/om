@@ -145,56 +145,22 @@ hello: world`))
 			})
 		})
 
-		Context("Failure cases", func() {
-
-			Context("when there is no input file", func() {
-				It("returns an error", func() {
-					err := command.Execute([]string{
-						"--config", "foo.yml",
-					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).Should(ContainSubstring("no such file or directory"))
+		Context("when path flag is set", func() {
+			It("returns a value from the interpolated file", func() {
+				err := ioutil.WriteFile(inputFile, []byte(`{"a": "((interpolated-value))", "c":"d" }`), 0755)
+				Expect(err).NotTo(HaveOccurred())
+				err = ioutil.WriteFile(varsFile, []byte(`{"interpolated-value": "b"}`), 0755)
+				Expect(err).NotTo(HaveOccurred())
+				err = command.Execute([]string{
+					"--config", inputFile,
+					"--vars-file", varsFile,
+					"--path", "/a",
 				})
+				Expect(err).NotTo(HaveOccurred())
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML(`b`))
 			})
-
-			Context("when the environment is not provided in the expected format", func() {
-
-				It("returns an error", func() {
-					command = commands.NewInterpolate(
-						func() []string { return []string{"not-an-environment-variable"} },
-						logger)
-
-					err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--config", inputFile,
-						"--vars-env", "OM_VAR",
-					})
-					Expect(err).To(MatchError("Expected environment variable to be key-value pair"))
-				})
-
-			})
-
-			Context("when an environment variable is not well-formed YAML", func() {
-
-				It("returns an error", func() {
-					command = commands.NewInterpolate(
-						func() []string { return []string{"OM_VAR_malformed={"} },
-						logger)
-
-					err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--config", inputFile,
-						"--vars-env", "OM_VAR",
-					})
-					Expect(err).To(MatchError(`Could not deserialize YAML from environment variable "OM_VAR_malformed"`))
-				})
-
-			})
-
 		})
 	})
 

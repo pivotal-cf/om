@@ -17,6 +17,7 @@ type Interpolate struct {
 	logger      logger
 	Options     struct {
 		ConfigFile string   `long:"config"    short:"c" required:"true" description:"path for file to be interpolated"`
+		Path       string   `long:"path"                                description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
 		VarsEnv    []string `long:"vars-env"                            description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
 		VarsFile   []string `long:"vars-file" short:"l"                 description:"Load variables from a YAML file"`
 		OpsFile    []string `long:"ops-file"  short:"o"                 description:"YAML operations files"`
@@ -49,7 +50,7 @@ func (c Interpolate) Execute(args []string) error {
 		environFunc:  c.environFunc,
 		varsEnvs:     c.Options.VarsEnv,
 		opsFiles:     c.Options.OpsFile,
-	})
+	}, c.Options.Path)
 	if err != nil {
 		return err
 	}
@@ -67,7 +68,7 @@ func (c Interpolate) Usage() jhanda.Usage {
 	}
 }
 
-func interpolate(o interpolateOptions) ([]byte, error) {
+func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 	contents, err := ioutil.ReadFile(o.templateFile)
 	if err != nil {
 		return nil, err
@@ -137,6 +138,15 @@ func interpolate(o interpolateOptions) ([]byte, error) {
 	evalOpts := boshtpl.EvaluateOpts{
 		UnescapedMultiline: true,
 		ExpectAllKeys:      true,
+	}
+
+	path, err := patch.NewPointerFromString(pathStr)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse path: %s", err)
+	}
+
+	if path.IsSet() {
+		evalOpts.PostVarSubstitutionOp = patch.FindOp{Path: path}
 	}
 
 	bytes, err := tpl.Evaluate(staticVars, ops, evalOpts)

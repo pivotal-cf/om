@@ -48,7 +48,7 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 		varsFiles:    varsField,
 		environFunc:  envFunc,
 		opsFiles:     nil,
-	})
+	}, "")
 	if err != nil {
 		return fmt.Errorf("could not load the config file: %s", err)
 	}

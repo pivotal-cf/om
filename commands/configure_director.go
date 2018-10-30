@@ -71,7 +71,7 @@ func (c ConfigureDirector) Execute(args []string) error {
 			environFunc:  c.environFunc,
 			varsEnvs:     c.Options.VarsEnv,
 			opsFiles:     c.Options.OpsFile,
-		})
+		}, "")
 		if err != nil {
 			return err
 		}

@@ -104,7 +104,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 			environFunc:  cp.environFunc,
 			varsEnvs:     cp.Options.VarsEnv,
 			opsFiles:     cp.Options.OpsFile,
-		})
+		}, "")
 		if err != nil {
 			return err
 		}
