@@ -93,6 +93,9 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(slug).To(Equal("elastic-runtime"))
 			Expect(releaseID).To(Equal(12345))
 			Expect(productFileID).To(Equal(54321))
+
+			fileName := path.Join(tempDir, commands.DownloadListFilename)
+			Expect(fileName).To(BeAnExistingFile())
 		})
 
 		Context("when the globs returns multiple files", func() {

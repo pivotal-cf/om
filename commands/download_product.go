@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pivotal-cf/go-pivnet"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
@@ -14,6 +15,13 @@ import (
 	"strconv"
 	"strings"
 )
+
+const DownloadListFilename = "download-file.json"
+
+type downloadList struct {
+	Product  string `json:"product,omitempty"`
+	Stemcell string `json:"stemcell,omitempty"`
+}
 
 //go:generate counterfeiter -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
 type PivnetDownloader interface {
@@ -74,9 +82,14 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse download-product flags: %s", err)
 	}
 
+	var productFileName, stemcellFileName string
+	var releaseID int
+
+	defer c.writerDownloadedFileList(productFileName, stemcellFileName)
+
 	c.init()
 
-	releaseID, productFileName, err := c.downloadProductFile(c.Options.ProductSlug, c.Options.ProductVersion, c.Options.FileGlob)
+	releaseID, productFileName, err = c.downloadProductFile(c.Options.ProductSlug, c.Options.ProductVersion, c.Options.FileGlob)
 	if err != nil {
 		return fmt.Errorf("could not download product: %s", err)
 	}
@@ -103,12 +116,28 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not sort stemcell dependency: %s", err)
 	}
 
-	_, _, err = c.downloadProductFile(stemcellSlug, stemcellVersion, fmt.Sprintf("*%s*", c.Options.StemcellIaas))
+	_, stemcellFileName, err = c.downloadProductFile(stemcellSlug, stemcellVersion, fmt.Sprintf("*%s*", c.Options.StemcellIaas))
 	if err != nil {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
 	return nil
+}
+
+func (c DownloadProduct) writerDownloadedFileList(productFileName string, stemcellFileName string) error {
+	c.logger.Info(fmt.Sprintf("Writing a list of downloaded artifact to %s", DownloadListFilename))
+	downloadList := downloadList{
+		Product:  productFileName,
+		Stemcell: stemcellFileName,
+	}
+
+	downloadListFile, err := os.Create(path.Join(c.Options.OutputDir, DownloadListFilename))
+	if err != nil {
+		return fmt.Errorf("could not create %s: %s", DownloadListFilename, err)
+	}
+	defer downloadListFile.Close()
+
+	return json.NewEncoder(downloadListFile).Encode(downloadList)
 }
 
 func (c *DownloadProduct) init() {
