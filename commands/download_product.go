@@ -98,39 +98,9 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not fetch stemcell dependency for %s %s: %s", c.Options.ProductSlug, c.Options.ProductVersion, err)
 	}
 
-	var stemcellSlug string
-	var stemcellVersion string
-	var stemcellVersionMajor int
-	var stemcellVersionMinor int
-
-	const errorForVersion = "versioning of stemcell dependency in unexpected format. Please contact Pivotal Support and advise them that the following version could not be parsed: %s"
-
-	for _, dependency := range dependencies {
-		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
-			versionString := dependency.Release.Version
-			splitVersions := strings.Split(versionString, ".")
-			if len(splitVersions) != 2 {
-				return fmt.Errorf(errorForVersion, versionString)
-			}
-			major, err := strconv.Atoi(splitVersions[0])
-			if err != nil {
-				return fmt.Errorf(errorForVersion, versionString)
-			}
-			minor, err := strconv.Atoi(splitVersions[1])
-			if err != nil {
-				return fmt.Errorf(errorForVersion, versionString)
-			}
-			if major > stemcellVersionMajor {
-				stemcellVersionMajor = major
-				stemcellVersionMinor = minor
-				stemcellVersion = versionString
-				stemcellSlug = dependency.Release.Product.Slug
-			} else if major == stemcellVersionMajor && minor > stemcellVersionMinor {
-				stemcellVersionMinor = minor
-				stemcellVersion = versionString
-				stemcellSlug = dependency.Release.Product.Slug
-			}
-		}
+	stemcellSlug, stemcellVersion, err := getLatestStemcell(dependencies)
+	if err != nil {
+		return fmt.Errorf("could not sort stemcell dependency: %s", err)
 	}
 
 	_, _, err = c.downloadProductFile(stemcellSlug, stemcellVersion, fmt.Sprintf("*%s*", c.Options.StemcellIaas))
@@ -232,4 +202,43 @@ func checkSingleProductFile(glob string, productFiles []pivnet.ProductFile) erro
 	}
 
 	return nil
+}
+
+func getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string, error) {
+	const errorForVersion = "versioning of stemcell dependency in unexpected format. the following version could not be parsed: %s"
+
+	var stemcellSlug string
+	var stemcellVersion string
+	var stemcellVersionMajor int
+	var stemcellVersionMinor int
+
+	for _, dependency := range dependencies {
+		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
+			versionString := dependency.Release.Version
+			splitVersions := strings.Split(versionString, ".")
+			if len(splitVersions) != 2 {
+				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
+			}
+			major, err := strconv.Atoi(splitVersions[0])
+			if err != nil {
+				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
+			}
+			minor, err := strconv.Atoi(splitVersions[1])
+			if err != nil {
+				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
+			}
+			if major > stemcellVersionMajor {
+				stemcellVersionMajor = major
+				stemcellVersionMinor = minor
+				stemcellVersion = versionString
+				stemcellSlug = dependency.Release.Product.Slug
+			} else if major == stemcellVersionMajor && minor > stemcellVersionMinor {
+				stemcellVersionMinor = minor
+				stemcellVersion = versionString
+				stemcellSlug = dependency.Release.Product.Slug
+			}
+		}
+	}
+
+	return stemcellSlug, stemcellVersion, nil
 }
