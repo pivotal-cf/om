@@ -32,7 +32,7 @@ func NewConfigureSAMLAuthentication(service configureAuthenticationService, logg
 }
 
 func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
-	err := loadConfigFile(args, &ca.Options)
+	err := loadConfigFile(args, &ca.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-saml-authentication flags: %s", err)
 	}

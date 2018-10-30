@@ -203,7 +203,7 @@ decryption-passphrase: some-passphrase
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{"--config", "something"})
-					Expect(err).To(MatchError("could not parse configure-authentication flags: failed to read config file something: open something: no such file or directory"))
+					Expect(err).To(MatchError("could not parse configure-authentication flags: could not load the config file: open something: no such file or directory"))
 
 				})
 			})

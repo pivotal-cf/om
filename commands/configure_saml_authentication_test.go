@@ -214,7 +214,7 @@ decryption-passphrase: some-passphrase
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
 					err := command.Execute([]string{"--config", "something"})
-					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: failed to read config file something: open something: no such file or directory"))
+					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: could not load the config file: open something: no such file or directory"))
 
 				})
 			})

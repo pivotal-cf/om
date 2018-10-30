@@ -23,6 +23,7 @@ var _ = Describe("DownloadProduct", func() {
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
 		fakeWriter           *gbytes.Buffer
+		environFunc          func() []string
 		tempDir              string
 		err                  error
 	)
@@ -34,11 +35,12 @@ var _ = Describe("DownloadProduct", func() {
 	BeforeEach(func() {
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
+		environFunc = func() []string { return nil }
 		fakeWriter = gbytes.NewBuffer()
 	})
 
 	JustBeforeEach(func() {
-		command = commands.NewDownloadProduct(logger, fakeWriter, fakePivnetFactory)
+		command = commands.NewDownloadProduct(environFunc, logger, fakeWriter, fakePivnetFactory)
 	})
 
 	Context("given the flags are set correctly", func() {
@@ -282,6 +284,91 @@ var _ = Describe("DownloadProduct", func() {
 
 				logStr, _ := logger.InfoArgsForCall(0)
 				Expect(logStr).To(ContainSubstring("already exists, skip downloading"))
+			})
+		})
+
+		Context("when the --config flag is passed", func() {
+			var (
+				configFile *os.File
+				err        error
+			)
+
+			Context("when the config file contains variables", func() {
+				const downloadProductConfigWithVariablesTmpl = `---
+pivnet-api-token: "token"
+pivnet-file-glob: "*.pivotal"
+pivnet-product-slug: ((product-slug))
+product-version: 2.0.0
+output-directory: %s
+`
+
+				BeforeEach(func() {
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
+					Expect(err).NotTo(HaveOccurred())
+
+					err = configFile.Close()
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					err = os.RemoveAll(configFile.Name())
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				It("returns an error if missing variables", func() {
+					err = command.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+				})
+
+				Context("passed in a vars-file", func() {
+					var varsFile *os.File
+
+					BeforeEach(func() {
+						varsFile, err = ioutil.TempFile("", "")
+						Expect(err).NotTo(HaveOccurred())
+
+						_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
+						Expect(err).NotTo(HaveOccurred())
+
+						err = varsFile.Close()
+						Expect(err).NotTo(HaveOccurred())
+					})
+
+					AfterEach(func() {
+						err = os.RemoveAll(varsFile.Name())
+						Expect(err).NotTo(HaveOccurred())
+					})
+
+					It("can interpolate variables into the configuration", func() {
+						err = command.Execute([]string{
+							"--config", configFile.Name(),
+							"--vars-file", varsFile.Name(),
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
+
+				Context("passed as environment variables", func() {
+					BeforeEach(func() {
+						environFunc = func() []string {
+							return []string{"OM_VAR_product-slug='sea-slug'"}
+						}
+					})
+
+					It("can interpolate variables into the configuration", func() {
+						err = command.Execute([]string{
+							"--config", configFile.Name(),
+							"--vars-env", "OM_VAR",
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
 			})
 		})
 	})

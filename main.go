@@ -167,7 +167,7 @@ func main() {
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
-	commandSet["download-product"] = commands.NewDownloadProduct(pivnetLogWriter, os.Stdout, pivnetFactory)
+	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, pivnetLogWriter, os.Stdout, pivnetFactory)
 	commandSet["errands"] = commands.NewErrands(presenter, api)
 	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(api, stdout)
