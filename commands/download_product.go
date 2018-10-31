@@ -85,8 +85,6 @@ func (c DownloadProduct) Execute(args []string) error {
 	var productFileName, stemcellFileName string
 	var releaseID int
 
-	defer c.writerDownloadedFileList(productFileName, stemcellFileName)
-
 	c.init()
 
 	releaseID, productFileName, err = c.downloadProductFile(c.Options.ProductSlug, c.Options.ProductVersion, c.Options.FileGlob)
@@ -95,7 +93,7 @@ func (c DownloadProduct) Execute(args []string) error {
 	}
 
 	if !c.Options.Stemcell {
-		return nil
+		return c.writerDownloadedFileList(productFileName, stemcellFileName)
 	}
 
 	c.logger.Info("Downloading stemcell")
@@ -121,7 +119,7 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
-	return nil
+	return c.writerDownloadedFileList(productFileName, stemcellFileName)
 }
 
 func (c DownloadProduct) writerDownloadedFileList(productFileName string, stemcellFileName string) error {

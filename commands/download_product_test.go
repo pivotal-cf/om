@@ -95,7 +95,10 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(productFileID).To(Equal(54321))
 
 			fileName := path.Join(tempDir, commands.DownloadListFilename)
+			fileContent, err := ioutil.ReadFile(fileName)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(fileName).To(BeAnExistingFile())
+			Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product": "%s" }`, file.Name())))
 		})
 
 		Context("when the globs returns multiple files", func() {
