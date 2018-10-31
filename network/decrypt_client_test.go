@@ -47,6 +47,7 @@ var _ = Describe("DecryptClient", func() {
 					Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
 				}, nil)
 				fakeClient.DoReturnsOnCall(3, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
+				fakeClient.DoReturnsOnCall(4, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
 			})
 
 			It("returns the response", func() {
@@ -58,6 +59,23 @@ var _ = Describe("DecryptClient", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(fakeClient.DoCallCount()).To(Equal(4))
+				Expect(fakeClient.DoArgsForCall(3).Method).To(Equal("some-method"))
+				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+				Expect(string(out.Contents())).To(ContainSubstring("Waiting for Ops Manager's auth systems to start. This may take a few minutes..."))
+			})
+
+			It("should only try to unlock once", func() {
+				out := gbytes.NewBuffer()
+				decryptClient := network.NewDecryptClient(fakeClient, fakeClient, correctDP, out)
+
+				req := http.Request{Method: "some-method"}
+				_, err := decryptClient.Do(&req)
+				Expect(err).NotTo(HaveOccurred())
+
+				resp, err := decryptClient.Do(&req)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeClient.DoCallCount()).To(Equal(5))
 				Expect(fakeClient.DoArgsForCall(3).Method).To(Equal("some-method"))
 				Expect(resp.StatusCode).To(Equal(http.StatusOK))
 				Expect(string(out.Contents())).To(ContainSubstring("Waiting for Ops Manager's auth systems to start. This may take a few minutes..."))

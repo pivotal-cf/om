@@ -15,12 +15,14 @@ type DecryptClient struct {
 	unauthedClient httpClient
 	authedClient   httpClient
 
+	tried bool // to enforce only unlock once in the entire run
+
 	decryptionPassphrase string
 	writer               io.Writer
 }
 
-func NewDecryptClient(authdClient httpClient, unAuthedClient httpClient, decryptionPassphrase string, writer io.Writer) DecryptClient {
-	return DecryptClient{
+func NewDecryptClient(authdClient httpClient, unAuthedClient httpClient, decryptionPassphrase string, writer io.Writer) *DecryptClient {
+	return &DecryptClient{
 		authedClient:         authdClient,
 		unauthedClient:       unAuthedClient,
 		decryptionPassphrase: decryptionPassphrase,
@@ -28,15 +30,18 @@ func NewDecryptClient(authdClient httpClient, unAuthedClient httpClient, decrypt
 	}
 }
 
-func (c DecryptClient) Do(request *http.Request) (*http.Response, error) {
-	if err := c.decrypt(); err != nil {
-		return nil, err
+func (c *DecryptClient) Do(request *http.Request) (*http.Response, error) {
+	if !c.tried {
+		if err := c.decrypt(); err != nil {
+			return nil, err
+		}
 	}
+	c.tried = true
 
 	return c.authedClient.Do(request)
 }
 
-func (c DecryptClient) decrypt() error {
+func (c *DecryptClient) decrypt() error {
 	const unlock = "/api/v0/unlock"
 	request, err := http.NewRequest("PUT", unlock, bytes.NewBufferString(fmt.Sprintf("{\"passphrase\": \"%s\"}", c.decryptionPassphrase)))
 	if err != nil {
