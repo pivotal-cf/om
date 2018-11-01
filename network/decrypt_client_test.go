@@ -8,6 +8,7 @@ import (
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/network/fakes"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 )
@@ -24,33 +25,34 @@ var _ = Describe("DecryptClient", func() {
 	const correctDP = `correct-decryption-passphrase`
 
 	Describe("Do", func() {
-		Context("when the response is successful", func() {
-			BeforeEach(func() {
-				fakeClient.DoReturnsOnCall(0, &http.Response{ // /api/v0/unlock
-					StatusCode:    http.StatusOK,
-					ContentLength: int64(len([]byte("{}"))),
-					Body:          ioutil.NopCloser(strings.NewReader("{}")),
-				}, nil)
-				fakeClient.DoReturnsOnCall(1, &http.Response{ // /api/v0/ensure_availability
-					StatusCode:    http.StatusOK,
-					ContentLength: int64(len([]byte("Waiting for authentication system to start..."))),
-					Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
-				}, nil)
-				fakeClient.DoReturnsOnCall(2, &http.Response{ // /api/v0/ensure_availability
-					StatusCode: http.StatusFound,
-					Header: map[string][]string{
-						"Location": []string{
-							"https://example.com/auth/cloudfoundry",
-						},
+		successfulRequestOnIndex := func(index int) {
+			fakeClient.DoReturnsOnCall(index, &http.Response{ // /api/v0/unlock
+				StatusCode:    http.StatusOK,
+				ContentLength: int64(len([]byte("{}"))),
+				Body:          ioutil.NopCloser(strings.NewReader("{}")),
+			}, nil)
+			fakeClient.DoReturnsOnCall(index+1, &http.Response{ // /api/v0/ensure_availability
+				StatusCode:    http.StatusOK,
+				ContentLength: int64(len([]byte("Waiting for authentication system to start..."))),
+				Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
+			}, nil)
+			fakeClient.DoReturnsOnCall(index+2, &http.Response{ // /api/v0/ensure_availability
+				StatusCode: http.StatusFound,
+				Header: map[string][]string{
+					"Location": []string{
+						"https://example.com/auth/cloudfoundry",
 					},
-					ContentLength: int64(len([]byte("Waiting for authentication system to start..."))),
-					Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
-				}, nil)
-				fakeClient.DoReturnsOnCall(3, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
-				fakeClient.DoReturnsOnCall(4, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
-			})
+				},
+				ContentLength: int64(len([]byte("Waiting for authentication system to start..."))),
+				Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
+			}, nil)
+			fakeClient.DoReturnsOnCall(index+3, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
+			fakeClient.DoReturnsOnCall(index+4, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
+		}
 
+		Context("when the response is successful", func() {
 			It("returns the response", func() {
+				successfulRequestOnIndex(0)
 				out := gbytes.NewBuffer()
 				decryptClient := network.NewDecryptClient(fakeClient, fakeClient, correctDP, out)
 
@@ -65,6 +67,7 @@ var _ = Describe("DecryptClient", func() {
 			})
 
 			It("should only try to unlock once", func() {
+				successfulRequestOnIndex(0)
 				out := gbytes.NewBuffer()
 				decryptClient := network.NewDecryptClient(fakeClient, fakeClient, correctDP, out)
 
@@ -94,6 +97,24 @@ var _ = Describe("DecryptClient", func() {
 				req := http.Request{Method: "some-method"}
 				_, err := decryptClient.Do(&req)
 				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		Context("when the network timeout", func() {
+			It("should retry a couple of times then return the error", func() {
+				fakeClient.DoReturnsOnCall(0, nil, &net.DNSError{IsTimeout: true})
+				fakeClient.DoReturnsOnCall(1, nil, &net.DNSError{IsTimeout: true})
+				fakeClient.DoReturnsOnCall(2, nil, &net.DNSError{IsTimeout: true})
+
+				out := gbytes.NewBuffer()
+				decryptClient := network.NewDecryptClient(fakeClient, fakeClient, correctDP, out)
+
+				req := http.Request{Method: "some-method"}
+				_, err := decryptClient.Do(&req)
+				Expect(err).To(HaveOccurred())
+
+				Expect(fakeClient.DoCallCount()).To(Equal(3))
+				Expect(fakeClient.DoArgsForCall(2).Method).To(Equal("PUT"))
 			})
 		})
 
