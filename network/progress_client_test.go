@@ -74,7 +74,7 @@ var _ = Describe("ProgressClient", func() {
 				_, err := ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Millisecond)
 
 				return &http.Response{
 					StatusCode: http.StatusOK,
@@ -87,6 +87,8 @@ var _ = Describe("ProgressClient", func() {
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 			Expect(err).NotTo(HaveOccurred())
 
+			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Millisecond))
+
 			_, err = progressClient.Do(req)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -95,11 +97,11 @@ var _ = Describe("ProgressClient", func() {
 			})
 
 			By("writing to the live log writer", func() {
-				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 6, 1))
-				Expect(liveWriter.WriteArgsForCall(0)).To(ContainSubstring("1s elapsed"))
-				Expect(liveWriter.WriteArgsForCall(1)).To(ContainSubstring("2s elapsed"))
-				Expect(liveWriter.WriteArgsForCall(2)).To(ContainSubstring("3s elapsed"))
-				Expect(liveWriter.WriteArgsForCall(3)).To(ContainSubstring("4s elapsed"))
+				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 10, 1))
+				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("1ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("2ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(2))).To(ContainSubstring("3ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(3))).To(ContainSubstring("4ms elapsed"))
 			})
 
 			By("flushing the live log writer", func() {
@@ -147,7 +149,7 @@ var _ = Describe("ProgressClient", func() {
 					ioutil.ReadAll(req.Body)
 					defer req.Body.Close()
 
-					time.Sleep(5 * time.Second)
+					time.Sleep(5 * time.Millisecond)
 
 					return &http.Response{
 						StatusCode: http.StatusOK,
@@ -160,15 +162,15 @@ var _ = Describe("ProgressClient", func() {
 				req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 				Expect(err).NotTo(HaveOccurred())
 
-				req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 2*time.Second))
+				req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 2*time.Millisecond))
 
 				_, err = progressClient.Do(req)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(liveWriter.StartCallCount()).To(Equal(1))
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
-				Expect(liveWriter.WriteArgsForCall(0)).To(ContainSubstring("2s elapsed"))
-				Expect(liveWriter.WriteArgsForCall(1)).To(ContainSubstring("4s elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("2ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("4ms elapsed"))
 				Expect(liveWriter.StopCallCount()).To(Equal(1))
 			})
 		})

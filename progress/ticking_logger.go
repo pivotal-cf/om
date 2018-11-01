@@ -40,7 +40,7 @@ func (tl *TickingLogger) Start() {
 			for {
 				select {
 				case <-tl.ticker.C:
-					duration := time.Now().Sub(startTime).Round(time.Second).String()
+					duration := time.Now().Sub(startTime).Round(tl.duration).String()
 					fmt.Fprintf(tl.liveWriter, "%s elapsed, waiting for response from Ops Manager...\r", duration)
 
 				case <-tl.done:
