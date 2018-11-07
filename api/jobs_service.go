@@ -11,7 +11,7 @@ import (
 // TODO: add omitempty everywhere
 type JobProperties struct {
 	Instances              interface{}  `json:"instances" yaml:"instances"`
-	PersistentDisk         *Disk        `json:"persistent_disk,omitempty" yaml:"persistent_disk,omitempty":`
+	PersistentDisk         *Disk        `json:"persistent_disk,omitempty" yaml:"persistent_disk,omitempty"`
 	InstanceType           InstanceType `json:"instance_type" yaml:"instance_type"`
 	InternetConnected      *bool        `json:"internet_connected,omitempty" yaml:"internet_connected,omitempty"`
 	LBNames                []string     `json:"elb_names" yaml:"elb_names,omitempty"`

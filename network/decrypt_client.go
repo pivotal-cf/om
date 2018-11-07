@@ -105,8 +105,6 @@ func (c DecryptClient) waitUntilAvailable() error {
 
 		trial++
 	}
-
-	return nil
 }
 
 type RetryError struct {

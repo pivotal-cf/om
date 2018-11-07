@@ -50,7 +50,7 @@ var _ = Describe("Certificate Authorities", func() {
 			}
 
 			fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
-				api.CertificateAuthoritiesOutput{certificateAuthoritiesOutput},
+				api.CertificateAuthoritiesOutput{CAs: certificateAuthoritiesOutput},
 				nil,
 			)
 		})

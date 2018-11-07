@@ -75,9 +75,9 @@ var _ = Describe("StagedDirectorConfig", func() {
 			fakeService.GetStagedDirectorNetworksReturns(expectedNetworks, nil)
 
 			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
-				api.StagedProduct{
-					"p-bosh-guid",
-					"director",
+				Product: api.StagedProduct{
+					GUID: "p-bosh-guid",
+					Type: "director",
 				},
 			}, nil)
 
