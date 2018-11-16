@@ -452,18 +452,15 @@ vmextensions-configuration:
 			})
 		})
 
-		Context("when no director configuration flags are provided", func() {
-			It("does not call the properties function ", func() {
-				err := command.Execute([]string{})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(0))
-				Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(0))
-				Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(0))
-				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(0))
-			})
-		})
-
 		Context("when an error occurs", func() {
+			Context("when no director configuration flags are provided", func() {
+				It("returns an error ", func() {
+					err := command.Execute([]string{})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("missing required flag \"--config\""))
+				})
+			})
+
 			Context("when flag parser fails", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--foo", "bar"})
@@ -584,7 +581,7 @@ vmextensions-configuration:
 
 				It("returns an error", func() {
 					err := command.Execute([]string{"--config", configFile.Name()})
-					Expect(err).To(MatchError(ContainSubstring("resource-configuration")))
+					Expect(err).To(MatchError(ContainSubstring("could not decode resource-configuration json for job 'resource'")))
 				})
 			})
 
