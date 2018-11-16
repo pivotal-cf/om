@@ -202,52 +202,53 @@ var _ = Describe("configure-director command", func() {
 
 	Context("when using command line arguments", func() {
 		It("configures the BOSH director using the API", func() {
+			configFile, err := ioutil.TempFile("", "config.yml")
+			_, err = configFile.WriteString(`{
+            "iaas-configuration": {
+				"project": "some-project",
+				"default_deployment_tag": "my-vms",
+				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
+			},
+            "az-configuration": [ {"name": "some-az-1"}, {"name": "some-existing-az"} ],
+            "networks-configuration": {
+				"networks": [{"name": "network-1"}],
+				"top-level": "the-top"
+			},
+            "network-assignment": {
+				"network": { "name": "some-network"},
+				"singleton_availability_zone": {"name": "some-az"}
+			},
+            "director-configuration": {
+				"ntp_servers_string": "us.example.org, time.something.com",
+				"resurrector_enabled": false,
+				"director_hostname": "foo.example.com",
+				"max_threads": 5
+			},
+            "security-configuration": {
+				"trusted_certificates": "some-certificate",
+				"generate_vm_passwords": true
+			},
+            "syslog-configuration": {
+				"syslogconfig": "awesome"
+			},
+            "resource-configuration": {
+				"compilation": {
+					"instance_type": {
+						"id": "m4.xlarge"
+					}
+				}
+			}
+            }`)
+			Expect(err).NotTo(HaveOccurred())
+
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
 				"configure-director",
-				"--iaas-configuration",
-				`{
-				"project": "some-project",
-				"default_deployment_tag": "my-vms",
-				"auth_json": "{\"some-auth-field\": \"some-service-key\",\"some-private_key\": \"some-key\"}"
-			}`,
-				"--az-configuration",
-				`[ {"name": "some-az-1"}, {"name": "some-existing-az"} ]`,
-				"--networks-configuration",
-				`{
-				"networks": [{"name": "network-1"}],
-				"top-level": "the-top"
-			}`,
-				"--network-assignment",
-				`{
-				"network": { "name": "some-network"},
-				"singleton_availability_zone": {"name": "some-az"}
-			}`,
-				"--director-configuration",
-				`{
-				"ntp_servers_string": "us.example.org, time.something.com",
-				"resurrector_enabled": false,
-				"director_hostname": "foo.example.com",
-				"max_threads": 5
-			 }`,
-				"--security-configuration",
-				`{
-				"trusted_certificates": "some-certificate",
-				"generate_vm_passwords": true
-			}`,
-				"--syslog-configuration", `{
-				"syslogconfig": "awesome"
-			}`,
-				"--resource-configuration", `{
-				"compilation": {
-					"instance_type": {
-						"id": "m4.xlarge"
-					}
-				}
-			}`,
+				"--config",
+				configFile.Name(),
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
