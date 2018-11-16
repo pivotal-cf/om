@@ -2,7 +2,7 @@ package config
 
 type ProductConfiguration struct {
 	ProductName              string                  `yaml:"product-name,omitempty"`
-	ProductProperties        map[string]interface{}  `yaml:"product-properties"`
+	ProductProperties        map[string]interface{}  `yaml:"product-properties,omitempty"`
 	NetworkProperties        map[string]interface{}  `yaml:"network-properties,omitempty"`
 	ResourceConfigProperties map[string]interface{}  `yaml:"resource-config,omitempty"`
 	ErrandConfigs            map[string]ErrandConfig `yaml:"errand-config,omitempty"`

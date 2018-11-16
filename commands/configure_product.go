@@ -11,7 +11,6 @@ import (
 
 	yamlConverter "github.com/ghodss/yaml"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 type ConfigureProduct struct {
@@ -19,14 +18,10 @@ type ConfigureProduct struct {
 	service     configureProductService
 	logger      logger
 	Options     struct {
-		ProductName       string   `long:"product-name"       short:"n"  required:"true" description:"name of the product being configured"`
-		ConfigFile        string   `long:"config"             short:"c"                  description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)"`
-		VarsFile          []string `long:"vars-file"          short:"l"                  description:"Load variables from a YAML file"`
-		VarsEnv           []string `long:"vars-env"                                      description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		OpsFile           []string `long:"ops-file"           short:"o"                  description:"YAML operations file"`
-		ProductProperties string   `long:"product-properties" short:"p"                  description:"properties to be configured in JSON format"`
-		NetworkProperties string   `long:"product-network"    short:"pn"                 description:"network properties in JSON format"`
-		ProductResources  string   `long:"product-resources"  short:"pr"                 description:"resource configurations in JSON format"`
+		ConfigFile string   `long:"config"    short:"c" description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
+		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
+		VarsEnv    []string `long:"vars-env"            description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		OpsFile    []string `long:"ops-file"  short:"o" description:"YAML operations file"`
 	}
 }
 
@@ -50,26 +45,31 @@ func NewConfigureProduct(environFunc func() []string, service configureProductSe
 }
 
 func (cp ConfigureProduct) Execute(args []string) error {
-	args, err := cp.loadProductName(args)
-	if err != nil {
-		return fmt.Errorf("could not parse configure-product flags: %s", err)
-	}
-
 	if _, err := jhanda.Parse(&cp.Options, args); err != nil {
 		return fmt.Errorf("could not parse configure-product flags: %s", err)
 	}
 
 	cp.logger.Printf("configuring product...")
 
-	if cp.Options.ConfigFile != "" {
-		if cp.Options.ProductProperties != "" || cp.Options.NetworkProperties != "" || cp.Options.ProductResources != "" {
-			return fmt.Errorf("config flag can not be passed with the product-properties, product-network or product-resources flag")
-		}
-	} else {
-		if cp.Options.ProductProperties == "" && cp.Options.NetworkProperties == "" && cp.Options.ProductResources == "" {
-			cp.logger.Printf("Provided properties are empty, nothing to do here")
-			return nil
-		}
+	var cfg config.ProductConfiguration
+	configContents, err := interpolate(interpolateOptions{
+		templateFile: cp.Options.ConfigFile,
+		varsFiles:    cp.Options.VarsFile,
+		environFunc:  cp.environFunc,
+		varsEnvs:     cp.Options.VarsEnv,
+		opsFiles:     cp.Options.OpsFile,
+	}, "")
+	if err != nil {
+		return err
+	}
+
+	err = yaml.UnmarshalStrict(configContents, &cfg)
+	if err != nil {
+		return fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
+	}
+
+	if cfg.ProductName == "" {
+		return fmt.Errorf("could not parse configure-product config: \"product-name\" is required")
 	}
 
 	stagedProducts, err := cp.service.ListStagedProducts()
@@ -79,105 +79,34 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	var productGUID string
 	for _, sp := range stagedProducts.Products {
-		if sp.Type == cp.Options.ProductName {
+		if sp.Type == cfg.ProductName {
 			productGUID = sp.GUID
 			break
 		}
 	}
 
 	if productGUID == "" {
-		return fmt.Errorf(`could not find product "%s"`, cp.Options.ProductName)
+		return fmt.Errorf(`could not find product "%s"`, cfg.ProductName)
 	}
 
-	var (
-		networkProperties string
-		productProperties string
-		productResources  string
-		errandConfigs     map[string]config.ErrandConfig
-	)
-
-	if cp.Options.ConfigFile != "" {
-		var cfg config.ProductConfiguration
-		configContents, err := interpolate(interpolateOptions{
-			templateFile: cp.Options.ConfigFile,
-			varsFiles:    cp.Options.VarsFile,
-			environFunc:  cp.environFunc,
-			varsEnvs:     cp.Options.VarsEnv,
-			opsFiles:     cp.Options.OpsFile,
-		}, "")
-		if err != nil {
-			return err
-		}
-
-		err = yaml.Unmarshal(configContents, &cfg)
-		if err != nil {
-			return fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
-		}
-
-		if cfg.NetworkProperties != nil {
-			networkProperties, err = getJSONProperties(cfg.NetworkProperties)
-			if err != nil {
-				return err
-			}
-		}
-
-		if cfg.ProductProperties != nil {
-			productProperties, err = getJSONProperties(cfg.ProductProperties)
-			if err != nil {
-				return err
-			}
-		}
-
-		if cfg.ResourceConfigProperties != nil {
-			productResources, err = getJSONProperties(cfg.ResourceConfigProperties)
-			if err != nil {
-				return err
-			}
-		}
-
-		if cfg.ErrandConfigs != nil {
-			errandConfigs = cfg.ErrandConfigs
-		}
-	} else {
-		if cp.Options.NetworkProperties != "" {
-			networkProperties = cp.Options.NetworkProperties
-		}
-
-		if cp.Options.ProductProperties != "" {
-			productProperties = cp.Options.ProductProperties
-		}
-
-		if cp.Options.ProductResources != "" {
-			productResources = cp.Options.ProductResources
-		}
+	err = cp.configureNetwork(cfg, productGUID)
+	if err != nil {
+		return err
 	}
 
-	if networkProperties != "" {
-		err = cp.configureNetwork(networkProperties, productGUID)
-		if err != nil {
-			return err
-		}
+	err = cp.configureProperties(cfg, productGUID)
+	if err != nil {
+		return err
 	}
 
-	if productProperties != "" {
-		err = cp.configureProperties(productProperties, productGUID)
-		if err != nil {
-			return err
-		}
+	err = cp.configureResources(cfg, productGUID)
+	if err != nil {
+		return err
 	}
 
-	if productResources != "" {
-		err = cp.configureResources(productResources, productGUID)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(errandConfigs) > 0 {
-		err = cp.configureErrands(errandConfigs, productGUID)
-		if err != nil {
-			return err
-		}
+	err = cp.configureErrands(cfg, productGUID)
+	if err != nil {
+		return err
 	}
 
 	cp.logger.Printf("finished configuring product")
@@ -207,9 +136,19 @@ func getJSONProperties(properties interface{}) (string, error) {
 	return string(jsonProperties), nil
 }
 
-func (cp ConfigureProduct) configureResources(productResources string, productGUID string) error {
+func (cp *ConfigureProduct) configureResources(cfg config.ProductConfiguration, productGUID string) error {
+	if cfg.ResourceConfigProperties == nil {
+		cp.logger.Println("resource config properties are not provided, nothing to do here")
+		return nil
+	}
+
+	productResources, err := getJSONProperties(cfg.ResourceConfigProperties)
+	if err != nil {
+		return err
+	}
+
 	var userProvidedConfig map[string]json.RawMessage
-	err := json.Unmarshal([]byte(productResources), &userProvidedConfig)
+	err = json.Unmarshal([]byte(productResources), &userProvidedConfig)
 	if err != nil {
 		return fmt.Errorf("could not decode product-resource json: %s", err)
 	}
@@ -247,9 +186,19 @@ func (cp ConfigureProduct) configureResources(productResources string, productGU
 	return nil
 }
 
-func (cp ConfigureProduct) configureProperties(productProperties string, productGUID string) error {
+func (cp *ConfigureProduct) configureProperties(cfg config.ProductConfiguration, productGUID string) error {
+	if cfg.ProductProperties == nil {
+		cp.logger.Println("product properties are not provided, nothing to do here")
+		return nil
+	}
+
+	productProperties, err := getJSONProperties(cfg.ProductProperties)
+	if err != nil {
+		return err
+	}
+
 	cp.logger.Printf("setting properties")
-	err := cp.service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+	err = cp.service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
 		GUID:       productGUID,
 		Properties: productProperties,
 	})
@@ -257,25 +206,43 @@ func (cp ConfigureProduct) configureProperties(productProperties string, product
 		return fmt.Errorf("failed to configure product: %s", err)
 	}
 	cp.logger.Printf("finished setting properties")
+
 	return nil
 }
 
-func (cp ConfigureProduct) configureNetwork(networkProperties string, productGUID string) error {
+func (cp *ConfigureProduct) configureNetwork(cfg config.ProductConfiguration, productGUID string) error {
+	if cfg.NetworkProperties == nil {
+		cp.logger.Println("network properties are not provided, nothing to do here")
+		return nil
+	}
+
+	networkProperties, err := getJSONProperties(cfg.NetworkProperties)
+	if err != nil {
+		return err
+	}
+
 	cp.logger.Printf("setting up network")
-	err := cp.service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
+	err = cp.service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
 		GUID:           productGUID,
 		NetworksAndAZs: networkProperties,
 	})
+
 	if err != nil {
 		return fmt.Errorf("failed to configure product: %s", err)
 	}
 	cp.logger.Printf("finished setting up network")
+
 	return nil
 }
 
-func (cp ConfigureProduct) configureErrands(errandConfigs map[string]config.ErrandConfig, productGUID string) error {
+func (cp *ConfigureProduct) configureErrands(cfg config.ProductConfiguration, productGUID string) error {
+	if cfg.ErrandConfigs == nil || len(cfg.ErrandConfigs) == 0 {
+		cp.logger.Println("errands are not provided, nothing to do here")
+		return nil
+	}
+
 	var names []string
-	for name := range errandConfigs {
+	for name := range cfg.ErrandConfigs {
 		names = append(names, name)
 	}
 
@@ -285,53 +252,12 @@ func (cp ConfigureProduct) configureErrands(errandConfigs map[string]config.Erra
 	for _, name := range names {
 		cp.logger.Printf("\t%s", name)
 
-		errandConfig := errandConfigs[name]
+		errandConfig := cfg.ErrandConfigs[name]
 		err := cp.service.UpdateStagedProductErrands(productGUID, name, errandConfig.PostDeployState, errandConfig.PreDeleteState)
 		if err != nil {
 			return fmt.Errorf("failed to set errand state for errand %s: %s", name, err)
 		}
 	}
+
 	return nil
-}
-
-func (cp ConfigureProduct) loadProductName(args []string) ([]string, error) {
-	type productName struct {
-		Name string `yaml:"product-name"`
-	}
-
-	jhanda.Parse(&cp.Options, args)
-
-	flagSet := cp.checkIfProductNameFlagSet()
-	if flagSet {
-		return args, nil
-	}
-
-	configSet := cp.checkConfigSet()
-	if !configSet {
-		return args, nil
-	}
-
-	configContent, err := ioutil.ReadFile(cp.Options.ConfigFile)
-	if err != nil {
-		return args, err
-	}
-
-	name := productName{}
-	err = yaml.Unmarshal(configContent, &name)
-	if err != nil {
-		return args, fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
-	}
-	if name.Name != "" {
-		return append(args, "--product-name", name.Name), nil
-
-	}
-	return args, nil
-}
-
-func (cp ConfigureProduct) checkIfProductNameFlagSet() bool {
-	return cp.Options.ProductName != ""
-}
-
-func (cp ConfigureProduct) checkConfigSet() bool {
-	return cp.Options.ConfigFile != ""
 }
