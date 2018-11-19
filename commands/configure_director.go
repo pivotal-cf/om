@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 	"sort"
+	"strings"
 )
 
 type ConfigureDirector struct {
@@ -76,6 +77,11 @@ func (c ConfigureDirector) Execute(args []string) error {
 		return err
 	}
 
+	err = c.validateConfig(config)
+	if err != nil {
+		return err
+	}
+
 	err = c.updateStagedDirectorProperties(config)
 	if err != nil {
 		return err
@@ -127,6 +133,19 @@ func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
 		return nil, fmt.Errorf("could not be parsed as valid configuration: %s: %s", c.Options.ConfigFile, err)
 	}
 	return &config, nil
+}
+
+func (c ConfigureDirector) validateConfig(config *directorConfig) error{
+	if len(config.Field) > 0 {
+	   var unrecognizedKeys []string
+	   for key := range config.Field {
+	       unrecognizedKeys = append(unrecognizedKeys, key)
+	   }
+	   sort.Strings(unrecognizedKeys)
+
+	   return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
+	}
+	return nil
 }
 
 func (c ConfigureDirector) updateStagedDirectorProperties(config *directorConfig) error {

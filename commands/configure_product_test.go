@@ -711,6 +711,7 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(err).To(MatchError("failed to configure product: some product error"))
 				})
 			})
+
 			Context("when errand config errors", func() {
 				var (
 					configFile *os.File
@@ -741,6 +742,24 @@ var _ = Describe("ConfigureProduct", func() {
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(MatchError("failed to set errand state for errand push-usage-service: error configuring errand"))
+				})
+			})
+
+			Context("with unrecognized top-level-keys", func() {
+				It("returns error saying the specified key", func() {
+					configYAML := `{"product-name": "cf", "unrecognized-other-key": {}, "unrecognized-key": {"some-attr1": "some-val1"}}`
+					configFile, err := ioutil.TempFile("", "config.yaml")
+					Expect(err).ToNot(HaveOccurred())
+					_, err = configFile.WriteString(configYAML)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(configFile.Close()).ToNot(HaveOccurred())
+
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					err = client.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`))
 				})
 			})
 		})

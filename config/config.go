@@ -6,6 +6,7 @@ type ProductConfiguration struct {
 	NetworkProperties        map[string]interface{}  `yaml:"network-properties,omitempty"`
 	ResourceConfigProperties map[string]interface{}  `yaml:"resource-config,omitempty"`
 	ErrandConfigs            map[string]ErrandConfig `yaml:"errand-config,omitempty"`
+	Field                    map[string]interface{}  `yaml:",inline"`
 }
 
 type ErrandConfig struct {

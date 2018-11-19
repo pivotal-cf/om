@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -51,42 +52,19 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	cp.logger.Printf("configuring product...")
 
-	var cfg config.ProductConfiguration
-	configContents, err := interpolate(interpolateOptions{
-		templateFile: cp.Options.ConfigFile,
-		varsFiles:    cp.Options.VarsFile,
-		environFunc:  cp.environFunc,
-		varsEnvs:     cp.Options.VarsEnv,
-		opsFiles:     cp.Options.OpsFile,
-	}, "")
+	cfg, err := cp.interpolateConfig()
 	if err != nil {
 		return err
 	}
 
-	err = yaml.UnmarshalStrict(configContents, &cfg)
-	if err != nil {
-		return fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
-	}
-
-	if cfg.ProductName == "" {
-		return fmt.Errorf("could not parse configure-product config: \"product-name\" is required")
-	}
-
-	stagedProducts, err := cp.service.ListStagedProducts()
+	err = cp.validateConfig(cfg)
 	if err != nil {
 		return err
 	}
 
-	var productGUID string
-	for _, sp := range stagedProducts.Products {
-		if sp.Type == cfg.ProductName {
-			productGUID = sp.GUID
-			break
-		}
-	}
-
-	if productGUID == "" {
-		return fmt.Errorf(`could not find product "%s"`, cfg.ProductName)
+	productGUID, err := cp.getProductGUID(cfg)
+	if err != nil {
+		return err
 	}
 
 	err = cp.configureNetwork(cfg, productGUID)
@@ -260,4 +238,63 @@ func (cp *ConfigureProduct) configureErrands(cfg config.ProductConfiguration, pr
 	}
 
 	return nil
+}
+
+func (cp *ConfigureProduct) interpolateConfig() (config.ProductConfiguration, error) {
+	var cfg config.ProductConfiguration
+	configContents, err := interpolate(interpolateOptions{
+		templateFile: cp.Options.ConfigFile,
+		varsFiles:    cp.Options.VarsFile,
+		environFunc:  cp.environFunc,
+		varsEnvs:     cp.Options.VarsEnv,
+		opsFiles:     cp.Options.OpsFile,
+	}, "")
+	if err != nil {
+		return config.ProductConfiguration{}, err
+	}
+
+	err = yaml.UnmarshalStrict(configContents, &cfg)
+	if err != nil {
+		return config.ProductConfiguration{}, fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
+	}
+
+	return cfg, nil
+}
+
+func (cp ConfigureProduct) validateConfig(cfg config.ProductConfiguration) error {
+	if cfg.ProductName == "" {
+		return fmt.Errorf("could not parse configure-product config: \"product-name\" is required")
+	}
+
+	if len(cfg.Field) > 0 {
+		var unrecognizedKeys []string
+		for key := range cfg.Field {
+			unrecognizedKeys = append(unrecognizedKeys, key)
+		}
+		sort.Strings(unrecognizedKeys)
+
+		return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
+	}
+	return nil
+}
+
+func (cp ConfigureProduct) getProductGUID(cfg config.ProductConfiguration) (string, error) {
+	stagedProducts, err := cp.service.ListStagedProducts()
+	if err != nil {
+		return "", err
+	}
+
+	var productGUID string
+	for _, sp := range stagedProducts.Products {
+		if sp.Type == cfg.ProductName {
+			productGUID = sp.GUID
+			break
+		}
+	}
+
+	if productGUID == "" {
+		return "", fmt.Errorf(`could not find product "%s"`, cfg.ProductName)
+	}
+
+	return productGUID, nil
 }

@@ -391,6 +391,23 @@ vmextensions-configuration:
 				})
 
 			})
+
+			Context("with unrecognized top-level-keys", func() {
+				It("returns error saying the specified key", func() {
+					configYAML := `{"unrecognized-key": {"some-attr": "some-val"}, "unrecognized-other-key": {}, "network-assignment": {"some-attr1": "some-val1"}}`
+					configFile, err := ioutil.TempFile("", "config.yaml")
+					Expect(err).ToNot(HaveOccurred())
+					_, err = configFile.WriteString(configYAML)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(configFile.Close()).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`))
+				})
+			})
 		})
 
 		Context("when no vm_extension configuration is provided", func() {
