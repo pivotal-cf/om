@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("StemcellService", func() {
+var _ = Describe("UploadStemcellService", func() {
 	Describe("UploadStemcell", func() {
 		var (
 			progressClient *fakes.HttpClient
