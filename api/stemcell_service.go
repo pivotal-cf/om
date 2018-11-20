@@ -11,11 +11,12 @@ type ProductStemcells struct {
 }
 
 type ProductStemcell struct {
-	GUID                  string   `json:"guid,omitempty"`
-	ProductName           string   `json:"identifier,omitempty"`
-	StagedForDeletion     bool     `json:"is_staged_for_deletion,omitempty"`
-	StagedStemcellVersion string   `json:"staged_stemcell_version,omitempty"`
-	AvailableVersions     []string `json:"available_stemcell_versions,omitempty"`
+	GUID                    string   `json:"guid,omitempty"`
+	ProductName             string   `json:"identifier,omitempty"`
+	StagedForDeletion       bool     `json:"is_staged_for_deletion,omitempty"`
+	StagedStemcellVersion   string   `json:"staged_stemcell_version,omitempty"`
+	RequiredStemcellVersion string   `json:"required_stemcell_version,omitempty"`
+	AvailableVersions       []string `json:"available_stemcell_versions,omitempty"`
 }
 
 func (a Api) ListStemcells() (ProductStemcells, error) {
