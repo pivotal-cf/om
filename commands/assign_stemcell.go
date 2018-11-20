@@ -44,6 +44,7 @@ func (as AssignStemcell) Execute(args []string) error {
 		return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
 	}
 
+	as.logger.Printf("finding available stemcells for product: \"%s\"...", as.Options.ProductName)
 	productStemcell, err := as.getProductStemcell()
 	if err != nil {
 		return err
@@ -53,12 +54,14 @@ func (as AssignStemcell) Execute(args []string) error {
 		return fmt.Errorf("could not assign stemcell: product \"%s\" is staged for deletion", as.Options.ProductName)
 	}
 
+	as.logger.Println("validating that stemcell exists in Ops Manager...")
 	stemcellVersion, err := as.validateStemcellVersion(productStemcell)
 	if err != nil {
 		return err
 	}
 
-	return as.service.AssignStemcell(api.ProductStemcells{
+	as.logger.Println("assigning stemcell: \"%s\" to product \"%s\"...", stemcellVersion, as.Options.ProductName)
+	err = as.service.AssignStemcell(api.ProductStemcells{
 		Products: []api.ProductStemcell{
 			{
 				GUID:                  productStemcell.GUID,
@@ -66,6 +69,12 @@ func (as AssignStemcell) Execute(args []string) error {
 			},
 		},
 	})
+	if err != nil {
+		return err
+	}
+
+	as.logger.Println("assigned stemcell successfully")
+	return nil
 }
 
 func (as AssignStemcell) getProductStemcell() (api.ProductStemcell, error) {
