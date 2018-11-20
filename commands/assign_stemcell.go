@@ -12,7 +12,8 @@ type AssignStemcell struct {
 	logger  logger
 	service assignStemcellService
 	Options struct {
-		ProductName     string `long:"product" short:"p"           description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
+		ConfigFile      string `long:"config"           short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		ProductName     string `long:"product"          short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
 		StemcellVersion string `long:"stemcell-version" short:"s"  description:"associate a particular stemcell version to a tile." default:"latest"`
 	}
 }
@@ -33,14 +34,15 @@ func NewAssignStemcell(service assignStemcellService, logger logger) AssignStemc
 func (as AssignStemcell) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description: "This command will assign an already uploaded stemcell to a specific product in Ops Manager.\n" +
-		"It is recommended to use \"upload-stemcell --floating=false\" before using this command.",
+			"It is recommended to use \"upload-stemcell --floating=false\" before using this command.",
 		ShortDescription: "assigns an uploaded stemcell to a product in the targeted Ops Manager",
 		Flags:            as.Options,
 	}
 }
 
 func (as AssignStemcell) Execute(args []string) error {
-	if _, err := jhanda.Parse(&as.Options, args); err != nil {
+	err := loadConfigFile(args, &as.Options, nil)
+	if err != nil {
 		return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
 	}
 

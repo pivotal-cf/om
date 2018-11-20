@@ -6,6 +6,8 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"io/ioutil"
+	"os"
 )
 
 var _ = Describe("AssignStemcell", func() {
@@ -110,6 +112,55 @@ var _ = Describe("AssignStemcell", func() {
 		})
 	})
 
+	Context("when config file is provided", func() {
+		var configFile *os.File
+
+		BeforeEach(func() {
+			var err error
+
+			fakeService.ListStemcellsReturns(api.ProductStemcells{
+				Products: []api.ProductStemcell{
+					{
+						GUID:                  "cf-guid",
+						ProductName:           "cf",
+						StagedForDeletion:     false,
+						StagedStemcellVersion: "",
+						AvailableVersions: []string{
+							"1234.5", "1234.6", "1234.99",
+						},
+					},
+				},
+			}, nil)
+
+			configContent := `
+product: cf
+stemcell-version: "1234.6"
+`
+			configFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configContent)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("reads configuration from config file", func() {
+			err := command.Execute([]string{"--config", configFile.Name()})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
+			Expect(fakeService.AssignStemcellCallCount()).To(Equal(1))
+
+			Expect(fakeService.AssignStemcellArgsForCall(0)).To(Equal(api.ProductStemcells{
+				Products: []api.ProductStemcell{
+					{
+						GUID:                  "cf-guid",
+						StagedStemcellVersion: "1234.6",
+					},
+				},
+			}))
+		})
+	})
+
 	Context("when given stemcell version is not available", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
@@ -136,7 +187,6 @@ var _ = Describe("AssignStemcell", func() {
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(0))
 		})
 	})
-
 
 	Context("when the product is not found but the stemcell exists", func() {
 		BeforeEach(func() {
@@ -216,4 +266,17 @@ var _ = Describe("AssignStemcell", func() {
 		})
 	})
 
+	Context("when an unknown flag is provided", func() {
+		It("returns an error", func() {
+			err := command.Execute([]string{"--badflag"})
+			Expect(err).To(MatchError("could not parse assign-stemcell flags: flag provided but not defined: -badflag"))
+		})
+	})
+
+	Context("when the product flag is not provided", func() {
+		It("returns an error", func() {
+			err := command.Execute([]string{})
+			Expect(err).To(MatchError("could not parse assign-stemcell flags: missing required flag \"--product\""))
+		})
+	})
 })
