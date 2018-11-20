@@ -152,21 +152,31 @@ func (c ConfigureDirector) updateStagedDirectorProperties(config *directorConfig
 	if config.DirectorConfigration != nil || config.IaasConfiguration != nil || config.SecurityConfiguration != nil || config.SyslogConfiguration != nil {
 		c.logger.Printf("started configuring director options for bosh tile")
 
-		directorConfig, err := getJSONProperties(config.DirectorConfigration)
-		if err != nil {
-			return err
+		var err error
+		var directorConfig, iaasConfig, securityConfig, syslogConfig string
+		if config.DirectorConfigration != nil {
+			directorConfig, err = getJSONProperties(config.DirectorConfigration)
+			if err != nil {
+				return err
+			}
 		}
-		iaasConfig, err := getJSONProperties(config.IaasConfiguration)
-		if err != nil {
-			return err
+		if config.IaasConfiguration != nil {
+			iaasConfig, err = getJSONProperties(config.IaasConfiguration)
+			if err != nil {
+				return err
+			}
 		}
-		securityConfig, err := getJSONProperties(config.SecurityConfiguration)
-		if err != nil {
-			return err
+		if config.SecurityConfiguration != nil {
+			securityConfig, err = getJSONProperties(config.SecurityConfiguration)
+			if err != nil {
+				return err
+			}
 		}
-		syslogConfig, err := getJSONProperties(config.SyslogConfiguration)
-		if err != nil {
-			return err
+		if config.SyslogConfiguration != nil {
+			syslogConfig, err = getJSONProperties(config.SyslogConfiguration)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = c.service.UpdateStagedDirectorProperties(api.DirectorProperties{

@@ -451,10 +451,10 @@ vmextensions-configuration:
 
 		Context("when some director configuration flags are provided", func() {
 			BeforeEach(func() {
-				config = `{"networks-configuration": {"network":"network-1"}}`
+				config = `{"networks-configuration":{"network":"network-1"},"director-configuration":{"some-director-assignment":"director"}}`
 			})
 
-			It("only updates the config for the provided flags", func() {
+			It("only updates the config for the provided flags, and sets others to empty", func() {
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
 				})
@@ -465,7 +465,13 @@ vmextensions-configuration:
 					Networks: json.RawMessage(`{"network":"network-1"}`),
 				}))
 				Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(0))
-				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(0))
+				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+				Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
+					IAASConfiguration:     json.RawMessage(""),
+					DirectorConfiguration: json.RawMessage("{\"some-director-assignment\":\"director\"}"),
+					SecurityConfiguration: json.RawMessage(""),
+					SyslogConfiguration:   json.RawMessage(""),
+				}))
 			})
 		})
 
