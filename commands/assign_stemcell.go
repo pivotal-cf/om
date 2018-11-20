@@ -12,9 +12,9 @@ type AssignStemcell struct {
 	logger  logger
 	service assignStemcellService
 	Options struct {
-		ConfigFile      string `long:"config"           short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-		ProductName     string `long:"product"          short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
-		StemcellVersion string `long:"stemcell-version" short:"s"  description:"associate a particular stemcell version to a tile." default:"latest"`
+		ConfigFile      string `long:"config"   short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		ProductName     string `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
+		StemcellVersion string `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile." default:"latest"`
 	}
 }
 
