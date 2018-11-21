@@ -11,6 +11,7 @@ on a vSphere Ops Manager.
 | activate-certificate-authority |  activates a certificate authority on the Ops Manager
 | [apply-changes](apply-changes/README.md) |  triggers an install on the Ops Manager targeted
 | [available-products](available-products/README.md) |  list available products
+| [bosh-env](bosh-env/README.md) |  prints bosh environment variables
 | certificate-authorities |  lists certificates managed by Ops Manager
 | certificate-authority |  prints requested certificate authority
 | config-template | **EXPERIMENTAL** generates a config template for the product
