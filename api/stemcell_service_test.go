@@ -52,7 +52,7 @@ var _ = Describe("StemcellService", func() {
 						GUID:                  "some-guid",
 						StagedForDeletion:     false,
 						StagedStemcellVersion: "1234.5",
-						ProductName: "some-product",
+						ProductName:           "some-product",
 						AvailableVersions: []string{
 							"1234.5",
 							"1234.6",

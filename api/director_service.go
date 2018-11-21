@@ -227,17 +227,17 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 	return azs, nil
 }
 
-func (a Api) sendAPIRequest(verb, endpoint string, jsonData []byte) (*http.Response, error) {
-	req, err := http.NewRequest(verb, endpoint, bytes.NewReader(jsonData))
+func (a Api) sendAPIRequest(method, endpoint string, jsonData []byte) (*http.Response, error) {
+	req, err := http.NewRequest(method, endpoint, bytes.NewReader(jsonData))
 	if err != nil {
-		return nil, fmt.Errorf("could not create api request %s %s: %s", verb, endpoint, err.Error())
+		return nil, fmt.Errorf("could not create api request %s %s: %s", method, endpoint, err.Error())
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := a.client.Do(req)
 	if err != nil {
-		return resp, fmt.Errorf("could not send api request to %s %s: %s", verb, endpoint, err.Error())
+		return resp, fmt.Errorf("could not send api request to %s %s: %s", method, endpoint, err.Error())
 	}
 
 	err = validateStatusOK(resp)

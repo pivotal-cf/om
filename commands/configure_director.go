@@ -135,15 +135,15 @@ func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
 	return &config, nil
 }
 
-func (c ConfigureDirector) validateConfig(config *directorConfig) error{
+func (c ConfigureDirector) validateConfig(config *directorConfig) error {
 	if len(config.Field) > 0 {
-	   var unrecognizedKeys []string
-	   for key := range config.Field {
-	       unrecognizedKeys = append(unrecognizedKeys, key)
-	   }
-	   sort.Strings(unrecognizedKeys)
+		var unrecognizedKeys []string
+		for key := range config.Field {
+			unrecognizedKeys = append(unrecognizedKeys, key)
+		}
+		sort.Strings(unrecognizedKeys)
 
-	   return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
+		return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
 	}
 	return nil
 }

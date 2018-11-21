@@ -51,7 +51,9 @@ var _ = Describe("Certificates", func() {
 				return resp, nil
 			}
 
-			output, err := service.GenerateCertificate("*.example.com,*.example.org")
+			output, err := service.GenerateCertificate(api.DomainsInput{
+				Domains: []string{"*.example.com", "*.example.org"},
+			})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(header.Get("Content-Type")).To(Equal("application/json"))
@@ -75,8 +77,8 @@ var _ = Describe("Certificates", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
-					_, err := service.GenerateCertificate("some-domains")
-					Expect(err).To(MatchError("client do errored"))
+					_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
+					Expect(err).To(MatchError("could not send api request to POST /api/v0/certificates/generate: client do errored"))
 				})
 			})
 
@@ -96,7 +98,7 @@ var _ = Describe("Certificates", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := service.GenerateCertificate("some-domains")
+					_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
