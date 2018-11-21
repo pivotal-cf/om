@@ -71,7 +71,7 @@ key-4: 2147483648
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 
 					_, err := service.GetDeployedProductManifest("some-product-guid")
-					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: nope"))
+					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: could not send api request to GET /api/v0/deployed/products/some-product-guid/manifest: nope"))
 				})
 			})
 
@@ -158,7 +158,7 @@ key-4: 2147483648
 
 				It("returns an error", func() {
 					_, err := service.ListDeployedProducts()
-					Expect(err).To(MatchError("could not make api request to deployed products endpoint: nope"))
+					Expect(err).To(MatchError("could not make api request to deployed products endpoint: could not send api request to GET /api/v0/deployed/products: nope"))
 				})
 			})
 

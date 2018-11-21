@@ -116,7 +116,7 @@ var _ = Describe("Diagnostic", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
 
 					_, err := service.GetDiagnosticReport()
-					Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: some error"))
+					Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report: some error"))
 				})
 			})
 

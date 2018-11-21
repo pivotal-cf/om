@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 )
 
 const pendingChangesEndpoint = "/api/v0/staged/pending_changes"
@@ -20,29 +18,14 @@ type ProductChange struct {
 }
 
 func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
-	pcReq, err := http.NewRequest("GET", pendingChangesEndpoint, nil)
+	resp, err := a.sendAPIRequest("GET", pendingChangesEndpoint, nil)
 	if err != nil {
-		return PendingChangesOutput{}, err
-	}
-
-	resp, err := a.client.Do(pcReq)
-	if err != nil {
-		return PendingChangesOutput{}, fmt.Errorf("could not make api request to pending_changes endpoint: %s", err)
+		return PendingChangesOutput{}, fmt.Errorf("failed to submit request: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return PendingChangesOutput{}, err
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return PendingChangesOutput{}, err
-	}
-
 	var pendingChanges PendingChangesOutput
-	err = json.Unmarshal(respBody, &pendingChanges)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&pendingChanges); err != nil {
 		return PendingChangesOutput{}, fmt.Errorf("could not unmarshal pending_changes response: %s", err)
 	}
 

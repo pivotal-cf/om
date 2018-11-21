@@ -87,7 +87,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
 					_, err := service.ListCertificateAuthorities()
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("could not send api request to GET /api/v0/certificate_authorities: client do errored"))
 				})
 			})
 
@@ -166,7 +166,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
 					_, err := service.GenerateCertificateAuthority()
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("could not send api request to POST /api/v0/certificate_authorities/generate: client do errored"))
 				})
 			})
 
@@ -227,7 +227,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
 					err := service.RegenerateCertificates()
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("could not send api request to POST /api/v0/certificate_authorities/active/regenerate: client do errored"))
 				})
 			})
 
@@ -317,7 +317,7 @@ var _ = Describe("CertificateAuthorities", func() {
 						CertPem:       certPem,
 						PrivateKeyPem: privateKey,
 					})
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("could not send api request to POST /api/v0/certificate_authorities: client do errored"))
 				})
 			})
 
@@ -397,7 +397,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("could not send api request to POST /api/v0/certificate_authorities/some-certificate-authority-guid/activate: client do errored"))
 				})
 			})
 
@@ -442,7 +442,9 @@ var _ = Describe("CertificateAuthorities", func() {
 			Expect(client.DoCallCount()).To(Equal(1))
 			request := client.DoArgsForCall(0)
 
-			Expect(request.Body).To(BeNil())
+			body, err := ioutil.ReadAll(request.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(body).To(Equal([]byte("")))
 
 			Expect(request.Method).To(Equal("DELETE"))
 
@@ -460,7 +462,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 						GUID: "some-certificate-authority-guid",
 					})
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("could not send api request to DELETE /api/v0/certificate_authorities/some-certificate-authority-guid: client do errored"))
 				})
 			})
 

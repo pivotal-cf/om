@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("PendingChangesService", func() {
+var _ = Describe("Credentials", func() {
 	var (
 		client  *fakes.HttpClient
 		service api.Api
@@ -27,73 +27,47 @@ var _ = Describe("PendingChangesService", func() {
 		})
 	})
 
-	Describe("ListStagedPendingChanges", func() {
-		It("lists pending changes", func() {
+	Describe("GetDeployedDirectorCredential", func() {
+
+		It("fetch a credential reference", func() {
 			var path string
+
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				path = req.URL.Path
 
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{
-						"product_changes": [{
-							"guid":"product-123",
-							"errands":[
-								{ "name":"errand-1", "post_deploy":"true" }
-							],
-							"action":"install"
-						},
-						{
-							"guid":"product-234",
-							"errands":[
-								{ "name":"errand-3", "post_deploy":"true" }
-							],
-							"action":"update"
-						}]
-				  }`)),
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Body: ioutil.NopCloser(
+						strings.NewReader(`{"credential":"BOSH_CLIENT=ops_manager BOSH_CLIENT_SECRET=foo BOSH_CA_CERT=/var/tempest/workspaces/default/root_ca_certificate BOSH_ENVIRONMENT=10.0.0.10 bosh "}`),
+					),
 				}, nil
 			}
-
-			output, err := service.ListStagedPendingChanges()
+			output, err := service.GetBoshEnvironment()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(output.ChangeList).To(ConsistOf([]api.ProductChange{
-				{
-					Product: "product-123",
-					Errands: []api.Errand{
-						{Name: "errand-1", PostDeploy: "true"},
-					},
-					Action: "install",
-				},
-				{
-					Product: "product-234",
-					Errands: []api.Errand{
-						{Name: "errand-3", PostDeploy: "true"},
-					},
-					Action: "update",
-				},
-			},
-			))
-
-			Expect(path).To(Equal("/api/v0/staged/pending_changes"))
+			Expect(path).To(Equal("/api/v0/deployed/director/credentials/bosh_commandline_credentials"))
+			Expect(output.Client).To(Equal("ops_manager"))
+			Expect(output.ClientSecret).To(Equal("foo"))
+			Expect(output.Environment).To(Equal("10.0.0.10"))
 		})
 
 		Describe("errors", func() {
 			Context("the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.ListStagedPendingChanges()
-					Expect(err).To(MatchError(ContainSubstring("could not send api request")))
+					_, err := service.GetBoshEnvironment()
+					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
 				})
 			})
 
-			Context("when the server won't fetch pending changes", func() {
+			Context("when the server won't fetch credential references", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
-					_, err := service.ListStagedPendingChanges()
+					_, err := service.GetBoshEnvironment()
 					Expect(err).To(MatchError(ContainSubstring("request failed")))
 				})
 			})
@@ -105,7 +79,7 @@ var _ = Describe("PendingChangesService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
 					}, nil)
 
-					_, err := service.ListStagedPendingChanges()
+					_, err := service.GetBoshEnvironment()
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 				})
 			})

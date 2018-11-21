@@ -71,7 +71,7 @@ var _ = Describe("ErrandsService", func() {
 					}
 
 					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", "false")
-					Expect(err).To(MatchError("failed to set errand state: 418 I'm a teapot"))
+					Expect(err).To(MatchError("failed to set errand state: request failed: unexpected response:\nHTTP/0.0 418 I'm a teapot\r\n\r\nI'm a teapot"))
 				})
 			})
 
@@ -87,30 +87,7 @@ var _ = Describe("ErrandsService", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
 					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
-					Expect(err).To(MatchError("client do errored"))
-				})
-			})
-
-			Context("when the response body cannot be read", func() {
-				BeforeEach(func() {
-					api.SetReadAll(func(_ io.Reader) ([]byte, error) {
-						return nil, errors.New("failed to read body")
-					})
-				})
-
-				AfterEach(func() {
-					api.ResetReadAll()
-				})
-
-				It("returns an error", func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						return &http.Response{StatusCode: http.StatusTeapot,
-							Body: nil,
-						}, nil
-					}
-
-					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
-					Expect(err).To(MatchError(ContainSubstring("failed to read body")))
+					Expect(err).To(MatchError("failed to set errand state: could not send api request to PUT /api/v0/staged/products/some-product-id/errands: client do errored"))
 				})
 			})
 		})
@@ -159,7 +136,7 @@ var _ = Describe("ErrandsService", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
 					_, err := service.ListStagedProductErrands("some-product-id")
-					Expect(err).To(MatchError("client do errored"))
+					Expect(err).To(MatchError("failed to list errands: could not send api request to GET /api/v0/staged/products/some-product-id/errands: client do errored"))
 				})
 			})
 
@@ -187,7 +164,7 @@ var _ = Describe("ErrandsService", func() {
 
 					_, err := service.ListStagedProductErrands("future-moon-and-assimilation")
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("failed to list errands: 409 Conflict")))
+					Expect(err).To(MatchError(ContainSubstring("failed to list errands: request failed: unexpected response:\nHTTP/0.0 409 Conflict\r\n\r\nConflict")))
 				})
 			})
 		})

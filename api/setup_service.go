@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -39,24 +38,10 @@ func (a Api) Setup(input SetupInput) (SetupOutput, error) {
 		return SetupOutput{}, err
 	}
 
-	request, err := http.NewRequest("POST", "/api/v0/setup", bytes.NewReader(payload))
-	if err != nil {
-		return SetupOutput{}, err
-	}
-
-	request.Header.Set("Content-Type", "application/json")
-
-	response, err := a.unauthedClient.Do(request)
+	_, err = a.sendUnauthedAPIRequest("POST", "/api/v0/setup", payload)
 	if err != nil {
 		return SetupOutput{}, fmt.Errorf("could not make api request to setup endpoint: %s", err)
 	}
-
-	defer response.Body.Close()
-
-	if err = validateStatusOK(response); err != nil {
-		return SetupOutput{}, err
-	}
-
 	return SetupOutput{}, nil
 }
 

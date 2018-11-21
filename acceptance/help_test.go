@@ -32,6 +32,7 @@ Commands:
   apply-changes                   triggers an install on the Ops Manager targeted
   assign-stemcell                 assigns an uploaded stemcell to a product in the targeted Ops Manager
   available-products              list available products
+  bosh-env                        prints bosh environment variables
   certificate-authorities         lists certificates managed by Ops Manager
   certificate-authority           prints requested certificate authority
   config-template                 **EXPERIMENTAL** generates a config template for the product

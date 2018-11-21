@@ -185,7 +185,7 @@ var _ = Describe("InstallationsService", func() {
 					}, errors.New("some error"))
 
 					_, err := service.CreateInstallation(false, true, nil)
-					Expect(err).To(MatchError("could not make api request to installations endpoint: some error"))
+					Expect(err).To(MatchError("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations: some error"))
 				})
 			})
 
@@ -242,7 +242,7 @@ var _ = Describe("InstallationsService", func() {
 					}, errors.New("some error"))
 
 					_, err := service.GetInstallation(3232)
-					Expect(err).To(MatchError("could not make api request to installations status endpoint: some error"))
+					Expect(err).To(MatchError("could not make api request to installations status endpoint: could not send api request to GET /api/v0/installations/3232: some error"))
 				})
 			})
 
@@ -300,7 +300,7 @@ var _ = Describe("InstallationsService", func() {
 				}, errors.New("some error"))
 
 				_, err := service.GetInstallationLogs(3232)
-				Expect(err).To(MatchError("could not make api request to installations logs endpoint: some error"))
+				Expect(err).To(MatchError("could not make api request to installations logs endpoint: could not send api request to GET /api/v0/installations/3232/logs: some error"))
 			})
 		})
 

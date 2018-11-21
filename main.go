@@ -11,6 +11,7 @@ import (
 
 	"github.com/gosuri/uilive"
 	"github.com/olekukonko/tablewriter"
+	"github.com/pivotal-cf/om/renderers"
 	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/go-pivnet/logshim"
@@ -142,12 +143,14 @@ func main() {
 	pivnetFactory := commands.DefaultPivnetFactory
 
 	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
+	envRendererFactory := renderers.NewFactory(renderers.NewEnvGetter())
 
 	commandSet := jhanda.CommandSet{}
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)
 	commandSet["apply-changes"] = commands.NewApplyChanges(api, api, logWriter, stdout, applySleepDuration)
 	commandSet["assign-stemcell"] = commands.NewAssignStemcell(api, stdout)
 	commandSet["available-products"] = commands.NewAvailableProducts(api, presenter, stdout)
+	commandSet["bosh-env"] = commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
 	commandSet["config-template"] = commands.NewConfigTemplate(metadataExtractor, stdout)

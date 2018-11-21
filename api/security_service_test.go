@@ -46,7 +46,7 @@ var _ = Describe("Security", func() {
 				client.DoReturns(&http.Response{}, errors.New("some-error"))
 
 				_, err := service.GetSecurityRootCACertificate()
-				Expect(err).To(MatchError("failed to submit request: some-error"))
+				Expect(err).To(MatchError("failed to submit request: could not send api request to GET /api/v0/security/root_ca_certificate: some-error"))
 			})
 
 			It("returns error when response contains non-200 status code", func() {
