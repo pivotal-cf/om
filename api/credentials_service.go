@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 )
 
 type GetDeployedProductCredentialInput struct {
@@ -26,30 +24,14 @@ type Credential struct {
 }
 
 func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInput) (GetDeployedProductCredentialOutput, error) {
-	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", input.DeployedGUID, input.CredentialReference)
-	req, err := http.NewRequest("GET", path, nil)
-	if err != nil {
-		return GetDeployedProductCredentialOutput{}, err
-	}
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", input.DeployedGUID, input.CredentialReference), nil)
 	if err != nil {
 		return GetDeployedProductCredentialOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return GetDeployedProductCredentialOutput{}, err
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return GetDeployedProductCredentialOutput{}, err
-	}
-
 	var credentialOutput GetDeployedProductCredentialOutput
-	err = json.Unmarshal(respBody, &credentialOutput)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&credentialOutput); err != nil {
 		return GetDeployedProductCredentialOutput{}, fmt.Errorf("could not unmarshal credentials response: %s", err)
 	}
 
@@ -57,30 +39,14 @@ func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInpu
 }
 
 func (a Api) ListDeployedProductCredentials(deployedGUID string) (CredentialReferencesOutput, error) {
-	path := fmt.Sprintf("/api/v0/deployed/products/%s/credentials", deployedGUID)
-	req, err := http.NewRequest("GET", path, nil)
-	if err != nil {
-		return CredentialReferencesOutput{}, err
-	}
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/deployed/products/%s/credentials", deployedGUID), nil)
 	if err != nil {
 		return CredentialReferencesOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return CredentialReferencesOutput{}, err
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return CredentialReferencesOutput{}, err
-	}
-
 	var credentialReferences CredentialReferencesOutput
-	err = json.Unmarshal(respBody, &credentialReferences)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&credentialReferences); err != nil {
 		return CredentialReferencesOutput{}, fmt.Errorf("could not unmarshal credentials response: %s", err)
 	}
 

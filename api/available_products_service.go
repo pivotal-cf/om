@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -63,29 +62,14 @@ func (a Api) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAv
 }
 
 func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
-	avReq, err := http.NewRequest("GET", availableProductsEndpoint, nil)
-	if err != nil {
-		return AvailableProductsOutput{}, err
-	}
-
-	resp, err := a.client.Do(avReq)
+	resp, err := a.sendAPIRequest("GET", availableProductsEndpoint, nil)
 	if err != nil {
 		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
 	}
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return AvailableProductsOutput{}, err
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return AvailableProductsOutput{}, err
-	}
-
 	var availableProducts []ProductInfo
-	err = json.Unmarshal(respBody, &availableProducts)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&availableProducts); err != nil {
 		return AvailableProductsOutput{}, fmt.Errorf("could not unmarshal available_products response: %s", err)
 	}
 

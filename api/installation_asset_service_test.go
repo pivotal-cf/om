@@ -75,7 +75,7 @@ var _ = Describe("InstallationAssetService", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
 					err := service.DownloadInstallationAssetCollection("fake-file", 1)
-					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
+					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: could not send api request to GET /api/v0/installation_asset_collection: some client error"))
 				})
 			})
 
@@ -220,7 +220,7 @@ var _ = Describe("InstallationAssetService", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
 
 					_, err := service.DeleteInstallationAssetCollection()
-					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
+					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: could not send api request to DELETE /api/v0/installation_asset_collection: some client error"))
 				})
 			})
 

@@ -200,7 +200,7 @@ var _ = Describe("Available Products", func() {
 					}, errors.New("some error"))
 
 					_, err := service.RunningInstallation()
-					Expect(err).To(MatchError("could not make api request to installations endpoint: some error"))
+					Expect(err).To(MatchError("could not make api request to installations endpoint: could not send api request to GET /api/v0/installations: some error"))
 				})
 			})
 

@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 type ProductStemcells struct {
@@ -20,29 +19,15 @@ type ProductStemcell struct {
 }
 
 func (a Api) ListStemcells() (ProductStemcells, error) {
-	req, err := http.NewRequest("GET", "/api/v0/stemcell_assignments", nil)
-	if err != nil {
-		return ProductStemcells{}, err
-	}
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("GET", "/api/v0/stemcell_assignments", nil)
 	if err != nil {
 		return ProductStemcells{}, fmt.Errorf("could not make api request to list stemcells: %s", err)
 	}
-
 	defer resp.Body.Close()
-	err = validateStatusOK(resp)
-	if err != nil {
-		return ProductStemcells{}, err
-	}
 
 	var productStemcells ProductStemcells
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&productStemcells)
-	if err != nil {
-		return ProductStemcells{}, err
-	}
-	return productStemcells, nil
+	err = json.NewDecoder(resp.Body).Decode(&productStemcells)
+	return productStemcells, err
 }
 
 func (a Api) AssignStemcell(input ProductStemcells) error {
@@ -52,6 +37,5 @@ func (a Api) AssignStemcell(input ProductStemcells) error {
 	}
 
 	_, err = a.sendAPIRequest("PATCH", "/api/v0/stemcell_assignments", jsonData)
-
 	return err
 }

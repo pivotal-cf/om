@@ -52,7 +52,7 @@ var _ = Describe("JobsService", func() {
 					client.DoReturns(&http.Response{}, errors.New("bad"))
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(MatchError("could not make api request to jobs endpoint: bad"))
+					Expect(err).To(MatchError("could not make api request to jobs endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs: bad"))
 				})
 			})
 
@@ -216,7 +216,7 @@ var _ = Describe("JobsService", func() {
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
-					Expect(err).To(MatchError("could not make api request to resource_config endpoint: some client error"))
+					Expect(err).To(MatchError("could not make api request to resource_config endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config: some client error"))
 				})
 			})
 
@@ -404,7 +404,7 @@ var _ = Describe("JobsService", func() {
 						PersistentDisk: &api.Disk{Size: "000"},
 						InstanceType:   api.InstanceType{ID: "number-2"},
 					})
-					Expect(err).To(MatchError("could not make api request to jobs resource_config endpoint: bad things"))
+					Expect(err).To(MatchError("could not make api request to jobs resource_config endpoint: could not send api request to PUT /api/v0/staged/products/some-product-guid/jobs/some-other-guid/resource_config: bad things"))
 				})
 			})
 

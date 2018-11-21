@@ -72,7 +72,7 @@ var _ = Describe("StemcellService", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
 					_, err := service.ListStemcells()
-					Expect(err).To(MatchError("could not make api request to list stemcells: some client error"))
+					Expect(err).To(MatchError("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcell_assignments: some client error"))
 				})
 			})
 

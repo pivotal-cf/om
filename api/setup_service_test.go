@@ -78,7 +78,7 @@ var _ = Describe("Setup", func() {
 					client.DoReturns(&http.Response{}, errors.New("could not make request"))
 
 					_, err := service.Setup(api.SetupInput{})
-					Expect(err).To(MatchError("could not make api request to setup endpoint: could not make request"))
+					Expect(err).To(MatchError("could not make api request to setup endpoint: could not send api request to POST /api/v0/setup: could not make request"))
 				})
 			})
 

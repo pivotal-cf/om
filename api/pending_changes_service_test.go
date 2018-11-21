@@ -82,7 +82,7 @@ var _ = Describe("PendingChangesService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
 					_, err := service.ListStagedPendingChanges()
-					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
+					Expect(err).To(MatchError(ContainSubstring("could not send api request")))
 				})
 			})
 

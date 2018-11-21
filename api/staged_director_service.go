@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"gopkg.in/yaml.v2"
@@ -48,16 +47,10 @@ func (a Api) GetStagedDirectorProperties() (map[string]map[string]interface{}, e
 	if err != nil {
 		return nil, err // un-tested
 	}
-
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var properties map[string]map[string]interface{}
-	if err = yaml.Unmarshal(body, &properties); err != nil {
+	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
 		return nil, fmt.Errorf("could not parse json: %s", err)
 	}
 
@@ -74,15 +67,9 @@ func (a Api) GetStagedDirectorAvailabilityZones() (AvailabilityZonesOutput, erro
 
 		return properties, err // un-tested
 	}
-
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return properties, err
-	}
-
-	if err = yaml.Unmarshal(body, &properties); err != nil {
+	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
 		return properties, fmt.Errorf("could not parse json: %s", err)
 	}
 
@@ -95,15 +82,9 @@ func (a Api) GetStagedDirectorNetworks() (NetworksConfigurationOutput, error) {
 	if err != nil {
 		return properties, err // un-tested
 	}
-
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return properties, err
-	}
-
-	if err = yaml.Unmarshal(body, &properties); err != nil {
+	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
 		return properties, fmt.Errorf("could not parse json: %s", err)
 	}
 

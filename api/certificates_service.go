@@ -21,13 +21,6 @@ func (a Api) GenerateCertificate(domains DomainsInput) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return "", err
-	}
-
 	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(respBody), nil
+	return string(respBody), err
 }

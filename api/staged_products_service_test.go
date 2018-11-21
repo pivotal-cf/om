@@ -196,7 +196,7 @@ var _ = Describe("StagedProducts", func() {
 						ProductName:    "foo",
 						ProductVersion: "bar",
 					}, "")
-					Expect(err).To(MatchError("could not make request to staged-products endpoint: some error"))
+					Expect(err).To(MatchError("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error"))
 				})
 			})
 
@@ -343,7 +343,7 @@ var _ = Describe("StagedProducts", func() {
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
-				Expect(err).To(MatchError("could not make request to staged-products endpoint: some error"))
+				Expect(err).To(MatchError("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error"))
 			})
 		})
 
@@ -373,7 +373,7 @@ var _ = Describe("StagedProducts", func() {
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
-				Expect(err).To(MatchError("could not make DELETE api request to staged products endpoint: some error"))
+				Expect(err).To(MatchError("could not send api request to DELETE /api/v0/staged/products/some-product-guid: some error"))
 			})
 		})
 	})
@@ -436,7 +436,7 @@ var _ = Describe("StagedProducts", func() {
 
 				It("returns an error", func() {
 					_, err := service.ListStagedProducts()
-					Expect(err).To(MatchError("could not make request to staged-products endpoint: nope"))
+					Expect(err).To(MatchError("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: nope"))
 				})
 			})
 
@@ -694,7 +694,7 @@ var _ = Describe("StagedProducts", func() {
 						GUID:       "foo",
 						Properties: `{}`,
 					})
-					Expect(err).To(MatchError("could not make api request to staged product properties endpoint: nope"))
+					Expect(err).To(MatchError("could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/foo/properties: nope"))
 				})
 			})
 
@@ -773,7 +773,7 @@ var _ = Describe("StagedProducts", func() {
 						GUID:           "foo",
 						NetworksAndAZs: `{}`,
 					})
-					Expect(err).To(MatchError("could not make api request to staged product networks_and_azs endpoint: nope"))
+					Expect(err).To(MatchError("could not make api request to staged product networks_and_azs endpoint: could not send api request to PUT /api/v0/staged/products/foo/networks_and_azs: nope"))
 				})
 			})
 
@@ -843,7 +843,7 @@ key-4: 2147483648
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 
 					_, err := service.GetStagedProductManifest("some-product-guid")
-					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: nope"))
+					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/manifest: nope"))
 				})
 			})
 
@@ -954,7 +954,7 @@ key-4: 2147483648
 				})
 				It("returns an error", func() {
 					_, err := service.GetStagedProductProperties("some-product-guid")
-					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: some-error`))
+					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/properties: some-error`))
 				})
 			})
 
@@ -1061,7 +1061,7 @@ key-4: 2147483648
 
 				It("returns an error", func() {
 					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
-					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: some-error`))
+					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/networks_and_azs: some-error`))
 				})
 			})
 

@@ -1,10 +1,8 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 )
 
@@ -24,21 +22,11 @@ type InstallationsServiceOutput struct {
 }
 
 func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
-	req, err := http.NewRequest("GET", "/api/v0/installations", nil)
-	if err != nil {
-		return []InstallationsServiceOutput{}, err
-	}
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("GET", "/api/v0/installations", nil)
 	if err != nil {
 		return []InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations endpoint: %s", err)
 	}
-
 	defer resp.Body.Close()
-
-	if err = validateStatusOK(resp); err != nil {
-		return []InstallationsServiceOutput{}, err
-	}
 
 	var responseStruct struct {
 		Installations []InstallationsServiceOutput
@@ -90,23 +78,12 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 	if err != nil {
 		return InstallationsServiceOutput{}, err
 	}
-	req, err := http.NewRequest("POST", "/api/v0/installations", bytes.NewReader(data))
-	if err != nil {
-		return InstallationsServiceOutput{}, err
-	}
 
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("POST", "/api/v0/installations", data)
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations endpoint: %s", err)
 	}
-
 	defer resp.Body.Close()
-
-	if err = validateStatusOK(resp); err != nil {
-		return InstallationsServiceOutput{}, err
-	}
 
 	var installation struct {
 		Install struct {
@@ -122,23 +99,11 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 }
 
 func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/installations/%d", id), nil)
-	if err != nil {
-		return InstallationsServiceOutput{}, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/installations/%d", id), nil)
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations status endpoint: %s", err)
 	}
-
 	defer resp.Body.Close()
-
-	if err = validateStatusOK(resp); err != nil {
-		return InstallationsServiceOutput{}, err
-	}
 
 	var output struct {
 		Status string
@@ -152,23 +117,11 @@ func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
 }
 
 func (a Api) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v0/installations/%d/logs", id), nil)
-	if err != nil {
-		return InstallationsServiceOutput{}, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := a.client.Do(req)
+	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/installations/%d/logs", id), nil)
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations logs endpoint: %s", err)
 	}
-
 	defer resp.Body.Close()
-
-	if err = validateStatusOK(resp); err != nil {
-		return InstallationsServiceOutput{}, err
-	}
 
 	var output struct {
 		Logs string
