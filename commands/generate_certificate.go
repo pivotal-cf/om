@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"github.com/pivotal-cf/om/api"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 )
@@ -16,7 +18,7 @@ type GenerateCertificate struct {
 
 //go:generate counterfeiter -o ./fakes/generate_certificate_service.go --fake-name GenerateCertificateService . generateCertificateService
 type generateCertificateService interface {
-	GenerateCertificate(string) (string, error)
+	GenerateCertificate(domains api.DomainsInput) (string, error)
 }
 
 func NewGenerateCertificate(service generateCertificateService, logger logger) GenerateCertificate {
@@ -28,7 +30,14 @@ func (g GenerateCertificate) Execute(args []string) error {
 		return fmt.Errorf("could not parse generate-certificate flags: %s", err)
 	}
 
-	output, err := g.service.GenerateCertificate(g.Options.Domains)
+	domains := strings.Split(g.Options.Domains, ",")
+	for i, domain := range domains {
+		domains[i] = strings.TrimSpace(domain)
+	}
+
+	output, err := g.service.GenerateCertificate(api.DomainsInput{
+		Domains: domains,
+	})
 
 	if err != nil {
 		return err

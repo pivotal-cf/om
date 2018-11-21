@@ -2,14 +2,32 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 )
 
 type LiveWriter struct {
-	WriteStub        func(p []byte) (n int, err error)
+	FlushStub        func() error
+	flushMutex       sync.RWMutex
+	flushArgsForCall []struct {
+	}
+	flushReturns struct {
+		result1 error
+	}
+	flushReturnsOnCall map[int]struct {
+		result1 error
+	}
+	StartStub        func()
+	startMutex       sync.RWMutex
+	startArgsForCall []struct {
+	}
+	StopStub        func()
+	stopMutex       sync.RWMutex
+	stopArgsForCall []struct {
+	}
+	WriteStub        func([]byte) (int, error)
 	writeMutex       sync.RWMutex
 	writeArgsForCall []struct {
-		p []byte
+		arg1 []byte
 	}
 	writeReturns struct {
 		result1 int
@@ -19,84 +37,66 @@ type LiveWriter struct {
 		result1 int
 		result2 error
 	}
-	StartStub        func()
-	startMutex       sync.RWMutex
-	startArgsForCall []struct{}
-	StopStub         func()
-	stopMutex        sync.RWMutex
-	stopArgsForCall  []struct{}
-	FlushStub        func() error
-	flushMutex       sync.RWMutex
-	flushArgsForCall []struct{}
-	flushReturns     struct {
-		result1 error
-	}
-	flushReturnsOnCall map[int]struct {
-		result1 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *LiveWriter) Write(p []byte) (n int, err error) {
-	var pCopy []byte
-	if p != nil {
-		pCopy = make([]byte, len(p))
-		copy(pCopy, p)
-	}
-	fake.writeMutex.Lock()
-	ret, specificReturn := fake.writeReturnsOnCall[len(fake.writeArgsForCall)]
-	fake.writeArgsForCall = append(fake.writeArgsForCall, struct {
-		p []byte
-	}{pCopy})
-	fake.recordInvocation("Write", []interface{}{pCopy})
-	fake.writeMutex.Unlock()
-	if fake.WriteStub != nil {
-		return fake.WriteStub(p)
+func (fake *LiveWriter) Flush() error {
+	fake.flushMutex.Lock()
+	ret, specificReturn := fake.flushReturnsOnCall[len(fake.flushArgsForCall)]
+	fake.flushArgsForCall = append(fake.flushArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Flush", []interface{}{})
+	fake.flushMutex.Unlock()
+	if fake.FlushStub != nil {
+		return fake.FlushStub()
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fake.writeReturns.result1, fake.writeReturns.result2
+	fakeReturns := fake.flushReturns
+	return fakeReturns.result1
 }
 
-func (fake *LiveWriter) WriteCallCount() int {
-	fake.writeMutex.RLock()
-	defer fake.writeMutex.RUnlock()
-	return len(fake.writeArgsForCall)
+func (fake *LiveWriter) FlushCallCount() int {
+	fake.flushMutex.RLock()
+	defer fake.flushMutex.RUnlock()
+	return len(fake.flushArgsForCall)
 }
 
-func (fake *LiveWriter) WriteArgsForCall(i int) []byte {
-	fake.writeMutex.RLock()
-	defer fake.writeMutex.RUnlock()
-	return fake.writeArgsForCall[i].p
+func (fake *LiveWriter) FlushCalls(stub func() error) {
+	fake.flushMutex.Lock()
+	defer fake.flushMutex.Unlock()
+	fake.FlushStub = stub
 }
 
-func (fake *LiveWriter) WriteReturns(result1 int, result2 error) {
-	fake.WriteStub = nil
-	fake.writeReturns = struct {
-		result1 int
-		result2 error
-	}{result1, result2}
+func (fake *LiveWriter) FlushReturns(result1 error) {
+	fake.flushMutex.Lock()
+	defer fake.flushMutex.Unlock()
+	fake.FlushStub = nil
+	fake.flushReturns = struct {
+		result1 error
+	}{result1}
 }
 
-func (fake *LiveWriter) WriteReturnsOnCall(i int, result1 int, result2 error) {
-	fake.WriteStub = nil
-	if fake.writeReturnsOnCall == nil {
-		fake.writeReturnsOnCall = make(map[int]struct {
-			result1 int
-			result2 error
+func (fake *LiveWriter) FlushReturnsOnCall(i int, result1 error) {
+	fake.flushMutex.Lock()
+	defer fake.flushMutex.Unlock()
+	fake.FlushStub = nil
+	if fake.flushReturnsOnCall == nil {
+		fake.flushReturnsOnCall = make(map[int]struct {
+			result1 error
 		})
 	}
-	fake.writeReturnsOnCall[i] = struct {
-		result1 int
-		result2 error
-	}{result1, result2}
+	fake.flushReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *LiveWriter) Start() {
 	fake.startMutex.Lock()
-	fake.startArgsForCall = append(fake.startArgsForCall, struct{}{})
+	fake.startArgsForCall = append(fake.startArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Start", []interface{}{})
 	fake.startMutex.Unlock()
 	if fake.StartStub != nil {
@@ -110,9 +110,16 @@ func (fake *LiveWriter) StartCallCount() int {
 	return len(fake.startArgsForCall)
 }
 
+func (fake *LiveWriter) StartCalls(stub func()) {
+	fake.startMutex.Lock()
+	defer fake.startMutex.Unlock()
+	fake.StartStub = stub
+}
+
 func (fake *LiveWriter) Stop() {
 	fake.stopMutex.Lock()
-	fake.stopArgsForCall = append(fake.stopArgsForCall, struct{}{})
+	fake.stopArgsForCall = append(fake.stopArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Stop", []interface{}{})
 	fake.stopMutex.Unlock()
 	if fake.StopStub != nil {
@@ -126,57 +133,91 @@ func (fake *LiveWriter) StopCallCount() int {
 	return len(fake.stopArgsForCall)
 }
 
-func (fake *LiveWriter) Flush() error {
-	fake.flushMutex.Lock()
-	ret, specificReturn := fake.flushReturnsOnCall[len(fake.flushArgsForCall)]
-	fake.flushArgsForCall = append(fake.flushArgsForCall, struct{}{})
-	fake.recordInvocation("Flush", []interface{}{})
-	fake.flushMutex.Unlock()
-	if fake.FlushStub != nil {
-		return fake.FlushStub()
+func (fake *LiveWriter) StopCalls(stub func()) {
+	fake.stopMutex.Lock()
+	defer fake.stopMutex.Unlock()
+	fake.StopStub = stub
+}
+
+func (fake *LiveWriter) Write(arg1 []byte) (int, error) {
+	var arg1Copy []byte
+	if arg1 != nil {
+		arg1Copy = make([]byte, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.writeMutex.Lock()
+	ret, specificReturn := fake.writeReturnsOnCall[len(fake.writeArgsForCall)]
+	fake.writeArgsForCall = append(fake.writeArgsForCall, struct {
+		arg1 []byte
+	}{arg1Copy})
+	fake.recordInvocation("Write", []interface{}{arg1Copy})
+	fake.writeMutex.Unlock()
+	if fake.WriteStub != nil {
+		return fake.WriteStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fake.flushReturns.result1
+	fakeReturns := fake.writeReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *LiveWriter) FlushCallCount() int {
-	fake.flushMutex.RLock()
-	defer fake.flushMutex.RUnlock()
-	return len(fake.flushArgsForCall)
+func (fake *LiveWriter) WriteCallCount() int {
+	fake.writeMutex.RLock()
+	defer fake.writeMutex.RUnlock()
+	return len(fake.writeArgsForCall)
 }
 
-func (fake *LiveWriter) FlushReturns(result1 error) {
-	fake.FlushStub = nil
-	fake.flushReturns = struct {
-		result1 error
-	}{result1}
+func (fake *LiveWriter) WriteCalls(stub func([]byte) (int, error)) {
+	fake.writeMutex.Lock()
+	defer fake.writeMutex.Unlock()
+	fake.WriteStub = stub
 }
 
-func (fake *LiveWriter) FlushReturnsOnCall(i int, result1 error) {
-	fake.FlushStub = nil
-	if fake.flushReturnsOnCall == nil {
-		fake.flushReturnsOnCall = make(map[int]struct {
-			result1 error
+func (fake *LiveWriter) WriteArgsForCall(i int) []byte {
+	fake.writeMutex.RLock()
+	defer fake.writeMutex.RUnlock()
+	argsForCall := fake.writeArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *LiveWriter) WriteReturns(result1 int, result2 error) {
+	fake.writeMutex.Lock()
+	defer fake.writeMutex.Unlock()
+	fake.WriteStub = nil
+	fake.writeReturns = struct {
+		result1 int
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *LiveWriter) WriteReturnsOnCall(i int, result1 int, result2 error) {
+	fake.writeMutex.Lock()
+	defer fake.writeMutex.Unlock()
+	fake.WriteStub = nil
+	if fake.writeReturnsOnCall == nil {
+		fake.writeReturnsOnCall = make(map[int]struct {
+			result1 int
+			result2 error
 		})
 	}
-	fake.flushReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+	fake.writeReturnsOnCall[i] = struct {
+		result1 int
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *LiveWriter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.writeMutex.RLock()
-	defer fake.writeMutex.RUnlock()
+	fake.flushMutex.RLock()
+	defer fake.flushMutex.RUnlock()
 	fake.startMutex.RLock()
 	defer fake.startMutex.RUnlock()
 	fake.stopMutex.RLock()
 	defer fake.stopMutex.RUnlock()
-	fake.flushMutex.RLock()
-	defer fake.flushMutex.RUnlock()
+	fake.writeMutex.RLock()
+	defer fake.writeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

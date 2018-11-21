@@ -2,14 +2,14 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 )
 
 type LogWriter struct {
-	FlushStub        func(logs string) error
+	FlushStub        func(string) error
 	flushMutex       sync.RWMutex
 	flushArgsForCall []struct {
-		logs string
+		arg1 string
 	}
 	flushReturns struct {
 		result1 error
@@ -21,21 +21,22 @@ type LogWriter struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *LogWriter) Flush(logs string) error {
+func (fake *LogWriter) Flush(arg1 string) error {
 	fake.flushMutex.Lock()
 	ret, specificReturn := fake.flushReturnsOnCall[len(fake.flushArgsForCall)]
 	fake.flushArgsForCall = append(fake.flushArgsForCall, struct {
-		logs string
-	}{logs})
-	fake.recordInvocation("Flush", []interface{}{logs})
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("Flush", []interface{}{arg1})
 	fake.flushMutex.Unlock()
 	if fake.FlushStub != nil {
-		return fake.FlushStub(logs)
+		return fake.FlushStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.flushReturns.result1
+	fakeReturns := fake.flushReturns
+	return fakeReturns.result1
 }
 
 func (fake *LogWriter) FlushCallCount() int {
@@ -44,13 +45,22 @@ func (fake *LogWriter) FlushCallCount() int {
 	return len(fake.flushArgsForCall)
 }
 
+func (fake *LogWriter) FlushCalls(stub func(string) error) {
+	fake.flushMutex.Lock()
+	defer fake.flushMutex.Unlock()
+	fake.FlushStub = stub
+}
+
 func (fake *LogWriter) FlushArgsForCall(i int) string {
 	fake.flushMutex.RLock()
 	defer fake.flushMutex.RUnlock()
-	return fake.flushArgsForCall[i].logs
+	argsForCall := fake.flushArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *LogWriter) FlushReturns(result1 error) {
+	fake.flushMutex.Lock()
+	defer fake.flushMutex.Unlock()
 	fake.FlushStub = nil
 	fake.flushReturns = struct {
 		result1 error
@@ -58,6 +68,8 @@ func (fake *LogWriter) FlushReturns(result1 error) {
 }
 
 func (fake *LogWriter) FlushReturnsOnCall(i int, result1 error) {
+	fake.flushMutex.Lock()
+	defer fake.flushMutex.Unlock()
 	fake.FlushStub = nil
 	if fake.flushReturnsOnCall == nil {
 		fake.flushReturnsOnCall = make(map[int]struct {

@@ -2,16 +2,17 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type StagedProductsService struct {
 	GetDiagnosticReportStub        func() (api.DiagnosticReport, error)
 	getDiagnosticReportMutex       sync.RWMutex
-	getDiagnosticReportArgsForCall []struct{}
-	getDiagnosticReportReturns     struct {
+	getDiagnosticReportArgsForCall []struct {
+	}
+	getDiagnosticReportReturns struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
@@ -26,7 +27,8 @@ type StagedProductsService struct {
 func (fake *StagedProductsService) GetDiagnosticReport() (api.DiagnosticReport, error) {
 	fake.getDiagnosticReportMutex.Lock()
 	ret, specificReturn := fake.getDiagnosticReportReturnsOnCall[len(fake.getDiagnosticReportArgsForCall)]
-	fake.getDiagnosticReportArgsForCall = append(fake.getDiagnosticReportArgsForCall, struct{}{})
+	fake.getDiagnosticReportArgsForCall = append(fake.getDiagnosticReportArgsForCall, struct {
+	}{})
 	fake.recordInvocation("GetDiagnosticReport", []interface{}{})
 	fake.getDiagnosticReportMutex.Unlock()
 	if fake.GetDiagnosticReportStub != nil {
@@ -35,7 +37,8 @@ func (fake *StagedProductsService) GetDiagnosticReport() (api.DiagnosticReport, 
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getDiagnosticReportReturns.result1, fake.getDiagnosticReportReturns.result2
+	fakeReturns := fake.getDiagnosticReportReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *StagedProductsService) GetDiagnosticReportCallCount() int {
@@ -44,7 +47,15 @@ func (fake *StagedProductsService) GetDiagnosticReportCallCount() int {
 	return len(fake.getDiagnosticReportArgsForCall)
 }
 
+func (fake *StagedProductsService) GetDiagnosticReportCalls(stub func() (api.DiagnosticReport, error)) {
+	fake.getDiagnosticReportMutex.Lock()
+	defer fake.getDiagnosticReportMutex.Unlock()
+	fake.GetDiagnosticReportStub = stub
+}
+
 func (fake *StagedProductsService) GetDiagnosticReportReturns(result1 api.DiagnosticReport, result2 error) {
+	fake.getDiagnosticReportMutex.Lock()
+	defer fake.getDiagnosticReportMutex.Unlock()
 	fake.GetDiagnosticReportStub = nil
 	fake.getDiagnosticReportReturns = struct {
 		result1 api.DiagnosticReport
@@ -53,6 +64,8 @@ func (fake *StagedProductsService) GetDiagnosticReportReturns(result1 api.Diagno
 }
 
 func (fake *StagedProductsService) GetDiagnosticReportReturnsOnCall(i int, result1 api.DiagnosticReport, result2 error) {
+	fake.getDiagnosticReportMutex.Lock()
+	defer fake.getDiagnosticReportMutex.Unlock()
 	fake.GetDiagnosticReportStub = nil
 	if fake.getDiagnosticReportReturnsOnCall == nil {
 		fake.getDiagnosticReportReturnsOnCall = make(map[int]struct {

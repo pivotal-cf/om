@@ -2,38 +2,17 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/formcontent"
+	formcontent "github.com/pivotal-cf/om/formcontent"
 )
 
 type Multipart struct {
-	FinalizeStub        func() formcontent.ContentSubmission
-	finalizeMutex       sync.RWMutex
-	finalizeArgsForCall []struct{}
-	finalizeReturns     struct {
-		result1 formcontent.ContentSubmission
-	}
-	finalizeReturnsOnCall map[int]struct {
-		result1 formcontent.ContentSubmission
-	}
-	AddFileStub        func(key, path string) error
-	addFileMutex       sync.RWMutex
-	addFileArgsForCall []struct {
-		key  string
-		path string
-	}
-	addFileReturns struct {
-		result1 error
-	}
-	addFileReturnsOnCall map[int]struct {
-		result1 error
-	}
-	AddFieldStub        func(key, value string) error
+	AddFieldStub        func(string, string) error
 	addFieldMutex       sync.RWMutex
 	addFieldArgsForCall []struct {
-		key   string
-		value string
+		arg1 string
+		arg2 string
 	}
 	addFieldReturns struct {
 		result1 error
@@ -41,115 +20,49 @@ type Multipart struct {
 	addFieldReturnsOnCall map[int]struct {
 		result1 error
 	}
+	AddFileStub        func(string, string) error
+	addFileMutex       sync.RWMutex
+	addFileArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	addFileReturns struct {
+		result1 error
+	}
+	addFileReturnsOnCall map[int]struct {
+		result1 error
+	}
+	FinalizeStub        func() formcontent.ContentSubmission
+	finalizeMutex       sync.RWMutex
+	finalizeArgsForCall []struct {
+	}
+	finalizeReturns struct {
+		result1 formcontent.ContentSubmission
+	}
+	finalizeReturnsOnCall map[int]struct {
+		result1 formcontent.ContentSubmission
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Multipart) Finalize() formcontent.ContentSubmission {
-	fake.finalizeMutex.Lock()
-	ret, specificReturn := fake.finalizeReturnsOnCall[len(fake.finalizeArgsForCall)]
-	fake.finalizeArgsForCall = append(fake.finalizeArgsForCall, struct{}{})
-	fake.recordInvocation("Finalize", []interface{}{})
-	fake.finalizeMutex.Unlock()
-	if fake.FinalizeStub != nil {
-		return fake.FinalizeStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.finalizeReturns.result1
-}
-
-func (fake *Multipart) FinalizeCallCount() int {
-	fake.finalizeMutex.RLock()
-	defer fake.finalizeMutex.RUnlock()
-	return len(fake.finalizeArgsForCall)
-}
-
-func (fake *Multipart) FinalizeReturns(result1 formcontent.ContentSubmission) {
-	fake.FinalizeStub = nil
-	fake.finalizeReturns = struct {
-		result1 formcontent.ContentSubmission
-	}{result1}
-}
-
-func (fake *Multipart) FinalizeReturnsOnCall(i int, result1 formcontent.ContentSubmission) {
-	fake.FinalizeStub = nil
-	if fake.finalizeReturnsOnCall == nil {
-		fake.finalizeReturnsOnCall = make(map[int]struct {
-			result1 formcontent.ContentSubmission
-		})
-	}
-	fake.finalizeReturnsOnCall[i] = struct {
-		result1 formcontent.ContentSubmission
-	}{result1}
-}
-
-func (fake *Multipart) AddFile(key string, path string) error {
-	fake.addFileMutex.Lock()
-	ret, specificReturn := fake.addFileReturnsOnCall[len(fake.addFileArgsForCall)]
-	fake.addFileArgsForCall = append(fake.addFileArgsForCall, struct {
-		key  string
-		path string
-	}{key, path})
-	fake.recordInvocation("AddFile", []interface{}{key, path})
-	fake.addFileMutex.Unlock()
-	if fake.AddFileStub != nil {
-		return fake.AddFileStub(key, path)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.addFileReturns.result1
-}
-
-func (fake *Multipart) AddFileCallCount() int {
-	fake.addFileMutex.RLock()
-	defer fake.addFileMutex.RUnlock()
-	return len(fake.addFileArgsForCall)
-}
-
-func (fake *Multipart) AddFileArgsForCall(i int) (string, string) {
-	fake.addFileMutex.RLock()
-	defer fake.addFileMutex.RUnlock()
-	return fake.addFileArgsForCall[i].key, fake.addFileArgsForCall[i].path
-}
-
-func (fake *Multipart) AddFileReturns(result1 error) {
-	fake.AddFileStub = nil
-	fake.addFileReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *Multipart) AddFileReturnsOnCall(i int, result1 error) {
-	fake.AddFileStub = nil
-	if fake.addFileReturnsOnCall == nil {
-		fake.addFileReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.addFileReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *Multipart) AddField(key string, value string) error {
+func (fake *Multipart) AddField(arg1 string, arg2 string) error {
 	fake.addFieldMutex.Lock()
 	ret, specificReturn := fake.addFieldReturnsOnCall[len(fake.addFieldArgsForCall)]
 	fake.addFieldArgsForCall = append(fake.addFieldArgsForCall, struct {
-		key   string
-		value string
-	}{key, value})
-	fake.recordInvocation("AddField", []interface{}{key, value})
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("AddField", []interface{}{arg1, arg2})
 	fake.addFieldMutex.Unlock()
 	if fake.AddFieldStub != nil {
-		return fake.AddFieldStub(key, value)
+		return fake.AddFieldStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.addFieldReturns.result1
+	fakeReturns := fake.addFieldReturns
+	return fakeReturns.result1
 }
 
 func (fake *Multipart) AddFieldCallCount() int {
@@ -158,13 +71,22 @@ func (fake *Multipart) AddFieldCallCount() int {
 	return len(fake.addFieldArgsForCall)
 }
 
+func (fake *Multipart) AddFieldCalls(stub func(string, string) error) {
+	fake.addFieldMutex.Lock()
+	defer fake.addFieldMutex.Unlock()
+	fake.AddFieldStub = stub
+}
+
 func (fake *Multipart) AddFieldArgsForCall(i int) (string, string) {
 	fake.addFieldMutex.RLock()
 	defer fake.addFieldMutex.RUnlock()
-	return fake.addFieldArgsForCall[i].key, fake.addFieldArgsForCall[i].value
+	argsForCall := fake.addFieldArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *Multipart) AddFieldReturns(result1 error) {
+	fake.addFieldMutex.Lock()
+	defer fake.addFieldMutex.Unlock()
 	fake.AddFieldStub = nil
 	fake.addFieldReturns = struct {
 		result1 error
@@ -172,6 +94,8 @@ func (fake *Multipart) AddFieldReturns(result1 error) {
 }
 
 func (fake *Multipart) AddFieldReturnsOnCall(i int, result1 error) {
+	fake.addFieldMutex.Lock()
+	defer fake.addFieldMutex.Unlock()
 	fake.AddFieldStub = nil
 	if fake.addFieldReturnsOnCall == nil {
 		fake.addFieldReturnsOnCall = make(map[int]struct {
@@ -183,15 +107,128 @@ func (fake *Multipart) AddFieldReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *Multipart) AddFile(arg1 string, arg2 string) error {
+	fake.addFileMutex.Lock()
+	ret, specificReturn := fake.addFileReturnsOnCall[len(fake.addFileArgsForCall)]
+	fake.addFileArgsForCall = append(fake.addFileArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("AddFile", []interface{}{arg1, arg2})
+	fake.addFileMutex.Unlock()
+	if fake.AddFileStub != nil {
+		return fake.AddFileStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.addFileReturns
+	return fakeReturns.result1
+}
+
+func (fake *Multipart) AddFileCallCount() int {
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	return len(fake.addFileArgsForCall)
+}
+
+func (fake *Multipart) AddFileCalls(stub func(string, string) error) {
+	fake.addFileMutex.Lock()
+	defer fake.addFileMutex.Unlock()
+	fake.AddFileStub = stub
+}
+
+func (fake *Multipart) AddFileArgsForCall(i int) (string, string) {
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	argsForCall := fake.addFileArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *Multipart) AddFileReturns(result1 error) {
+	fake.addFileMutex.Lock()
+	defer fake.addFileMutex.Unlock()
+	fake.AddFileStub = nil
+	fake.addFileReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *Multipart) AddFileReturnsOnCall(i int, result1 error) {
+	fake.addFileMutex.Lock()
+	defer fake.addFileMutex.Unlock()
+	fake.AddFileStub = nil
+	if fake.addFileReturnsOnCall == nil {
+		fake.addFileReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addFileReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *Multipart) Finalize() formcontent.ContentSubmission {
+	fake.finalizeMutex.Lock()
+	ret, specificReturn := fake.finalizeReturnsOnCall[len(fake.finalizeArgsForCall)]
+	fake.finalizeArgsForCall = append(fake.finalizeArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Finalize", []interface{}{})
+	fake.finalizeMutex.Unlock()
+	if fake.FinalizeStub != nil {
+		return fake.FinalizeStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.finalizeReturns
+	return fakeReturns.result1
+}
+
+func (fake *Multipart) FinalizeCallCount() int {
+	fake.finalizeMutex.RLock()
+	defer fake.finalizeMutex.RUnlock()
+	return len(fake.finalizeArgsForCall)
+}
+
+func (fake *Multipart) FinalizeCalls(stub func() formcontent.ContentSubmission) {
+	fake.finalizeMutex.Lock()
+	defer fake.finalizeMutex.Unlock()
+	fake.FinalizeStub = stub
+}
+
+func (fake *Multipart) FinalizeReturns(result1 formcontent.ContentSubmission) {
+	fake.finalizeMutex.Lock()
+	defer fake.finalizeMutex.Unlock()
+	fake.FinalizeStub = nil
+	fake.finalizeReturns = struct {
+		result1 formcontent.ContentSubmission
+	}{result1}
+}
+
+func (fake *Multipart) FinalizeReturnsOnCall(i int, result1 formcontent.ContentSubmission) {
+	fake.finalizeMutex.Lock()
+	defer fake.finalizeMutex.Unlock()
+	fake.FinalizeStub = nil
+	if fake.finalizeReturnsOnCall == nil {
+		fake.finalizeReturnsOnCall = make(map[int]struct {
+			result1 formcontent.ContentSubmission
+		})
+	}
+	fake.finalizeReturnsOnCall[i] = struct {
+		result1 formcontent.ContentSubmission
+	}{result1}
+}
+
 func (fake *Multipart) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.finalizeMutex.RLock()
-	defer fake.finalizeMutex.RUnlock()
-	fake.addFileMutex.RLock()
-	defer fake.addFileMutex.RUnlock()
 	fake.addFieldMutex.RLock()
 	defer fake.addFieldMutex.RUnlock()
+	fake.addFileMutex.RLock()
+	defer fake.addFileMutex.RUnlock()
+	fake.finalizeMutex.RLock()
+	defer fake.finalizeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

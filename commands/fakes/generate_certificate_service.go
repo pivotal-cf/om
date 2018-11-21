@@ -2,14 +2,16 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
+
+	api "github.com/pivotal-cf/om/api"
 )
 
 type GenerateCertificateService struct {
-	GenerateCertificateStub        func(string) (string, error)
+	GenerateCertificateStub        func(api.DomainsInput) (string, error)
 	generateCertificateMutex       sync.RWMutex
 	generateCertificateArgsForCall []struct {
-		arg1 string
+		arg1 api.DomainsInput
 	}
 	generateCertificateReturns struct {
 		result1 string
@@ -23,11 +25,11 @@ type GenerateCertificateService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *GenerateCertificateService) GenerateCertificate(arg1 string) (string, error) {
+func (fake *GenerateCertificateService) GenerateCertificate(arg1 api.DomainsInput) (string, error) {
 	fake.generateCertificateMutex.Lock()
 	ret, specificReturn := fake.generateCertificateReturnsOnCall[len(fake.generateCertificateArgsForCall)]
 	fake.generateCertificateArgsForCall = append(fake.generateCertificateArgsForCall, struct {
-		arg1 string
+		arg1 api.DomainsInput
 	}{arg1})
 	fake.recordInvocation("GenerateCertificate", []interface{}{arg1})
 	fake.generateCertificateMutex.Unlock()
@@ -37,7 +39,8 @@ func (fake *GenerateCertificateService) GenerateCertificate(arg1 string) (string
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.generateCertificateReturns.result1, fake.generateCertificateReturns.result2
+	fakeReturns := fake.generateCertificateReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *GenerateCertificateService) GenerateCertificateCallCount() int {
@@ -46,13 +49,22 @@ func (fake *GenerateCertificateService) GenerateCertificateCallCount() int {
 	return len(fake.generateCertificateArgsForCall)
 }
 
-func (fake *GenerateCertificateService) GenerateCertificateArgsForCall(i int) string {
+func (fake *GenerateCertificateService) GenerateCertificateCalls(stub func(api.DomainsInput) (string, error)) {
+	fake.generateCertificateMutex.Lock()
+	defer fake.generateCertificateMutex.Unlock()
+	fake.GenerateCertificateStub = stub
+}
+
+func (fake *GenerateCertificateService) GenerateCertificateArgsForCall(i int) api.DomainsInput {
 	fake.generateCertificateMutex.RLock()
 	defer fake.generateCertificateMutex.RUnlock()
-	return fake.generateCertificateArgsForCall[i].arg1
+	argsForCall := fake.generateCertificateArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *GenerateCertificateService) GenerateCertificateReturns(result1 string, result2 error) {
+	fake.generateCertificateMutex.Lock()
+	defer fake.generateCertificateMutex.Unlock()
 	fake.GenerateCertificateStub = nil
 	fake.generateCertificateReturns = struct {
 		result1 string
@@ -61,6 +73,8 @@ func (fake *GenerateCertificateService) GenerateCertificateReturns(result1 strin
 }
 
 func (fake *GenerateCertificateService) GenerateCertificateReturnsOnCall(i int, result1 string, result2 error) {
+	fake.generateCertificateMutex.Lock()
+	defer fake.generateCertificateMutex.Unlock()
 	fake.GenerateCertificateStub = nil
 	if fake.generateCertificateReturnsOnCall == nil {
 		fake.generateCertificateReturnsOnCall = make(map[int]struct {

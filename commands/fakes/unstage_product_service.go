@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type UnstageProductService struct {
@@ -37,7 +37,8 @@ func (fake *UnstageProductService) DeleteStagedProduct(arg1 api.UnstageProductIn
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deleteStagedProductReturns.result1
+	fakeReturns := fake.deleteStagedProductReturns
+	return fakeReturns.result1
 }
 
 func (fake *UnstageProductService) DeleteStagedProductCallCount() int {
@@ -46,13 +47,22 @@ func (fake *UnstageProductService) DeleteStagedProductCallCount() int {
 	return len(fake.deleteStagedProductArgsForCall)
 }
 
+func (fake *UnstageProductService) DeleteStagedProductCalls(stub func(api.UnstageProductInput) error) {
+	fake.deleteStagedProductMutex.Lock()
+	defer fake.deleteStagedProductMutex.Unlock()
+	fake.DeleteStagedProductStub = stub
+}
+
 func (fake *UnstageProductService) DeleteStagedProductArgsForCall(i int) api.UnstageProductInput {
 	fake.deleteStagedProductMutex.RLock()
 	defer fake.deleteStagedProductMutex.RUnlock()
-	return fake.deleteStagedProductArgsForCall[i].arg1
+	argsForCall := fake.deleteStagedProductArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *UnstageProductService) DeleteStagedProductReturns(result1 error) {
+	fake.deleteStagedProductMutex.Lock()
+	defer fake.deleteStagedProductMutex.Unlock()
 	fake.DeleteStagedProductStub = nil
 	fake.deleteStagedProductReturns = struct {
 		result1 error
@@ -60,6 +70,8 @@ func (fake *UnstageProductService) DeleteStagedProductReturns(result1 error) {
 }
 
 func (fake *UnstageProductService) DeleteStagedProductReturnsOnCall(i int, result1 error) {
+	fake.deleteStagedProductMutex.Lock()
+	defer fake.deleteStagedProductMutex.Unlock()
 	fake.DeleteStagedProductStub = nil
 	if fake.deleteStagedProductReturnsOnCall == nil {
 		fake.deleteStagedProductReturnsOnCall = make(map[int]struct {

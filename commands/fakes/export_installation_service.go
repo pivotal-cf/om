@@ -2,15 +2,15 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 )
 
 type ExportInstallationService struct {
-	DownloadInstallationAssetCollectionStub        func(outputFile string, pollingInterval int) error
+	DownloadInstallationAssetCollectionStub        func(string, int) error
 	downloadInstallationAssetCollectionMutex       sync.RWMutex
 	downloadInstallationAssetCollectionArgsForCall []struct {
-		outputFile      string
-		pollingInterval int
+		arg1 string
+		arg2 int
 	}
 	downloadInstallationAssetCollectionReturns struct {
 		result1 error
@@ -22,22 +22,23 @@ type ExportInstallationService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ExportInstallationService) DownloadInstallationAssetCollection(outputFile string, pollingInterval int) error {
+func (fake *ExportInstallationService) DownloadInstallationAssetCollection(arg1 string, arg2 int) error {
 	fake.downloadInstallationAssetCollectionMutex.Lock()
 	ret, specificReturn := fake.downloadInstallationAssetCollectionReturnsOnCall[len(fake.downloadInstallationAssetCollectionArgsForCall)]
 	fake.downloadInstallationAssetCollectionArgsForCall = append(fake.downloadInstallationAssetCollectionArgsForCall, struct {
-		outputFile      string
-		pollingInterval int
-	}{outputFile, pollingInterval})
-	fake.recordInvocation("DownloadInstallationAssetCollection", []interface{}{outputFile, pollingInterval})
+		arg1 string
+		arg2 int
+	}{arg1, arg2})
+	fake.recordInvocation("DownloadInstallationAssetCollection", []interface{}{arg1, arg2})
 	fake.downloadInstallationAssetCollectionMutex.Unlock()
 	if fake.DownloadInstallationAssetCollectionStub != nil {
-		return fake.DownloadInstallationAssetCollectionStub(outputFile, pollingInterval)
+		return fake.DownloadInstallationAssetCollectionStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.downloadInstallationAssetCollectionReturns.result1
+	fakeReturns := fake.downloadInstallationAssetCollectionReturns
+	return fakeReturns.result1
 }
 
 func (fake *ExportInstallationService) DownloadInstallationAssetCollectionCallCount() int {
@@ -46,13 +47,22 @@ func (fake *ExportInstallationService) DownloadInstallationAssetCollectionCallCo
 	return len(fake.downloadInstallationAssetCollectionArgsForCall)
 }
 
+func (fake *ExportInstallationService) DownloadInstallationAssetCollectionCalls(stub func(string, int) error) {
+	fake.downloadInstallationAssetCollectionMutex.Lock()
+	defer fake.downloadInstallationAssetCollectionMutex.Unlock()
+	fake.DownloadInstallationAssetCollectionStub = stub
+}
+
 func (fake *ExportInstallationService) DownloadInstallationAssetCollectionArgsForCall(i int) (string, int) {
 	fake.downloadInstallationAssetCollectionMutex.RLock()
 	defer fake.downloadInstallationAssetCollectionMutex.RUnlock()
-	return fake.downloadInstallationAssetCollectionArgsForCall[i].outputFile, fake.downloadInstallationAssetCollectionArgsForCall[i].pollingInterval
+	argsForCall := fake.downloadInstallationAssetCollectionArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *ExportInstallationService) DownloadInstallationAssetCollectionReturns(result1 error) {
+	fake.downloadInstallationAssetCollectionMutex.Lock()
+	defer fake.downloadInstallationAssetCollectionMutex.Unlock()
 	fake.DownloadInstallationAssetCollectionStub = nil
 	fake.downloadInstallationAssetCollectionReturns = struct {
 		result1 error
@@ -60,6 +70,8 @@ func (fake *ExportInstallationService) DownloadInstallationAssetCollectionReturn
 }
 
 func (fake *ExportInstallationService) DownloadInstallationAssetCollectionReturnsOnCall(i int, result1 error) {
+	fake.downloadInstallationAssetCollectionMutex.Lock()
+	defer fake.downloadInstallationAssetCollectionMutex.Unlock()
 	fake.DownloadInstallationAssetCollectionStub = nil
 	if fake.downloadInstallationAssetCollectionReturnsOnCall == nil {
 		fake.downloadInstallationAssetCollectionReturnsOnCall = make(map[int]struct {

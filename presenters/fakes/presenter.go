@@ -2,11 +2,11 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/models"
-	"github.com/pivotal-cf/om/presenters"
+	api "github.com/pivotal-cf/om/api"
+	models "github.com/pivotal-cf/om/models"
+	presenters "github.com/pivotal-cf/om/presenters"
 )
 
 type Presenter struct {
@@ -87,10 +87,17 @@ func (fake *Presenter) PresentAvailableProductsCallCount() int {
 	return len(fake.presentAvailableProductsArgsForCall)
 }
 
+func (fake *Presenter) PresentAvailableProductsCalls(stub func([]models.Product)) {
+	fake.presentAvailableProductsMutex.Lock()
+	defer fake.presentAvailableProductsMutex.Unlock()
+	fake.PresentAvailableProductsStub = stub
+}
+
 func (fake *Presenter) PresentAvailableProductsArgsForCall(i int) []models.Product {
 	fake.presentAvailableProductsMutex.RLock()
 	defer fake.presentAvailableProductsMutex.RUnlock()
-	return fake.presentAvailableProductsArgsForCall[i].arg1
+	argsForCall := fake.presentAvailableProductsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentCertificateAuthorities(arg1 []api.CA) {
@@ -116,10 +123,17 @@ func (fake *Presenter) PresentCertificateAuthoritiesCallCount() int {
 	return len(fake.presentCertificateAuthoritiesArgsForCall)
 }
 
+func (fake *Presenter) PresentCertificateAuthoritiesCalls(stub func([]api.CA)) {
+	fake.presentCertificateAuthoritiesMutex.Lock()
+	defer fake.presentCertificateAuthoritiesMutex.Unlock()
+	fake.PresentCertificateAuthoritiesStub = stub
+}
+
 func (fake *Presenter) PresentCertificateAuthoritiesArgsForCall(i int) []api.CA {
 	fake.presentCertificateAuthoritiesMutex.RLock()
 	defer fake.presentCertificateAuthoritiesMutex.RUnlock()
-	return fake.presentCertificateAuthoritiesArgsForCall[i].arg1
+	argsForCall := fake.presentCertificateAuthoritiesArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentCertificateAuthority(arg1 api.CA) {
@@ -140,10 +154,17 @@ func (fake *Presenter) PresentCertificateAuthorityCallCount() int {
 	return len(fake.presentCertificateAuthorityArgsForCall)
 }
 
+func (fake *Presenter) PresentCertificateAuthorityCalls(stub func(api.CA)) {
+	fake.presentCertificateAuthorityMutex.Lock()
+	defer fake.presentCertificateAuthorityMutex.Unlock()
+	fake.PresentCertificateAuthorityStub = stub
+}
+
 func (fake *Presenter) PresentCertificateAuthorityArgsForCall(i int) api.CA {
 	fake.presentCertificateAuthorityMutex.RLock()
 	defer fake.presentCertificateAuthorityMutex.RUnlock()
-	return fake.presentCertificateAuthorityArgsForCall[i].arg1
+	argsForCall := fake.presentCertificateAuthorityArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentCredentialReferences(arg1 []string) {
@@ -169,10 +190,17 @@ func (fake *Presenter) PresentCredentialReferencesCallCount() int {
 	return len(fake.presentCredentialReferencesArgsForCall)
 }
 
+func (fake *Presenter) PresentCredentialReferencesCalls(stub func([]string)) {
+	fake.presentCredentialReferencesMutex.Lock()
+	defer fake.presentCredentialReferencesMutex.Unlock()
+	fake.PresentCredentialReferencesStub = stub
+}
+
 func (fake *Presenter) PresentCredentialReferencesArgsForCall(i int) []string {
 	fake.presentCredentialReferencesMutex.RLock()
 	defer fake.presentCredentialReferencesMutex.RUnlock()
-	return fake.presentCredentialReferencesArgsForCall[i].arg1
+	argsForCall := fake.presentCredentialReferencesArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentCredentials(arg1 map[string]string) {
@@ -193,10 +221,17 @@ func (fake *Presenter) PresentCredentialsCallCount() int {
 	return len(fake.presentCredentialsArgsForCall)
 }
 
+func (fake *Presenter) PresentCredentialsCalls(stub func(map[string]string)) {
+	fake.presentCredentialsMutex.Lock()
+	defer fake.presentCredentialsMutex.Unlock()
+	fake.PresentCredentialsStub = stub
+}
+
 func (fake *Presenter) PresentCredentialsArgsForCall(i int) map[string]string {
 	fake.presentCredentialsMutex.RLock()
 	defer fake.presentCredentialsMutex.RUnlock()
-	return fake.presentCredentialsArgsForCall[i].arg1
+	argsForCall := fake.presentCredentialsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentDeployedProducts(arg1 []api.DiagnosticProduct) {
@@ -222,10 +257,17 @@ func (fake *Presenter) PresentDeployedProductsCallCount() int {
 	return len(fake.presentDeployedProductsArgsForCall)
 }
 
+func (fake *Presenter) PresentDeployedProductsCalls(stub func([]api.DiagnosticProduct)) {
+	fake.presentDeployedProductsMutex.Lock()
+	defer fake.presentDeployedProductsMutex.Unlock()
+	fake.PresentDeployedProductsStub = stub
+}
+
 func (fake *Presenter) PresentDeployedProductsArgsForCall(i int) []api.DiagnosticProduct {
 	fake.presentDeployedProductsMutex.RLock()
 	defer fake.presentDeployedProductsMutex.RUnlock()
-	return fake.presentDeployedProductsArgsForCall[i].arg1
+	argsForCall := fake.presentDeployedProductsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentErrands(arg1 []models.Errand) {
@@ -251,10 +293,17 @@ func (fake *Presenter) PresentErrandsCallCount() int {
 	return len(fake.presentErrandsArgsForCall)
 }
 
+func (fake *Presenter) PresentErrandsCalls(stub func([]models.Errand)) {
+	fake.presentErrandsMutex.Lock()
+	defer fake.presentErrandsMutex.Unlock()
+	fake.PresentErrandsStub = stub
+}
+
 func (fake *Presenter) PresentErrandsArgsForCall(i int) []models.Errand {
 	fake.presentErrandsMutex.RLock()
 	defer fake.presentErrandsMutex.RUnlock()
-	return fake.presentErrandsArgsForCall[i].arg1
+	argsForCall := fake.presentErrandsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentInstallations(arg1 []models.Installation) {
@@ -280,10 +329,17 @@ func (fake *Presenter) PresentInstallationsCallCount() int {
 	return len(fake.presentInstallationsArgsForCall)
 }
 
+func (fake *Presenter) PresentInstallationsCalls(stub func([]models.Installation)) {
+	fake.presentInstallationsMutex.Lock()
+	defer fake.presentInstallationsMutex.Unlock()
+	fake.PresentInstallationsStub = stub
+}
+
 func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installation {
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
-	return fake.presentInstallationsArgsForCall[i].arg1
+	argsForCall := fake.presentInstallationsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentPendingChanges(arg1 []api.ProductChange) {
@@ -309,10 +365,17 @@ func (fake *Presenter) PresentPendingChangesCallCount() int {
 	return len(fake.presentPendingChangesArgsForCall)
 }
 
+func (fake *Presenter) PresentPendingChangesCalls(stub func([]api.ProductChange)) {
+	fake.presentPendingChangesMutex.Lock()
+	defer fake.presentPendingChangesMutex.Unlock()
+	fake.PresentPendingChangesStub = stub
+}
+
 func (fake *Presenter) PresentPendingChangesArgsForCall(i int) []api.ProductChange {
 	fake.presentPendingChangesMutex.RLock()
 	defer fake.presentPendingChangesMutex.RUnlock()
-	return fake.presentPendingChangesArgsForCall[i].arg1
+	argsForCall := fake.presentPendingChangesArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) PresentStagedProducts(arg1 []api.DiagnosticProduct) {
@@ -338,10 +401,17 @@ func (fake *Presenter) PresentStagedProductsCallCount() int {
 	return len(fake.presentStagedProductsArgsForCall)
 }
 
+func (fake *Presenter) PresentStagedProductsCalls(stub func([]api.DiagnosticProduct)) {
+	fake.presentStagedProductsMutex.Lock()
+	defer fake.presentStagedProductsMutex.Unlock()
+	fake.PresentStagedProductsStub = stub
+}
+
 func (fake *Presenter) PresentStagedProductsArgsForCall(i int) []api.DiagnosticProduct {
 	fake.presentStagedProductsMutex.RLock()
 	defer fake.presentStagedProductsMutex.RUnlock()
-	return fake.presentStagedProductsArgsForCall[i].arg1
+	argsForCall := fake.presentStagedProductsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Presenter) Invocations() map[string][][]interface{} {

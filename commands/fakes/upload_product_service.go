@@ -2,25 +2,12 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type UploadProductService struct {
-	UploadAvailableProductStub        func(api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error)
-	uploadAvailableProductMutex       sync.RWMutex
-	uploadAvailableProductArgsForCall []struct {
-		arg1 api.UploadAvailableProductInput
-	}
-	uploadAvailableProductReturns struct {
-		result1 api.UploadAvailableProductOutput
-		result2 error
-	}
-	uploadAvailableProductReturnsOnCall map[int]struct {
-		result1 api.UploadAvailableProductOutput
-		result2 error
-	}
 	CheckProductAvailabilityStub        func(string, string) (bool, error)
 	checkProductAvailabilityMutex       sync.RWMutex
 	checkProductAvailabilityArgsForCall []struct {
@@ -35,59 +22,21 @@ type UploadProductService struct {
 		result1 bool
 		result2 error
 	}
+	UploadAvailableProductStub        func(api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error)
+	uploadAvailableProductMutex       sync.RWMutex
+	uploadAvailableProductArgsForCall []struct {
+		arg1 api.UploadAvailableProductInput
+	}
+	uploadAvailableProductReturns struct {
+		result1 api.UploadAvailableProductOutput
+		result2 error
+	}
+	uploadAvailableProductReturnsOnCall map[int]struct {
+		result1 api.UploadAvailableProductOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *UploadProductService) UploadAvailableProduct(arg1 api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error) {
-	fake.uploadAvailableProductMutex.Lock()
-	ret, specificReturn := fake.uploadAvailableProductReturnsOnCall[len(fake.uploadAvailableProductArgsForCall)]
-	fake.uploadAvailableProductArgsForCall = append(fake.uploadAvailableProductArgsForCall, struct {
-		arg1 api.UploadAvailableProductInput
-	}{arg1})
-	fake.recordInvocation("UploadAvailableProduct", []interface{}{arg1})
-	fake.uploadAvailableProductMutex.Unlock()
-	if fake.UploadAvailableProductStub != nil {
-		return fake.UploadAvailableProductStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.uploadAvailableProductReturns.result1, fake.uploadAvailableProductReturns.result2
-}
-
-func (fake *UploadProductService) UploadAvailableProductCallCount() int {
-	fake.uploadAvailableProductMutex.RLock()
-	defer fake.uploadAvailableProductMutex.RUnlock()
-	return len(fake.uploadAvailableProductArgsForCall)
-}
-
-func (fake *UploadProductService) UploadAvailableProductArgsForCall(i int) api.UploadAvailableProductInput {
-	fake.uploadAvailableProductMutex.RLock()
-	defer fake.uploadAvailableProductMutex.RUnlock()
-	return fake.uploadAvailableProductArgsForCall[i].arg1
-}
-
-func (fake *UploadProductService) UploadAvailableProductReturns(result1 api.UploadAvailableProductOutput, result2 error) {
-	fake.UploadAvailableProductStub = nil
-	fake.uploadAvailableProductReturns = struct {
-		result1 api.UploadAvailableProductOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *UploadProductService) UploadAvailableProductReturnsOnCall(i int, result1 api.UploadAvailableProductOutput, result2 error) {
-	fake.UploadAvailableProductStub = nil
-	if fake.uploadAvailableProductReturnsOnCall == nil {
-		fake.uploadAvailableProductReturnsOnCall = make(map[int]struct {
-			result1 api.UploadAvailableProductOutput
-			result2 error
-		})
-	}
-	fake.uploadAvailableProductReturnsOnCall[i] = struct {
-		result1 api.UploadAvailableProductOutput
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *UploadProductService) CheckProductAvailability(arg1 string, arg2 string) (bool, error) {
@@ -105,7 +54,8 @@ func (fake *UploadProductService) CheckProductAvailability(arg1 string, arg2 str
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.checkProductAvailabilityReturns.result1, fake.checkProductAvailabilityReturns.result2
+	fakeReturns := fake.checkProductAvailabilityReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *UploadProductService) CheckProductAvailabilityCallCount() int {
@@ -114,13 +64,22 @@ func (fake *UploadProductService) CheckProductAvailabilityCallCount() int {
 	return len(fake.checkProductAvailabilityArgsForCall)
 }
 
+func (fake *UploadProductService) CheckProductAvailabilityCalls(stub func(string, string) (bool, error)) {
+	fake.checkProductAvailabilityMutex.Lock()
+	defer fake.checkProductAvailabilityMutex.Unlock()
+	fake.CheckProductAvailabilityStub = stub
+}
+
 func (fake *UploadProductService) CheckProductAvailabilityArgsForCall(i int) (string, string) {
 	fake.checkProductAvailabilityMutex.RLock()
 	defer fake.checkProductAvailabilityMutex.RUnlock()
-	return fake.checkProductAvailabilityArgsForCall[i].arg1, fake.checkProductAvailabilityArgsForCall[i].arg2
+	argsForCall := fake.checkProductAvailabilityArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *UploadProductService) CheckProductAvailabilityReturns(result1 bool, result2 error) {
+	fake.checkProductAvailabilityMutex.Lock()
+	defer fake.checkProductAvailabilityMutex.Unlock()
 	fake.CheckProductAvailabilityStub = nil
 	fake.checkProductAvailabilityReturns = struct {
 		result1 bool
@@ -129,6 +88,8 @@ func (fake *UploadProductService) CheckProductAvailabilityReturns(result1 bool, 
 }
 
 func (fake *UploadProductService) CheckProductAvailabilityReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.checkProductAvailabilityMutex.Lock()
+	defer fake.checkProductAvailabilityMutex.Unlock()
 	fake.CheckProductAvailabilityStub = nil
 	if fake.checkProductAvailabilityReturnsOnCall == nil {
 		fake.checkProductAvailabilityReturnsOnCall = make(map[int]struct {
@@ -142,13 +103,76 @@ func (fake *UploadProductService) CheckProductAvailabilityReturnsOnCall(i int, r
 	}{result1, result2}
 }
 
+func (fake *UploadProductService) UploadAvailableProduct(arg1 api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error) {
+	fake.uploadAvailableProductMutex.Lock()
+	ret, specificReturn := fake.uploadAvailableProductReturnsOnCall[len(fake.uploadAvailableProductArgsForCall)]
+	fake.uploadAvailableProductArgsForCall = append(fake.uploadAvailableProductArgsForCall, struct {
+		arg1 api.UploadAvailableProductInput
+	}{arg1})
+	fake.recordInvocation("UploadAvailableProduct", []interface{}{arg1})
+	fake.uploadAvailableProductMutex.Unlock()
+	if fake.UploadAvailableProductStub != nil {
+		return fake.UploadAvailableProductStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.uploadAvailableProductReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *UploadProductService) UploadAvailableProductCallCount() int {
+	fake.uploadAvailableProductMutex.RLock()
+	defer fake.uploadAvailableProductMutex.RUnlock()
+	return len(fake.uploadAvailableProductArgsForCall)
+}
+
+func (fake *UploadProductService) UploadAvailableProductCalls(stub func(api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error)) {
+	fake.uploadAvailableProductMutex.Lock()
+	defer fake.uploadAvailableProductMutex.Unlock()
+	fake.UploadAvailableProductStub = stub
+}
+
+func (fake *UploadProductService) UploadAvailableProductArgsForCall(i int) api.UploadAvailableProductInput {
+	fake.uploadAvailableProductMutex.RLock()
+	defer fake.uploadAvailableProductMutex.RUnlock()
+	argsForCall := fake.uploadAvailableProductArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *UploadProductService) UploadAvailableProductReturns(result1 api.UploadAvailableProductOutput, result2 error) {
+	fake.uploadAvailableProductMutex.Lock()
+	defer fake.uploadAvailableProductMutex.Unlock()
+	fake.UploadAvailableProductStub = nil
+	fake.uploadAvailableProductReturns = struct {
+		result1 api.UploadAvailableProductOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *UploadProductService) UploadAvailableProductReturnsOnCall(i int, result1 api.UploadAvailableProductOutput, result2 error) {
+	fake.uploadAvailableProductMutex.Lock()
+	defer fake.uploadAvailableProductMutex.Unlock()
+	fake.UploadAvailableProductStub = nil
+	if fake.uploadAvailableProductReturnsOnCall == nil {
+		fake.uploadAvailableProductReturnsOnCall = make(map[int]struct {
+			result1 api.UploadAvailableProductOutput
+			result2 error
+		})
+	}
+	fake.uploadAvailableProductReturnsOnCall[i] = struct {
+		result1 api.UploadAvailableProductOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *UploadProductService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.uploadAvailableProductMutex.RLock()
-	defer fake.uploadAvailableProductMutex.RUnlock()
 	fake.checkProductAvailabilityMutex.RLock()
 	defer fake.checkProductAvailabilityMutex.RUnlock()
+	fake.uploadAvailableProductMutex.RLock()
+	defer fake.uploadAvailableProductMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

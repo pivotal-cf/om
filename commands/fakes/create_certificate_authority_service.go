@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type CreateCertificateAuthorityService struct {
@@ -39,7 +39,8 @@ func (fake *CreateCertificateAuthorityService) CreateCertificateAuthority(arg1 a
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.createCertificateAuthorityReturns.result1, fake.createCertificateAuthorityReturns.result2
+	fakeReturns := fake.createCertificateAuthorityReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityCallCount() int {
@@ -48,13 +49,22 @@ func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityCallCou
 	return len(fake.createCertificateAuthorityArgsForCall)
 }
 
+func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityCalls(stub func(api.CertificateAuthorityInput) (api.CA, error)) {
+	fake.createCertificateAuthorityMutex.Lock()
+	defer fake.createCertificateAuthorityMutex.Unlock()
+	fake.CreateCertificateAuthorityStub = stub
+}
+
 func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityArgsForCall(i int) api.CertificateAuthorityInput {
 	fake.createCertificateAuthorityMutex.RLock()
 	defer fake.createCertificateAuthorityMutex.RUnlock()
-	return fake.createCertificateAuthorityArgsForCall[i].arg1
+	argsForCall := fake.createCertificateAuthorityArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturns(result1 api.CA, result2 error) {
+	fake.createCertificateAuthorityMutex.Lock()
+	defer fake.createCertificateAuthorityMutex.Unlock()
 	fake.CreateCertificateAuthorityStub = nil
 	fake.createCertificateAuthorityReturns = struct {
 		result1 api.CA
@@ -63,6 +73,8 @@ func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturns
 }
 
 func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturnsOnCall(i int, result1 api.CA, result2 error) {
+	fake.createCertificateAuthorityMutex.Lock()
+	defer fake.createCertificateAuthorityMutex.Unlock()
 	fake.CreateCertificateAuthorityStub = nil
 	if fake.createCertificateAuthorityReturnsOnCall == nil {
 		fake.createCertificateAuthorityReturnsOnCall = make(map[int]struct {

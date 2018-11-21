@@ -2,16 +2,17 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type CertificateAuthoritiesService struct {
 	ListCertificateAuthoritiesStub        func() (api.CertificateAuthoritiesOutput, error)
 	listCertificateAuthoritiesMutex       sync.RWMutex
-	listCertificateAuthoritiesArgsForCall []struct{}
-	listCertificateAuthoritiesReturns     struct {
+	listCertificateAuthoritiesArgsForCall []struct {
+	}
+	listCertificateAuthoritiesReturns struct {
 		result1 api.CertificateAuthoritiesOutput
 		result2 error
 	}
@@ -26,7 +27,8 @@ type CertificateAuthoritiesService struct {
 func (fake *CertificateAuthoritiesService) ListCertificateAuthorities() (api.CertificateAuthoritiesOutput, error) {
 	fake.listCertificateAuthoritiesMutex.Lock()
 	ret, specificReturn := fake.listCertificateAuthoritiesReturnsOnCall[len(fake.listCertificateAuthoritiesArgsForCall)]
-	fake.listCertificateAuthoritiesArgsForCall = append(fake.listCertificateAuthoritiesArgsForCall, struct{}{})
+	fake.listCertificateAuthoritiesArgsForCall = append(fake.listCertificateAuthoritiesArgsForCall, struct {
+	}{})
 	fake.recordInvocation("ListCertificateAuthorities", []interface{}{})
 	fake.listCertificateAuthoritiesMutex.Unlock()
 	if fake.ListCertificateAuthoritiesStub != nil {
@@ -35,7 +37,8 @@ func (fake *CertificateAuthoritiesService) ListCertificateAuthorities() (api.Cer
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listCertificateAuthoritiesReturns.result1, fake.listCertificateAuthoritiesReturns.result2
+	fakeReturns := fake.listCertificateAuthoritiesReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesCallCount() int {
@@ -44,7 +47,15 @@ func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesCallCount()
 	return len(fake.listCertificateAuthoritiesArgsForCall)
 }
 
+func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesCalls(stub func() (api.CertificateAuthoritiesOutput, error)) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	defer fake.listCertificateAuthoritiesMutex.Unlock()
+	fake.ListCertificateAuthoritiesStub = stub
+}
+
 func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesReturns(result1 api.CertificateAuthoritiesOutput, result2 error) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	defer fake.listCertificateAuthoritiesMutex.Unlock()
 	fake.ListCertificateAuthoritiesStub = nil
 	fake.listCertificateAuthoritiesReturns = struct {
 		result1 api.CertificateAuthoritiesOutput
@@ -53,6 +64,8 @@ func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesReturns(res
 }
 
 func (fake *CertificateAuthoritiesService) ListCertificateAuthoritiesReturnsOnCall(i int, result1 api.CertificateAuthoritiesOutput, result2 error) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	defer fake.listCertificateAuthoritiesMutex.Unlock()
 	fake.ListCertificateAuthoritiesStub = nil
 	if fake.listCertificateAuthoritiesReturnsOnCall == nil {
 		fake.listCertificateAuthoritiesReturnsOnCall = make(map[int]struct {

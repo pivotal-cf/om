@@ -2,8 +2,8 @@
 package fakes
 
 import (
-	"net/http"
-	"sync"
+	http "net/http"
+	sync "sync"
 )
 
 type HttpClient struct {
@@ -38,7 +38,8 @@ func (fake *HttpClient) Do(arg1 *http.Request) (*http.Response, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.doReturns.result1, fake.doReturns.result2
+	fakeReturns := fake.doReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *HttpClient) DoCallCount() int {
@@ -47,13 +48,22 @@ func (fake *HttpClient) DoCallCount() int {
 	return len(fake.doArgsForCall)
 }
 
+func (fake *HttpClient) DoCalls(stub func(*http.Request) (*http.Response, error)) {
+	fake.doMutex.Lock()
+	defer fake.doMutex.Unlock()
+	fake.DoStub = stub
+}
+
 func (fake *HttpClient) DoArgsForCall(i int) *http.Request {
 	fake.doMutex.RLock()
 	defer fake.doMutex.RUnlock()
-	return fake.doArgsForCall[i].arg1
+	argsForCall := fake.doArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *HttpClient) DoReturns(result1 *http.Response, result2 error) {
+	fake.doMutex.Lock()
+	defer fake.doMutex.Unlock()
 	fake.DoStub = nil
 	fake.doReturns = struct {
 		result1 *http.Response
@@ -62,6 +72,8 @@ func (fake *HttpClient) DoReturns(result1 *http.Response, result2 error) {
 }
 
 func (fake *HttpClient) DoReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.doMutex.Lock()
+	defer fake.doMutex.Unlock()
 	fake.DoStub = nil
 	if fake.doReturnsOnCall == nil {
 		fake.doReturnsOnCall = make(map[int]struct {

@@ -2,27 +2,16 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type DeployedManifestService struct {
-	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
-	listDeployedProductsMutex       sync.RWMutex
-	listDeployedProductsArgsForCall []struct{}
-	listDeployedProductsReturns     struct {
-		result1 []api.DeployedProductOutput
-		result2 error
-	}
-	listDeployedProductsReturnsOnCall map[int]struct {
-		result1 []api.DeployedProductOutput
-		result2 error
-	}
-	GetDeployedProductManifestStub        func(guid string) (string, error)
+	GetDeployedProductManifestStub        func(string) (string, error)
 	getDeployedProductManifestMutex       sync.RWMutex
 	getDeployedProductManifestArgsForCall []struct {
-		guid string
+		arg1 string
 	}
 	getDeployedProductManifestReturns struct {
 		result1 string
@@ -32,68 +21,38 @@ type DeployedManifestService struct {
 		result1 string
 		result2 error
 	}
+	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
+	listDeployedProductsMutex       sync.RWMutex
+	listDeployedProductsArgsForCall []struct {
+	}
+	listDeployedProductsReturns struct {
+		result1 []api.DeployedProductOutput
+		result2 error
+	}
+	listDeployedProductsReturnsOnCall map[int]struct {
+		result1 []api.DeployedProductOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *DeployedManifestService) ListDeployedProducts() ([]api.DeployedProductOutput, error) {
-	fake.listDeployedProductsMutex.Lock()
-	ret, specificReturn := fake.listDeployedProductsReturnsOnCall[len(fake.listDeployedProductsArgsForCall)]
-	fake.listDeployedProductsArgsForCall = append(fake.listDeployedProductsArgsForCall, struct{}{})
-	fake.recordInvocation("ListDeployedProducts", []interface{}{})
-	fake.listDeployedProductsMutex.Unlock()
-	if fake.ListDeployedProductsStub != nil {
-		return fake.ListDeployedProductsStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.listDeployedProductsReturns.result1, fake.listDeployedProductsReturns.result2
-}
-
-func (fake *DeployedManifestService) ListDeployedProductsCallCount() int {
-	fake.listDeployedProductsMutex.RLock()
-	defer fake.listDeployedProductsMutex.RUnlock()
-	return len(fake.listDeployedProductsArgsForCall)
-}
-
-func (fake *DeployedManifestService) ListDeployedProductsReturns(result1 []api.DeployedProductOutput, result2 error) {
-	fake.ListDeployedProductsStub = nil
-	fake.listDeployedProductsReturns = struct {
-		result1 []api.DeployedProductOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *DeployedManifestService) ListDeployedProductsReturnsOnCall(i int, result1 []api.DeployedProductOutput, result2 error) {
-	fake.ListDeployedProductsStub = nil
-	if fake.listDeployedProductsReturnsOnCall == nil {
-		fake.listDeployedProductsReturnsOnCall = make(map[int]struct {
-			result1 []api.DeployedProductOutput
-			result2 error
-		})
-	}
-	fake.listDeployedProductsReturnsOnCall[i] = struct {
-		result1 []api.DeployedProductOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *DeployedManifestService) GetDeployedProductManifest(guid string) (string, error) {
+func (fake *DeployedManifestService) GetDeployedProductManifest(arg1 string) (string, error) {
 	fake.getDeployedProductManifestMutex.Lock()
 	ret, specificReturn := fake.getDeployedProductManifestReturnsOnCall[len(fake.getDeployedProductManifestArgsForCall)]
 	fake.getDeployedProductManifestArgsForCall = append(fake.getDeployedProductManifestArgsForCall, struct {
-		guid string
-	}{guid})
-	fake.recordInvocation("GetDeployedProductManifest", []interface{}{guid})
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetDeployedProductManifest", []interface{}{arg1})
 	fake.getDeployedProductManifestMutex.Unlock()
 	if fake.GetDeployedProductManifestStub != nil {
-		return fake.GetDeployedProductManifestStub(guid)
+		return fake.GetDeployedProductManifestStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getDeployedProductManifestReturns.result1, fake.getDeployedProductManifestReturns.result2
+	fakeReturns := fake.getDeployedProductManifestReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *DeployedManifestService) GetDeployedProductManifestCallCount() int {
@@ -102,13 +61,22 @@ func (fake *DeployedManifestService) GetDeployedProductManifestCallCount() int {
 	return len(fake.getDeployedProductManifestArgsForCall)
 }
 
+func (fake *DeployedManifestService) GetDeployedProductManifestCalls(stub func(string) (string, error)) {
+	fake.getDeployedProductManifestMutex.Lock()
+	defer fake.getDeployedProductManifestMutex.Unlock()
+	fake.GetDeployedProductManifestStub = stub
+}
+
 func (fake *DeployedManifestService) GetDeployedProductManifestArgsForCall(i int) string {
 	fake.getDeployedProductManifestMutex.RLock()
 	defer fake.getDeployedProductManifestMutex.RUnlock()
-	return fake.getDeployedProductManifestArgsForCall[i].guid
+	argsForCall := fake.getDeployedProductManifestArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *DeployedManifestService) GetDeployedProductManifestReturns(result1 string, result2 error) {
+	fake.getDeployedProductManifestMutex.Lock()
+	defer fake.getDeployedProductManifestMutex.Unlock()
 	fake.GetDeployedProductManifestStub = nil
 	fake.getDeployedProductManifestReturns = struct {
 		result1 string
@@ -117,6 +85,8 @@ func (fake *DeployedManifestService) GetDeployedProductManifestReturns(result1 s
 }
 
 func (fake *DeployedManifestService) GetDeployedProductManifestReturnsOnCall(i int, result1 string, result2 error) {
+	fake.getDeployedProductManifestMutex.Lock()
+	defer fake.getDeployedProductManifestMutex.Unlock()
 	fake.GetDeployedProductManifestStub = nil
 	if fake.getDeployedProductManifestReturnsOnCall == nil {
 		fake.getDeployedProductManifestReturnsOnCall = make(map[int]struct {
@@ -130,13 +100,68 @@ func (fake *DeployedManifestService) GetDeployedProductManifestReturnsOnCall(i i
 	}{result1, result2}
 }
 
+func (fake *DeployedManifestService) ListDeployedProducts() ([]api.DeployedProductOutput, error) {
+	fake.listDeployedProductsMutex.Lock()
+	ret, specificReturn := fake.listDeployedProductsReturnsOnCall[len(fake.listDeployedProductsArgsForCall)]
+	fake.listDeployedProductsArgsForCall = append(fake.listDeployedProductsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListDeployedProducts", []interface{}{})
+	fake.listDeployedProductsMutex.Unlock()
+	if fake.ListDeployedProductsStub != nil {
+		return fake.ListDeployedProductsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listDeployedProductsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *DeployedManifestService) ListDeployedProductsCallCount() int {
+	fake.listDeployedProductsMutex.RLock()
+	defer fake.listDeployedProductsMutex.RUnlock()
+	return len(fake.listDeployedProductsArgsForCall)
+}
+
+func (fake *DeployedManifestService) ListDeployedProductsCalls(stub func() ([]api.DeployedProductOutput, error)) {
+	fake.listDeployedProductsMutex.Lock()
+	defer fake.listDeployedProductsMutex.Unlock()
+	fake.ListDeployedProductsStub = stub
+}
+
+func (fake *DeployedManifestService) ListDeployedProductsReturns(result1 []api.DeployedProductOutput, result2 error) {
+	fake.listDeployedProductsMutex.Lock()
+	defer fake.listDeployedProductsMutex.Unlock()
+	fake.ListDeployedProductsStub = nil
+	fake.listDeployedProductsReturns = struct {
+		result1 []api.DeployedProductOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *DeployedManifestService) ListDeployedProductsReturnsOnCall(i int, result1 []api.DeployedProductOutput, result2 error) {
+	fake.listDeployedProductsMutex.Lock()
+	defer fake.listDeployedProductsMutex.Unlock()
+	fake.ListDeployedProductsStub = nil
+	if fake.listDeployedProductsReturnsOnCall == nil {
+		fake.listDeployedProductsReturnsOnCall = make(map[int]struct {
+			result1 []api.DeployedProductOutput
+			result2 error
+		})
+	}
+	fake.listDeployedProductsReturnsOnCall[i] = struct {
+		result1 []api.DeployedProductOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *DeployedManifestService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listDeployedProductsMutex.RLock()
-	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.getDeployedProductManifestMutex.RLock()
 	defer fake.getDeployedProductManifestMutex.RUnlock()
+	fake.listDeployedProductsMutex.RLock()
+	defer fake.listDeployedProductsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

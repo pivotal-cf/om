@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type DeleteCertificateAuthorityService struct {
@@ -37,7 +37,8 @@ func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthority(arg1 a
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deleteCertificateAuthorityReturns.result1
+	fakeReturns := fake.deleteCertificateAuthorityReturns
+	return fakeReturns.result1
 }
 
 func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityCallCount() int {
@@ -46,13 +47,22 @@ func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityCallCou
 	return len(fake.deleteCertificateAuthorityArgsForCall)
 }
 
+func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityCalls(stub func(api.DeleteCertificateAuthorityInput) error) {
+	fake.deleteCertificateAuthorityMutex.Lock()
+	defer fake.deleteCertificateAuthorityMutex.Unlock()
+	fake.DeleteCertificateAuthorityStub = stub
+}
+
 func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityArgsForCall(i int) api.DeleteCertificateAuthorityInput {
 	fake.deleteCertificateAuthorityMutex.RLock()
 	defer fake.deleteCertificateAuthorityMutex.RUnlock()
-	return fake.deleteCertificateAuthorityArgsForCall[i].arg1
+	argsForCall := fake.deleteCertificateAuthorityArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityReturns(result1 error) {
+	fake.deleteCertificateAuthorityMutex.Lock()
+	defer fake.deleteCertificateAuthorityMutex.Unlock()
 	fake.DeleteCertificateAuthorityStub = nil
 	fake.deleteCertificateAuthorityReturns = struct {
 		result1 error
@@ -60,6 +70,8 @@ func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityReturns
 }
 
 func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityReturnsOnCall(i int, result1 error) {
+	fake.deleteCertificateAuthorityMutex.Lock()
+	defer fake.deleteCertificateAuthorityMutex.Unlock()
 	fake.DeleteCertificateAuthorityStub = nil
 	if fake.deleteCertificateAuthorityReturnsOnCall == nil {
 		fake.deleteCertificateAuthorityReturnsOnCall = make(map[int]struct {

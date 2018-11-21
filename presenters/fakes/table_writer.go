@@ -2,28 +2,24 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 )
 
 type TableWriter struct {
-	SetHeaderStub        func([]string)
-	setHeaderMutex       sync.RWMutex
-	setHeaderArgsForCall []struct {
-		arg1 []string
-	}
 	AppendStub        func([]string)
 	appendMutex       sync.RWMutex
 	appendArgsForCall []struct {
 		arg1 []string
+	}
+	RenderStub        func()
+	renderMutex       sync.RWMutex
+	renderArgsForCall []struct {
 	}
 	SetAlignmentStub        func(int)
 	setAlignmentMutex       sync.RWMutex
 	setAlignmentArgsForCall []struct {
 		arg1 int
 	}
-	RenderStub                      func()
-	renderMutex                     sync.RWMutex
-	renderArgsForCall               []struct{}
 	SetAutoFormatHeadersStub        func(bool)
 	setAutoFormatHeadersMutex       sync.RWMutex
 	setAutoFormatHeadersArgsForCall []struct {
@@ -34,37 +30,13 @@ type TableWriter struct {
 	setAutoWrapTextArgsForCall []struct {
 		arg1 bool
 	}
+	SetHeaderStub        func([]string)
+	setHeaderMutex       sync.RWMutex
+	setHeaderArgsForCall []struct {
+		arg1 []string
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *TableWriter) SetHeader(arg1 []string) {
-	var arg1Copy []string
-	if arg1 != nil {
-		arg1Copy = make([]string, len(arg1))
-		copy(arg1Copy, arg1)
-	}
-	fake.setHeaderMutex.Lock()
-	fake.setHeaderArgsForCall = append(fake.setHeaderArgsForCall, struct {
-		arg1 []string
-	}{arg1Copy})
-	fake.recordInvocation("SetHeader", []interface{}{arg1Copy})
-	fake.setHeaderMutex.Unlock()
-	if fake.SetHeaderStub != nil {
-		fake.SetHeaderStub(arg1)
-	}
-}
-
-func (fake *TableWriter) SetHeaderCallCount() int {
-	fake.setHeaderMutex.RLock()
-	defer fake.setHeaderMutex.RUnlock()
-	return len(fake.setHeaderArgsForCall)
-}
-
-func (fake *TableWriter) SetHeaderArgsForCall(i int) []string {
-	fake.setHeaderMutex.RLock()
-	defer fake.setHeaderMutex.RUnlock()
-	return fake.setHeaderArgsForCall[i].arg1
 }
 
 func (fake *TableWriter) Append(arg1 []string) {
@@ -90,10 +62,40 @@ func (fake *TableWriter) AppendCallCount() int {
 	return len(fake.appendArgsForCall)
 }
 
+func (fake *TableWriter) AppendCalls(stub func([]string)) {
+	fake.appendMutex.Lock()
+	defer fake.appendMutex.Unlock()
+	fake.AppendStub = stub
+}
+
 func (fake *TableWriter) AppendArgsForCall(i int) []string {
 	fake.appendMutex.RLock()
 	defer fake.appendMutex.RUnlock()
-	return fake.appendArgsForCall[i].arg1
+	argsForCall := fake.appendArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *TableWriter) Render() {
+	fake.renderMutex.Lock()
+	fake.renderArgsForCall = append(fake.renderArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Render", []interface{}{})
+	fake.renderMutex.Unlock()
+	if fake.RenderStub != nil {
+		fake.RenderStub()
+	}
+}
+
+func (fake *TableWriter) RenderCallCount() int {
+	fake.renderMutex.RLock()
+	defer fake.renderMutex.RUnlock()
+	return len(fake.renderArgsForCall)
+}
+
+func (fake *TableWriter) RenderCalls(stub func()) {
+	fake.renderMutex.Lock()
+	defer fake.renderMutex.Unlock()
+	fake.RenderStub = stub
 }
 
 func (fake *TableWriter) SetAlignment(arg1 int) {
@@ -114,26 +116,17 @@ func (fake *TableWriter) SetAlignmentCallCount() int {
 	return len(fake.setAlignmentArgsForCall)
 }
 
+func (fake *TableWriter) SetAlignmentCalls(stub func(int)) {
+	fake.setAlignmentMutex.Lock()
+	defer fake.setAlignmentMutex.Unlock()
+	fake.SetAlignmentStub = stub
+}
+
 func (fake *TableWriter) SetAlignmentArgsForCall(i int) int {
 	fake.setAlignmentMutex.RLock()
 	defer fake.setAlignmentMutex.RUnlock()
-	return fake.setAlignmentArgsForCall[i].arg1
-}
-
-func (fake *TableWriter) Render() {
-	fake.renderMutex.Lock()
-	fake.renderArgsForCall = append(fake.renderArgsForCall, struct{}{})
-	fake.recordInvocation("Render", []interface{}{})
-	fake.renderMutex.Unlock()
-	if fake.RenderStub != nil {
-		fake.RenderStub()
-	}
-}
-
-func (fake *TableWriter) RenderCallCount() int {
-	fake.renderMutex.RLock()
-	defer fake.renderMutex.RUnlock()
-	return len(fake.renderArgsForCall)
+	argsForCall := fake.setAlignmentArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *TableWriter) SetAutoFormatHeaders(arg1 bool) {
@@ -154,10 +147,17 @@ func (fake *TableWriter) SetAutoFormatHeadersCallCount() int {
 	return len(fake.setAutoFormatHeadersArgsForCall)
 }
 
+func (fake *TableWriter) SetAutoFormatHeadersCalls(stub func(bool)) {
+	fake.setAutoFormatHeadersMutex.Lock()
+	defer fake.setAutoFormatHeadersMutex.Unlock()
+	fake.SetAutoFormatHeadersStub = stub
+}
+
 func (fake *TableWriter) SetAutoFormatHeadersArgsForCall(i int) bool {
 	fake.setAutoFormatHeadersMutex.RLock()
 	defer fake.setAutoFormatHeadersMutex.RUnlock()
-	return fake.setAutoFormatHeadersArgsForCall[i].arg1
+	argsForCall := fake.setAutoFormatHeadersArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *TableWriter) SetAutoWrapText(arg1 bool) {
@@ -178,27 +178,70 @@ func (fake *TableWriter) SetAutoWrapTextCallCount() int {
 	return len(fake.setAutoWrapTextArgsForCall)
 }
 
+func (fake *TableWriter) SetAutoWrapTextCalls(stub func(bool)) {
+	fake.setAutoWrapTextMutex.Lock()
+	defer fake.setAutoWrapTextMutex.Unlock()
+	fake.SetAutoWrapTextStub = stub
+}
+
 func (fake *TableWriter) SetAutoWrapTextArgsForCall(i int) bool {
 	fake.setAutoWrapTextMutex.RLock()
 	defer fake.setAutoWrapTextMutex.RUnlock()
-	return fake.setAutoWrapTextArgsForCall[i].arg1
+	argsForCall := fake.setAutoWrapTextArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *TableWriter) SetHeader(arg1 []string) {
+	var arg1Copy []string
+	if arg1 != nil {
+		arg1Copy = make([]string, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.setHeaderMutex.Lock()
+	fake.setHeaderArgsForCall = append(fake.setHeaderArgsForCall, struct {
+		arg1 []string
+	}{arg1Copy})
+	fake.recordInvocation("SetHeader", []interface{}{arg1Copy})
+	fake.setHeaderMutex.Unlock()
+	if fake.SetHeaderStub != nil {
+		fake.SetHeaderStub(arg1)
+	}
+}
+
+func (fake *TableWriter) SetHeaderCallCount() int {
+	fake.setHeaderMutex.RLock()
+	defer fake.setHeaderMutex.RUnlock()
+	return len(fake.setHeaderArgsForCall)
+}
+
+func (fake *TableWriter) SetHeaderCalls(stub func([]string)) {
+	fake.setHeaderMutex.Lock()
+	defer fake.setHeaderMutex.Unlock()
+	fake.SetHeaderStub = stub
+}
+
+func (fake *TableWriter) SetHeaderArgsForCall(i int) []string {
+	fake.setHeaderMutex.RLock()
+	defer fake.setHeaderMutex.RUnlock()
+	argsForCall := fake.setHeaderArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *TableWriter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.setHeaderMutex.RLock()
-	defer fake.setHeaderMutex.RUnlock()
 	fake.appendMutex.RLock()
 	defer fake.appendMutex.RUnlock()
-	fake.setAlignmentMutex.RLock()
-	defer fake.setAlignmentMutex.RUnlock()
 	fake.renderMutex.RLock()
 	defer fake.renderMutex.RUnlock()
+	fake.setAlignmentMutex.RLock()
+	defer fake.setAlignmentMutex.RUnlock()
 	fake.setAutoFormatHeadersMutex.RLock()
 	defer fake.setAutoFormatHeadersMutex.RUnlock()
 	fake.setAutoWrapTextMutex.RLock()
 	defer fake.setAutoWrapTextMutex.RUnlock()
+	fake.setHeaderMutex.RLock()
+	defer fake.setHeaderMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

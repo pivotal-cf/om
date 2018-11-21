@@ -2,16 +2,17 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type AvailableProductsService struct {
 	ListAvailableProductsStub        func() (api.AvailableProductsOutput, error)
 	listAvailableProductsMutex       sync.RWMutex
-	listAvailableProductsArgsForCall []struct{}
-	listAvailableProductsReturns     struct {
+	listAvailableProductsArgsForCall []struct {
+	}
+	listAvailableProductsReturns struct {
 		result1 api.AvailableProductsOutput
 		result2 error
 	}
@@ -26,7 +27,8 @@ type AvailableProductsService struct {
 func (fake *AvailableProductsService) ListAvailableProducts() (api.AvailableProductsOutput, error) {
 	fake.listAvailableProductsMutex.Lock()
 	ret, specificReturn := fake.listAvailableProductsReturnsOnCall[len(fake.listAvailableProductsArgsForCall)]
-	fake.listAvailableProductsArgsForCall = append(fake.listAvailableProductsArgsForCall, struct{}{})
+	fake.listAvailableProductsArgsForCall = append(fake.listAvailableProductsArgsForCall, struct {
+	}{})
 	fake.recordInvocation("ListAvailableProducts", []interface{}{})
 	fake.listAvailableProductsMutex.Unlock()
 	if fake.ListAvailableProductsStub != nil {
@@ -35,7 +37,8 @@ func (fake *AvailableProductsService) ListAvailableProducts() (api.AvailableProd
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listAvailableProductsReturns.result1, fake.listAvailableProductsReturns.result2
+	fakeReturns := fake.listAvailableProductsReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *AvailableProductsService) ListAvailableProductsCallCount() int {
@@ -44,7 +47,15 @@ func (fake *AvailableProductsService) ListAvailableProductsCallCount() int {
 	return len(fake.listAvailableProductsArgsForCall)
 }
 
+func (fake *AvailableProductsService) ListAvailableProductsCalls(stub func() (api.AvailableProductsOutput, error)) {
+	fake.listAvailableProductsMutex.Lock()
+	defer fake.listAvailableProductsMutex.Unlock()
+	fake.ListAvailableProductsStub = stub
+}
+
 func (fake *AvailableProductsService) ListAvailableProductsReturns(result1 api.AvailableProductsOutput, result2 error) {
+	fake.listAvailableProductsMutex.Lock()
+	defer fake.listAvailableProductsMutex.Unlock()
 	fake.ListAvailableProductsStub = nil
 	fake.listAvailableProductsReturns = struct {
 		result1 api.AvailableProductsOutput
@@ -53,6 +64,8 @@ func (fake *AvailableProductsService) ListAvailableProductsReturns(result1 api.A
 }
 
 func (fake *AvailableProductsService) ListAvailableProductsReturnsOnCall(i int, result1 api.AvailableProductsOutput, result2 error) {
+	fake.listAvailableProductsMutex.Lock()
+	defer fake.listAvailableProductsMutex.Unlock()
 	fake.ListAvailableProductsStub = nil
 	if fake.listAvailableProductsReturnsOnCall == nil {
 		fake.listAvailableProductsReturnsOnCall = make(map[int]struct {

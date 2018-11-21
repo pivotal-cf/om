@@ -2,27 +2,16 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type AssignStemcellService struct {
-	ListStemcellsStub        func() (api.ProductStemcells, error)
-	listStemcellsMutex       sync.RWMutex
-	listStemcellsArgsForCall []struct{}
-	listStemcellsReturns     struct {
-		result1 api.ProductStemcells
-		result2 error
-	}
-	listStemcellsReturnsOnCall map[int]struct {
-		result1 api.ProductStemcells
-		result2 error
-	}
-	AssignStemcellStub        func(input api.ProductStemcells) error
+	AssignStemcellStub        func(api.ProductStemcells) error
 	assignStemcellMutex       sync.RWMutex
 	assignStemcellArgsForCall []struct {
-		input api.ProductStemcells
+		arg1 api.ProductStemcells
 	}
 	assignStemcellReturns struct {
 		result1 error
@@ -30,14 +19,87 @@ type AssignStemcellService struct {
 	assignStemcellReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ListStemcellsStub        func() (api.ProductStemcells, error)
+	listStemcellsMutex       sync.RWMutex
+	listStemcellsArgsForCall []struct {
+	}
+	listStemcellsReturns struct {
+		result1 api.ProductStemcells
+		result2 error
+	}
+	listStemcellsReturnsOnCall map[int]struct {
+		result1 api.ProductStemcells
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *AssignStemcellService) AssignStemcell(arg1 api.ProductStemcells) error {
+	fake.assignStemcellMutex.Lock()
+	ret, specificReturn := fake.assignStemcellReturnsOnCall[len(fake.assignStemcellArgsForCall)]
+	fake.assignStemcellArgsForCall = append(fake.assignStemcellArgsForCall, struct {
+		arg1 api.ProductStemcells
+	}{arg1})
+	fake.recordInvocation("AssignStemcell", []interface{}{arg1})
+	fake.assignStemcellMutex.Unlock()
+	if fake.AssignStemcellStub != nil {
+		return fake.AssignStemcellStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.assignStemcellReturns
+	return fakeReturns.result1
+}
+
+func (fake *AssignStemcellService) AssignStemcellCallCount() int {
+	fake.assignStemcellMutex.RLock()
+	defer fake.assignStemcellMutex.RUnlock()
+	return len(fake.assignStemcellArgsForCall)
+}
+
+func (fake *AssignStemcellService) AssignStemcellCalls(stub func(api.ProductStemcells) error) {
+	fake.assignStemcellMutex.Lock()
+	defer fake.assignStemcellMutex.Unlock()
+	fake.AssignStemcellStub = stub
+}
+
+func (fake *AssignStemcellService) AssignStemcellArgsForCall(i int) api.ProductStemcells {
+	fake.assignStemcellMutex.RLock()
+	defer fake.assignStemcellMutex.RUnlock()
+	argsForCall := fake.assignStemcellArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *AssignStemcellService) AssignStemcellReturns(result1 error) {
+	fake.assignStemcellMutex.Lock()
+	defer fake.assignStemcellMutex.Unlock()
+	fake.AssignStemcellStub = nil
+	fake.assignStemcellReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *AssignStemcellService) AssignStemcellReturnsOnCall(i int, result1 error) {
+	fake.assignStemcellMutex.Lock()
+	defer fake.assignStemcellMutex.Unlock()
+	fake.AssignStemcellStub = nil
+	if fake.assignStemcellReturnsOnCall == nil {
+		fake.assignStemcellReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.assignStemcellReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *AssignStemcellService) ListStemcells() (api.ProductStemcells, error) {
 	fake.listStemcellsMutex.Lock()
 	ret, specificReturn := fake.listStemcellsReturnsOnCall[len(fake.listStemcellsArgsForCall)]
-	fake.listStemcellsArgsForCall = append(fake.listStemcellsArgsForCall, struct{}{})
+	fake.listStemcellsArgsForCall = append(fake.listStemcellsArgsForCall, struct {
+	}{})
 	fake.recordInvocation("ListStemcells", []interface{}{})
 	fake.listStemcellsMutex.Unlock()
 	if fake.ListStemcellsStub != nil {
@@ -46,7 +108,8 @@ func (fake *AssignStemcellService) ListStemcells() (api.ProductStemcells, error)
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.listStemcellsReturns.result1, fake.listStemcellsReturns.result2
+	fakeReturns := fake.listStemcellsReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *AssignStemcellService) ListStemcellsCallCount() int {
@@ -55,7 +118,15 @@ func (fake *AssignStemcellService) ListStemcellsCallCount() int {
 	return len(fake.listStemcellsArgsForCall)
 }
 
+func (fake *AssignStemcellService) ListStemcellsCalls(stub func() (api.ProductStemcells, error)) {
+	fake.listStemcellsMutex.Lock()
+	defer fake.listStemcellsMutex.Unlock()
+	fake.ListStemcellsStub = stub
+}
+
 func (fake *AssignStemcellService) ListStemcellsReturns(result1 api.ProductStemcells, result2 error) {
+	fake.listStemcellsMutex.Lock()
+	defer fake.listStemcellsMutex.Unlock()
 	fake.ListStemcellsStub = nil
 	fake.listStemcellsReturns = struct {
 		result1 api.ProductStemcells
@@ -64,6 +135,8 @@ func (fake *AssignStemcellService) ListStemcellsReturns(result1 api.ProductStemc
 }
 
 func (fake *AssignStemcellService) ListStemcellsReturnsOnCall(i int, result1 api.ProductStemcells, result2 error) {
+	fake.listStemcellsMutex.Lock()
+	defer fake.listStemcellsMutex.Unlock()
 	fake.ListStemcellsStub = nil
 	if fake.listStemcellsReturnsOnCall == nil {
 		fake.listStemcellsReturnsOnCall = make(map[int]struct {
@@ -77,61 +150,13 @@ func (fake *AssignStemcellService) ListStemcellsReturnsOnCall(i int, result1 api
 	}{result1, result2}
 }
 
-func (fake *AssignStemcellService) AssignStemcell(input api.ProductStemcells) error {
-	fake.assignStemcellMutex.Lock()
-	ret, specificReturn := fake.assignStemcellReturnsOnCall[len(fake.assignStemcellArgsForCall)]
-	fake.assignStemcellArgsForCall = append(fake.assignStemcellArgsForCall, struct {
-		input api.ProductStemcells
-	}{input})
-	fake.recordInvocation("AssignStemcell", []interface{}{input})
-	fake.assignStemcellMutex.Unlock()
-	if fake.AssignStemcellStub != nil {
-		return fake.AssignStemcellStub(input)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.assignStemcellReturns.result1
-}
-
-func (fake *AssignStemcellService) AssignStemcellCallCount() int {
-	fake.assignStemcellMutex.RLock()
-	defer fake.assignStemcellMutex.RUnlock()
-	return len(fake.assignStemcellArgsForCall)
-}
-
-func (fake *AssignStemcellService) AssignStemcellArgsForCall(i int) api.ProductStemcells {
-	fake.assignStemcellMutex.RLock()
-	defer fake.assignStemcellMutex.RUnlock()
-	return fake.assignStemcellArgsForCall[i].input
-}
-
-func (fake *AssignStemcellService) AssignStemcellReturns(result1 error) {
-	fake.AssignStemcellStub = nil
-	fake.assignStemcellReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *AssignStemcellService) AssignStemcellReturnsOnCall(i int, result1 error) {
-	fake.AssignStemcellStub = nil
-	if fake.assignStemcellReturnsOnCall == nil {
-		fake.assignStemcellReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.assignStemcellReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *AssignStemcellService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listStemcellsMutex.RLock()
-	defer fake.listStemcellsMutex.RUnlock()
 	fake.assignStemcellMutex.RLock()
 	defer fake.assignStemcellMutex.RUnlock()
+	fake.listStemcellsMutex.RLock()
+	defer fake.listStemcellsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

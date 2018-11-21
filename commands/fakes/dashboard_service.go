@@ -2,16 +2,17 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/ui"
+	ui "github.com/pivotal-cf/om/ui"
 )
 
 type DashboardService struct {
 	GetInstallFormStub        func() (ui.Form, error)
 	getInstallFormMutex       sync.RWMutex
-	getInstallFormArgsForCall []struct{}
-	getInstallFormReturns     struct {
+	getInstallFormArgsForCall []struct {
+	}
+	getInstallFormReturns struct {
 		result1 ui.Form
 		result2 error
 	}
@@ -21,8 +22,9 @@ type DashboardService struct {
 	}
 	GetRevertFormStub        func() (ui.Form, error)
 	getRevertFormMutex       sync.RWMutex
-	getRevertFormArgsForCall []struct{}
-	getRevertFormReturns     struct {
+	getRevertFormArgsForCall []struct {
+	}
+	getRevertFormReturns struct {
 		result1 ui.Form
 		result2 error
 	}
@@ -48,7 +50,8 @@ type DashboardService struct {
 func (fake *DashboardService) GetInstallForm() (ui.Form, error) {
 	fake.getInstallFormMutex.Lock()
 	ret, specificReturn := fake.getInstallFormReturnsOnCall[len(fake.getInstallFormArgsForCall)]
-	fake.getInstallFormArgsForCall = append(fake.getInstallFormArgsForCall, struct{}{})
+	fake.getInstallFormArgsForCall = append(fake.getInstallFormArgsForCall, struct {
+	}{})
 	fake.recordInvocation("GetInstallForm", []interface{}{})
 	fake.getInstallFormMutex.Unlock()
 	if fake.GetInstallFormStub != nil {
@@ -57,7 +60,8 @@ func (fake *DashboardService) GetInstallForm() (ui.Form, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getInstallFormReturns.result1, fake.getInstallFormReturns.result2
+	fakeReturns := fake.getInstallFormReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *DashboardService) GetInstallFormCallCount() int {
@@ -66,7 +70,15 @@ func (fake *DashboardService) GetInstallFormCallCount() int {
 	return len(fake.getInstallFormArgsForCall)
 }
 
+func (fake *DashboardService) GetInstallFormCalls(stub func() (ui.Form, error)) {
+	fake.getInstallFormMutex.Lock()
+	defer fake.getInstallFormMutex.Unlock()
+	fake.GetInstallFormStub = stub
+}
+
 func (fake *DashboardService) GetInstallFormReturns(result1 ui.Form, result2 error) {
+	fake.getInstallFormMutex.Lock()
+	defer fake.getInstallFormMutex.Unlock()
 	fake.GetInstallFormStub = nil
 	fake.getInstallFormReturns = struct {
 		result1 ui.Form
@@ -75,6 +87,8 @@ func (fake *DashboardService) GetInstallFormReturns(result1 ui.Form, result2 err
 }
 
 func (fake *DashboardService) GetInstallFormReturnsOnCall(i int, result1 ui.Form, result2 error) {
+	fake.getInstallFormMutex.Lock()
+	defer fake.getInstallFormMutex.Unlock()
 	fake.GetInstallFormStub = nil
 	if fake.getInstallFormReturnsOnCall == nil {
 		fake.getInstallFormReturnsOnCall = make(map[int]struct {
@@ -91,7 +105,8 @@ func (fake *DashboardService) GetInstallFormReturnsOnCall(i int, result1 ui.Form
 func (fake *DashboardService) GetRevertForm() (ui.Form, error) {
 	fake.getRevertFormMutex.Lock()
 	ret, specificReturn := fake.getRevertFormReturnsOnCall[len(fake.getRevertFormArgsForCall)]
-	fake.getRevertFormArgsForCall = append(fake.getRevertFormArgsForCall, struct{}{})
+	fake.getRevertFormArgsForCall = append(fake.getRevertFormArgsForCall, struct {
+	}{})
 	fake.recordInvocation("GetRevertForm", []interface{}{})
 	fake.getRevertFormMutex.Unlock()
 	if fake.GetRevertFormStub != nil {
@@ -100,7 +115,8 @@ func (fake *DashboardService) GetRevertForm() (ui.Form, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getRevertFormReturns.result1, fake.getRevertFormReturns.result2
+	fakeReturns := fake.getRevertFormReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *DashboardService) GetRevertFormCallCount() int {
@@ -109,7 +125,15 @@ func (fake *DashboardService) GetRevertFormCallCount() int {
 	return len(fake.getRevertFormArgsForCall)
 }
 
+func (fake *DashboardService) GetRevertFormCalls(stub func() (ui.Form, error)) {
+	fake.getRevertFormMutex.Lock()
+	defer fake.getRevertFormMutex.Unlock()
+	fake.GetRevertFormStub = stub
+}
+
 func (fake *DashboardService) GetRevertFormReturns(result1 ui.Form, result2 error) {
+	fake.getRevertFormMutex.Lock()
+	defer fake.getRevertFormMutex.Unlock()
 	fake.GetRevertFormStub = nil
 	fake.getRevertFormReturns = struct {
 		result1 ui.Form
@@ -118,6 +142,8 @@ func (fake *DashboardService) GetRevertFormReturns(result1 ui.Form, result2 erro
 }
 
 func (fake *DashboardService) GetRevertFormReturnsOnCall(i int, result1 ui.Form, result2 error) {
+	fake.getRevertFormMutex.Lock()
+	defer fake.getRevertFormMutex.Unlock()
 	fake.GetRevertFormStub = nil
 	if fake.getRevertFormReturnsOnCall == nil {
 		fake.getRevertFormReturnsOnCall = make(map[int]struct {
@@ -145,7 +171,8 @@ func (fake *DashboardService) PostInstallForm(arg1 ui.PostFormInput) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.postInstallFormReturns.result1
+	fakeReturns := fake.postInstallFormReturns
+	return fakeReturns.result1
 }
 
 func (fake *DashboardService) PostInstallFormCallCount() int {
@@ -154,13 +181,22 @@ func (fake *DashboardService) PostInstallFormCallCount() int {
 	return len(fake.postInstallFormArgsForCall)
 }
 
+func (fake *DashboardService) PostInstallFormCalls(stub func(ui.PostFormInput) error) {
+	fake.postInstallFormMutex.Lock()
+	defer fake.postInstallFormMutex.Unlock()
+	fake.PostInstallFormStub = stub
+}
+
 func (fake *DashboardService) PostInstallFormArgsForCall(i int) ui.PostFormInput {
 	fake.postInstallFormMutex.RLock()
 	defer fake.postInstallFormMutex.RUnlock()
-	return fake.postInstallFormArgsForCall[i].arg1
+	argsForCall := fake.postInstallFormArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *DashboardService) PostInstallFormReturns(result1 error) {
+	fake.postInstallFormMutex.Lock()
+	defer fake.postInstallFormMutex.Unlock()
 	fake.PostInstallFormStub = nil
 	fake.postInstallFormReturns = struct {
 		result1 error
@@ -168,6 +204,8 @@ func (fake *DashboardService) PostInstallFormReturns(result1 error) {
 }
 
 func (fake *DashboardService) PostInstallFormReturnsOnCall(i int, result1 error) {
+	fake.postInstallFormMutex.Lock()
+	defer fake.postInstallFormMutex.Unlock()
 	fake.PostInstallFormStub = nil
 	if fake.postInstallFormReturnsOnCall == nil {
 		fake.postInstallFormReturnsOnCall = make(map[int]struct {

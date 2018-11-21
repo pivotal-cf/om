@@ -2,39 +2,39 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 )
 
 type Logger struct {
-	PrintStub        func(v ...interface{})
+	PrintStub        func(...interface{})
 	printMutex       sync.RWMutex
 	printArgsForCall []struct {
-		v []interface{}
+		arg1 []interface{}
 	}
-	PrintfStub        func(format string, v ...interface{})
+	PrintfStub        func(string, ...interface{})
 	printfMutex       sync.RWMutex
 	printfArgsForCall []struct {
-		format string
-		v      []interface{}
+		arg1 string
+		arg2 []interface{}
 	}
-	PrintlnStub        func(v ...interface{})
+	PrintlnStub        func(...interface{})
 	printlnMutex       sync.RWMutex
 	printlnArgsForCall []struct {
-		v []interface{}
+		arg1 []interface{}
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Logger) Print(v ...interface{}) {
+func (fake *Logger) Print(arg1 ...interface{}) {
 	fake.printMutex.Lock()
 	fake.printArgsForCall = append(fake.printArgsForCall, struct {
-		v []interface{}
-	}{v})
-	fake.recordInvocation("Print", []interface{}{v})
+		arg1 []interface{}
+	}{arg1})
+	fake.recordInvocation("Print", []interface{}{arg1})
 	fake.printMutex.Unlock()
 	if fake.PrintStub != nil {
-		fake.PrintStub(v...)
+		fake.PrintStub(arg1...)
 	}
 }
 
@@ -44,22 +44,29 @@ func (fake *Logger) PrintCallCount() int {
 	return len(fake.printArgsForCall)
 }
 
+func (fake *Logger) PrintCalls(stub func(...interface{})) {
+	fake.printMutex.Lock()
+	defer fake.printMutex.Unlock()
+	fake.PrintStub = stub
+}
+
 func (fake *Logger) PrintArgsForCall(i int) []interface{} {
 	fake.printMutex.RLock()
 	defer fake.printMutex.RUnlock()
-	return fake.printArgsForCall[i].v
+	argsForCall := fake.printArgsForCall[i]
+	return argsForCall.arg1
 }
 
-func (fake *Logger) Printf(format string, v ...interface{}) {
+func (fake *Logger) Printf(arg1 string, arg2 ...interface{}) {
 	fake.printfMutex.Lock()
 	fake.printfArgsForCall = append(fake.printfArgsForCall, struct {
-		format string
-		v      []interface{}
-	}{format, v})
-	fake.recordInvocation("Printf", []interface{}{format, v})
+		arg1 string
+		arg2 []interface{}
+	}{arg1, arg2})
+	fake.recordInvocation("Printf", []interface{}{arg1, arg2})
 	fake.printfMutex.Unlock()
 	if fake.PrintfStub != nil {
-		fake.PrintfStub(format, v...)
+		fake.PrintfStub(arg1, arg2...)
 	}
 }
 
@@ -69,21 +76,28 @@ func (fake *Logger) PrintfCallCount() int {
 	return len(fake.printfArgsForCall)
 }
 
+func (fake *Logger) PrintfCalls(stub func(string, ...interface{})) {
+	fake.printfMutex.Lock()
+	defer fake.printfMutex.Unlock()
+	fake.PrintfStub = stub
+}
+
 func (fake *Logger) PrintfArgsForCall(i int) (string, []interface{}) {
 	fake.printfMutex.RLock()
 	defer fake.printfMutex.RUnlock()
-	return fake.printfArgsForCall[i].format, fake.printfArgsForCall[i].v
+	argsForCall := fake.printfArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *Logger) Println(v ...interface{}) {
+func (fake *Logger) Println(arg1 ...interface{}) {
 	fake.printlnMutex.Lock()
 	fake.printlnArgsForCall = append(fake.printlnArgsForCall, struct {
-		v []interface{}
-	}{v})
-	fake.recordInvocation("Println", []interface{}{v})
+		arg1 []interface{}
+	}{arg1})
+	fake.recordInvocation("Println", []interface{}{arg1})
 	fake.printlnMutex.Unlock()
 	if fake.PrintlnStub != nil {
-		fake.PrintlnStub(v...)
+		fake.PrintlnStub(arg1...)
 	}
 }
 
@@ -93,10 +107,17 @@ func (fake *Logger) PrintlnCallCount() int {
 	return len(fake.printlnArgsForCall)
 }
 
+func (fake *Logger) PrintlnCalls(stub func(...interface{})) {
+	fake.printlnMutex.Lock()
+	defer fake.printlnMutex.Unlock()
+	fake.PrintlnStub = stub
+}
+
 func (fake *Logger) PrintlnArgsForCall(i int) []interface{} {
 	fake.printlnMutex.RLock()
 	defer fake.printlnMutex.RUnlock()
-	return fake.printlnArgsForCall[i].v
+	argsForCall := fake.printlnArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Logger) Invocations() map[string][][]interface{} {

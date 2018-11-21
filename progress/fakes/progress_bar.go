@@ -2,17 +2,15 @@
 package fakes
 
 import (
-	"io"
-	"sync"
+	io "io"
+	sync "sync"
 )
 
 type ProgressBar struct {
-	StartStub                 func()
-	startMutex                sync.RWMutex
-	startArgsForCall          []struct{}
-	FinishStub                func()
-	finishMutex               sync.RWMutex
-	finishArgsForCall         []struct{}
+	FinishStub        func()
+	finishMutex       sync.RWMutex
+	finishArgsForCall []struct {
+	}
 	NewProxyReaderStub        func(io.Reader) io.ReadCloser
 	newProxyReaderMutex       sync.RWMutex
 	newProxyReaderArgsForCall []struct {
@@ -24,29 +22,18 @@ type ProgressBar struct {
 	newProxyReaderReturnsOnCall map[int]struct {
 		result1 io.ReadCloser
 	}
+	StartStub        func()
+	startMutex       sync.RWMutex
+	startArgsForCall []struct {
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProgressBar) Start() {
-	fake.startMutex.Lock()
-	fake.startArgsForCall = append(fake.startArgsForCall, struct{}{})
-	fake.recordInvocation("Start", []interface{}{})
-	fake.startMutex.Unlock()
-	if fake.StartStub != nil {
-		fake.StartStub()
-	}
-}
-
-func (fake *ProgressBar) StartCallCount() int {
-	fake.startMutex.RLock()
-	defer fake.startMutex.RUnlock()
-	return len(fake.startArgsForCall)
-}
-
 func (fake *ProgressBar) Finish() {
 	fake.finishMutex.Lock()
-	fake.finishArgsForCall = append(fake.finishArgsForCall, struct{}{})
+	fake.finishArgsForCall = append(fake.finishArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Finish", []interface{}{})
 	fake.finishMutex.Unlock()
 	if fake.FinishStub != nil {
@@ -58,6 +45,12 @@ func (fake *ProgressBar) FinishCallCount() int {
 	fake.finishMutex.RLock()
 	defer fake.finishMutex.RUnlock()
 	return len(fake.finishArgsForCall)
+}
+
+func (fake *ProgressBar) FinishCalls(stub func()) {
+	fake.finishMutex.Lock()
+	defer fake.finishMutex.Unlock()
+	fake.FinishStub = stub
 }
 
 func (fake *ProgressBar) NewProxyReader(arg1 io.Reader) io.ReadCloser {
@@ -74,7 +67,8 @@ func (fake *ProgressBar) NewProxyReader(arg1 io.Reader) io.ReadCloser {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.newProxyReaderReturns.result1
+	fakeReturns := fake.newProxyReaderReturns
+	return fakeReturns.result1
 }
 
 func (fake *ProgressBar) NewProxyReaderCallCount() int {
@@ -83,13 +77,22 @@ func (fake *ProgressBar) NewProxyReaderCallCount() int {
 	return len(fake.newProxyReaderArgsForCall)
 }
 
+func (fake *ProgressBar) NewProxyReaderCalls(stub func(io.Reader) io.ReadCloser) {
+	fake.newProxyReaderMutex.Lock()
+	defer fake.newProxyReaderMutex.Unlock()
+	fake.NewProxyReaderStub = stub
+}
+
 func (fake *ProgressBar) NewProxyReaderArgsForCall(i int) io.Reader {
 	fake.newProxyReaderMutex.RLock()
 	defer fake.newProxyReaderMutex.RUnlock()
-	return fake.newProxyReaderArgsForCall[i].arg1
+	argsForCall := fake.newProxyReaderArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *ProgressBar) NewProxyReaderReturns(result1 io.ReadCloser) {
+	fake.newProxyReaderMutex.Lock()
+	defer fake.newProxyReaderMutex.Unlock()
 	fake.NewProxyReaderStub = nil
 	fake.newProxyReaderReturns = struct {
 		result1 io.ReadCloser
@@ -97,6 +100,8 @@ func (fake *ProgressBar) NewProxyReaderReturns(result1 io.ReadCloser) {
 }
 
 func (fake *ProgressBar) NewProxyReaderReturnsOnCall(i int, result1 io.ReadCloser) {
+	fake.newProxyReaderMutex.Lock()
+	defer fake.newProxyReaderMutex.Unlock()
 	fake.NewProxyReaderStub = nil
 	if fake.newProxyReaderReturnsOnCall == nil {
 		fake.newProxyReaderReturnsOnCall = make(map[int]struct {
@@ -108,15 +113,38 @@ func (fake *ProgressBar) NewProxyReaderReturnsOnCall(i int, result1 io.ReadClose
 	}{result1}
 }
 
+func (fake *ProgressBar) Start() {
+	fake.startMutex.Lock()
+	fake.startArgsForCall = append(fake.startArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Start", []interface{}{})
+	fake.startMutex.Unlock()
+	if fake.StartStub != nil {
+		fake.StartStub()
+	}
+}
+
+func (fake *ProgressBar) StartCallCount() int {
+	fake.startMutex.RLock()
+	defer fake.startMutex.RUnlock()
+	return len(fake.startArgsForCall)
+}
+
+func (fake *ProgressBar) StartCalls(stub func()) {
+	fake.startMutex.Lock()
+	defer fake.startMutex.Unlock()
+	fake.StartStub = stub
+}
+
 func (fake *ProgressBar) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.startMutex.RLock()
-	defer fake.startMutex.RUnlock()
 	fake.finishMutex.RLock()
 	defer fake.finishMutex.RUnlock()
 	fake.newProxyReaderMutex.RLock()
 	defer fake.newProxyReaderMutex.RUnlock()
+	fake.startMutex.RLock()
+	defer fake.startMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

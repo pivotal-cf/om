@@ -2,12 +2,25 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type ImportInstallationService struct {
+	EnsureAvailabilityStub        func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
+	ensureAvailabilityMutex       sync.RWMutex
+	ensureAvailabilityArgsForCall []struct {
+		arg1 api.EnsureAvailabilityInput
+	}
+	ensureAvailabilityReturns struct {
+		result1 api.EnsureAvailabilityOutput
+		result2 error
+	}
+	ensureAvailabilityReturnsOnCall map[int]struct {
+		result1 api.EnsureAvailabilityOutput
+		result2 error
+	}
 	UploadInstallationAssetCollectionStub        func(api.ImportInstallationInput) error
 	uploadInstallationAssetCollectionMutex       sync.RWMutex
 	uploadInstallationAssetCollectionArgsForCall []struct {
@@ -19,21 +32,71 @@ type ImportInstallationService struct {
 	uploadInstallationAssetCollectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	EnsureAvailabilityStub        func(input api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
-	ensureAvailabilityMutex       sync.RWMutex
-	ensureAvailabilityArgsForCall []struct {
-		input api.EnsureAvailabilityInput
-	}
-	ensureAvailabilityReturns struct {
-		result1 api.EnsureAvailabilityOutput
-		result2 error
-	}
-	ensureAvailabilityReturnsOnCall map[int]struct {
-		result1 api.EnsureAvailabilityOutput
-		result2 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *ImportInstallationService) EnsureAvailability(arg1 api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+	fake.ensureAvailabilityMutex.Lock()
+	ret, specificReturn := fake.ensureAvailabilityReturnsOnCall[len(fake.ensureAvailabilityArgsForCall)]
+	fake.ensureAvailabilityArgsForCall = append(fake.ensureAvailabilityArgsForCall, struct {
+		arg1 api.EnsureAvailabilityInput
+	}{arg1})
+	fake.recordInvocation("EnsureAvailability", []interface{}{arg1})
+	fake.ensureAvailabilityMutex.Unlock()
+	if fake.EnsureAvailabilityStub != nil {
+		return fake.EnsureAvailabilityStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.ensureAvailabilityReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *ImportInstallationService) EnsureAvailabilityCallCount() int {
+	fake.ensureAvailabilityMutex.RLock()
+	defer fake.ensureAvailabilityMutex.RUnlock()
+	return len(fake.ensureAvailabilityArgsForCall)
+}
+
+func (fake *ImportInstallationService) EnsureAvailabilityCalls(stub func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)) {
+	fake.ensureAvailabilityMutex.Lock()
+	defer fake.ensureAvailabilityMutex.Unlock()
+	fake.EnsureAvailabilityStub = stub
+}
+
+func (fake *ImportInstallationService) EnsureAvailabilityArgsForCall(i int) api.EnsureAvailabilityInput {
+	fake.ensureAvailabilityMutex.RLock()
+	defer fake.ensureAvailabilityMutex.RUnlock()
+	argsForCall := fake.ensureAvailabilityArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ImportInstallationService) EnsureAvailabilityReturns(result1 api.EnsureAvailabilityOutput, result2 error) {
+	fake.ensureAvailabilityMutex.Lock()
+	defer fake.ensureAvailabilityMutex.Unlock()
+	fake.EnsureAvailabilityStub = nil
+	fake.ensureAvailabilityReturns = struct {
+		result1 api.EnsureAvailabilityOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *ImportInstallationService) EnsureAvailabilityReturnsOnCall(i int, result1 api.EnsureAvailabilityOutput, result2 error) {
+	fake.ensureAvailabilityMutex.Lock()
+	defer fake.ensureAvailabilityMutex.Unlock()
+	fake.EnsureAvailabilityStub = nil
+	if fake.ensureAvailabilityReturnsOnCall == nil {
+		fake.ensureAvailabilityReturnsOnCall = make(map[int]struct {
+			result1 api.EnsureAvailabilityOutput
+			result2 error
+		})
+	}
+	fake.ensureAvailabilityReturnsOnCall[i] = struct {
+		result1 api.EnsureAvailabilityOutput
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *ImportInstallationService) UploadInstallationAssetCollection(arg1 api.ImportInstallationInput) error {
@@ -50,7 +113,8 @@ func (fake *ImportInstallationService) UploadInstallationAssetCollection(arg1 ap
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.uploadInstallationAssetCollectionReturns.result1
+	fakeReturns := fake.uploadInstallationAssetCollectionReturns
+	return fakeReturns.result1
 }
 
 func (fake *ImportInstallationService) UploadInstallationAssetCollectionCallCount() int {
@@ -59,13 +123,22 @@ func (fake *ImportInstallationService) UploadInstallationAssetCollectionCallCoun
 	return len(fake.uploadInstallationAssetCollectionArgsForCall)
 }
 
+func (fake *ImportInstallationService) UploadInstallationAssetCollectionCalls(stub func(api.ImportInstallationInput) error) {
+	fake.uploadInstallationAssetCollectionMutex.Lock()
+	defer fake.uploadInstallationAssetCollectionMutex.Unlock()
+	fake.UploadInstallationAssetCollectionStub = stub
+}
+
 func (fake *ImportInstallationService) UploadInstallationAssetCollectionArgsForCall(i int) api.ImportInstallationInput {
 	fake.uploadInstallationAssetCollectionMutex.RLock()
 	defer fake.uploadInstallationAssetCollectionMutex.RUnlock()
-	return fake.uploadInstallationAssetCollectionArgsForCall[i].arg1
+	argsForCall := fake.uploadInstallationAssetCollectionArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *ImportInstallationService) UploadInstallationAssetCollectionReturns(result1 error) {
+	fake.uploadInstallationAssetCollectionMutex.Lock()
+	defer fake.uploadInstallationAssetCollectionMutex.Unlock()
 	fake.UploadInstallationAssetCollectionStub = nil
 	fake.uploadInstallationAssetCollectionReturns = struct {
 		result1 error
@@ -73,6 +146,8 @@ func (fake *ImportInstallationService) UploadInstallationAssetCollectionReturns(
 }
 
 func (fake *ImportInstallationService) UploadInstallationAssetCollectionReturnsOnCall(i int, result1 error) {
+	fake.uploadInstallationAssetCollectionMutex.Lock()
+	defer fake.uploadInstallationAssetCollectionMutex.Unlock()
 	fake.UploadInstallationAssetCollectionStub = nil
 	if fake.uploadInstallationAssetCollectionReturnsOnCall == nil {
 		fake.uploadInstallationAssetCollectionReturnsOnCall = make(map[int]struct {
@@ -84,64 +159,13 @@ func (fake *ImportInstallationService) UploadInstallationAssetCollectionReturnsO
 	}{result1}
 }
 
-func (fake *ImportInstallationService) EnsureAvailability(input api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
-	fake.ensureAvailabilityMutex.Lock()
-	ret, specificReturn := fake.ensureAvailabilityReturnsOnCall[len(fake.ensureAvailabilityArgsForCall)]
-	fake.ensureAvailabilityArgsForCall = append(fake.ensureAvailabilityArgsForCall, struct {
-		input api.EnsureAvailabilityInput
-	}{input})
-	fake.recordInvocation("EnsureAvailability", []interface{}{input})
-	fake.ensureAvailabilityMutex.Unlock()
-	if fake.EnsureAvailabilityStub != nil {
-		return fake.EnsureAvailabilityStub(input)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.ensureAvailabilityReturns.result1, fake.ensureAvailabilityReturns.result2
-}
-
-func (fake *ImportInstallationService) EnsureAvailabilityCallCount() int {
-	fake.ensureAvailabilityMutex.RLock()
-	defer fake.ensureAvailabilityMutex.RUnlock()
-	return len(fake.ensureAvailabilityArgsForCall)
-}
-
-func (fake *ImportInstallationService) EnsureAvailabilityArgsForCall(i int) api.EnsureAvailabilityInput {
-	fake.ensureAvailabilityMutex.RLock()
-	defer fake.ensureAvailabilityMutex.RUnlock()
-	return fake.ensureAvailabilityArgsForCall[i].input
-}
-
-func (fake *ImportInstallationService) EnsureAvailabilityReturns(result1 api.EnsureAvailabilityOutput, result2 error) {
-	fake.EnsureAvailabilityStub = nil
-	fake.ensureAvailabilityReturns = struct {
-		result1 api.EnsureAvailabilityOutput
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *ImportInstallationService) EnsureAvailabilityReturnsOnCall(i int, result1 api.EnsureAvailabilityOutput, result2 error) {
-	fake.EnsureAvailabilityStub = nil
-	if fake.ensureAvailabilityReturnsOnCall == nil {
-		fake.ensureAvailabilityReturnsOnCall = make(map[int]struct {
-			result1 api.EnsureAvailabilityOutput
-			result2 error
-		})
-	}
-	fake.ensureAvailabilityReturnsOnCall[i] = struct {
-		result1 api.EnsureAvailabilityOutput
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *ImportInstallationService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.uploadInstallationAssetCollectionMutex.RLock()
-	defer fake.uploadInstallationAssetCollectionMutex.RUnlock()
 	fake.ensureAvailabilityMutex.RLock()
 	defer fake.ensureAvailabilityMutex.RUnlock()
+	fake.uploadInstallationAssetCollectionMutex.RLock()
+	defer fake.uploadInstallationAssetCollectionMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

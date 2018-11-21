@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type CreateVMExtensionService struct {
@@ -37,7 +37,8 @@ func (fake *CreateVMExtensionService) CreateStagedVMExtension(arg1 api.CreateVME
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.createStagedVMExtensionReturns.result1
+	fakeReturns := fake.createStagedVMExtensionReturns
+	return fakeReturns.result1
 }
 
 func (fake *CreateVMExtensionService) CreateStagedVMExtensionCallCount() int {
@@ -46,13 +47,22 @@ func (fake *CreateVMExtensionService) CreateStagedVMExtensionCallCount() int {
 	return len(fake.createStagedVMExtensionArgsForCall)
 }
 
+func (fake *CreateVMExtensionService) CreateStagedVMExtensionCalls(stub func(api.CreateVMExtension) error) {
+	fake.createStagedVMExtensionMutex.Lock()
+	defer fake.createStagedVMExtensionMutex.Unlock()
+	fake.CreateStagedVMExtensionStub = stub
+}
+
 func (fake *CreateVMExtensionService) CreateStagedVMExtensionArgsForCall(i int) api.CreateVMExtension {
 	fake.createStagedVMExtensionMutex.RLock()
 	defer fake.createStagedVMExtensionMutex.RUnlock()
-	return fake.createStagedVMExtensionArgsForCall[i].arg1
+	argsForCall := fake.createStagedVMExtensionArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *CreateVMExtensionService) CreateStagedVMExtensionReturns(result1 error) {
+	fake.createStagedVMExtensionMutex.Lock()
+	defer fake.createStagedVMExtensionMutex.Unlock()
 	fake.CreateStagedVMExtensionStub = nil
 	fake.createStagedVMExtensionReturns = struct {
 		result1 error
@@ -60,6 +70,8 @@ func (fake *CreateVMExtensionService) CreateStagedVMExtensionReturns(result1 err
 }
 
 func (fake *CreateVMExtensionService) CreateStagedVMExtensionReturnsOnCall(i int, result1 error) {
+	fake.createStagedVMExtensionMutex.Lock()
+	defer fake.createStagedVMExtensionMutex.Unlock()
 	fake.CreateStagedVMExtensionStub = nil
 	if fake.createStagedVMExtensionReturnsOnCall == nil {
 		fake.createStagedVMExtensionReturnsOnCall = make(map[int]struct {

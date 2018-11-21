@@ -2,16 +2,16 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type InstallationLogService struct {
-	GetInstallationLogsStub        func(id int) (api.InstallationsServiceOutput, error)
+	GetInstallationLogsStub        func(int) (api.InstallationsServiceOutput, error)
 	getInstallationLogsMutex       sync.RWMutex
 	getInstallationLogsArgsForCall []struct {
-		id int
+		arg1 int
 	}
 	getInstallationLogsReturns struct {
 		result1 api.InstallationsServiceOutput
@@ -25,21 +25,22 @@ type InstallationLogService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *InstallationLogService) GetInstallationLogs(id int) (api.InstallationsServiceOutput, error) {
+func (fake *InstallationLogService) GetInstallationLogs(arg1 int) (api.InstallationsServiceOutput, error) {
 	fake.getInstallationLogsMutex.Lock()
 	ret, specificReturn := fake.getInstallationLogsReturnsOnCall[len(fake.getInstallationLogsArgsForCall)]
 	fake.getInstallationLogsArgsForCall = append(fake.getInstallationLogsArgsForCall, struct {
-		id int
-	}{id})
-	fake.recordInvocation("GetInstallationLogs", []interface{}{id})
+		arg1 int
+	}{arg1})
+	fake.recordInvocation("GetInstallationLogs", []interface{}{arg1})
 	fake.getInstallationLogsMutex.Unlock()
 	if fake.GetInstallationLogsStub != nil {
-		return fake.GetInstallationLogsStub(id)
+		return fake.GetInstallationLogsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getInstallationLogsReturns.result1, fake.getInstallationLogsReturns.result2
+	fakeReturns := fake.getInstallationLogsReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *InstallationLogService) GetInstallationLogsCallCount() int {
@@ -48,13 +49,22 @@ func (fake *InstallationLogService) GetInstallationLogsCallCount() int {
 	return len(fake.getInstallationLogsArgsForCall)
 }
 
+func (fake *InstallationLogService) GetInstallationLogsCalls(stub func(int) (api.InstallationsServiceOutput, error)) {
+	fake.getInstallationLogsMutex.Lock()
+	defer fake.getInstallationLogsMutex.Unlock()
+	fake.GetInstallationLogsStub = stub
+}
+
 func (fake *InstallationLogService) GetInstallationLogsArgsForCall(i int) int {
 	fake.getInstallationLogsMutex.RLock()
 	defer fake.getInstallationLogsMutex.RUnlock()
-	return fake.getInstallationLogsArgsForCall[i].id
+	argsForCall := fake.getInstallationLogsArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *InstallationLogService) GetInstallationLogsReturns(result1 api.InstallationsServiceOutput, result2 error) {
+	fake.getInstallationLogsMutex.Lock()
+	defer fake.getInstallationLogsMutex.Unlock()
 	fake.GetInstallationLogsStub = nil
 	fake.getInstallationLogsReturns = struct {
 		result1 api.InstallationsServiceOutput
@@ -63,6 +73,8 @@ func (fake *InstallationLogService) GetInstallationLogsReturns(result1 api.Insta
 }
 
 func (fake *InstallationLogService) GetInstallationLogsReturnsOnCall(i int, result1 api.InstallationsServiceOutput, result2 error) {
+	fake.getInstallationLogsMutex.Lock()
+	defer fake.getInstallationLogsMutex.Unlock()
 	fake.GetInstallationLogsStub = nil
 	if fake.getInstallationLogsReturnsOnCall == nil {
 		fake.getInstallationLogsReturnsOnCall = make(map[int]struct {

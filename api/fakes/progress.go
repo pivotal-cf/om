@@ -2,15 +2,38 @@
 package fakes
 
 import (
-	"io"
-	"sync"
+	io "io"
+	sync "sync"
 )
 
 type Progress struct {
-	SetTotalStub        func(int64)
-	setTotalMutex       sync.RWMutex
-	setTotalArgsForCall []struct {
-		arg1 int64
+	EndStub        func()
+	endMutex       sync.RWMutex
+	endArgsForCall []struct {
+	}
+	GetCurrentStub        func() int64
+	getCurrentMutex       sync.RWMutex
+	getCurrentArgsForCall []struct {
+	}
+	getCurrentReturns struct {
+		result1 int64
+	}
+	getCurrentReturnsOnCall map[int]struct {
+		result1 int64
+	}
+	GetTotalStub        func() int64
+	getTotalMutex       sync.RWMutex
+	getTotalArgsForCall []struct {
+	}
+	getTotalReturns struct {
+		result1 int64
+	}
+	getTotalReturnsOnCall map[int]struct {
+		result1 int64
+	}
+	KickoffStub        func()
+	kickoffMutex       sync.RWMutex
+	kickoffArgsForCall []struct {
 	}
 	NewBarReaderStub        func(io.Reader) io.ReadCloser
 	newBarReaderMutex       sync.RWMutex
@@ -23,32 +46,223 @@ type Progress struct {
 	newBarReaderReturnsOnCall map[int]struct {
 		result1 io.ReadCloser
 	}
-	KickoffStub         func()
-	kickoffMutex        sync.RWMutex
-	kickoffArgsForCall  []struct{}
-	EndStub             func()
-	endMutex            sync.RWMutex
-	endArgsForCall      []struct{}
-	GetTotalStub        func() int64
-	getTotalMutex       sync.RWMutex
-	getTotalArgsForCall []struct{}
-	getTotalReturns     struct {
-		result1 int64
-	}
-	getTotalReturnsOnCall map[int]struct {
-		result1 int64
-	}
-	GetCurrentStub        func() int64
-	getCurrentMutex       sync.RWMutex
-	getCurrentArgsForCall []struct{}
-	getCurrentReturns     struct {
-		result1 int64
-	}
-	getCurrentReturnsOnCall map[int]struct {
-		result1 int64
+	SetTotalStub        func(int64)
+	setTotalMutex       sync.RWMutex
+	setTotalArgsForCall []struct {
+		arg1 int64
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *Progress) End() {
+	fake.endMutex.Lock()
+	fake.endArgsForCall = append(fake.endArgsForCall, struct {
+	}{})
+	fake.recordInvocation("End", []interface{}{})
+	fake.endMutex.Unlock()
+	if fake.EndStub != nil {
+		fake.EndStub()
+	}
+}
+
+func (fake *Progress) EndCallCount() int {
+	fake.endMutex.RLock()
+	defer fake.endMutex.RUnlock()
+	return len(fake.endArgsForCall)
+}
+
+func (fake *Progress) EndCalls(stub func()) {
+	fake.endMutex.Lock()
+	defer fake.endMutex.Unlock()
+	fake.EndStub = stub
+}
+
+func (fake *Progress) GetCurrent() int64 {
+	fake.getCurrentMutex.Lock()
+	ret, specificReturn := fake.getCurrentReturnsOnCall[len(fake.getCurrentArgsForCall)]
+	fake.getCurrentArgsForCall = append(fake.getCurrentArgsForCall, struct {
+	}{})
+	fake.recordInvocation("GetCurrent", []interface{}{})
+	fake.getCurrentMutex.Unlock()
+	if fake.GetCurrentStub != nil {
+		return fake.GetCurrentStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.getCurrentReturns
+	return fakeReturns.result1
+}
+
+func (fake *Progress) GetCurrentCallCount() int {
+	fake.getCurrentMutex.RLock()
+	defer fake.getCurrentMutex.RUnlock()
+	return len(fake.getCurrentArgsForCall)
+}
+
+func (fake *Progress) GetCurrentCalls(stub func() int64) {
+	fake.getCurrentMutex.Lock()
+	defer fake.getCurrentMutex.Unlock()
+	fake.GetCurrentStub = stub
+}
+
+func (fake *Progress) GetCurrentReturns(result1 int64) {
+	fake.getCurrentMutex.Lock()
+	defer fake.getCurrentMutex.Unlock()
+	fake.GetCurrentStub = nil
+	fake.getCurrentReturns = struct {
+		result1 int64
+	}{result1}
+}
+
+func (fake *Progress) GetCurrentReturnsOnCall(i int, result1 int64) {
+	fake.getCurrentMutex.Lock()
+	defer fake.getCurrentMutex.Unlock()
+	fake.GetCurrentStub = nil
+	if fake.getCurrentReturnsOnCall == nil {
+		fake.getCurrentReturnsOnCall = make(map[int]struct {
+			result1 int64
+		})
+	}
+	fake.getCurrentReturnsOnCall[i] = struct {
+		result1 int64
+	}{result1}
+}
+
+func (fake *Progress) GetTotal() int64 {
+	fake.getTotalMutex.Lock()
+	ret, specificReturn := fake.getTotalReturnsOnCall[len(fake.getTotalArgsForCall)]
+	fake.getTotalArgsForCall = append(fake.getTotalArgsForCall, struct {
+	}{})
+	fake.recordInvocation("GetTotal", []interface{}{})
+	fake.getTotalMutex.Unlock()
+	if fake.GetTotalStub != nil {
+		return fake.GetTotalStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.getTotalReturns
+	return fakeReturns.result1
+}
+
+func (fake *Progress) GetTotalCallCount() int {
+	fake.getTotalMutex.RLock()
+	defer fake.getTotalMutex.RUnlock()
+	return len(fake.getTotalArgsForCall)
+}
+
+func (fake *Progress) GetTotalCalls(stub func() int64) {
+	fake.getTotalMutex.Lock()
+	defer fake.getTotalMutex.Unlock()
+	fake.GetTotalStub = stub
+}
+
+func (fake *Progress) GetTotalReturns(result1 int64) {
+	fake.getTotalMutex.Lock()
+	defer fake.getTotalMutex.Unlock()
+	fake.GetTotalStub = nil
+	fake.getTotalReturns = struct {
+		result1 int64
+	}{result1}
+}
+
+func (fake *Progress) GetTotalReturnsOnCall(i int, result1 int64) {
+	fake.getTotalMutex.Lock()
+	defer fake.getTotalMutex.Unlock()
+	fake.GetTotalStub = nil
+	if fake.getTotalReturnsOnCall == nil {
+		fake.getTotalReturnsOnCall = make(map[int]struct {
+			result1 int64
+		})
+	}
+	fake.getTotalReturnsOnCall[i] = struct {
+		result1 int64
+	}{result1}
+}
+
+func (fake *Progress) Kickoff() {
+	fake.kickoffMutex.Lock()
+	fake.kickoffArgsForCall = append(fake.kickoffArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Kickoff", []interface{}{})
+	fake.kickoffMutex.Unlock()
+	if fake.KickoffStub != nil {
+		fake.KickoffStub()
+	}
+}
+
+func (fake *Progress) KickoffCallCount() int {
+	fake.kickoffMutex.RLock()
+	defer fake.kickoffMutex.RUnlock()
+	return len(fake.kickoffArgsForCall)
+}
+
+func (fake *Progress) KickoffCalls(stub func()) {
+	fake.kickoffMutex.Lock()
+	defer fake.kickoffMutex.Unlock()
+	fake.KickoffStub = stub
+}
+
+func (fake *Progress) NewBarReader(arg1 io.Reader) io.ReadCloser {
+	fake.newBarReaderMutex.Lock()
+	ret, specificReturn := fake.newBarReaderReturnsOnCall[len(fake.newBarReaderArgsForCall)]
+	fake.newBarReaderArgsForCall = append(fake.newBarReaderArgsForCall, struct {
+		arg1 io.Reader
+	}{arg1})
+	fake.recordInvocation("NewBarReader", []interface{}{arg1})
+	fake.newBarReaderMutex.Unlock()
+	if fake.NewBarReaderStub != nil {
+		return fake.NewBarReaderStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.newBarReaderReturns
+	return fakeReturns.result1
+}
+
+func (fake *Progress) NewBarReaderCallCount() int {
+	fake.newBarReaderMutex.RLock()
+	defer fake.newBarReaderMutex.RUnlock()
+	return len(fake.newBarReaderArgsForCall)
+}
+
+func (fake *Progress) NewBarReaderCalls(stub func(io.Reader) io.ReadCloser) {
+	fake.newBarReaderMutex.Lock()
+	defer fake.newBarReaderMutex.Unlock()
+	fake.NewBarReaderStub = stub
+}
+
+func (fake *Progress) NewBarReaderArgsForCall(i int) io.Reader {
+	fake.newBarReaderMutex.RLock()
+	defer fake.newBarReaderMutex.RUnlock()
+	argsForCall := fake.newBarReaderArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *Progress) NewBarReaderReturns(result1 io.ReadCloser) {
+	fake.newBarReaderMutex.Lock()
+	defer fake.newBarReaderMutex.Unlock()
+	fake.NewBarReaderStub = nil
+	fake.newBarReaderReturns = struct {
+		result1 io.ReadCloser
+	}{result1}
+}
+
+func (fake *Progress) NewBarReaderReturnsOnCall(i int, result1 io.ReadCloser) {
+	fake.newBarReaderMutex.Lock()
+	defer fake.newBarReaderMutex.Unlock()
+	fake.NewBarReaderStub = nil
+	if fake.newBarReaderReturnsOnCall == nil {
+		fake.newBarReaderReturnsOnCall = make(map[int]struct {
+			result1 io.ReadCloser
+		})
+	}
+	fake.newBarReaderReturnsOnCall[i] = struct {
+		result1 io.ReadCloser
+	}{result1}
 }
 
 func (fake *Progress) SetTotal(arg1 int64) {
@@ -69,187 +283,34 @@ func (fake *Progress) SetTotalCallCount() int {
 	return len(fake.setTotalArgsForCall)
 }
 
+func (fake *Progress) SetTotalCalls(stub func(int64)) {
+	fake.setTotalMutex.Lock()
+	defer fake.setTotalMutex.Unlock()
+	fake.SetTotalStub = stub
+}
+
 func (fake *Progress) SetTotalArgsForCall(i int) int64 {
 	fake.setTotalMutex.RLock()
 	defer fake.setTotalMutex.RUnlock()
-	return fake.setTotalArgsForCall[i].arg1
-}
-
-func (fake *Progress) NewBarReader(arg1 io.Reader) io.ReadCloser {
-	fake.newBarReaderMutex.Lock()
-	ret, specificReturn := fake.newBarReaderReturnsOnCall[len(fake.newBarReaderArgsForCall)]
-	fake.newBarReaderArgsForCall = append(fake.newBarReaderArgsForCall, struct {
-		arg1 io.Reader
-	}{arg1})
-	fake.recordInvocation("NewBarReader", []interface{}{arg1})
-	fake.newBarReaderMutex.Unlock()
-	if fake.NewBarReaderStub != nil {
-		return fake.NewBarReaderStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.newBarReaderReturns.result1
-}
-
-func (fake *Progress) NewBarReaderCallCount() int {
-	fake.newBarReaderMutex.RLock()
-	defer fake.newBarReaderMutex.RUnlock()
-	return len(fake.newBarReaderArgsForCall)
-}
-
-func (fake *Progress) NewBarReaderArgsForCall(i int) io.Reader {
-	fake.newBarReaderMutex.RLock()
-	defer fake.newBarReaderMutex.RUnlock()
-	return fake.newBarReaderArgsForCall[i].arg1
-}
-
-func (fake *Progress) NewBarReaderReturns(result1 io.ReadCloser) {
-	fake.NewBarReaderStub = nil
-	fake.newBarReaderReturns = struct {
-		result1 io.ReadCloser
-	}{result1}
-}
-
-func (fake *Progress) NewBarReaderReturnsOnCall(i int, result1 io.ReadCloser) {
-	fake.NewBarReaderStub = nil
-	if fake.newBarReaderReturnsOnCall == nil {
-		fake.newBarReaderReturnsOnCall = make(map[int]struct {
-			result1 io.ReadCloser
-		})
-	}
-	fake.newBarReaderReturnsOnCall[i] = struct {
-		result1 io.ReadCloser
-	}{result1}
-}
-
-func (fake *Progress) Kickoff() {
-	fake.kickoffMutex.Lock()
-	fake.kickoffArgsForCall = append(fake.kickoffArgsForCall, struct{}{})
-	fake.recordInvocation("Kickoff", []interface{}{})
-	fake.kickoffMutex.Unlock()
-	if fake.KickoffStub != nil {
-		fake.KickoffStub()
-	}
-}
-
-func (fake *Progress) KickoffCallCount() int {
-	fake.kickoffMutex.RLock()
-	defer fake.kickoffMutex.RUnlock()
-	return len(fake.kickoffArgsForCall)
-}
-
-func (fake *Progress) End() {
-	fake.endMutex.Lock()
-	fake.endArgsForCall = append(fake.endArgsForCall, struct{}{})
-	fake.recordInvocation("End", []interface{}{})
-	fake.endMutex.Unlock()
-	if fake.EndStub != nil {
-		fake.EndStub()
-	}
-}
-
-func (fake *Progress) EndCallCount() int {
-	fake.endMutex.RLock()
-	defer fake.endMutex.RUnlock()
-	return len(fake.endArgsForCall)
-}
-
-func (fake *Progress) GetTotal() int64 {
-	fake.getTotalMutex.Lock()
-	ret, specificReturn := fake.getTotalReturnsOnCall[len(fake.getTotalArgsForCall)]
-	fake.getTotalArgsForCall = append(fake.getTotalArgsForCall, struct{}{})
-	fake.recordInvocation("GetTotal", []interface{}{})
-	fake.getTotalMutex.Unlock()
-	if fake.GetTotalStub != nil {
-		return fake.GetTotalStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.getTotalReturns.result1
-}
-
-func (fake *Progress) GetTotalCallCount() int {
-	fake.getTotalMutex.RLock()
-	defer fake.getTotalMutex.RUnlock()
-	return len(fake.getTotalArgsForCall)
-}
-
-func (fake *Progress) GetTotalReturns(result1 int64) {
-	fake.GetTotalStub = nil
-	fake.getTotalReturns = struct {
-		result1 int64
-	}{result1}
-}
-
-func (fake *Progress) GetTotalReturnsOnCall(i int, result1 int64) {
-	fake.GetTotalStub = nil
-	if fake.getTotalReturnsOnCall == nil {
-		fake.getTotalReturnsOnCall = make(map[int]struct {
-			result1 int64
-		})
-	}
-	fake.getTotalReturnsOnCall[i] = struct {
-		result1 int64
-	}{result1}
-}
-
-func (fake *Progress) GetCurrent() int64 {
-	fake.getCurrentMutex.Lock()
-	ret, specificReturn := fake.getCurrentReturnsOnCall[len(fake.getCurrentArgsForCall)]
-	fake.getCurrentArgsForCall = append(fake.getCurrentArgsForCall, struct{}{})
-	fake.recordInvocation("GetCurrent", []interface{}{})
-	fake.getCurrentMutex.Unlock()
-	if fake.GetCurrentStub != nil {
-		return fake.GetCurrentStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.getCurrentReturns.result1
-}
-
-func (fake *Progress) GetCurrentCallCount() int {
-	fake.getCurrentMutex.RLock()
-	defer fake.getCurrentMutex.RUnlock()
-	return len(fake.getCurrentArgsForCall)
-}
-
-func (fake *Progress) GetCurrentReturns(result1 int64) {
-	fake.GetCurrentStub = nil
-	fake.getCurrentReturns = struct {
-		result1 int64
-	}{result1}
-}
-
-func (fake *Progress) GetCurrentReturnsOnCall(i int, result1 int64) {
-	fake.GetCurrentStub = nil
-	if fake.getCurrentReturnsOnCall == nil {
-		fake.getCurrentReturnsOnCall = make(map[int]struct {
-			result1 int64
-		})
-	}
-	fake.getCurrentReturnsOnCall[i] = struct {
-		result1 int64
-	}{result1}
+	argsForCall := fake.setTotalArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *Progress) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.setTotalMutex.RLock()
-	defer fake.setTotalMutex.RUnlock()
-	fake.newBarReaderMutex.RLock()
-	defer fake.newBarReaderMutex.RUnlock()
-	fake.kickoffMutex.RLock()
-	defer fake.kickoffMutex.RUnlock()
 	fake.endMutex.RLock()
 	defer fake.endMutex.RUnlock()
-	fake.getTotalMutex.RLock()
-	defer fake.getTotalMutex.RUnlock()
 	fake.getCurrentMutex.RLock()
 	defer fake.getCurrentMutex.RUnlock()
+	fake.getTotalMutex.RLock()
+	defer fake.getTotalMutex.RUnlock()
+	fake.kickoffMutex.RLock()
+	defer fake.kickoffMutex.RUnlock()
+	fake.newBarReaderMutex.RLock()
+	defer fake.newBarReaderMutex.RUnlock()
+	fake.setTotalMutex.RLock()
+	defer fake.setTotalMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

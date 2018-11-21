@@ -2,19 +2,19 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/configparser"
+	api "github.com/pivotal-cf/om/api"
+	configparser "github.com/pivotal-cf/om/configparser"
 )
 
 type ConfigParser struct {
-	ParsePropertiesStub        func(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
+	ParsePropertiesStub        func(configparser.PropertyName, api.ResponseProperty, configparser.CredentialHandler) (map[string]interface{}, error)
 	parsePropertiesMutex       sync.RWMutex
 	parsePropertiesArgsForCall []struct {
-		name     configparser.PropertyName
-		property api.ResponseProperty
-		handler  configparser.CredentialHandler
+		arg1 configparser.PropertyName
+		arg2 api.ResponseProperty
+		arg3 configparser.CredentialHandler
 	}
 	parsePropertiesReturns struct {
 		result1 map[string]interface{}
@@ -28,23 +28,24 @@ type ConfigParser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ConfigParser) ParseProperties(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error) {
+func (fake *ConfigParser) ParseProperties(arg1 configparser.PropertyName, arg2 api.ResponseProperty, arg3 configparser.CredentialHandler) (map[string]interface{}, error) {
 	fake.parsePropertiesMutex.Lock()
 	ret, specificReturn := fake.parsePropertiesReturnsOnCall[len(fake.parsePropertiesArgsForCall)]
 	fake.parsePropertiesArgsForCall = append(fake.parsePropertiesArgsForCall, struct {
-		name     configparser.PropertyName
-		property api.ResponseProperty
-		handler  configparser.CredentialHandler
-	}{name, property, handler})
-	fake.recordInvocation("ParseProperties", []interface{}{name, property, handler})
+		arg1 configparser.PropertyName
+		arg2 api.ResponseProperty
+		arg3 configparser.CredentialHandler
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ParseProperties", []interface{}{arg1, arg2, arg3})
 	fake.parsePropertiesMutex.Unlock()
 	if fake.ParsePropertiesStub != nil {
-		return fake.ParsePropertiesStub(name, property, handler)
+		return fake.ParsePropertiesStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.parsePropertiesReturns.result1, fake.parsePropertiesReturns.result2
+	fakeReturns := fake.parsePropertiesReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *ConfigParser) ParsePropertiesCallCount() int {
@@ -53,13 +54,22 @@ func (fake *ConfigParser) ParsePropertiesCallCount() int {
 	return len(fake.parsePropertiesArgsForCall)
 }
 
+func (fake *ConfigParser) ParsePropertiesCalls(stub func(configparser.PropertyName, api.ResponseProperty, configparser.CredentialHandler) (map[string]interface{}, error)) {
+	fake.parsePropertiesMutex.Lock()
+	defer fake.parsePropertiesMutex.Unlock()
+	fake.ParsePropertiesStub = stub
+}
+
 func (fake *ConfigParser) ParsePropertiesArgsForCall(i int) (configparser.PropertyName, api.ResponseProperty, configparser.CredentialHandler) {
 	fake.parsePropertiesMutex.RLock()
 	defer fake.parsePropertiesMutex.RUnlock()
-	return fake.parsePropertiesArgsForCall[i].name, fake.parsePropertiesArgsForCall[i].property, fake.parsePropertiesArgsForCall[i].handler
+	argsForCall := fake.parsePropertiesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *ConfigParser) ParsePropertiesReturns(result1 map[string]interface{}, result2 error) {
+	fake.parsePropertiesMutex.Lock()
+	defer fake.parsePropertiesMutex.Unlock()
 	fake.ParsePropertiesStub = nil
 	fake.parsePropertiesReturns = struct {
 		result1 map[string]interface{}
@@ -68,6 +78,8 @@ func (fake *ConfigParser) ParsePropertiesReturns(result1 map[string]interface{},
 }
 
 func (fake *ConfigParser) ParsePropertiesReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+	fake.parsePropertiesMutex.Lock()
+	defer fake.parsePropertiesMutex.Unlock()
 	fake.ParsePropertiesStub = nil
 	if fake.parsePropertiesReturnsOnCall == nil {
 		fake.parsePropertiesReturnsOnCall = make(map[int]struct {

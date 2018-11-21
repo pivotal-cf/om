@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/extractor"
+	extractor "github.com/pivotal-cf/om/extractor"
 )
 
 type MetadataExtractor struct {
@@ -39,7 +39,8 @@ func (fake *MetadataExtractor) ExtractMetadata(arg1 string) (extractor.Metadata,
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.extractMetadataReturns.result1, fake.extractMetadataReturns.result2
+	fakeReturns := fake.extractMetadataReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *MetadataExtractor) ExtractMetadataCallCount() int {
@@ -48,13 +49,22 @@ func (fake *MetadataExtractor) ExtractMetadataCallCount() int {
 	return len(fake.extractMetadataArgsForCall)
 }
 
+func (fake *MetadataExtractor) ExtractMetadataCalls(stub func(string) (extractor.Metadata, error)) {
+	fake.extractMetadataMutex.Lock()
+	defer fake.extractMetadataMutex.Unlock()
+	fake.ExtractMetadataStub = stub
+}
+
 func (fake *MetadataExtractor) ExtractMetadataArgsForCall(i int) string {
 	fake.extractMetadataMutex.RLock()
 	defer fake.extractMetadataMutex.RUnlock()
-	return fake.extractMetadataArgsForCall[i].arg1
+	argsForCall := fake.extractMetadataArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *MetadataExtractor) ExtractMetadataReturns(result1 extractor.Metadata, result2 error) {
+	fake.extractMetadataMutex.Lock()
+	defer fake.extractMetadataMutex.Unlock()
 	fake.ExtractMetadataStub = nil
 	fake.extractMetadataReturns = struct {
 		result1 extractor.Metadata
@@ -63,6 +73,8 @@ func (fake *MetadataExtractor) ExtractMetadataReturns(result1 extractor.Metadata
 }
 
 func (fake *MetadataExtractor) ExtractMetadataReturnsOnCall(i int, result1 extractor.Metadata, result2 error) {
+	fake.extractMetadataMutex.Lock()
+	defer fake.extractMetadataMutex.Unlock()
 	fake.ExtractMetadataStub = nil
 	if fake.extractMetadataReturnsOnCall == nil {
 		fake.extractMetadataReturnsOnCall = make(map[int]struct {
