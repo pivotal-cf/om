@@ -243,6 +243,9 @@ func getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string,
 		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
 			versionString := dependency.Release.Version
 			splitVersions := strings.Split(versionString, ".")
+			if len(splitVersions) == 1 {
+				splitVersions = []string{splitVersions[0], "0"}
+			}
 			if len(splitVersions) != 2 {
 				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
 			}

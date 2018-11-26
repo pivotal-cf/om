@@ -181,6 +181,15 @@ var _ = Describe("DownloadProduct", func() {
 							Name: "Stemcells for PCF (Ubuntu Xenial)",
 						},
 					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199674,
+						Version: "97",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
 				}, nil)
 			})
 
