@@ -26,10 +26,6 @@ Usage: om [options] configure-product [<args>]
 Command Arguments:
   --config, -c              string             path to yml file containing all config fields (see docs/configure-product/README.md for format)
   --ops-file, -o            string (variadic)  YAML operations file
-  --product-name, -n        string (required)  name of the product being configured
-  --product-network, -pn    string             network properties in JSON format
-  --product-properties, -p  string             properties to be configured in JSON format
-  --product-resources, -pr  string             resource configurations in JSON format
   --vars-env                string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l           string (variadic)  Load variables from a YAML file
 ```
