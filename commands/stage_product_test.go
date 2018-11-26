@@ -127,6 +127,27 @@ var _ = Describe("StageProduct", func() {
 		})
 	})
 
+	Context("when there is a running installation", func() {
+		BeforeEach(func() {
+			fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{
+				{
+					ID:         999,
+					Status:     "running",
+					Logs:       "",
+					StartedAt:  nil,
+					FinishedAt: nil,
+					UserName:   "admin",
+				},
+			}, nil)
+		})
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+			err := command.Execute([]string{"--product-name", "cf", "--product-version", "some-version"})
+			Expect(err).To(MatchError("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes"))
+			Expect(fakeService.ListInstallationsCallCount()).To(Equal(1))
+		})
+	})
+
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {

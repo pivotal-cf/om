@@ -18,10 +18,11 @@ type StageProduct struct {
 
 //go:generate counterfeiter -o ./fakes/stage_product_service.go --fake-name StageProductService . stageProductService
 type stageProductService interface {
-	Stage(api.StageProductInput, string) error
-	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	CheckProductAvailability(productName string, productVersion string) (bool, error)
 	GetDiagnosticReport() (api.DiagnosticReport, error)
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
+	ListInstallations() ([]api.InstallationsServiceOutput, error)
+	Stage(api.StageProductInput, string) error
 }
 
 func NewStageProduct(service stageProductService, logger logger) StageProduct {
@@ -34,6 +35,11 @@ func NewStageProduct(service stageProductService, logger logger) StageProduct {
 func (sp StageProduct) Execute(args []string) error {
 	if _, err := jhanda.Parse(&sp.Options, args); err != nil {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
+	}
+
+	err := checkRunningInstallation(sp.service.ListInstallations)
+	if err != nil {
+		return err
 	}
 
 	diagnosticReport, err := sp.service.GetDiagnosticReport()
