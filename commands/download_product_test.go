@@ -94,11 +94,11 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(releaseID).To(Equal(12345))
 			Expect(productFileID).To(Equal(54321))
 
-			fileName := path.Join(tempDir, commands.DownloadListFilename)
+			fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
 			fileContent, err := ioutil.ReadFile(fileName)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fileName).To(BeAnExistingFile())
-			Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product": "%s" }`, file.Name())))
+			Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
 		})
 
 		Context("when the globs returns multiple files", func() {
@@ -215,11 +215,25 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(version).To(Equal("97.19"))
 				Expect(str).To(Equal("stemcells-ubuntu-xenial"))
 
-				file, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
-				Expect(file.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
+				productFile, _, _, _, _:= fakePivnetDownloader.DownloadProductFileArgsForCall(0)
+
+				stemcellFile, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
+				Expect(stemcellFile.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
 				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
 				Expect(releaseID).To(Equal(9999))
 				Expect(fileID).To(Equal(5678))
+
+				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+				fileContent, err := ioutil.ReadFile(fileName)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fileName).To(BeAnExistingFile())
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
+					{
+						"product_path": "%s", 
+						"product_slug": "elastic-runtime", 
+						"stemcell_path": "%s", 
+						"stemcell_version": "97.19" 
+					}`, productFile.Name(), stemcellFile.Name())))
 			})
 
 			Context("when the product is not a tile", func() {
