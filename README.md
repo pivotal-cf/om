@@ -22,13 +22,18 @@ provided. The Ops Manager API documentation is available at
 
 To install `om` go to [Releases](https://github.com/pivotal-cf/om/releases)
 
-Additionally, you can install `om` via `apt-get` from [Stark and Wayne's](https://www.starkandwayne.com/) apt-get repo:
-```
+Additionally, you can install `om` via `apt-get` or `homebrew` from [Stark and Wayne](https://www.starkandwayne.com/):
+```sh
+# apt-get:
 wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
 echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
 apt-get update
 
 apt-get install om
+
+# homebrew:
+brew tap starkandwayne/cf
+brew install om
 ```
 
 ## Current Commands
