@@ -2,7 +2,7 @@
 
 # GCP-specific inputs for the `configure-director` command
 
-#### --iaas-configuration
+#### iaas-configuration:
 **Note regarding `auth_json`**: To easily format this JSON for use as a string here, use `cat service_account_key.json | jq 'tostring'`.
 `jq` can be downloaded [here](https://stedolan.github.io/jq/).
 If you have configured your OpsMan VM to have an attached Service Account, then this field is not required.
@@ -17,7 +17,7 @@ If you have configured your OpsMan VM to have an attached Service Account, then 
 }
 ```
 
-#### --director-configuration
+#### director-configuration:
 **Note regarding `ntp_servers_string`**: We recommend using the metadata server (169.254.169.254) as the NTP server to all PCF users on GCP.
 
 ##### Minimal example
@@ -27,7 +27,7 @@ If you have configured your OpsMan VM to have an attached Service Account, then 
 }
 ```
 
-#### --security-configuration
+#### security-configuration:
 No additional security configuration is strictly required.
 
 ##### Minimal example
@@ -37,7 +37,7 @@ No additional security configuration is strictly required.
 }
 ```
 
-#### --az-configuration
+#### az-configuration:
 We tend to use the "us-central1" region because it has 3 zones to balance across for high-availability deployments.
 
 ##### Minimal example
@@ -49,7 +49,7 @@ We tend to use the "us-central1" region because it has 3 zones to balance across
 ]
 ```
 
-#### --networks-configuration
+#### networks-configuration:
 In the example configuration below, we have taken a single GCP network and described it as 3 Ops Manager networks along subnet boundaries.
 
 ##### Minimal example
@@ -113,7 +113,7 @@ In the example configuration below, we have taken a single GCP network and descr
 }
 ```
 
-#### --network-assignment
+#### network-assignment:
 This flag will set the network assignment for the BOSH Director tile itself.
 
 ##### Minimal example
@@ -129,7 +129,7 @@ This flag will set the network assignment for the BOSH Director tile itself.
 ```
 
 
-#### --vmextensions-configuration
+#### vmextensions-configuration:
 
 ##### Minimal example
 ```json

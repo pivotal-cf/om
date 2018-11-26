@@ -40,87 +40,42 @@ om \
   --user my-user \
   --password my-password \
     configure-director \
-      --iaas-configuration '{
-        "project": "my-foo-project",
-        "default_deployment_tag": "foo-vms",
-        "auth_json": "{\"some-key\":\"some-value\"}"
-      }' \
-      --director-configuration '{
-        "ntp_servers_string": "169.254.169.254"
-      }' \
-      --security-configuration '{
-        "trusted_certificates": "some-trusted-certificates"
-      }' \
-      --az-configuration '[
-        {"name": "us-central1-a"},
-        {"name": "us-central1-b"},
-        {"name": "us-central1-c"}
-      ]' \
-      --network-configuration '{
-        "icmp_checks_enabled": false,
-        "networks": [
-          {
-            "name": "opsman-network",
-            "subnets": [
-              {
-                "iaas_identifier": "some-network/opsman-subnet/us-central1",
-                "cidr": "10.0.0.0/24",
-                "reserved_ip_ranges": "10.0.0.0-10.0.0.4",
-                "dns": "8.8.8.8",
-                "gateway": "10.0.0.1",
-                "availability_zone_names": [
-                  "us-central1-a",
-                  "us-central1-b",
-                  "us-central1-c"
-                ]
-              }
-            ]
-          },
-          {
-            "name": "ert-network",
-            "subnets": [
-              {
-                "iaas_identifier": "some-network/ert-subnet/us-central1",
-                "cidr": "10.0.4.0/22",
-                "reserved_ip_ranges": "10.0.4.0-10.0.4.4",
-                "dns": "8.8.8.8",
-                "gateway": "10.0.4.1",
-                "availability_zone_names": [
-                  "us-central1-a",
-                  "us-central1-b",
-                  "us-central1-c"
-                ]
-              }
-            ]
-          },
-          {
-            "name": "services-network",
-            "service_network": true,
-            "subnets": [
-              {
-                "iaas_identifier": "some-network/services-subnet/us-central1",
-                "cidr": "10.0.8.0/22",
-                "reserved_ip_ranges": "10.0.8.0-10.0.8.4",
-                "dns": "8.8.8.8",
-                "gateway": "10.0.8.1",
-                "availability_zone_names": [
-                  "us-central1-a",
-                  "us-central1-b",
-                  "us-central1-c"
-                ]
-              }
-            ]
-          }
-        ]
-      }' \
-      --network-assignment '{
-        "singleton_availability_zone": {
-          "name": "us-central1-a"
-        },
-        "network": {
-          "name": "opsman-network"
-        }
-      }'
+      --config director.yml
+```
+
+an example director.yml:
+```yaml
+iaas-configuration:
+  project: my-foo-project
+  default_deployment_tag: foo-vms
+  auth_json: '{"some-key":"some-value"}'
+director-configuration:
+  ntp_servers_string: 169.254.169.254
+security-configuration:
+  trusted_certificates: some-trusted-certificates
+az-configuration:
+- name: us-central1-a
+- name: us-central1-b
+- name: us-central1-c
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: opsman-network
+    subnets:
+    - iaas_identifier: some-network/opsman-subnet/us-central1
+      cidr: 10.0.0.0/24
+      reserved_ip_ranges: 10.0.0.0-10.0.0.4
+      dns: 8.8.8.8
+      gateway: 10.0.0.1
+      availability_zone_names:
+      - us-central1-a
+      - us-central1-b
+      - us-central1-c
+network-assignment:
+  singleton_availability_zone:
+    name: us-central1-a
+  network:
+    name: opsman-network
 ```
 
 ## 4. Uploading a product.
@@ -218,108 +173,47 @@ om \
   --user my-user \
   --password my-password \
     configure-product \
-      --product-name some-product \
-      --product-network '{
-        "singleton_availability_zone": {
-          "name": "az-1"
-        },
-        "other_availability_zones": [
-          {
-            "name": "az-1"
-          },
-          {
-            "name": "az-2"
-          },
-          {
-            "name": "az-3"
-          }
-        ],
-        "network": {
-          "name": "ert-network"
-        }
-      }' \
-      --product-properties '{
-        ".cloud_controller.system_domain": {
-          "value": "sys.example.com"
-        },
-        ".cloud_controller.apps_domain": {
-          "value": "apps.example.com"
-        },
-        ".ha_proxy.skip_cert_verify": {
-          "value": true
-        },
-        ".properties.networking_point_of_entry": {
-          "value": "external_ssl"
-        },
-        ".properties.networking_point_of_entry.external_ssl.ssl_rsa_certificate": {
-          "value": {
-            "cert_pem": "-----BEGIN CERTIFICATE-----\nSECRET STUFF\n-----END CERTIFICATE-----\n",
-            "private_key_pem": "-----BEGIN RSA PRIVATE KEY-----\nSECRET STUFF\n-----END RSA PRIVATE KEY-----\n"
-          }
-        },
-        ".properties.security_acknowledgement": {
-          "value": "X"
-        },
-        ".properties.smtp_from": {
-          "value": "some-user@example.com"
-        },
-        ".properties.smtp_address": {
-          "value": "smtp.example.com"
-        },
-        ".properties.smtp_port": {
-          "value": "587"
-        },
-        ".properties.smtp_credentials": {
-          "value": {
-            "identity": "some-smtp-username",
-            "password": "some-smtp-password"
-          }
-        },
-        ".properties.smtp_enable_starttls_auto": {
-          "value": true
-        },
-        ".properties.smtp_auth_mechanism": {
-          "value": "plain"
-        }
-      }' \
-      --product-resources '{
-        "tcp_router": {
-          "elb_names": [
-            "some-tcp-load-balancer"
-          ]
-        },
-        "mysql": {
-          "instances": 3
-        },
-        "router": {
-          "instances": 3,
-          "elb_names": [
-            "some-http-load-balancer",
-            "some-web-socket-load-balancer"
-          ]
-        },
-        "consul_server": {
-          "instances": 3
-        },
-        "etcd_tls_server": {
-          "instances": 3
-        },
-        "diego_brain": {
-          "elb_names": [
-            "some-ssh-load-balancer"
-          ]
-        },
-        "diego_cell": {
-          "instances": 3
-        },
-        "diego_database": {
-          "instances": 3
-        },
-        "mysql_proxy": {
-          "instances": 2
-        }
-      }'
+      --config product.yml
 ```
+
+an example product.yml:
+```yaml
+product-name: some-product
+network-properties:
+  singleton_availability_zone:
+    name: az-1
+  other_availability_zones:
+  - name: az-1
+  - name: az-2
+  - name: az-3
+  network:
+    name: ert-network
+product-properties:
+  ".cloud_controller.system_domain":
+    value: sys.example.com
+  ".cloud_controller.apps_domain":
+    value: apps.example.com
+  ".ha_proxy.skip_cert_verify":
+    value: true
+  ".properties.networking_point_of_entry":
+    value: external_ssl
+  ".properties.networking_point_of_entry.external_ssl.ssl_rsa_certificate":
+    value:
+      cert_pem: |
+        -----BEGIN CERTIFICATE-----
+        SECRET STUFF
+        -----END CERTIFICATE-----
+      private_key_pem: |
+        -----BEGIN RSA PRIVATE KEY-----
+        SECRET STUFF
+        -----END RSA PRIVATE KEY-----
+resource-config:
+  tcp_router:
+    elb_names:
+    - some-tcp-load-balancer
+  mysql:
+    instances: 3
+``` 
 
 ## 9. Apply changes.
 
