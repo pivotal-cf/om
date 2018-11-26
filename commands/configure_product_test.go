@@ -517,6 +517,30 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
+		Context("when there is a running installation", func() {
+			BeforeEach(func() {
+				service.ListInstallationsReturns([]api.InstallationsServiceOutput{
+					{
+						ID:         999,
+						Status:     "running",
+						Logs:       "",
+						StartedAt:  nil,
+						FinishedAt: nil,
+						UserName:   "admin",
+					},
+				}, nil)
+
+				config = `{"product-name": "cf"}`
+			})
+
+			It("returns an error", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				err := client.Execute([]string{"--config", configFile.Name()})
+				Expect(err).To(MatchError("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes"))
+				Expect(service.ListInstallationsCallCount()).To(Equal(1))
+			})
+		})
+
 		Context("when an error occurs", func() {
 			BeforeEach(func() {
 				config = `{"product-name": "cf"}`

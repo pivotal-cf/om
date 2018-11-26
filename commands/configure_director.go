@@ -37,18 +37,19 @@ type directorConfig struct {
 
 //go:generate counterfeiter -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
 type configureDirectorService interface {
-	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput) error
-	UpdateStagedDirectorNetworks(api.NetworkInput) error
-	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
-	UpdateStagedDirectorProperties(api.DirectorProperties) error
-	ListStagedProductJobs(string) (map[string]string, error)
-	GetStagedProductJobResourceConfig(string, string) (api.JobProperties, error)
-	UpdateStagedProductJobResourceConfig(string, string, api.JobProperties) error
-	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
-	GetStagedProductManifest(guid string) (manifest string, err error)
 	CreateStagedVMExtension(api.CreateVMExtension) error
-	ListStagedVMExtensions() ([]api.VMExtension, error)
 	DeleteVMExtension(name string) error
+	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
+	GetStagedProductJobResourceConfig(string, string) (api.JobProperties, error)
+	GetStagedProductManifest(guid string) (manifest string, err error)
+	ListInstallations() ([]api.InstallationsServiceOutput, error)
+	ListStagedProductJobs(string) (map[string]string, error)
+	ListStagedVMExtensions() ([]api.VMExtension, error)
+	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput) error
+	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
+	UpdateStagedDirectorNetworks(api.NetworkInput) error
+	UpdateStagedDirectorProperties(api.DirectorProperties) error
+	UpdateStagedProductJobResourceConfig(string, string, api.JobProperties) error
 }
 
 func NewConfigureDirector(environFunc func() []string, service configureDirectorService, logger logger) ConfigureDirector {
@@ -71,6 +72,12 @@ func (c ConfigureDirector) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse configure-director flags: %s", err)
 	}
+
+	err := checkRunningInstallation(c.service.ListInstallations)
+	if err != nil {
+		return err
+	}
+
 
 	config, err := c.interpolateConfig()
 	if err != nil {
@@ -423,5 +430,18 @@ func (c ConfigureDirector) configureResourceConfiguration(config *directorConfig
 		return fmt.Errorf("failed to configure resources for '%s': %s", jobName, err)
 	}
 
+	return nil
+}
+
+func checkRunningInstallation(listInstallations func() ([]api.InstallationsServiceOutput, error)) error {
+	installations, err := listInstallations()
+	if err != nil {
+		return fmt.Errorf("could not list installations: %s", err)
+	}
+	if len(installations) > 0 {
+		if installations[0].Status == "running" {
+			return fmt.Errorf("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes")
+		}
+	}
 	return nil
 }
