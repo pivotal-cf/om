@@ -14,16 +14,20 @@ type ConfigureLDAPAuthentication struct {
 	Options struct {
 		ConfigFile           string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
-		EmailAttribute       string `long:"email-attribute" required:"true"`
-		GroupSearchBase      string `long:"group-search-base" required:"true"`
-		GroupSearchFilter    string `long:"group-search-filter" required:"true"`
-		LDAPPassword         string `long:"ldap-password" required:"true"`
-		LDAPRBACAdminGroup   string `long:"ldap-rbac-admin-group-name" required:"true"`
-		LDAPReferral         string `long:"ldap-referrals" required:"true"`
-		LDAPUsername         string `long:"ldap-username" required:"true"`
-		ServerURL            string `long:"server-url" required:"true"`
-		UserSearchBase       string `long:"user-search-base" required:"true"`
-		UserSearchFilter     string `long:"user-search-filter" required:"true"`
+		HTTPProxyURL         string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL        string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
+		NoProxy              string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
+		EmailAttribute       string `long:"email-attribute"                  required:"true" description:"name of the LDAP attribute that contains the users email address"`
+		GroupSearchBase      string `long:"group-search-base"                required:"true" description:"start point for a user group membership search, and sequential nested searches"`
+		GroupSearchFilter    string `long:"group-search-filter"              required:"true" description:"search filter to find the groups to which a user belongs, e.g. 'member={0}'"`
+		LDAPPassword         string `long:"ldap-password"                    required:"true" description:"password for ldap-username DN"`
+		LDAPRBACAdminGroup   string `long:"ldap-rbac-admin-group-name"       required:"true" description:"the name of LDAP group whose members should be considered admins of OpsManager"`
+		LDAPReferral         string `long:"ldap-referrals"                   required:"true" description:"configure the UAA LDAP referral behavior"`
+		LDAPUsername         string `long:"ldap-username"                    required:"true" description:"DN for the LDAP credentials used to search the directory"`
+		ServerSSLCert        string `long:"server-ssl-cert"                                  description:"the server certificate when using ldaps://"`
+		ServerURL            string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
+		UserSearchBase       string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
+		UserSearchFilter     string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
 	}
 }
 
@@ -58,9 +62,12 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 
 	_, err = ca.service.Setup(api.SetupInput{
 		IdentityProvider:                 "ldap",
+		EULAAccepted:                     "true",
 		DecryptionPassphrase:             ca.Options.DecryptionPassphrase,
 		DecryptionPassphraseConfirmation: ca.Options.DecryptionPassphrase,
-		EULAAccepted:                     "true",
+		HTTPProxyURL:                     ca.Options.HTTPProxyURL,
+		HTTPSProxyURL:                    ca.Options.HTTPSProxyURL,
+		NoProxy:                          ca.Options.NoProxy,
 		LDAPSettings: &api.LDAPSettings{
 			EmailAttribute:     ca.Options.EmailAttribute,
 			GroupSearchBase:    ca.Options.GroupSearchBase,
@@ -69,6 +76,7 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 			LDAPRBACAdminGroup: ca.Options.LDAPRBACAdminGroup,
 			LDAPReferral:       ca.Options.LDAPReferral,
 			LDAPUsername:       ca.Options.LDAPUsername,
+			ServerSSLCert:      ca.Options.ServerSSLCert,
 			ServerURL:          ca.Options.ServerURL,
 			UserSearchBase:     ca.Options.UserSearchBase,
 			UserSearchFilter:   ca.Options.UserSearchFilter,

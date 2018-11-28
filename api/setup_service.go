@@ -17,6 +17,7 @@ type LDAPSettings struct {
 	LDAPRBACAdminGroup string `json:"ldap_rbac_admin_group_name,omitempty"`
 	LDAPReferral       string `json:"ldap_referrals,omitempty"`
 	LDAPUsername       string `json:"ldap_username,omitempty"`
+	ServerSSLCert      string `json:"server_ssl_cert,omitempty"`
 	ServerURL          string `json:"server_url,omitempty"`
 	UserSearchBase     string `json:"user_search_base,omitempty"`
 	UserSearchFilter   string `json:"user_search_filter,omitempty"`
