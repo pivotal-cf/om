@@ -138,11 +138,11 @@ func (t TablePresenter) PresentPendingChanges(pendingChanges []api.ProductChange
 
 	for _, change := range pendingChanges {
 		if len(change.Errands) == 0 {
-			t.tableWriter.Append([]string{change.Product, change.Action, ""})
+			t.tableWriter.Append([]string{change.GUID, change.Action, ""})
 		}
 		for i, errand := range change.Errands {
 			if i == 0 {
-				t.tableWriter.Append([]string{change.Product, change.Action, errand.Name})
+				t.tableWriter.Append([]string{change.GUID, change.Action, errand.Name})
 			} else {
 				t.tableWriter.Append([]string{"", "", errand.Name})
 			}

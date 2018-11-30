@@ -215,7 +215,7 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(version).To(Equal("97.19"))
 				Expect(str).To(Equal("stemcells-ubuntu-xenial"))
 
-				productFile, _, _, _, _:= fakePivnetDownloader.DownloadProductFileArgsForCall(0)
+				productFile, _, _, _, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
 
 				stemcellFile, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
 				Expect(stemcellFile.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))

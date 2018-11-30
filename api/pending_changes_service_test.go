@@ -47,7 +47,8 @@ var _ = Describe("PendingChangesService", func() {
 							"errands":[
 								{ "name":"errand-3", "post_deploy":"true" }
 							],
-							"action":"update"
+							"action":"update",
+                            "completeness_checks": {"configuration_complete": true, "stemcell_present": false, "configurable_properties_valid": true}
 						}]
 				  }`)),
 				}, nil
@@ -58,18 +59,23 @@ var _ = Describe("PendingChangesService", func() {
 
 			Expect(output.ChangeList).To(ConsistOf([]api.ProductChange{
 				{
-					Product: "product-123",
+					GUID: "product-123",
 					Errands: []api.Errand{
 						{Name: "errand-1", PostDeploy: "true"},
 					},
 					Action: "install",
 				},
 				{
-					Product: "product-234",
+					GUID:   "product-234",
+					Action: "update",
 					Errands: []api.Errand{
 						{Name: "errand-3", PostDeploy: "true"},
 					},
-					Action: "update",
+					CompletenessChecks: &api.CompletenessChecks{
+						ConfigurationComplete:       true,
+						StemcellPresent:             false,
+						ConfigurablePropertiesValid: true,
+					},
 				},
 			},
 			))

@@ -127,9 +127,9 @@ func (c DownloadProduct) Execute(args []string) error {
 func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileName string, stemcellVersion string) error {
 	c.logger.Info(fmt.Sprintf("Writing a list of downloaded artifact to %s", DownloadProductOutputFilename))
 	outputList := outputList{
-		ProductPath:  productFileName,
-		StemcellPath: stemcellFileName,
-		ProductSlug: c.Options.ProductSlug,
+		ProductPath:     productFileName,
+		StemcellPath:    stemcellFileName,
+		ProductSlug:     c.Options.ProductSlug,
 		StemcellVersion: stemcellVersion,
 	}
 

@@ -30,8 +30,8 @@ var _ = Describe("PendingChanges", func() {
 			pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 				ChangeList: []api.ProductChange{
 					{
-						Product: "some-product",
-						Action:  "update",
+						GUID:   "some-product",
+						Action: "update",
 						Errands: []api.Errand{
 							{
 								Name:       "some-errand",
@@ -46,7 +46,7 @@ var _ = Describe("PendingChanges", func() {
 						},
 					},
 					{
-						Product: "some-product-without-errand",
+						GUID:    "some-product-without-errand",
 						Action:  "install",
 						Errands: []api.Errand{},
 					},

@@ -18,6 +18,7 @@ type ConfigureProduct struct {
 	environFunc func() []string
 	service     configureProductService
 	logger      logger
+	target      string
 	Options     struct {
 		ConfigFile string   `long:"config"    short:"c" description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
 		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
@@ -30,6 +31,7 @@ type ConfigureProduct struct {
 type configureProductService interface {
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
+	ListStagedPendingChanges() (api.PendingChangesOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	ListStagedProducts() (api.StagedProductsOutput, error)
 	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
@@ -38,10 +40,17 @@ type configureProductService interface {
 	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
 }
 
-func NewConfigureProduct(environFunc func() []string, service configureProductService, logger logger) ConfigureProduct {
+type configureProduct struct {
+	config.ProductConfiguration `yaml:",inline"`
+	ValidateConfigComplete      bool                   `yaml:"validate-config-complete"`
+	Field                       map[string]interface{} `yaml:",inline"`
+}
+
+func NewConfigureProduct(environFunc func() []string, service configureProductService, target string, logger logger) ConfigureProduct {
 	return ConfigureProduct{
 		environFunc: environFunc,
 		service:     service,
+		target:      target,
 		logger:      logger,
 	}
 }
@@ -58,7 +67,9 @@ func (cp ConfigureProduct) Execute(args []string) error {
 
 	cp.logger.Printf("configuring product...")
 
-	cfg, err := cp.interpolateConfig()
+	cfg := configureProduct{ValidateConfigComplete: true}
+
+	cfg, err = cp.interpolateConfig(cfg)
 	if err != nil {
 		return err
 	}
@@ -93,6 +104,12 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return err
 	}
 
+	if cfg.ValidateConfigComplete {
+		if err := cp.validateConfigComplete(productGUID); err != nil {
+			return err
+		}
+	}
+
 	cp.logger.Printf("finished configuring product")
 
 	return nil
@@ -120,7 +137,7 @@ func getJSONProperties(properties interface{}) (string, error) {
 	return string(jsonProperties), nil
 }
 
-func (cp *ConfigureProduct) configureResources(cfg config.ProductConfiguration, productGUID string) error {
+func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID string) error {
 	if cfg.ResourceConfigProperties == nil {
 		cp.logger.Println("resource config properties are not provided, nothing to do here")
 		return nil
@@ -170,7 +187,7 @@ func (cp *ConfigureProduct) configureResources(cfg config.ProductConfiguration, 
 	return nil
 }
 
-func (cp *ConfigureProduct) configureProperties(cfg config.ProductConfiguration, productGUID string) error {
+func (cp *ConfigureProduct) configureProperties(cfg configureProduct, productGUID string) error {
 	if cfg.ProductProperties == nil {
 		cp.logger.Println("product properties are not provided, nothing to do here")
 		return nil
@@ -194,7 +211,7 @@ func (cp *ConfigureProduct) configureProperties(cfg config.ProductConfiguration,
 	return nil
 }
 
-func (cp *ConfigureProduct) configureNetwork(cfg config.ProductConfiguration, productGUID string) error {
+func (cp *ConfigureProduct) configureNetwork(cfg configureProduct, productGUID string) error {
 	if cfg.NetworkProperties == nil {
 		cp.logger.Println("network properties are not provided, nothing to do here")
 		return nil
@@ -219,7 +236,7 @@ func (cp *ConfigureProduct) configureNetwork(cfg config.ProductConfiguration, pr
 	return nil
 }
 
-func (cp *ConfigureProduct) configureErrands(cfg config.ProductConfiguration, productGUID string) error {
+func (cp *ConfigureProduct) configureErrands(cfg configureProduct, productGUID string) error {
 	if cfg.ErrandConfigs == nil || len(cfg.ErrandConfigs) == 0 {
 		cp.logger.Println("errands are not provided, nothing to do here")
 		return nil
@@ -246,8 +263,7 @@ func (cp *ConfigureProduct) configureErrands(cfg config.ProductConfiguration, pr
 	return nil
 }
 
-func (cp *ConfigureProduct) interpolateConfig() (config.ProductConfiguration, error) {
-	var cfg config.ProductConfiguration
+func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configureProduct, error) {
 	configContents, err := interpolate(interpolateOptions{
 		templateFile: cp.Options.ConfigFile,
 		varsFiles:    cp.Options.VarsFile,
@@ -256,18 +272,18 @@ func (cp *ConfigureProduct) interpolateConfig() (config.ProductConfiguration, er
 		opsFiles:     cp.Options.OpsFile,
 	}, "")
 	if err != nil {
-		return config.ProductConfiguration{}, err
+		return configureProduct{}, err
 	}
 
 	err = yaml.UnmarshalStrict(configContents, &cfg)
 	if err != nil {
-		return config.ProductConfiguration{}, fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
+		return configureProduct{}, fmt.Errorf("%s could not be parsed as valid configuration: %s", cp.Options.ConfigFile, err)
 	}
 
 	return cfg, nil
 }
 
-func (cp ConfigureProduct) validateConfig(cfg config.ProductConfiguration) error {
+func (cp ConfigureProduct) validateConfig(cfg configureProduct) error {
 	if cfg.ProductName == "" {
 		return fmt.Errorf("could not parse configure-product config: \"product-name\" is required")
 	}
@@ -284,7 +300,7 @@ func (cp ConfigureProduct) validateConfig(cfg config.ProductConfiguration) error
 	return nil
 }
 
-func (cp ConfigureProduct) getProductGUID(cfg config.ProductConfiguration) (string, error) {
+func (cp ConfigureProduct) getProductGUID(cfg configureProduct) (string, error) {
 	stagedProducts, err := cp.service.ListStagedProducts()
 	if err != nil {
 		return "", err
@@ -303,4 +319,20 @@ func (cp ConfigureProduct) getProductGUID(cfg config.ProductConfiguration) (stri
 	}
 
 	return productGUID, nil
+}
+
+func (cp ConfigureProduct) validateConfigComplete(productGUID string) error {
+	pendingChanges, err := cp.service.ListStagedPendingChanges()
+	if err != nil {
+		return err
+	}
+	for _, changeList := range pendingChanges.ChangeList {
+		if changeList.GUID == productGUID {
+			completenessCheck := changeList.CompletenessChecks
+			if !completenessCheck.ConfigurationComplete {
+				return fmt.Errorf("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing./nVisit the Ops Manager for details: %s", cp.target)
+			}
+		}
+	}
+	return nil
 }

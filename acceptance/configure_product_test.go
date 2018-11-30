@@ -31,6 +31,8 @@ var _ = Describe("configure-product command", func() {
 			w.Header().Set("Content-Type", "application/json")
 
 			switch req.URL.Path {
+			case "/api/v0/staged/pending_changes":
+				w.Write([]byte(`{}`))
 			case "/api/v0/installations":
 				w.Write([]byte(`{"installations": []}`))
 			case "/uaa/oauth/token":
@@ -249,7 +251,9 @@ var _ = Describe("configure-product command", func() {
 		}`, propertiesJSON, productNetworkJSON, nsxResourceConfigJSON)
 		configFile, err := ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
-		configFile.WriteString(configFileContents)
+		_, err = configFile.WriteString(configFileContents)
+		Expect(err).ToNot(HaveOccurred())
+
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

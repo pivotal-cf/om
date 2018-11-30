@@ -78,7 +78,6 @@ func (c ConfigureDirector) Execute(args []string) error {
 		return err
 	}
 
-
 	config, err := c.interpolateConfig()
 	if err != nil {
 		return err
