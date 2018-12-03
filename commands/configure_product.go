@@ -330,7 +330,7 @@ func (cp ConfigureProduct) validateConfigComplete(productGUID string) error {
 		if changeList.GUID == productGUID {
 			completenessCheck := changeList.CompletenessChecks
 			if !completenessCheck.ConfigurationComplete {
-				return fmt.Errorf("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing./nVisit the Ops Manager for details: %s", cp.target)
+				return fmt.Errorf("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing.\nVisit the Ops Manager for details: %s", cp.target)
 			}
 		}
 	}

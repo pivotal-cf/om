@@ -107,7 +107,7 @@ var _ = Describe("ConfigureProduct", func() {
 					"--config", configFile.Name(),
 				})
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(MatchError("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing./nVisit the Ops Manager for details: example.com"))
+				Expect(err).To(MatchError("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing.\nVisit the Ops Manager for details: example.com"))
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 				actual := service.UpdateStagedProductPropertiesArgsForCall(0)
