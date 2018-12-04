@@ -19,12 +19,52 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type TLSServer struct {
+	UploadHandler http.Handler
+}
+
+func (t *TLSServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var responseString string
+	w.Header().Set("Content-Type", "application/json")
+
+	switch req.URL.Path {
+	case "/uaa/oauth/token":
+		responseString = `{
+				"access_token": "some-opsman-token",
+				"token_type": "bearer",
+				"expires_in": 3600
+			}`
+	case "/api/v0/diagnostic_report":
+		responseString = "{}"
+	case "/api/v0/available_products":
+		if req.Method == "GET" {
+			responseString = "[]"
+		} else if req.Method == "POST" {
+			auth := req.Header.Get("Authorization")
+			if auth != "Bearer some-opsman-token" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			t.UploadHandler.ServeHTTP(w, req)
+			return
+		}
+	default:
+		out, err := httputil.DumpRequest(req, true)
+		Expect(err).NotTo(HaveOccurred())
+		Fail(fmt.Sprintf("unexpected request: %s", out))
+	}
+
+	w.Write([]byte(responseString))
+}
+
 var _ = Describe("upload-product command", func() {
 	var (
 		product       string
 		productFile   *os.File
 		server        *httptest.Server
 		uploadHandler func(http.ResponseWriter, *http.Request)
+		snip          chan struct{}
 	)
 
 	BeforeEach(func() {
@@ -61,40 +101,10 @@ name: some-product`)
 			w.Write([]byte("{}"))
 		}
 
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
+	})
 
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
-			case "/api/v0/diagnostic_report":
-				responseString = "{}"
-			case "/api/v0/available_products":
-				if req.Method == "GET" {
-					responseString = "[]"
-				} else if req.Method == "POST" {
-					auth := req.Header.Get("Authorization")
-					if auth != "Bearer some-opsman-token" {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					uploadHandler(w, req)
-					return
-				}
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-
-			w.Write([]byte(responseString))
-		}))
+	JustBeforeEach(func() {
+		server = httptest.NewTLSServer(&TLSServer{UploadHandler: http.HandlerFunc(uploadHandler)})
 	})
 
 	AfterEach(func() {
@@ -182,12 +192,13 @@ name: some-product`)
 
 		Context("when the server returns EOF during upload", func() {
 			BeforeEach(func() {
+				snip = make(chan struct{})
 				uploadCallCount := 0
 				uploadHandler = func(w http.ResponseWriter, req *http.Request) {
 					uploadCallCount++
 
 					if uploadCallCount == 1 {
-						server.CloseClientConnections()
+						close(snip)
 						return
 					} else {
 						err := req.ParseMultipartForm(100)
@@ -200,6 +211,14 @@ name: some-product`)
 						w.Write([]byte("{}"))
 					}
 				}
+			})
+
+			JustBeforeEach(func() {
+				go func() {
+					<-snip
+
+					server.CloseClientConnections()
+				}()
 			})
 
 			It("retries the upload", func() {
