@@ -77,28 +77,45 @@ var _ = Describe("ReadCloser", func() {
 			bar               *fakes.ProgressBar
 			closer            *fakeCloser
 			readCloser        *progress.ReadCloser
-			callbackWasCalled bool
+			callbackCallCount int
 		)
 
 		BeforeEach(func() {
 			bar = &fakes.ProgressBar{}
 			closer = &fakeCloser{}
 			bar.NewProxyReaderReturns(closer)
+			callbackCallCount = 0
 
-			readCloser = progress.NewReadCloser(closer, bar, func() { callbackWasCalled = true })
+			readCloser = progress.NewReadCloser(closer, bar, func() { callbackCallCount++ })
 		})
 
 		It("closes the underlying closer and calls Finish", func() {
-			Expect(closer.closeWasCalled).To(BeFalse())
+			Expect(closer.callCount).To(Equal(0))
 			Expect(bar.FinishCallCount()).To(Equal(0))
-			Expect(callbackWasCalled).To(BeFalse())
+			Expect(callbackCallCount).To(Equal(0))
 
 			err := readCloser.Close()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(closer.closeWasCalled).To(BeTrue())
+			Expect(closer.callCount).To(Equal(1))
 			Expect(bar.FinishCallCount()).To(Equal(1))
-			Expect(callbackWasCalled).To(BeTrue())
+			Expect(callbackCallCount).To(Equal(1))
+		})
+
+		It("no-ops if Close is called a second time", func() {
+			err := readCloser.Close()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(closer.callCount).To(Equal(1))
+			Expect(bar.FinishCallCount()).To(Equal(1))
+			Expect(callbackCallCount).To(Equal(1))
+
+			err = readCloser.Close()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(closer.callCount).To(Equal(1))
+			Expect(bar.FinishCallCount()).To(Equal(1))
+			Expect(callbackCallCount).To(Equal(1))
 		})
 
 		Context("when there is no callback", func() {
@@ -114,7 +131,7 @@ var _ = Describe("ReadCloser", func() {
 })
 
 type fakeCloser struct {
-	closeWasCalled bool
+	callCount int
 }
 
 func (f *fakeCloser) Read([]byte) (int, error) {
@@ -122,6 +139,6 @@ func (f *fakeCloser) Read([]byte) (int, error) {
 }
 
 func (f *fakeCloser) Close() error {
-	f.closeWasCalled = true
+	f.callCount++
 	return nil
 }
