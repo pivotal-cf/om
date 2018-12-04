@@ -95,7 +95,8 @@ func (w *Writer) Start() {
 // Stop stops the listener that updates the terminal
 func (w *Writer) Stop() {
 	w.Flush()
-	close(w.tdone)
+	w.tdone <- true
+	<-w.tdone
 }
 
 // Listen listens for updates to the writer's buffer and flushes to the out provided. It blocks the runtime.
@@ -111,6 +112,7 @@ func (w *Writer) Listen() {
 			w.ticker.Stop()
 			w.ticker = nil
 			w.mtx.Unlock()
+			close(w.tdone)
 			return
 		}
 	}

@@ -105,12 +105,13 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
-  branch = "master"
-  digest = "1:b87f828d0392f61272dbfd2f5f5d39cdad674a4b604441e3fc4119c2e98ac92d"
+  branch = "PR-fix-start-panic"
+  digest = "1:c8f0c61f53479f83a82baec4ac2912cd54add5fdeeaee57794bcf232d343d20f"
   name = "github.com/gosuri/uilive"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "ac356e6e42cd31fcef8e6aec13ae9ed6fe87713e"
+  revision = "dba397846782463861339b89ce061cc560086a52"
+  source = "github.com/pivotal/uilive"
 
 [[projects]]
   digest = "1:bc4f7eec3b7be8c6cb1f0af6c1e3333d5bb71072951aaaae2f05067b0803f287"
@@ -137,12 +138,11 @@
   revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
-  digest = "1:831e7951ac89dbdbddac0e1a92e2af9bc4ffe7982117d0624e9a06e2ad12cbb4"
+  digest = "1:4b7ad06825a5ef932f35a66ac4a959facd323d70ed2106c7e2f3fcca07d66cc3"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
     "config",
-    "extensions/table",
     "ginkgo",
     "ginkgo/convert",
     "ginkgo/interrupthandler",
@@ -237,6 +237,14 @@
   pruneopts = "NUT"
   revision = "ae14d05bf21b657eefa68c52a97764a52d43d1f4"
   version = "v0.0.55"
+
+[[projects]]
+  digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   digest = "1:b372c73a3511a44b1c0937258f48dba29d22613d5f6190e91d8dd0bab40dd190"
@@ -364,7 +372,6 @@
     "github.com/gosuri/uilive",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
-    "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/ginkgo/ginkgo",
     "github.com/onsi/gomega",
     "github.com/onsi/gomega/gbytes",
@@ -377,6 +384,7 @@
     "github.com/pivotal-cf/kiln/proofing",
     "github.com/pivotal-cf/pivnet-cli/filter",
     "github.com/pivotal-cf/pivnet-cli/gp",
+    "github.com/pkg/errors",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",
     "gopkg.in/cheggaaa/pb.v1",
