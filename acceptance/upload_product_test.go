@@ -21,9 +21,10 @@ import (
 
 var _ = Describe("upload-product command", func() {
 	var (
-		product     string
-		productFile *os.File
-		server      *httptest.Server
+		product       string
+		productFile   *os.File
+		server        *httptest.Server
+		uploadHandler func(http.ResponseWriter, *http.Request)
 	)
 
 	BeforeEach(func() {
@@ -52,7 +53,15 @@ name: some-product`)
 		err = zipper.Close()
 		Expect(err).NotTo(HaveOccurred())
 
-		server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		uploadHandler = func(w http.ResponseWriter, req *http.Request) {
+			err := req.ParseMultipartForm(100)
+			Expect(err).NotTo(HaveOccurred())
+
+			product = req.MultipartForm.File["product[file]"][0].Filename
+			w.Write([]byte("{}"))
+		}
+
+		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			var responseString string
 			w.Header().Set("Content-Type", "application/json")
 
@@ -75,11 +84,8 @@ name: some-product`)
 						return
 					}
 
-					err := req.ParseMultipartForm(100)
-					Expect(err).NotTo(HaveOccurred())
-
-					product = req.MultipartForm.File["product[file]"][0].Filename
-					responseString = "{}"
+					uploadHandler(w, req)
+					return
 				}
 			default:
 				out, err := httputil.DumpRequest(req, true)
@@ -89,10 +95,6 @@ name: some-product`)
 
 			w.Write([]byte(responseString))
 		}))
-	})
-
-	JustBeforeEach(func() {
-		server.StartTLS()
 	})
 
 	AfterEach(func() {
@@ -181,57 +183,24 @@ name: some-product`)
 		Context("when the server returns EOF during upload", func() {
 			BeforeEach(func() {
 				uploadCallCount := 0
-				server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-					var responseString string
-					w.Header().Set("Content-Type", "application/json")
+				uploadHandler = func(w http.ResponseWriter, req *http.Request) {
+					uploadCallCount++
 
-					switch req.URL.Path {
-					case "/uaa/oauth/token":
-						responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
-					case "/api/v0/diagnostic_report":
-						responseString = "{}"
-					case "/api/v0/available_products":
-						if req.Method == "GET" {
-							responseString = "[]"
-						} else if req.Method == "POST" {
-							auth := req.Header.Get("Authorization")
-							if auth != "Bearer some-opsman-token" {
-								w.WriteHeader(http.StatusUnauthorized)
-								return
-							}
-
-							uploadCallCount++
-
-							if uploadCallCount == 1 {
-								server.CloseClientConnections()
-								return
-							} else {
-								err := req.ParseMultipartForm(100)
-								if err != nil {
-									http.Error(w, fmt.Sprintf("failed to parse request body: %s", err), http.StatusInternalServerError)
-									return
-								}
-
-								product = req.MultipartForm.File["product[file]"][0].Filename
-								responseString = "{}"
-							}
+					if uploadCallCount == 1 {
+						server.CloseClientConnections()
+						return
+					} else {
+						err := req.ParseMultipartForm(100)
+						if err != nil {
+							http.Error(w, fmt.Sprintf("failed to parse request body: %s", err), http.StatusInternalServerError)
+							return
 						}
-					default:
-						out, err := httputil.DumpRequest(req, true)
-						Expect(err).NotTo(HaveOccurred())
-						Fail(fmt.Sprintf("unexpected request: %s", out))
+
+						product = req.MultipartForm.File["product[file]"][0].Filename
+						w.Write([]byte("{}"))
 					}
-
-					w.Write([]byte(responseString))
-				}))
+				}
 			})
-
-			// TODO: remove server duplication
-			// TODO: test that if 3 retries fail then om returns EOF error
 
 			It("retries the upload", func() {
 				command := exec.Command(pathToMain,
