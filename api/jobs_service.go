@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 // TODO: add omitempty everywhere
@@ -41,7 +43,7 @@ type Job struct {
 func (a Api) ListStagedProductJobs(productGUID string) (map[string]string, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs", productGUID), nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not make api request to jobs endpoint: %s", err)
+		return nil, errors.Wrap(err, "could not make api request to jobs endpoint")
 	}
 	defer resp.Body.Close()
 
@@ -51,7 +53,7 @@ func (a Api) ListStagedProductJobs(productGUID string) (map[string]string, error
 
 	err = json.NewDecoder(resp.Body).Decode(&jobsOutput)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode jobs json response: %s", err)
+		return nil, errors.Wrap(err, "failed to decode jobs json response")
 	}
 
 	jobGUIDMap := make(map[string]string)
@@ -65,7 +67,7 @@ func (a Api) ListStagedProductJobs(productGUID string) (map[string]string, error
 func (a Api) GetStagedProductJobResourceConfig(productGUID, jobGUID string) (JobProperties, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), nil)
 	if err != nil {
-		return JobProperties{}, fmt.Errorf("could not make api request to resource_config endpoint: %s", err)
+		return JobProperties{}, errors.Wrap(err, "could not make api request to resource_config endpoint")
 	}
 	defer resp.Body.Close()
 
@@ -85,7 +87,7 @@ func (a Api) UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, j
 
 	_, err = a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), jsonPayload)
 	if err != nil {
-		return fmt.Errorf("could not make api request to jobs resource_config endpoint: %s", err)
+		return errors.Wrap(err, "could not make api request to jobs resource_config endpoint")
 	}
 
 	return nil

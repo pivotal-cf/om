@@ -196,7 +196,7 @@ var _ = Describe("StagedProducts", func() {
 						ProductName:    "foo",
 						ProductVersion: "bar",
 					}, "")
-					Expect(err).To(MatchError("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error"))
+					Expect(err.Error()).To(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error"))
 				})
 			})
 
@@ -436,7 +436,7 @@ var _ = Describe("StagedProducts", func() {
 
 				It("returns an error", func() {
 					_, err := service.ListStagedProducts()
-					Expect(err).To(MatchError("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: nope"))
+					Expect(err.Error()).To(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: nope"))
 				})
 			})
 

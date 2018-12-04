@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/pkg/errors"
 )
 
 var readAll = ioutil.ReadAll
@@ -36,7 +38,7 @@ func (a Api) UpdateStagedProductErrands(productID string, errandName string, pos
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
 	_, err = a.sendAPIRequest("PUT", path, payload)
 	if err != nil {
-		return fmt.Errorf("failed to set errand state: %s", err)
+		return errors.Wrap(err, "failed to set errand state")
 	}
 
 	return nil
@@ -47,7 +49,7 @@ func (a Api) ListStagedProductErrands(productID string) (ErrandsListOutput, erro
 
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/errands", productID), nil)
 	if err != nil {
-		return errandsListOutput, fmt.Errorf("failed to list errands: %s", err)
+		return errandsListOutput, errors.Wrap(err, "failed to list errands")
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&errandsListOutput)

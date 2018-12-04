@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/pkg/errors"
 )
 
 type VMExtensionResponse struct {
@@ -23,7 +25,7 @@ type CreateVMExtension struct {
 func (a Api) CreateStagedVMExtension(input CreateVMExtension) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
-		return fmt.Errorf("could not marshal json: %s", err)
+		return errors.Wrap(err, "could not marshal json")
 	}
 
 	resp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/vm_extensions/%s", input.Name), jsonData)
@@ -48,7 +50,7 @@ func (a Api) ListStagedVMExtensions() ([]VMExtension, error) {
 	}
 	var vmExtensions VMExtensionResponse
 	if err = json.Unmarshal(body, &vmExtensions); err != nil {
-		return nil, fmt.Errorf("could not parse json: %s", err)
+		return nil, errors.Wrap(err, "could not parse json")
 	}
 
 	return vmExtensions.VMExtensions, nil

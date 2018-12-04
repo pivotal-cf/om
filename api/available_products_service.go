@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -66,13 +65,13 @@ func (a Api) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAv
 func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 	resp, err := a.sendAPIRequest("GET", availableProductsEndpoint, nil)
 	if err != nil {
-		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %s", err)
+		return AvailableProductsOutput{}, errors.Wrap(err, "could not make api request to available_products endpoint")
 	}
 	defer resp.Body.Close()
 
 	var availableProducts []ProductInfo
 	if err := json.NewDecoder(resp.Body).Decode(&availableProducts); err != nil {
-		return AvailableProductsOutput{}, fmt.Errorf("could not unmarshal available_products response: %s", err)
+		return AvailableProductsOutput{}, errors.Wrap(err, "could not unmarshal available_products response")
 	}
 
 	return AvailableProductsOutput{ProductsList: availableProducts}, nil
@@ -91,7 +90,7 @@ func (a Api) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
 
 	resp, err := a.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("could not make api request to available_products endpoint: %s", err)
+		return errors.Wrap(err, "could not make api request to available_products endpoint")
 	}
 
 	defer resp.Body.Close()

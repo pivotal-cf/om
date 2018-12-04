@@ -1,9 +1,10 @@
 package api
 
 import (
-	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 type StemcellUploadInput struct {
@@ -25,7 +26,7 @@ func (a Api) UploadStemcell(input StemcellUploadInput) (StemcellUploadOutput, er
 
 	resp, err := a.progressClient.Do(req)
 	if err != nil {
-		return StemcellUploadOutput{}, fmt.Errorf("could not make api request to stemcells endpoint: %s", err)
+		return StemcellUploadOutput{}, errors.Wrap(err, "could not make api request to stemcells endpoint")
 	}
 
 	defer resp.Body.Close()
