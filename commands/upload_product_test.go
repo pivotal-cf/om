@@ -1,8 +1,8 @@
 package commands_test
 
 import (
-	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -13,6 +13,7 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/formcontent"
+	"github.com/pkg/errors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -219,6 +220,24 @@ var _ = Describe("UploadProduct", func() {
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("expected version 2.5.0 does not match product version 1.5.0"))
+		})
+	})
+
+	Context("when the product fails to upload the first time with a retryable error", func() {
+		It("tries again", func() {
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+
+			fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
+			fakeService.UploadAvailableProductReturnsOnCall(1, api.UploadAvailableProductOutput{}, nil)
+
+			err := command.Execute([]string{"--product", "/some/path"})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(multipart.AddFileCallCount()).To(Equal(2))
+			Expect(multipart.FinalizeCallCount()).To(Equal(2))
+			Expect(multipart.ResetCallCount()).To(Equal(1))
+
+			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(2))
 		})
 	})
 

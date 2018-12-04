@@ -6,6 +6,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/extractor"
+	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/validator"
 )
 
@@ -94,25 +95,30 @@ func (up UploadProduct) Execute(args []string) error {
 		return nil
 	}
 
-	up.logger.Printf("processing product")
-	err = up.multipart.AddFile("product[file]", up.Options.Product)
-	if err != nil {
-		return fmt.Errorf("failed to load product: %s", err)
+	for i := 0; i < 3; i++ {
+		up.logger.Printf("processing product")
+
+		err = up.multipart.AddFile("product[file]", up.Options.Product)
+		if err != nil {
+			return fmt.Errorf("failed to load product: %s", err)
+		}
+
+		submission := up.multipart.Finalize()
+
+		up.logger.Printf("beginning product upload to Ops Manager")
+
+		_, err = up.service.UploadAvailableProduct(api.UploadAvailableProductInput{
+			Product:         submission.Content,
+			ContentType:     submission.ContentType,
+			ContentLength:   submission.ContentLength,
+			PollingInterval: up.Options.PollingInterval,
+		})
+		if network.CanRetry(err) {
+			up.multipart.Reset()
+		} else {
+			break
+		}
 	}
-
-	submission := up.multipart.Finalize()
-	if err != nil {
-		return fmt.Errorf("failed to create multipart form: %s", err)
-	}
-
-	up.logger.Printf("beginning product upload to Ops Manager")
-
-	_, err = up.service.UploadAvailableProduct(api.UploadAvailableProductInput{
-		Product:         submission.Content,
-		ContentType:     submission.ContentType,
-		ContentLength:   submission.ContentLength,
-		PollingInterval: up.Options.PollingInterval,
-	})
 	if err != nil {
 		return fmt.Errorf("failed to upload product: %s", err)
 	}
