@@ -11,12 +11,12 @@ type Bar struct {
 	bar *pb.ProgressBar
 }
 
-func NewBar() Bar {
+func NewBar() *Bar {
 	bar := pb.New(0)
 	bar.SetUnits(pb.U_BYTES)
 	bar.Width = 80
 	bar.Output = os.Stderr
-	return Bar{bar}
+	return &Bar{bar}
 }
 
 func (b Bar) NewProxyReader(r io.Reader) io.ReadCloser {
@@ -33,4 +33,8 @@ func (b Bar) Finish() {
 
 func (b Bar) SetTotal64(size int64) {
 	b.bar.Total = size
+}
+
+func (b *Bar) Reset() {
+	b.bar = NewBar().bar
 }

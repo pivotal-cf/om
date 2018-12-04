@@ -22,6 +22,10 @@ type ProgressBar struct {
 	newProxyReaderReturnsOnCall map[int]struct {
 		result1 io.ReadCloser
 	}
+	ResetStub        func()
+	resetMutex       sync.RWMutex
+	resetArgsForCall []struct {
+	}
 	SetTotal64Stub        func(int64)
 	setTotal64Mutex       sync.RWMutex
 	setTotal64ArgsForCall []struct {
@@ -118,6 +122,29 @@ func (fake *ProgressBar) NewProxyReaderReturnsOnCall(i int, result1 io.ReadClose
 	}{result1}
 }
 
+func (fake *ProgressBar) Reset() {
+	fake.resetMutex.Lock()
+	fake.resetArgsForCall = append(fake.resetArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Reset", []interface{}{})
+	fake.resetMutex.Unlock()
+	if fake.ResetStub != nil {
+		fake.ResetStub()
+	}
+}
+
+func (fake *ProgressBar) ResetCallCount() int {
+	fake.resetMutex.RLock()
+	defer fake.resetMutex.RUnlock()
+	return len(fake.resetArgsForCall)
+}
+
+func (fake *ProgressBar) ResetCalls(stub func()) {
+	fake.resetMutex.Lock()
+	defer fake.resetMutex.Unlock()
+	fake.ResetStub = stub
+}
+
 func (fake *ProgressBar) SetTotal64(arg1 int64) {
 	fake.setTotal64Mutex.Lock()
 	fake.setTotal64ArgsForCall = append(fake.setTotal64ArgsForCall, struct {
@@ -179,6 +206,8 @@ func (fake *ProgressBar) Invocations() map[string][][]interface{} {
 	defer fake.finishMutex.RUnlock()
 	fake.newProxyReaderMutex.RLock()
 	defer fake.newProxyReaderMutex.RUnlock()
+	fake.resetMutex.RLock()
+	defer fake.resetMutex.RUnlock()
 	fake.setTotal64Mutex.RLock()
 	defer fake.setTotal64Mutex.RUnlock()
 	fake.startMutex.RLock()

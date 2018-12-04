@@ -33,10 +33,13 @@ var _ = Describe("ProgressClient", func() {
 
 	Describe("Do", func() {
 		It("makes a request to upload the product to the Ops Manager", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader("{}")),
-			}, nil)
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				req.Body.Close()
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("{}")),
+				}, nil
+			}
 
 			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some content")))
 
@@ -61,6 +64,8 @@ var _ = Describe("ProgressClient", func() {
 			rawReqBody, err := ioutil.ReadAll(req.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(rawReqBody)).To(Equal("some content"))
+
+			Expect(progressBar.ResetCallCount()).To(Equal(1))
 
 			Expect(progressBar.SetTotal64CallCount()).To(Equal(1))
 			Expect(progressBar.SetTotal64ArgsForCall(0)).To(Equal(int64(12)))
@@ -204,7 +209,10 @@ var _ = Describe("ProgressClient", func() {
 		Context("when an error occurs", func() {
 			Context("when the client errors performing the request", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some client error"))
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						req.Body.Close()
+						return &http.Response{}, errors.New("some client error")
+					}
 
 					req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 					Expect(err).NotTo(HaveOccurred())
@@ -216,12 +224,10 @@ var _ = Describe("ProgressClient", func() {
 
 			Context("when server responds with timeout error before upload has finished", func() {
 				It("returns an error", func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						return &http.Response{
-							StatusCode: http.StatusRequestTimeout,
-							Body:       ioutil.NopCloser(strings.NewReader(`something from nginx probably xml`)),
-						}, nil
-					}
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusRequestTimeout,
+						Body:       ioutil.NopCloser(strings.NewReader(`something from nginx probably xml`)),
+					}, nil)
 
 					var req *http.Request
 					req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
@@ -236,7 +242,7 @@ var _ = Describe("ProgressClient", func() {
 						close(done)
 					}()
 
-					Eventually(done).Should(BeClosed())
+					Eventually(done, 3).Should(BeClosed())
 					Expect(resp.StatusCode).To(Equal(http.StatusRequestTimeout))
 				})
 			})
