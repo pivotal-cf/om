@@ -12,6 +12,51 @@ import (
 var _ = Describe("Formcontent", func() {
 	var form *formcontent.Form
 
+	Describe("Reset", func() {
+		var fileWithContent string
+
+		BeforeEach(func() {
+			handle, err := ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = handle.WriteString("some content")
+			Expect(err).NotTo(HaveOccurred())
+
+			fileWithContent = handle.Name()
+
+			form = formcontent.NewForm()
+			err = form.AddFile("something[original-file]", fileWithContent)
+			Expect(err).NotTo(HaveOccurred())
+			form.AddField("key", "value")
+
+			submission := form.Finalize()
+			Expect(submission.ContentLength).NotTo(BeZero())
+
+			// drain the reader to force pipe to be closed
+			_, err = ioutil.ReadAll(submission.Content)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			os.Remove(fileWithContent)
+		})
+
+		It("resets the fields on the form", func() {
+			form.Reset()
+
+			err := form.AddFile("something[other-file]", fileWithContent)
+			Expect(err).NotTo(HaveOccurred())
+
+			submission := form.Finalize()
+			Expect(submission.ContentLength).NotTo(BeZero())
+
+			contents, err := ioutil.ReadAll(submission.Content)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(contents).To(ContainSubstring("other-file"))
+			Expect(contents).NotTo(ContainSubstring("original-file"))
+		})
+	})
+
 	Describe("AddFile", func() {
 		var (
 			fileWithContent1 string
