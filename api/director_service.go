@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	yamlConverter "github.com/ghodss/yaml"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -61,7 +62,7 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) 
 	azs := AvailabilityZones{}
 	err := yaml.Unmarshal(input.AvailabilityZones, &azs.AvailabilityZones)
 	if err != nil {
-		return fmt.Errorf("provided AZ config is not well-formed JSON: %s", err)
+		return errors.Wrap(err, "provided AZ config is not well-formed JSON")
 	}
 
 	for i, az := range azs.AvailabilityZones {
@@ -77,12 +78,12 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) 
 
 	decoratedConfig, err := yaml.Marshal(azs)
 	if err != nil {
-		return fmt.Errorf("problem marshalling request: %s", err) // un-tested
+		return errors.Wrap(err, "problem marshalling request") // un-tested
 	}
 
 	jsonData, err := yamlConverter.YAMLToJSON(decoratedConfig)
 	if err != nil {
-		return fmt.Errorf("problem converting request to JSON: %s", err) // un-tested
+		return errors.Wrap(err, "problem converting request to JSON") // un-tested
 	}
 
 	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/availability_zones", jsonData)
@@ -93,7 +94,7 @@ func (a Api) UpdateStagedDirectorNetworks(input NetworkInput) error {
 	networks := Networks{}
 	err := yaml.Unmarshal(input.Networks, &networks)
 	if err != nil {
-		return fmt.Errorf("provided networks config is not well-formed JSON: %s", err)
+		return errors.Wrap(err, "provided networks config is not well-formed JSON")
 	}
 
 	for i, network := range networks.Networks {
@@ -109,12 +110,12 @@ func (a Api) UpdateStagedDirectorNetworks(input NetworkInput) error {
 
 	decoratedConfig, err := yaml.Marshal(networks)
 	if err != nil {
-		return fmt.Errorf("problem marshalling request: %s", err) // un-tested
+		return errors.Wrap(err, "problem marshalling request") // un-tested
 	}
 
 	jsonData, err := yamlConverter.YAMLToJSON(decoratedConfig)
 	if err != nil {
-		return fmt.Errorf("problem converting request to JSON: %s", err) // un-tested
+		return errors.Wrap(err, "problem converting request to JSON") // un-tested
 	}
 
 	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/networks", jsonData)
@@ -129,7 +130,7 @@ func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) e
 	}
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
-		return fmt.Errorf("could not marshal json: %s", err)
+		return errors.Wrap(err, "could not marshal json")
 	}
 
 	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/network_and_az", jsonData)
@@ -139,7 +140,7 @@ func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) e
 func (a Api) UpdateStagedDirectorProperties(input DirectorProperties) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
-		return fmt.Errorf("could not marshal json: %s", err)
+		return errors.Wrap(err, "could not marshal json")
 	}
 
 	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/properties", jsonData)
@@ -150,7 +151,7 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 	existingNetworksResponse, err := a.sendAPIRequest("GET", "/api/v0/staged/director/networks", nil)
 	if err != nil {
 		if existingNetworksResponse.StatusCode != http.StatusNotFound {
-			return Networks{}, fmt.Errorf("unable to fetch existing network configuration: %s", err)
+			return Networks{}, errors.Wrap(err, "unable to fetch existing network configuration")
 		}
 	}
 
@@ -161,13 +162,13 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 
 	existingNetworksJSON, err := ioutil.ReadAll(existingNetworksResponse.Body)
 	if err != nil {
-		return Networks{}, fmt.Errorf("unable to read existing network configuration: %s", err) // un-tested
+		return Networks{}, errors.Wrap(err, "unable to read existing network configuration") // un-tested
 	}
 
 	var existingNetworks Networks
 	err = yaml.Unmarshal(existingNetworksJSON, &existingNetworks)
 	if err != nil {
-		return Networks{}, fmt.Errorf("problem retrieving existing networks: response is not well-formed: %s", err)
+		return Networks{}, errors.Wrap(err, "problem retrieving existing networks: response is not well-formed")
 	}
 
 	for _, network := range networks.Networks {
@@ -185,7 +186,7 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 	existingAzsResponse, err := a.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	if err != nil {
 		if existingAzsResponse.StatusCode != http.StatusNotFound {
-			return AvailabilityZones{}, fmt.Errorf("unable to fetch existing AZ configuration: %s", err)
+			return AvailabilityZones{}, errors.Wrap(err, "unable to fetch existing AZ configuration")
 		}
 	}
 
@@ -196,13 +197,13 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 
 	existingAzsJSON, err := ioutil.ReadAll(existingAzsResponse.Body)
 	if err != nil {
-		return AvailabilityZones{}, fmt.Errorf("unable to read existing AZ configuration: %s", err) // un-tested
+		return AvailabilityZones{}, errors.Wrap(err, "unable to read existing AZ configuration") // un-tested
 	}
 
 	var existingAZs AvailabilityZones
 	err = yaml.Unmarshal(existingAzsJSON, &existingAZs)
 	if err != nil {
-		return AvailabilityZones{}, fmt.Errorf("problem retrieving existing AZs: response is not well-formed: %s", err)
+		return AvailabilityZones{}, errors.Wrap(err, "problem retrieving existing AZs: response is not well-formed")
 	}
 
 	for _, az := range azs.AvailabilityZones {
@@ -225,4 +226,3 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 	}
 	return azs, nil
 }
-

@@ -1,9 +1,10 @@
 package api
 
 import (
-	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 type RequestServiceCurlInput struct {
@@ -22,13 +23,13 @@ type RequestServiceCurlOutput struct {
 func (a Api) Curl(input RequestServiceCurlInput) (RequestServiceCurlOutput, error) {
 	request, err := http.NewRequest(input.Method, input.Path, input.Data)
 	if err != nil {
-		return RequestServiceCurlOutput{}, fmt.Errorf("failed constructing request: %s", err)
+		return RequestServiceCurlOutput{}, errors.Wrap(err, "failed constructing request")
 	}
 
 	request.Header = input.Headers
 	response, err := a.client.Do(request)
 	if err != nil {
-		return RequestServiceCurlOutput{}, fmt.Errorf("failed submitting request: %s", err)
+		return RequestServiceCurlOutput{}, errors.Wrap(err, "failed submitting request")
 	}
 
 	output := RequestServiceCurlOutput{

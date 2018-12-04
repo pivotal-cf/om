@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 func (a Api) sendAPIRequest(method, endpoint string, jsonData []byte) (*http.Response, error) {
@@ -21,14 +23,14 @@ func (a Api) sendUnauthedAPIRequest(method, endpoint string, jsonData []byte) (*
 func sendRequest(client httpClient, method, endpoint string, jsonData []byte) (*http.Response, error) {
 	req, err := http.NewRequest(method, endpoint, bytes.NewReader(jsonData))
 	if err != nil {
-		return nil, fmt.Errorf("could not create api request %s %s: %s", method, endpoint, err.Error())
+		return nil, errors.Wrap(err, fmt.Sprintf("could not create api request %s %s", method, endpoint))
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return resp, fmt.Errorf("could not send api request to %s %s: %s", method, endpoint, err.Error())
+		return resp, errors.Wrap(err, fmt.Sprintf("could not send api request to %s %s", method, endpoint))
 	}
 
 	err = validateStatusOK(resp)
