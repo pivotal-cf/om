@@ -10,6 +10,8 @@ import (
 	"github.com/pivotal-cf/om/validator"
 )
 
+const maxUploadRetries = 2
+
 type UploadProduct struct {
 	multipart multipart
 	logger    logger
@@ -95,7 +97,7 @@ func (up UploadProduct) Execute(args []string) error {
 		return nil
 	}
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i <= maxUploadRetries; i++ {
 		up.logger.Printf("processing product")
 
 		err = up.multipart.AddFile("product[file]", up.Options.Product)
@@ -113,7 +115,8 @@ func (up UploadProduct) Execute(args []string) error {
 			ContentLength:   submission.ContentLength,
 			PollingInterval: up.Options.PollingInterval,
 		})
-		if network.CanRetry(err) {
+		if network.CanRetry(err) && i < maxUploadRetries {
+			up.logger.Printf("retrying product upload after error: %s\n", err)
 			up.multipart.Reset()
 		} else {
 			break

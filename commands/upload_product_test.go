@@ -241,6 +241,24 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
+	Context("when the product fails to upload three times", func() {
+		It("returns an error", func() {
+			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+
+			fakeService.UploadAvailableProductReturns(api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
+
+			err := command.Execute([]string{"--product", "/some/path"})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("EOF"))
+
+			Expect(multipart.AddFileCallCount()).To(Equal(3))
+			Expect(multipart.FinalizeCallCount()).To(Equal(3))
+			Expect(multipart.ResetCallCount()).To(Equal(2))
+
+			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(3))
+		})
+	})
+
 	Context("when config file is provided", func() {
 		var configFile *os.File
 
