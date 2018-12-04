@@ -52,7 +52,7 @@ name: some-product`)
 		err = zipper.Close()
 		Expect(err).NotTo(HaveOccurred())
 
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			var responseString string
 			w.Header().Set("Content-Type", "application/json")
 
@@ -89,6 +89,10 @@ name: some-product`)
 
 			w.Write([]byte(responseString))
 		}))
+	})
+
+	JustBeforeEach(func() {
+		server.StartTLS()
 	})
 
 	AfterEach(func() {
@@ -171,6 +175,78 @@ name: some-product`)
 
 				Eventually(session, 5).Should(gexec.Exit(1))
 				Eventually(session.Err, 5).Should(gbytes.Say(`no such file or directory`))
+			})
+		})
+
+		Context("when the server returns EOF during upload", func() {
+			BeforeEach(func() {
+				uploadCallCount := 0
+				server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					var responseString string
+					w.Header().Set("Content-Type", "application/json")
+
+					switch req.URL.Path {
+					case "/uaa/oauth/token":
+						responseString = `{
+				"access_token": "some-opsman-token",
+				"token_type": "bearer",
+				"expires_in": 3600
+			}`
+					case "/api/v0/diagnostic_report":
+						responseString = "{}"
+					case "/api/v0/available_products":
+						if req.Method == "GET" {
+							responseString = "[]"
+						} else if req.Method == "POST" {
+							auth := req.Header.Get("Authorization")
+							if auth != "Bearer some-opsman-token" {
+								w.WriteHeader(http.StatusUnauthorized)
+								return
+							}
+
+							uploadCallCount++
+
+							if uploadCallCount == 1 {
+								server.CloseClientConnections()
+								return
+							} else {
+								err := req.ParseMultipartForm(100)
+								if err != nil {
+									http.Error(w, fmt.Sprintf("failed to parse request body: %s", err), http.StatusInternalServerError)
+									return
+								}
+
+								product = req.MultipartForm.File["product[file]"][0].Filename
+								responseString = "{}"
+							}
+						}
+					default:
+						out, err := httputil.DumpRequest(req, true)
+						Expect(err).NotTo(HaveOccurred())
+						Fail(fmt.Sprintf("unexpected request: %s", out))
+					}
+
+					w.Write([]byte(responseString))
+				}))
+			})
+
+			// TODO: remove server duplication
+			// TODO: test that if 3 retries fail then om returns EOF error
+
+			It("retries the upload", func() {
+				command := exec.Command(pathToMain,
+					"--target", server.URL,
+					"--username", "some-username",
+					"--password", "some-password",
+					"--skip-ssl-validation",
+					"upload-product",
+					"--product", productFile.Name(),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(0))
 			})
 		})
 	})

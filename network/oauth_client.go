@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
@@ -142,7 +143,7 @@ func retrieveTokenWithRetry(config *oauth2.Config, ctx context.Context, username
 			fmt.Fprintf(os.Stderr, "\nRetrying, attempt %d out of %d...\n", i+1, TOKEN_ATTEMPT_COUNT)
 		}
 		token, err = config.PasswordCredentialsToken(ctx, username, password)
-		if !canRetry(err) {
+		if !CanRetry(err) {
 			break
 		}
 
@@ -163,7 +164,7 @@ func httpResponseWithRetry(client *http.Client, request *http.Request) (*http.Re
 retry:
 	resp, err := client.Do(request)
 	if client.Timeout == 0 {
-		if canRetry(err) {
+		if CanRetry(err) {
 			goto retry
 		}
 	}
@@ -175,12 +176,15 @@ retry:
 	return resp, nil
 }
 
-func canRetry(err error) bool {
+func CanRetry(err error) bool {
 	if err != nil {
-		if ne, ok := err.(net.Error); ok {
-			if ne.Temporary() {
-				return true
-			}
+		err = errors.Cause(err)
+		if IsTemporary(err) {
+			return true
+		}
+
+		if ue, ok := err.(*url.Error); ok {
+			err = ue.Err
 		}
 
 		if err == io.EOF {

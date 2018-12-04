@@ -27,6 +27,7 @@ type UploadStemcell struct {
 //go:generate counterfeiter -o ./fakes/multipart.go --fake-name Multipart . multipart
 type multipart interface {
 	Finalize() formcontent.ContentSubmission
+	Reset()
 	AddFile(key, path string) error
 	AddField(key, value string) error
 }
