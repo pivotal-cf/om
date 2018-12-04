@@ -86,7 +86,7 @@ func (w *Writer) Flush() error {
 func (w *Writer) Start() {
 	if w.ticker == nil {
 		w.ticker = time.NewTicker(w.RefreshInterval)
-		w.tdone = make(chan bool, 1)
+		w.tdone = make(chan bool)
 	}
 
 	go w.Listen()

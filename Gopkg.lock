@@ -106,11 +106,11 @@
 
 [[projects]]
   branch = "PR-fix-start-panic"
-  digest = "1:c8f0c61f53479f83a82baec4ac2912cd54add5fdeeaee57794bcf232d343d20f"
+  digest = "1:37285883bcfd879ed8c0daa31d511a0f8569ebb55c5cdc3f02c837482c2673c8"
   name = "github.com/gosuri/uilive"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "dba397846782463861339b89ce061cc560086a52"
+  revision = "921d4ab784bde24c849f0d93b4c2e615fc4a590c"
   source = "github.com/pivotal/uilive"
 
 [[projects]]
