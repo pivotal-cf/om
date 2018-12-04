@@ -13,6 +13,7 @@ type progressBar interface {
 	Start()
 	Finish()
 	SetTotal64(int64)
+	Reset()
 	NewProxyReader(io.Reader) io.ReadCloser
 }
 
@@ -44,17 +45,31 @@ func (pc ProgressClient) Do(req *http.Request) (*http.Response, error) {
 		duration = time.Second
 	}
 
+	// reset bar in case request is being retried
+	pc.progressBar.Reset()
+
 	tl := progress.NewTickingLogger(pc.liveWriter, duration)
+
+	startedTicker := make(chan bool)
 
 	switch req.Method {
 	case "POST", "PUT":
-		req.Body = progress.NewReadCloser(req.Body, pc.progressBar, tl.Start)
+		req.Body = progress.NewReadCloser(req.Body, pc.progressBar, func() {
+			tl.Start()
+			close(startedTicker)
+		})
 		pc.progressBar.SetTotal64(req.ContentLength)
 	case "GET":
 		tl.Start()
+		close(startedTicker)
 	}
 
 	resp, err := pc.client.Do(req)
+
+	// the req.Body is closed asynchronously, but we'll also guard against
+	// it never getting closed by continuing after X seconds
+	waitForChanWithTimeout(startedTicker, 2*time.Second)
+
 	tl.Stop()
 	if err != nil {
 		return nil, err
@@ -66,4 +81,11 @@ func (pc ProgressClient) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	return resp, nil
+}
+
+func waitForChanWithTimeout(waitChan <-chan bool, timeout time.Duration) {
+	select {
+	case <-waitChan:
+	case <-time.After(timeout):
+	}
 }
