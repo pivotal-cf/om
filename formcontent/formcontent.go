@@ -19,6 +19,7 @@ type Form struct {
 	formWriter  *multipart.Writer
 	files       []string
 	fileKeys    []*bytes.Buffer
+	doneWriting chan error
 }
 
 type ContentSubmission struct {
@@ -30,9 +31,9 @@ type ContentSubmission struct {
 func NewForm() *Form {
 	buf := &bytes.Buffer{}
 
-	pr, pw := io.Pipe()
-
 	formWriter := multipart.NewWriter(buf)
+
+	pr, pw := io.Pipe()
 
 	return &Form{
 		contentType: formWriter.FormDataContentType(),
@@ -41,7 +42,31 @@ func NewForm() *Form {
 		pw:          pw,
 		formFields:  buf,
 		formWriter:  formWriter,
+		doneWriting: make(chan error, 1),
 	}
+}
+
+func (f *Form) Reset() {
+	f.pw.Close()
+
+	<-f.doneWriting
+
+	buf := &bytes.Buffer{}
+
+	formWriter := multipart.NewWriter(buf)
+
+	pr, pw := io.Pipe()
+
+	f.contentType = formWriter.FormDataContentType()
+	f.boundary = formWriter.Boundary()
+	f.length = 0
+	f.pr = pr
+	f.pw = pw
+	f.formFields = buf
+	f.formWriter = formWriter
+	f.files = nil
+	f.fileKeys = nil
+	f.doneWriting = make(chan error, 1)
 }
 
 func (f *Form) AddField(key string, value string) error {
@@ -133,6 +158,7 @@ func (f *Form) writeToPipe() {
 			_, err = f.pw.Write([]byte("\r\n"))
 			if err != nil {
 				f.pw.CloseWithError(err)
+				f.doneWriting <- err
 				return
 			}
 		}
@@ -140,6 +166,7 @@ func (f *Form) writeToPipe() {
 		_, err = io.Copy(f.pw, key)
 		if err != nil {
 			f.pw.CloseWithError(err)
+			f.doneWriting <- err
 			return
 		}
 
@@ -147,6 +174,7 @@ func (f *Form) writeToPipe() {
 		err = writeFileToPipe(fileName, f.pw)
 		if err != nil {
 			f.pw.CloseWithError(err)
+			f.doneWriting <- err
 			return
 		}
 
@@ -158,6 +186,7 @@ func (f *Form) writeToPipe() {
 		_, err = f.pw.Write([]byte("\r\n"))
 		if err != nil {
 			f.pw.CloseWithError(err)
+			f.doneWriting <- err
 			return
 		}
 	}
@@ -165,10 +194,12 @@ func (f *Form) writeToPipe() {
 	_, err = io.Copy(f.pw, f.formFields)
 	if err != nil {
 		f.pw.CloseWithError(err)
+		f.doneWriting <- err
 		return
 	}
 
 	f.pw.Close()
+	f.doneWriting <- nil
 	return
 }
 
