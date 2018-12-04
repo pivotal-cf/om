@@ -17,6 +17,7 @@ type ReadCloser struct {
 	callback    func()
 
 	started bool
+	closed  bool
 }
 
 func NewReadCloser(reader io.Reader, progressBar progressBar, callback func()) *ReadCloser {
@@ -35,12 +36,17 @@ func (rc *ReadCloser) Read(b []byte) (int, error) {
 
 	result, err := rc.reader.Read(b)
 	if err == io.EOF {
-		rc.finish()
+		_ = rc.Close()
 	}
 	return result, err
 }
 
 func (rc *ReadCloser) Close() error {
+	if rc.closed {
+		return nil
+	}
+	rc.closed = true
+
 	rc.finish()
 
 	if closer, ok := rc.reader.(io.Closer); ok {
