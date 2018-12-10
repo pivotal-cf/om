@@ -19,11 +19,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type TLSServer struct {
+type UploadProductTestServer struct {
 	UploadHandler http.Handler
 }
 
-func (t *TLSServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (t *UploadProductTestServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var responseString string
 	w.Header().Set("Content-Type", "application/json")
 
@@ -104,7 +104,7 @@ name: some-product`)
 	})
 
 	JustBeforeEach(func() {
-		server = httptest.NewTLSServer(&TLSServer{UploadHandler: http.HandlerFunc(uploadHandler)})
+		server = httptest.NewTLSServer(&UploadProductTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
 	})
 
 	AfterEach(func() {

@@ -18,11 +18,56 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type UploadStemcellTestServer struct {
+	UploadHandler http.Handler
+}
+
+func (t *UploadStemcellTestServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var responseString string
+	w.Header().Set("Content-Type", "application/json")
+
+	switch req.URL.Path {
+	case "/uaa/oauth/token":
+		req.ParseForm()
+
+		if req.PostForm.Get("password") == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		responseString = `{
+				"access_token": "some-opsman-token",
+				"token_type": "bearer",
+				"expires_in": 3600
+			}`
+	case "/api/v0/diagnostic_report":
+		responseString = "{}"
+	case "/api/v0/stemcells":
+		auth := req.Header.Get("Authorization")
+
+		if auth != "Bearer some-opsman-token" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		t.UploadHandler.ServeHTTP(w, req)
+		return
+	default:
+		out, err := httputil.DumpRequest(req, true)
+		Expect(err).NotTo(HaveOccurred())
+		Fail(fmt.Sprintf("unexpected request: %s", out))
+	}
+
+	w.Write([]byte(responseString))
+}
+
 var _ = Describe("upload-stemcell command", func() {
 	var (
-		stemcellName string
-		content      *os.File
-		server       *httptest.Server
+		stemcellName  string
+		content       *os.File
+		server        *httptest.Server
+		uploadHandler func(http.ResponseWriter, *http.Request)
+		snip          chan struct{}
 	)
 
 	BeforeEach(func() {
@@ -33,49 +78,19 @@ var _ = Describe("upload-stemcell command", func() {
 		_, err = content.WriteString("content so validation does not fail")
 		Expect(err).NotTo(HaveOccurred())
 
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				req.ParseForm()
-
-				if req.PostForm.Get("password") == "" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
-			case "/api/v0/diagnostic_report":
-				responseString = "{}"
-			case "/api/v0/stemcells":
-				auth := req.Header.Get("Authorization")
-
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				err := req.ParseMultipartForm(100)
-				if err != nil {
-					panic(err)
-				}
-
-				stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
-				responseString = "{}"
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
+		uploadHandler = func(w http.ResponseWriter, req *http.Request) {
+			err := req.ParseMultipartForm(100)
+			if err != nil {
+				panic(err)
 			}
 
-			w.Write([]byte(responseString))
-		}))
+			stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
+			w.Write([]byte("{}"))
+		}
+	})
+
+	JustBeforeEach(func() {
+		server = httptest.NewTLSServer(&UploadStemcellTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
 	})
 
 	AfterEach(func() {
@@ -212,6 +227,53 @@ var _ = Describe("upload-stemcell command", func() {
 
 				Eventually(session, 10*time.Second).Should(gexec.Exit(1))
 				Eventually(session.Err).Should(gbytes.Say(`no such file or directory`))
+			})
+		})
+
+		Context("when the server returns EOF during upload", func() {
+			BeforeEach(func() {
+				snip = make(chan struct{})
+				uploadCallCount := 0
+				uploadHandler = func(w http.ResponseWriter, req *http.Request) {
+					uploadCallCount++
+
+					if uploadCallCount == 1 {
+						close(snip)
+						return
+					} else {
+						err := req.ParseMultipartForm(100)
+						if err != nil {
+							panic(err)
+						}
+
+						stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
+						w.Write([]byte("{}"))
+					}
+				}
+			})
+
+			JustBeforeEach(func() {
+				go func() {
+					<-snip
+
+					server.CloseClientConnections()
+				}()
+			})
+
+			It("retries the upload", func() {
+				command := exec.Command(pathToMain,
+					"--target", server.URL,
+					"--username", "some-username",
+					"--password", "some-password",
+					"--skip-ssl-validation",
+					"upload-stemcell",
+					"--stemcell", content.Name(),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(0))
 			})
 		})
 	})
