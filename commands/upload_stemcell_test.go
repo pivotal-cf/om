@@ -1,11 +1,13 @@
 package commands_test
 
 import (
-	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -116,6 +118,64 @@ var _ = Describe("UploadStemcell", func() {
 
 			format, v = logger.PrintfArgsForCall(2)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+		})
+
+		Context("when the product fails to upload the first time with a retryable error", func() {
+			It("tries again", func() {
+				submission := formcontent.ContentSubmission{
+					Content:       ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
+					ContentLength: 10,
+				}
+				multipart.FinalizeReturns(submission)
+
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
+
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
+
+				fakeService.UploadStemcellReturnsOnCall(0, api.StemcellUploadOutput{}, errors.Wrap(io.EOF, "some upload error"))
+				fakeService.UploadStemcellReturnsOnCall(1, api.StemcellUploadOutput{}, nil)
+
+				err := command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(multipart.AddFileCallCount()).To(Equal(2))
+				Expect(multipart.FinalizeCallCount()).To(Equal(2))
+				Expect(multipart.ResetCallCount()).To(Equal(1))
+
+				Expect(fakeService.UploadStemcellCallCount()).To(Equal(2))
+			})
+		})
+
+		Context("when the product fails to upload three times", func() {
+			It("returns an error", func() {
+				submission := formcontent.ContentSubmission{
+					Content:       ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
+					ContentLength: 10,
+				}
+				multipart.FinalizeReturns(submission)
+
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
+
+				command := commands.NewUploadStemcell(multipart, fakeService, logger)
+
+				fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, errors.Wrap(io.EOF, "some upload error"))
+
+				err := command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("EOF"))
+
+				Expect(multipart.AddFileCallCount()).To(Equal(3))
+				Expect(multipart.FinalizeCallCount()).To(Equal(3))
+				Expect(multipart.ResetCallCount()).To(Equal(2))
+
+				Expect(fakeService.UploadStemcellCallCount()).To(Equal(3))
+			})
 		})
 	})
 

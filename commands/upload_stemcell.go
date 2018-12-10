@@ -7,10 +7,13 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/formcontent"
+	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/validator"
 
 	"strconv"
 )
+
+const maxStemcellUploadRetries = 2
 
 type UploadStemcell struct {
 	multipart multipart
@@ -94,28 +97,37 @@ func (us UploadStemcell) Execute(args []string) error {
 		}
 	}
 
-	err := us.multipart.AddFile("stemcell[file]", us.Options.Stemcell)
-	if err != nil {
-		return fmt.Errorf("failed to load stemcell: %s", err)
+	var err error
+	for i := 0; i <= maxStemcellUploadRetries; i++ {
+		err = us.multipart.AddFile("stemcell[file]", us.Options.Stemcell)
+		if err != nil {
+			return fmt.Errorf("failed to load stemcell: %s", err)
+		}
+
+		err = us.multipart.AddField("stemcell[floating]", strconv.FormatBool(us.Options.Floating))
+		if err != nil {
+			return fmt.Errorf("failed to load stemcell: %s", err)
+		}
+
+		submission := us.multipart.Finalize()
+		if err != nil {
+			return fmt.Errorf("failed to create multipart form: %s", err)
+		}
+
+		us.logger.Printf("beginning stemcell upload to Ops Manager")
+
+		_, err = us.service.UploadStemcell(api.StemcellUploadInput{
+			Stemcell:      submission.Content,
+			ContentType:   submission.ContentType,
+			ContentLength: submission.ContentLength,
+		})
+		if network.CanRetry(err) && i < maxStemcellUploadRetries {
+			us.logger.Printf("retrying stemcell upload after error: %s\n", err)
+			us.multipart.Reset()
+		} else {
+			break
+		}
 	}
-
-	err = us.multipart.AddField("stemcell[floating]", strconv.FormatBool(us.Options.Floating))
-	if err != nil {
-		return fmt.Errorf("failed to load stemcell: %s", err)
-	}
-
-	submission := us.multipart.Finalize()
-	if err != nil {
-		return fmt.Errorf("failed to create multipart form: %s", err)
-	}
-
-	us.logger.Printf("beginning stemcell upload to Ops Manager")
-
-	_, err = us.service.UploadStemcell(api.StemcellUploadInput{
-		Stemcell:      submission.Content,
-		ContentType:   submission.ContentType,
-		ContentLength: submission.ContentLength,
-	})
 	if err != nil {
 		return fmt.Errorf("failed to upload stemcell: %s", err)
 	}
