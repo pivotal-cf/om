@@ -2,11 +2,14 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/renderers"
 )
+
+const protocolPrefix = "://"
 
 type BoshEnvironment struct {
 	service         boshEnvironmentService
@@ -37,6 +40,13 @@ func NewBoshEnvironment(service boshEnvironmentService, logger logger, opsmanHos
 		rendererFactory: rendererFactory,
 		opsmanHost:      opsmanHost,
 	}
+}
+func (be BoshEnvironment) Target() string {
+	if strings.Contains(be.opsmanHost,protocolPrefix) {
+		parts := strings.SplitAfter(be.opsmanHost, protocolPrefix)
+		return parts[1]
+	}
+	return be.opsmanHost
 }
 
 func (be BoshEnvironment) Execute(args []string) error {
@@ -81,7 +91,7 @@ func (be BoshEnvironment) Execute(args []string) error {
 	variables["CREDHUB_CA_CERT"] = boshCACerts
 
 	if be.Options.SSHPrivateKey != "" {
-		variables["BOSH_ALL_PROXY"] = fmt.Sprintf("ssh+socks5://ubuntu@%s:22?private-key=%s", be.opsmanHost, be.Options.SSHPrivateKey)
+		variables["BOSH_ALL_PROXY"] = fmt.Sprintf("ssh+socks5://ubuntu@%s:22?private-key=%s", be.Target(), be.Options.SSHPrivateKey)
 		variables["CREDHUB_PROXY"] = variables["BOSH_ALL_PROXY"]
 	}
 	be.renderVariables(renderer, variables)
