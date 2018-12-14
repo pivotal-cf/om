@@ -11,10 +11,17 @@ type PendingChangesOutput struct {
 	ChangeList []ProductChange `json:"product_changes"`
 }
 
+type CompletenessChecks struct {
+	ConfigurationComplete       bool `json:"configuration_complete"`
+	StemcellPresent             bool `json:"stemcell_present"`
+	ConfigurablePropertiesValid bool `json:"configurable_properties_valid"`
+}
+
 type ProductChange struct {
-	Product string   `json:"guid"`
-	Errands []Errand `json:"errands"`
-	Action  string   `json:"action"`
+	GUID               string              `json:"guid"`
+	Action             string              `json:"action"`
+	Errands            []Errand            `json:"errands"`
+	CompletenessChecks *CompletenessChecks `json:"completeness_checks,omitempty"`
 }
 
 func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {

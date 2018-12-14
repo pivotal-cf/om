@@ -88,10 +88,10 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("skip-unchanged-products is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 		for _, p := range s.ChangeList {
-			ac.logger.Printf("Found product: %s with action of: %s", p.Product, p.Action)
+			ac.logger.Printf("Found product: %s with action of: %s", p.GUID, p.Action)
 			if p.Action != "unchanged" {
-				changedProducts = append(changedProducts, p.Product)
-				ac.logger.Printf("Adding %s to ProductNames", p.Product)
+				changedProducts = append(changedProducts, p.GUID)
+				ac.logger.Printf("Adding %s to ProductNames", p.GUID)
 			}
 		}
 		if len(changedProducts) <= 0 {

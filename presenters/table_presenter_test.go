@@ -229,8 +229,8 @@ var _ = Describe("TablePresenter", func() {
 		BeforeEach(func() {
 			pendingChanges = []api.ProductChange{
 				{
-					Product: "some-product",
-					Action:  "update",
+					GUID:   "some-product",
+					Action: "update",
 					Errands: []api.Errand{
 						{
 							Name:       "some-errand",
@@ -245,7 +245,7 @@ var _ = Describe("TablePresenter", func() {
 					},
 				},
 				{
-					Product: "some-product-without-errand",
+					GUID:    "some-product-without-errand",
 					Action:  "install",
 					Errands: []api.Errand{},
 				},

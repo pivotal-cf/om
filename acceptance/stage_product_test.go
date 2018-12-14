@@ -29,6 +29,8 @@ var _ = Describe("stage-product command", func() {
 				w.Header().Set("Content-Type", "application/json")
 
 				switch req.URL.Path {
+				case "/api/v0/installations":
+					w.Write([]byte(`{"installations": []}`))
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -120,6 +122,8 @@ var _ = Describe("stage-product command", func() {
 				w.Header().Set("Content-Type", "application/json")
 
 				switch req.URL.Path {
+				case "/api/v0/installations":
+					w.Write([]byte(`{"installations": []}`))
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -227,6 +231,8 @@ var _ = Describe("stage-product command", func() {
 				w.Header().Set("Content-Type", "application/json")
 
 				switch req.URL.Path {
+				case "/api/v0/installations":
+					w.Write([]byte(`{"installations": []}`))
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -333,6 +339,8 @@ var _ = Describe("stage-product command", func() {
 				w.Header().Set("Content-Type", "application/json")
 
 				switch req.URL.Path {
+				case "/api/v0/installations":
+					w.Write([]byte(`{"installations": []}`))
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",

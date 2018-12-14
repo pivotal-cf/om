@@ -46,7 +46,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 
 			It("configures a product's properties", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
@@ -77,6 +77,45 @@ var _ = Describe("ConfigureProduct", func() {
 				format, content = logger.PrintfArgsForCall(3)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
 			})
+
+			It("check configuration is complete after configuring", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "example.com", logger)
+
+				service.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+
+				service.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+					ChangeList: []api.ProductChange{
+						{
+							GUID:    "some-product-guid",
+							Action:  "install",
+							Errands: nil,
+							CompletenessChecks: &api.CompletenessChecks{
+								ConfigurationComplete:       false,
+								StemcellPresent:             false,
+								ConfigurablePropertiesValid: true,
+							},
+						},
+					},
+				}, nil)
+
+				err := client.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing.\nVisit the Ops Manager for details: example.com"))
+
+				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
+				actual := service.UpdateStagedProductPropertiesArgsForCall(0)
+				Expect(actual.GUID).To(Equal("some-product-guid"))
+				Expect(actual.Properties).To(MatchJSON(productProperties))
+
+				Expect(service.ListStagedPendingChangesCallCount()).To(Equal(1))
+			})
 		})
 
 		Context("when product network is provided", func() {
@@ -85,7 +124,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 
 			It("configures a product's network", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
@@ -124,7 +163,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 
 			It("configures the resource that is provided", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
@@ -285,7 +324,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the config file contains variables", func() {
 				Context("passed in a vars-file", func() {
 					It("can interpolate variables into the configuration", func() {
-						client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 						configFile, err = ioutil.TempFile("", "")
 						Expect(err).NotTo(HaveOccurred())
@@ -309,10 +348,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 				Context("passed as environment variables", func() {
 					It("can interpolate variables into the configuration", func() {
-						client := commands.NewConfigureProduct(
-							func() []string { return []string{"OM_VAR_password=something-secure"} },
-							service,
-							logger)
+						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)
 
 						configFile, err = ioutil.TempFile("", "")
 						Expect(err).NotTo(HaveOccurred())
@@ -329,7 +365,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error if missing variables", func() {
-					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
@@ -347,7 +383,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 			Context("when an ops-file is provided", func() {
 				It("can interpolate ops-files into the configuration", func() {
-					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
@@ -374,7 +410,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error if the ops file is invalid", func() {
-					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
@@ -404,7 +440,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 
 			It("configures the resource that is provided", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
@@ -461,7 +497,7 @@ var _ = Describe("ConfigureProduct", func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
 			})
 			It("returns an error", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
 					Products: []api.StagedProduct{
 						{GUID: "some-product-guid", Type: "cf"},
@@ -495,7 +531,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 
 			It("logs and then does nothing if network is empty", func() {
-				command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+				command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
@@ -517,6 +553,30 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
+		Context("when there is a running installation", func() {
+			BeforeEach(func() {
+				service.ListInstallationsReturns([]api.InstallationsServiceOutput{
+					{
+						ID:         999,
+						Status:     "running",
+						Logs:       "",
+						StartedAt:  nil,
+						FinishedAt: nil,
+						UserName:   "admin",
+					},
+				}, nil)
+
+				config = `{"product-name": "cf"}`
+			})
+
+			It("returns an error", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+				err := client.Execute([]string{"--config", configFile.Name()})
+				Expect(err).To(MatchError("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes"))
+				Expect(service.ListInstallationsCallCount()).To(Equal(1))
+			})
+		})
+
 		Context("when an error occurs", func() {
 			BeforeEach(func() {
 				config = `{"product-name": "cf"}`
@@ -524,7 +584,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 			Context("when the product does not exist", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
@@ -545,7 +605,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
@@ -563,7 +623,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
@@ -586,7 +646,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
 						Products: []api.StagedProduct{
 							{GUID: "some-product-guid", Type: "cf"},
@@ -607,7 +667,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse configure-product flags: flag provided but not defined: -badflag"))
 				})
@@ -619,7 +679,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					err := command.Execute([]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("could not parse configure-product config: \"product-name\" is required"))
 				})
@@ -628,7 +688,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("when the --config flag is passed", func() {
 				Context("when the provided config path does not exist", func() {
 					It("returns an error", func() {
-						command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+						command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 						service.ListStagedProductsReturns(api.StagedProductsOutput{
 							Products: []api.StagedProduct{
 								{GUID: "some-product-guid", Type: "cf"},
@@ -651,7 +711,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 					It("returns an error", func() {
 						invalidConfig := "this is not a valid config"
-						client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 						service.ListStagedProductsReturns(api.StagedProductsOutput{
 							Products: []api.StagedProduct{
 								{GUID: "some-product-guid", Type: "cf"},
@@ -678,7 +738,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					service.UpdateStagedProductPropertiesReturns(errors.New("some product error"))
 
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
@@ -698,7 +758,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 
 				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					service.UpdateStagedProductNetworksAndAZsReturns(errors.New("some product error"))
 
 					service.ListStagedProductsReturns(api.StagedProductsOutput{
@@ -730,7 +790,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 				It("errors when calling api", func() {
 					service.UpdateStagedProductErrandsReturns(errors.New("error configuring errand"))
-					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
@@ -754,7 +814,7 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(err).ToNot(HaveOccurred())
 					Expect(configFile.Close()).ToNot(HaveOccurred())
 
-					client := commands.NewConfigureProduct(func() []string { return nil }, service, logger)
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					err = client.Execute([]string{
 						"--config", configFile.Name(),
 					})
@@ -767,7 +827,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewConfigureProduct(nil, nil, nil)
+			command := commands.NewConfigureProduct(nil, nil, "", nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command configures a staged product",
 				ShortDescription: "configures a staged product",

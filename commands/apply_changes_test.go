@@ -153,17 +153,17 @@ var _ = Describe("ApplyChanges", func() {
 					pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 						ChangeList: []api.ProductChange{
 							{
-								Product: "some-product",
+								GUID:    "some-product",
 								Action:  "update",
 								Errands: []api.Errand{},
 							},
 							{
-								Product: "some-product-2",
+								GUID:    "some-product-2",
 								Action:  "install",
 								Errands: []api.Errand{},
 							},
 							{
-								Product: "some-product-that-is-unchanged",
+								GUID:    "some-product-that-is-unchanged",
 								Action:  "unchanged",
 								Errands: []api.Errand{},
 							},
@@ -189,17 +189,17 @@ var _ = Describe("ApplyChanges", func() {
 					pendingService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 						ChangeList: []api.ProductChange{
 							{
-								Product: "some-product",
+								GUID:    "some-product",
 								Action:  "unchanged",
 								Errands: []api.Errand{},
 							},
 							{
-								Product: "some-product-2",
+								GUID:    "some-product-2",
 								Action:  "unchanged",
 								Errands: []api.Errand{},
 							},
 							{
-								Product: "some-product-that-is-unchanged",
+								GUID:    "some-product-that-is-unchanged",
 								Action:  "unchanged",
 								Errands: []api.Errand{},
 							},

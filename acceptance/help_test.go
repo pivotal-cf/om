@@ -38,6 +38,7 @@ Commands:
   config-template                 **EXPERIMENTAL** generates a config template for the product
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
   configure-director              configures the director
+  configure-ldap-authentication   configures Ops Manager with LDAP authentication
   configure-product               configures a staged product
   configure-saml-authentication   configures Ops Manager with SAML authentication
   create-certificate-authority    creates a certificate authority on the Ops Manager

@@ -2,7 +2,7 @@
 
 # AWS configure-director
 
-#### --iaas-configuration
+#### iaas-configuration:
 **Note for `ssh_private_key`**: You will need to replace newlines with "\n".
 This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "\\n"}' | tr -d '\n'`.
 
@@ -21,7 +21,7 @@ This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "
 
 ```
 
-#### --director-configuration
+#### director-configuration:
 **Note regarding `ntp_servers_string`**: We recommend using this NTP server to all PCF users on AWS
 
 ##### Minimal example
@@ -31,7 +31,7 @@ This can be done with the simple `bash` chainsaw `cat key.pem | awk '{print $1 "
 }
 ```
 
-#### --security-configuration
+#### security-configuration:
 No additional security configuration is strictly required.
 
 ##### Minimal example
@@ -41,7 +41,7 @@ No additional security configuration is strictly required.
 }
 ```
 
-#### --az-configuration
+#### az-configuration:
 
 ##### Minimal example
 ```json
@@ -51,7 +51,7 @@ No additional security configuration is strictly required.
 ]
 ```
 
-#### --networks-configuration
+#### networks-configuration:
 **Note:** Only one availability zone can be specified per network subnet.
 
 ##### Minimal example
@@ -108,7 +108,7 @@ No additional security configuration is strictly required.
 }
 ```
 
-#### --network-assignment
+#### network-assignment:
 
 ##### Minimal example
 ```json
@@ -123,7 +123,7 @@ No additional security configuration is strictly required.
 ```
 
 
-#### --vmextensions-configuration
+#### vmextensions-configuration:
 
 ##### Minimal example
 ```json

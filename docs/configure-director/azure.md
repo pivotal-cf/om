@@ -2,7 +2,7 @@
 
 # Azure-specific inputs for the `configure-director` command
 
-#### --iaas-configuration
+#### iaas-configuration:
 
 ##### Minimal example
 ```json
@@ -20,7 +20,7 @@
 }
 ```
 
-#### --director-configuration
+#### director-configuration:
 
 ##### Minimal example
 ```json
@@ -29,7 +29,7 @@
 }
 ```
 
-#### --security-configuration
+#### security-configuration:
 No additional security configuration is strictly required.
 
 ##### Minimal example
@@ -39,10 +39,10 @@ No additional security configuration is strictly required.
 }
 ```
 
-#### --az-configuration
+#### az-configuration:
 Azure does not configure or manage AZs and so this configuration is not required.
 
-#### --networks-configuration
+#### networks-configuration:
 
 ##### Minimal example
 ```json
@@ -89,7 +89,7 @@ Azure does not configure or manage AZs and so this configuration is not required
 }
 ```
 
-#### --network-assignment
+#### network-assignment:
 
 ##### Minimal example
 ```json
@@ -101,7 +101,7 @@ Azure does not configure or manage AZs and so this configuration is not required
 ```
 
 
-#### --vmextensions-configuration
+#### vmextensions-configuration:
 
 ##### Minimal example
 ```json

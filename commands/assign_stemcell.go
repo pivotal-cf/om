@@ -62,7 +62,7 @@ func (as AssignStemcell) Execute(args []string) error {
 		return err
 	}
 
-	as.logger.Println("assigning stemcell: \"%s\" to product \"%s\"...", stemcellVersion, as.Options.ProductName)
+	as.logger.Printf("assigning stemcell: \"%s\" to product \"%s\"...\n", stemcellVersion, as.Options.ProductName)
 	err = as.service.AssignStemcell(api.ProductStemcells{
 		Products: []api.ProductStemcell{
 			{
