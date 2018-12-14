@@ -15,6 +15,32 @@ import (
 )
 
 var _ = Describe("bosh-env", func() {
+	Context("Creating Command", func() {
+		var (
+			fakeService         *fakes.BoshEnvironmentService
+			fakeRendererFactory *fakes.RendererFactory
+			stdout              *fakes.Logger
+		)
+		BeforeEach(func() {
+			fakeService = &fakes.BoshEnvironmentService{}
+			fakeRendererFactory = &fakes.RendererFactory{}
+			stdout = &fakes.Logger{}
+		})
+		It("Should use the target as is", func() {
+			command := commands.NewBoshEnvironment(fakeService, stdout, "opsman.pivotal.io", fakeRendererFactory)
+			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
+		})
+
+		It("Should remove protocol", func() {
+			command := commands.NewBoshEnvironment(fakeService, stdout, "https://opsman.pivotal.io", fakeRendererFactory)
+			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
+		})
+
+		It("Should remove protocol", func() {
+			command := commands.NewBoshEnvironment(fakeService, stdout, "http://opsman.pivotal.io", fakeRendererFactory)
+			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
+		})
+	})
 	Context("calling the api", func() {
 		var (
 			command             commands.BoshEnvironment
