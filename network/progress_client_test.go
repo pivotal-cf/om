@@ -79,7 +79,7 @@ var _ = Describe("ProgressClient", func() {
 				_, err := ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 
-				time.Sleep(20 * time.Millisecond)
+				time.Sleep(120 * time.Millisecond)
 
 				return &http.Response{
 					StatusCode: http.StatusOK,
@@ -92,7 +92,7 @@ var _ = Describe("ProgressClient", func() {
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
 			Expect(err).NotTo(HaveOccurred())
 
-			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 10*time.Millisecond))
+			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 50*time.Millisecond))
 
 			_, err = progressClient.Do(req)
 			Expect(err).NotTo(HaveOccurred())
@@ -103,8 +103,8 @@ var _ = Describe("ProgressClient", func() {
 
 			By("writing to the live log writer", func() {
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 3, 1))
-				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("10ms elapsed"))
-				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("20ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("50ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("100ms elapsed"))
 			})
 
 			By("flushing the live log writer", func() {
