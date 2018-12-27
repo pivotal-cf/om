@@ -1046,6 +1046,30 @@ key-4: 2147483648
 			}))
 		})
 
+		Context("when there is no network + azs for the give product", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+					var err error
+					switch req.URL.Path {
+					case "/api/v0/staged/products/some-product-guid/networks_and_azs":
+						resp = &http.Response{
+							StatusCode: http.StatusNotFound,
+							Body:       ioutil.NopCloser(nil),
+						}
+						err = errors.New("Products without jobs cannot have networks and azs")
+					}
+					return resp, err
+				}
+			})
+
+			It("returns an empty payload without error", func() {
+				config, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config).To(Equal(map[string]interface{}(nil)))
+			})
+		})
+
 		Context("failure cases", func() {
 			Context("when the networks_and_azs request returns an error", func() {
 				BeforeEach(func() {

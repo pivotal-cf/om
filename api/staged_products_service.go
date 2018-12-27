@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -337,16 +338,21 @@ func (a Api) GetStagedProductProperties(product string) (map[string]ResponseProp
 }
 
 func (a Api) GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error) {
-	respBody, err := a.fetchProductResource(product, "networks_and_azs")
-	if err != nil {
-		return nil, err
-	}
-	defer respBody.Close()
-
 	var networksResponse struct {
 		Networks map[string]interface{} `json:"networks_and_azs"`
 	}
-	if err = json.NewDecoder(respBody).Decode(&networksResponse); err != nil {
+
+	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", product), nil)
+	if err != nil {
+		if resp.StatusCode == http.StatusNotFound && strings.Contains(err.Error(), "Products without jobs cannot have networks and azs") {
+			return networksResponse.Networks, nil
+		}
+		return nil, errors.Wrap(err, "could not make api request to staged product properties endpoint")
+	}
+
+	defer resp.Body.Close()
+
+	if err = json.NewDecoder(resp.Body).Decode(&networksResponse); err != nil {
 		return nil, errors.Wrap(err, "could not parse json")
 	}
 
