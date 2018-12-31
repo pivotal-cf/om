@@ -15,7 +15,7 @@ om helps you interact with an Ops Manager
 Usage: om [options] <command> [<args>]
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --connect-timeout, -o                                  int     timeout in seconds to make TCP connections (default: 5)
+  --connect-timeout, -o                                  int     timeout in seconds to make TCP connections (default: 10)
   --decryption-passphrase, -d, OM_DECRYPTION_PASSPHRASE  string  Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)
   --env, -e                                              string  env file with login credentials
   --help, -h                                             bool    prints this usage information (default: false)
@@ -86,7 +86,7 @@ This unauthenticated command helps setup the internal userstore authentication m
 Usage: om [options] configure-authentication [<args>]
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --connect-timeout, -o                                  int     timeout in seconds to make TCP connections (default: 5)
+  --connect-timeout, -o                                  int     timeout in seconds to make TCP connections (default: 10)
   --decryption-passphrase, -d, OM_DECRYPTION_PASSPHRASE  string  Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)
   --env, -e                                              string  env file with login credentials
   --help, -h                                             bool    prints this usage information (default: false)

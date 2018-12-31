@@ -40,7 +40,7 @@ type options struct {
 	ClientSecret         string `yaml:"client-secret"        short:"s"  long:"client-secret"       env:"OM_CLIENT_SECRET"                 description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
 	Help                 bool   `                            short:"h"  long:"help"                                       default:"false" description:"prints this usage information"`
 	Password             string `yaml:"password"             short:"p"  long:"password"            env:"OM_PASSWORD"                      description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
-	ConnectTimeout       int    `yaml:"connect-timeout"      short:"o"  long:"connect-timeout"                            default:"5"     description:"timeout in seconds to make TCP connections"`
+	ConnectTimeout       int    `yaml:"connect-timeout"      short:"o"  long:"connect-timeout"                            default:"10"    description:"timeout in seconds to make TCP connections"`
 	RequestTimeout       int    `yaml:"request-timeout"      short:"r"  long:"request-timeout"                            default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
 	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"  short:"k"  long:"skip-ssl-validation"                        default:"false" description:"skip ssl certificate validation during http requests"`
 	Target               string `yaml:"target"               short:"t"  long:"target"              env:"OM_TARGET"                        description:"location of the Ops Manager VM"`
