@@ -120,7 +120,7 @@ var _ = Describe("bosh-env", func() {
 		It("returns the usage information for the bosh-env command", func() {
 			command := commands.NewBoshEnvironment(nil, nil, "", nil)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This prints bosh environment variables to target bosh director",
+				Description:      "This prints bosh environment variables to target bosh director. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
 				ShortDescription: "prints bosh environment variables",
 				Flags:            command.Options,
 			}))

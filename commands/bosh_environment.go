@@ -18,7 +18,7 @@ type BoshEnvironment struct {
 	opsmanHost      string
 	Options         struct {
 		ShellType     string `long:"shell-type" description:"Prints for the given shell (posix|powershell)"`
-		SSHPrivateKey string `long:"ssh-private-key" short:"i" description:"location of ssh private key"`
+		SSHPrivateKey string `long:"ssh-private-key" short:"i" description:"Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel."`
 	}
 }
 
@@ -42,7 +42,7 @@ func NewBoshEnvironment(service boshEnvironmentService, logger logger, opsmanHos
 	}
 }
 func (be BoshEnvironment) Target() string {
-	if strings.Contains(be.opsmanHost,protocolPrefix) {
+	if strings.Contains(be.opsmanHost, protocolPrefix) {
 		parts := strings.SplitAfter(be.opsmanHost, protocolPrefix)
 		return parts[1]
 	}
@@ -101,7 +101,7 @@ func (be BoshEnvironment) Execute(args []string) error {
 
 func (be BoshEnvironment) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This prints bosh environment variables to target bosh director",
+		Description:      "This prints bosh environment variables to target bosh director. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
 		ShortDescription: "prints bosh environment variables",
 		Flags:            be.Options,
 	}
