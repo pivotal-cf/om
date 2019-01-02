@@ -2,6 +2,10 @@ package commands_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -12,9 +16,6 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/validator"
-	"io/ioutil"
-	"os"
-	"path"
 )
 
 var _ = Describe("DownloadProduct", func() {
@@ -43,7 +44,7 @@ var _ = Describe("DownloadProduct", func() {
 		command = commands.NewDownloadProduct(environFunc, logger, fakeWriter, fakePivnetFactory)
 	})
 
-	Context("given the flags are set correctly", func() {
+	Context("when the flags are set correctly", func() {
 		BeforeEach(func() {
 			fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 				ID: 12345,
@@ -99,6 +100,27 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fileName).To(BeAnExistingFile())
 			Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
+		})
+
+		PContext("when the version is given as a regex", func() {
+			It("downloads the highest version matching that regex", func(){
+
+			})
+		})
+
+		Context("when both product-version and product-version-regex are set", func() {
+			It("fails with an error saying that the user must pick one or the other", func(){
+				err := command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--product-version-regex", ".*",
+					"--output-directory", tempDir,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other"))
+			})
 		})
 
 		Context("when the globs returns multiple files", func() {
@@ -229,10 +251,10 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(fileName).To(BeAnExistingFile())
 				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
 					{
-						"product_path": "%s", 
-						"product_slug": "elastic-runtime", 
-						"stemcell_path": "%s", 
-						"stemcell_version": "97.19" 
+						"product_path": "%s",
+						"product_slug": "elastic-runtime",
+						"stemcell_path": "%s",
+						"stemcell_version": "97.19"
 					}`, productFile.Name(), stemcellFile.Name())))
 			})
 

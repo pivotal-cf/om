@@ -3,17 +3,18 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+
 	"github.com/pivotal-cf/go-pivnet"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/validator"
 	"github.com/pivotal-cf/pivnet-cli/filter"
 	"github.com/pivotal-cf/pivnet-cli/gp"
-	"io"
-	"os"
-	"path"
-	"strconv"
-	"strings"
 )
 
 const DownloadProductOutputFilename = "download-file.json"
@@ -27,6 +28,7 @@ type outputList struct {
 
 //go:generate counterfeiter -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
 type PivnetDownloader interface {
+	ReleasesForProductSlug(productSlug string) ([]pivnet.Release, error)
 	ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error)
 	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
 	DownloadProductFile(location *os.File, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
@@ -47,16 +49,17 @@ type DownloadProduct struct {
 	client         PivnetDownloader
 	filter         *filter.Filter
 	Options        struct {
-		ConfigFile     string   `long:"config"               short:"c"   description:"path to yml file for configuration (keys must match the following command line flags)"`
-		VarsFile       []string `long:"vars-file"            short:"l"   description:"Load variables from a YAML file"`
-		VarsEnv        []string `long:"vars-env"                         description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		Token          string   `long:"pivnet-api-token"                  required:"true"`
-		FileGlob       string   `long:"pivnet-file-glob"     short:"f"   description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
-		ProductSlug    string   `long:"pivnet-product-slug"  short:"p"   description:"Path to product" required:"true"`
-		ProductVersion string   `long:"product-version"                  description:"version of the provided product file to be used for validation" required:"true"`
-		OutputDir      string   `long:"output-directory"     short:"o"   description:"Directory path to which the file will be outputted. File name will be preserved from Pivotal Network" required:"true"`
-		Stemcell       bool     `long:"download-stemcell"                description:"If set, the latest available stemcell for the product will also be downloaded"`
-		StemcellIaas   string   `long:"stemcell-iaas"                    description:"The stemcell for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+		ConfigFile          string   `long:"config"                short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
+		VarsFile            []string `long:"vars-file"             short:"l" description:"Load variables from a YAML file"`
+		VarsEnv             []string `long:"vars-env"                        description:"Load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+		Token               string   `long:"pivnet-api-token"      short:"t" description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." required:"true"`
+		FileGlob            string   `long:"pivnet-file-glob"      short:"f" description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
+		ProductSlug         string   `long:"pivnet-product-slug"   short:"p" description:"Path to product" required:"true"`
+		ProductVersion      string   `long:"product-version"       short:"v" description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+		ProductVersionRegex string   `long:"product-version-regex" short:"r" description:"Regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+		OutputDir           string   `long:"output-directory"      short:"o" description:"Directory path to which the file will be outputted. File name will be preserved from Pivotal Network" required:"true"`
+		Stemcell            bool     `long:"download-stemcell"               description:"If set, the latest available stemcell for the product will also be downloaded"`
+		StemcellIaas        string   `long:"stemcell-iaas"                   description:"The stemcell for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 	}
 }
 
@@ -82,6 +85,10 @@ func (c DownloadProduct) Execute(args []string) error {
 	err := loadConfigFile(args, &c.Options, c.environFunc)
 	if err != nil {
 		return fmt.Errorf("could not parse download-product flags: %s", err)
+	}
+
+	if c.Options.ProductVersionRegex != "" {
+		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
 
 	var productFileName, stemcellFileName string
