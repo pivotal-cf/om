@@ -179,6 +179,35 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(fileName).To(BeAnExistingFile())
 				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
 			})
+
+			Context("when the releases contains non-semver-compatible version", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ReleasesForProductSlugReturns([]pivnet.Release{
+						{
+							ID:      3,
+							Version: "2.1.2",
+						},
+						{
+							ID:      0,
+							Version: "2.0.x",
+						},
+					}, nil)
+				})
+
+				It("ignores the version and prints a warning", func() {
+					err := command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version-regex", `2\..\..*`,
+						"--output-directory", tempDir,
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					logStr, _ := logger.InfoArgsForCall(0)
+					Expect(logStr).To(Equal("could not parse version: 2.0.x"))
+				})
+			})
 		})
 
 		Context("when the globs returns multiple files", func() {

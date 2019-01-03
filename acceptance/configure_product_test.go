@@ -254,7 +254,6 @@ var _ = Describe("configure-product command", func() {
 		_, err = configFile.WriteString(configFileContents)
 		Expect(err).ToNot(HaveOccurred())
 
-
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",

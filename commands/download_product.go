@@ -119,7 +119,8 @@ func (c DownloadProduct) Execute(args []string) error {
 
 			v, err := version.NewVersion(release.Version)
 			if err != nil {
-				return fmt.Errorf("could not parse version: %s: %s", release.Version, err)
+				c.logger.Info(fmt.Sprintf("could not parse version: %s", release.Version))
+				continue
 			}
 			versions = append(versions, v)
 		}
@@ -234,6 +235,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob string) (int, 
 	}
 	defer productFile.Close()
 
+	c.logger.Info(fmt.Sprintf("downloading %s...", productFile.Name()))
 	err = c.client.DownloadProductFile(productFile, slug, release.ID, productFileName.ID, c.progressWriter)
 	if err != nil {
 		return release.ID, "", fmt.Errorf("could not download product file %s %s: %s", slug, version, err)

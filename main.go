@@ -134,7 +134,7 @@ func main() {
 	})
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
-	pivnetLogWriter := logshim.NewLogShim(stdout, stdout, global.Trace)
+	pivnetLogWriter := logshim.NewLogShim(stderr, stderr, global.Trace)
 
 	form := formcontent.NewForm()
 
