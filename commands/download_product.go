@@ -61,8 +61,8 @@ type DownloadProduct struct {
 		ProductVersion      string   `long:"product-version"       short:"v" description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 		ProductVersionRegex string   `long:"product-version-regex" short:"r" description:"Regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 		OutputDir           string   `long:"output-directory"      short:"o" description:"Directory path to which the file will be outputted. File name will be preserved from Pivotal Network" required:"true"`
-		Stemcell            bool     `long:"download-stemcell"               description:"If set, the latest available stemcell for the product will also be downloaded"`
-		StemcellIaas        string   `long:"stemcell-iaas"                   description:"The stemcell for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+		Stemcell            bool     `long:"download-stemcell"               description:"No-op for backwards compatibility"`
+		StemcellIaas        string   `long:"stemcell-iaas"                   description:"Download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 	}
 }
 
@@ -135,7 +135,7 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not download product: %s", err)
 	}
 
-	if !c.Options.Stemcell {
+	if c.Options.StemcellIaas == "" {
 		return c.writeOutputFile(productFileName, stemcellFileName, "")
 	}
 

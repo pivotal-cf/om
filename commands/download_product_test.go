@@ -21,6 +21,7 @@ import (
 var _ = Describe("DownloadProduct", func() {
 	var (
 		command              commands.DownloadProduct
+		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
 		fakeWriter           *gbytes.Buffer
@@ -60,6 +61,14 @@ var _ = Describe("DownloadProduct", func() {
 
 			tempDir, err = ioutil.TempDir("", "om-tests-")
 			Expect(err).NotTo(HaveOccurred())
+
+			commandArgs = []string{
+				"--pivnet-api-token", "token",
+				"--pivnet-file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--output-directory", tempDir,
+			}
 		})
 
 		AfterEach(func() {
@@ -68,13 +77,7 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		It("downloads a product from Pivotal Network", func() {
-			err := command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--pivnet-file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--output-directory", tempDir,
-			})
+			err = command.Execute(commandArgs)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakePivnetDownloader.ReleasesForProductSlugCallCount()).To(Equal(0))
@@ -139,16 +142,18 @@ var _ = Describe("DownloadProduct", func() {
 				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 					ID: 4,
 				}, nil)
-			})
 
-			It("downloads the highest version matching that regex", func() {
-				err := command.Execute([]string{
+				commandArgs = []string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version-regex", `2\..\..*`,
 					"--output-directory", tempDir,
-				})
+				}
+			})
+
+			It("downloads the highest version matching that regex", func() {
+				err = command.Execute(commandArgs)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(fakePivnetDownloader.ReleasesForProductSlugCallCount()).To(Equal(1))
@@ -195,13 +200,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("ignores the version and prints a warning", func() {
-					err := command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
-						"--pivnet-product-slug", "elastic-runtime",
-						"--product-version-regex", `2\..\..*`,
-						"--output-directory", tempDir,
-					})
+					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
 					logStr, _ := logger.InfoArgsForCall(0)
@@ -227,13 +226,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("returns an error", func() {
-				err := command.Execute([]string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--output-directory", tempDir,
-				})
+				err = command.Execute(commandArgs)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring(`the glob '*.pivotal' matches multiple files. Write your glob to match exactly one of the following:`))
 			})
@@ -303,14 +296,13 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("grabs the latest stemcell for the product that matches the glob", func() {
-				err := command.Execute([]string{
+				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version", "2.0.0",
 					"--output-directory", tempDir,
-					"--download-stemcell",
-					"stemcell-iaas", "google",
+					"--stemcell-iaas", "google",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -361,14 +353,13 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("exit gracefully when the product is not a tile", func() {
-					err := command.Execute([]string{
+					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
 						"--pivnet-file-glob", "*.tgz",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
-						"--download-stemcell",
-						"stemcell-iaas", "google",
+						"--stemcell-iaas", "google",
 					})
 					Expect(err).NotTo(HaveOccurred())
 					Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
@@ -376,7 +367,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
 					Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
 
-					infoStr, _ := logger.InfoArgsForCall(1)
+					infoStr, _ := logger.InfoArgsForCall(2)
 					Expect(infoStr).To(Equal("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
 				})
 			})
@@ -407,7 +398,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("does not download the file again", func() {
-				err := command.Execute([]string{
+				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
@@ -514,21 +505,21 @@ output-directory: %s
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
-				err := command.Execute([]string{"--badflag"})
+				err = command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse download-product flags: flag provided but not defined: -badflag"))
 			})
 		})
 
 		Context("when a required flag is not provided", func() {
 			It("returns an error", func() {
-				err := command.Execute([]string{})
+				err = command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--pivnet-api-token\""))
 			})
 		})
 
 		Context("when both product-version and product-version-regex are set", func() {
 			It("fails with an error saying that the user must pick one or the other", func() {
-				err := command.Execute([]string{
+				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
@@ -547,7 +538,7 @@ output-directory: %s
 			})
 
 			It("returns an error", func() {
-				err := command.Execute([]string{
+				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
