@@ -114,6 +114,14 @@
   source = "github.com/pivotal/uilive"
 
 [[projects]]
+  digest = "1:0b06ffe0c0764e413a6738e3f045d6bb14117359aef80a09f8c60fbff2ecad6b"
+  name = "github.com/hashicorp/go-version"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "b5a281d3160aa11950a6182bd9a9dc2cb1e02d50"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:bc4f7eec3b7be8c6cb1f0af6c1e3333d5bb71072951aaaae2f05067b0803f287"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
@@ -370,6 +378,7 @@
     "github.com/ghodss/yaml",
     "github.com/google/go-querystring/query",
     "github.com/gosuri/uilive",
+    "github.com/hashicorp/go-version",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/ginkgo/ginkgo",
