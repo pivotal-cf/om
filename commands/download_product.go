@@ -6,9 +6,12 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/go-pivnet"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/jhanda"
@@ -87,7 +90,7 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse download-product flags: %s", err)
 	}
 
-	if c.Options.ProductVersionRegex != "" {
+	if c.Options.ProductVersionRegex != "" && c.Options.ProductVersion != "" {
 		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
 
@@ -96,7 +99,37 @@ func (c DownloadProduct) Execute(args []string) error {
 
 	c.init()
 
-	releaseID, productFileName, err = c.downloadProductFile(c.Options.ProductSlug, c.Options.ProductVersion, c.Options.FileGlob)
+	productVersion := c.Options.ProductVersion
+	if c.Options.ProductVersionRegex != "" {
+		re, err := regexp.Compile(c.Options.ProductVersionRegex)
+		if err != nil {
+			return fmt.Errorf("could not compile regex: %s: %s", c.Options.ProductVersionRegex, err)
+		}
+
+		releases, err := c.client.ReleasesForProductSlug(c.Options.ProductSlug)
+		if err != nil {
+			return err
+		}
+
+		var versions []*version.Version
+		for _, release := range releases {
+			if !re.MatchString(release.Version) {
+				continue
+			}
+
+			v, err := version.NewVersion(release.Version)
+			if err != nil {
+				return fmt.Errorf("could not parse version: %s: %s", release.Version, err)
+			}
+			versions = append(versions, v)
+		}
+
+		sort.Sort(version.Collection(versions))
+
+		productVersion = versions[len(versions)-1].Original()
+	}
+
+	releaseID, productFileName, err = c.downloadProductFile(c.Options.ProductSlug, productVersion, c.Options.FileGlob)
 	if err != nil {
 		return fmt.Errorf("could not download product: %s", err)
 	}

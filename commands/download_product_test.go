@@ -77,6 +77,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(fakePivnetDownloader.ReleasesForProductSlugCallCount()).To(Equal(0))
 			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
 			Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
 			Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
@@ -102,24 +103,81 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
 		})
 
-		PContext("when the version is given as a regex", func() {
-			It("downloads the highest version matching that regex", func(){
+		Context("when the version is given as a regex", func() {
+			BeforeEach(func() {
+				fakePivnetDownloader.ReleasesForProductSlugReturns([]pivnet.Release{
+					{
+						ID:      5,
+						Version: "3.0.0",
+					},
+					{
+						ID:      4,
+						Version: "1.1.11",
+					},
+					{
+						ID:      3,
+						Version: "2.1.2",
+					},
+					{
+						ID:      2,
+						Version: "2.1.1",
+					},
+					{
+						ID:      1,
+						Version: "2.0.1",
+					},
+				}, nil)
 
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+					{
+						ID:           54321,
+						AWSObjectKey: "/some-account/some-bucket/cf-2.1-build.11.pivotal",
+						Name:         "Example Cloud Foundry",
+					},
+				}, nil)
+
+				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
+					ID: 4,
+				}, nil)
 			})
-		})
 
-		Context("when both product-version and product-version-regex are set", func() {
-			It("fails with an error saying that the user must pick one or the other", func(){
+			It("downloads the highest version matching that regex", func() {
 				err := command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--product-version-regex", ".*",
+					"--product-version-regex", `2\..\..*`,
 					"--output-directory", tempDir,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakePivnetDownloader.ReleasesForProductSlugCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
+
+				slug := fakePivnetDownloader.ReleasesForProductSlugArgsForCall(0)
+				Expect(slug).To(Equal("elastic-runtime"))
+
+				slug, version := fakePivnetDownloader.ReleaseForVersionArgsForCall(0)
+				Expect(slug).To(Equal("elastic-runtime"))
+				Expect(version).To(Equal("2.1.2"))
+
+				slug, releaseID := fakePivnetDownloader.ProductFilesForReleaseArgsForCall(0)
+				Expect(slug).To(Equal("elastic-runtime"))
+				Expect(releaseID).To(Equal(4))
+
+				file, slug, releaseID, productFileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
+				Expect(file.Name()).To(Equal(path.Join(tempDir, "cf-2.1-build.11.pivotal")))
+				Expect(slug).To(Equal("elastic-runtime"))
+				Expect(releaseID).To(Equal(4))
+				Expect(productFileID).To(Equal(54321))
+
+				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+				fileContent, err := ioutil.ReadFile(fileName)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fileName).To(BeAnExistingFile())
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
 			})
 		})
 
@@ -258,7 +316,7 @@ var _ = Describe("DownloadProduct", func() {
 					}`, productFile.Name(), stemcellFile.Name())))
 			})
 
-			Context("when the product is not a tile", func() {
+			Context("when the product is not a tile and download-stemcell flag is set", func() {
 				BeforeEach(func() {
 					fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 						ID: 12345,
@@ -436,6 +494,21 @@ output-directory: %s
 			It("returns an error", func() {
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--pivnet-api-token\""))
+			})
+		})
+
+		Context("when both product-version and product-version-regex are set", func() {
+			It("fails with an error saying that the user must pick one or the other", func() {
+				err := command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--product-version-regex", ".*",
+					"--output-directory", tempDir,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other"))
 			})
 		})
 
