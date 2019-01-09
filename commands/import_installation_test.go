@@ -52,7 +52,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-		err := command.Execute([]string{
+		err := command.Execute([]string{"--polling-interval", "0",
 			"--installation", "/path/to/some-installation",
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -69,10 +69,9 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
 		Expect(fakeService.UploadInstallationAssetCollectionArgsForCall(0)).To(Equal(api.ImportInstallationInput{
-			ContentLength:   10,
-			Installation:    ioutil.NopCloser(strings.NewReader("")),
-			ContentType:     "some content-type",
-			PollingInterval: 1,
+			ContentLength: 10,
+			Installation:  ioutil.NopCloser(strings.NewReader("")),
+			ContentType:   "some content-type",
 		}))
 
 		format, v := logger.PrintfArgsForCall(0)
@@ -88,41 +87,6 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 	})
 
-	Context("when polling interval is specified", func() {
-		It("passes the value to the installation service", func() {
-			submission := formcontent.ContentSubmission{
-				Content:       ioutil.NopCloser(strings.NewReader("")),
-				ContentType:   "some content-type",
-				ContentLength: 10,
-			}
-			multipart.FinalizeReturns(submission)
-
-			eaOutputs := []api.EnsureAvailabilityOutput{
-				{Status: api.EnsureAvailabilityStatusUnstarted},
-				{Status: api.EnsureAvailabilityStatusPending},
-				{Status: api.EnsureAvailabilityStatusPending},
-				{Status: api.EnsureAvailabilityStatusPending},
-				{Status: api.EnsureAvailabilityStatusComplete},
-			}
-
-			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
-				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
-			}
-
-			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-
-			err := command.Execute([]string{
-				"--installation", "/path/to/some-installation",
-				"--polling-interval", "48",
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakeService.UploadInstallationAssetCollectionCallCount()).To(Equal(1))
-			input := fakeService.UploadInstallationAssetCollectionArgsForCall(0)
-			Expect(input.PollingInterval).To(Equal(48))
-		})
-	})
-
 	Context("when the Ops Manager is already configured", func() {
 		It("prints a helpful message", func() {
 			fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
@@ -131,7 +95,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := command.Execute([]string{
+			err := command.Execute([]string{"--polling-interval", "0",
 				"--installation", "/path/to/some-installation",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -179,7 +143,7 @@ installation: /path/to/some-installation
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := command.Execute([]string{
+			err := command.Execute([]string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -216,7 +180,7 @@ installation: /path/to/some-installation
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := command.Execute([]string{
+			err := command.Execute([]string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 				"--installation", "/path/to/some-installation1",
 			})
@@ -237,7 +201,7 @@ installation: /path/to/some-installation
 		Context("when the global decryption-passphrase is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "", logger)
-				err := command.Execute([]string{})
+				err := command.Execute([]string{"--polling-interval", "0"})
 				Expect(err).To(MatchError("the global decryption-passphrase argument is required for this command"))
 			})
 		})
@@ -245,16 +209,16 @@ installation: /path/to/some-installation
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--badflag"})
+				err := command.Execute([]string{"--polling-interval", "0", "--badflag"})
 				Expect(err).To(MatchError("could not parse import-installation flags: flag provided but not defined: -badflag"))
 			})
 		})
 
 		Context("when config file cannot be opened", func() {
 			It("returns an error", func() {
-				command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
+				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--config", "something"})
-				Expect(err).To(MatchError("could not parse configure-saml-authentication flags: could not load the config file: open something: no such file or directory"))
+				Expect(err).To(MatchError("could not parse import-installation flags: could not load the config file: open something: no such file or directory"))
 
 			})
 		})
@@ -262,7 +226,7 @@ installation: /path/to/some-installation
 		Context("when the --installation flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{})
+				err := command.Execute([]string{"--polling-interval", "0"})
 				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--installation\""))
 			})
 		})
@@ -271,7 +235,7 @@ installation: /path/to/some-installation
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-				err := command.Execute([]string{"--installation", "/some/path"})
+				err := command.Execute([]string{"--polling-interval", "0", "--installation", "/some/path"})
 				Expect(err).To(MatchError("could not check Ops Manager status: some error"))
 			})
 		})
@@ -284,7 +248,7 @@ installation: /path/to/some-installation
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
-				err := command.Execute([]string{"--installation", "/some/path"})
+				err := command.Execute([]string{"--polling-interval", "0", "--installation", "/some/path"})
 				Expect(err).To(MatchError("failed to load installation: bad file"))
 			})
 		})
@@ -297,7 +261,7 @@ installation: /path/to/some-installation
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				fakeService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
 
-				err := command.Execute([]string{"--installation", "/some/path"})
+				err := command.Execute([]string{"--polling-interval", "0", "--installation", "/some/path"})
 				Expect(err).To(MatchError("failed to import installation: some installation error"))
 			})
 		})
