@@ -2,9 +2,9 @@ package commands
 
 import (
 	"fmt"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"time"
 )
 
 type ImportInstallation struct {
@@ -15,7 +15,7 @@ type ImportInstallation struct {
 	Options    struct {
 		ConfigFile      string `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
-		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) at which to print status" default:"1"`
+		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) to check OpsManager availability" default:"10"`
 	}
 }
 
@@ -82,10 +82,9 @@ func (ii ImportInstallation) Execute(args []string) error {
 	ii.logger.Printf("beginning installation import to Ops Manager")
 
 	err = ii.service.UploadInstallationAssetCollection(api.ImportInstallationInput{
-		Installation:    submission.Content,
-		ContentType:     submission.ContentType,
-		ContentLength:   submission.ContentLength,
-		PollingInterval: ii.Options.PollingInterval,
+		Installation:  submission.Content,
+		ContentType:   submission.ContentType,
+		ContentLength: submission.ContentLength,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to import installation: %s", err)
@@ -93,6 +92,7 @@ func (ii ImportInstallation) Execute(args []string) error {
 
 	ii.logger.Printf("waiting for import to complete, this should take only a couple minutes...")
 	for ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusComplete {
+		time.Sleep(time.Second * time.Duration(ii.Options.PollingInterval))
 		ensureAvailabilityOutput, err = ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {
 			return fmt.Errorf("could not check Ops Manager Status: %s", err)
