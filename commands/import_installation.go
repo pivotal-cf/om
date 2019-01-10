@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const maxRetries = 3
+
 type ImportInstallation struct {
 	multipart  multipart
 	logger     logger
@@ -92,19 +94,32 @@ func (ii ImportInstallation) Execute(args []string) error {
 	}
 
 	ii.logger.Printf("waiting for import to complete, this should take only a couple minutes...")
+
+	err = ii.ensureAvailability(ensureAvailabilityOutput)
+	if err != nil {
+		return err
+	}
+
+	ii.logger.Printf("finished import")
+
+	return nil
+}
+
+func (ii ImportInstallation) ensureAvailability(ensureAvailabilityOutput api.EnsureAvailabilityOutput) error {
+	var tryCount int
+	var err error
+
 	for ensureAvailabilityOutput.Status != api.EnsureAvailabilityStatusComplete {
 		time.Sleep(time.Second * time.Duration(ii.Options.PollingInterval))
 		ensureAvailabilityOutput, err = ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {
-			if strings.Contains(err.Error(), "connection refused") {
+			if strings.Contains(err.Error(), "connection refused") && tryCount < maxRetries {
 				ii.logger.Printf("waiting for ops manager web server boots up...")
+				tryCount++
 				continue
 			}
 			return fmt.Errorf("could not check Ops Manager Status: %s", err)
 		}
 	}
-
-	ii.logger.Printf("finished import")
-
 	return nil
 }
