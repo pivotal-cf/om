@@ -208,6 +208,10 @@ installation: /path/to/some-installation
 			}
 			multipart.FinalizeReturns(submission)
 
+			command = commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+		})
+
+		It("it retries on the specified polling interval to allow nginx time to boot up", func() {
 			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 				if fakeService.EnsureAvailabilityCallCount() < 4 && fakeService.EnsureAvailabilityCallCount() > 2 {
 					return api.EnsureAvailabilityOutput{}, fmt.Errorf("connection refused")
@@ -223,10 +227,6 @@ installation: /path/to/some-installation
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			command = commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-		})
-
-		It("it retries on the specified polling interval to allow nginx time to boot up", func() {
 			err := command.Execute([]string{"--polling-interval", "0",
 				"--installation", "/path/to/some-installation",
 			})
@@ -250,6 +250,23 @@ installation: /path/to/some-installation
 			format, v = logger.PrintfArgsForCall(4)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 		})
+
+		It("it only retries 3 times before giving up", func(done Done) {
+			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				if fakeService.EnsureAvailabilityCallCount() > 2 {
+					return api.EnsureAvailabilityOutput{}, fmt.Errorf("connection refused")
+				}
+
+				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
+			}
+
+			err := command.Execute([]string{"--polling-interval", "0",
+				"--installation", "/path/to/some-installation",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("could not check Ops Manager Status:"))
+			close(done)
+		}, 1)
 	})
 
 	Context("failure cases", func() {
