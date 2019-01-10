@@ -29,7 +29,7 @@ func (du DiagnosticReportUnavailable) Error() string {
 func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/diagnostic_report", nil)
 	if err != nil {
-		if resp.StatusCode == http.StatusInternalServerError {
+		if resp != nil && resp.StatusCode == http.StatusInternalServerError {
 			return DiagnosticReport{}, DiagnosticReportUnavailable{}
 		}
 		return DiagnosticReport{}, errors.Wrap(err, "could not make api request to diagnostic_report endpoint")
