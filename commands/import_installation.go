@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"strings"
 	"time"
 )
 
@@ -95,6 +96,10 @@ func (ii ImportInstallation) Execute(args []string) error {
 		time.Sleep(time.Second * time.Duration(ii.Options.PollingInterval))
 		ensureAvailabilityOutput, err = ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {
+			if strings.Contains(err.Error(), "connection refused") {
+				ii.logger.Printf("waiting for ops manager web server boots up...")
+				continue
+			}
 			return fmt.Errorf("could not check Ops Manager Status: %s", err)
 		}
 	}
