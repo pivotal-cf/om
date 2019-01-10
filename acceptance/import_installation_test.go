@@ -78,6 +78,7 @@ var _ = Describe("import-installation command", func() {
 			"--decryption-passphrase", "fake-passphrase",
 			"--skip-ssl-validation",
 			"import-installation",
+			"--polling-interval", "0",
 			"--installation", content.Name(),
 		)
 
