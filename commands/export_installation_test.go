@@ -33,9 +33,8 @@ var _ = Describe("ExportInstallation", func() {
 
 		By("calling export on the installation service")
 		Expect(fakeService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
-		outputFile, pollingInterval := fakeService.DownloadInstallationAssetCollectionArgsForCall(0)
+		outputFile := fakeService.DownloadInstallationAssetCollectionArgsForCall(0)
 		Expect(outputFile).To(Equal("/path/to/output.zip"))
-		Expect(pollingInterval).To(Equal(1))
 
 		By("printing correct log messages")
 		Expect(logger.PrintfCallCount()).To(Equal(2))
@@ -44,23 +43,6 @@ var _ = Describe("ExportInstallation", func() {
 
 		format, v = logger.PrintfArgsForCall(1)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished exporting installation"))
-	})
-
-	Context("when polling interval is specified", func() {
-		It("passes the value to the installation service", func() {
-			command := commands.NewExportInstallation(fakeService, logger)
-
-			err := command.Execute([]string{
-				"--output-file", "/path/to/output.zip",
-				"--polling-interval", "48",
-			})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakeService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))
-			outputFile, pollingInterval := fakeService.DownloadInstallationAssetCollectionArgsForCall(0)
-			Expect(outputFile).To(Equal("/path/to/output.zip"))
-			Expect(pollingInterval).To(Equal(48))
-		})
 	})
 
 	Context("failure cases", func() {

@@ -6,11 +6,10 @@ import (
 )
 
 type ExportInstallationService struct {
-	DownloadInstallationAssetCollectionStub        func(string, int) error
+	DownloadInstallationAssetCollectionStub        func(string) error
 	downloadInstallationAssetCollectionMutex       sync.RWMutex
 	downloadInstallationAssetCollectionArgsForCall []struct {
 		arg1 string
-		arg2 int
 	}
 	downloadInstallationAssetCollectionReturns struct {
 		result1 error
@@ -22,17 +21,16 @@ type ExportInstallationService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ExportInstallationService) DownloadInstallationAssetCollection(arg1 string, arg2 int) error {
+func (fake *ExportInstallationService) DownloadInstallationAssetCollection(arg1 string) error {
 	fake.downloadInstallationAssetCollectionMutex.Lock()
 	ret, specificReturn := fake.downloadInstallationAssetCollectionReturnsOnCall[len(fake.downloadInstallationAssetCollectionArgsForCall)]
 	fake.downloadInstallationAssetCollectionArgsForCall = append(fake.downloadInstallationAssetCollectionArgsForCall, struct {
 		arg1 string
-		arg2 int
-	}{arg1, arg2})
-	fake.recordInvocation("DownloadInstallationAssetCollection", []interface{}{arg1, arg2})
+	}{arg1})
+	fake.recordInvocation("DownloadInstallationAssetCollection", []interface{}{arg1})
 	fake.downloadInstallationAssetCollectionMutex.Unlock()
 	if fake.DownloadInstallationAssetCollectionStub != nil {
-		return fake.DownloadInstallationAssetCollectionStub(arg1, arg2)
+		return fake.DownloadInstallationAssetCollectionStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -47,17 +45,17 @@ func (fake *ExportInstallationService) DownloadInstallationAssetCollectionCallCo
 	return len(fake.downloadInstallationAssetCollectionArgsForCall)
 }
 
-func (fake *ExportInstallationService) DownloadInstallationAssetCollectionCalls(stub func(string, int) error) {
+func (fake *ExportInstallationService) DownloadInstallationAssetCollectionCalls(stub func(string) error) {
 	fake.downloadInstallationAssetCollectionMutex.Lock()
 	defer fake.downloadInstallationAssetCollectionMutex.Unlock()
 	fake.DownloadInstallationAssetCollectionStub = stub
 }
 
-func (fake *ExportInstallationService) DownloadInstallationAssetCollectionArgsForCall(i int) (string, int) {
+func (fake *ExportInstallationService) DownloadInstallationAssetCollectionArgsForCall(i int) string {
 	fake.downloadInstallationAssetCollectionMutex.RLock()
 	defer fake.downloadInstallationAssetCollectionMutex.RUnlock()
 	argsForCall := fake.downloadInstallationAssetCollectionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *ExportInstallationService) DownloadInstallationAssetCollectionReturns(result1 error) {

@@ -55,7 +55,7 @@ var _ = Describe("InstallationAssetService", func() {
 				Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
 			}, nil)
 
-			err := service.DownloadInstallationAssetCollection(outputFile.Name(), 1)
+			err := service.DownloadInstallationAssetCollection(outputFile.Name())
 			Expect(err).NotTo(HaveOccurred())
 
 			By("posting to the installation_asset_collection endpoint")
@@ -74,7 +74,7 @@ var _ = Describe("InstallationAssetService", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
-					err := service.DownloadInstallationAssetCollection("fake-file", 1)
+					err := service.DownloadInstallationAssetCollection("fake-file")
 					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: could not send api request to GET /api/v0/installation_asset_collection: some client error"))
 				})
 			})
@@ -86,7 +86,7 @@ var _ = Describe("InstallationAssetService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					err := service.DownloadInstallationAssetCollection("fake-file", 1)
+					err := service.DownloadInstallationAssetCollection("fake-file")
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -98,7 +98,7 @@ var _ = Describe("InstallationAssetService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 
-					err := service.DownloadInstallationAssetCollection("fake-dir/fake-file", 1)
+					err := service.DownloadInstallationAssetCollection("fake-dir/fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file")))
 				})
 			})
@@ -111,7 +111,7 @@ var _ = Describe("InstallationAssetService", func() {
 						ContentLength: 50,
 					}, nil)
 
-					err := service.DownloadInstallationAssetCollection(outputFile.Name(), 1)
+					err := service.DownloadInstallationAssetCollection(outputFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("invalid response length")))
 				})
 			})

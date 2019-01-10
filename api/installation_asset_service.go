@@ -17,7 +17,7 @@ type ImportInstallationInput struct {
 	PollingInterval int
 }
 
-func (a Api) DownloadInstallationAssetCollection(outputFile string, pollingInterval int) error {
+func (a Api) DownloadInstallationAssetCollection(outputFile string) error {
 	resp, err := a.sendProgressAPIRequest("GET", "/api/v0/installation_asset_collection", nil)
 	if err != nil {
 		return errors.Wrap(err, "could not make api request to installation_asset_collection endpoint")
