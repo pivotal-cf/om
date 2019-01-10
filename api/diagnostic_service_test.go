@@ -111,6 +111,15 @@ var _ = Describe("Diagnostic", func() {
 				})
 			})
 
+			Context("when the resp is nil due to network error", func() {
+				It("returns the error", func() {
+					client.DoReturns(nil, errors.New("some error"))
+					_, err := service.GetDiagnosticReport()
+					Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report: some error"))
+
+				})
+			})
+
 			Context("when the client fails before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
