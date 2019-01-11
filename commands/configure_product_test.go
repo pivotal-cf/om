@@ -115,6 +115,41 @@ var _ = Describe("ConfigureProduct", func() {
 
 				Expect(service.ListStagedPendingChangesCallCount()).To(Equal(1))
 			})
+
+			It("returns a helpful error message if configuration completeness cannot be validated", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "example.com", logger)
+
+				service.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+
+				service.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+					ChangeList: []api.ProductChange{
+						{
+							GUID:    "some-product-guid",
+							Action:  "install",
+							Errands: nil,
+							CompletenessChecks: nil,
+						},
+					},
+				}, nil)
+
+				err := client.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("configuration completeness could not be determined.\nThis feature is only supported for OpsMan 2.2+\nIf you're on older version of OpsMan add the line `validate-config-complete: false` to your config file."))
+
+				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
+				actual := service.UpdateStagedProductPropertiesArgsForCall(0)
+				Expect(actual.GUID).To(Equal("some-product-guid"))
+				Expect(actual.Properties).To(MatchJSON(productProperties))
+
+				Expect(service.ListStagedPendingChangesCallCount()).To(Equal(1))
+			})
 		})
 
 		Context("when product network is provided", func() {

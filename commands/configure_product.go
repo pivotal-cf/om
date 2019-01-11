@@ -329,6 +329,9 @@ func (cp ConfigureProduct) validateConfigComplete(productGUID string) error {
 	for _, changeList := range pendingChanges.ChangeList {
 		if changeList.GUID == productGUID {
 			completenessCheck := changeList.CompletenessChecks
+			if completenessCheck == nil {
+				return fmt.Errorf("configuration completeness could not be determined.\nThis feature is only supported for OpsMan 2.2+\nIf you're on older version of OpsMan add the line `validate-config-complete: false` to your config file.")
+			}
 			if !completenessCheck.ConfigurationComplete {
 				return fmt.Errorf("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing.\nVisit the Ops Manager for details: %s", cp.target)
 			}
