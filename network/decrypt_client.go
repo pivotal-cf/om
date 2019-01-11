@@ -91,7 +91,7 @@ func (c DecryptClient) waitUntilAvailable() error {
 	var trial = 1
 	for {
 		if trial == 2 {
-			c.writer.Write([]byte("Waiting for Ops Manager's auth systems to start. This may take a few minutes...\n"))
+			_, _ = c.writer.Write([]byte("Waiting for Ops Manager's auth systems to start. This may take a few minutes...\n"))
 		}
 
 		err := c.checkAvailability()

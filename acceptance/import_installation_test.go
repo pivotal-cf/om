@@ -63,12 +63,12 @@ var _ = Describe("import-installation command", func() {
 				Fail(fmt.Sprintf("unexpected request: %s", out))
 			}
 
-			w.Write([]byte(responseString))
+			_, err := w.Write([]byte(responseString))
+			Expect(err).ToNot(HaveOccurred())
 		}))
 	})
 
 	AfterEach(func() {
-		os.Remove(content.Name())
 		server.Close()
 	})
 
@@ -110,7 +110,8 @@ var _ = Describe("import-installation command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 

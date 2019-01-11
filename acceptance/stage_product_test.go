@@ -30,7 +30,8 @@ var _ = Describe("stage-product command", func() {
 
 				switch req.URL.Path {
 				case "/api/v0/installations":
-					w.Write([]byte(`{"installations": []}`))
+					_, err := w.Write([]byte(`{"installations": []}`))
+					Expect(err).ToNot(HaveOccurred())
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -81,7 +82,8 @@ var _ = Describe("stage-product command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 
@@ -123,7 +125,8 @@ var _ = Describe("stage-product command", func() {
 
 				switch req.URL.Path {
 				case "/api/v0/installations":
-					w.Write([]byte(`{"installations": []}`))
+					_, err := w.Write([]byte(`{"installations": []}`))
+					Expect(err).ToNot(HaveOccurred())
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -191,7 +194,8 @@ var _ = Describe("stage-product command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 
@@ -232,7 +236,8 @@ var _ = Describe("stage-product command", func() {
 
 				switch req.URL.Path {
 				case "/api/v0/installations":
-					w.Write([]byte(`{"installations": []}`))
+					_, err := w.Write([]byte(`{"installations": []}`))
+					Expect(err).ToNot(HaveOccurred())
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -260,7 +265,6 @@ var _ = Describe("stage-product command", func() {
 						return
 					}
 					if req.Method == "GET" {
-						responseString = `[]`
 						responseString = `[{
 							"type": "cf",
 							"guid": "cf-some-guid"
@@ -299,7 +303,8 @@ var _ = Describe("stage-product command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 
@@ -340,7 +345,8 @@ var _ = Describe("stage-product command", func() {
 
 				switch req.URL.Path {
 				case "/api/v0/installations":
-					w.Write([]byte(`{"installations": []}`))
+					_, err := w.Write([]byte(`{"installations": []}`))
+					Expect(err).ToNot(HaveOccurred())
 				case "/uaa/oauth/token":
 					responseString = `{
 						"access_token": "some-opsman-token",
@@ -387,7 +393,8 @@ var _ = Describe("stage-product command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 

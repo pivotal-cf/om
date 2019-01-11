@@ -26,13 +26,15 @@ var _ = Describe("generate certificate", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/certificates/generate":
-				w.Write([]byte(output))
+				_, err := w.Write([]byte(output))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

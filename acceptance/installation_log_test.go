@@ -21,13 +21,15 @@ var _ = Describe("installation-log command", func() {
 
 			switch req.URL.Path {
 			case "/api/v0/installations/999/logs":
-				w.Write([]byte(`{"logs": "log output"}`))
+				_, err := w.Write([]byte(`{"logs": "log output"}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 				}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

@@ -1,7 +1,6 @@
 package commands_test
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -872,17 +871,6 @@ const automaticResourceConfig = `{
   }
 }`
 
-const productPropertiesFile = `---
-product-name: cf
-product-properties:
-  .properties.something:
-    value: configure-me
-  .a-job.job-property:
-    value:
-      identity: username
-      password: example-new-password
-`
-
 const productPropertiesWithVariables = `---
 product-name: cf
 product-properties:
@@ -892,38 +880,6 @@ product-properties:
     value:
       identity: username
       password: ((password))`
-
-const networkPropertiesFile = `---
-product-name: cf
-network-properties:
-  singleton_availability_zone:
-    name: az-one
-  other_availability_zones:
-    - name: az-two
-    - name: az-three
-  network:
-    name: network-one
-product-properties:
-`
-
-const resourceConfigFile = `---
-product-name: cf
-resource-config:
-  some-job:
-    instances: 1
-    persistent_disk:
-      size_mb: "20480"
-    instance_type:
-      id: m1.medium
-    internet_connected: true
-    elb_names:
-      - some-lb
-  some-other-job:
-    persistent_disk:
-      size_mb: "20480"
-    instance_type:
-      id: m1.medium
-`
 
 const ymlProductProperties = `---
 product-name: cf
@@ -958,9 +914,3 @@ errand-config:
     post-deploy-state: false
     pre-delete-state: when-changed
 `
-
-func marshallResponse(input interface{}) []byte {
-	resp, err := json.Marshal(input)
-	Expect(err).ToNot(HaveOccurred())
-	return resp
-}

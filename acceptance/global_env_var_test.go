@@ -116,7 +116,7 @@ func testServer(useUsernamePasswordAuth bool) *httptest.Server {
 
 		switch req.URL.Path {
 		case "/uaa/oauth/token":
-			req.ParseForm()
+			_ = req.ParseForm()
 
 			if useUsernamePasswordAuth {
 				if req.PostForm.Get("username") != "some-env-provided-username" || req.PostForm.Get("password") != "some-env-provided-password" {
@@ -130,11 +130,12 @@ func testServer(useUsernamePasswordAuth bool) *httptest.Server {
 				}
 			}
 
-			w.Write([]byte(`{
+			_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+			Expect(err).ToNot(HaveOccurred())
 		case "/api/v0/available_products":
 			auth := req.Header.Get("Authorization")
 
@@ -143,7 +144,8 @@ func testServer(useUsernamePasswordAuth bool) *httptest.Server {
 				return
 			}
 
-			w.Write([]byte(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
+			_, err := w.Write([]byte(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
+			Expect(err).ToNot(HaveOccurred())
 		default:
 			_, err := httputil.DumpRequest(req, true)
 			Expect(err).NotTo(HaveOccurred())

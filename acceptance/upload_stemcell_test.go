@@ -28,7 +28,7 @@ func (t *UploadStemcellTestServer) ServeHTTP(w http.ResponseWriter, req *http.Re
 
 	switch req.URL.Path {
 	case "/uaa/oauth/token":
-		req.ParseForm()
+		_ = req.ParseForm()
 
 		if req.PostForm.Get("password") == "" {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -58,7 +58,8 @@ func (t *UploadStemcellTestServer) ServeHTTP(w http.ResponseWriter, req *http.Re
 		Fail(fmt.Sprintf("unexpected request: %s", out))
 	}
 
-	w.Write([]byte(responseString))
+	_, err := w.Write([]byte(responseString))
+	Expect(err).ToNot(HaveOccurred())
 }
 
 var _ = Describe("upload-stemcell command", func() {
@@ -85,7 +86,8 @@ var _ = Describe("upload-stemcell command", func() {
 			}
 
 			stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
-			w.Write([]byte("{}"))
+			_, err = w.Write([]byte("{}"))
+			Expect(err).ToNot(HaveOccurred())
 		}
 	})
 
@@ -94,7 +96,6 @@ var _ = Describe("upload-stemcell command", func() {
 	})
 
 	AfterEach(func() {
-		os.Remove(content.Name())
 		server.Close()
 	})
 
@@ -126,11 +127,12 @@ var _ = Describe("upload-stemcell command", func() {
 				w.Header().Set("Content-Type", "application/json")
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				case "/api/v0/diagnostic_report":
 					auth := req.Header.Get("Authorization")
 					if auth != "Bearer some-opsman-token" {
@@ -138,7 +140,8 @@ var _ = Describe("upload-stemcell command", func() {
 						return
 					}
 
-					w.Write(diagnosticReport)
+					_, err := w.Write(diagnosticReport)
+					Expect(err).ToNot(HaveOccurred())
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())
@@ -247,7 +250,8 @@ var _ = Describe("upload-stemcell command", func() {
 						}
 
 						stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
-						w.Write([]byte("{}"))
+						_, err = w.Write([]byte("{}"))
+						Expect(err).ToNot(HaveOccurred())
 					}
 				}
 			})

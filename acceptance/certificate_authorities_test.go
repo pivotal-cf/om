@@ -87,17 +87,19 @@ var _ = Describe("certificate-authorities", func() {
 				username := req.FormValue("username")
 
 				if username == "some-username" {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				} else {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-running-install-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				}
 			case "/api/v0/certificate_authorities":
 				auth := req.Header.Get("Authorization")
@@ -106,7 +108,7 @@ var _ = Describe("certificate-authorities", func() {
 					return
 				}
 
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
   "certificate_authorities": [
     {
       "guid": "some-guid",
@@ -126,6 +128,7 @@ var _ = Describe("certificate-authorities", func() {
     }
   ]
 }`))
+				Expect(err).ToNot(HaveOccurred())
 			}
 		}))
 	})

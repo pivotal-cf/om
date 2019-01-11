@@ -113,11 +113,12 @@ var _ = Describe("UploadProduct", func() {
 		It("proceeds normally when the sha sums match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
-
-			file.Close()
 			defer os.Remove(file.Name())
 
-			file.WriteString("testing-shasum")
+			_, err = file.WriteString("testing-shasum")
+			Expect(err).ToNot(HaveOccurred())
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
@@ -133,7 +134,7 @@ var _ = Describe("UploadProduct", func() {
 
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+				"--sha256", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
@@ -146,11 +147,12 @@ var _ = Describe("UploadProduct", func() {
 		It("returns an error when the sha sums don't match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
-
-			file.Close()
 			defer os.Remove(file.Name())
 
-			file.WriteString("testing-shasum")
+			_, err = file.WriteString("testing-shasum")
+			Expect(err).ToNot(HaveOccurred())
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err = command.Execute([]string{
@@ -158,7 +160,7 @@ var _ = Describe("UploadProduct", func() {
 				"--sha256", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
+			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44"))
 		})
 
 		It("fails when the file can not calculate a shasum", func() {
@@ -176,7 +178,8 @@ var _ = Describe("UploadProduct", func() {
 		It("proceeds normally when the versions match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
-			file.Close()
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
 			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
@@ -206,7 +209,8 @@ var _ = Describe("UploadProduct", func() {
 		It("returns an error when the versions don't match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
-			file.Close()
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
 			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
@@ -278,7 +282,8 @@ product: will-be-overridden-by-command-line
 		It("reads configuration from config file", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
-			file.Close()
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
 			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{

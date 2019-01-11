@@ -44,22 +44,25 @@ var _ = Describe("configure-director command", func() {
 
 			switch req.URL.Path {
 			case "/api/v0/installations":
-				w.Write([]byte(`{"installations": []}`))
+				_, err := w.Write([]byte(`{"installations": []}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/uaa/oauth/token":
 				username := req.FormValue("username")
 
 				if username == "some-username" {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				} else {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-running-install-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				}
 			case "/api/v0/staged/director/availability_zones":
 				auth := req.Header.Get("Authorization")
@@ -71,7 +74,8 @@ var _ = Describe("configure-director command", func() {
 				azConfigurationMethod = req.Method
 
 				if req.Method == "GET" {
-					w.Write([]byte(`"availability_zones": [{"guid": "existing-az-guid", "name": "some-existing-az"}]`))
+					_, err := w.Write([]byte(`"availability_zones": [{"guid": "existing-az-guid", "name": "some-existing-az"}]`))
+					Expect(err).ToNot(HaveOccurred())
 				} else if req.Method == "PUT" {
 					var err error
 					azPutConfigurationBody, err = ioutil.ReadAll(req.Body)
@@ -79,7 +83,8 @@ var _ = Describe("configure-director command", func() {
 
 					azPutCallCount++
 
-					w.Write([]byte(`{}`))
+					_, err = w.Write([]byte(`{}`))
+					Expect(err).ToNot(HaveOccurred())
 				} else {
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())
@@ -93,7 +98,8 @@ var _ = Describe("configure-director command", func() {
 					return
 				}
 				if req.Method == "GET" {
-					w.Write([]byte(`"networks": [{"guid": "existing-network-guid", "name": "network-1"}]`))
+					_, err := w.Write([]byte(`"networks": [{"guid": "existing-network-guid", "name": "network-1"}]`))
+					Expect(err).ToNot(HaveOccurred())
 				} else if req.Method == "PUT" {
 					var err error
 					networksConfigurationBody, err = ioutil.ReadAll(req.Body)
@@ -101,7 +107,8 @@ var _ = Describe("configure-director command", func() {
 
 					networksPutCallCount++
 
-					w.Write([]byte(`{}`))
+					_, err = w.Write([]byte(`{}`))
+					Expect(err).ToNot(HaveOccurred())
 				}
 			case "/api/v0/staged/director/network_and_az":
 				auth := req.Header.Get("Authorization")
@@ -122,7 +129,8 @@ var _ = Describe("configure-director command", func() {
 
 				networkAZCallCount++
 
-				w.Write([]byte(`{}`))
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/director/properties":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
@@ -137,10 +145,11 @@ var _ = Describe("configure-director command", func() {
 
 				directorPropertiesCallCount++
 
-				w.Write([]byte(`{}`))
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 
 			case "/api/v0/staged/products":
-				w.Write([]byte(`[
+				_, err := w.Write([]byte(`[
 					{
 						"installation_name": "component-type1-installation-name",
 						"guid": "component-type1-guid",
@@ -152,9 +161,10 @@ var _ = Describe("configure-director command", func() {
 						"type": "p-bosh"
 					}
 				]`))
+				Expect(err).ToNot(HaveOccurred())
 
 			case "/api/v0/staged/products/p-bosh-guid/jobs":
-				w.Write([]byte(`
+				_, err := w.Write([]byte(`
 					{
 						"jobs": [
 							{
@@ -164,10 +174,10 @@ var _ = Describe("configure-director command", func() {
 						]
 					}
 				`))
-
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/p-bosh-guid/jobs/compilation-guid/resource_config":
 				if req.Method == "GET" {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"instances": 1,
 						"instance_type": {
 							"id": "automatic"
@@ -178,6 +188,7 @@ var _ = Describe("configure-director command", func() {
 						"internet_connected": true,
 						"elb_names": ["my-elb"]
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 					return
 				}
 
@@ -186,7 +197,8 @@ var _ = Describe("configure-director command", func() {
 				resourceConfigBody, err = ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 
-				w.Write([]byte(`{}`))
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 
 			case "/api/v0/deployed/director/credentials":
 				w.WriteHeader(http.StatusNotFound)
@@ -206,6 +218,7 @@ var _ = Describe("configure-director command", func() {
 	Context("when using command line arguments", func() {
 		It("displays a helpful error message when using moved director properties", func() {
 			configFile, err := ioutil.TempFile("", "config.yml")
+			Expect(err).ToNot(HaveOccurred())
 			_, err = configFile.WriteString(`{
             "iaas-configuration": {
 				"project": "some-project",
@@ -262,6 +275,7 @@ var _ = Describe("configure-director command", func() {
 			Expect(session.Err).To(gbytes.Say("To fix this error, move the above keys under 'properties-configuration' and change their dashes to underscores."))
 
 			configFile, err = ioutil.TempFile("", "config.yml")
+			Expect(err).ToNot(HaveOccurred())
 			_, err = configFile.WriteString(`{
            		"what is this": "key?"
             }`)
@@ -285,6 +299,7 @@ var _ = Describe("configure-director command", func() {
 		})
 		It("configures the BOSH director using the API", func() {
 			configFile, err := ioutil.TempFile("", "config.yml")
+			Expect(err).ToNot(HaveOccurred())
 			_, err = configFile.WriteString(`{
             "properties-configuration": {
 				"iaas_configuration": {

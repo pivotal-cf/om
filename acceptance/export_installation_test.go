@@ -35,16 +35,16 @@ var _ = Describe("export-installation command", func() {
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
 				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 					"access_token": "some-opsman-token",
 					"token_type": "bearer",
 					"expires_in": 3600
 				}`))
-
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/installation_asset_collection":
 				time.Sleep(1010 * time.Millisecond)
-				w.Write([]byte("some-installation"))
-
+				_, err := w.Write([]byte("some-installation"))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -55,7 +55,8 @@ var _ = Describe("export-installation command", func() {
 	})
 
 	AfterEach(func() {
-		os.Remove(outputFileName)
+		err := os.Remove(outputFileName)
+		Expect(err).ToNot(HaveOccurred())
 		server.Close()
 	})
 

@@ -21,16 +21,19 @@ var _ = Describe("activate certificate authority", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/certificate_authorities/some-id/activate":
-				w.Write([]byte("{}"))
+				_, err := w.Write([]byte("{}"))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/certificate_authorities/missing-id/activate":
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(`{"errors":["Certificate with specified guid not found"]}`))
+				_, err := w.Write([]byte(`{"errors":["Certificate with specified guid not found"]}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

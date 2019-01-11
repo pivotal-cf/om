@@ -10,7 +10,7 @@ type ExportInstallation struct {
 	logger  logger
 	service exportInstallationService
 	Options struct {
-		OutputFile      string `long:"output-file"      short:"o"  required:"true" description:"output path to write installation to"`
+		OutputFile string `long:"output-file"      short:"o"  required:"true" description:"output path to write installation to"`
 	}
 }
 

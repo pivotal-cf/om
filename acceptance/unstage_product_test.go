@@ -41,7 +41,6 @@ var _ = Describe("unstage-product command", func() {
 						return
 					}
 					if req.Method == "GET" {
-						responseString = `[]`
 						responseString = `[{
 							"type": "cf",
 							"guid": "cf-some-guid"
@@ -67,7 +66,8 @@ var _ = Describe("unstage-product command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 
@@ -125,7 +125,8 @@ var _ = Describe("unstage-product command", func() {
 					Fail(fmt.Sprintf("unexpected request: %s", out))
 				}
 
-				w.Write([]byte(responseString))
+				_, err := w.Write([]byte(responseString))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 		})
 

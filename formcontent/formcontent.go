@@ -88,7 +88,10 @@ func (f *Form) AddFile(key string, path string) error {
 	buf := &bytes.Buffer{}
 
 	fileKey := multipart.NewWriter(buf)
-	fileKey.SetBoundary(f.boundary)
+	err = fileKey.SetBoundary(f.boundary)
+	if err != nil {
+		return err
+	}
 
 	_, err = fileKey.CreateFormFile(key, filepath.Base(path))
 	if err != nil {
@@ -157,7 +160,7 @@ func (f *Form) writeToPipe() {
 		if separate {
 			_, err = f.pw.Write([]byte("\r\n"))
 			if err != nil {
-				f.pw.CloseWithError(err)
+				_ = f.pw.CloseWithError(err)
 				f.doneWriting <- err
 				return
 			}
@@ -165,7 +168,7 @@ func (f *Form) writeToPipe() {
 
 		_, err = io.Copy(f.pw, key)
 		if err != nil {
-			f.pw.CloseWithError(err)
+			_ = f.pw.CloseWithError(err)
 			f.doneWriting <- err
 			return
 		}
@@ -173,7 +176,7 @@ func (f *Form) writeToPipe() {
 		fileName := f.files[i]
 		err = writeFileToPipe(fileName, f.pw)
 		if err != nil {
-			f.pw.CloseWithError(err)
+			_ = f.pw.CloseWithError(err)
 			f.doneWriting <- err
 			return
 		}
@@ -185,7 +188,7 @@ func (f *Form) writeToPipe() {
 	if separate && f.formFields.Len() > len(f.boundary)+8 { // boundary+8 =>format: \r\n--boundary-words--\r\n
 		_, err = f.pw.Write([]byte("\r\n"))
 		if err != nil {
-			f.pw.CloseWithError(err)
+			_ = f.pw.CloseWithError(err)
 			f.doneWriting <- err
 			return
 		}
@@ -193,12 +196,12 @@ func (f *Form) writeToPipe() {
 
 	_, err = io.Copy(f.pw, f.formFields)
 	if err != nil {
-		f.pw.CloseWithError(err)
+		_ = f.pw.CloseWithError(err)
 		f.doneWriting <- err
 		return
 	}
 
-	f.pw.Close()
+	_ = f.pw.Close()
 	f.doneWriting <- nil
 	return
 }

@@ -31,17 +31,19 @@ var _ = Describe("apply-changes command", func() {
 				username := req.FormValue("username")
 
 				if username == "some-username" {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				} else {
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 						"access_token": "some-running-install-opsman-token",
 						"token_type": "bearer",
 						"expires_in": 3600
 					}`))
+					Expect(err).ToNot(HaveOccurred())
 				}
 			case "/api/v0/installations":
 				auth := req.Header.Get("Authorization")
@@ -51,24 +53,29 @@ var _ = Describe("apply-changes command", func() {
 				}
 
 				if auth == "Bearer some-running-install-opsman-token" {
-					w.Write([]byte(`{ "installations": [ { "id": 42, "status": "running", "started_at": "2017-03-02T06:50:32.370Z" } ] }`))
+					_, err := w.Write([]byte(`{ "installations": [ { "id": 42, "status": "running", "started_at": "2017-03-02T06:50:32.370Z" } ] }`))
+					Expect(err).ToNot(HaveOccurred())
 				} else {
-					w.Write([]byte(`{ "install": { "id": 42 } }`))
+					_, err := w.Write([]byte(`{ "install": { "id": 42 } }`))
+					Expect(err).ToNot(HaveOccurred())
 				}
 			case "/api/v0/installations/42":
 				if installationsStatusCallCount == 3 {
-					w.Write([]byte(`{ "status": "succeeded" }`))
+					_, err := w.Write([]byte(`{ "status": "succeeded" }`))
+					Expect(err).ToNot(HaveOccurred())
 					return
 				}
 
 				installationsStatusCallCount++
-				w.Write([]byte(`{ "status": "running" }`))
+				_, err := w.Write([]byte(`{ "status": "running" }`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/installations/42/logs":
 				if installationsLogsCallCount != 3 {
 					logLines += fmt.Sprintf("something logged for call #%d\n", installationsLogsCallCount)
 				}
 
-				w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
+				_, err := w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
+				Expect(err).ToNot(HaveOccurred())
 				installationsLogsCallCount++
 			default:
 				out, err := httputil.DumpRequest(req, true)

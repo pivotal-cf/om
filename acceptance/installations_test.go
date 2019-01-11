@@ -53,7 +53,7 @@ var _ = Describe("installations command", func() {
 
 			switch req.URL.Path {
 			case "/api/v0/installations":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				  "installations": [
 				    {
 				      "user_name": "some-user",
@@ -78,12 +78,14 @@ var _ = Describe("installations command", func() {
 				    }
 				  ]
 				}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 				}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

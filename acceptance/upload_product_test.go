@@ -55,7 +55,8 @@ func (t *UploadProductTestServer) ServeHTTP(w http.ResponseWriter, req *http.Req
 		Fail(fmt.Sprintf("unexpected request: %s", out))
 	}
 
-	w.Write([]byte(responseString))
+	_, err := w.Write([]byte(responseString))
+	Expect(err).ToNot(HaveOccurred())
 }
 
 var _ = Describe("upload-product command", func() {
@@ -98,7 +99,8 @@ name: some-product`)
 			Expect(err).NotTo(HaveOccurred())
 
 			product = req.MultipartForm.File["product[file]"][0].Filename
-			w.Write([]byte("{}"))
+			_, err = w.Write([]byte("{}"))
+			Expect(err).ToNot(HaveOccurred())
 		}
 
 	})
@@ -108,7 +110,6 @@ name: some-product`)
 	})
 
 	AfterEach(func() {
-		os.Remove(productFile.Name())
 		server.Close()
 	})
 
@@ -208,7 +209,8 @@ name: some-product`)
 						}
 
 						product = req.MultipartForm.File["product[file]"][0].Filename
-						w.Write([]byte("{}"))
+						_, err = w.Write([]byte("{}"))
+						Expect(err).ToNot(HaveOccurred())
 					}
 				}
 			})

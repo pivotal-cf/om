@@ -27,7 +27,7 @@ var _ = Describe("assign-stemcell command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				req.ParseForm()
+				_ = req.ParseForm()
 
 				if req.PostForm.Get("password") == "" {
 					w.WriteHeader(http.StatusUnauthorized)
@@ -51,7 +51,8 @@ var _ = Describe("assign-stemcell command", func() {
 				Fail(fmt.Sprintf("unexpected request: %s", out))
 			}
 
-			w.Write([]byte(responseString))
+			_, err := w.Write([]byte(responseString))
+			Expect(err).ToNot(HaveOccurred())
 		}))
 	})
 

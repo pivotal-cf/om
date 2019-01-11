@@ -193,10 +193,10 @@ properties-configuration:
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"another_vm_extension"}}))
 
 			expectedLogs := make(map[interface{}][]string)
-			formatStr1, formatArg := logger.PrintfArgsForCall(16)
+			formatStr1, _ := logger.PrintfArgsForCall(16)
 			formatStr2, formatArg := logger.PrintfArgsForCall(17)
 			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
-			formatStr1, formatArg = logger.PrintfArgsForCall(18)
+			formatStr1, _ = logger.PrintfArgsForCall(18)
 			formatStr2, formatArg = logger.PrintfArgsForCall(19)
 			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
 			Expect(expectedLogs).To(HaveKey("some_other_vm_extension"))

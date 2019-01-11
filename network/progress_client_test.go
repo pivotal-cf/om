@@ -149,7 +149,8 @@ var _ = Describe("ProgressClient", func() {
 		Context("when the polling interval is greater than 1", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					ioutil.ReadAll(req.Body)
+					_, err := ioutil.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
 					defer req.Body.Close()
 
 					time.Sleep(50 * time.Millisecond)
@@ -181,7 +182,8 @@ var _ = Describe("ProgressClient", func() {
 		Context("when the polling interval is greater than the time it takes upload the product", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					ioutil.ReadAll(req.Body)
+					_, err := ioutil.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
 					defer req.Body.Close()
 
 					time.Sleep(100 * time.Millisecond)

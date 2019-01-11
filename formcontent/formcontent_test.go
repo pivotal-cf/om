@@ -27,7 +27,8 @@ var _ = Describe("Formcontent", func() {
 			form = formcontent.NewForm()
 			err = form.AddFile("something[original-file]", fileWithContent)
 			Expect(err).NotTo(HaveOccurred())
-			form.AddField("key", "value")
+			err = form.AddField("key", "value")
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
 			Expect(submission.ContentLength).NotTo(BeZero())
@@ -38,7 +39,8 @@ var _ = Describe("Formcontent", func() {
 		})
 
 		AfterEach(func() {
-			os.Remove(fileWithContent)
+			err := os.Remove(fileWithContent)
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("resets the fields on the form", func() {

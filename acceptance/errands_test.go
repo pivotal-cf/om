@@ -41,20 +41,22 @@ var _ = Describe("errands command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products":
-				w.Write([]byte(`[
+				_, err := w.Write([]byte(`[
 					{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
 					{"installation_name":"cf","guid":"cf-guid","type":"cf","product_version":"1.10.0-build.177"},
 					{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0"},
 					{"installation_name":"p-isolation-segment","guid":"p-isolation-segment-guid","type":"p-isolation-segment","product_version":"1.10.0-build.31"}
 				]`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/errands":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 					"errands": [
 						{"post_deploy": "true", "pre_delete": true, "name": "some-errand-1"},
 						{"post_deploy": "false", "pre_delete": false, "name": "some-errand-2"},
@@ -62,6 +64,7 @@ var _ = Describe("errands command", func() {
 						{"post_deploy": "when-changed", "name": "some-errand-4"}
 					]
 				}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

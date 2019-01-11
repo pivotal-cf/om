@@ -95,19 +95,6 @@ const NetDocument = `
 	</body>
 </html>`
 
-const mistmatchedForm = `
-<html>
-	<body>
-		<form action="/some/action" method="some-method">
-			<input name="_method" value="some-rails" />
-			<input name="authenticity_token" value="some-authenticity" />
-			<input name="availability_zones[availability_zones][][iaas_identifier]" value="some-az-name-2" \>
-			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-1" \>
-			<input name="availability_zones[availability_zones][][guid]" type="hidden" value="some-az-guid-2" \>
-		</form>
-	</body>
-</html>`
-
 var _ = Describe("Bosh Forms", func() {
 	var (
 		service ui.Ui

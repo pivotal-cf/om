@@ -28,7 +28,8 @@ var _ = Describe("UnauthenticatedClient", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				w.WriteHeader(http.StatusTeapot)
-				w.Write([]byte("response"))
+				_, err = w.Write([]byte("response"))
+				Expect(err).ToNot(HaveOccurred())
 			}))
 
 			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
@@ -61,7 +62,8 @@ var _ = Describe("UnauthenticatedClient", func() {
 			It("defaults to HTTPS", func() {
 				server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 					w.WriteHeader(http.StatusTeapot)
-					w.Write([]byte("response"))
+					_, err := w.Write([]byte("response"))
+					Expect(err).ToNot(HaveOccurred())
 				}))
 
 				noScheme, err := url.Parse(server.URL)

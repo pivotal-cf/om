@@ -40,7 +40,8 @@ var _ = Describe("delete-unused-products command", func() {
 				Fail(fmt.Sprintf("unexpected request: %s", out))
 			}
 
-			w.Write([]byte(responseString))
+			_, err := w.Write([]byte(responseString))
+			Expect(err).ToNot(HaveOccurred())
 		}))
 	})
 

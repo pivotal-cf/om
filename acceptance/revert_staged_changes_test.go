@@ -26,11 +26,12 @@ var _ = Describe("revert-staged-changes command", func() {
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
 				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/":
 				http.SetCookie(w, &http.Cookie{
 					Name:  "somecookie",
@@ -38,7 +39,7 @@ var _ = Describe("revert-staged-changes command", func() {
 					Path:  "/",
 				})
 
-				w.Write([]byte(`<html>
+				_, err := w.Write([]byte(`<html>
 				<body>
 					<form action="/some-other-form" method="post">
 						<input name="_method" value="fakemethod2" />
@@ -54,9 +55,10 @@ var _ = Describe("revert-staged-changes command", func() {
 					</form>
 					</body>
 				</html>`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/installation":
 				receivedCookies = req.Cookies()
-				req.ParseForm()
+				_ = req.ParseForm()
 				Forms = append(Forms, req.Form)
 			default:
 				out, err := httputil.DumpRequest(req, true)

@@ -44,11 +44,12 @@ var _ = Describe("available-products command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/available_products":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {
@@ -56,7 +57,8 @@ var _ = Describe("available-products command", func() {
 					return
 				}
 
-				w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
+				_, err := w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
@@ -111,11 +113,12 @@ var _ = Describe("available-products command", func() {
 
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
-					w.Write([]byte(`{
+					_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+					Expect(err).ToNot(HaveOccurred())
 				case "/api/v0/available_products":
 					auth := req.Header.Get("Authorization")
 					if auth != "Bearer some-opsman-token" {
@@ -123,7 +126,8 @@ var _ = Describe("available-products command", func() {
 						return
 					}
 
-					w.Write([]byte(`[]`))
+					_, err := w.Write([]byte(`[]`))
+					Expect(err).ToNot(HaveOccurred())
 				default:
 					out, err := httputil.DumpRequest(req, true)
 					Expect(err).NotTo(HaveOccurred())

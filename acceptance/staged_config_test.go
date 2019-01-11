@@ -23,23 +23,26 @@ var _ = Describe("staged-config command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products":
-				w.Write([]byte(`[
+				_, err := w.Write([]byte(`[
 					{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
 					{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0"}
 				]`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/deployed/products":
-				w.Write([]byte(`[
+				_, err := w.Write([]byte(`[
 					{"guid":"p-bosh-guid","type":"p-bosh"},
 					{"guid":"some-product-guid","type":"some-product"}
 				]`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/properties":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
           "properties": {
             ".properties.some-configurable-property": {
               "type": "string",
@@ -66,8 +69,9 @@ var _ = Describe("staged-config command", func() {
             }
           }
         }`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
           "networks_and_azs": {
             "singleton_availability_zone": {
               "name": "az-one"
@@ -85,8 +89,9 @@ var _ = Describe("staged-config command", func() {
             }
           }
         }`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/jobs":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 					"jobs": [
 					  {
 							"name": "some-job",
@@ -94,8 +99,9 @@ var _ = Describe("staged-config command", func() {
 						}
 					]
 				}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 						"instances": 1,
 						"instance_type": {
 							"id": "automatic"
@@ -106,8 +112,9 @@ var _ = Describe("staged-config command", func() {
 						"internet_connected": true,
 						"elb_names": ["my-elb"]
 					}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/deployed/products/some-product-guid/credentials/.properties.some-secret-property":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 						"credential": {
 							"type": "some-secret-type",
 							"value": {
@@ -115,8 +122,9 @@ var _ = Describe("staged-config command", func() {
 							}
 						}
 					}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/errands":
-				w.Write([]byte(`{ "errands": [
+				_, err := w.Write([]byte(`{ "errands": [
                            {
                              "name": "errand-1",
                              "post_deploy": false,
@@ -127,6 +135,7 @@ var _ = Describe("staged-config command", func() {
                              "pre_delete": true,
                              "label": "Errand 2 Label"
                            }]}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

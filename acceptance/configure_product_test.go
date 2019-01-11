@@ -32,17 +32,20 @@ var _ = Describe("configure-product command", func() {
 
 			switch req.URL.Path {
 			case "/api/v0/staged/pending_changes":
-				w.Write([]byte(`{}`))
+				_, err := w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/installations":
-				w.Write([]byte(`{"installations": []}`))
+				_, err := w.Write([]byte(`{"installations": []}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products":
-				w.Write([]byte(`[
+				_, err := w.Write([]byte(`[
 					{
 						"installation_name": "some-product-guid",
 						"guid": "some-product-guid",
@@ -54,8 +57,9 @@ var _ = Describe("configure-product command", func() {
 						"type": "p-bosh"
 					}
 				]`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/jobs":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 					"jobs": [
 					  {
 							"name": "not-the-job",
@@ -71,20 +75,23 @@ var _ = Describe("configure-product command", func() {
 						}
 					]
 				}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/properties":
 				var err error
 				productPropertiesMethod = req.Method
 				productPropertiesBody, err = ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 
-				w.Write([]byte(`{}`))
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/networks_and_azs":
 				var err error
 				productNetworkMethod = req.Method
 				productNetworkBody, err = ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 
-				w.Write([]byte(`{}`))
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/jobs/just-a-guid/resource_config":
 				fallthrough
 			case "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config":
@@ -94,7 +101,8 @@ var _ = Describe("configure-product command", func() {
 
 				resourceConfigBody = append(resourceConfigBody, body)
 
-				w.Write([]byte(`{}`))
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {
@@ -124,7 +132,8 @@ var _ = Describe("configure-product command", func() {
 		}`, propertiesJSON, productNetworkJSON, resourceConfigJSON)
 		configFile, err := ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
-		configFile.WriteString(configFileContents)
+		_, err = configFile.WriteString(configFileContents)
+		Expect(err).ToNot(HaveOccurred())
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL,

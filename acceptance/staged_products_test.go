@@ -44,11 +44,12 @@ var _ = Describe("staged-products command", func() {
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/diagnostic_report":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {
@@ -56,7 +57,8 @@ var _ = Describe("staged-products command", func() {
 					return
 				}
 
-				w.Write(diagnosticReport)
+				_, err := w.Write(diagnosticReport)
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

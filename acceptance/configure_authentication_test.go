@@ -39,7 +39,8 @@ var _ = Describe("configure-authentication command", func() {
 
 				if ensureAvailabilityCallCount < 3 {
 					w.WriteHeader(http.StatusOK)
-					w.Write([]byte("Waiting for authentication system to start..."))
+					_, err := w.Write([]byte("Waiting for authentication system to start..."))
+					Expect(err).ToNot(HaveOccurred())
 					return
 				}
 

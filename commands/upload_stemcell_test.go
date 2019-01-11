@@ -250,11 +250,12 @@ var _ = Describe("UploadStemcell", func() {
 		It("proceeds normally when the sha sums match", func() {
 			file, err := ioutil.TempFile("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
-
-			file.Close()
 			defer os.Remove(file.Name())
 
-			file.WriteString("testing-shasum")
+			_, err = file.WriteString("testing-shasum")
+			Expect(err).ToNot(HaveOccurred())
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := formcontent.ContentSubmission{
 				ContentLength: 10,
@@ -268,7 +269,7 @@ var _ = Describe("UploadStemcell", func() {
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err = command.Execute([]string{
 				"--stemcell", file.Name(),
-				"--shasum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			format, v := logger.PrintfArgsForCall(0)
@@ -278,11 +279,12 @@ var _ = Describe("UploadStemcell", func() {
 		It("returns an error when the sha sums don't match", func() {
 			file, err := ioutil.TempFile("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
-
-			file.Close()
 			defer os.Remove(file.Name())
 
-			file.WriteString("testing-shasum")
+			_, err = file.WriteString("testing-shasum")
+			Expect(err).ToNot(HaveOccurred())
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
 
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err = command.Execute([]string{
@@ -290,13 +292,13 @@ var _ = Describe("UploadStemcell", func() {
 				"--shasum", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
+			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44"))
 		})
 		It("fails when the file can not calculate a shasum", func() {
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err := command.Execute([]string{
 				"--stemcell", "/path/to/testing.tgz",
-				"--shasum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("open /path/to/testing.tgz: no such file or directory"))

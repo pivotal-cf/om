@@ -38,11 +38,12 @@ var _ = Describe("OAuthClient", func() {
 
 				w.Header().Set("Content-Type", "application/json")
 
-				w.Write([]byte(`{
+				_, err = w.Write([]byte(`{
 					"access_token": "some-opsman-token",
 					"token_type": "bearer",
 					"expires_in": 3600
 					}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/some/path":
 				authHeader = req.Header.Get("Authorization")
 
@@ -52,7 +53,6 @@ var _ = Describe("OAuthClient", func() {
 				})
 
 				w.WriteHeader(http.StatusNoContent)
-				w.Write([]byte("response"))
 			default:
 				receivedCookies = req.Cookies()
 			}
@@ -77,6 +77,7 @@ var _ = Describe("OAuthClient", func() {
 			Expect(authHeader).To(Equal("Bearer some-opsman-token"))
 
 			req, err = http.ReadRequest(bufio.NewReader(bytes.NewReader(receivedRequest)))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(req.Method).To(Equal("POST"))
 			Expect(req.URL.Path).To(Equal("/uaa/oauth/token"))
 
@@ -111,6 +112,7 @@ var _ = Describe("OAuthClient", func() {
 			Expect(authHeader).To(Equal("Bearer some-opsman-token"))
 
 			req, err = http.ReadRequest(bufio.NewReader(bytes.NewReader(receivedRequest)))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(req.Method).To(Equal("POST"))
 			Expect(req.URL.Path).To(Equal("/uaa/oauth/token"))
 

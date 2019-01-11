@@ -61,11 +61,12 @@ name: some-product`)
 
 			switch req.URL.Path {
 			case "/uaa/oauth/token":
-				w.Write([]byte(`{
+				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
 				"token_type": "bearer",
 				"expires_in": 3600
 			}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/available_products":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {
@@ -75,7 +76,8 @@ name: some-product`)
 
 				switch req.Method {
 				case "GET":
-					w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
+					_, err := w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
+					Expect(err).ToNot(HaveOccurred())
 				case "POST":
 					w.WriteHeader(http.StatusOK)
 				default:
