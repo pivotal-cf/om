@@ -35,19 +35,19 @@ type httpClient interface {
 }
 
 type options struct {
-	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d" long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE" description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
-	ClientID             string `yaml:"client-id"            short:"c"  long:"client-id"           env:"OM_CLIENT_ID"                     description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
-	ClientSecret         string `yaml:"client-secret"        short:"s"  long:"client-secret"       env:"OM_CLIENT_SECRET"                 description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
-	Help                 bool   `                            short:"h"  long:"help"                                       default:"false" description:"prints this usage information"`
-	Password             string `yaml:"password"             short:"p"  long:"password"            env:"OM_PASSWORD"                      description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
-	ConnectTimeout       int    `yaml:"connect-timeout"      short:"o"  long:"connect-timeout"                            default:"10"    description:"timeout in seconds to make TCP connections"`
-	RequestTimeout       int    `yaml:"request-timeout"      short:"r"  long:"request-timeout"                            default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
-	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"  short:"k"  long:"skip-ssl-validation"                        default:"false" description:"skip ssl certificate validation during http requests"`
-	Target               string `yaml:"target"               short:"t"  long:"target"              env:"OM_TARGET"                        description:"location of the Ops Manager VM"`
-	Trace                bool   `yaml:"trace"                short:"tr" long:"trace"                                                      description:"prints HTTP requests and response payloads"`
-	Username             string `yaml:"username"             short:"u"  long:"username"            env:"OM_USERNAME"                      description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
-	Env                  string `                            short:"e"  long:"env"                                                        description:"env file with login credentials"`
-	Version              bool   `                            short:"v"  long:"version"                                    default:"false" description:"prints the om release version"`
+	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d" long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE"             description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
+	ClientID             string `yaml:"client-id"             short:"c"  long:"client-id"           env:"OM_CLIENT_ID"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
+	ClientSecret         string `yaml:"client-secret"         short:"s"  long:"client-secret"       env:"OM_CLIENT_SECRET"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
+	Help                 bool   `                             short:"h"  long:"help"                                             default:"false" description:"prints this usage information"`
+	Password             string `yaml:"password"              short:"p"  long:"password"            env:"OM_PASSWORD"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
+	ConnectTimeout       int    `yaml:"connect-timeout"       short:"o"  long:"connect-timeout"     env:"OM_CONNECT_TIMEOUT"     default:"10"    description:"timeout in seconds to make TCP connections"`
+	RequestTimeout       int    `yaml:"request-timeout"       short:"r"  long:"request-timeout"     env:"OM_REQUEST_TIMEOUT"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
+	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"   short:"k"  long:"skip-ssl-validation" env:"OM_SKIP_SSL_VALIDATION" default:"false" description:"skip ssl certificate validation during http requests"`
+	Target               string `yaml:"target"                short:"t"  long:"target"              env:"OM_TARGET"                              description:"location of the Ops Manager VM"`
+	Trace                bool   `yaml:"trace"                 short:"tr" long:"trace"               env:"OM_TRACE"                               description:"prints HTTP requests and response payloads"`
+	Username             string `yaml:"username"              short:"u"  long:"username"            env:"OM_USERNAME"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
+	Env                  string `                             short:"e"  long:"env"                                                              description:"env file with login credentials"`
+	Version              bool   `                             short:"v"  long:"version"                                          default:"false" description:"prints the om release version"`
 }
 
 func main() {
