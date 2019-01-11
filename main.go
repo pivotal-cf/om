@@ -233,7 +233,7 @@ func setEnvFileProperties(global *options) error {
 	if global.Password == "" {
 		global.Password = opts.Password
 	}
-	if global.ConnectTimeout == 5 && opts.ConnectTimeout != 0 {
+	if global.ConnectTimeout == 10 && opts.ConnectTimeout != 0 {
 		global.ConnectTimeout = opts.ConnectTimeout
 	}
 	if global.RequestTimeout == 1800 && opts.RequestTimeout != 0 {
