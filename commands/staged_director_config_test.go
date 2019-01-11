@@ -129,11 +129,6 @@ az-configuration:
 - name: some-az
   iaas_configuration_guid: some-iaas-guid
 - name: some-other-az
-director-configuration:
-  max_threads: 5
-  encryption:
-    providers:
-      client_certificate: user_provided_cert
 network-assignment:
   network:
     name: network-1
@@ -148,10 +143,6 @@ resource-configuration:
     instances: 1
     instance_type:
       id: automatic
-security-configuration:
-  trusted_certificates: some-certificate
-syslog-configuration:
-  syslogconfig: awesome
 vmextensions-configuration:
   - name: vm_ext1
     cloud_properties: 
@@ -159,6 +150,16 @@ vmextensions-configuration:
   - name: vm_ext2
     cloud_properties:
       key_name: operations_keypair
+properties-configuration:
+  syslog_configuration:
+    syslogconfig: awesome
+  security_configuration:
+    trusted_certificates: some-certificate
+  director_configuration:
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
 `)))
 		})
 
@@ -171,11 +172,6 @@ vmextensions-configuration:
 
 				output := logger.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
-director-configuration:
-  max_threads: 5
-  encryption:
-    providers:
-      client_certificate: user_provided_cert
 network-assignment:
   network:
     name: network-1
@@ -190,10 +186,6 @@ resource-configuration:
     instances: 1
     instance_type:
       id: automatic
-security-configuration:
-  trusted_certificates: some-certificate
-syslog-configuration:
-  syslogconfig: awesome
 vmextensions-configuration:
   - name: vm_ext1
     cloud_properties: 
@@ -201,6 +193,16 @@ vmextensions-configuration:
   - name: vm_ext2
     cloud_properties:
       key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
 `)))
 			})
 		})
@@ -219,18 +221,6 @@ az-configuration:
 - name: some-az
   iaas_configuration_guid: some-iaas-guid
 - name: some-other-az
-director-configuration:
-  filtered_key: filtered_key
-  max_threads: 5
-  encryption:
-    providers:
-      client_certificate: user_provided_cert
-      partition_password: some_password
-      client_key: user_provided_key
-      client_user: user
-iaas-configuration:
-  key: some-key
-  project: project-id
 network-assignment:
   network:
     name: network-1
@@ -245,10 +235,6 @@ resource-configuration:
     instances: 1
     instance_type:
       id: automatic
-security-configuration:
-  trusted_certificates: some-certificate
-syslog-configuration:
-  syslogconfig: awesome
 vmextensions-configuration:
   - name: vm_ext1
     cloud_properties: 
@@ -256,6 +242,23 @@ vmextensions-configuration:
   - name: vm_ext2
     cloud_properties:
       key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: filtered_key
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        partition_password: some_password
+        client_key: user_provided_key
+        client_user: user
+  iaas_configuration:
+    key: some-key
+    project: project-id  
 `)))
 			})
 		})
@@ -274,18 +277,6 @@ az-configuration:
 - name: some-az
   iaas_configuration_guid: some-iaas-guid
 - name: some-other-az
-director-configuration:
-  filtered_key: ((director-configuration_filtered_key))
-  encryption:
-    providers:
-      client_certificate: user_provided_cert
-      client_key: ((director-configuration_encryption_providers_client_key))
-      client_user: ((director-configuration_encryption_providers_client_user))
-      partition_password: ((director-configuration_encryption_providers_partition_password))
-  max_threads: 5
-iaas-configuration:
-  project: ((iaas-configuration_project))
-  key: ((iaas-configuration_key))
 network-assignment:
   network:
     name: network-1
@@ -300,10 +291,6 @@ resource-configuration:
     instances: 1
     instance_type:
       id: automatic
-security-configuration:
-  trusted_certificates: some-certificate
-syslog-configuration:
-  syslogconfig: awesome
 vmextensions-configuration:
   - name: vm_ext1
     cloud_properties: 
@@ -311,6 +298,23 @@ vmextensions-configuration:
   - name: vm_ext2
     cloud_properties:
       key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: ((properties-configuration_director_configuration_filtered_key))
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        client_key: ((properties-configuration_director_configuration_encryption_providers_client_key))
+        client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
+        partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
+    max_threads: 5
+  iaas_configuration:
+    project: ((properties-configuration_iaas_configuration_project))
+    key: ((properties-configuration_iaas_configuration_key))  
 `)))
 			})
 		})
