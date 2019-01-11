@@ -35,7 +35,7 @@ var _ = Describe("SslCertificate", func() {
 			}
 
 			fakeSSLCertificateService.GetSSLCertificateReturns(
-				api.SSLCertificateOutput{sslCertificateOutput},
+				api.SSLCertificateOutput{Certificate: sslCertificateOutput},
 				nil,
 			)
 		})
