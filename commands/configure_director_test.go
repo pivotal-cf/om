@@ -42,8 +42,8 @@ var _ = Describe("ConfigureDirector", func() {
 			FloatingIPs: "1.2.3.4",
 		}, nil)
 		service.ListStagedVMExtensionsReturns([]api.VMExtension{
-			api.VMExtension{Name: "some_vm_extension"},
-			api.VMExtension{Name: "some_other_vm_extension"},
+			{Name: "some_vm_extension"},
+			{Name: "some_other_vm_extension"},
 		}, nil)
 
 		service.ListInstallationsReturns([]api.InstallationsServiceOutput{
@@ -87,14 +87,6 @@ az-configuration:
   name: AZ1
 networks-configuration:
   network: network-1
-director-configuration:
-  some-director-assignment: director
-iaas-configuration:
-  some-iaas-assignment: iaas
-security-configuration:
-  some-security-assignment: security
-syslog-configuration:
-  some-syslog-assignment: syslog
 resource-configuration:
   resource:
     instance_type:
@@ -106,6 +98,17 @@ vmextensions-configuration:
 - name: another_vm_extension
   cloud_properties:
     foo: bar
+properties-configuration:
+  dns_configuration:
+    recurse: "true"
+  syslog_configuration:
+    some-syslog-assignment: syslog
+  security_configuration:
+    some-security-assignment: security
+  iaas_configuration:
+    some-iaas-assignment: iaas
+  director_configuration:
+    some-director-assignment: director
 `
 		})
 
@@ -124,12 +127,15 @@ vmextensions-configuration:
 				NetworkAZ: json.RawMessage(`{"network":{"name":"network"},"singleton_availability_zone":{"name":"singleton"}}`),
 			}))
 			Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
-			Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
-				DirectorConfiguration: json.RawMessage(`{"some-director-assignment":"director"}`),
-				IAASConfiguration:     json.RawMessage(`{"some-iaas-assignment":"iaas"}`),
-				SecurityConfiguration: json.RawMessage(`{"some-security-assignment":"security"}`),
-				SyslogConfiguration:   json.RawMessage(`{"some-syslog-assignment":"syslog"}`),
-			}))
+			Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(
+				`{
+					"director_configuration":{"some-director-assignment":"director"},
+					"iaas_configuration":{"some-iaas-assignment":"iaas"},
+					"security_configuration":{"some-security-assignment":"security"},
+					"syslog_configuration":{"some-syslog-assignment":"syslog"},
+					"dns_configuration": {"recurse":"true"}
+				}`,
+			))
 			Expect(service.GetStagedProductByNameCallCount()).To(Equal(1))
 			Expect(service.GetStagedProductByNameArgsForCall(0)).To(Equal("p-bosh"))
 			Expect(service.ListStagedProductJobsCallCount()).To(Equal(1))
@@ -299,16 +305,24 @@ vmextensions-configuration:
 						},
 					}
 
+					dnsConfig := map[string]interface{}{
+						"recurse": "true",
+					}
+
 					configurationMAP := map[string]interface{}{}
 					configurationMAP["network-assignment"] = networkAssignment
 					configurationMAP["az-configuration"] = azConfiguration
 					configurationMAP["networks-configuration"] = networksConfiguration
-					configurationMAP["director-configuration"] = directorConfiguration
-					configurationMAP["iaas-configuration"] = iaasConfiguration
-					configurationMAP["security-configuration"] = securityConfiguration
-					configurationMAP["syslog-configuration"] = syslogConfiguration
 					configurationMAP["resource-configuration"] = resourceConfiguration
 					configurationMAP["vmextensions-configuration"] = vmextensionConfig
+
+					configurationMAP["properties-configuration"] = map[string]interface{}{
+						"director_configuration": directorConfiguration,
+						"iaas_configuration":     iaasConfiguration,
+						"security_configuration": securityConfiguration,
+						"dns_configuration":      dnsConfig,
+						"syslog_configuration":   syslogConfiguration,
+					}
 
 					completeConfigurationJSON, err = json.Marshal(configurationMAP)
 					Expect(err).NotTo(HaveOccurred())
@@ -416,7 +430,7 @@ vmextensions-configuration:
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`))
+					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: "unrecognized-key", "unrecognized-other-key"`))
 				})
 			})
 		})
@@ -460,9 +474,9 @@ vmextensions-configuration:
 			})
 		})
 
-		Context("when some director configuration flags are provided", func() {
+		Context("when only some of the configure-director top-level keys are provided", func() {
 			BeforeEach(func() {
-				config = `{"networks-configuration":{"network":"network-1"},"director-configuration":{"some-director-assignment":"director"}}`
+				config = `{"networks-configuration":{"network":"network-1"},"properties-configuration":{"some-director-assignment":"director"}}`
 			})
 
 			It("only updates the config for the provided flags, and sets others to empty", func() {
@@ -477,12 +491,9 @@ vmextensions-configuration:
 				}))
 				Expect(service.UpdateStagedDirectorNetworkAndAZCallCount()).To(Equal(0))
 				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
-				Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties{
-					IAASConfiguration:     json.RawMessage(""),
-					DirectorConfiguration: json.RawMessage("{\"some-director-assignment\":\"director\"}"),
-					SecurityConfiguration: json.RawMessage(""),
-					SyslogConfiguration:   json.RawMessage(""),
-				}))
+				Expect(service.UpdateStagedDirectorPropertiesArgsForCall(0)).To(Equal(api.DirectorProperties(
+					`{"some-director-assignment":"director"}`,
+				)))
 			})
 		})
 
@@ -562,7 +573,7 @@ vmextensions-configuration:
 
 			Context("when configuring properties fails", func() {
 				BeforeEach(func() {
-					config = `{"director-configuration": {}}`
+					config = `{"properties-configuration": {"director_configuration": {}}}`
 				})
 
 				It("returns an error", func() {

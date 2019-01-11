@@ -3,11 +3,12 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
-	"sort"
-	"strings"
 )
 
 type ConfigureDirector struct {
@@ -23,16 +24,13 @@ type ConfigureDirector struct {
 }
 
 type directorConfig struct {
-	NetworkAssignment     interface{}            `yaml:"network-assignment"`
-	AZConfiguration       interface{}            `yaml:"az-configuration"`
-	NetworksConfiguration interface{}            `yaml:"networks-configuration"`
-	DirectorConfigration  interface{}            `yaml:"director-configuration"`
-	IaasConfiguration     interface{}            `yaml:"iaas-configuration"`
-	SecurityConfiguration interface{}            `yaml:"security-configuration"`
-	SyslogConfiguration   interface{}            `yaml:"syslog-configuration"`
-	ResourceConfiguration map[string]interface{} `yaml:"resource-configuration"`
-	VMExtensions          interface{}            `yaml:"vmextensions-configuration"`
-	Field                 map[string]interface{} `yaml:",inline"`
+	NetworkAssignment       interface{}            `yaml:"network-assignment"`
+	AZConfiguration         interface{}            `yaml:"az-configuration"`
+	NetworksConfiguration   interface{}            `yaml:"networks-configuration"`
+	PropertiesConfiguration interface{}            `yaml:"properties-configuration"`
+	ResourceConfiguration   map[string]interface{} `yaml:"resource-configuration"`
+	VMExtensions            interface{}            `yaml:"vmextensions-configuration"`
+	Field                   map[string]interface{} `yaml:",inline"`
 }
 
 //go:generate counterfeiter -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
@@ -149,48 +147,61 @@ func (c ConfigureDirector) validateConfig(config *directorConfig) error {
 		}
 		sort.Strings(unrecognizedKeys)
 
-		return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
+		deprecatedKeys := []string{"director-configuration", "iaas-configuration", "security-configuration", "syslog-configuration"}
+		errorMessage := `The following keys have recently been removed from the top level configuration: director-configuration, iaas-configuration, security-configuration, syslog-configuration
+To fix this error, move the above keys under 'properties-configuration' and change their dashes to underscores.
+
+The old configuration file would contain the keys at the top level.
+
+director-configuration: {}
+iaas-configuration: {}
+network-assignment: {}
+networks-configuration: {}
+resource-configuration: {}
+security-configuration: {}
+syslog-configuration: {}
+vm-extensions-configuration: {}
+
+They'll need to be moved to the new 'properties-configuration', with their dashes turn to underscore.
+For example, 'director-configuration' becomes 'director_configuration'.
+
+The new configration file will look like.
+
+az-configuration: {}
+network-assignment: {}
+networks-configuration: {}
+properties-configuration:
+  director_configuration: {}
+  security_configuration: {}
+  syslog_configuration: {}
+  iaas_configuration: {}
+resource-configuration: {}
+vm-extensions-configuration: {}
+`
+
+		for _, depKey := range deprecatedKeys {
+			for _, unrecKey := range unrecognizedKeys {
+				if depKey == unrecKey {
+					return fmt.Errorf(errorMessage)
+				}
+			}
+		}
+
+		return fmt.Errorf("the config file contains unrecognized keys: \"%s\"", strings.Join(unrecognizedKeys, "\", \""))
 	}
 	return nil
 }
 
 func (c ConfigureDirector) updateStagedDirectorProperties(config *directorConfig) error {
-	if config.DirectorConfigration != nil || config.IaasConfiguration != nil || config.SecurityConfiguration != nil || config.SyslogConfiguration != nil {
+	if config.PropertiesConfiguration != nil {
 		c.logger.Printf("started configuring director options for bosh tile")
 
-		var err error
-		var directorConfig, iaasConfig, securityConfig, syslogConfig string
-		if config.DirectorConfigration != nil {
-			directorConfig, err = getJSONProperties(config.DirectorConfigration)
-			if err != nil {
-				return err
-			}
-		}
-		if config.IaasConfiguration != nil {
-			iaasConfig, err = getJSONProperties(config.IaasConfiguration)
-			if err != nil {
-				return err
-			}
-		}
-		if config.SecurityConfiguration != nil {
-			securityConfig, err = getJSONProperties(config.SecurityConfiguration)
-			if err != nil {
-				return err
-			}
-		}
-		if config.SyslogConfiguration != nil {
-			syslogConfig, err = getJSONProperties(config.SyslogConfiguration)
-			if err != nil {
-				return err
-			}
+		properties, err := getJSONProperties(config.PropertiesConfiguration)
+		if err != nil {
+			return err
 		}
 
-		err = c.service.UpdateStagedDirectorProperties(api.DirectorProperties{
-			DirectorConfiguration: json.RawMessage(directorConfig),
-			IAASConfiguration:     json.RawMessage(iaasConfig),
-			SecurityConfiguration: json.RawMessage(securityConfig),
-			SyslogConfiguration:   json.RawMessage(syslogConfig),
-		})
+		err = c.service.UpdateStagedDirectorProperties(api.DirectorProperties(properties))
 
 		if err != nil {
 			return fmt.Errorf("properties could not be applied: %s", err)

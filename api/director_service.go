@@ -51,12 +51,7 @@ type NetworkAndAZConfiguration struct {
 	NetworkAZ json.RawMessage `json:"network_and_az,omitempty"`
 }
 
-type DirectorProperties struct {
-	IAASConfiguration     json.RawMessage `json:"iaas_configuration,omitempty"`
-	DirectorConfiguration json.RawMessage `json:"director_configuration,omitempty"`
-	SecurityConfiguration json.RawMessage `json:"security_configuration,omitempty"`
-	SyslogConfiguration   json.RawMessage `json:"syslog_configuration,omitempty"`
-}
+type DirectorProperties json.RawMessage
 
 func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) error {
 	azs := AvailabilityZones{}
@@ -138,12 +133,7 @@ func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) e
 }
 
 func (a Api) UpdateStagedDirectorProperties(input DirectorProperties) error {
-	jsonData, err := json.Marshal(&input)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal json")
-	}
-
-	_, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/properties", jsonData)
+	_, err := a.sendAPIRequest("PUT", "/api/v0/staged/director/properties", input)
 	return err
 }
 

@@ -552,12 +552,13 @@ var _ = Describe("Director", func() {
 		})
 
 		It("assigns director configuration properties", func() {
-			err := service.UpdateStagedDirectorProperties(api.DirectorProperties{
-				IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
-				DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
-				SecurityConfiguration: json.RawMessage(`{"hello": "goodbye"}`),
-				SyslogConfiguration:   json.RawMessage(`{"imsyslog": "yep"}`),
-			})
+			err := service.UpdateStagedDirectorProperties(api.DirectorProperties(`{
+				"iaas_configuration": {"prop": "other", "value": "one"},
+				"director_configuration": {"prop": "blah", "value": "nothing"},
+                "dns_configuration": {"recurse": "no"},
+				"security_configuration": {"hello": "goodbye"},
+				"syslog_configuration":{"imsyslog": "yep"}
+			}`))
 
 			Expect(err).NotTo(HaveOccurred())
 
@@ -573,6 +574,7 @@ var _ = Describe("Director", func() {
 			Expect(jsonBody).To(MatchJSON(`{
 				"iaas_configuration": {"prop": "other", "value": "one"},
 				"director_configuration": {"prop": "blah", "value": "nothing"},
+                "dns_configuration": {"recurse": "no"},
 				"security_configuration": {"hello": "goodbye"},
 				"syslog_configuration":{"imsyslog": "yep"}
 			}`))
@@ -580,10 +582,7 @@ var _ = Describe("Director", func() {
 
 		Context("when some of the configurations are empty", func() {
 			It("returns only configurations that are populated", func() {
-				err := service.UpdateStagedDirectorProperties(api.DirectorProperties{
-					IAASConfiguration:     json.RawMessage(`{"prop": "other", "value": "one"}`),
-					DirectorConfiguration: json.RawMessage(`{"prop": "blah", "value": "nothing"}`),
-				})
+				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(`{"iaas_configuration": {"prop": "other", "value": "one"},"director_configuration": {"prop": "blah", "value": "nothing"}}`))
 
 				Expect(err).NotTo(HaveOccurred())
 
@@ -609,7 +608,7 @@ var _ = Describe("Director", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-				err := service.UpdateStagedDirectorProperties(api.DirectorProperties{})
+				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(``))
 
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
@@ -619,7 +618,7 @@ var _ = Describe("Director", func() {
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
-				err := service.UpdateStagedDirectorProperties(api.DirectorProperties{})
+				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(``))
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/properties: api endpoint failed"))
 			})
