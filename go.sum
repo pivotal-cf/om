@@ -60,8 +60,6 @@ github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d h1:Hv1DF96jUOtFUy5
 github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d/go.mod h1:dtX102okHXUUdK9XmlK5WYl2lR0VP0OLaYCiIowB17M=
 github.com/pivotal-cf/pivnet-cli v0.0.55 h1:R8mnLHUVb9DWuVqHdmkLCltG7bUTJq9nj5OexPt5Y2s=
 github.com/pivotal-cf/pivnet-cli v0.0.55/go.mod h1:GIenTUfi8rXtvDXnOuUMfQ+ZofegQ+7XG2Hby3jB0+4=
-github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd h1:KRN5ZOqeY3MHImYOEVHOVis//2OfRDjsbTSf7f2PmcI=
-github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd/go.mod h1:j8LyeJ7/0GbbwookzCmmFyCoRKp1WBwV/xxlebLz9UM=
 github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd h1:naqv5wnPWCvb6o2nYbygTQZlhetOm3e6RTPueq4AFX4=
 github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd/go.mod h1:j8LyeJ7/0GbbwookzCmmFyCoRKp1WBwV/xxlebLz9UM=
 github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
