@@ -27,6 +27,6 @@ run:
       git commit -m"Automatically updated README.md" || true
     popd > /dev/null
 
-    cp -r $GOPATH/src/github.com/pivotal-cf/om $cwd/om-updated-readme
+    cp -r $cwd/om $cwd/om-updated-readme
 outputs:
 - name: om-updated-readme
