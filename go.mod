@@ -12,7 +12,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
-	github.com/gosuri/uilive v0.0.0-20181204013807-921d4ab784bd
+	github.com/hashicorp/go-version v1.1.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4
 	github.com/onsi/ginkgo v1.6.0
@@ -21,6 +21,7 @@ require (
 	github.com/pivotal-cf/jhanda v0.0.0-20180509215011-1b5ae1681a45
 	github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d
 	github.com/pivotal-cf/pivnet-cli v0.0.55
+	github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect

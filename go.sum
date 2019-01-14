@@ -29,8 +29,8 @@ github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 h1:zLTLjkaOFEFIOxY5BWLFLwh+cL8vOBW4XJ2aqLE/Tf0=
 github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
-github.com/gosuri/uilive v0.0.0-20181204013807-921d4ab784bd h1:ABSHChBWAFZ3dgab+T1saPlkEAMvl5eBhuc5R54vYR8=
-github.com/gosuri/uilive v0.0.0-20181204013807-921d4ab784bd/go.mod h1:qkLSc0A5EXSP6B04TrN4oQoxqFI7A8XvoXSlJi8cwk8=
+github.com/hashicorp/go-version v1.1.0 h1:bPIoEKD27tNdebFGGxxYwcL4nepeY4j1QP23PFRGzg0=
+github.com/hashicorp/go-version v1.1.0/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
@@ -60,6 +60,10 @@ github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d h1:Hv1DF96jUOtFUy5
 github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d/go.mod h1:dtX102okHXUUdK9XmlK5WYl2lR0VP0OLaYCiIowB17M=
 github.com/pivotal-cf/pivnet-cli v0.0.55 h1:R8mnLHUVb9DWuVqHdmkLCltG7bUTJq9nj5OexPt5Y2s=
 github.com/pivotal-cf/pivnet-cli v0.0.55/go.mod h1:GIenTUfi8rXtvDXnOuUMfQ+ZofegQ+7XG2Hby3jB0+4=
+github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd h1:KRN5ZOqeY3MHImYOEVHOVis//2OfRDjsbTSf7f2PmcI=
+github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd/go.mod h1:j8LyeJ7/0GbbwookzCmmFyCoRKp1WBwV/xxlebLz9UM=
+github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd h1:naqv5wnPWCvb6o2nYbygTQZlhetOm3e6RTPueq4AFX4=
+github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd/go.mod h1:j8LyeJ7/0GbbwookzCmmFyCoRKp1WBwV/xxlebLz9UM=
 github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

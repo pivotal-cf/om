@@ -9,7 +9,7 @@ import (
 
 	"time"
 
-	"github.com/gosuri/uilive"
+	"github.com/pivotal/uilive"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/om/renderers"
 	"gopkg.in/yaml.v2"
