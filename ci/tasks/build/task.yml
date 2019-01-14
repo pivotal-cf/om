@@ -8,7 +8,6 @@ image_resource:
 
 inputs:
 - name: om
-  path: go/src/github.com/pivotal-cf/om
 - name: om-version
 
 outputs:

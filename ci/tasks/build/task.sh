@@ -8,7 +8,7 @@ function main() {
   version="$(cat om-version/version)"
 
   export GOPATH="${cwd}/go"
-  pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+  pushd "om" > /dev/null
     for OS in darwin linux windows; do
       local name
       name="om-${OS}"
