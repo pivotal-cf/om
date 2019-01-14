@@ -18,7 +18,7 @@ run:
     export PATH="${PATH}:${GOPATH}/bin"
 
     pushd "om" > /dev/null
-      go get ./...
+      go get -t ./...
 
       ginkgo \
         -r \
