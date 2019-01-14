@@ -5,7 +5,6 @@ image_resource:
     repository: golang
 inputs:
 - name: om
-  path: go/src/github.com/pivotal-cf/om
 run:
   path: "/bin/bash"
   args:
@@ -16,7 +15,7 @@ run:
     cwd="${PWD}"
     export GOPATH="$(pwd)/go"
 
-    pushd "${GOPATH}/src/github.com/pivotal-cf/om" > /dev/null
+    pushd "om" > /dev/null
       sed '/## Current Commands/q' README.md > /tmp/readme
       mv /tmp/readme README.md
       echo '```' >> README.md
