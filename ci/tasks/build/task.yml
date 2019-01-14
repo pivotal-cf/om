@@ -14,4 +14,4 @@ outputs:
 - name: binaries
 
 run:
-  path: go/src/github.com/pivotal-cf/om/ci/tasks/build/task.sh
+  path: om/ci/tasks/build/task.sh
