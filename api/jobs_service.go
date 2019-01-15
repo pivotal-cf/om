@@ -47,6 +47,10 @@ func (a Api) ListStagedProductJobs(productGUID string) (map[string]string, error
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
+
 	var jobsOutput struct {
 		Jobs []Job
 	}
@@ -71,6 +75,10 @@ func (a Api) GetStagedProductJobResourceConfig(productGUID, jobGUID string) (Job
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return JobProperties{}, err
+	}
+
 	var existingConfig JobProperties
 	if err := json.NewDecoder(resp.Body).Decode(&existingConfig); err != nil {
 		return JobProperties{}, err
@@ -85,9 +93,13 @@ func (a Api) UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, j
 		return err
 	}
 
-	_, err = a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), jsonPayload)
+	resp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s/jobs/%s/resource_config", productGUID, jobGUID), jsonPayload)
 	if err != nil {
 		return errors.Wrap(err, "could not make api request to jobs resource_config endpoint")
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
 	}
 
 	return nil

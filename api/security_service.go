@@ -17,6 +17,10 @@ func (a Api) GetSecurityRootCACertificate() (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return "", err
+	}
+
 	var certResponse certResponse
 	if err := json.NewDecoder(resp.Body).Decode(&certResponse); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal response")

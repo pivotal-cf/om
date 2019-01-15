@@ -30,6 +30,10 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return []InstallationsServiceOutput{}, err
+	}
+
 	var responseStruct struct {
 		Installations []InstallationsServiceOutput
 	}
@@ -87,6 +91,10 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
 	var installation struct {
 		Install struct {
 			ID int
@@ -107,6 +115,10 @@ func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
+	}
+
 	var output struct {
 		Status string
 	}
@@ -124,6 +136,10 @@ func (a Api) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
 		return InstallationsServiceOutput{}, errors.Wrap(err, "could not make api request to installations logs endpoint")
 	}
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return InstallationsServiceOutput{}, err
+	}
 
 	var output struct {
 		Logs string

@@ -71,7 +71,7 @@ var _ = Describe("ErrandsService", func() {
 					}
 
 					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", "false")
-					Expect(err).To(MatchError("failed to set errand state: request failed: unexpected response:\nHTTP/0.0 418 I'm a teapot\r\n\r\nI'm a teapot"))
+					Expect(err).To(MatchError("request failed: unexpected response:\nHTTP/0.0 418 I'm a teapot\r\n\r\nI'm a teapot"))
 				})
 			})
 
@@ -164,7 +164,7 @@ var _ = Describe("ErrandsService", func() {
 
 					_, err := service.ListStagedProductErrands("future-moon-and-assimilation")
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("failed to list errands: request failed: unexpected response:\nHTTP/0.0 409 Conflict\r\n\r\nConflict")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:\nHTTP/0.0 409 Conflict\r\n\r\nConflict")))
 				})
 			})
 		})

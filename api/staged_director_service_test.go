@@ -262,6 +262,7 @@ var _ = Describe("StagedProducts", func() {
 				},
 			}))
 		})
+
 		It("returns an empty list when status code is 405", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
@@ -269,6 +270,7 @@ var _ = Describe("StagedProducts", func() {
 				case "/api/v0/staged/director/availability_zones":
 					resp = &http.Response{
 						StatusCode: http.StatusMethodNotAllowed,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
 					}
 				}
 				return resp, nil

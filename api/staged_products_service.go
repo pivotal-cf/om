@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -132,8 +130,16 @@ func (a Api) DeleteStagedProduct(input UnstageProductInput) error {
 		return fmt.Errorf("product is not staged: %s", input.ProductName)
 	}
 
-	_, err = a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), []byte("{}"))
-	return err
+	resp, err := a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), []byte("{}"))
+	if err != nil {
+		return err
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
@@ -142,6 +148,10 @@ func (a Api) ListStagedProducts() (StagedProductsOutput, error) {
 		return StagedProductsOutput{}, errors.Wrap(err, "could not make request to staged-products endpoint")
 	}
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return StagedProductsOutput{}, err
+	}
 
 	var stagedProducts []StagedProduct
 	err = json.NewDecoder(resp.Body).Decode(&stagedProducts)
@@ -288,12 +298,16 @@ func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesIn
 }
 
 func (a Api) UpdateStagedProductNetworksAndAZs(input UpdateStagedProductNetworksAndAZsInput) error {
-	_, err := a.sendAPIRequest("PUT",
+	resp, err := a.sendAPIRequest("PUT",
 		fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", input.GUID),
 		[]byte(fmt.Sprintf(`{"networks_and_azs": %s}`, input.NetworksAndAZs)),
 	)
 	if err != nil {
 		return errors.Wrap(err, "could not make api request to staged product networks_and_azs endpoint")
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
 	}
 
 	return nil
@@ -307,6 +321,10 @@ func (a Api) GetStagedProductManifest(guid string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return "", err
+	}
+
 	var contents struct {
 		Manifest interface{}
 	}
@@ -316,20 +334,28 @@ func (a Api) GetStagedProductManifest(guid string) (string, error) {
 	}
 
 	manifest, err := yaml.Marshal(contents.Manifest)
-	return string(manifest), err
+	if err != nil {
+		return "", err
+	}
+
+	return string(manifest), nil
 }
 
 func (a Api) GetStagedProductProperties(product string) (map[string]ResponseProperty, error) {
-	respBody, err := a.fetchProductResource(product, "properties")
+	resp, err := a.fetchProductResource(product, "properties")
 	if err != nil {
 		return nil, err
 	}
-	defer respBody.Close()
+	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
 
 	var propertiesResponse struct {
 		Properties map[string]ResponseProperty
 	}
-	err = yaml.NewDecoder(respBody).Decode(&propertiesResponse)
+	err = yaml.NewDecoder(resp.Body).Decode(&propertiesResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not parse json")
 	}
@@ -344,13 +370,18 @@ func (a Api) GetStagedProductNetworksAndAZs(product string) (map[string]interfac
 
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/networks_and_azs", product), nil)
 	if err != nil {
-		if resp.StatusCode == http.StatusNotFound && strings.Contains(err.Error(), "Products without jobs cannot have networks and azs") {
-			return networksResponse.Networks, nil
-		}
 		return nil, errors.Wrap(err, "could not make api request to staged product properties endpoint")
 	}
 
+	if resp.StatusCode == http.StatusNotFound {
+		// TODO should be a log line here probably?
+		return nil, nil
+	}
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
 
 	if err = json.NewDecoder(resp.Body).Decode(&networksResponse); err != nil {
 		return nil, errors.Wrap(err, "could not parse json")
@@ -359,13 +390,13 @@ func (a Api) GetStagedProductNetworksAndAZs(product string) (map[string]interfac
 	return networksResponse.Networks, nil
 }
 
-func (a Api) fetchProductResource(guid, endpoint string) (io.ReadCloser, error) {
+func (a Api) fetchProductResource(guid, endpoint string) (*http.Response, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/%s", guid, endpoint), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not make api request to staged product properties endpoint")
 	}
 
-	return resp.Body, nil
+	return resp, nil
 }
 
 func (a Api) checkStagedProducts(productName string) (string, error) {

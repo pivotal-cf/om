@@ -32,6 +32,10 @@ func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInpu
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return GetDeployedProductCredentialOutput{}, err
+	}
+
 	var credentialOutput GetDeployedProductCredentialOutput
 	if err := json.NewDecoder(resp.Body).Decode(&credentialOutput); err != nil {
 		return GetDeployedProductCredentialOutput{}, errors.Wrap(err, "could not unmarshal credentials response")
@@ -46,6 +50,10 @@ func (a Api) ListDeployedProductCredentials(deployedGUID string) (CredentialRefe
 		return CredentialReferencesOutput{}, errors.Wrap(err, "could not make api request to credentials endpoint")
 	}
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return CredentialReferencesOutput{}, err
+	}
 
 	var credentialReferences CredentialReferencesOutput
 	if err := json.NewDecoder(resp.Body).Decode(&credentialReferences); err != nil {

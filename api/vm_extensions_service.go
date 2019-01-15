@@ -34,6 +34,10 @@ func (a Api) CreateStagedVMExtension(input CreateVMExtension) error {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -43,6 +47,10 @@ func (a Api) ListStagedVMExtensions() ([]VMExtension, error) {
 		return nil, err // un-tested
 	}
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -57,6 +65,10 @@ func (a Api) ListStagedVMExtensions() ([]VMExtension, error) {
 }
 
 func (a Api) DeleteVMExtension(name string) error {
-	_, err := a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/vm_extensions/%s", name), nil)
+	resp, err := a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/vm_extensions/%s", name), nil)
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
 	return err
 }

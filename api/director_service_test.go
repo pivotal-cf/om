@@ -41,7 +41,7 @@ var _ = Describe("Director", func() {
 									{"guid": "existing-az-guid",
 									 "name": "existing-az",
 									 "clusters":
-										[{"cluster":"pizza", 
+										[{"cluster":"pizza",
                                           "guid":"pepperoni",
                                           "res_pool":"dcba"}]}]}`,
 						))}, nil
@@ -60,7 +60,9 @@ var _ = Describe("Director", func() {
           			{"name": "new-az"}
           			  ]`)})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(stderr.Invocations()).To(HaveLen(0))
+			Expect(stderr.Invocations()).To(HaveLen(1))
+			message := stderr.PrintlnArgsForCall(0)
+			Expect(message[0]).To(Equal("successfully fetched AZ's, continuing"))
 
 			Expect(client.DoCallCount()).To(Equal(2))
 
@@ -165,7 +167,6 @@ var _ = Describe("Director", func() {
 		})
 
 		Context("failure cases", func() {
-
 			It("returns an error when the provided AZ config is malformed", func() {
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("{malformed"),
@@ -189,20 +190,17 @@ var _ = Describe("Director", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil,
 				)
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
-				Expect(err).To(MatchError(HavePrefix("unable to fetch existing AZ configuration")))
-				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+				Expect(err).To(MatchError(HavePrefix("received unexpected status while fetching AZ configuration")))
+				Expect(err).To(MatchError(ContainSubstring("500")))
 			})
 
 			It("returns an error when the GET to the api endpoint fails", func() {
 				client.DoReturns(
-					&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"),
+					&http.Response{}, errors.New("api endpoint failed"),
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
 
-				Expect(err).To(MatchError(HavePrefix("unable to fetch existing AZ configuration")))
 				Expect(err).To(MatchError(ContainSubstring(
 					"could not send api request to GET /api/v0/staged/director/availability_zones: api endpoint failed")))
 			})
@@ -529,11 +527,12 @@ var _ = Describe("Director", func() {
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
 				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
-				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
+				Expect(err).To(MatchError(ContainSubstring("418")))
 			})
 
 			It("returns an error when the api endpoint fails", func() {
-				client.DoReturns(&http.Response{
+				client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusNotFound}, nil)
+				client.DoReturnsOnCall(1, &http.Response{
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
 
