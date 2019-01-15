@@ -20,9 +20,10 @@ provided. The Ops Manager API documentation is available at
 
 ## Installation
 
-To install `om` go to [Releases](https://github.com/pivotal-cf/om/releases)
+To download `om` go to [Releases](https://github.com/pivotal-cf/om/releases).
 
-Additionally, you can install `om` via `apt-get` or `homebrew` from [Stark and Wayne](https://www.starkandwayne.com/):
+Alternatively, you can install `om` via `apt-get` or `homebrew`
+from package manager distributions maintained by [Stark and Wayne](https://www.starkandwayne.com/):
 ```sh
 # apt-get:
 wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
@@ -35,6 +36,25 @@ apt-get install om
 brew tap starkandwayne/cf
 brew install om
 ```
+
+You can also build from source.
+
+### Building from Source
+You'll need at least Go 1.11, as
+`om` uses Go Modules to manage dependencies.
+
+To build from source, after you've cloned the repo, run these commands from the top level of the repo:
+
+```bash
+GO111MODULE=on go mod download
+GO111MODULE=on go build
+```
+
+Go 1.11 uses some heuristics to determine if Go Modules should be used.
+The process above overrides those herusitics
+to ensure that Go Modules are _always_ used.
+If you have cloned this repo outside of your GOPATH,
+`GO111MODULE=on` can be excluded from the above steps.
 
 ## Current Commands
 ```
