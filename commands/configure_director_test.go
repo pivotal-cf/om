@@ -186,7 +186,7 @@ properties-configuration:
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
 			Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(12)).To(Equal("started configuring vm extensions"))
-			Expect(logger.PrintfArgsForCall(13)).To(Equal("applying vm-extensions configuration for the following:"))
+			Expect(logger.PrintfArgsForCall(13)).To(Equal("applying vmextensions configuration for the following:"))
 			formatStr, formatArg = logger.PrintfArgsForCall(14)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"a_vm_extension"}}))
 			formatStr, formatArg = logger.PrintfArgsForCall(15)

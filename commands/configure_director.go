@@ -160,7 +160,7 @@ networks-configuration: {}
 resource-configuration: {}
 security-configuration: {}
 syslog-configuration: {}
-vm-extensions-configuration: {}
+vmextensions-configuration: {}
 
 They'll need to be moved to the new 'properties-configuration', with their dashes turn to underscore.
 For example, 'director-configuration' becomes 'director_configuration'.
@@ -176,7 +176,7 @@ properties-configuration:
   syslog_configuration: {}
   iaas_configuration: {}
 resource-configuration: {}
-vm-extensions-configuration: {}
+vmextensions-configuration: {}
 `
 
 		for _, depKey := range deprecatedKeys {
@@ -317,7 +317,7 @@ func (c ConfigureDirector) addNewExtensions(extensionsToDelete map[string]api.VM
 		return nil, fmt.Errorf("could not unmarshall vmextensions-configuration json: %s. Full Error: %s", newExtensions, err)
 	}
 
-	c.logger.Printf("applying vm-extensions configuration for the following:")
+	c.logger.Printf("applying vmextensions configuration for the following:")
 	for _, newExtension := range newVMExtensions {
 		c.logger.Printf("\t%s", newExtension.Name)
 
