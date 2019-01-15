@@ -20,13 +20,21 @@ func (a Api) GetDeployedProductManifest(guid string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return "", err
+	}
+
 	var contents interface{}
 	if err := yaml.NewDecoder(resp.Body).Decode(&contents); err != nil {
 		return "", errors.Wrap(err, "could not parse json")
 	}
 
 	manifest, err := yaml.Marshal(contents)
-	return string(manifest), err
+	if err != nil {
+		return "", nil
+	}
+
+	return string(manifest), nil
 }
 
 func (a Api) ListDeployedProducts() ([]DeployedProductOutput, error) {
@@ -35,6 +43,10 @@ func (a Api) ListDeployedProducts() ([]DeployedProductOutput, error) {
 		return []DeployedProductOutput{}, errors.Wrap(err, "could not make api request to deployed products endpoint")
 	}
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
 
 	var deployedProducts []DeployedProductOutput
 	if err := json.NewDecoder(resp.Body).Decode(&deployedProducts); err != nil {

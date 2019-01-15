@@ -47,6 +47,10 @@ func (a Api) Info() (Info, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return Info{}, err
+	}
+
 	err = json.NewDecoder(resp.Body).Decode(&r)
 	return r.Info, err
 }

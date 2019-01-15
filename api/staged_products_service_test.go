@@ -1057,7 +1057,6 @@ key-4: 2147483648
 							StatusCode: http.StatusNotFound,
 							Body:       ioutil.NopCloser(nil),
 						}
-						err = errors.New("Products without jobs cannot have networks and azs")
 					}
 					return resp, err
 				}

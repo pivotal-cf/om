@@ -67,7 +67,12 @@ func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 	if err != nil {
 		return AvailableProductsOutput{}, errors.Wrap(err, "could not make api request to available_products endpoint")
 	}
+
 	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return AvailableProductsOutput{}, err
+	}
 
 	var availableProducts []ProductInfo
 	if err := json.NewDecoder(resp.Body).Decode(&availableProducts); err != nil {

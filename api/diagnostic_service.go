@@ -29,12 +29,17 @@ func (du DiagnosticReportUnavailable) Error() string {
 func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/diagnostic_report", nil)
 	if err != nil {
-		if resp != nil && resp.StatusCode == http.StatusInternalServerError {
-			return DiagnosticReport{}, DiagnosticReportUnavailable{}
-		}
 		return DiagnosticReport{}, errors.Wrap(err, "could not make api request to diagnostic_report endpoint")
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return DiagnosticReport{}, DiagnosticReportUnavailable{}
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return DiagnosticReport{}, err
+	}
 
 	var apiResponse *struct {
 		DiagnosticReport

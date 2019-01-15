@@ -32,6 +32,10 @@ func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
 	}
 	defer resp.Body.Close()
 
+	if err = validateStatusOK(resp); err != nil {
+		return PendingChangesOutput{}, err
+	}
+
 	var pendingChanges PendingChangesOutput
 	if err := json.NewDecoder(resp.Body).Decode(&pendingChanges); err != nil {
 		return PendingChangesOutput{}, errors.Wrap(err, "could not unmarshal pending_changes response")
