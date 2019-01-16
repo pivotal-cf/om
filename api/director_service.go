@@ -155,11 +155,11 @@ func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) e
 		if err != nil {
 			return err
 		}
+		defer resp.Body.Close()
 
 		if err = validateStatusOK(resp); err != nil {
 			return err
 		}
-		//TODO does this PUT actually return a body, I say yes.
 
 		return nil
 	default:

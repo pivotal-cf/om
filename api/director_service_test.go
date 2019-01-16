@@ -460,13 +460,42 @@ var _ = Describe("Director", func() {
 				})
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/networks: api endpoint failed"))
 			})
+
+			Context("when the network endpoint status is non-200", func() {
+				It("returns an error", func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						switch req.Method {
+						case "GET":
+							return &http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(strings.NewReader(`{"networks": []}`)),
+							}, nil
+						case "PUT":
+							return &http.Response{
+								StatusCode: http.StatusInternalServerError,
+								Body:       ioutil.NopCloser(strings.NewReader(``)),
+							}, nil
+						default:
+							return nil, errors.New("unexected method in test")
+						}
+					}
+
+					err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+						Networks: json.RawMessage("{}"),
+					})
+					Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+				})
+			})
 		})
 	})
 
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
 			client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusNotFound}, nil)
-			client.DoReturnsOnCall(1, &http.Response{StatusCode: http.StatusOK}, nil)
+			client.DoReturnsOnCall(1, &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+			}, nil)
 
 			err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
 				NetworkAZ: json.RawMessage(`{
