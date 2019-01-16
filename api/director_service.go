@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	yaml "github.com/cloudfoundry/routing-release/src/gopkg.in/yaml.v2"
 	yamlConverter "github.com/ghodss/yaml"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 type AvailabilityZoneInput struct {
