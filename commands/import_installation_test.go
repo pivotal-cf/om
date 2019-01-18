@@ -226,7 +226,7 @@ var _ = Describe("ImportInstallation", func() {
 	})
 
 	Context("when EnsureAvailability returns 'connection refused'", func() {
-		var command commands.ImportInstallation
+		var command *commands.ImportInstallation
 
 		BeforeEach(func() {
 			submission := formcontent.ContentSubmission{
