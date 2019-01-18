@@ -1,9 +1,11 @@
 package commands
 
 import (
+	"archive/zip"
 	"fmt"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"os"
 	"strings"
 	"time"
 )
@@ -53,6 +55,27 @@ func (ii ImportInstallation) Execute(args []string) error {
 	err := loadConfigFile(args, &ii.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
+	}
+
+	if _, err := os.Stat(ii.Options.Installation); err != nil {
+		return fmt.Errorf("file: \"%s\" does not exist. Please check the name and try again.", ii.Options.Installation)
+	}
+
+	if zipper, err := zip.OpenReader(ii.Options.Installation); err != nil {
+		return fmt.Errorf("file: \"%s\" is not a valid zip file", ii.Options.Installation)
+	} else {
+		defer zipper.Close()
+		found := false
+		for _, f := range zipper.File {
+			if f.Name == "installation.yml" {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", ii.Options.Installation)
+		}
 	}
 
 	ensureAvailabilityOutput, err := ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})

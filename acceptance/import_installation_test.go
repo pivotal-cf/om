@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"archive/zip"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -26,13 +27,31 @@ var _ = Describe("import-installation command", func() {
 		ensureAvailabilityCallCount int
 	)
 
-	BeforeEach(func() {
-		var err error
-		content, err = ioutil.TempFile("", "cool_name.com")
-		Expect(err).NotTo(HaveOccurred())
+	createZipFile := func(files []struct{ Name, Body string}) *os.File {
+		tmpFile, err := ioutil.TempFile("", "")
+		w := zip.NewWriter(tmpFile)
 
-		_, err = content.WriteString("content so validation does not fail")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
+		for _, file := range files {
+			f, err := w.Create(file.Name)
+			if err != nil {
+				Expect(err).ToNot(HaveOccurred())
+			}
+			_, err = f.Write([]byte(file.Body))
+			if err != nil {
+				Expect(err).ToNot(HaveOccurred())
+			}
+		}
+		err = w.Close()
+		Expect(err).ToNot(HaveOccurred())
+
+		return tmpFile
+	}
+
+	BeforeEach(func() {
+		content = createZipFile([]struct{ Name, Body string}{
+			{"installation.yml", ""},
+		})
 
 		ensureAvailabilityCallCount = 0
 
@@ -133,37 +152,6 @@ var _ = Describe("import-installation command", func() {
 	})
 
 	Context("when an error occurs", func() {
-		Context("when the content to upload is empty", func() {
-			var emptyContent *os.File
-
-			BeforeEach(func() {
-				var err error
-				emptyContent, err = ioutil.TempFile("", "")
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			AfterEach(func() {
-				err := os.Remove(emptyContent.Name())
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			It("returns an error", func() {
-				command := exec.Command(pathToMain,
-					"--target", server.URL,
-					"--decryption-passphrase", "fake-passphrase",
-					"--skip-ssl-validation",
-					"import-installation",
-					"--installation", emptyContent.Name(),
-				)
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(session, 5).Should(gexec.Exit(1))
-				Eventually(session.Err, 5).Should(gbytes.Say("failed to load installation: file provided has no content"))
-			})
-		})
-
 		Context("when the content cannot be read", func() {
 			BeforeEach(func() {
 				err := os.Remove(content.Name())
@@ -183,7 +171,7 @@ var _ = Describe("import-installation command", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(1))
-				Eventually(session.Err, 5).Should(gbytes.Say(`no such file or directory`))
+				Eventually(session.Err, 5).Should(gbytes.Say(`does not exist. Please check the name and try again.`))
 			})
 		})
 	})

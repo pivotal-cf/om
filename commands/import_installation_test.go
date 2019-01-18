@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -22,12 +23,41 @@ var _ = Describe("ImportInstallation", func() {
 		fakeService *fakes.ImportInstallationService
 		multipart   *fakes.Multipart
 		logger      *fakes.Logger
+		installationFile string
 	)
+
+	createZipFile := func(files []struct{ Name, Body string}) string {
+		tmpFile, err := ioutil.TempFile("", "")
+		w := zip.NewWriter(tmpFile)
+
+		Expect(err).ToNot(HaveOccurred())
+		for _, file := range files {
+			f, err := w.Create(file.Name)
+			if err != nil {
+				Expect(err).ToNot(HaveOccurred())
+			}
+			_, err = f.Write([]byte(file.Body))
+			if err != nil {
+				Expect(err).ToNot(HaveOccurred())
+			}
+		}
+		err = w.Close()
+		Expect(err).ToNot(HaveOccurred())
+
+		return tmpFile.Name()
+	}
 
 	BeforeEach(func() {
 		multipart = &fakes.Multipart{}
 		fakeService = &fakes.ImportInstallationService{}
 		logger = &fakes.Logger{}
+		installationFile = createZipFile([]struct{ Name, Body string}{
+			{"installation.yml", ""},
+		})
+	})
+
+	AfterEach(func() {
+		os.Remove(installationFile)
 	})
 
 	It("imports an installation", func() {
@@ -53,14 +83,14 @@ var _ = Describe("ImportInstallation", func() {
 		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 		err := command.Execute([]string{"--polling-interval", "0",
-			"--installation", "/path/to/some-installation",
+			"--installation",installationFile,
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("installation[file]"))
-		Expect(file).To(Equal("/path/to/some-installation"))
+		Expect(file).To(Equal(installationFile))
 
 		key, val := multipart.AddFieldArgsForCall(0)
 		Expect(key).To(Equal("passphrase"))
@@ -96,7 +126,7 @@ var _ = Describe("ImportInstallation", func() {
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 			err := command.Execute([]string{"--polling-interval", "0",
-				"--installation", "/path/to/some-installation",
+				"--installation", installationFile,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -111,9 +141,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		BeforeEach(func() {
 			var err error
-			configContent := `
-installation: /path/to/some-installation
-`
+			configContent := fmt.Sprintf(`installation: %s`, installationFile)
 			configFile, err = ioutil.TempFile("", "")
 			Expect(err).NotTo(HaveOccurred())
 
@@ -151,7 +179,7 @@ installation: /path/to/some-installation
 
 			key, file := multipart.AddFileArgsForCall(0)
 			Expect(key).To(Equal("installation[file]"))
-			Expect(file).To(Equal("/path/to/some-installation"))
+			Expect(file).To(Equal(installationFile))
 
 			key, val := multipart.AddFieldArgsForCall(0)
 			Expect(key).To(Equal("passphrase"))
@@ -182,14 +210,14 @@ installation: /path/to/some-installation
 
 			err := command.Execute([]string{"--polling-interval", "0",
 				"--config", configFile.Name(),
-				"--installation", "/path/to/some-installation1",
+				"--installation", installationFile,
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 			key, file := multipart.AddFileArgsForCall(0)
 			Expect(key).To(Equal("installation[file]"))
-			Expect(file).To(Equal("/path/to/some-installation1"))
+			Expect(file).To(Equal(installationFile))
 
 			key, val := multipart.AddFieldArgsForCall(0)
 			Expect(key).To(Equal("passphrase"))
@@ -228,7 +256,7 @@ installation: /path/to/some-installation
 			}
 
 			err := command.Execute([]string{"--polling-interval", "0",
-				"--installation", "/path/to/some-installation",
+				"--installation", installationFile,
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
@@ -261,7 +289,7 @@ installation: /path/to/some-installation
 			}
 
 			err := command.Execute([]string{"--polling-interval", "0",
-				"--installation", "/path/to/some-installation",
+				"--installation", installationFile,
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("could not check Ops Manager Status:"))
@@ -303,11 +331,56 @@ installation: /path/to/some-installation
 			})
 		})
 
+		Context("when the --installation provided is a file that does not exist", func() {
+			It("returns an error", func() {
+				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+				err := command.Execute([]string{"--installation", "does-not-exist.zip"})
+				Expect(err).To(MatchError("file: \"does-not-exist.zip\" does not exist. Please check the name and try again." ))
+			})
+		})
+
+		Context("when the --installation provided is not a valid zip file", func() {
+			var notZipFile string
+			BeforeEach(func() {
+				tmpFile, err := ioutil.TempFile("", "")
+				Expect(err).ToNot(HaveOccurred())
+				notZipFile = tmpFile.Name()
+			})
+
+			AfterEach(func() {
+				os.Remove(notZipFile)
+			})
+
+			It("returns an error", func() {
+				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+				err := command.Execute([]string{"--installation", notZipFile})
+				Expect(err).To(MatchError(fmt.Sprintf("file: \"%s\" is not a valid zip file", notZipFile)))
+			})
+		})
+
+		Context("when the --installation provided does not have required installation.yml", func() {
+			var invalidInstallation string
+			BeforeEach(func() {
+				invalidInstallation = createZipFile([]struct{ Name, Body string}{})
+			})
+
+			AfterEach(func() {
+				os.Remove(invalidInstallation)
+			})
+
+			It("returns an error", func() {
+				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+				err := command.Execute([]string{"--installation", invalidInstallation})
+				expectedErrorTemplate := "file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
+				Expect(err).To(MatchError(fmt.Sprintf(expectedErrorTemplate, invalidInstallation)))
+			})
+		})
+
 		Context("when the ensure_availability endpoint returns an error", func() {
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-				err := command.Execute([]string{"--polling-interval", "0", "--installation", "/some/path"})
+				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("could not check Ops Manager status: some error"))
 			})
 		})
@@ -320,7 +393,7 @@ installation: /path/to/some-installation
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
-				err := command.Execute([]string{"--polling-interval", "0", "--installation", "/some/path"})
+				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("failed to load installation: bad file"))
 			})
 		})
@@ -333,7 +406,7 @@ installation: /path/to/some-installation
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				fakeService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
 
-				err := command.Execute([]string{"--polling-interval", "0", "--installation", "/some/path"})
+				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("failed to import installation: some installation error"))
 			})
 		})
