@@ -7,7 +7,7 @@
   * it is a valid zip file
   * it contains the `installation.yml` artifact indicative of an exported installation
   
-## Bug Fixes
+### Bug Fixes
 
 * Fixed typo in `configure-director` vmextensions
 
