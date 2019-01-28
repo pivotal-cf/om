@@ -228,7 +228,7 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 
 	switch {
 	case existingAzsResponse.StatusCode == http.StatusOK:
-		a.logger.Println("successfully fetched AZ's, continuing")
+		a.logger.Println("successfully fetched AZs, continuing")
 	case existingAzsResponse.StatusCode == http.StatusNotFound:
 		a.logger.Println("unable to retrieve existing AZ configuration, attempting to configure anyway")
 		return azs, nil

@@ -62,7 +62,7 @@ var _ = Describe("Director", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stderr.Invocations()).To(HaveLen(1))
 			message := stderr.PrintlnArgsForCall(0)
-			Expect(message[0]).To(Equal("successfully fetched AZ's, continuing"))
+			Expect(message[0]).To(Equal("successfully fetched AZs, continuing"))
 
 			Expect(client.DoCallCount()).To(Equal(2))
 
