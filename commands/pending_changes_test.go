@@ -71,7 +71,7 @@ var _ = Describe("PendingChanges", func() {
 			})
 		})
 
-		Context("failure cases", func() {
+		Describe("failure cases", func() {
 			Context("when an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
