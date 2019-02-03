@@ -12,6 +12,7 @@ type PendingChanges struct {
 	service   pendingChangesService
 	presenter presenters.FormattedPresenter
 	Options   struct {
+		Check  bool   `long:"check" description:"Exit 1 if there are any pending changes.\nUseful for validating that Ops Mananager is in a clean state." default:"false"`
 		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
@@ -36,6 +37,10 @@ func (pc PendingChanges) Execute(args []string) error {
 	output, err := pc.service.ListStagedPendingChanges()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve pending changes %s", err)
+	}
+
+	if output.ChangeList[0].Action != "unchanged" && pc.Options.Check {
+		return fmt.Errorf("there are pending changes!")
 	}
 
 	pc.presenter.SetFormat(pc.Options.Format)
