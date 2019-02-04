@@ -124,7 +124,7 @@ func (ii ImportInstallation) ensureAvailability() error {
 	return nil
 }
 
-func (ii *ImportInstallation) validate(args []string) error{
+func (ii *ImportInstallation) validate(args []string) error {
 	if ii.passphrase == "" {
 		return fmt.Errorf("the global decryption-passphrase argument is required for this command")
 	}

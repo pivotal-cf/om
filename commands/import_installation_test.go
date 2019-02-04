@@ -20,13 +20,13 @@ import (
 
 var _ = Describe("ImportInstallation", func() {
 	var (
-		fakeService *fakes.ImportInstallationService
-		multipart   *fakes.Multipart
-		logger      *fakes.Logger
+		fakeService      *fakes.ImportInstallationService
+		multipart        *fakes.Multipart
+		logger           *fakes.Logger
 		installationFile string
 	)
 
-	createZipFile := func(files []struct{ Name, Body string}) string {
+	createZipFile := func(files []struct{ Name, Body string }) string {
 		tmpFile, err := ioutil.TempFile("", "")
 		w := zip.NewWriter(tmpFile)
 
@@ -51,7 +51,7 @@ var _ = Describe("ImportInstallation", func() {
 		multipart = &fakes.Multipart{}
 		fakeService = &fakes.ImportInstallationService{}
 		logger = &fakes.Logger{}
-		installationFile = createZipFile([]struct{ Name, Body string}{
+		installationFile = createZipFile([]struct{ Name, Body string }{
 			{"installation.yml", ""},
 		})
 	})
@@ -83,7 +83,7 @@ var _ = Describe("ImportInstallation", func() {
 		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
 		err := command.Execute([]string{"--polling-interval", "0",
-			"--installation",installationFile,
+			"--installation", installationFile,
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
@@ -335,7 +335,7 @@ var _ = Describe("ImportInstallation", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--installation", "does-not-exist.zip"})
-				Expect(err).To(MatchError("file: \"does-not-exist.zip\" does not exist. Please check the name and try again." ))
+				Expect(err).To(MatchError("file: \"does-not-exist.zip\" does not exist. Please check the name and try again."))
 			})
 		})
 
@@ -361,7 +361,7 @@ var _ = Describe("ImportInstallation", func() {
 		Context("when the --installation provided does not have required installation.yml", func() {
 			var invalidInstallation string
 			BeforeEach(func() {
-				invalidInstallation = createZipFile([]struct{ Name, Body string}{})
+				invalidInstallation = createZipFile([]struct{ Name, Body string }{})
 			})
 
 			AfterEach(func() {

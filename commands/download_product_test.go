@@ -367,7 +367,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
 					Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
 
-					infoStr, _ := logger.InfoArgsForCall(2)
+					infoStr, _ := logger.InfoArgsForCall(1)
 					Expect(infoStr).To(Equal("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
 				})
 			})

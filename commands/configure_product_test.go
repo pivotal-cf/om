@@ -129,9 +129,9 @@ var _ = Describe("ConfigureProduct", func() {
 				service.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 					ChangeList: []api.ProductChange{
 						{
-							GUID:    "some-product-guid",
-							Action:  "install",
-							Errands: nil,
+							GUID:               "some-product-guid",
+							Action:             "install",
+							Errands:            nil,
 							CompletenessChecks: nil,
 						},
 					},
