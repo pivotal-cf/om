@@ -2,16 +2,17 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type SSLCertificateService struct {
 	GetSSLCertificateStub        func() (api.SSLCertificateOutput, error)
 	getSSLCertificateMutex       sync.RWMutex
-	getSSLCertificateArgsForCall []struct{}
-	getSSLCertificateReturns     struct {
+	getSSLCertificateArgsForCall []struct {
+	}
+	getSSLCertificateReturns struct {
 		result1 api.SSLCertificateOutput
 		result2 error
 	}
@@ -26,7 +27,8 @@ type SSLCertificateService struct {
 func (fake *SSLCertificateService) GetSSLCertificate() (api.SSLCertificateOutput, error) {
 	fake.getSSLCertificateMutex.Lock()
 	ret, specificReturn := fake.getSSLCertificateReturnsOnCall[len(fake.getSSLCertificateArgsForCall)]
-	fake.getSSLCertificateArgsForCall = append(fake.getSSLCertificateArgsForCall, struct{}{})
+	fake.getSSLCertificateArgsForCall = append(fake.getSSLCertificateArgsForCall, struct {
+	}{})
 	fake.recordInvocation("GetSSLCertificate", []interface{}{})
 	fake.getSSLCertificateMutex.Unlock()
 	if fake.GetSSLCertificateStub != nil {
@@ -35,7 +37,8 @@ func (fake *SSLCertificateService) GetSSLCertificate() (api.SSLCertificateOutput
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getSSLCertificateReturns.result1, fake.getSSLCertificateReturns.result2
+	fakeReturns := fake.getSSLCertificateReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *SSLCertificateService) GetSSLCertificateCallCount() int {
@@ -44,7 +47,15 @@ func (fake *SSLCertificateService) GetSSLCertificateCallCount() int {
 	return len(fake.getSSLCertificateArgsForCall)
 }
 
+func (fake *SSLCertificateService) GetSSLCertificateCalls(stub func() (api.SSLCertificateOutput, error)) {
+	fake.getSSLCertificateMutex.Lock()
+	defer fake.getSSLCertificateMutex.Unlock()
+	fake.GetSSLCertificateStub = stub
+}
+
 func (fake *SSLCertificateService) GetSSLCertificateReturns(result1 api.SSLCertificateOutput, result2 error) {
+	fake.getSSLCertificateMutex.Lock()
+	defer fake.getSSLCertificateMutex.Unlock()
 	fake.GetSSLCertificateStub = nil
 	fake.getSSLCertificateReturns = struct {
 		result1 api.SSLCertificateOutput
@@ -53,6 +64,8 @@ func (fake *SSLCertificateService) GetSSLCertificateReturns(result1 api.SSLCerti
 }
 
 func (fake *SSLCertificateService) GetSSLCertificateReturnsOnCall(i int, result1 api.SSLCertificateOutput, result2 error) {
+	fake.getSSLCertificateMutex.Lock()
+	defer fake.getSSLCertificateMutex.Unlock()
 	fake.GetSSLCertificateStub = nil
 	if fake.getSSLCertificateReturnsOnCall == nil {
 		fake.getSSLCertificateReturnsOnCall = make(map[int]struct {

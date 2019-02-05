@@ -39,13 +39,12 @@ type PivnetDownloader interface {
 
 type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
-	GetLatestProductFile(slug, version, glob string) (*fileArtifact, error)
-	DownloadProductToFile(fa *fileArtifact, file *os.File) error
-	DownloadProductStemcell(fa *fileArtifact) (*stemcell, error)
+	GetLatestProductFile(slug, version, glob string) (*FileArtifact, error)
+	DownloadProductToFile(fa *FileArtifact, file *os.File) error
+	DownloadProductStemcell(fa *FileArtifact) (*stemcell, error)
 }
 
 type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
-
 func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
 	return gp.NewClient(config, logger)
 }
@@ -66,7 +65,7 @@ type DownloadProduct struct {
 		PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p" description:"Path to product" required:"true"`
 		ProductVersion      string   `long:"product-version"       short:"v" description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 		ProductVersionRegex string   `long:"product-version-regex" short:"r" description:"Regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
-		OutputDir           string   `long:"output-directory"      short:"o" description:"Directory path to which the file will be outputted. File name will be preserved from Pivotal Network" required:"true"`
+		OutputDir           string   `long:"output-directory"      short:"o" description:"Directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 		Stemcell            bool     `long:"download-stemcell"               description:"No-op for backwards compatibility"`
 		StemcellIaas        string   `long:"stemcell-iaas"                   description:"Download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 	}
@@ -180,13 +179,13 @@ func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileNam
 	return json.NewEncoder(outputFile).Encode(outputList)
 }
 
-func (c *DownloadProduct) downloadProductFile(slug, version, glob string) (string, *fileArtifact, error) {
+func (c *DownloadProduct) downloadProductFile(slug, version, glob string) (string, *FileArtifact, error) {
 	fileArtifact, err := c.client.GetLatestProductFile(slug, version, glob)
 	if err != nil {
 		return "", nil, err
 	}
 
-	productFilePath := path.Join(c.Options.OutputDir, path.Base(fileArtifact.name))
+	productFilePath := path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))
 	exist, err := checkFileExists(productFilePath, fileArtifact.sha256)
 	if err != nil {
 		return productFilePath, nil, err

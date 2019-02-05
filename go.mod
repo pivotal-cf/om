@@ -3,8 +3,10 @@ module github.com/pivotal-cf/om
 require (
 	github.com/PuerkitoBio/goquery v1.4.0
 	github.com/andybalholm/cascadia v1.0.0 // indirect
+	github.com/aws/aws-sdk-go v1.16.27 // indirect
 	github.com/bmatcuk/doublestar v1.1.1 // indirect
 	github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 // indirect
+	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
 	github.com/cloudfoundry/bosh-cli v3.0.1+incompatible
 	github.com/cloudfoundry/bosh-utils v0.0.0-20180515235324-fad7a5ad622c // indirect
 	github.com/cppforlife/go-patch v0.1.0
@@ -13,6 +15,7 @@ require (
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
 	github.com/gosuri/uilive v0.0.0-20170323041506-ac356e6e42cd // indirect
+	github.com/graymeta/stow v0.0.0-20181228161447-b469cfb112f8
 	github.com/hashicorp/go-version v1.1.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4

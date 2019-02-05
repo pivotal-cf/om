@@ -39,8 +39,8 @@ type pivnetClient struct {
 	progressWriter io.Writer
 }
 
-type fileArtifact struct {
-	name          string
+type FileArtifact struct {
+	Name          string
 	sha256        string
 	slug          string
 	releaseID     int
@@ -65,7 +65,7 @@ func (p *pivnetClient) GetAllProductVersions(slug string) ([]string, error) {
 	return versions, nil
 }
 
-func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (*fileArtifact, error) {
+func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (*FileArtifact, error) {
 	// 1. Check the release for given version / slug
 	release, err := p.downloader.ReleaseForVersion(slug, version)
 	if err != nil {
@@ -87,8 +87,8 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (*fileAr
 		return nil, err
 	}
 
-	return &fileArtifact{
-		name:          productFiles[0].AWSObjectKey,
+	return &FileArtifact{
+		Name:          productFiles[0].AWSObjectKey,
 		sha256:        productFiles[0].SHA256,
 		releaseID:     release.ID,
 		slug:          slug,
@@ -110,7 +110,7 @@ func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []piv
 	return nil
 }
 
-func (p *pivnetClient) DownloadProductToFile(fa *fileArtifact, file *os.File) error {
+func (p *pivnetClient) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
 	err := p.downloader.DownloadProductFile(file, fa.slug, fa.releaseID, fa.productFileID, p.progressWriter)
 	if err != nil {
 		return fmt.Errorf("could not download product file %s: %s", fa.slug, err)
@@ -118,7 +118,7 @@ func (p *pivnetClient) DownloadProductToFile(fa *fileArtifact, file *os.File) er
 	return nil
 }
 
-func (p *pivnetClient) DownloadProductStemcell(fa *fileArtifact) (*stemcell, error) {
+func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) {
 	dependencies, err := p.downloader.ReleaseDependencies(fa.slug, fa.releaseID)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch stemcell dependency for %s: %s", fa.slug, err)
