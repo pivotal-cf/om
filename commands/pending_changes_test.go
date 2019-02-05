@@ -118,8 +118,9 @@ var _ = Describe("PendingChanges", func() {
 					}, nil)
 				})
 
-				It("returns an error", func() {
+				It("lists change information for all products and returns an error", func() {
 					err := command.Execute(options)
+					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 					Expect(err).To(HaveOccurred())
 				})
 			})
@@ -135,8 +136,9 @@ var _ = Describe("PendingChanges", func() {
 						},
 					}, nil)
 				})
-				It("does not return an error", func() {
+				It("lists change information for all products and does not return an error", func() {
 					err := command.Execute(options)
+					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
