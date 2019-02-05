@@ -898,6 +898,11 @@ key-4: 2147483648
 									"configurable": true,
 									"credential": true
 								},
+								".properties.some-selector-property": {
+									"value": "Plan 1",
+									"selected_option": "xGB",	
+									"configurable": true
+								},
 								".properties.some-property-with-a-large-number-value": {
 									"value": 2147483648,
 									"configurable": true
@@ -914,29 +919,33 @@ key-4: 2147483648
 			config, err := service.GetStagedProductProperties("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(config).To(Equal(map[string]api.ResponseProperty{
-				".properties.some-configurable-property": api.ResponseProperty{
-					Value:        "some-value",
-					Configurable: true,
-					IsCredential: false,
+			Expect(config).To(HaveKeyWithValue(".properties.some-configurable-property", api.ResponseProperty{
+				Value:        "some-value",
+				Configurable: true,
+				IsCredential: false,
+			}))
+			Expect(config).To(HaveKeyWithValue(".properties.some-non-configurable-property", api.ResponseProperty{
+				Value:        "some-value",
+				Configurable: false,
+				IsCredential: false,
+			}))
+			Expect(config).To(HaveKeyWithValue(".properties.some-secret-property", api.ResponseProperty{
+				Value: map[interface{}]interface{}{
+					"some-secret-type": "***",
 				},
-				".properties.some-non-configurable-property": api.ResponseProperty{
-					Value:        "some-value",
-					Configurable: false,
-					IsCredential: false,
-				},
-				".properties.some-secret-property": api.ResponseProperty{
-					Value: map[interface{}]interface{}{
-						"some-secret-type": "***",
-					},
-					Configurable: true,
-					IsCredential: true,
-				},
-				".properties.some-property-with-a-large-number-value": api.ResponseProperty{
-					Value:        2147483648,
-					Configurable: true,
-					IsCredential: false,
-				},
+				Configurable: true,
+				IsCredential: true,
+			}))
+			Expect(config).To(HaveKeyWithValue(".properties.some-property-with-a-large-number-value", api.ResponseProperty{
+				Value:        2147483648,
+				Configurable: true,
+				IsCredential: false,
+			}))
+			Expect(config).To(HaveKeyWithValue(".properties.some-selector-property", api.ResponseProperty{
+				Value:          "Plan 1",
+				SelectedOption: "xGB",
+				Configurable:   true,
+				IsCredential:   false,
 			}))
 		})
 

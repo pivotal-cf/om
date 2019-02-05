@@ -39,10 +39,11 @@ type UpdateStagedProductNetworksAndAZsInput struct {
 }
 
 type ResponseProperty struct {
-	Value        interface{}
-	Configurable bool
-	IsCredential bool   `yaml:"credential"`
-	Type         string `yaml:"type"`
+	Value          interface{}
+	SelectedOption string `yaml:"selected_option,omitempty"`
+	Configurable   bool
+	IsCredential   bool   `yaml:"credential"`
+	Type           string `yaml:"type"`
 }
 
 func (r *ResponseProperty) isCollection() bool {
