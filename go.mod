@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/go-version v1.1.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4
-	github.com/onsi/ginkgo v1.6.0
+	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.2
 	github.com/pivotal-cf/go-pivnet v0.0.49
 	github.com/pivotal-cf/jhanda v0.0.0-20180509215011-1b5ae1681a45
