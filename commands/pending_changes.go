@@ -39,8 +39,12 @@ func (pc PendingChanges) Execute(args []string) error {
 		return fmt.Errorf("failed to retrieve pending changes %s", err)
 	}
 
-	if output.ChangeList[0].Action != "unchanged" && pc.Options.Check {
-		return fmt.Errorf("there are pending changes!")
+	if pc.Options.Check {
+		for _, ProductChange := range output.ChangeList {
+			if ProductChange.Action != "unchanged" {
+				return fmt.Errorf("there are pending changes")
+			}
+		}
 	}
 
 	pc.presenter.SetFormat(pc.Options.Format)

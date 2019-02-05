@@ -63,21 +63,13 @@ var _ = Describe("PendingChanges", func() {
 		})
 
 		Context("when the check flag is provided", func() {
-      var options []string
+			var options []string
 
-			BeforeEach(func(){
+			BeforeEach(func() {
 				options = []string{"--check"}
 			})
 			When("there are pending changes", func() {
-				// No setup yet because this is the way the top level Describe sets it
-				It("returns an error", func(){
-					err := command.Execute(options)
-					Expect(err).To(HaveOccurred())
-				})
-			})
-
-			When("there are no pending changes", func(){
-				BeforeEach(func(){
+				BeforeEach(func() {
 					pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 						ChangeList: []api.ProductChange{
 							{
@@ -97,14 +89,53 @@ var _ = Describe("PendingChanges", func() {
 								},
 							},
 							{
-								GUID:    "some-product-without-errand",
+								GUID:    "some-other-product-without-errand",
+								Action:  "install",
+								Errands: []api.Errand{},
+							},
+							{
+								GUID:   "some-other-product",
+								Action: "install",
+								Errands: []api.Errand{
+									{
+										Name:       "some-errand",
+										PostDeploy: "on",
+										PreDelete:  "false",
+									},
+									{
+										Name:       "some-errand-2",
+										PostDeploy: "when-change",
+										PreDelete:  "false",
+									},
+								},
+							},
+							{
+								GUID:    "some-other-product-without-errand",
 								Action:  "install",
 								Errands: []api.Errand{},
 							},
 						},
 					}, nil)
 				})
-				It("does not return an error", func(){
+
+				It("returns an error", func() {
+					err := command.Execute(options)
+					Expect(err).To(HaveOccurred())
+				})
+			})
+
+			When("there are no pending changes", func() {
+				BeforeEach(func() {
+					pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								GUID:   "some-product-without-errands",
+								Action: "unchanged",
+							},
+						},
+					}, nil)
+				})
+				It("does not return an error", func() {
 					err := command.Execute(options)
 					Expect(err).NotTo(HaveOccurred())
 				})
