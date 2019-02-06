@@ -39,12 +39,12 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		Context("when product properties is provided", func() {
+		Context("when product properties are provided", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "product-properties": %s}`, productProperties)
 			})
 
-			It("configures a product's properties", func() {
+			It("configures the given product's properties", func() {
 				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
