@@ -45,6 +45,7 @@ type ProductDownloader interface {
 }
 
 type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
+
 func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
 	return gp.NewClient(config, logger)
 }

@@ -9,9 +9,9 @@ import (
 
 	"time"
 
-	"github.com/pivotal/uilive"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/om/renderers"
+	"github.com/pivotal/uilive"
 	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/go-pivnet/logshim"

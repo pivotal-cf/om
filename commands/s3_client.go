@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/graymeta/stow"
 	_ "github.com/graymeta/stow/s3"
+	"gopkg.in/go-playground/validator.v9"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,29 +13,69 @@ import (
 	"strings"
 )
 
+type WalkFunc func(item Item, err error) error
 
-//go:generate counterfeiter -o ./fakes/storer_service.go --fake-name BlobStorer . BlobStorer
-type BlobStorer interface {
-	ListFiles() ([]string, error)
-	DownloadFile(filename string) (io.ReadCloser, error)
+//go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . Config
+type Config interface {
+	Config(name string) (string, bool)
+	Set(name, value string)
+}
+
+//go:generate counterfeiter -o ./fakes/container_service.go --fake-name Container . Container
+type Container interface {
+	Item(id string) (Item, error)
+}
+
+//go:generate counterfeiter -o ./fakes/location_service.go --fake-name Location . Location
+type Location interface {
+	Container(id string) (Container, error)
+}
+
+//go:generate counterfeiter -o ./fakes/item_service.go --fake-name Item . Item
+type Item interface {
+	Open() (io.ReadCloser, error)
+	ID() string
+}
+
+//go:generate counterfeiter -o ./fakes/stower_service.go --fake-name Stower . Stower
+type Stower interface {
+	Dial(kind string, config Config) (Location, error)
+	Container(id string) (Container, error)
+	Item(id string) (Item, error)
+	Walk(container Container, prefix string, pageSize int, fn WalkFunc) error
 }
 
 type S3Configuration struct {
-	Bucket string
+	Bucket              string `yaml:"bucket" validate:"required"`
+	AccessKeyID         string `yaml:"access-key-id" validate:"required"`
+	SecretAccessKey     string `yaml:"secret-access-key" validate:"required"`
+	RegionName          string `yaml:"region-name" validate:"required"`
+	Endpoint            string `yaml:"endpoint" validate:"required"`
+	DisableSSL          bool   `yaml:"disable-ssl"`
+	SkipSSLVerification bool   `yaml:"skip-ssl-verification"`
+	UseV2Signing        bool   `yaml:"use-v2-signing"`
 }
 
 type S3Client struct {
-	store BlobStorer
+	stower Stower
+	Config S3Configuration
 }
 
-func NewS3Client(store BlobStorer) *S3Client {
-	return &S3Client{
-		store: store,
+func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
+	validate := validator.New()
+	err := validate.Struct(config)
+	if err != nil {
+		return nil, err
 	}
+
+	return &S3Client{
+		stower: stower,
+		Config: config,
+	}, nil
 }
 
 func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
-	files, err := s3.store.ListFiles()
+	files, err := s3.ListFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +100,7 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 }
 
 func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifact, error) {
-	files, err := s3.store.ListFiles()
+	files, err := s3.ListFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -81,14 +122,14 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 	}
 
 	if len(artifacts) == 0 {
-		return nil, fmt.Errorf("the glob '%s' matchs no file", glob)
+		return nil, fmt.Errorf("the glob '%s' matches no file", glob)
 	}
 
 	return &FileArtifact{Name: artifacts[0]}, nil
 }
 
 func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
-	f, err := s3.store.DownloadFile(fa.Name)
+	f, err := s3.DownloadFile(fa.Name)
 	if err != nil {
 		return err
 	}
@@ -104,29 +145,19 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) 
 	return nil, errors.New("downloading stemcells for s3 is not supported at this time")
 }
 
-type S3Store struct {
-	config S3Configuration
-}
-
-func NewS3Store(config S3Configuration) *S3Store {
-	return &S3Store{
-		config: config,
-	}
-}
-
-func (s *S3Store) ListFiles() ([]string, error) {
+func (s *S3Client) ListFiles() ([]string, error) {
 	config := stow.ConfigMap{}
-	location, err := stow.Dial("s3", config)
+	location, err := s.stower.Dial("s3", config)
 	if err != nil {
 		return nil, err
 	}
-	container, err := location.Container(s.config.Bucket)
+	container, err := location.Container(s.Config.Bucket)
 	if err != nil {
 		return nil, err
 	}
 
 	var paths []string
-	err = stow.Walk(container, stow.NoPrefix, 100, func(item stow.Item, err error) error {
+	err = s.stower.Walk(container, stow.NoPrefix, 100, func(item Item, err error) error {
 		if err != nil {
 			return err
 		}
@@ -141,13 +172,13 @@ func (s *S3Store) ListFiles() ([]string, error) {
 	return paths, nil
 }
 
-func (s *S3Store) DownloadFile(filename string) (io.ReadCloser, error) {
+func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, error) {
 	config := stow.ConfigMap{}
-	location, err := stow.Dial("s3", config)
+	location, err := s.stower.Dial("s3", config)
 	if err != nil {
 		return nil, err
 	}
-	container, err := location.Container(s.config.Bucket)
+	container, err := location.Container(s.Config.Bucket)
 	if err != nil {
 		return nil, err
 	}
