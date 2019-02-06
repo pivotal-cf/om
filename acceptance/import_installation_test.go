@@ -27,7 +27,7 @@ var _ = Describe("import-installation command", func() {
 		ensureAvailabilityCallCount int
 	)
 
-	createZipFile := func(files []struct{ Name, Body string}) *os.File {
+	createZipFile := func(files []struct{ Name, Body string }) *os.File {
 		tmpFile, err := ioutil.TempFile("", "")
 		w := zip.NewWriter(tmpFile)
 
@@ -49,7 +49,7 @@ var _ = Describe("import-installation command", func() {
 	}
 
 	BeforeEach(func() {
-		content = createZipFile([]struct{ Name, Body string}{
+		content = createZipFile([]struct{ Name, Body string }{
 			{"installation.yml", ""},
 		})
 
