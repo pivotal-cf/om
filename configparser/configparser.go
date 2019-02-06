@@ -66,6 +66,9 @@ func (p *configParser) ParseProperties(name PropertyName, property api.ResponseP
 	if property.Type == "collection" {
 		return p.handleCollection(name, property, handler)
 	}
+	if property.SelectedOption != "" {
+		return map[string]interface{}{"value": property.Value, "selected_option": property.SelectedOption}, nil
+	}
 	return map[string]interface{}{"value": property.Value}, nil
 }
 
