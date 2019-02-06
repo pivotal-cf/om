@@ -74,28 +74,6 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	It("returns an error on storer failure", func() {
-		dialError := errors.New("dial error")
-		itemsList := []mockItem{}
-		stower := newMockStower(itemsList)
-		stower.dialError = dialError
-
-		config := commands.S3Configuration{
-			Bucket:          "bucket",
-			AccessKeyID:     "access-key-id",
-			SecretAccessKey: "secret-access-key",
-			RegionName:      "region",
-			Endpoint:        "endpoint",
-		}
-
-		client, err := commands.NewS3Client(stower, config)
-		Expect(err).ToNot(HaveOccurred())
-
-		_, err = client.GetAllProductVersions("product-slug")
-		Expect(err).To(HaveOccurred())
-		Expect(err).To(Equal(dialError))
-	})
-
 	Context("GetLatestProductFile", func() {
 		It("returns a file artifact", func() {
 			itemsList := []mockItem{
@@ -169,7 +147,7 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	Context("Product Download", func() {
+	Context("DownloadProductToFile", func() {
 		var file *os.File
 		var fileContents = "hello world"
 
@@ -244,40 +222,40 @@ var _ = Describe("S3Client", func() {
 				Expect(err).To(HaveOccurred())
 			})
 		})
-		Context("DownloadProductToFile", func() {
-			It("writes to a file when the file exists", func() {
-				stower := &fakes.Stower{}
-				location := &fakes.Location{}
-				container := &fakes.Container{}
-				stower.DialReturns(location, nil)
-				location.ContainerReturns(container, nil)
 
-				item := newMockItem(file.Name())
-				item.fakeFileName = file.Name()
-				container.ItemReturns(item, nil)
+		It("writes to a file when the file exists", func() {
+			stower := &fakes.Stower{}
+			location := &fakes.Location{}
+			container := &fakes.Container{}
+			stower.DialReturns(location, nil)
+			location.ContainerReturns(container, nil)
 
-				config := commands.S3Configuration{
-					Bucket:          "bucket",
-					AccessKeyID:     "access-key-id",
-					SecretAccessKey: "secret-access-key",
-					RegionName:      "region",
-					Endpoint:        "endpoint",
-				}
-				client, err := commands.NewS3Client(stower, config)
-				Expect(err).ToNot(HaveOccurred())
+			item := newMockItem(file.Name())
+			item.fakeFileName = file.Name()
+			container.ItemReturns(item, nil)
 
-				file, err := ioutil.TempFile("", "")
-				Expect(err).ToNot(HaveOccurred())
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+			client, err := commands.NewS3Client(stower, config)
+			Expect(err).ToNot(HaveOccurred())
 
-				err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
-				Expect(err).ToNot(HaveOccurred())
+			file, err := ioutil.TempFile("", "")
+			Expect(err).ToNot(HaveOccurred())
 
-				contents, err := ioutil.ReadFile(file.Name())
-				Expect(err).ToNot(HaveOccurred())
-				Expect(contents).To(Equal([]byte(fileContents)))
-			})
+			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			Expect(err).ToNot(HaveOccurred())
+
+			contents, err := ioutil.ReadFile(file.Name())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(contents).To(Equal([]byte(fileContents)))
 		})
 	})
+
 	Context("Property Validation", func() {
 		DescribeTable("lists missing required properties", func(param string) {
 			stower := &fakes.Stower{}
@@ -310,6 +288,28 @@ var _ = Describe("S3Client", func() {
 			Expect(client.Config.SkipSSLVerification).To(BeFalse())
 			Expect(client.Config.UseV2Signing).To(BeFalse())
 		})
+	})
+
+	It("returns an error on storer failure", func() {
+		dialError := errors.New("dial error")
+		itemsList := []mockItem{}
+		stower := newMockStower(itemsList)
+		stower.dialError = dialError
+
+		config := commands.S3Configuration{
+			Bucket:          "bucket",
+			AccessKeyID:     "access-key-id",
+			SecretAccessKey: "secret-access-key",
+			RegionName:      "region",
+			Endpoint:        "endpoint",
+		}
+
+		client, err := commands.NewS3Client(stower, config)
+		Expect(err).ToNot(HaveOccurred())
+
+		_, err = client.GetAllProductVersions("product-slug")
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(Equal(dialError))
 	})
 })
 

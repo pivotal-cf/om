@@ -28,23 +28,12 @@ type outputList struct {
 	StemcellVersion string `json:"stemcell_version,omitempty"`
 }
 
-//go:generate counterfeiter -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
-type PivnetDownloader interface {
-	ReleasesForProductSlug(productSlug string) ([]pivnet.Release, error)
-	ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error)
-	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
-	DownloadProductFile(location *os.File, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
-	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
-}
-
 type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
 	GetLatestProductFile(slug, version, glob string) (*FileArtifact, error)
 	DownloadProductToFile(fa *FileArtifact, file *os.File) error
 	DownloadProductStemcell(fa *FileArtifact) (*stemcell, error)
 }
-
-type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
 func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
 	return gp.NewClient(config, logger)

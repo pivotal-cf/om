@@ -12,24 +12,31 @@ import (
 	"strings"
 )
 
-func NewPivnetClient(
-	logger pivnetlog.Logger,
-	progressWriter io.Writer,
-	factory PivnetFactory,
-	token string,
-) *pivnetClient {
+//go:generate counterfeiter -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
+type PivnetDownloader interface {
+	ReleasesForProductSlug(productSlug string) ([]pivnet.Release, error)
+	ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error)
+	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
+	DownloadProductFile(location *os.File, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
+	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
+}
+
+type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
+
+func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string) *pivnetClient {
+	downloader := factory(
+		pivnet.ClientConfig{
+			Host:              pivnet.DefaultHost,
+			Token:             token,
+			UserAgent:         fmt.Sprintf("om-download-product"),
+			SkipSSLValidation: false,
+		},
+		logger)
+
 	return &pivnetClient{
 		filter:         filter.NewFilter(logger),
 		progressWriter: progressWriter,
-		downloader: factory(
-			pivnet.ClientConfig{
-				Host:              pivnet.DefaultHost,
-				Token:             token,
-				UserAgent:         fmt.Sprintf("om-download-product"),
-				SkipSSLValidation: false,
-			},
-			logger,
-		),
+		downloader: downloader,
 	}
 }
 
@@ -96,20 +103,6 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (*FileAr
 	}, nil
 }
 
-func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []pivnet.ProductFile) error {
-	if len(productFiles) > 1 {
-		var productFileNames []string
-		for _, productFile := range productFiles {
-			productFileNames = append(productFileNames, path.Base(productFile.AWSObjectKey))
-		}
-		return fmt.Errorf("the glob '%s' matches multiple files. Write your glob to match exactly one of the following:\n  %s", glob, strings.Join(productFileNames, "\n  "))
-	} else if len(productFiles) == 0 {
-		return fmt.Errorf("the glob '%s' matchs no file", glob)
-	}
-
-	return nil
-}
-
 func (p *pivnetClient) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
 	err := p.downloader.DownloadProductFile(file, fa.slug, fa.releaseID, fa.productFileID, p.progressWriter)
 	if err != nil {
@@ -130,6 +123,20 @@ func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*stemcell, err
 	}
 
 	return &stemcell{slug: stemcellSlug, version: stemcellVersion}, nil
+}
+
+func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []pivnet.ProductFile) error {
+	if len(productFiles) > 1 {
+		var productFileNames []string
+		for _, productFile := range productFiles {
+			productFileNames = append(productFileNames, path.Base(productFile.AWSObjectKey))
+		}
+		return fmt.Errorf("the glob '%s' matches multiple files. Write your glob to match exactly one of the following:\n  %s", glob, strings.Join(productFileNames, "\n  "))
+	} else if len(productFiles) == 0 {
+		return fmt.Errorf("the glob '%s' matchs no file", glob)
+	}
+
+	return nil
 }
 
 func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string, error) {
