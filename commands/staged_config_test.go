@@ -419,7 +419,7 @@ errand-config:
 		})
 	})
 
-	Context("using configurations with selected_options", func() {
+	When("a selector is present", func() {
 		stagedConfigTemplate := `---
 product-name: some-product
 product-properties:
@@ -444,11 +444,11 @@ errand-config:
   second-errand:
     post-deploy-state: false
 `
-		When("selected_option and value are available", func() {
+		Context("and both selected_option and value are available", func() {
 			BeforeEach(func() {
 				internalSelector = api.ResponseProperty{
 					Value:          "internal",
-					SelectedOption: "internal_option",
+					SelectedOption: "internal-option",
 					Type:           "selector",
 					Configurable:   true,
 				}
@@ -466,8 +466,38 @@ errand-config:
 				output := logger.PrintlnArgsForCall(0)
 				selectedAndValue := `
   .properties.some-selector:
-    selected_option: internal_option
-    value: internal`
+    selected_option: internal-option
+    value: internal
+  .properties.some-selector.internal-option.name:
+    value: "Hello World"`
+				Expect(output).To(ContainElement(MatchYAML(fmt.Sprintf(stagedConfigTemplate, selectedAndValue))))
+			})
+		})
+
+		Context("and only value is available", func() {
+			BeforeEach(func() {
+				internalSelector = api.ResponseProperty{
+					Value:        "internal-option",
+					Type:         "selector",
+					Configurable: true,
+				}
+				fakeService = setFakeService(internalSelector)
+			})
+
+			It("will include properties dependent on the selected selector if available", func() {
+				command := commands.NewStagedConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(logger.PrintlnCallCount()).To(Equal(1))
+				output := logger.PrintlnArgsForCall(0)
+				selectedAndValue := `
+  .properties.some-selector:
+    value: internal-option
+  .properties.some-selector.internal-option.name:
+    value: "Hello World"`
 				Expect(output).To(ContainElement(MatchYAML(fmt.Sprintf(stagedConfigTemplate, selectedAndValue))))
 			})
 		})
@@ -586,6 +616,10 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			".properties.some-selector": internalSelector,
 			".properties.some-selector.not-internal.some-string-property": {
 				Value:        "some-value",
+				Configurable: true,
+			},
+			".properties.some-selector.internal-option.name": {
+				Value:        "Hello World",
 				Configurable: true,
 			},
 		}, nil)

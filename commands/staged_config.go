@@ -95,7 +95,11 @@ func (ec StagedConfig) Execute(args []string) error {
 			continue
 		}
 		if property.Type == "selector" {
-			selectorProperties[name] = property.Value.(string)
+			value := property.SelectedOption
+			if value == "" {
+				value = property.Value.(string)
+			}
+			selectorProperties[name] = value
 		}
 		var output map[string]interface{}
 
