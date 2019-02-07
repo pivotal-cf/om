@@ -9,14 +9,13 @@ import (
 	"time"
 
 	"github.com/pivotal-cf/om/commands"
-	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"os"
 )
 
-var _ = Describe("S3Client", func() {
+var _ = FDescribe("S3Client", func() {
 	Context("GetAllProductVersions", func() {
 		It("returns versions matching the slug", func() {
 			itemsList := []mockItem{
@@ -172,13 +171,14 @@ var _ = Describe("S3Client", func() {
 
 		Context("DownloadFile", func() {
 			It("receives the contents of a file if the file exists", func() {
-				stower := &fakes.Stower{}
-
 				item := newMockItem(file.Name())
 				item.fakeFileName = file.Name()
-				container := &mockContainer{item: item}
-				location := mockLocation{container: container}
-				stower.DialReturns(location, nil)
+				container := mockContainer{item: item}
+				location := mockLocation{container: &container}
+				stower := mockStower{
+					location: location,
+					itemsList: []mockItem{item},
+				}
 
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
@@ -199,14 +199,14 @@ var _ = Describe("S3Client", func() {
 			})
 
 			It("errors when cannot open file", func() {
-				stower := &fakes.Stower{}
-
 				item := newMockItem(file.Name())
 				item.fileError = errors.New("could not open file")
-				container := &mockContainer{item: item}
-				location := mockLocation{container:container}
-
-				stower.DialReturns(location, nil)
+				container := mockContainer{item: item}
+				location := mockLocation{container: &container}
+				stower := mockStower{
+					location: location,
+					itemsList: []mockItem{item},
+				}
 
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
@@ -224,13 +224,14 @@ var _ = Describe("S3Client", func() {
 		})
 
 		It("writes to a file when the file exists", func() {
-			stower := &fakes.Stower{}
-
 			item := newMockItem(file.Name())
 			item.fakeFileName = file.Name()
-			container := &mockContainer{item: item}
-			location := mockLocation{container:container}
-			stower.DialReturns(location, nil)
+			container := mockContainer{item: item}
+			location := mockLocation{container: &container}
+			stower := mockStower{
+				location: location,
+				itemsList: []mockItem{item},
+			}
 
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
@@ -256,7 +257,7 @@ var _ = Describe("S3Client", func() {
 
 	Context("Property Validation", func() {
 		DescribeTable("lists missing required properties", func(param string) {
-			stower := &fakes.Stower{}
+			stower := mockStower{}
 			config := commands.S3Configuration{}
 			_, err := commands.NewS3Client(stower, config)
 			Expect(err).To(HaveOccurred())
@@ -278,7 +279,7 @@ var _ = Describe("S3Client", func() {
 				RegionName:      "region",
 				Endpoint:        "endpoint",
 			}
-			stower := &fakes.Stower{}
+			stower := mockStower{itemsList: []mockItem{}}
 			client, err := commands.NewS3Client(stower, config)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -313,6 +314,8 @@ var _ = Describe("S3Client", func() {
 
 type mockStower struct {
 	itemsList      []mockItem
+	location      mockLocation
+	dialCallCount  int
 	dialError      error
 	containerError error
 	itemError      error
@@ -325,11 +328,12 @@ func newMockStower(itemsList []mockItem) mockStower {
 }
 
 func (s mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
+	s.dialCallCount++
 	if s.dialError != nil {
 		return nil, s.dialError
 	}
 
-	return mockLocation{}, nil
+	return s.location, nil
 }
 
 func (s mockStower) Container(id string) (stow.Container, error) {
@@ -354,7 +358,7 @@ func (s mockStower) Walk(container stow.Container, prefix string, pageSize int, 
 	return nil
 }
 
-type mockLocation struct{
+type mockLocation struct {
 	io.Closer
 	container *mockContainer
 }
@@ -375,12 +379,12 @@ func (m mockLocation) ItemByURL(url *url.URL) (stow.Item, error) {
 	return mockItem{}, nil
 }
 
-type mockContainer struct{
+type mockContainer struct {
 	item mockItem
 }
 
 func (m mockContainer) ID() string {
-return ""
+	return ""
 }
 func (m mockContainer) Name() string {
 	return ""

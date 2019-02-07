@@ -20,7 +20,6 @@ type Config interface {
 	Set(name, value string)
 }
 
-//go:generate counterfeiter -o ./fakes/stower_service.go --fake-name Stower . Stower
 type Stower interface {
 	Dial(kind string, config Config) (stow.Location, error)
 	Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error
