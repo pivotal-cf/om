@@ -88,7 +88,9 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
 
-	c.client = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken)
+	//if blobstore flag not set, use pivnet client
+	filter := filter.NewFilter(c.logger)
+	c.client = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
 
 	productVersion := c.Options.ProductVersion
 	if c.Options.ProductVersionRegex != "" {
@@ -143,12 +145,12 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not information about stemcell: %s", err)
 	}
 
-	stemcellFileName, _, err := c.downloadProductFile(stemcell.slug, stemcell.version, fmt.Sprintf("*%s*", c.Options.StemcellIaas))
+	stemcellFileName, _, err := c.downloadProductFile(stemcell.Slug, stemcell.Version, fmt.Sprintf("*%s*", c.Options.StemcellIaas))
 	if err != nil {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
-	return c.writeOutputFile(productFileName, stemcellFileName, stemcell.version)
+	return c.writeOutputFile(productFileName, stemcellFileName, stemcell.Version)
 }
 
 func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileName string, stemcellVersion string) error {

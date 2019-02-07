@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pivotal-cf/go-pivnet"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
-	"github.com/pivotal-cf/pivnet-cli/filter"
 	"io"
 	"os"
 	"path"
@@ -21,9 +20,15 @@ type PivnetDownloader interface {
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
 }
 
+//go:generate counterfeiter -o ./fakes/pivnet_filter_service.go --fake-name PivnetFilter . PivnetFilter
+type PivnetFilter interface {
+	ReleasesByVersion(releases []pivnet.Release, version string) ([]pivnet.Release, error)
+ 	ProductFileKeysByGlobs(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error)
+}
+
 type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string) *pivnetClient {
+func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string, filter PivnetFilter) *pivnetClient {
 	downloader := factory(
 		pivnet.ClientConfig{
 			Host:              pivnet.DefaultHost,
@@ -34,7 +39,7 @@ func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory 
 		logger)
 
 	return &pivnetClient{
-		filter:         filter.NewFilter(logger),
+		filter:         filter,
 		progressWriter: progressWriter,
 		downloader: downloader,
 	}
@@ -42,7 +47,7 @@ func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory 
 
 type pivnetClient struct {
 	downloader     PivnetDownloader
-	filter         *filter.Filter
+	filter         PivnetFilter
 	progressWriter io.Writer
 }
 
@@ -55,8 +60,8 @@ type FileArtifact struct {
 }
 
 type stemcell struct {
-	slug    string
-	version string
+	Slug    string
+	Version string
 }
 
 func (p *pivnetClient) GetAllProductVersions(slug string) ([]string, error) {
@@ -122,7 +127,7 @@ func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*stemcell, err
 		return nil, fmt.Errorf("could not sort stemcell dependency: %s", err)
 	}
 
-	return &stemcell{slug: stemcellSlug, version: stemcellVersion}, nil
+	return &stemcell{Slug: stemcellSlug, Version: stemcellVersion}, nil
 }
 
 func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []pivnet.ProductFile) error {
@@ -133,14 +138,14 @@ func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []piv
 		}
 		return fmt.Errorf("the glob '%s' matches multiple files. Write your glob to match exactly one of the following:\n  %s", glob, strings.Join(productFileNames, "\n  "))
 	} else if len(productFiles) == 0 {
-		return fmt.Errorf("the glob '%s' matchs no file", glob)
+		return fmt.Errorf("the glob '%s' matches no file", glob)
 	}
 
 	return nil
 }
 
 func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string, error) {
-	const errorForVersion = "versioning of stemcell dependency in unexpected format. the following version could not be parsed: %s"
+	const errorForVersion = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
 
 	var stemcellSlug string
 	var stemcellVersion string
@@ -165,6 +170,7 @@ func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency
 			if err != nil {
 				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
 			}
+
 			if major > stemcellVersionMajor {
 				stemcellVersionMajor = major
 				stemcellVersionMinor = minor
