@@ -1,9 +1,12 @@
 package commands_test
 
 import (
+	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"net/url"
+	"time"
 
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -170,14 +173,12 @@ var _ = Describe("S3Client", func() {
 		Context("DownloadFile", func() {
 			It("receives the contents of a file if the file exists", func() {
 				stower := &fakes.Stower{}
-				location := &fakes.Location{}
-				container := &fakes.Container{}
-				stower.DialReturns(location, nil)
-				location.ContainerReturns(container, nil)
 
 				item := newMockItem(file.Name())
 				item.fakeFileName = file.Name()
-				container.ItemReturns(item, nil)
+				container := &mockContainer{item: item}
+				location := mockLocation{container: container}
+				stower.DialReturns(location, nil)
 
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
@@ -199,14 +200,13 @@ var _ = Describe("S3Client", func() {
 
 			It("errors when cannot open file", func() {
 				stower := &fakes.Stower{}
-				location := &fakes.Location{}
-				container := &fakes.Container{}
-				stower.DialReturns(location, nil)
-				location.ContainerReturns(container, nil)
 
 				item := newMockItem(file.Name())
 				item.fileError = errors.New("could not open file")
-				container.ItemReturns(item, nil)
+				container := &mockContainer{item: item}
+				location := mockLocation{container:container}
+
+				stower.DialReturns(location, nil)
 
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
@@ -225,14 +225,12 @@ var _ = Describe("S3Client", func() {
 
 		It("writes to a file when the file exists", func() {
 			stower := &fakes.Stower{}
-			location := &fakes.Location{}
-			container := &fakes.Container{}
-			stower.DialReturns(location, nil)
-			location.ContainerReturns(container, nil)
 
 			item := newMockItem(file.Name())
 			item.fakeFileName = file.Name()
-			container.ItemReturns(item, nil)
+			container := &mockContainer{item: item}
+			location := mockLocation{container:container}
+			stower.DialReturns(location, nil)
 
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
@@ -326,34 +324,78 @@ func newMockStower(itemsList []mockItem) mockStower {
 	}
 }
 
-func (s mockStower) Dial(kind string, config commands.Config) (commands.Location, error) {
+func (s mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
 	if s.dialError != nil {
 		return nil, s.dialError
 	}
 
-	return &fakes.Location{}, nil
+	return mockLocation{}, nil
 }
 
-func (s mockStower) Container(id string) (commands.Container, error) {
+func (s mockStower) Container(id string) (stow.Container, error) {
 	if s.containerError != nil {
 		return nil, s.containerError
 	}
-	return &fakes.Container{}, nil
+	return mockContainer{}, nil
 }
 
-func (s mockStower) Item(id string) (commands.Item, error) {
+func (s mockStower) Item(id string) (stow.Item, error) {
 	if s.itemError != nil {
 		return nil, s.itemError
 	}
-	return &fakes.Item{}, nil
+	return mockItem{}, nil
 }
 
-func (s mockStower) Walk(container commands.Container, prefix string, pageSize int, fn commands.WalkFunc) error {
+func (s mockStower) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
 	for _, item := range s.itemsList {
 		fn(item, nil)
 	}
 
 	return nil
+}
+
+type mockLocation struct{
+	io.Closer
+	container *mockContainer
+}
+
+func (m mockLocation) CreateContainer(name string) (stow.Container, error) {
+	return mockContainer{}, nil
+}
+func (m mockLocation) Containers(prefix string, cursor string, count int) ([]stow.Container, string, error) {
+	return []stow.Container{mockContainer{}}, "", nil
+}
+func (m mockLocation) Container(id string) (stow.Container, error) {
+	return m.container, nil
+}
+func (m mockLocation) RemoveContainer(id string) error {
+	return nil
+}
+func (m mockLocation) ItemByURL(url *url.URL) (stow.Item, error) {
+	return mockItem{}, nil
+}
+
+type mockContainer struct{
+	item mockItem
+}
+
+func (m mockContainer) ID() string {
+return ""
+}
+func (m mockContainer) Name() string {
+	return ""
+}
+func (m mockContainer) Item(id string) (stow.Item, error) {
+	return m.item, nil
+}
+func (m mockContainer) Items(prefix, cursor string, count int) ([]stow.Item, string, error) {
+	return []stow.Item{mockItem{}}, "", nil
+}
+func (m mockContainer) RemoveItem(id string) error {
+	return nil
+}
+func (m mockContainer) Put(name string, r io.Reader, size int64, metadata map[string]interface{}) (stow.Item, error) {
+	return mockItem{}, nil
 }
 
 type mockItem struct {
@@ -384,4 +426,23 @@ func (m mockItem) Open() (io.ReadCloser, error) {
 
 func (m mockItem) ID() string {
 	return m.idString
+}
+
+func (m mockItem) Name() string {
+	return ""
+}
+func (m mockItem) URL() *url.URL {
+	return &url.URL{}
+}
+func (m mockItem) Size() (int64, error) {
+	return 0, nil
+}
+func (m mockItem) ETag() (string, error) {
+	return "", nil
+}
+func (m mockItem) LastMod() (time.Time, error) {
+	return time.Now(), nil
+}
+func (m mockItem) Metadata() (map[string]interface{}, error) {
+	return make(map[string]interface{}), nil
 }

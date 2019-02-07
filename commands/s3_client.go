@@ -13,7 +13,6 @@ import (
 	"strings"
 )
 
-type WalkFunc func(item Item, err error) error
 
 //go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . Config
 type Config interface {
@@ -21,28 +20,10 @@ type Config interface {
 	Set(name, value string)
 }
 
-//go:generate counterfeiter -o ./fakes/container_service.go --fake-name Container . Container
-type Container interface {
-	Item(id string) (Item, error)
-}
-
-//go:generate counterfeiter -o ./fakes/location_service.go --fake-name Location . Location
-type Location interface {
-	Container(id string) (Container, error)
-}
-
-//go:generate counterfeiter -o ./fakes/item_service.go --fake-name Item . Item
-type Item interface {
-	Open() (io.ReadCloser, error)
-	ID() string
-}
-
 //go:generate counterfeiter -o ./fakes/stower_service.go --fake-name Stower . Stower
 type Stower interface {
-	Dial(kind string, config Config) (Location, error)
-	Container(id string) (Container, error)
-	Item(id string) (Item, error)
-	Walk(container Container, prefix string, pageSize int, fn WalkFunc) error
+	Dial(kind string, config Config) (stow.Location, error)
+	Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error
 }
 
 type S3Configuration struct {
@@ -157,7 +138,7 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	}
 
 	var paths []string
-	err = s.stower.Walk(container, stow.NoPrefix, 100, func(item Item, err error) error {
+	err = s.stower.Walk(container, stow.NoPrefix, 100, func(item stow.Item, err error) error {
 		if err != nil {
 			return err
 		}
