@@ -6,10 +6,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/go-pivnet"
+	log "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/go-pivnet/logger/loggerfakes"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	log "github.com/pivotal-cf/go-pivnet/logger"
 )
 
 var _ = Describe("PivnetClient", func() {
@@ -181,10 +181,10 @@ var _ = Describe("PivnetClient", func() {
 
 	Context("DownloadProductStemcell", func() {
 		var (
-			fakePivnetDownloader *fakes.PivnetDownloader
-			fakePivnetFilter     *fakes.PivnetFilter
-			logger               = &loggerfakes.FakeLogger{}
-			fakePivnetFactory    func(config pivnet.ClientConfig, logger log.Logger) commands.PivnetDownloader
+			fakePivnetDownloader     *fakes.PivnetDownloader
+			fakePivnetFilter         *fakes.PivnetFilter
+			logger                   = &loggerfakes.FakeLogger{}
+			fakePivnetFactory        func(config pivnet.ClientConfig, logger log.Logger) commands.PivnetDownloader
 			errorTemplateForStemcell = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
 		)
 

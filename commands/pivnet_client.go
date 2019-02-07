@@ -23,7 +23,7 @@ type PivnetDownloader interface {
 //go:generate counterfeiter -o ./fakes/pivnet_filter_service.go --fake-name PivnetFilter . PivnetFilter
 type PivnetFilter interface {
 	ReleasesByVersion(releases []pivnet.Release, version string) ([]pivnet.Release, error)
- 	ProductFileKeysByGlobs(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error)
+	ProductFileKeysByGlobs(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error)
 }
 
 type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
@@ -41,7 +41,7 @@ func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory 
 	return &pivnetClient{
 		filter:         filter,
 		progressWriter: progressWriter,
-		downloader: downloader,
+		downloader:     downloader,
 	}
 }
 
