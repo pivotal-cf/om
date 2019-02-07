@@ -4,57 +4,32 @@ package fakes
 import (
 	sync "sync"
 
+	stow "github.com/graymeta/stow"
 	commands "github.com/pivotal-cf/om/commands"
 )
 
 type Stower struct {
-	ContainerStub        func(string) (commands.Container, error)
-	containerMutex       sync.RWMutex
-	containerArgsForCall []struct {
-		arg1 string
-	}
-	containerReturns struct {
-		result1 commands.Container
-		result2 error
-	}
-	containerReturnsOnCall map[int]struct {
-		result1 commands.Container
-		result2 error
-	}
-	DialStub        func(string, commands.Config) (commands.Location, error)
+	DialStub        func(string, commands.Config) (stow.Location, error)
 	dialMutex       sync.RWMutex
 	dialArgsForCall []struct {
 		arg1 string
 		arg2 commands.Config
 	}
 	dialReturns struct {
-		result1 commands.Location
+		result1 stow.Location
 		result2 error
 	}
 	dialReturnsOnCall map[int]struct {
-		result1 commands.Location
+		result1 stow.Location
 		result2 error
 	}
-	ItemStub        func(string) (commands.Item, error)
-	itemMutex       sync.RWMutex
-	itemArgsForCall []struct {
-		arg1 string
-	}
-	itemReturns struct {
-		result1 commands.Item
-		result2 error
-	}
-	itemReturnsOnCall map[int]struct {
-		result1 commands.Item
-		result2 error
-	}
-	WalkStub        func(commands.Container, string, int, commands.WalkFunc) error
+	WalkStub        func(stow.Container, string, int, stow.WalkFunc) error
 	walkMutex       sync.RWMutex
 	walkArgsForCall []struct {
-		arg1 commands.Container
+		arg1 stow.Container
 		arg2 string
 		arg3 int
-		arg4 commands.WalkFunc
+		arg4 stow.WalkFunc
 	}
 	walkReturns struct {
 		result1 error
@@ -66,70 +41,7 @@ type Stower struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Stower) Container(arg1 string) (commands.Container, error) {
-	fake.containerMutex.Lock()
-	ret, specificReturn := fake.containerReturnsOnCall[len(fake.containerArgsForCall)]
-	fake.containerArgsForCall = append(fake.containerArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("Container", []interface{}{arg1})
-	fake.containerMutex.Unlock()
-	if fake.ContainerStub != nil {
-		return fake.ContainerStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.containerReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *Stower) ContainerCallCount() int {
-	fake.containerMutex.RLock()
-	defer fake.containerMutex.RUnlock()
-	return len(fake.containerArgsForCall)
-}
-
-func (fake *Stower) ContainerCalls(stub func(string) (commands.Container, error)) {
-	fake.containerMutex.Lock()
-	defer fake.containerMutex.Unlock()
-	fake.ContainerStub = stub
-}
-
-func (fake *Stower) ContainerArgsForCall(i int) string {
-	fake.containerMutex.RLock()
-	defer fake.containerMutex.RUnlock()
-	argsForCall := fake.containerArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *Stower) ContainerReturns(result1 commands.Container, result2 error) {
-	fake.containerMutex.Lock()
-	defer fake.containerMutex.Unlock()
-	fake.ContainerStub = nil
-	fake.containerReturns = struct {
-		result1 commands.Container
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *Stower) ContainerReturnsOnCall(i int, result1 commands.Container, result2 error) {
-	fake.containerMutex.Lock()
-	defer fake.containerMutex.Unlock()
-	fake.ContainerStub = nil
-	if fake.containerReturnsOnCall == nil {
-		fake.containerReturnsOnCall = make(map[int]struct {
-			result1 commands.Container
-			result2 error
-		})
-	}
-	fake.containerReturnsOnCall[i] = struct {
-		result1 commands.Container
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *Stower) Dial(arg1 string, arg2 commands.Config) (commands.Location, error) {
+func (fake *Stower) Dial(arg1 string, arg2 commands.Config) (stow.Location, error) {
 	fake.dialMutex.Lock()
 	ret, specificReturn := fake.dialReturnsOnCall[len(fake.dialArgsForCall)]
 	fake.dialArgsForCall = append(fake.dialArgsForCall, struct {
@@ -154,7 +66,7 @@ func (fake *Stower) DialCallCount() int {
 	return len(fake.dialArgsForCall)
 }
 
-func (fake *Stower) DialCalls(stub func(string, commands.Config) (commands.Location, error)) {
+func (fake *Stower) DialCalls(stub func(string, commands.Config) (stow.Location, error)) {
 	fake.dialMutex.Lock()
 	defer fake.dialMutex.Unlock()
 	fake.DialStub = stub
@@ -167,103 +79,40 @@ func (fake *Stower) DialArgsForCall(i int) (string, commands.Config) {
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *Stower) DialReturns(result1 commands.Location, result2 error) {
+func (fake *Stower) DialReturns(result1 stow.Location, result2 error) {
 	fake.dialMutex.Lock()
 	defer fake.dialMutex.Unlock()
 	fake.DialStub = nil
 	fake.dialReturns = struct {
-		result1 commands.Location
+		result1 stow.Location
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *Stower) DialReturnsOnCall(i int, result1 commands.Location, result2 error) {
+func (fake *Stower) DialReturnsOnCall(i int, result1 stow.Location, result2 error) {
 	fake.dialMutex.Lock()
 	defer fake.dialMutex.Unlock()
 	fake.DialStub = nil
 	if fake.dialReturnsOnCall == nil {
 		fake.dialReturnsOnCall = make(map[int]struct {
-			result1 commands.Location
+			result1 stow.Location
 			result2 error
 		})
 	}
 	fake.dialReturnsOnCall[i] = struct {
-		result1 commands.Location
+		result1 stow.Location
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *Stower) Item(arg1 string) (commands.Item, error) {
-	fake.itemMutex.Lock()
-	ret, specificReturn := fake.itemReturnsOnCall[len(fake.itemArgsForCall)]
-	fake.itemArgsForCall = append(fake.itemArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("Item", []interface{}{arg1})
-	fake.itemMutex.Unlock()
-	if fake.ItemStub != nil {
-		return fake.ItemStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.itemReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *Stower) ItemCallCount() int {
-	fake.itemMutex.RLock()
-	defer fake.itemMutex.RUnlock()
-	return len(fake.itemArgsForCall)
-}
-
-func (fake *Stower) ItemCalls(stub func(string) (commands.Item, error)) {
-	fake.itemMutex.Lock()
-	defer fake.itemMutex.Unlock()
-	fake.ItemStub = stub
-}
-
-func (fake *Stower) ItemArgsForCall(i int) string {
-	fake.itemMutex.RLock()
-	defer fake.itemMutex.RUnlock()
-	argsForCall := fake.itemArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *Stower) ItemReturns(result1 commands.Item, result2 error) {
-	fake.itemMutex.Lock()
-	defer fake.itemMutex.Unlock()
-	fake.ItemStub = nil
-	fake.itemReturns = struct {
-		result1 commands.Item
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *Stower) ItemReturnsOnCall(i int, result1 commands.Item, result2 error) {
-	fake.itemMutex.Lock()
-	defer fake.itemMutex.Unlock()
-	fake.ItemStub = nil
-	if fake.itemReturnsOnCall == nil {
-		fake.itemReturnsOnCall = make(map[int]struct {
-			result1 commands.Item
-			result2 error
-		})
-	}
-	fake.itemReturnsOnCall[i] = struct {
-		result1 commands.Item
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *Stower) Walk(arg1 commands.Container, arg2 string, arg3 int, arg4 commands.WalkFunc) error {
+func (fake *Stower) Walk(arg1 stow.Container, arg2 string, arg3 int, arg4 stow.WalkFunc) error {
 	fake.walkMutex.Lock()
 	ret, specificReturn := fake.walkReturnsOnCall[len(fake.walkArgsForCall)]
 	fake.walkArgsForCall = append(fake.walkArgsForCall, struct {
-		arg1 commands.Container
+		arg1 stow.Container
 		arg2 string
 		arg3 int
-		arg4 commands.WalkFunc
+		arg4 stow.WalkFunc
 	}{arg1, arg2, arg3, arg4})
 	fake.recordInvocation("Walk", []interface{}{arg1, arg2, arg3, arg4})
 	fake.walkMutex.Unlock()
@@ -283,13 +132,13 @@ func (fake *Stower) WalkCallCount() int {
 	return len(fake.walkArgsForCall)
 }
 
-func (fake *Stower) WalkCalls(stub func(commands.Container, string, int, commands.WalkFunc) error) {
+func (fake *Stower) WalkCalls(stub func(stow.Container, string, int, stow.WalkFunc) error) {
 	fake.walkMutex.Lock()
 	defer fake.walkMutex.Unlock()
 	fake.WalkStub = stub
 }
 
-func (fake *Stower) WalkArgsForCall(i int) (commands.Container, string, int, commands.WalkFunc) {
+func (fake *Stower) WalkArgsForCall(i int) (stow.Container, string, int, stow.WalkFunc) {
 	fake.walkMutex.RLock()
 	defer fake.walkMutex.RUnlock()
 	argsForCall := fake.walkArgsForCall[i]
@@ -322,12 +171,8 @@ func (fake *Stower) WalkReturnsOnCall(i int, result1 error) {
 func (fake *Stower) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.containerMutex.RLock()
-	defer fake.containerMutex.RUnlock()
 	fake.dialMutex.RLock()
 	defer fake.dialMutex.RUnlock()
-	fake.itemMutex.RLock()
-	defer fake.itemMutex.RUnlock()
 	fake.walkMutex.RLock()
 	defer fake.walkMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
