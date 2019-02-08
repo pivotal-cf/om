@@ -3,6 +3,9 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/pivotal-cf/jhanda"
@@ -95,7 +98,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
@@ -123,7 +126,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--ignore-warnings"})
 				Expect(err).NotTo(HaveOccurred())
 
-				ignoreWarnings, _, _ := service.CreateInstallationArgsForCall(0)
+				ignoreWarnings, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
 			})
 		})
@@ -135,7 +138,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--skip-deploy-products"})
 				Expect(err).NotTo(HaveOccurred())
 
-				_, deployProducts, _ := service.CreateInstallationArgsForCall(0)
+				_, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 
@@ -174,7 +177,7 @@ var _ = Describe("ApplyChanges", func() {
 				It("applies changes to all unchanged products", func() {
 					err := command.Execute([]string{"--skip-unchanged-products"})
 					Expect(err).NotTo(HaveOccurred())
-					_, _, productList := service.CreateInstallationArgsForCall(0)
+					_, _, productList, _ := service.CreateInstallationArgsForCall(0)
 					Expect(productList).To(HaveLen(2))
 					Expect(productList).To(ConsistOf("some-product", "some-product-2"))
 				})
@@ -211,7 +214,7 @@ var _ = Describe("ApplyChanges", func() {
 
 					err := command.Execute([]string{"--skip-unchanged-products"})
 					Expect(err).NotTo(HaveOccurred())
-					_, deployProducts, productList := service.CreateInstallationArgsForCall(0)
+					_, deployProducts, productList, _ := service.CreateInstallationArgsForCall(0)
 					Expect(productList).To(HaveLen(0))
 					Expect(deployProducts).To(Equal(false))
 				})
@@ -228,8 +231,147 @@ var _ = Describe("ApplyChanges", func() {
 				err := command.Execute([]string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
-				_, _, productNames := service.CreateInstallationArgsForCall(0)
+				_, _, productNames, _ := service.CreateInstallationArgsForCall(0)
 				Expect(productNames).To(ConsistOf("product1", "product2"))
+			})
+		})
+
+		Context("Load config file", func() {
+			var fileName string
+
+			Context("given a valid config file", func() {
+				BeforeEach(func() {
+					fh, err := ioutil.TempFile("", "")
+					defer fh.Close()
+					Expect(err).NotTo(HaveOccurred())
+					_, err = fh.WriteString(`
+---
+errands:
+  product1_name:
+    run_post_deploy:
+      errand_c: "default"
+    run_pre_delete:
+      errand_a: true
+      errand_b: false
+  product2_name:
+    run_post_deploy:
+      errand_a: false
+    run_pre_delete:
+      errand_b: "default"
+`)
+
+					Expect(err).NotTo(HaveOccurred())
+					fileName = fh.Name()
+				})
+
+				It("parses the config file correctly", func() {
+					fh, err := os.Open(fileName)
+					Expect(err).NotTo(HaveOccurred())
+					defer fh.Close()
+
+					applyErrandChanges := api.ApplyErrandChanges{}
+					err = yaml.NewDecoder(fh).Decode(&applyErrandChanges)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(applyErrandChanges).To(Equal(api.ApplyErrandChanges{
+						Errands: map[string]api.ProductErrand{
+							"product1_name": {
+								RunPostDeploy: map[string]interface{}{
+									"errand_c": "default",
+								},
+								RunPreDelete: map[string]interface{}{
+									"errand_a": true,
+									"errand_b": false,
+								},
+							},
+							"product2_name": {
+								RunPostDeploy: map[string]interface{}{
+									"errand_a": false,
+								},
+								RunPreDelete: map[string]interface{}{
+									"errand_b": "default",
+								},
+							},
+						}}))
+				})
+
+				It("calls the api with correct arguments", func() {
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{"--config", fileName})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.CreateInstallationCallCount()).To(Equal(1))
+
+					ignoreWarnings, deployProducts, _, errands := service.CreateInstallationArgsForCall(0)
+					Expect(ignoreWarnings).To(Equal(false))
+					Expect(deployProducts).To(Equal(true))
+					Expect(errands).To(Equal(api.ApplyErrandChanges{
+						Errands: map[string]api.ProductErrand{
+							"product1_name": {
+								RunPostDeploy: map[string]interface{}{
+									"errand_c": "default",
+								},
+								RunPreDelete: map[string]interface{}{
+									"errand_a": true,
+									"errand_b": false,
+								},
+							},
+							"product2_name": {
+								RunPostDeploy: map[string]interface{}{
+									"errand_a": false,
+								},
+								RunPreDelete: map[string]interface{}{
+									"errand_b": "default",
+								},
+							},
+						}}))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
+
+					Expect(service.GetInstallationArgsForCall(0)).To(Equal(311))
+					Expect(service.GetInstallationCallCount()).To(Equal(3))
+
+					Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(311))
+					Expect(service.GetInstallationLogsCallCount()).To(Equal(3))
+
+					Expect(writer.FlushCallCount()).To(Equal(3))
+					Expect(writer.FlushArgsForCall(0)).To(Equal("start of logs"))
+					Expect(writer.FlushArgsForCall(1)).To(Equal("these logs"))
+					Expect(writer.FlushArgsForCall(2)).To(Equal("some other logs"))
+				})
+			})
+
+			Context("given a file that does not exist", func() {
+				It("returns an error", func() {
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{"--config", "filedoesnotexist"})
+					Expect(err).To(MatchError("could not load config: open filedoesnotexist: no such file or directory"))
+				})
+			})
+
+			Context("given a invalid yaml file", func() {
+				BeforeEach(func() {
+					fh, err := ioutil.TempFile("", "")
+					defer fh.Close()
+					Expect(err).NotTo(HaveOccurred())
+					_, err = fh.WriteString(`
+---
+errands: lolololol
+`)
+
+					Expect(err).NotTo(HaveOccurred())
+					fileName = fh.Name()
+				})
+
+				It("returns an error", func() {
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{"--config", fileName})
+					Expect(err.Error()).To(ContainSubstring("line 3: cannot unmarshal !!str `lolololol`"))
+				})
 			})
 		})
 

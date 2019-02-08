@@ -107,17 +107,25 @@ var _ = Describe("InstallationsService", func() {
 	Describe("CreateInstallation", func() {
 		Context("When deploying all products", func() {
 			It("triggers an installation on an Ops Manager, deploying all products", func() {
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
 				}, nil)
 
-				output, err := service.CreateInstallation(false, true, nil)
+				output, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
-				req := client.DoArgsForCall(0)
+				req := client.DoArgsForCall(2)
 
 				Expect(req.Method).To(Equal("POST"))
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
@@ -134,13 +142,20 @@ var _ = Describe("InstallationsService", func() {
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
 				}, nil)
-
-				output, err := service.CreateInstallation(false, false, nil)
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				output, err := service.CreateInstallation(false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
-				req := client.DoArgsForCall(0)
+				req := client.DoArgsForCall(2)
 
 				Expect(req.Method).To(Equal("POST"))
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
@@ -159,14 +174,18 @@ var _ = Describe("InstallationsService", func() {
 				}, nil)
 				client.DoReturnsOnCall(1, &http.Response{
 					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(2, &http.Response{
+					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
 				}, nil)
 
-				output, err := service.CreateInstallation(false, true, []string{"product2"})
+				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
-				req := client.DoArgsForCall(1)
+				req := client.DoArgsForCall(2)
 				Expect(req.Method).To(Equal("POST"))
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 
@@ -176,15 +195,86 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
+		Context("when given the errands", func() {
+			It("sends the errands as a json parameter", func() {
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(2, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
+				}, nil)
+
+				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
+					Errands: map[string]api.ProductErrand{
+						"product1": {
+							RunPostDeploy: map[string]interface{}{
+								"errand1": "default",
+							},
+						},
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+
+				req := client.DoArgsForCall(2)
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
+
+				body, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(body)).To(MatchJSON(`{"ignore_warnings":"false","deploy_products":["guid2"],"errands":{"guid1":{"run_post_deploy":{"errand1":"default"}}}}`)) // TODO product1-guid
+			})
+
+			It("returns an error if the product guid is not found", func() {
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(2, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
+				}, nil)
+
+				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
+					Errands: map[string]api.ProductErrand{
+						"product3": {
+							RunPostDeploy: map[string]interface{}{
+								"errand1": "default",
+							},
+						},
+					},
+				})
+				Expect(err).To(MatchError("failed to fetch product GUID for product: product3"))
+			})
+		})
+
 		Context("when an error occurs", func() {
 			Context("when the client has an error during the request", func() {
 				It("returns an error", func() {
+					client.DoReturnsOnCall(0, &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+					}, nil)
+					client.DoReturnsOnCall(1, &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+					}, nil)
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, errors.New("some error"))
 
-					_, err := service.CreateInstallation(false, true, nil)
+					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations: some error"))
 				})
 			})
@@ -196,19 +286,27 @@ var _ = Describe("InstallationsService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("")),
 					}, nil)
 
-					_, err := service.CreateInstallation(false, true, nil)
+					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 
 			Context("when the json cannot be decoded", func() {
 				It("returns an error", func() {
+					client.DoReturnsOnCall(0, &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+					}, nil)
+					client.DoReturnsOnCall(1, &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
+					}, nil)
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(strings.NewReader("##################")),
 					}, nil)
 
-					_, err := service.CreateInstallation(false, true, nil)
+					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 				})
 			})
