@@ -3,6 +3,8 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/graymeta/stow"
+	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 	"path"
@@ -39,34 +41,48 @@ func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) P
 	return gp.NewClient(config, logger)
 }
 
+type DefaultStow struct{}
+
+func (d DefaultStow) Dial(kind string, config Config) (stow.Location, error) {
+	location, err := stow.Dial(kind, config)
+	return location, err
+}
+func (d DefaultStow) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
+	return stow.Walk(container, prefix, pageSize, fn)
+}
+
 type DownloadProduct struct {
 	environFunc    func() []string
 	logger         pivnetlog.Logger
 	progressWriter io.Writer
 	pivnetFactory  PivnetFactory
+	stower         Stower
 	filter         *filter.Filter
 	client         ProductDownloader
 	Options        struct {
-		ConfigFile          string   `long:"config"                short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
-		VarsFile            []string `long:"vars-file"             short:"l" description:"Load variables from a YAML file"`
-		VarsEnv             []string `long:"vars-env"                        description:"Load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-		PivnetToken         string   `long:"pivnet-api-token"      short:"t" description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." required:"true"`
-		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f" description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
-		PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p" description:"Path to product" required:"true"`
-		ProductVersion      string   `long:"product-version"       short:"v" description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
-		ProductVersionRegex string   `long:"product-version-regex" short:"r" description:"Regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
-		OutputDir           string   `long:"output-directory"      short:"o" description:"Directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-		Stemcell            bool     `long:"download-stemcell"               description:"No-op for backwards compatibility"`
-		StemcellIaas        string   `long:"stemcell-iaas"                   description:"Download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+		Blobstore           string   `long:"blobstore"             short:"b"  description:"specify an blobstore to use if not downloading from pivnet"`
+		ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		OutputDir           string   `long:"output-directory"      short:"o"  description:"Directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
+		PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p"  description:"Path to product" required:"true"`
+		PivnetToken         string   `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." required:"true"`
+		ProductVersion      string   `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+		ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"Regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+		S3                  string   `long:"s3-config"                        description:"YAML configuration for using an s3 client.\nRequired fields: bucket, access-key-id, secret-access-key, region-name, endpoint.\nOptional: disable-ssl, skip-ssl-verification, use-v2-signing"`
+		Stemcell            bool     `long:"download-stemcell"                description:"No-op for backwards compatibility"`
+		StemcellIaas        string   `long:"stemcell-iaas"                    description:"Download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+		VarsEnv             []string `long:"vars-env"                         description:"Load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile            []string `long:"vars-file"             short:"l"  description:"Load variables from a YAML file"`
 	}
 }
 
-func NewDownloadProduct(environFunc func() []string, logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory) DownloadProduct {
+func NewDownloadProduct(environFunc func() []string, logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, stower Stower) DownloadProduct {
 	return DownloadProduct{
 		environFunc:    environFunc,
 		logger:         logger,
 		progressWriter: progressWriter,
 		pivnetFactory:  factory,
+		stower:         stower,
 	}
 }
 
@@ -88,9 +104,17 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
 
-	//if blobstore flag not set, use pivnet client
-	filter := filter.NewFilter(c.logger)
-	c.client = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
+	switch c.Options.Blobstore {
+	case "s3":
+		config, err := c.parses3Config()
+		c.client, err = NewS3Client(c.stower, config)
+		if err != nil {
+			return fmt.Errorf("could not create an s3 client: %s", err)
+		}
+	default:
+		filter := filter.NewFilter(c.logger)
+		c.client = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
+	}
 
 	productVersion := c.Options.ProductVersion
 	if c.Options.ProductVersionRegex != "" {
@@ -151,6 +175,12 @@ func (c DownloadProduct) Execute(args []string) error {
 	}
 
 	return c.writeOutputFile(productFileName, stemcellFileName, stemcell.Version)
+}
+
+func (c DownloadProduct) parses3Config() (S3Configuration, error) {
+	var config S3Configuration
+	err := yaml.UnmarshalStrict([]byte(c.Options.S3), &config)
+	return config, err
 }
 
 func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileName string, stemcellVersion string) error {

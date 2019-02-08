@@ -20,10 +20,12 @@ import (
 
 var _ = Describe("DownloadProduct", func() {
 	var (
+		callCount int
 		command              commands.DownloadProduct
 		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
+		fakeStower           mockStower
 		fakeWriter           *gbytes.Buffer
 		environFunc          func() []string
 		tempDir              string
@@ -35,14 +37,16 @@ var _ = Describe("DownloadProduct", func() {
 	}
 
 	BeforeEach(func() {
+		callCount = 0
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
+		fakeStower = newMockStower([]mockItem{}, &callCount)
 		environFunc = func() []string { return nil }
 		fakeWriter = gbytes.NewBuffer()
 	})
 
 	JustBeforeEach(func() {
-		command = commands.NewDownloadProduct(environFunc, logger, fakeWriter, fakePivnetFactory)
+		command = commands.NewDownloadProduct(environFunc, logger, fakeWriter, fakePivnetFactory, fakeStower)
 	})
 
 	Context("when the flags are set correctly", func() {
@@ -80,30 +84,32 @@ var _ = Describe("DownloadProduct", func() {
 			err = command.Execute(commandArgs)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(fakePivnetDownloader.ReleasesForProductSlugCallCount()).To(Equal(0))
 			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
-			Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
-			Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
+			Expect(*fakeStower.dialCallCount).To(Equal(0))
+		})
 
-			slug, version := fakePivnetDownloader.ReleaseForVersionArgsForCall(0)
-			Expect(slug).To(Equal("elastic-runtime"))
-			Expect(version).To(Equal("2.0.0"))
+		It("downloads a product from s3 given the blobstore flag", func() {
+			commandArgs = []string{
+				"--pivnet-api-token", "token",
+				"--pivnet-file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--output-directory", tempDir,
+				"--blobstore", "s3",
+				"--s3-config", `
+bucket: bucket
+access-key-id: access-key-id
+secret-access-key: secret-access-key
+region-name: region-name
+endpoint: endpoint
+`,
+			}
 
-			slug, releaseID := fakePivnetDownloader.ProductFilesForReleaseArgsForCall(0)
-			Expect(slug).To(Equal("elastic-runtime"))
-			Expect(releaseID).To(Equal(12345))
+			command.Execute(commandArgs)
 
-			file, slug, releaseID, productFileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
-			Expect(file.Name()).To(Equal(path.Join(tempDir, "cf-2.0-build.1.pivotal")))
-			Expect(slug).To(Equal("elastic-runtime"))
-			Expect(releaseID).To(Equal(12345))
-			Expect(productFileID).To(Equal(54321))
+			Expect(*fakeStower.dialCallCount).Should(BeNumerically(">", 0))
+			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
 
-			fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
-			fileContent, err := ioutil.ReadFile(fileName)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(fileName).To(BeAnExistingFile())
-			Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
 		})
 
 		Context("when the version is given as a regex", func() {
@@ -513,7 +519,7 @@ output-directory: %s
 		Context("when a required flag is not provided", func() {
 			It("returns an error", func() {
 				err = command.Execute([]string{})
-				Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--pivnet-api-token\""))
+				Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--output-directory\""))
 			})
 		})
 
