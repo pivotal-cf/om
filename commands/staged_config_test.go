@@ -419,6 +419,36 @@ errand-config:
 		})
 	})
 
+	When("an arbitrarily long non-selector property path is present", func() {
+		It("preserves that path", func() {
+			fakeService := &fakes.StagedConfigService{}
+			fakeService.GetStagedProductPropertiesReturns(
+				map[string]api.ResponseProperty{
+					".properties.rds_mysql_plans[1].CreateDBInstance_EngineVersion.asdf": {
+						Value:        "some-value",
+						Configurable: true,
+					},
+				}, nil)
+
+			command := commands.NewStagedConfig(fakeService, logger)
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			output := logger.PrintlnArgsForCall(0)
+			manifest := `
+product-name: some-product
+product-properties:
+  .properties.rds_mysql_plans[1].CreateDBInstance_EngineVersion.asdf:
+    value: "some-value"
+`
+			Expect(output).To(ContainElement(MatchYAML(manifest)))
+
+		})
+	})
+
 	When("a selector is present", func() {
 		stagedConfigTemplate := `---
 product-name: some-product
