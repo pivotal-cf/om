@@ -103,8 +103,8 @@ var _ = Describe("ProgressClient", func() {
 
 			By("writing to the live log writer", func() {
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 3, 1))
-				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("50ms elapsed"))
-				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("100ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("ms elapsed"))
 			})
 
 			By("flushing the live log writer", func() {
@@ -173,8 +173,8 @@ var _ = Describe("ProgressClient", func() {
 
 				Expect(liveWriter.StartCallCount()).To(Equal(1))
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
-				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("20ms elapsed"))
-				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("40ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(0))).To(ContainSubstring("ms elapsed"))
+				Expect(string(liveWriter.WriteArgsForCall(1))).To(ContainSubstring("ms elapsed"))
 				Expect(liveWriter.StopCallCount()).To(Equal(1))
 			})
 		})
