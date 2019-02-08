@@ -4,15 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"github.com/graymeta/stow"
+	"github.com/graymeta/stow/s3"
 	_ "github.com/graymeta/stow/s3"
 	"gopkg.in/go-playground/validator.v9"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
-
 
 //go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . Config
 type Config interface {
@@ -26,19 +27,18 @@ type Stower interface {
 }
 
 type S3Configuration struct {
-	Bucket              string `yaml:"bucket" validate:"required"`
-	AccessKeyID         string `yaml:"access-key-id" validate:"required"`
-	SecretAccessKey     string `yaml:"secret-access-key" validate:"required"`
-	RegionName          string `yaml:"region-name" validate:"required"`
-	Endpoint            string `yaml:"endpoint" validate:"required"`
-	DisableSSL          bool   `yaml:"disable-ssl"`
-	SkipSSLVerification bool   `yaml:"skip-ssl-verification"`
-	UseV2Signing        bool   `yaml:"use-v2-signing"`
+	Bucket          string `yaml:"bucket" validate:"required"`
+	AccessKeyID     string `yaml:"access-key-id" validate:"required"`
+	SecretAccessKey string `yaml:"secret-access-key" validate:"required"`
+	RegionName      string `yaml:"region-name" validate:"required"`
+	Endpoint        string `yaml:"endpoint" validate:"required"`
+	DisableSSL      bool `yaml:"disable-ssl" `
 }
 
 type S3Client struct {
 	stower Stower
-	Config S3Configuration
+	bucket string
+	Config stow.Config
 }
 
 func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
@@ -48,9 +48,19 @@ func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
 		return nil, err
 	}
 
+	disableSSL := strconv.FormatBool(config.DisableSSL)
+	stowConfig := stow.ConfigMap{
+		s3.ConfigAccessKeyID: config.AccessKeyID,
+		s3.ConfigSecretKey:   config.SecretAccessKey,
+		s3.ConfigRegion:      config.RegionName,
+		s3.ConfigEndpoint:    config.Endpoint,
+		s3.ConfigDisableSSL:  disableSSL,
+	}
+
 	return &S3Client{
 		stower: stower,
-		Config: config,
+		Config: stowConfig,
+		bucket: config.Bucket,
 	}, nil
 }
 
@@ -126,12 +136,11 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) 
 }
 
 func (s *S3Client) ListFiles() ([]string, error) {
-	config := stow.ConfigMap{}
-	location, err := s.stower.Dial("s3", config)
+	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
 		return nil, err
 	}
-	container, err := location.Container(s.Config.Bucket)
+	container, err := location.Container(s.bucket)
 	if err != nil {
 		return nil, err
 	}
@@ -153,12 +162,11 @@ func (s *S3Client) ListFiles() ([]string, error) {
 }
 
 func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, error) {
-	config := stow.ConfigMap{}
-	location, err := s.stower.Dial("s3", config)
+	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
 		return nil, err
 	}
-	container, err := location.Container(s.Config.Bucket)
+	container, err := location.Container(s.bucket)
 	if err != nil {
 		return nil, err
 	}

@@ -181,8 +181,8 @@ var _ = Describe("S3Client", func() {
 				container := mockContainer{item: item}
 				location := mockLocation{container: &container}
 				stower := mockStower{
-					location: location,
-					itemsList: []mockItem{item},
+					location:      location,
+					itemsList:     []mockItem{item},
 					dialCallCount: &callCount,
 				}
 
@@ -210,8 +210,8 @@ var _ = Describe("S3Client", func() {
 				container := mockContainer{item: item}
 				location := mockLocation{container: &container}
 				stower := mockStower{
-					location: location,
-					itemsList: []mockItem{item},
+					location:      location,
+					itemsList:     []mockItem{item},
 					dialCallCount: &callCount,
 				}
 
@@ -236,8 +236,8 @@ var _ = Describe("S3Client", func() {
 			container := mockContainer{item: item}
 			location := mockLocation{container: &container}
 			stower := mockStower{
-				location: location,
-				itemsList: []mockItem{item},
+				location:      location,
+				itemsList:     []mockItem{item},
 				dialCallCount: &callCount,
 			}
 
@@ -291,9 +291,8 @@ var _ = Describe("S3Client", func() {
 			client, err := commands.NewS3Client(stower, config)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(client.Config.DisableSSL).To(BeFalse())
-			Expect(client.Config.SkipSSLVerification).To(BeFalse())
-			Expect(client.Config.UseV2Signing).To(BeFalse())
+			expectedDisableSSL, _ := client.Config.Config("disable_ssl")
+			Expect(expectedDisableSSL).To(Equal("false"))
 		})
 	})
 
@@ -322,7 +321,7 @@ var _ = Describe("S3Client", func() {
 
 type mockStower struct {
 	itemsList      []mockItem
-	location      mockLocation
+	location       mockLocation
 	dialCallCount  *int
 	dialError      error
 	containerError error
@@ -331,7 +330,7 @@ type mockStower struct {
 
 func newMockStower(itemsList []mockItem, callCount *int) mockStower {
 	return mockStower{
-		itemsList: itemsList,
+		itemsList:     itemsList,
 		dialCallCount: callCount,
 	}
 }
