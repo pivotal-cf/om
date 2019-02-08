@@ -193,7 +193,26 @@ func (cp *ConfigureProduct) configureProperties(cfg configureProduct, productGUI
 		return nil
 	}
 
-	productProperties, err := getJSONProperties(cfg.ProductProperties)
+	productProperties := cfg.ProductProperties
+	for name, value := range productProperties {
+		switch value.(type) {
+		case map[interface{}]interface{}:
+			v := value.(map[interface{}]interface{})
+			// This is here:
+			// * the GET /properties returns the value as a field named `selected_options`.
+			// * the PUT /properties expects the filed to be named `option_value`.
+			// We are future-proofing and migrating until the issue is resolved.
+			// See for more information [#163833845]
+			if v["selected_option"] == nil && v["option_value"] != nil {
+				v["selected_option"] = v["option_value"]
+			} else if v["option_value"] == nil && v["selected_option"] != nil {
+				v["option_value"] = v["selected_option"]
+			}
+			productProperties[name] = value
+		}
+	}
+
+	productPropertiesJSON, err := getJSONProperties(cfg.ProductProperties)
 	if err != nil {
 		return err
 	}
@@ -201,7 +220,7 @@ func (cp *ConfigureProduct) configureProperties(cfg configureProduct, productGUI
 	cp.logger.Printf("setting properties")
 	err = cp.service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
 		GUID:       productGUID,
-		Properties: productProperties,
+		Properties: productPropertiesJSON,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to configure product: %s", err)

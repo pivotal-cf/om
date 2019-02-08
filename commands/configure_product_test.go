@@ -925,6 +925,11 @@ product-properties:
     value:
       identity: username
       password: example-new-password
+  .properties.selector:
+    value: "Hello World"
+    option_value: "hello"
+  .properties.another-selector:
+    selected_option: "bye"
 `
 
 const productOpsFile = `---
@@ -936,7 +941,9 @@ const productOpsFile = `---
 const productPropertiesWithOpsFileInterpolated = `{
   ".properties.something": {"value": "configure-me"},
   ".a-job.job-property": {"value": {"identity": "username", "password": "example-new-password"} },
-  ".some.property": {"value": "some-value"}
+  ".some.property": {"value": "some-value"},
+  ".properties.selector": {"value": "Hello World", "option_value": "hello", "selected_option":"hello"},
+  ".properties.another-selector": {"option_value": "bye", "selected_option":"bye"}
 }`
 
 const errandConfigFile = `---
