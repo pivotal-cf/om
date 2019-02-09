@@ -6,12 +6,13 @@ import (
 	"github.com/graymeta/stow"
 	"github.com/graymeta/stow/s3"
 	_ "github.com/graymeta/stow/s3"
+	"github.com/pivotal-cf/om/progress"
 	"gopkg.in/go-playground/validator.v9"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -30,8 +31,8 @@ type S3Configuration struct {
 	Bucket          string `yaml:"bucket" validate:"required"`
 	AccessKeyID     string `yaml:"access-key-id" validate:"required"`
 	SecretAccessKey string `yaml:"secret-access-key" validate:"required"`
-	RegionName      string `yaml:"region-name" validate:"required"`
-	Endpoint        string `yaml:"endpoint" validate:"required"`
+	RegionName      string `yaml:"region-name"`
+	Endpoint        string `yaml:"endpoint"`
 	DisableSSL      bool `yaml:"disable-ssl" `
 }
 
@@ -48,13 +49,13 @@ func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
 		return nil, err
 	}
 
-	disableSSL := strconv.FormatBool(config.DisableSSL)
+	//disableSSL := strconv.FormatBool(config.DisableSSL)
 	stowConfig := stow.ConfigMap{
 		s3.ConfigAccessKeyID: config.AccessKeyID,
 		s3.ConfigSecretKey:   config.SecretAccessKey,
-		s3.ConfigRegion:      config.RegionName,
+		s3.ConfigRegion:    config.RegionName,
 		s3.ConfigEndpoint:    config.Endpoint,
-		s3.ConfigDisableSSL:  disableSSL,
+		//s3.ConfigDisableSSL:  disableSSL,
 	}
 
 	return &S3Client{
@@ -119,12 +120,19 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 }
 
 func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
-	f, err := s3.DownloadFile(fa.Name)
+	item, size, err := s3.DownloadFile(fa.Name)
 	if err != nil {
 		return err
 	}
 
-	if _, err := io.Copy(file, f); err != nil {
+	progressBar := progress.NewBar()
+	progressBar.SetTotal64(size)
+	reader := progressBar.NewProxyReader(item)
+	log.Println("Downloading product from s3...")
+	progressBar.Start()
+	defer progressBar.Finish()
+
+	if _, err := io.Copy(file, reader); err != nil {
 		return err
 	}
 
@@ -142,6 +150,9 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	}
 	container, err := location.Container(s.bucket)
 	if err != nil {
+		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
+			return nil, errors.New("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint")
+		}
 		return nil, err
 	}
 
@@ -161,19 +172,27 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	return paths, nil
 }
 
-func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, error) {
+func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	container, err := location.Container(s.bucket)
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
+			return nil, 0, errors.New("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint")
+		}
+		return nil, 0, err
 	}
 	item, err := container.Item(filename)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return item.Open()
+	size, err := item.Size()
+	if err != nil {
+		return nil, 0,  err
+	}
+	readcloser, err := item.Open()
+	return readcloser, size, err
 }

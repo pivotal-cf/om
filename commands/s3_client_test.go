@@ -79,6 +79,29 @@ var _ = Describe("S3Client", func() {
 				"1.1.1",
 			}))
 		})
+
+		It("returns a helpful error if the InvalidSignature is returned by container", func() {
+			location := mockLocation{
+				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
+			}
+			stower := mockStower{
+				dialCallCount: &callCount,
+				location:      location,
+			}
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+
+			client, err := commands.NewS3Client(stower, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = client.GetAllProductVersions("someslug")
+			Expect(err.Error()).To(ContainSubstring("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint"))
+		})
 	})
 
 	Context("GetLatestProductFile", func() {
@@ -196,7 +219,7 @@ var _ = Describe("S3Client", func() {
 				client, err := commands.NewS3Client(stower, config)
 				Expect(err).ToNot(HaveOccurred())
 
-				readCloser, err := client.DownloadFile(file.Name())
+				readCloser, _, err := client.DownloadFile(file.Name())
 				Expect(err).ToNot(HaveOccurred())
 
 				b, err := ioutil.ReadAll(readCloser)
@@ -225,7 +248,7 @@ var _ = Describe("S3Client", func() {
 				client, err := commands.NewS3Client(stower, config)
 				Expect(err).ToNot(HaveOccurred())
 
-				_, err = client.DownloadFile(file.Name())
+				_, _, err = client.DownloadFile(file.Name())
 				Expect(err).To(HaveOccurred())
 			})
 		})
@@ -261,6 +284,32 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(Equal([]byte(fileContents)))
 		})
+
+		It("returns a helpful error if the InvalidSignature is returned by container", func() {
+			location := mockLocation{
+				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
+			}
+			stower := mockStower{
+				dialCallCount: &callCount,
+				location:      location,
+			}
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+
+			file, err := ioutil.TempFile("", "")
+			Expect(err).ToNot(HaveOccurred())
+
+			client, err := commands.NewS3Client(stower, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			Expect(err.Error()).To(ContainSubstring("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint"))
+		})
 	})
 
 	Context("Property Validation", func() {
@@ -275,8 +324,6 @@ var _ = Describe("S3Client", func() {
 			Entry("requires Bucket", "Bucket"),
 			Entry("requires AccessKeyID", "AccessKeyID"),
 			Entry("requires SecretAccessKey", "SecretAccessKey"),
-			Entry("requires RegionName", "RegionName"),
-			Entry("requires Endpoint", "Endpoint"),
 		)
 
 		It("defaults optional properties", func() {
@@ -293,6 +340,10 @@ var _ = Describe("S3Client", func() {
 
 			expectedDisableSSL, _ := client.Config.Config("disable_ssl")
 			Expect(expectedDisableSSL).To(Equal("false"))
+		})
+
+		It("returns a helpful error if neither aws 'region' or 'endpoint' is given", func() {
+			Fail("haven't implemented yet")
 		})
 	})
 
@@ -336,6 +387,7 @@ func newMockStower(itemsList []mockItem, callCount *int) mockStower {
 }
 
 func (s mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
+	println("******")
 	*s.dialCallCount++
 	if s.dialError != nil {
 		return nil, s.dialError
@@ -368,7 +420,8 @@ func (s mockStower) Walk(container stow.Container, prefix string, pageSize int, 
 
 type mockLocation struct {
 	io.Closer
-	container *mockContainer
+	container      *mockContainer
+	containerError error
 }
 
 func (m mockLocation) CreateContainer(name string) (stow.Container, error) {
@@ -378,6 +431,9 @@ func (m mockLocation) Containers(prefix string, cursor string, count int) ([]sto
 	return []stow.Container{mockContainer{}}, "", nil
 }
 func (m mockLocation) Container(id string) (stow.Container, error) {
+	if m.containerError != nil {
+		return nil, m.containerError
+	}
 	return m.container, nil
 }
 func (m mockLocation) RemoveContainer(id string) error {

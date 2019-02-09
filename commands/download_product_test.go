@@ -20,7 +20,7 @@ import (
 
 var _ = Describe("DownloadProduct", func() {
 	var (
-		callCount int
+		callCount            int
 		command              commands.DownloadProduct
 		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
@@ -179,7 +179,7 @@ endpoint: endpoint
 				Expect(releaseID).To(Equal(4))
 
 				file, slug, releaseID, productFileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
-				Expect(file.Name()).To(Equal(path.Join(tempDir, "cf-2.1-build.11.pivotal")))
+				Expect(file.Name()).To(Equal(path.Join(tempDir, "elastic-runtime-2.1.2_cf-2.1-build.11.pivotal")))
 				Expect(slug).To(Equal("elastic-runtime"))
 				Expect(releaseID).To(Equal(4))
 				Expect(productFileID).To(Equal(54321))
@@ -188,7 +188,8 @@ endpoint: endpoint
 				fileContent, err := ioutil.ReadFile(fileName)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fileName).To(BeAnExistingFile())
-				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, file.Name())))
+				prefixedFileName := path.Join(tempDir, "elastic-runtime-2.1.2_cf-2.1-build.11.pivotal")
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, prefixedFileName)))
 			})
 
 			Context("when the releases contains non-semver-compatible version", func() {
@@ -212,6 +213,38 @@ endpoint: endpoint
 					logStr, _ := logger.InfoArgsForCall(0)
 					Expect(logStr).To(Equal("could not parse version: 2.0.x"))
 				})
+			})
+		})
+
+		Context("when the file to be downloaded matches the appropriate regex already", func() {
+			BeforeEach(func() {
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+					{
+						ID:           54321,
+						AWSObjectKey: "/some-account/some-bucket/elastic-runtime-2.0.0_cf-2.0-build.1.pivotal",
+						Name:         "cf-2.0-build.1.pivotal",
+					},
+				}, nil)
+
+				commandArgs = []string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", `2.0.0`,
+					"--output-directory", tempDir,
+				}
+			})
+
+			It("does not duplicate the filename prefix in the output file or filename", func() {
+				err = command.Execute(commandArgs)
+				Expect(err).NotTo(HaveOccurred())
+
+				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+				fileContent, err := ioutil.ReadFile(fileName)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fileName).To(BeAnExistingFile())
+				prefixedFileName := path.Join(tempDir, "elastic-runtime-2.0.0_cf-2.0-build.1.pivotal")
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, prefixedFileName)))
 			})
 		})
 
@@ -322,7 +355,7 @@ endpoint: endpoint
 				Expect(version).To(Equal("97.19"))
 				Expect(str).To(Equal("stemcells-ubuntu-xenial"))
 
-				productFile, _, _, _, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
+				fakePivnetDownloader.DownloadProductFileArgsForCall(0)
 
 				stemcellFile, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
 				Expect(stemcellFile.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
@@ -334,13 +367,14 @@ endpoint: endpoint
 				fileContent, err := ioutil.ReadFile(fileName)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fileName).To(BeAnExistingFile())
+				prefixedFileName := path.Join(tempDir, "elastic-runtime-2.0.0_cf-2.0-build.1.pivotal")
 				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
 					{
 						"product_path": "%s",
 						"product_slug": "elastic-runtime",
 						"stemcell_path": "%s",
 						"stemcell_version": "97.19"
-					}`, productFile.Name(), stemcellFile.Name())))
+					}`, prefixedFileName, stemcellFile.Name())))
 			})
 
 			Context("when the product is not a tile and download-stemcell flag is set", func() {
@@ -381,7 +415,7 @@ endpoint: endpoint
 
 		Context("when the file is already downloaded", func() {
 			BeforeEach(func() {
-				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
+				filePath := path.Join(tempDir, "elastic-runtime-2.0.0_cf-2.0-build.1.pivotal")
 				file, err := os.Create(filePath)
 				Expect(err).NotTo(HaveOccurred())
 				_, err = file.WriteString("something-not-important")
