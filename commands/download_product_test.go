@@ -216,38 +216,6 @@ endpoint: endpoint
 			})
 		})
 
-		Context("when the file to be downloaded matches the appropriate regex already", func() {
-			BeforeEach(func() {
-				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
-					{
-						ID:           54321,
-						AWSObjectKey: "/some-account/some-bucket/elastic-runtime-2.0.0_cf-2.0-build.1.pivotal",
-						Name:         "cf-2.0-build.1.pivotal",
-					},
-				}, nil)
-
-				commandArgs = []string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", `2.0.0`,
-					"--output-directory", tempDir,
-				}
-			})
-
-			It("does not duplicate the filename prefix in the output file or filename", func() {
-				err = command.Execute(commandArgs)
-				Expect(err).NotTo(HaveOccurred())
-
-				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
-				fileContent, err := ioutil.ReadFile(fileName)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fileName).To(BeAnExistingFile())
-				prefixedFileName := path.Join(tempDir, "elastic-runtime-2.0.0_cf-2.0-build.1.pivotal")
-				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, prefixedFileName)))
-			})
-		})
-
 		Context("when the globs returns multiple files", func() {
 			BeforeEach(func() {
 				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
@@ -538,6 +506,40 @@ output-directory: %s
 						Expect(err).NotTo(HaveOccurred())
 					})
 				})
+			})
+		})
+
+		Describe("managing the filename so it can be parsed from blobstore sources", func() {
+			When("the file to be downloaded already satisfies our blobstore parsability constraints", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/elastic-runtime-2.0.0_cf-2.0-build.1.pivotal",
+							Name:         "cf-2.0-build.1.pivotal",
+						},
+					}, nil)
+
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+					}
+				})
+			})
+
+			It("does not duplicate the filename prefix in the output file or filename", func() {
+				err = command.Execute(commandArgs)
+				Expect(err).NotTo(HaveOccurred())
+
+				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+				fileContent, err := ioutil.ReadFile(fileName)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fileName).To(BeAnExistingFile())
+				prefixedFileName := path.Join(tempDir, "elastic-runtime-2.0.0_cf-2.0-build.1.pivotal")
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, prefixedFileName)))
 			})
 		})
 	})
