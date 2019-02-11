@@ -1,18 +1,20 @@
 package commands_test
 
 import (
+	"net/url"
+	"time"
+
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"net/url"
-	"time"
 
-	"github.com/pivotal-cf/om/commands"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"os"
+
+	"github.com/pivotal-cf/om/commands"
+	"github.com/pkg/errors"
 )
 
 var _ = Describe("S3Client", func() {

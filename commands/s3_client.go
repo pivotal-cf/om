@@ -3,11 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/graymeta/stow"
-	"github.com/graymeta/stow/s3"
-	_ "github.com/graymeta/stow/s3"
-	"github.com/pivotal-cf/om/progress"
-	"gopkg.in/go-playground/validator.v9"
 	"io"
 	"log"
 	"os"
@@ -15,6 +10,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/graymeta/stow"
+	"github.com/graymeta/stow/s3"
+	_ "github.com/graymeta/stow/s3"
+	"github.com/pivotal-cf/om/progress"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 //go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . Config
