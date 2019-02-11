@@ -349,8 +349,18 @@ var _ = Describe("S3Client", func() {
 			Expect(retrievedDisableSSLValue).To(Equal("false"))
 		})
 
-		It("returns a helpful error if neither aws 'region' or 'endpoint' is given", func() {
-			Fail("haven't implemented yet")
+		When("neither region nor endpoint is given", func() {
+			It("returns an error that says one or the other is required", func() {
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+				}
+				stower := mockStower{itemsList: []mockItem{}}
+				_, err := commands.NewS3Client(stower, config)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
+			})
 		})
 	})
 
