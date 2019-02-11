@@ -102,6 +102,10 @@ var _ = Describe("S3Client", func() {
 			_, err = client.GetAllProductVersions("someslug")
 			Expect(err.Error()).To(ContainSubstring("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint"))
 		})
+
+		PIt("errors when zero files match the slug", func() {
+			Fail("not implemented")
+		})
 	})
 
 	Context("GetLatestProductFile", func() {
