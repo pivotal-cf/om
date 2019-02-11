@@ -112,7 +112,7 @@ endpoint: endpoint
 
 		})
 
-		Context("when the version is given as a regex", func() {
+		Context("when a valid product-version-regex is provided", func() {
 			BeforeEach(func() {
 				fakePivnetDownloader.ReleasesForProductSlugReturns([]pivnet.Release{
 					{
