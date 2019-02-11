@@ -35,7 +35,7 @@ type S3Configuration struct {
 	SecretAccessKey string `yaml:"secret-access-key" validate:"required"`
 	RegionName      string `yaml:"region-name"`
 	Endpoint        string `yaml:"endpoint"`
-	DisableSSL      bool `yaml:"disable-ssl" `
+	DisableSSL      bool   `yaml:"disable-ssl" `
 }
 
 type S3Client struct {
@@ -51,11 +51,15 @@ func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
 		return nil, err
 	}
 
+	if config.Endpoint == "" && config.RegionName == "" {
+		return nil, fmt.Errorf("no endpoint information provided in config file; please provide either region or endpoint")
+	}
+
 	disableSSL := strconv.FormatBool(config.DisableSSL)
 	stowConfig := stow.ConfigMap{
 		s3.ConfigAccessKeyID: config.AccessKeyID,
 		s3.ConfigSecretKey:   config.SecretAccessKey,
-		s3.ConfigRegion:    config.RegionName,
+		s3.ConfigRegion:      config.RegionName,
 		s3.ConfigEndpoint:    config.Endpoint,
 		s3.ConfigDisableSSL:  disableSSL,
 	}
@@ -193,7 +197,7 @@ func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
 
 	size, err := item.Size()
 	if err != nil {
-		return nil, 0,  err
+		return nil, 0, err
 	}
 	readcloser, err := item.Open()
 	return readcloser, size, err
