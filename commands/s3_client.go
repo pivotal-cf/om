@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -49,13 +50,13 @@ func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
 		return nil, err
 	}
 
-	//disableSSL := strconv.FormatBool(config.DisableSSL)
+	disableSSL := strconv.FormatBool(config.DisableSSL)
 	stowConfig := stow.ConfigMap{
 		s3.ConfigAccessKeyID: config.AccessKeyID,
 		s3.ConfigSecretKey:   config.SecretAccessKey,
 		s3.ConfigRegion:    config.RegionName,
 		s3.ConfigEndpoint:    config.Endpoint,
-		//s3.ConfigDisableSSL:  disableSSL,
+		s3.ConfigDisableSSL:  disableSSL,
 	}
 
 	return &S3Client{

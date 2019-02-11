@@ -338,8 +338,9 @@ var _ = Describe("S3Client", func() {
 			client, err := commands.NewS3Client(stower, config)
 			Expect(err).ToNot(HaveOccurred())
 
-			expectedDisableSSL, _ := client.Config.Config("disable_ssl")
-			Expect(expectedDisableSSL).To(Equal("false"))
+			retrievedDisableSSLValue, retrievedValuePresence := client.Config.Config("disable_ssl")
+			Expect(retrievedValuePresence).To(Equal(true))
+			Expect(retrievedDisableSSLValue).To(Equal("false"))
 		})
 
 		It("returns a helpful error if neither aws 'region' or 'endpoint' is given", func() {
