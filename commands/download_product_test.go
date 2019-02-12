@@ -512,7 +512,7 @@ output-directory: %s
 			})
 		})
 
-		FDescribe("managing the filename so it can be parsed from blobstore sources", func() {
+		Describe("managing the filename so it can be parsed from blobstore sources", func() {
 			When("the file to be downloaded already satisfies our blobstore parsability constraints", func() {
 				BeforeEach(func() {
 					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
