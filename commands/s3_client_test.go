@@ -81,7 +81,7 @@ var _ = Describe("S3Client", func() {
 			}))
 		})
 
-		It("returns a helpful error if the InvalidSignature is returned by container", func() {
+		It("returns an error saying S3 could not be reached if the container returns InvalidSignature", func() {
 			location := mockLocation{
 				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
 			}
@@ -101,7 +101,7 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.GetAllProductVersions("someslug")
-			Expect(err.Error()).To(ContainSubstring("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint"))
+			Expect(err.Error()).To(ContainSubstring("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint"))
 		})
 
 		When("zero files match the slug", func() {
@@ -363,7 +363,7 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
-			Expect(err.Error()).To(ContainSubstring("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint"))
+			Expect(err.Error()).To(ContainSubstring("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint"))
 		})
 	})
 

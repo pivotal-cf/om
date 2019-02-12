@@ -167,7 +167,7 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	container, err := location.Container(s.bucket)
 	if err != nil {
 		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
-			return nil, errors.New("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint")
+			return nil, errors.New("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint")
 		}
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
 	container, err := location.Container(s.bucket)
 	if err != nil {
 		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
-			return nil, 0, errors.New("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint")
+			return nil, 0, errors.New("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint")
 		}
 		return nil, 0, err
 	}
