@@ -362,6 +362,22 @@ var _ = Describe("S3Client", func() {
 				Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
 			})
 		})
+
+		When("both region and endpoint is given", func() {
+			It("returns no error", func() {
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+				stower := mockStower{itemsList: []mockItem{}}
+				_, err := commands.NewS3Client(stower, config)
+				Expect(err).ToNot(HaveOccurred())
+				// Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
+			})
+		})
 	})
 
 	It("returns an error on storer failure", func() {
