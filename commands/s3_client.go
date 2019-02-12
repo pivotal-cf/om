@@ -13,7 +13,6 @@ import (
 
 	"github.com/graymeta/stow"
 	"github.com/graymeta/stow/s3"
-	_ "github.com/graymeta/stow/s3"
 	"github.com/pivotal-cf/om/progress"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -36,6 +35,7 @@ type S3Configuration struct {
 	RegionName      string `yaml:"region-name"`
 	Endpoint        string `yaml:"endpoint"`
 	DisableSSL      bool   `yaml:"disable-ssl" `
+	EnableV2Signing bool   `yaml:"enable-v2-signing" `
 }
 
 type S3Client struct {
@@ -56,12 +56,14 @@ func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
 	}
 
 	disableSSL := strconv.FormatBool(config.DisableSSL)
+	enableV2Signing := strconv.FormatBool(config.EnableV2Signing)
 	stowConfig := stow.ConfigMap{
 		s3.ConfigAccessKeyID: config.AccessKeyID,
 		s3.ConfigSecretKey:   config.SecretAccessKey,
 		s3.ConfigRegion:      config.RegionName,
 		s3.ConfigEndpoint:    config.Endpoint,
 		s3.ConfigDisableSSL:  disableSSL,
+		s3.ConfigV2Signing:   enableV2Signing,
 	}
 
 	return &S3Client{
@@ -149,6 +151,7 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) 
 	return nil, errors.New("downloading stemcells for s3 is not supported at this time")
 }
 
+/* TODO: this should be a private method */
 func (s *S3Client) ListFiles() ([]string, error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
@@ -178,6 +181,7 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	return paths, nil
 }
 
+/* TODO: this should be a private method in DownloadProductToFile */
 func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {

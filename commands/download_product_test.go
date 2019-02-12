@@ -25,7 +25,7 @@ var _ = Describe("DownloadProduct", func() {
 		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
-		fakeStower           mockStower
+		fakeStower           *mockStower
 		fakeWriter           *gbytes.Buffer
 		environFunc          func() []string
 		tempDir              string

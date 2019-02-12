@@ -86,7 +86,7 @@ var _ = Describe("S3Client", func() {
 			location := mockLocation{
 				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
 			}
-			stower := mockStower{
+			stower := &mockStower{
 				dialCallCount: &callCount,
 				location:      location,
 			}
@@ -107,6 +107,36 @@ var _ = Describe("S3Client", func() {
 
 		PIt("errors when zero files match the slug", func() {
 			Fail("not implemented")
+		})
+
+		When("configuring s3", func() {
+			It("can support v2 signing", func() {
+				itemsList := []mockItem{
+					newMockItem("product-slug-1.0.0-alpha.preview+123.github_somefile-0.0.1.zip"),
+					newMockItem("product-slug-1.1.1_somefile-0.0.2.zip"),
+					newMockItem("another-slug-1.2.3_somefile-0.0.3.zip"),
+					newMockItem("another-slug-1.1.1_somefile-0.0.4.zip"),
+				}
+				stower := newMockStower(itemsList, &callCount)
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+					EnableV2Signing: true,
+				}
+
+				client, err := commands.NewS3Client(stower, config)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.GetAllProductVersions("product-slug")
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(stower.config).ToNot(BeNil())
+				actualValue, _ := stower.config.Config("v2_signing")
+				Expect(actualValue).To(Equal("true"))
+			})
 		})
 	})
 
@@ -209,7 +239,7 @@ var _ = Describe("S3Client", func() {
 				item.fakeFileName = file.Name()
 				container := mockContainer{item: item}
 				location := mockLocation{container: &container}
-				stower := mockStower{
+				stower := &mockStower{
 					location:      location,
 					itemsList:     []mockItem{item},
 					dialCallCount: &callCount,
@@ -238,7 +268,7 @@ var _ = Describe("S3Client", func() {
 				item.fileError = errors.New("could not open file")
 				container := mockContainer{item: item}
 				location := mockLocation{container: &container}
-				stower := mockStower{
+				stower := &mockStower{
 					location:      location,
 					itemsList:     []mockItem{item},
 					dialCallCount: &callCount,
@@ -264,7 +294,7 @@ var _ = Describe("S3Client", func() {
 			item.fakeFileName = file.Name()
 			container := mockContainer{item: item}
 			location := mockLocation{container: &container}
-			stower := mockStower{
+			stower := &mockStower{
 				location:      location,
 				itemsList:     []mockItem{item},
 				dialCallCount: &callCount,
@@ -295,7 +325,7 @@ var _ = Describe("S3Client", func() {
 			location := mockLocation{
 				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
 			}
-			stower := mockStower{
+			stower := &mockStower{
 				dialCallCount: &callCount,
 				location:      location,
 			}
@@ -320,7 +350,7 @@ var _ = Describe("S3Client", func() {
 
 	Context("Property Validation", func() {
 		DescribeTable("lists missing required properties", func(param string) {
-			stower := mockStower{}
+			stower := &mockStower{}
 			config := commands.S3Configuration{}
 			_, err := commands.NewS3Client(stower, config)
 			Expect(err).To(HaveOccurred())
@@ -340,7 +370,7 @@ var _ = Describe("S3Client", func() {
 				RegionName:      "region",
 				Endpoint:        "endpoint",
 			}
-			stower := mockStower{itemsList: []mockItem{}}
+			stower := &mockStower{itemsList: []mockItem{}}
 			client, err := commands.NewS3Client(stower, config)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -356,7 +386,7 @@ var _ = Describe("S3Client", func() {
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 				}
-				stower := mockStower{itemsList: []mockItem{}}
+				stower := &mockStower{itemsList: []mockItem{}}
 				_, err := commands.NewS3Client(stower, config)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
@@ -410,17 +440,18 @@ type mockStower struct {
 	dialError      error
 	containerError error
 	itemError      error
+	config         commands.Config
 }
 
-func newMockStower(itemsList []mockItem, callCount *int) mockStower {
-	return mockStower{
+func newMockStower(itemsList []mockItem, callCount *int) *mockStower {
+	return &mockStower{
 		itemsList:     itemsList,
 		dialCallCount: callCount,
 	}
 }
 
-func (s mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
-	println("******")
+func (s *mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
+	s.config = config
 	*s.dialCallCount++
 	if s.dialError != nil {
 		return nil, s.dialError
@@ -429,21 +460,21 @@ func (s mockStower) Dial(kind string, config commands.Config) (stow.Location, er
 	return s.location, nil
 }
 
-func (s mockStower) Container(id string) (stow.Container, error) {
+func (s *mockStower) Container(id string) (stow.Container, error) {
 	if s.containerError != nil {
 		return nil, s.containerError
 	}
 	return mockContainer{}, nil
 }
 
-func (s mockStower) Item(id string) (stow.Item, error) {
+func (s *mockStower) Item(id string) (stow.Item, error) {
 	if s.itemError != nil {
 		return nil, s.itemError
 	}
 	return mockItem{}, nil
 }
 
-func (s mockStower) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
+func (s *mockStower) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
 	for _, item := range s.itemsList {
 		fn(item, nil)
 	}
