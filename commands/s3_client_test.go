@@ -2,7 +2,6 @@ package commands_test
 
 import (
 	"net/url"
-	"time"
 
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
@@ -551,6 +550,7 @@ func (m mockContainer) Put(name string, r io.Reader, size int64, metadata map[st
 }
 
 type mockItem struct {
+	stow.Item
 	idString     string
 	fakeFileName string
 	fileError    error
@@ -580,21 +580,6 @@ func (m mockItem) ID() string {
 	return m.idString
 }
 
-func (m mockItem) Name() string {
-	return ""
-}
-func (m mockItem) URL() *url.URL {
-	return &url.URL{}
-}
 func (m mockItem) Size() (int64, error) {
 	return 0, nil
-}
-func (m mockItem) ETag() (string, error) {
-	return "", nil
-}
-func (m mockItem) LastMod() (time.Time, error) {
-	return time.Now(), nil
-}
-func (m mockItem) Metadata() (map[string]interface{}, error) {
-	return make(map[string]interface{}), nil
 }
