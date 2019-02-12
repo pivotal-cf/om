@@ -158,6 +158,8 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) 
 	return nil, errors.New("downloading stemcells for s3 is not supported at this time")
 }
 
+var invalidSignatureErrorMessage = "could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint"
+
 /* TODO: this should be a private method */
 func (s *S3Client) ListFiles() ([]string, error) {
 	location, err := s.stower.Dial("s3", s.Config)
@@ -167,7 +169,7 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	container, err := location.Container(s.bucket)
 	if err != nil {
 		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
-			return nil, errors.New("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint")
+			return nil, errors.New(invalidSignatureErrorMessage)
 		}
 		return nil, err
 	}
@@ -197,7 +199,7 @@ func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
 	container, err := location.Container(s.bucket)
 	if err != nil {
 		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
-			return nil, 0, errors.New("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint")
+			return nil, 0, errors.New(invalidSignatureErrorMessage)
 		}
 		return nil, 0, err
 	}
