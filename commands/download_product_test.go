@@ -88,28 +88,31 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(*fakeStower.dialCallCount).To(Equal(0))
 		})
 
-		It("downloads a product from s3 given the blobstore flag", func() {
-			commandArgs = []string{
-				"--pivnet-api-token", "token",
-				"--pivnet-file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--output-directory", tempDir,
-				"--blobstore", "s3",
-				"--s3-config", `
+		When("the blobstore flag is set to s3", func() {
+			BeforeEach(func() {
+				commandArgs = []string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+					"--blobstore", "s3",
+					"--s3-config", `
 bucket: bucket
 access-key-id: access-key-id
 secret-access-key: secret-access-key
 region-name: region-name
 endpoint: endpoint
 `,
-			}
+				}
+			})
 
-			command.Execute(commandArgs)
+			It("downloads the specified product from s3", func() {
+				command.Execute(commandArgs)
 
-			Expect(*fakeStower.dialCallCount).Should(BeNumerically(">", 0))
-			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
-
+				Expect(*fakeStower.dialCallCount).Should(BeNumerically(">", 0))
+				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
+			})
 		})
 
 		Context("when a valid product-version-regex is provided", func() {
