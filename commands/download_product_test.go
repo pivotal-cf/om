@@ -187,12 +187,8 @@ endpoint: endpoint
 				Expect(releaseID).To(Equal(4))
 				Expect(productFileID).To(Equal(54321))
 
-				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
-				fileContent, err := ioutil.ReadFile(fileName)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fileName).To(BeAnExistingFile())
 				prefixedFileName := path.Join(tempDir, "elastic-runtime-2.1.2_cf-2.1-build.11.pivotal")
-				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "elastic-runtime" }`, prefixedFileName)))
+				Expect(prefixedFileName).To(BeAnExistingFile())
 			})
 
 			Context("when the releases contains non-semver-compatible version", func() {
@@ -512,7 +508,7 @@ output-directory: %s
 			})
 		})
 
-		Describe("managing the filename so it can be parsed from blobstore sources", func() {
+		Describe("managing and reporting the filename written to the filesystem", func() {
 			When("the file to be downloaded already satisfies our blobstore parsability constraints", func() {
 				BeforeEach(func() {
 					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
@@ -536,12 +532,58 @@ output-directory: %s
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
-					fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
-					fileContent, err := ioutil.ReadFile(fileName)
+					prefixedFileName := path.Join(tempDir, "electric-teeth-2.0.0_cf-2.0-build.1.pivotal")
+					Expect(prefixedFileName).To(BeAnExistingFile())
+				})
+				It("writes the un-modified filname in the download-file.json", func() {
+					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(fileName).To(BeAnExistingFile())
+
+					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
 					prefixedFileName := path.Join(tempDir, "electric-teeth-2.0.0_cf-2.0-build.1.pivotal")
 					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "electric-teeth" }`, prefixedFileName)))
+				})
+			})
+
+			When("the slug comes after the version in the name of the file to be downloaded", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/2.0.0_downtown-buzz-edition-cf-2.0-build.1.pivotal",
+							Name:         "cf-2.0-build.1.pivotal",
+						},
+					}, nil)
+
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "downtown-buzz-edition",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+					}
+				})
+				It("prefixes the filename with slug and version to satisfy our parsing constraints", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					prefixedFileName := path.Join(tempDir, "downtown-buzz-edition-2.0.0_2.0.0_downtown-buzz-edition-cf-2.0-build.1.pivotal")
+					Expect(prefixedFileName).To(BeAnExistingFile())
+				})
+
+				It("writes the prefixed filename in the download-file.json", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
+					prefixedFileName := path.Join(tempDir, "downtown-buzz-edition-2.0.0_2.0.0_downtown-buzz-edition-cf-2.0-build.1.pivotal")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "downtown-buzz-edition" }`, prefixedFileName)))
 				})
 			})
 		})
