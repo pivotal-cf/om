@@ -413,7 +413,7 @@ var _ = Describe("S3Client", func() {
 		})
 
 		When("both region and endpoint is given", func() {
-			It("returns no error", func() {
+			It("does not error", func() {
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
@@ -424,7 +424,6 @@ var _ = Describe("S3Client", func() {
 				stower := &mockStower{itemsList: []mockItem{}}
 				_, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				// Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
 			})
 		})
 	})
