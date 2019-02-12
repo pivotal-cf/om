@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -39,12 +38,13 @@ type S3Configuration struct {
 }
 
 type S3Client struct {
-	stower Stower
-	bucket string
-	Config stow.Config
+	stower         Stower
+	bucket         string
+	Config         stow.Config
+	progressWriter io.Writer
 }
 
-func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
+func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer) (*S3Client, error) {
 	validate := validator.New()
 	err := validate.Struct(config)
 	if err != nil {
@@ -67,9 +67,10 @@ func NewS3Client(stower Stower, config S3Configuration) (*S3Client, error) {
 	}
 
 	return &S3Client{
-		stower: stower,
-		Config: stowConfig,
-		bucket: config.Bucket,
+		stower:         stower,
+		Config:         stowConfig,
+		bucket:         config.Bucket,
+		progressWriter: progressWriter,
 	}, nil
 }
 
@@ -135,8 +136,9 @@ func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, file *os.File) error 
 
 	progressBar := progress.NewBar()
 	progressBar.SetTotal64(size)
+	progressBar.SetOutput(s3.progressWriter)
 	reader := progressBar.NewProxyReader(item)
-	log.Println("Downloading product from s3...")
+	s3.progressWriter.Write([]byte("Downloading product from s3..."))
 	progressBar.Start()
 	defer progressBar.Finish()
 

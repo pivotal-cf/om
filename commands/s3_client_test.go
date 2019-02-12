@@ -40,7 +40,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			versions, err := client.GetAllProductVersions("product-slug")
@@ -70,7 +70,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			versions, err := client.GetAllProductVersions("product-slug")
@@ -98,7 +98,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.GetAllProductVersions("someslug")
@@ -127,7 +127,7 @@ var _ = Describe("S3Client", func() {
 					EnableV2Signing: true,
 				}
 
-				client, err := commands.NewS3Client(stower, config)
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetAllProductVersions("product-slug")
@@ -156,7 +156,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
@@ -180,7 +180,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
@@ -204,7 +204,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.GetLatestProductFile("product-slug", "1.1.1", "*.zip")
@@ -252,7 +252,7 @@ var _ = Describe("S3Client", func() {
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(stower, config)
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				readCloser, _, err := client.DownloadFile(file.Name())
@@ -281,7 +281,7 @@ var _ = Describe("S3Client", func() {
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(stower, config)
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, _, err = client.DownloadFile(file.Name())
@@ -307,7 +307,7 @@ var _ = Describe("S3Client", func() {
 				RegionName:      "region",
 				Endpoint:        "endpoint",
 			}
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			file, err := ioutil.TempFile("", "")
@@ -340,7 +340,7 @@ var _ = Describe("S3Client", func() {
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
@@ -352,7 +352,7 @@ var _ = Describe("S3Client", func() {
 		DescribeTable("lists missing required properties", func(param string) {
 			stower := &mockStower{}
 			config := commands.S3Configuration{}
-			_, err := commands.NewS3Client(stower, config)
+			_, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).To(HaveOccurred())
 
 			Expect(err.Error()).To(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param))
@@ -371,7 +371,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 			stower := &mockStower{itemsList: []mockItem{}}
-			client, err := commands.NewS3Client(stower, config)
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			retrievedDisableSSLValue, retrievedValuePresence := client.Config.Config("disable_ssl")
@@ -387,7 +387,7 @@ var _ = Describe("S3Client", func() {
 					SecretAccessKey: "secret-access-key",
 				}
 				stower := &mockStower{itemsList: []mockItem{}}
-				_, err := commands.NewS3Client(stower, config)
+				_, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
 			})
@@ -402,8 +402,8 @@ var _ = Describe("S3Client", func() {
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				stower := mockStower{itemsList: []mockItem{}}
-				_, err := commands.NewS3Client(stower, config)
+				stower := &mockStower{itemsList: []mockItem{}}
+				_, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 				// Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
 			})
@@ -424,7 +424,7 @@ var _ = Describe("S3Client", func() {
 			Endpoint:        "endpoint",
 		}
 
-		client, err := commands.NewS3Client(stower, config)
+		client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = client.GetAllProductVersions("product-slug")

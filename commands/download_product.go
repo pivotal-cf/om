@@ -107,7 +107,7 @@ func (c DownloadProduct) Execute(args []string) error {
 	switch c.Options.Blobstore {
 	case "s3":
 		config, err := c.parses3Config()
-		c.client, err = NewS3Client(c.stower, config)
+		c.client, err = NewS3Client(c.stower, config, os.Stdout)
 		if err != nil {
 			return fmt.Errorf("could not create an s3 client: %s", err)
 		}
