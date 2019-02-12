@@ -24,7 +24,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.2
-	github.com/pivotal-cf/go-pivnet v0.0.49
+	github.com/pivotal-cf/go-pivnet v0.0.50
 	github.com/pivotal-cf/jhanda v0.0.0-20180509215011-1b5ae1681a45
 	github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d
 	github.com/pivotal-cf/pivnet-cli v0.0.55

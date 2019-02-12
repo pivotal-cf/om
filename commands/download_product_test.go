@@ -2,7 +2,6 @@ package commands_test
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet"
 	"io/ioutil"
 	"os"
 	"path"
@@ -10,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+	"github.com/pivotal-cf/go-pivnet"
 	log "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/go-pivnet/logger/loggerfakes"
 	"github.com/pivotal-cf/jhanda"
