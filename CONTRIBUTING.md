@@ -53,15 +53,18 @@ No special `bin` or `scripts` dir here, we run the tests with this one-liner:
 ginkgo -r -race -p .
 ```
 
+Several integration tests require [`minio`](https://minio.io/)) to be installed for s3 testing.
+For OSX, `brew install minio/stable/minio minio/stable/mc`.
+
 ## Vendoring dependencies
 
 The project currently checks in all vendored dependencies. Our vendoring tool of choice
-at present is [dep](https://github.com/golang/dep) which is rapidly becoming the standard.
+at present is [go modules](https://github.com/golang/go/wiki/Modules) which is rapidly becoming the standard.
 
 Adding a dependency is relatively straightforward (first make sure you have the dep binary):
 
-```go
-  dep ensure -add github.com/some-user/some-dep
+```bash
+  go get github.com/some-user/some-dep
 ```
 
 Check in both the manifest changes and the file additions in the vendor directory.
