@@ -160,10 +160,10 @@ var _ = Describe("Config Parser", func() {
 				Configurable: true,
 			},
 			".properties.some-selector-with-selected-value": api.ResponseProperty{
-				Value:        "Hello World",
+				Value:          "Hello World",
 				SelectedOption: "beginner",
-				Type:         "selector",
-				Configurable: true,
+				Type:           "selector",
+				Configurable:   true,
 			},
 		}
 	})

@@ -10,7 +10,7 @@ import (
 	"os/exec"
 )
 
-var _ = FDescribe("download-product command", func() {
+var _ = Describe("download-product command", func() {
 	When("downloading from s3", func() {
 		runCommand := func(args ...string) {
 			fmt.Fprintf(GinkgoWriter, "cmd: %s", args)
