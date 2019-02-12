@@ -574,7 +574,7 @@ output-directory: %s
 			})
 		})
 
-		PContext("when neither product-version nor product-version-regex are set", func() {
+		Context("when neither product-version nor product-version-regex are set", func() {
 			It("fails with an error saying that the user must provide one or the other", func() {
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",

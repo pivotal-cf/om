@@ -104,6 +104,10 @@ func (c DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
 
+	if c.Options.ProductVersionRegex == "" && c.Options.ProductVersion == "" {
+		return fmt.Errorf("no version information provided; please provide either --product-version or --product-version-regex")
+	}
+
 	switch c.Options.Blobstore {
 	case "s3":
 		config, err := c.parses3Config()
