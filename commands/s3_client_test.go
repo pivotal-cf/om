@@ -105,8 +105,28 @@ var _ = Describe("S3Client", func() {
 			Expect(err.Error()).To(ContainSubstring("could not contact s3 with the endpoint provided. Please validate that the endpoint is a valid s3 endpoint"))
 		})
 
-		PIt("errors when zero files match the slug", func() {
-			Fail("not implemented")
+		When("zero files match the slug", func() {
+			itemsList := []mockItem{
+				newMockItem("product-slug-1.0.0-pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.348.ova"),
+			}
+
+			stower := newMockStower(itemsList, &callCount)
+
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+			}
+
+			It("gives an error message indicating the key and value that were not matched", func() {
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.GetAllProductVersions("someslug")
+				Expect(err.Error()).To(ContainSubstring("no files matching pivnet-product-slug someslug found"))
+			})
 		})
 
 		When("configuring s3", func() {

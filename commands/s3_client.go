@@ -95,6 +95,11 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 		}
 
 	}
+
+	if len(versions) == 0 {
+		return nil, fmt.Errorf("no files matching pivnet-product-slug %s found", slug)
+	}
+
 	return versions, nil
 
 }
