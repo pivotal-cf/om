@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type UpdateSSLCertificateService struct {
@@ -37,7 +37,8 @@ func (fake *UpdateSSLCertificateService) UpdateSSLCertificate(arg1 api.SSLCertif
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.updateSSLCertificateReturns.result1
+	fakeReturns := fake.updateSSLCertificateReturns
+	return fakeReturns.result1
 }
 
 func (fake *UpdateSSLCertificateService) UpdateSSLCertificateCallCount() int {
@@ -46,13 +47,22 @@ func (fake *UpdateSSLCertificateService) UpdateSSLCertificateCallCount() int {
 	return len(fake.updateSSLCertificateArgsForCall)
 }
 
+func (fake *UpdateSSLCertificateService) UpdateSSLCertificateCalls(stub func(api.SSLCertificateInput) error) {
+	fake.updateSSLCertificateMutex.Lock()
+	defer fake.updateSSLCertificateMutex.Unlock()
+	fake.UpdateSSLCertificateStub = stub
+}
+
 func (fake *UpdateSSLCertificateService) UpdateSSLCertificateArgsForCall(i int) api.SSLCertificateInput {
 	fake.updateSSLCertificateMutex.RLock()
 	defer fake.updateSSLCertificateMutex.RUnlock()
-	return fake.updateSSLCertificateArgsForCall[i].arg1
+	argsForCall := fake.updateSSLCertificateArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *UpdateSSLCertificateService) UpdateSSLCertificateReturns(result1 error) {
+	fake.updateSSLCertificateMutex.Lock()
+	defer fake.updateSSLCertificateMutex.Unlock()
 	fake.UpdateSSLCertificateStub = nil
 	fake.updateSSLCertificateReturns = struct {
 		result1 error
@@ -60,6 +70,8 @@ func (fake *UpdateSSLCertificateService) UpdateSSLCertificateReturns(result1 err
 }
 
 func (fake *UpdateSSLCertificateService) UpdateSSLCertificateReturnsOnCall(i int, result1 error) {
+	fake.updateSSLCertificateMutex.Lock()
+	defer fake.updateSSLCertificateMutex.Unlock()
 	fake.UpdateSSLCertificateStub = nil
 	if fake.updateSSLCertificateReturnsOnCall == nil {
 		fake.updateSSLCertificateReturnsOnCall = make(map[int]struct {

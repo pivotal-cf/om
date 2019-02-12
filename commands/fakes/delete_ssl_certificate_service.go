@@ -2,14 +2,15 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 )
 
 type DeleteSSLCertificateService struct {
 	DeleteSSLCertificateStub        func() error
 	deleteSSLCertificateMutex       sync.RWMutex
-	deleteSSLCertificateArgsForCall []struct{}
-	deleteSSLCertificateReturns     struct {
+	deleteSSLCertificateArgsForCall []struct {
+	}
+	deleteSSLCertificateReturns struct {
 		result1 error
 	}
 	deleteSSLCertificateReturnsOnCall map[int]struct {
@@ -22,7 +23,8 @@ type DeleteSSLCertificateService struct {
 func (fake *DeleteSSLCertificateService) DeleteSSLCertificate() error {
 	fake.deleteSSLCertificateMutex.Lock()
 	ret, specificReturn := fake.deleteSSLCertificateReturnsOnCall[len(fake.deleteSSLCertificateArgsForCall)]
-	fake.deleteSSLCertificateArgsForCall = append(fake.deleteSSLCertificateArgsForCall, struct{}{})
+	fake.deleteSSLCertificateArgsForCall = append(fake.deleteSSLCertificateArgsForCall, struct {
+	}{})
 	fake.recordInvocation("DeleteSSLCertificate", []interface{}{})
 	fake.deleteSSLCertificateMutex.Unlock()
 	if fake.DeleteSSLCertificateStub != nil {
@@ -31,7 +33,8 @@ func (fake *DeleteSSLCertificateService) DeleteSSLCertificate() error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deleteSSLCertificateReturns.result1
+	fakeReturns := fake.deleteSSLCertificateReturns
+	return fakeReturns.result1
 }
 
 func (fake *DeleteSSLCertificateService) DeleteSSLCertificateCallCount() int {
@@ -40,7 +43,15 @@ func (fake *DeleteSSLCertificateService) DeleteSSLCertificateCallCount() int {
 	return len(fake.deleteSSLCertificateArgsForCall)
 }
 
+func (fake *DeleteSSLCertificateService) DeleteSSLCertificateCalls(stub func() error) {
+	fake.deleteSSLCertificateMutex.Lock()
+	defer fake.deleteSSLCertificateMutex.Unlock()
+	fake.DeleteSSLCertificateStub = stub
+}
+
 func (fake *DeleteSSLCertificateService) DeleteSSLCertificateReturns(result1 error) {
+	fake.deleteSSLCertificateMutex.Lock()
+	defer fake.deleteSSLCertificateMutex.Unlock()
 	fake.DeleteSSLCertificateStub = nil
 	fake.deleteSSLCertificateReturns = struct {
 		result1 error
@@ -48,6 +59,8 @@ func (fake *DeleteSSLCertificateService) DeleteSSLCertificateReturns(result1 err
 }
 
 func (fake *DeleteSSLCertificateService) DeleteSSLCertificateReturnsOnCall(i int, result1 error) {
+	fake.deleteSSLCertificateMutex.Lock()
+	defer fake.deleteSSLCertificateMutex.Unlock()
 	fake.DeleteSSLCertificateStub = nil
 	if fake.deleteSSLCertificateReturnsOnCall == nil {
 		fake.deleteSSLCertificateReturnsOnCall = make(map[int]struct {
