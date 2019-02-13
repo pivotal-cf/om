@@ -154,7 +154,7 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) 
 	return nil, errors.New("downloading stemcells for s3 is not supported at this time")
 }
 
-var invalidSignatureErrorMessage = "could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint"
+var InvalidEndpointErrorMessageTemplate = "Could not reach provided endpoint: '%s': %s"
 
 /* TODO: this should be a private method */
 func (s *S3Client) ListFiles() ([]string, error) {
@@ -164,8 +164,9 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	}
 	container, err := location.Container(s.bucket)
 	if err != nil {
-		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
-			return nil, errors.New(invalidSignatureErrorMessage)
+		endpoint, _ := s.Config.Config("endpoint")
+		if endpoint != "" {
+			return nil, errors.New(fmt.Sprintf(InvalidEndpointErrorMessageTemplate, endpoint, err.Error()))
 		}
 		return nil, err
 	}
@@ -187,15 +188,16 @@ func (s *S3Client) ListFiles() ([]string, error) {
 }
 
 /* TODO: this should be a private method in DownloadProductToFile */
-func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
+func (s *S3Client) DownloadFile(filename string) (fileToWrite io.ReadCloser, fileSize int64, err error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
 		return nil, 0, err
 	}
 	container, err := location.Container(s.bucket)
 	if err != nil {
-		if strings.Contains(err.Error(), "<InvalidSignatureException>") {
-			return nil, 0, errors.New(invalidSignatureErrorMessage)
+		endpoint, _ := s.Config.Config("endpoint")
+		if endpoint != "" {
+			return nil, 0, errors.New(fmt.Sprintf(InvalidEndpointErrorMessageTemplate, endpoint, err.Error()))
 		}
 		return nil, 0, err
 	}
@@ -204,10 +206,10 @@ func (s *S3Client) DownloadFile(filename string) (io.ReadCloser, int64, error) {
 		return nil, 0, err
 	}
 
-	size, err := item.Size()
+	fileSize, err = item.Size()
 	if err != nil {
 		return nil, 0, err
 	}
-	readcloser, err := item.Open()
-	return readcloser, size, err
+	fileToWrite, err = item.Open()
+	return fileToWrite, fileSize, err
 }

@@ -81,27 +81,36 @@ var _ = Describe("S3Client", func() {
 			}))
 		})
 
-		It("returns an error saying S3 could not be reached if the container returns InvalidSignature", func() {
-			location := mockLocation{
-				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
-			}
-			stower := &mockStower{
-				dialCallCount: &callCount,
-				location:      location,
-			}
-			config := commands.S3Configuration{
-				Bucket:          "bucket",
-				AccessKeyID:     "access-key-id",
-				SecretAccessKey: "secret-access-key",
-				RegionName:      "region",
-				Endpoint:        "endpoint",
-			}
+		When("the container returns 'expected element type <Error>", func() {
+			var (
+				stower *mockStower
+				config commands.S3Configuration
+			)
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
+			BeforeEach(func() {
+				location := mockLocation{
+					containerError: errors.New("expected element type <Error> but have StowErrorType"),
+				}
+				stower = &mockStower{
+					dialCallCount: &callCount,
+					location:      location,
+				}
+				config = commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+			})
+			It("returns an error, containing endpoint information, saying S3 could not be reached", func() {
 
-			_, err = client.GetAllProductVersions("someslug")
-			Expect(err.Error()).To(ContainSubstring("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint"))
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.GetAllProductVersions("someslug")
+				Expect(err.Error()).To(ContainSubstring("Could not reach provided endpoint: 'endpoint': expected element type <Error> but have StowErrorType"))
+			})
 		})
 
 		When("zero files match the slug", func() {
@@ -232,7 +241,7 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	Context("DownloadProductToFile", func() {
+	Describe("DownloadProductToFile", func() {
 		var file *os.File
 		var fileContents = "hello world"
 
@@ -252,7 +261,7 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		Context("DownloadFile", func() {
+		Describe("DownloadFile", func() {
 			It("receives the contents of a file if the file exists", func() {
 				item := newMockItem(file.Name())
 				item.fakeFileName = file.Name()
@@ -342,7 +351,7 @@ var _ = Describe("S3Client", func() {
 
 		It("returns a helpful error if the InvalidSignature is returned by container", func() {
 			location := mockLocation{
-				containerError: errors.New("expected element type <Error> but have <InvalidSignatureException>"),
+				containerError: errors.New("expected element type <Error> but have StowErrorType"),
 			}
 			stower := &mockStower{
 				dialCallCount: &callCount,
@@ -363,7 +372,7 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
-			Expect(err.Error()).To(ContainSubstring("could not contact S3 with the endpoint provided. Please validate that the endpoint is a valid S3 endpoint"))
+			Expect(err.Error()).To(ContainSubstring("Could not reach provided endpoint: 'endpoint': expected element type <Error> but have StowErrorType"))
 		})
 	})
 
@@ -415,7 +424,7 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	It("returns an error on storer failure", func() {
+	It("returns an error on stower failure", func() {
 		dialError := errors.New("dial error")
 		itemsList := []mockItem{}
 		stower := newMockStower(itemsList, &callCount)
