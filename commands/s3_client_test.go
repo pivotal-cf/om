@@ -46,39 +46,49 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(versions).To(Equal([]string{
-				"1.0.0-alpha.preview+123.github",
+				"1.0.0",
 				"1.1.1",
 			}))
 		})
 
-		It("does not include multiple copies of the same version", func() {
-			itemsList := []mockItem{
-				newMockItem("product-slug-1.0.0-alpha.preview+123.github_somefile-0.0.1.zip"),
-				newMockItem("product-slug-1.1.1_somefile-0.0.2.zip"),
-				newMockItem("product-slug-1.1.1_someotherfile-0.0.2.zip"),
-				newMockItem("another-slug-1.2.3_somefile-0.0.3.zip"),
-				newMockItem("another-slug-1.1.1_somefile-0.0.4.zip"),
-			}
+		When("there are multiple files of the same 'version', differing only in their tag", func() {
+			var (
+				stower *mockStower
+				config commands.S3Configuration
+			)
 
-			stower := newMockStower(itemsList, &callCount)
-			config := commands.S3Configuration{
-				Bucket:          "bucket",
-				AccessKeyID:     "access-key-id",
-				SecretAccessKey: "secret-access-key",
-				RegionName:      "region",
-				Endpoint:        "endpoint",
-			}
+			BeforeEach(func() {
+				itemsList := []mockItem{
+					newMockItem("alpha.preview.github_somefile-product-slug-1.0.0+abuildtag.zip"),
+					newMockItem("alpha.preview.github_somefile-product-slug-1.0.0+otherbuildtag.zip"),
+					newMockItem("product-slug-1.1.1_somefile-0.0.2.zip"),
+					newMockItem("product-slug-1.1.1_someotherfile-0.0.2.zip"),
+					newMockItem("another-slug-1.2.3_somefile-0.0.3.zip"),
+					newMockItem("another-slug-1.1.1_somefile-0.0.4.zip"),
+				}
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
+				stower = newMockStower(itemsList, &callCount)
+				config = commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+			})
 
-			versions, err := client.GetAllProductVersions("product-slug")
-			Expect(err).ToNot(HaveOccurred())
+			It("reports only one file for the duplicate version", func() {
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
 
-			Expect(versions).To(Equal([]string{
-				"1.0.0-alpha.preview+123.github",
-				"1.1.1",
-			}))
+				versions, err := client.GetAllProductVersions("product-slug")
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(versions).To(Equal([]string{
+					"1.0.0",
+					"1.1.1",
+				}))
+			})
 		})
 
 		When("the container returns 'expected element type <Error>", func() {

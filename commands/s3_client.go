@@ -76,14 +76,21 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 		return nil, err
 	}
 
-	validFile := regexp.MustCompile(fmt.Sprintf(`^%s-(.*?)_`, slug))
+	productFileCompiledRegex := regexp.MustCompile(fmt.Sprintf(`%s\-%s`, slug, Semver2Regex))
 
 	var versions []string
 	versionFound := make(map[string]bool)
-	for _, f := range files {
-		x := validFile.FindStringSubmatch(f)
-		if len(x) == 2 {
-			version := x[1]
+	for _, fileName := range files {
+		match := productFileCompiledRegex.FindStringSubmatch(fileName)
+		if len(match) > MatchGroupCountForMainSemverVersion {
+			namedResultsOfCaptureGroups := make(map[string]string)
+			for i, name := range productFileCompiledRegex.SubexpNames() {
+				if i != 0 && name != "" {
+					namedResultsOfCaptureGroups[name] = match[i]
+				}
+			}
+
+			version := fmt.Sprintf("%s.%s.%s", namedResultsOfCaptureGroups["major"], namedResultsOfCaptureGroups["minor"], namedResultsOfCaptureGroups["patch"])
 			if !versionFound[version] {
 				versions = append(versions, version)
 				versionFound[version] = true
@@ -221,3 +228,6 @@ func (s *S3Client) listFiles() ([]string, error) {
 
 	return paths, nil
 }
+
+const Semver2Regex = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
+const MatchGroupCountForMainSemverVersion = 4
