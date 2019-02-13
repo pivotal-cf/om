@@ -21,7 +21,7 @@ run:
     pushd "om" > /dev/null
       go mod download
 
-      ginkgo \
+      CGO_ENABLED=1 ginkgo \
         -r \
         -p \
         -race \
