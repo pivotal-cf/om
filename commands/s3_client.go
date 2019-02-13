@@ -129,25 +129,61 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 	return &FileArtifact{Name: artifacts[0]}, nil
 }
 
-func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
-	item, size, err := s3.downloadFile(fa.Name)
+func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, destinationFile *os.File) error {
+	blobReader, size, err := s3.initializeBlobReader(fa.Name)
 	if err != nil {
 		return err
 	}
 
-	progressBar := progress.NewBar()
-	progressBar.SetTotal64(size)
-	progressBar.SetOutput(s3.progressWriter)
-	reader := progressBar.NewProxyReader(item)
-	s3.progressWriter.Write([]byte("Downloading product from s3..."))
-	progressBar.Start()
+	progressBar, wrappedBlobReader := s3.startProgressBar(size, blobReader)
 	defer progressBar.Finish()
 
-	if _, err := io.Copy(file, reader); err != nil {
+	if err = s3.streamBufferToFile(destinationFile, wrappedBlobReader); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *S3Client) initializeBlobReader(filename string) (blobToRead io.ReadCloser, fileSize int64, err error) {
+	location, err := s.stower.Dial("s3", s.Config)
+	if err != nil {
+		return nil, 0, err
+	}
+	container, err := location.Container(s.bucket)
+	if err != nil {
+		endpoint, _ := s.Config.Config("endpoint")
+		if endpoint != "" {
+			return nil, 0, errors.New(fmt.Sprintf(InvalidEndpointErrorMessageTemplate, endpoint, err.Error()))
+		}
+		return nil, 0, err
+	}
+	item, err := container.Item(filename)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	fileSize, err = item.Size()
+	if err != nil {
+		return nil, 0, err
+	}
+	blobToRead, err = item.Open()
+	return blobToRead, fileSize, err
+}
+
+func (s3 S3Client) startProgressBar(size int64, item io.Reader) (progressBar *progress.Bar, reader io.Reader) {
+	progressBar = progress.NewBar()
+	progressBar.SetTotal64(size)
+	progressBar.SetOutput(s3.progressWriter)
+	reader = progressBar.NewProxyReader(item)
+	_, _ = s3.progressWriter.Write([]byte("Downloading product from s3..."))
+	progressBar.Start()
+	return progressBar, reader
+}
+
+func (s3 S3Client) streamBufferToFile(destinationFile *os.File, wrappedBlobReader io.Reader) error {
+	_, err := io.Copy(destinationFile, wrappedBlobReader)
+	return err
 }
 
 func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) {
@@ -184,30 +220,4 @@ func (s *S3Client) listFiles() ([]string, error) {
 	}
 
 	return paths, nil
-}
-
-func (s *S3Client) downloadFile(filename string) (fileToWrite io.ReadCloser, fileSize int64, err error) {
-	location, err := s.stower.Dial("s3", s.Config)
-	if err != nil {
-		return nil, 0, err
-	}
-	container, err := location.Container(s.bucket)
-	if err != nil {
-		endpoint, _ := s.Config.Config("endpoint")
-		if endpoint != "" {
-			return nil, 0, errors.New(fmt.Sprintf(InvalidEndpointErrorMessageTemplate, endpoint, err.Error()))
-		}
-		return nil, 0, err
-	}
-	item, err := container.Item(filename)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	fileSize, err = item.Size()
-	if err != nil {
-		return nil, 0, err
-	}
-	fileToWrite, err = item.Open()
-	return fileToWrite, fileSize, err
 }
