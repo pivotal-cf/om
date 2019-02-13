@@ -16,6 +16,7 @@ var _ = Describe("StagedProducts", func() {
 	var (
 		client  *fakes.HttpClient
 		service api.Api
+		redact  string
 	)
 
 	BeforeEach(func() {
@@ -28,6 +29,8 @@ var _ = Describe("StagedProducts", func() {
 	Describe("GetDirectorProperties", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				redact = req.URL.Query().Get("redact")
+
 				var resp *http.Response
 				switch req.URL.Path {
 				case "/api/v0/staged/director/properties":
@@ -95,8 +98,9 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		It("returns all the special properties for the Director", func() {
-			config, err := service.GetStagedDirectorProperties()
+			config, err := service.GetStagedDirectorProperties(true)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(redact).To(Equal("true"))
 
 			Expect(config["iaas_configuration"]).To(Equal(map[string]interface{}{
 				"vcenter_host":                 "10.10.10.0",
@@ -160,6 +164,12 @@ var _ = Describe("StagedProducts", func() {
 			))
 		})
 
+		It("disables redaction", func() {
+			_, err := service.GetStagedDirectorProperties(false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(redact).To(Equal("false"))
+		})
+
 		Context("failure cases", func() {
 			Context("when the properties request returns an error", func() {
 				BeforeEach(func() {
@@ -173,8 +183,8 @@ var _ = Describe("StagedProducts", func() {
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.GetStagedDirectorProperties()
-					Expect(err).To(MatchError(`could not send api request to GET /api/v0/staged/director/properties: some-error`))
+					_, err := service.GetStagedDirectorProperties(false)
+					Expect(err).To(MatchError(`could not send api request to GET /api/v0/staged/director/properties?redact=false: some-error`))
 				})
 			})
 
@@ -193,7 +203,7 @@ var _ = Describe("StagedProducts", func() {
 					}
 				})
 				It("returns an error", func() {
-					_, err := service.GetStagedDirectorProperties()
+					_, err := service.GetStagedDirectorProperties(false)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
@@ -214,7 +224,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := service.GetStagedDirectorProperties()
+					_, err := service.GetStagedDirectorProperties(false)
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
 			})

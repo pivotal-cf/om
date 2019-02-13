@@ -16,12 +16,13 @@ type StagedDirectorConfig struct {
 	Options struct {
 		IncludeCredentials  bool `long:"include-credentials" short:"c" description:"include credentials. note: requires product to have been deployed"`
 		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"replace obscured credentials to interpolatable placeholders"`
+		NoRedact            bool `long:"no-redact" description:"Redact IaaS values from director configuration"`
 	}
 }
 
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
 type stagedDirectorConfigService interface {
-	GetStagedDirectorProperties() (map[string]map[string]interface{}, error)
+	GetStagedDirectorProperties(bool) (map[string]map[string]interface{}, error)
 	GetStagedDirectorAvailabilityZones() (api.AvailabilityZonesOutput, error)
 	GetStagedDirectorNetworks() (api.NetworksConfigurationOutput, error)
 
@@ -66,7 +67,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
-	properties, err := ec.service.GetStagedDirectorProperties()
+	properties, err := ec.service.GetStagedDirectorProperties(!ec.Options.NoRedact)
 	if err != nil {
 		return err
 	}
