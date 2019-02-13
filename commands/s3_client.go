@@ -71,7 +71,7 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 }
 
 func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
-	files, err := s3.ListFiles()
+	files, err := s3.listFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 }
 
 func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifact, error) {
-	files, err := s3.ListFiles()
+	files, err := s3.listFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -156,8 +156,7 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) 
 
 var InvalidEndpointErrorMessageTemplate = "Could not reach provided endpoint: '%s': %s"
 
-/* TODO: this should be a private method */
-func (s *S3Client) ListFiles() ([]string, error) {
+func (s *S3Client) listFiles() ([]string, error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
 		return nil, err
@@ -187,7 +186,6 @@ func (s *S3Client) ListFiles() ([]string, error) {
 	return paths, nil
 }
 
-/* TODO: this should be a private method in DownloadProductToFile */
 func (s *S3Client) downloadFile(filename string) (fileToWrite io.ReadCloser, fileSize int64, err error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
