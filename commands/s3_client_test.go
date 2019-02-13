@@ -261,60 +261,29 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		Describe("DownloadFile", func() {
-			It("receives the contents of a file if the file exists", func() {
-				item := newMockItem(file.Name())
-				item.fakeFileName = file.Name()
-				container := mockContainer{item: item}
-				location := mockLocation{container: &container}
-				stower := &mockStower{
-					location:      location,
-					itemsList:     []mockItem{item},
-					dialCallCount: &callCount,
-				}
+		It("errors when cannot open file", func() {
+			item := newMockItem(file.Name())
+			item.fileError = errors.New("could not open file")
+			container := mockContainer{item: item}
+			location := mockLocation{container: &container}
+			stower := &mockStower{
+				location:      location,
+				itemsList:     []mockItem{item},
+				dialCallCount: &callCount,
+			}
 
-				config := commands.S3Configuration{
-					Bucket:          "bucket",
-					AccessKeyID:     "access-key-id",
-					SecretAccessKey: "secret-access-key",
-					RegionName:      "region",
-					Endpoint:        "endpoint",
-				}
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
 
-				readCloser, _, err := client.DownloadFile(file.Name())
-				Expect(err).ToNot(HaveOccurred())
-
-				b, err := ioutil.ReadAll(readCloser)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(b)).To(Equal(fileContents))
-			})
-
-			It("errors when cannot open file", func() {
-				item := newMockItem(file.Name())
-				item.fileError = errors.New("could not open file")
-				container := mockContainer{item: item}
-				location := mockLocation{container: &container}
-				stower := &mockStower{
-					location:      location,
-					itemsList:     []mockItem{item},
-					dialCallCount: &callCount,
-				}
-
-				config := commands.S3Configuration{
-					Bucket:          "bucket",
-					AccessKeyID:     "access-key-id",
-					SecretAccessKey: "secret-access-key",
-					RegionName:      "region",
-					Endpoint:        "endpoint",
-				}
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
-
-				_, _, err = client.DownloadFile(file.Name())
-				Expect(err).To(HaveOccurred())
-			})
+			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			Expect(err).To(HaveOccurred())
 		})
 
 		It("writes to a file when the file exists", func() {
@@ -426,7 +395,7 @@ var _ = Describe("S3Client", func() {
 
 	It("returns an error on stower failure", func() {
 		dialError := errors.New("dial error")
-		itemsList := []mockItem{}
+		itemsList := []mockItem{{}}
 		stower := newMockStower(itemsList, &callCount)
 		stower.dialError = dialError
 

@@ -130,7 +130,7 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 }
 
 func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
-	item, size, err := s3.DownloadFile(fa.Name)
+	item, size, err := s3.downloadFile(fa.Name)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (s *S3Client) ListFiles() ([]string, error) {
 }
 
 /* TODO: this should be a private method in DownloadProductToFile */
-func (s *S3Client) DownloadFile(filename string) (fileToWrite io.ReadCloser, fileSize int64, err error) {
+func (s *S3Client) downloadFile(filename string) (fileToWrite io.ReadCloser, fileSize int64, err error) {
 	location, err := s.stower.Dial("s3", s.Config)
 	if err != nil {
 		return nil, 0, err
