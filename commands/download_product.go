@@ -140,13 +140,17 @@ func (c DownloadProduct) Execute(args []string) error {
 
 			v, err := version.NewVersion(productVersion)
 			if err != nil {
-				c.logger.Info(fmt.Sprintf("could not parse version: %s", productVersion))
+				c.logger.Info(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
 				continue
 			}
 			versions = append(versions, v)
 		}
 
 		sort.Sort(versions)
+
+		if len(versions) == 0 {
+			return fmt.Errorf("no valid versions found for product '%s'", c.Options.PivnetProductSlug)
+		}
 
 		productVersion = versions[len(versions)-1].Original()
 	}
@@ -213,8 +217,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		return "", nil, err
 	}
 
-	expectedFileFormat := regexp.MustCompile(fmt.Sprintf(`^%s-(.*?)_`, slug))
-
+	expectedFileFormat := regexp.MustCompile(fmt.Sprintf(`%s\-%s`, slug, Semver2Regex))
 	var productFilePath string
 	if expectedFileFormat.MatchString(path.Base(fileArtifact.Name)) {
 		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))

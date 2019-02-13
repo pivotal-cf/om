@@ -210,7 +210,7 @@ endpoint: endpoint
 					Expect(err).NotTo(HaveOccurred())
 
 					logStr, _ := logger.InfoArgsForCall(0)
-					Expect(logStr).To(Equal("could not parse version: 2.0.x"))
+					Expect(logStr).To(Equal("warning: could not parse semver version from: 2.0.x"))
 				})
 			})
 		})
@@ -514,7 +514,7 @@ output-directory: %s
 					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
 						{
 							ID:           54321,
-							AWSObjectKey: "/some-account/some-bucket/electric-teeth-2.0.0_cf-2.0-build.1.pivotal",
+							AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1-electric-teeth-2.0.0.pivotal",
 							Name:         "cf-2.0-build.1.pivotal",
 						},
 					}, nil)
@@ -532,7 +532,7 @@ output-directory: %s
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
-					prefixedFileName := path.Join(tempDir, "electric-teeth-2.0.0_cf-2.0-build.1.pivotal")
+					prefixedFileName := path.Join(tempDir, "cf-2.0-build.1-electric-teeth-2.0.0.pivotal")
 					Expect(prefixedFileName).To(BeAnExistingFile())
 				})
 				It("writes the un-modified filname in the download-file.json", func() {
@@ -543,7 +543,7 @@ output-directory: %s
 					fileContent, err := ioutil.ReadFile(downloadReportFileName)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
-					prefixedFileName := path.Join(tempDir, "electric-teeth-2.0.0_cf-2.0-build.1.pivotal")
+					prefixedFileName := path.Join(tempDir, "cf-2.0-build.1-electric-teeth-2.0.0.pivotal")
 					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "electric-teeth" }`, prefixedFileName)))
 				})
 			})
@@ -566,6 +566,7 @@ output-directory: %s
 						"--output-directory", tempDir,
 					}
 				})
+
 				It("prefixes the filename with slug and version to satisfy our parsing constraints", func() {
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
@@ -584,6 +585,34 @@ output-directory: %s
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					prefixedFileName := path.Join(tempDir, "downtown-buzz-edition-2.0.0_2.0.0_downtown-buzz-edition-cf-2.0-build.1.pivotal")
 					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "downtown-buzz-edition" }`, prefixedFileName)))
+				})
+			})
+
+			When("the slug does not exist in the name of the file to be downloaded", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/2.0.0-cf-2.0-build.1.pivotal",
+							Name:         "cf-2.0-build.1.pivotal",
+						},
+					}, nil)
+
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "mayhem-crew",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+					}
+				})
+
+				It("prefixes the filename with slug and version to satisfy our parsing constraints", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					prefixedFileName := path.Join(tempDir, "mayhem-crew-2.0.0_2.0.0-cf-2.0-build.1.pivotal")
+					Expect(prefixedFileName).To(BeAnExistingFile())
 				})
 			})
 		})
