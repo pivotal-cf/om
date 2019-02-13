@@ -367,8 +367,8 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	Context("Property Validation", func() {
-		DescribeTable("lists missing required properties", func(param string) {
+	Describe("property validation and defaults", func() {
+		DescribeTable("required property validation", func(param string) {
 			stower := &mockStower{}
 			config := commands.S3Configuration{}
 			_, err := commands.NewS3Client(stower, config, GinkgoWriter)
@@ -379,6 +379,7 @@ var _ = Describe("S3Client", func() {
 			Entry("requires Bucket", "Bucket"),
 			Entry("requires AccessKeyID", "AccessKeyID"),
 			Entry("requires SecretAccessKey", "SecretAccessKey"),
+			Entry("requires RegionName", "RegionName"),
 		)
 
 		It("defaults optional properties", func() {
@@ -398,27 +399,13 @@ var _ = Describe("S3Client", func() {
 			Expect(retrievedDisableSSLValue).To(Equal("false"))
 		})
 
-		When("neither region nor endpoint is given", func() {
-			It("returns an error that says one or the other is required", func() {
+		When("both region and endpoint are given", func() {
+			It("returns an error if they do not match", func() {
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
-				}
-				stower := &mockStower{itemsList: []mockItem{}}
-				_, err := commands.NewS3Client(stower, config, GinkgoWriter)
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("no endpoint information provided in config file; please provide either region or endpoint"))
-			})
-		})
-
-		When("both region and endpoint is given", func() {
-			It("does not error", func() {
-				config := commands.S3Configuration{
-					Bucket:          "bucket",
-					AccessKeyID:     "access-key-id",
-					SecretAccessKey: "secret-access-key",
-					RegionName:      "region",
+					RegionName:      "wrongRegion",
 					Endpoint:        "endpoint",
 				}
 				stower := &mockStower{itemsList: []mockItem{}}

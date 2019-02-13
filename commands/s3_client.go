@@ -31,7 +31,7 @@ type S3Configuration struct {
 	Bucket          string `yaml:"bucket" validate:"required"`
 	AccessKeyID     string `yaml:"access-key-id" validate:"required"`
 	SecretAccessKey string `yaml:"secret-access-key" validate:"required"`
-	RegionName      string `yaml:"region-name"`
+	RegionName      string `yaml:"region-name" validate:"required"`
 	Endpoint        string `yaml:"endpoint"`
 	DisableSSL      bool   `yaml:"disable-ssl" `
 	EnableV2Signing bool   `yaml:"enable-v2-signing" `
@@ -49,10 +49,6 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 	err := validate.Struct(config)
 	if err != nil {
 		return nil, err
-	}
-
-	if config.Endpoint == "" && config.RegionName == "" {
-		return nil, fmt.Errorf("no endpoint information provided in config file; please provide either region or endpoint")
 	}
 
 	disableSSL := strconv.FormatBool(config.DisableSSL)
