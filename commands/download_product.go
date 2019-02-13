@@ -58,7 +58,7 @@ type DownloadProduct struct {
 	pivnetFactory  PivnetFactory
 	stower         Stower
 	filter         *filter.Filter
-	client         ProductDownloader
+	downloadClient ProductDownloader
 	Options        struct {
 		Blobstore           string   `long:"blobstore"             short:"b"  description:"specify an blobstore to use if not downloading from pivnet"`
 		ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
@@ -111,13 +111,13 @@ func (c DownloadProduct) Execute(args []string) error {
 	switch c.Options.Blobstore {
 	case "s3":
 		config, err := c.parses3Config()
-		c.client, err = NewS3Client(c.stower, config, os.Stdout)
+		c.downloadClient, err = NewS3Client(c.stower, config, os.Stdout)
 		if err != nil {
 			return fmt.Errorf("could not create an s3 client: %s", err)
 		}
 	default:
 		filter := filter.NewFilter(c.logger)
-		c.client = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
+		c.downloadClient = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
 	}
 
 	productVersion := c.Options.ProductVersion
@@ -127,7 +127,7 @@ func (c DownloadProduct) Execute(args []string) error {
 			return fmt.Errorf("could not compile regex: %s: %s", c.Options.ProductVersionRegex, err)
 		}
 
-		productVersions, err := c.client.GetAllProductVersions(c.Options.PivnetProductSlug)
+		productVersions, err := c.downloadClient.GetAllProductVersions(c.Options.PivnetProductSlug)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ func (c DownloadProduct) Execute(args []string) error {
 		return nil
 	}
 
-	stemcell, err := c.client.DownloadProductStemcell(productFileArtifact)
+	stemcell, err := c.downloadClient.DownloadProductStemcell(productFileArtifact)
 	if err != nil {
 		return fmt.Errorf("could not information about stemcell: %s", err)
 	}
@@ -212,7 +212,7 @@ func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileNam
 }
 
 func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string) (string, *FileArtifact, error) {
-	fileArtifact, err := c.client.GetLatestProductFile(slug, version, glob)
+	fileArtifact, err := c.downloadClient.GetLatestProductFile(slug, version, glob)
 	if err != nil {
 		return "", nil, err
 	}
@@ -241,7 +241,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 	defer productFile.Close()
 
-	return productFilePath, fileArtifact, c.client.DownloadProductToFile(fileArtifact, productFile)
+	return productFilePath, fileArtifact, c.downloadClient.DownloadProductToFile(fileArtifact, productFile)
 }
 
 func checkFileExists(path, expectedSum string) (bool, error) {
