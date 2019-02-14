@@ -1,3 +1,13 @@
+## 0.52.0
+### Features
+* add support for the `selected_option` field when calling `staged-config` to have better support for selectors.
+  * this support also extends to `configure-product`, which will accept both `selected_option` and `option_value` as
+  the machine readable value. 
+* `download-product` now has support for downloading from an external s3 compatible blobstore using the `--blobstore s3`
+  flag. 
+* `staged-director-config` now supports a `no-redact` flag that will return all of the credentials from an Ops Manager
+  director, if the user has proper permissions to do so. It is recommended to use the admin user. 
+
 ## 0.51.0 
 
 ### Features
