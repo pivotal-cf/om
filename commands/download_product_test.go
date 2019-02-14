@@ -97,13 +97,11 @@ var _ = Describe("DownloadProduct", func() {
 					"--product-version", "2.0.0",
 					"--output-directory", tempDir,
 					"--blobstore", "s3",
-					"--s3-config", `
-bucket: bucket
-access-key-id: access-key-id
-secret-access-key: secret-access-key
-region-name: region-name
-endpoint: endpoint
-`,
+					"--s3-bucket", "bucket",
+					"--s3-access-key-id", "access-key-id",
+					"--s3-secret-access-key", "secret-access-key",
+					"--s3-region-name", "region-name",
+					"--s3-endpoint", "endpoint",
 				}
 			})
 

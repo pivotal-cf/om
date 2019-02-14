@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/graymeta/stow"
-	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 	"path"
@@ -62,17 +61,23 @@ type DownloadProduct struct {
 	Options        struct {
 		Blobstore           string   `long:"blobstore"             short:"b"  description:"specify an blobstore to use if not downloading from pivnet"`
 		ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-		OutputDir           string   `long:"output-directory"      short:"o"  description:"Directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"Glob to match files within Pivotal Network product to be downloaded." required:"true"`
-		PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p"  description:"Path to product" required:"true"`
+		OutputDir           string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
+		PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p"  description:"path to product" required:"true"`
 		PivnetToken         string   `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." required:"true"`
 		ProductVersion      string   `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
-		ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"Regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
-		S3                  string   `long:"s3-config"                        description:"YAML configuration for using an s3 client.\n\t\t\t\t\t\t  Required fields: bucket, access-key-id, secret-access-key, {region-name OR endpoint}.\n\t\t\t\t\t\t  Optional: disable-ssl"`
-		Stemcell            bool     `long:"download-stemcell"                description:"No-op for backwards compatibility"`
-		StemcellIaas        string   `long:"stemcell-iaas"                    description:"Download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
-		VarsEnv             []string `long:"vars-env"                         description:"Load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile            []string `long:"vars-file"             short:"l"  description:"Load variables from a YAML file"`
+		ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+		S3Bucket            string   `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
+		S3AccessKeyID       string   `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
+		S3SecretAccessKey   string   `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
+		S3RegionName        string   `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
+		S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
+		S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting  the s3 compatible blobstore"`
+		S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
+		Stemcell            bool     `long:"download-stemcell"                cription:"no-op for backwards compatibility"`
+		StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+		VarsEnv             []string `long:"vars-env"                         description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile            []string `long:"vars-file"             short:"l"  description:"load variables from a YAML file"`
 	}
 }
 
@@ -110,7 +115,7 @@ func (c DownloadProduct) Execute(args []string) error {
 
 	switch c.Options.Blobstore {
 	case "s3":
-		config, err := c.parses3Config()
+		config := c.createS3Config()
 		c.downloadClient, err = NewS3Client(c.stower, config, os.Stdout)
 		if err != nil {
 			return fmt.Errorf("could not create an s3 client: %s", err)
@@ -187,10 +192,17 @@ func (c DownloadProduct) Execute(args []string) error {
 	return c.writeOutputFile(productFileName, stemcellFileName, stemcell.Version)
 }
 
-func (c DownloadProduct) parses3Config() (S3Configuration, error) {
-	var config S3Configuration
-	err := yaml.UnmarshalStrict([]byte(c.Options.S3), &config)
-	return config, err
+func (c DownloadProduct) createS3Config() S3Configuration {
+	config := S3Configuration{
+		Bucket:          c.Options.S3Bucket,
+		AccessKeyID:     c.Options.S3AccessKeyID,
+		SecretAccessKey: c.Options.S3SecretAccessKey,
+		RegionName:      c.Options.S3RegionName,
+		Endpoint:        c.Options.S3Endpoint,
+		DisableSSL:      c.Options.S3DisableSSL,
+		EnableV2Signing: c.Options.S3EnableV2Signing,
+	}
+	return config
 }
 
 func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileName string, stemcellVersion string) error {

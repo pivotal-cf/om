@@ -61,7 +61,12 @@ var _ = Describe("download-product command", func() {
 				"--product-version", "1.10.1",
 				"--output-directory", tmpDir,
 				"--blobstore", "s3",
-				"--s3-config", `{enable-v2-signing: true, region-name: unknown, bucket: bucket, access-key-id: minio, secret-access-key: password, endpoint: http://127.0.0.1:9001}`,
+				"--s3-bucket", "bucket",
+				"--s3-access-key-id", "minio",
+				"--s3-secret-access-key", "password",
+				"--s3-region-name", "unknown",
+				"--s3-endpoint", "http://127.0.0.1:9001",
+				"--s3-enable-v2-signing", "true",
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
