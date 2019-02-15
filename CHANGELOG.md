@@ -1,3 +1,9 @@
+## 0.53.0 
+
+### Bug Fixes
+
+* `download-product` would panic if the product was already downloaded and you asked for a stemcell. This has been fixed to behave appropriately
+
 ## 0.52.0
 ### Breaking changes
 * `download-product` will now enforce a prefix of `{product-slug}-{semver-version}` when downloading from pivnet. The original
