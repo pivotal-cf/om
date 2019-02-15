@@ -392,13 +392,73 @@ var _ = Describe("DownloadProduct", func() {
 				sum, err := validator.Checksum(filePath)
 				Expect(err).NotTo(HaveOccurred())
 
+				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
+					ID: 54321,
+				}, nil)
+
 				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
 					{
 						ID:           54321,
-						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
+						AWSObjectKey: "/some-account/some-bucket/elastic-runtime-2.0.0_cf-2.0-build.1.pivotal",
 						SHA256:       sum,
 						Name:         "Example Cloud Foundry",
 					},
+				}, nil)
+
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(1, []pivnet.ProductFile{
+					{
+						ID:           5678,
+						AWSObjectKey: "/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz",
+						Name:         "Example Stemcell For GCP",
+					},
+				}, nil)
+
+				fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+					{Release: pivnet.DependentRelease{
+						ID:      199678,
+						Version: "97.19",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199677,
+						Version: "97.18",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199676,
+						Version: "97.17",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199675,
+						Version: "97.9",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
+					{Release: pivnet.DependentRelease{
+						ID:      199674,
+						Version: "97",
+						Product: pivnet.Product{
+							ID:   111,
+							Slug: "stemcells-ubuntu-xenial",
+							Name: "Stemcells for PCF (Ubuntu Xenial)",
+						},
+					}},
 				}, nil)
 			})
 
@@ -418,6 +478,18 @@ var _ = Describe("DownloadProduct", func() {
 
 				logStr, _ := logger.InfoArgsForCall(0)
 				Expect(logStr).To(ContainSubstring("already exists, skip downloading"))
+			})
+
+			It("does not panic when downloading the stemcell if file already downloaded", func() {
+				err = command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--stemcell-iaas", "google",
+					"--output-directory", tempDir,
+				})
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 

@@ -56,7 +56,6 @@ type DownloadProduct struct {
 	progressWriter io.Writer
 	pivnetFactory  PivnetFactory
 	stower         Stower
-	filter         *filter.Filter
 	downloadClient ProductDownloader
 	Options        struct {
 		Blobstore           string   `long:"blobstore"             short:"b"  description:"specify an blobstore to use if not downloading from pivnet"`
@@ -244,7 +243,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 	if exist {
 		c.logger.Info(fmt.Sprintf("%s already exists, skip downloading", productFilePath))
-		return productFilePath, nil, nil
+		return productFilePath, fileArtifact, nil
 	}
 
 	productFile, err := os.Create(productFilePath)
