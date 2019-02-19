@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/graymeta/stow"
+	"github.com/pivotal-cf/pivnet-cli/filter"
 	"io"
 	"os"
 	"path"
@@ -16,7 +17,6 @@ import (
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/validator"
-	"github.com/pivotal-cf/pivnet-cli/filter"
 	"github.com/pivotal-cf/pivnet-cli/gp"
 )
 
@@ -80,8 +80,14 @@ type DownloadProduct struct {
 	}
 }
 
-func NewDownloadProduct(environFunc func() []string, logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, stower Stower) DownloadProduct {
-	return DownloadProduct{
+func NewDownloadProduct(
+	environFunc func() []string,
+	logger pivnetlog.Logger,
+	progressWriter io.Writer,
+	factory PivnetFactory,
+	stower Stower,
+) *DownloadProduct {
+	return &DownloadProduct{
 		environFunc:    environFunc,
 		logger:         logger,
 		progressWriter: progressWriter,
@@ -98,65 +104,25 @@ func (c DownloadProduct) Usage() jhanda.Usage {
 	}
 }
 
-func (c DownloadProduct) Execute(args []string) error {
+func (c *DownloadProduct) Execute(args []string) error {
 	err := loadConfigFile(args, &c.Options, c.environFunc)
 	if err != nil {
 		return fmt.Errorf("could not parse download-product flags: %s", err)
 	}
 
-	if c.Options.ProductVersionRegex != "" && c.Options.ProductVersion != "" {
-		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
+	err = c.validate()
+	if err != nil {
+		return err
 	}
 
-	if c.Options.ProductVersionRegex == "" && c.Options.ProductVersion == "" {
-		return fmt.Errorf("no version information provided; please provide either --product-version or --product-version-regex")
+	err = c.createClient()
+	if err != nil {
+		return err
 	}
 
-	switch c.Options.Blobstore {
-	case "s3":
-		config := c.createS3Config()
-		c.downloadClient, err = NewS3Client(c.stower, config, os.Stdout)
-		if err != nil {
-			return fmt.Errorf("could not create an s3 client: %s", err)
-		}
-	default:
-		filter := filter.NewFilter(c.logger)
-		c.downloadClient = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
-	}
-
-	productVersion := c.Options.ProductVersion
-	if c.Options.ProductVersionRegex != "" {
-		re, err := regexp.Compile(c.Options.ProductVersionRegex)
-		if err != nil {
-			return fmt.Errorf("could not compile regex: %s: %s", c.Options.ProductVersionRegex, err)
-		}
-
-		productVersions, err := c.downloadClient.GetAllProductVersions(c.Options.PivnetProductSlug)
-		if err != nil {
-			return err
-		}
-
-		var versions version.Collection
-		for _, productVersion := range productVersions {
-			if !re.MatchString(productVersion) {
-				continue
-			}
-
-			v, err := version.NewVersion(productVersion)
-			if err != nil {
-				c.logger.Info(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
-				continue
-			}
-			versions = append(versions, v)
-		}
-
-		sort.Sort(versions)
-
-		if len(versions) == 0 {
-			return fmt.Errorf("no valid versions found for product '%s'", c.Options.PivnetProductSlug)
-		}
-
-		productVersion = versions[len(versions)-1].Original()
+	productVersion, err := c.determineProductVersion()
+	if err != nil {
+		return err
 	}
 
 	prefixPath := fmt.Sprintf("%s-%s_", c.Options.PivnetProductSlug, productVersion)
@@ -202,6 +168,70 @@ func (c DownloadProduct) createS3Config() S3Configuration {
 		EnableV2Signing: c.Options.S3EnableV2Signing,
 	}
 	return config
+}
+
+func (c *DownloadProduct) determineProductVersion() (string, error) {
+	if c.Options.ProductVersionRegex != "" {
+		re, err := regexp.Compile(c.Options.ProductVersionRegex)
+		if err != nil {
+			return "", fmt.Errorf("could not compile regex: %s: %s", c.Options.ProductVersionRegex, err)
+		}
+
+		productVersions, err := c.downloadClient.GetAllProductVersions(c.Options.PivnetProductSlug)
+		if err != nil {
+			return "", err
+		}
+
+		var versions version.Collection
+		for _, productVersion := range productVersions {
+			if !re.MatchString(productVersion) {
+				continue
+			}
+
+			v, err := version.NewVersion(productVersion)
+			if err != nil {
+				c.logger.Info(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
+				continue
+			}
+			versions = append(versions, v)
+		}
+
+		sort.Sort(versions)
+
+		if len(versions) == 0 {
+			return "", fmt.Errorf("no valid versions found for product '%s'", c.Options.PivnetProductSlug)
+		}
+
+		return versions[len(versions)-1].Original(), nil
+	}
+	return c.Options.ProductVersion, nil
+}
+
+func (c *DownloadProduct) createClient() error {
+	var err error
+	switch c.Options.Blobstore {
+	case "s3":
+		config := c.createS3Config()
+		c.downloadClient, err = NewS3Client(c.stower, config, os.Stdout)
+		if err != nil {
+			return fmt.Errorf("could not create an s3 client: %s", err)
+		}
+	default:
+		filter := filter.NewFilter(c.logger)
+		c.downloadClient = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
+	}
+	return nil
+}
+
+func (c *DownloadProduct) validate() error {
+	if c.Options.ProductVersionRegex != "" && c.Options.ProductVersion != "" {
+		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
+	}
+
+	if c.Options.ProductVersionRegex == "" && c.Options.ProductVersion == "" {
+		return fmt.Errorf("no version information provided; please provide either --product-version or --product-version-regex")
+	}
+	return nil
 }
 
 func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileName string, stemcellVersion string) error {

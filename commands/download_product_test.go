@@ -21,7 +21,7 @@ import (
 var _ = Describe("DownloadProduct", func() {
 	var (
 		callCount            int
-		command              commands.DownloadProduct
+		command              *commands.DownloadProduct
 		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
