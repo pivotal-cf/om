@@ -579,7 +579,7 @@ output-directory: %s
 		})
 
 		Describe("managing and reporting the filename written to the filesystem", func() {
-			When("the file to be downloaded already satisfies our blobstore parsability constraints", func() {
+			When("the file to be downloaded has a filename that includes the pattern `slug-version`", func() {
 				BeforeEach(func() {
 					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
 						{
@@ -605,7 +605,7 @@ output-directory: %s
 					prefixedFileName := path.Join(tempDir, "cf-2.0-build.1-electric-teeth-2.0.0.pivotal")
 					Expect(prefixedFileName).To(BeAnExistingFile())
 				})
-				It("writes the un-modified filname in the download-file.json", func() {
+				It("writes the un-modified filename in the download-file.json", func() {
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
@@ -615,6 +615,46 @@ output-directory: %s
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					prefixedFileName := path.Join(tempDir, "cf-2.0-build.1-electric-teeth-2.0.0.pivotal")
 					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "electric-teeth" }`, prefixedFileName)))
+				})
+			})
+
+			When("the file to be downloaded contains a slug and a version number, but they are not adjacent", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/ops-manager-aws-2.5.0-build.123.yml",
+							Name:         "ops-manager-aws-2.5.0-build.123.yml",
+						},
+					}, nil)
+
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*aws*.yml",
+						"--pivnet-product-slug", "ops-manager",
+						"--product-version", `2.5.0`,
+						"--output-directory", tempDir,
+					}
+				})
+
+				It("does not duplicate the filename prefix in the output file or filename", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					prefixedFileName := path.Join(tempDir, "ops-manager-aws-2.5.0-build.123.yml")
+					Expect(prefixedFileName).To(BeAnExistingFile())
+				})
+
+				It("writes the un-modified filename in the download-file.json", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
+					prefixedFileName := path.Join(tempDir, "ops-manager-aws-2.5.0-build.123.yml")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "ops-manager" }`, prefixedFileName)))
 				})
 			})
 
