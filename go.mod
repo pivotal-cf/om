@@ -32,7 +32,9 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect
+	golang.org/x/net v0.0.0-20190206173232-65e2d4e15006 // indirect
 	golang.org/x/oauth2 v0.0.0-20180314180239-fdc9e635145a
+	golang.org/x/sys v0.0.0-20190204203706-41f3e6584952 // indirect
 	google.golang.org/appengine v1.0.0 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.26
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect

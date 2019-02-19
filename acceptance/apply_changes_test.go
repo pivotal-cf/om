@@ -77,6 +77,14 @@ var _ = Describe("apply-changes command", func() {
 				_, err := w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
 				Expect(err).ToNot(HaveOccurred())
 				installationsLogsCallCount++
+			case "/api/v0/staged/products":
+				_, err := w.Write([]byte(`[{"guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"}]`))
+				Expect(err).ToNot(HaveOccurred())
+				return
+			case "/api/v0/deployed/products":
+				_, err := w.Write([]byte(`[]`))
+				Expect(err).ToNot(HaveOccurred())
+				return
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

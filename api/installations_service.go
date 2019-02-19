@@ -23,6 +23,36 @@ type InstallationsServiceOutput struct {
 	UserName   string     `json:"user_name"`
 }
 
+type ApplyErrandChanges struct {
+	Errands map[string]ProductErrand `yaml:"errands" json:"errands,omitempty"`
+}
+
+type ProductErrand struct {
+	RunPostDeploy map[string]interface{} `yaml:"run_post_deploy" json:"run_post_deploy,omitempty"`
+	RunPreDelete  map[string]interface{} `yaml:"run_pre_delete" json:"run_pre_delete,omitempty"`
+}
+
+func (a Api) fetchProductGUID() (map[string]string, error) {
+	productGuidMapping := map[string]string{}
+	sp, err := a.ListStagedProducts()
+	if err != nil {
+		return productGuidMapping, err
+	}
+	dp, err := a.ListDeployedProducts()
+	if err != nil {
+		return productGuidMapping, err
+	}
+
+	for _, stagedProduct := range sp.Products {
+		productGuidMapping[stagedProduct.Type] = stagedProduct.GUID
+	}
+	for _, deployedProduct := range dp {
+		productGuidMapping[deployedProduct.Type] = deployedProduct.GUID
+	}
+
+	return productGuidMapping, nil
+}
+
 func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/installations", nil)
 	if err != nil {
@@ -45,41 +75,43 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	return responseStruct.Installations, nil
 }
 
-func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, productNames []string) (InstallationsServiceOutput, error) {
+func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
+	productGuidMapping, err := a.fetchProductGUID()
+	if err != nil {
+		return InstallationsServiceOutput{}, errors.Wrap(err, "failed to list staged and/or deployed products")
+	}
+
 	var deployProductsVal interface{} = "all"
 	if !deployProducts {
 		deployProductsVal = "none"
 	} else if len(productNames) > 0 {
-		sp, err := a.ListStagedProducts()
-		if err != nil {
-			return InstallationsServiceOutput{}, errors.Wrap(err, "failed to list staged products")
-		}
-		// convert list of product names to product GUIDs
 		var productGUIDs []string
 		for _, productName := range productNames {
-			var guid string
-			for _, stagedProduct := range sp.Products {
-				if productName == stagedProduct.GUID {
-					guid = stagedProduct.GUID
-					break
-				} else if productName == stagedProduct.Type {
-					guid = stagedProduct.GUID
-					break
-				}
-			}
-			if guid != "" {
-				productGUIDs = append(productGUIDs, guid)
+			if productGUID, ok := productGuidMapping[productName]; ok {
+				productGUIDs = append(productGUIDs, productGUID)
 			}
 		}
 		deployProductsVal = productGUIDs
 	}
 
+	errandsPayload := map[string]ProductErrand{}
+
+	for productName, errandConfig := range errands.Errands {
+		if productGUID, ok := productGuidMapping[productName]; ok {
+			errandsPayload[productGUID] = errandConfig
+		} else {
+			return InstallationsServiceOutput{},  fmt.Errorf("failed to fetch product GUID for product: %s", productName)
+		}
+	}
+
 	data, err := json.Marshal(&struct {
-		IgnoreWarnings string      `json:"ignore_warnings"`
-		DeployProducts interface{} `json:"deploy_products"`
+		IgnoreWarnings string                   `json:"ignore_warnings"`
+		DeployProducts interface{}              `json:"deploy_products"`
+		Errands        map[string]ProductErrand `json:"errands,omitempty"`
 	}{
 		IgnoreWarnings: fmt.Sprintf("%t", ignoreWarnings),
 		DeployProducts: deployProductsVal,
+		Errands:        errandsPayload,
 	})
 	if err != nil {
 		return InstallationsServiceOutput{}, err
