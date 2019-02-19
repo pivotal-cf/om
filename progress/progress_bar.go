@@ -38,3 +38,7 @@ func (b Bar) SetTotal64(size int64) {
 func (b *Bar) Reset() {
 	b.bar = NewBar().bar
 }
+
+func (b Bar) SetOutput(writer io.Writer) {
+	b.bar.Output = writer
+}

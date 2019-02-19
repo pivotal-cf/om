@@ -2,7 +2,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: golang
+    repository: internalpcfplatformautomation/ci
+    tag: testing
 inputs:
 - name: om
 run:
@@ -20,7 +21,7 @@ run:
     pushd "om" > /dev/null
       go mod download
 
-      ginkgo \
+      CGO_ENABLED=1 ginkgo \
         -r \
         -p \
         -race \

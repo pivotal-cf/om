@@ -42,8 +42,16 @@ type ClusterOutput struct {
 	ResourcePool string `yaml:"resource_pool"`
 }
 
-func (a Api) GetStagedDirectorProperties() (map[string]map[string]interface{}, error) {
-	resp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/properties", nil)
+func (a Api) GetStagedDirectorProperties(redact bool) (map[string]map[string]interface{}, error) {
+	var queryString string
+
+	if redact {
+		queryString = "/api/v0/staged/director/properties?redact=true"
+	} else {
+		queryString = "/api/v0/staged/director/properties?redact=false"
+	}
+
+	resp, err := a.sendAPIRequest("GET", queryString, nil)
 	if err != nil {
 		return nil, err // un-tested
 	}

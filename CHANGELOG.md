@@ -1,3 +1,26 @@
+## 0.53.0 
+
+### Bug Fixes
+
+* `download-product` would panic if the product was already downloaded and you asked for a stemcell. This has been fixed to behave appropriately
+
+## 0.52.0
+### Breaking changes
+* `download-product` will now enforce a prefix of `{product-slug}-{semver-version}` when downloading from pivnet. The original
+  filename is preserved after the prefix. If the original filename already matches the intended format, there will be no
+  change. Any regexes that strictly enforce the original filename at the _beginning_ of the regex will be broken. Please
+  update accordingly. This change was done in order to encourage tile teams to change their file names to be more consistent. 
+  Ops Manager itself has already agreed to implement this change in newer versions. 
+
+### Features
+* add support for the `selected_option` field when calling `staged-config` to have better support for selectors.
+  * this support also extends to `configure-product`, which will accept both `selected_option` and `option_value` as
+  the machine readable value. 
+* `download-product` now has support for downloading from an external s3 compatible blobstore using the `--blobstore s3`
+  flag. 
+* `staged-director-config` now supports a `no-redact` flag that will return all of the credentials from an Ops Manager
+  director, if the user has proper permissions to do so. It is recommended to use the admin user. 
+
 ## 0.51.0 
 
 ### Features

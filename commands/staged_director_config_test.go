@@ -163,6 +163,15 @@ properties-configuration:
 `)))
 		})
 
+		It("doesn't redact values when --no-redact is passed", func() {
+			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			err := command.Execute([]string{"--no-redact"})
+			Expect(err).NotTo(HaveOccurred())
+
+			invocations := fakeService.Invocations()["GetStagedDirectorProperties"]
+			Expect(invocations[0]).To(Equal([]interface{}{false}))
+		})
+
 		Describe("when getting availability_zones returns an empty array", func() {
 			It("doesn't return the az in the config", func() {
 				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, nil)

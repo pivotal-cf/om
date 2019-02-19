@@ -159,6 +159,12 @@ var _ = Describe("Config Parser", func() {
 				Value:        "some-value",
 				Configurable: true,
 			},
+			".properties.some-selector-with-selected-value": api.ResponseProperty{
+				Value:          "Hello World",
+				SelectedOption: "beginner",
+				Type:           "selector",
+				Configurable:   true,
+			},
 		}
 	})
 
@@ -177,6 +183,10 @@ var _ = Describe("Config Parser", func() {
   value: internal
 .properties.some-selector.not-internal.some-string-property:
   value: some-value
+.properties.some-selector-with-selected-value:
+  selected_option: beginner
+  value: Hello World
+
 `))
 		})
 	})
@@ -222,6 +232,9 @@ var _ = Describe("Config Parser", func() {
   - certificate2:
       private_key_pem: "((properties_collection_1_certificate2.private_key_pem))"
       cert_pem: "((properties_collection_1_certificate2.cert_pem))"
+.properties.some-selector-with-selected-value:
+  selected_option: beginner
+  value: Hello World
 `))
 
 		})
@@ -313,6 +326,9 @@ var _ = Describe("Config Parser", func() {
   value: internal
 .properties.some-selector.not-internal.some-string-property:
   value: some-value
+.properties.some-selector-with-selected-value:
+  selected_option: beginner
+  value: Hello World
 `))
 		})
 

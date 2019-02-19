@@ -32,9 +32,10 @@ type StagedDirectorConfigService struct {
 		result1 api.NetworksConfigurationOutput
 		result2 error
 	}
-	GetStagedDirectorPropertiesStub        func() (map[string]map[string]interface{}, error)
+	GetStagedDirectorPropertiesStub        func(bool) (map[string]map[string]interface{}, error)
 	getStagedDirectorPropertiesMutex       sync.RWMutex
 	getStagedDirectorPropertiesArgsForCall []struct {
+		arg1 bool
 	}
 	getStagedDirectorPropertiesReturns struct {
 		result1 map[string]map[string]interface{}
@@ -223,15 +224,16 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksReturnsOnCall(
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorProperties() (map[string]map[string]interface{}, error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorProperties(arg1 bool) (map[string]map[string]interface{}, error) {
 	fake.getStagedDirectorPropertiesMutex.Lock()
 	ret, specificReturn := fake.getStagedDirectorPropertiesReturnsOnCall[len(fake.getStagedDirectorPropertiesArgsForCall)]
 	fake.getStagedDirectorPropertiesArgsForCall = append(fake.getStagedDirectorPropertiesArgsForCall, struct {
-	}{})
-	fake.recordInvocation("GetStagedDirectorProperties", []interface{}{})
+		arg1 bool
+	}{arg1})
+	fake.recordInvocation("GetStagedDirectorProperties", []interface{}{arg1})
 	fake.getStagedDirectorPropertiesMutex.Unlock()
 	if fake.GetStagedDirectorPropertiesStub != nil {
-		return fake.GetStagedDirectorPropertiesStub()
+		return fake.GetStagedDirectorPropertiesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -246,10 +248,17 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCallCount() 
 	return len(fake.getStagedDirectorPropertiesArgsForCall)
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCalls(stub func() (map[string]map[string]interface{}, error)) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCalls(stub func(bool) (map[string]map[string]interface{}, error)) {
 	fake.getStagedDirectorPropertiesMutex.Lock()
 	defer fake.getStagedDirectorPropertiesMutex.Unlock()
 	fake.GetStagedDirectorPropertiesStub = stub
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesArgsForCall(i int) bool {
+	fake.getStagedDirectorPropertiesMutex.RLock()
+	defer fake.getStagedDirectorPropertiesMutex.RUnlock()
+	argsForCall := fake.getStagedDirectorPropertiesArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturns(result1 map[string]map[string]interface{}, result2 error) {
