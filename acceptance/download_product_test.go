@@ -25,6 +25,7 @@ var _ = Describe("download-product command", func() {
 			if err != nil {
 				Skip("minio not installed")
 			}
+			fmt.Println("\nRunning minio v2 signing test")
 			_, err = exec.LookPath("mc")
 			if err != nil {
 				Skip("mc not installed")
