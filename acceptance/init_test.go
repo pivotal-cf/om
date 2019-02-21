@@ -37,7 +37,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		minio, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(minio.Out).Should(gbytes.Say("Endpoint:"))
+		Eventually(minio.Out, "10s").Should(gbytes.Say("Endpoint:"))
 		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://127.0.0.1:9001", "minio", "password")
 	}
 	return []byte(pathToMain)
