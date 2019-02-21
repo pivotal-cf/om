@@ -258,7 +258,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		return "", nil, err
 	}
 
-	expectedFileFormat := regexp.MustCompile(fmt.Sprintf(`^\[%s,%s\]`, slug, regexp.QuoteMeta(version)))
+	expectedFileFormat := regexp.MustCompile(regexp.QuoteMeta(prefixPath))
 	var productFilePath string
 	if expectedFileFormat.MatchString(path.Base(fileArtifact.Name)) {
 		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))
