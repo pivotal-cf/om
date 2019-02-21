@@ -411,20 +411,6 @@ func (s *mockStower) Dial(kind string, config commands.Config) (stow.Location, e
 	return s.location, nil
 }
 
-func (s *mockStower) Container(id string) (stow.Container, error) {
-	if s.containerError != nil {
-		return nil, s.containerError
-	}
-	return mockContainer{}, nil
-}
-
-func (s *mockStower) Item(id string) (stow.Item, error) {
-	if s.itemError != nil {
-		return nil, s.itemError
-	}
-	return mockItem{}, nil
-}
-
 func (s *mockStower) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
 	for _, item := range s.itemsList {
 		fn(item, nil)
