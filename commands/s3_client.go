@@ -33,8 +33,9 @@ type S3Configuration struct {
 	SecretAccessKey string `yaml:"secret-access-key" validate:"required"`
 	RegionName      string `yaml:"region-name" validate:"required"`
 	Endpoint        string `yaml:"endpoint"`
-	DisableSSL      bool   `yaml:"disable-ssl" `
-	EnableV2Signing bool   `yaml:"enable-v2-signing" `
+	DisableSSL      bool   `yaml:"disable-ssl"`
+	EnableV2Signing bool   `yaml:"enable-v2-signing"`
+	Path            string `yaml:"path"`
 }
 
 type S3Client struct {
@@ -42,6 +43,7 @@ type S3Client struct {
 	bucket         string
 	Config         stow.Config
 	progressWriter io.Writer
+	path           string
 }
 
 func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer) (*S3Client, error) {
@@ -67,6 +69,7 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 		Config:         stowConfig,
 		bucket:         config.Bucket,
 		progressWriter: progressWriter,
+		path:           config.Path,
 	}, nil
 }
 
@@ -76,7 +79,12 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 		return nil, err
 	}
 
-	productFileCompiledRegex := regexp.MustCompile(fmt.Sprintf(`^\[%s,(.*)\]`, slug))
+	productFileCompiledRegex := regexp.MustCompile(
+		fmt.Sprintf(`^/?%s/?\[%s,(.*?)\]`,
+			regexp.QuoteMeta(strings.Trim(s3.path, "/")),
+			slug,
+		),
+	)
 
 	var versions []string
 	versionFound := make(map[string]bool)
@@ -105,7 +113,13 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 		return nil, err
 	}
 
-	validFile := regexp.MustCompile(fmt.Sprintf(`^\[%s,%s\]`, slug, version))
+	validFile := regexp.MustCompile(
+		fmt.Sprintf(`^/?%s/?\[%s,%s\]`,
+			regexp.QuoteMeta(strings.Trim(s3.path, "/")),
+			slug,
+			regexp.QuoteMeta(version),
+		),
+	)
 	var prefixedFilepaths []string
 	var globMatchedFilepaths []string
 
@@ -120,7 +134,7 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 	}
 
 	for _, f := range prefixedFilepaths {
-		matched, _ := filepath.Match(glob, f)
+		matched, _ := filepath.Match(glob, filepath.Base(f))
 		if matched {
 			globMatchedFilepaths = append(globMatchedFilepaths, f)
 		}

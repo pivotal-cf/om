@@ -30,16 +30,16 @@ var _ = Describe("download-product command", func() {
 
 			// upload artifact to it
 			bucketName = fmt.Sprintf("bucket-%d", config.GinkgoConfig.ParallelNode)
-			runCommand("mc", "--debug", "mb", "testing/"+bucketName)
+			runCommand("mc", "mb", "testing/"+bucketName)
 		})
 
 		AfterEach(func() {
-			runCommand("mc", "--debug", "rm", "--force", "--recursive", "testing/"+bucketName)
+			runCommand("mc", "rm", "--force", "--recursive", "testing/"+bucketName)
 		})
 
 		When("specifying the version of the AWS signature", func() {
 			It("supports v2 signing", func() {
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
@@ -59,12 +59,12 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(0))
+				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 			})
 
 			It("supports v4 signing", func() {
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
@@ -83,7 +83,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(0))
+				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 			})
 		})
@@ -109,17 +109,17 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(1))
+				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`could not download product: bucket contains no files`))
 			})
 		})
 
 		When("a file with a prefix for the desired slug/version is not found", func() {
 			BeforeEach(func() {
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/example-product-1.10.1_product.yml")
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/still-useless.yml")
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,2.22.3]product-456.yml")
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,2.22.2]product-123.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/example-product-1.10.1_product.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/still-useless.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,2.22.3]product-456.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,2.22.2]product-123.yml")
 			})
 
 			It("raises an error that no files with a prefixed name matching the slug and version are available", func() {
@@ -141,14 +141,15 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(1))
+				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`no product files with expected prefix \[example-product,1.10.1\] found. Please ensure the file you're trying to download was initially persisted from Pivotal Network net using an appropriately configured download-product command`))
 			})
 		})
 
 		When("one prefixed file matches the product slug and version", func() {
 			BeforeEach(func() {
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/some-path/[example-product,1.10.1]product.yml")
+				runCommand("mc", "ls", "testing/"+bucketName+"/some-path/")
 			})
 
 			It("outputs the file and downloaded file metadata", func() {
@@ -166,11 +167,12 @@ var _ = Describe("download-product command", func() {
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-path", "/some-path",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(0))
+				Eventually(session, "10s").Should(gexec.Exit(0))
 
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",
@@ -184,8 +186,8 @@ var _ = Describe("download-product command", func() {
 
 		When("more than one prefixed file matches the product slug and version", func() {
 			BeforeEach(func() {
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product-456.yml")
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product-123.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product-456.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product-123.yml")
 			})
 
 			It("raises an error that too many files match the glob", func() {
@@ -207,15 +209,15 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(1))
+				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`could not download product: the glob '\*\.yml' matches multiple files`))
 			})
 		})
 
 		When("using product-regex to find the latest version", func() {
 			BeforeEach(func() {
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product-123.yml")
-				runCommand("mc", "--debug", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.2]product-456.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product-123.yml")
+				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.2]product-456.yml")
 			})
 
 			It("raises an error that too many files match the glob", func() {
@@ -237,7 +239,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				Eventually(session, "5s").Should(gexec.Exit(0))
+				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",
 					"product_path": "%s/[example-product,1.10.2]product-456.yml"

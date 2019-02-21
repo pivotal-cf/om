@@ -58,7 +58,7 @@ type DownloadProduct struct {
 	stower         Stower
 	downloadClient ProductDownloader
 	Options        struct {
-		Blobstore           string   `long:"blobstore"             short:"b"  description:"specify an blobstore to use if not downloading from pivnet"`
+		Blobstore           string   `long:"blobstore"             short:"b"  description:"enables download from external blobstores when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
 		ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		OutputDir           string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
@@ -73,7 +73,8 @@ type DownloadProduct struct {
 		S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
 		S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting  the s3 compatible blobstore"`
 		S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
-		Stemcell            bool     `long:"download-stemcell"                cription:"no-op for backwards compatibility"`
+		S3Path              string   `long:"s3-path"                          description:"specify the lookup path where the s3 artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+		Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
 		StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 		VarsEnv             []string `long:"vars-env"                         description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
 		VarsFile            []string `long:"vars-file"             short:"l"  description:"load variables from a YAML file"`
@@ -166,6 +167,7 @@ func (c DownloadProduct) createS3Config() S3Configuration {
 		Endpoint:        c.Options.S3Endpoint,
 		DisableSSL:      c.Options.S3DisableSSL,
 		EnableV2Signing: c.Options.S3EnableV2Signing,
+		Path:            c.Options.S3Path,
 	}
 	return config
 }
@@ -212,7 +214,7 @@ func (c *DownloadProduct) createClient() error {
 	switch c.Options.Blobstore {
 	case "s3":
 		config := c.createS3Config()
-		c.downloadClient, err = NewS3Client(c.stower, config, os.Stdout)
+		c.downloadClient, err = NewS3Client(c.stower, config, c.progressWriter)
 		if err != nil {
 			return fmt.Errorf("could not create an s3 client: %s", err)
 		}
@@ -258,9 +260,8 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		return "", nil, err
 	}
 
-	expectedFileFormat := regexp.MustCompile(regexp.QuoteMeta(prefixPath))
 	var productFilePath string
-	if expectedFileFormat.MatchString(path.Base(fileArtifact.Name)) {
+	if c.Options.Blobstore != "" || c.Options.S3Bucket == "" {
 		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))
 	} else {
 		productFilePath = path.Join(c.Options.OutputDir, prefixPath+path.Base(fileArtifact.Name))

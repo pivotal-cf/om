@@ -5,10 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/go-pivnet"
 	log "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/go-pivnet/logger/loggerfakes"
@@ -25,7 +25,6 @@ var _ = Describe("DownloadProduct", func() {
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
 		fakeStower           *mockStower
-		fakeWriter           *gbytes.Buffer
 		environFunc          func() []string
 		tempDir              string
 		err                  error
@@ -40,11 +39,10 @@ var _ = Describe("DownloadProduct", func() {
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
 		fakeStower = newMockStower([]mockItem{})
 		environFunc = func() []string { return nil }
-		fakeWriter = gbytes.NewBuffer()
 	})
 
 	JustBeforeEach(func() {
-		command = commands.NewDownloadProduct(environFunc, logger, fakeWriter, fakePivnetFactory, fakeStower)
+		command = commands.NewDownloadProduct(environFunc, logger, GinkgoWriter, fakePivnetFactory, fakeStower)
 	})
 
 	Context("when the flags are set correctly", func() {
@@ -178,13 +176,13 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(releaseID).To(Equal(4))
 
 				file, slug, releaseID, productFileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
-				Expect(file.Name()).To(Equal(path.Join(tempDir, "[elastic-runtime,2.1.2]cf-2.1-build.11.pivotal")))
+				Expect(file.Name()).To(Equal(path.Join(tempDir, "cf-2.1-build.11.pivotal")))
 				Expect(slug).To(Equal("elastic-runtime"))
 				Expect(releaseID).To(Equal(4))
 				Expect(productFileID).To(Equal(54321))
 
-				prefixedFileName := path.Join(tempDir, "[elastic-runtime,2.1.2]cf-2.1-build.11.pivotal")
-				Expect(prefixedFileName).To(BeAnExistingFile())
+				downloadedFilePath := path.Join(tempDir, "cf-2.1-build.11.pivotal")
+				Expect(downloadedFilePath).To(BeAnExistingFile())
 			})
 
 			Context("when the releases contains non-semver-compatible version", func() {
@@ -330,14 +328,14 @@ var _ = Describe("DownloadProduct", func() {
 				fileContent, err := ioutil.ReadFile(fileName)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fileName).To(BeAnExistingFile())
-				prefixedFileName := path.Join(tempDir, "[elastic-runtime,2.0.0]cf-2.0-build.1.pivotal")
+				downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
 				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
 					{
 						"product_path": "%s",
 						"product_slug": "elastic-runtime",
 						"stemcell_path": "%s",
 						"stemcell_version": "97.19"
-					}`, prefixedFileName, stemcellFile.Name())))
+					}`, downloadedFilePath, stemcellFile.Name())))
 			})
 
 			Context("when the product is not a tile and download-stemcell flag is set", func() {
@@ -378,7 +376,7 @@ var _ = Describe("DownloadProduct", func() {
 
 		Context("when the file is already downloaded", func() {
 			BeforeEach(func() {
-				filePath := path.Join(tempDir, "[elastic-runtime,2.0.0]cf-2.0-build.1.pivotal")
+				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
 				file, err := os.Create(filePath)
 				Expect(err).NotTo(HaveOccurred())
 				_, err = file.WriteString("something-not-important")
@@ -577,41 +575,139 @@ output-directory: %s
 		})
 
 		Describe("managing and reporting the filename written to the filesystem", func() {
-			BeforeEach(func() {
-				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
-					{
-						ID:           54321,
-						AWSObjectKey: "/some-account/some-bucket/my-great-product.pivotal",
-						Name:         "my-great-product.pivotal",
-					},
-				}, nil)
+			When("S3 configuration is provided and, blobstore is not set", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/my-great-product.pivotal",
+							Name:         "my-great-product.pivotal",
+						},
+					}, nil)
 
-				commandArgs = []string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "mayhem-crew",
-					"--product-version", `2.0.0`,
-					"--output-directory", tempDir,
-				}
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "mayhem-crew",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+						"--s3-bucket", "there once was a man from a",
+					}
+				})
+
+				It("prefixes the filename with a bracketed slug and version", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+					Expect(prefixedFileName).To(BeAnExistingFile())
+				})
+				It("writes the prefixed filename to the download-file.json", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
+					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, prefixedFileName)))
+				})
 			})
 
-			It("prefixes the filename with a bracketed slug and version", func() {
-				err = command.Execute(commandArgs)
-				Expect(err).NotTo(HaveOccurred())
+			When("S3 configuration is not provided, and blobstore is not set", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+						{
+							ID:           54321,
+							AWSObjectKey: "/some-account/some-bucket/my-great-product.pivotal",
+							Name:         "my-great-product.pivotal",
+						},
+					}, nil)
 
-				prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-				Expect(prefixedFileName).To(BeAnExistingFile())
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "mayhem-crew",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+					}
+				})
+				It("doesn't prefix", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
+					Expect(unPrefixedFileName).To(BeAnExistingFile())
+				})
+
+				It("writes the unprefixed filename to the download-file.json", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
+					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, unPrefixedFileName)))
+				})
 			})
-			It("writes the prefixed filename to the download-file.json", func() {
-				err = command.Execute(commandArgs)
-				Expect(err).NotTo(HaveOccurred())
 
-				downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
-				fileContent, err := ioutil.ReadFile(downloadReportFileName)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(downloadReportFileName).To(BeAnExistingFile())
-				prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, prefixedFileName)))
+			When("S3 configuration is provided, and blobstore is set", func() {
+				BeforeEach(func() {
+					tmpDir, err := ioutil.TempDir("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					filename := filepath.Join(tmpDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+					err = ioutil.WriteFile(
+						filename,
+						[]byte("yay"),
+						0777,
+					)
+					Expect(err).NotTo(HaveOccurred())
+
+					item := newMockItem(filename)
+					container := mockContainer{item: item}
+					location := mockLocation{container: &container}
+					fakeStower = &mockStower{
+						location:  location,
+						itemsList: []mockItem{item},
+					}
+
+					commandArgs = []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "mayhem-crew",
+						"--product-version", `2.0.0`,
+						"--blobstore", "s3",
+						"--s3-bucket", "validBucket",
+						"--s3-access-key-id", "access-key",
+						"--s3-secret-access-key", "secret-key",
+						"--s3-region-name", "some-region",
+						"--output-directory", tempDir,
+						"--s3-path", tmpDir,
+					}
+				})
+				It("doesn't prefix", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					unPrefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+					Expect(unPrefixedFileName).To(BeAnExistingFile())
+				})
+
+				It("writes the prefixed filename to the download-file.json", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
+					unPrefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, unPrefixedFileName)))
+				})
 			})
 		})
 	})

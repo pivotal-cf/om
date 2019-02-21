@@ -57,6 +57,48 @@ var _ = Describe("S3Client", func() {
 			})
 		})
 
+		DescribeTable("the path variable", func(path string) {
+			var (
+				stower *mockStower
+				config commands.S3Configuration
+			)
+
+			itemsList := []mockItem{
+				newMockItem("/some-path/nested-path/[product-slug,8.8.8]someproductfile.zip"),
+				newMockItem("/some-path/[product-slug,1.0.0-beta.1]someproductfile.zip"),
+				newMockItem("some-path/[product-slug,1.2.3]someproductfile.zip"),
+				newMockItem("[product-slug,7.7.7]someotherfile-0.0.2.zip"),
+				newMockItem("/some-path/[product-slug,1.1.1]someotherfile-0.0.2.zip"),
+				newMockItem("/some-path/[product-slug,1.1.1]with-another-right-bracket-]0.0.2.zip"),
+			}
+
+			stower = newMockStower(itemsList)
+			config = commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+				Path:            path,
+			}
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			versions, err := client.GetAllProductVersions("product-slug")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(versions).To(Equal([]string{
+				"1.0.0-beta.1",
+				"1.2.3",
+				"1.1.1",
+			}))
+		},
+			Entry("with a leading and trailing slash", "/some-path/"),
+			Entry("with a leading and without a trailing slash", "/some-path"),
+			Entry("without a leading slash", "some-path/"),
+			Entry("without a leading or trailing slash", "some-path"),
+		)
+
 		When("the container returns 'expected element type <Error>", func() {
 			var (
 				stower *mockStower
@@ -211,6 +253,37 @@ var _ = Describe("S3Client", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("the glob '*.zip' matches no file"))
 		})
+
+		DescribeTable("the item exists in the path in the bucket", func(path string) {
+			itemsList := []mockItem{
+				newMockItem("/some-path/nested/[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("/some-path/[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("some-path/[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
+				newMockItem("[product-slug,7.7.7]pcf-vsphere-2.1-build.348.ova"),
+			}
+
+			stower := newMockStower(itemsList)
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+				Path:            path,
+			}
+
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fileArtifact.Name).To(Equal("some-path/[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
+		},
+			Entry("with a leading and trailing slash", "/some-path/"),
+			Entry("with a leading and without a trailing slash", "/some-path"),
+			Entry("without a leading slash", "some-path/"),
+			Entry("without a leading or trailing slash", "some-path"),
+		)
 	})
 
 	Describe("DownloadProductToFile", func() {
@@ -476,7 +549,8 @@ type mockItem struct {
 
 func newMockItem(idString string) mockItem {
 	return mockItem{
-		idString: idString,
+		idString:     idString,
+		fakeFileName: idString,
 	}
 }
 
