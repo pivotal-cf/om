@@ -20,7 +20,6 @@ import (
 
 var _ = Describe("DownloadProduct", func() {
 	var (
-		callCount            int
 		command              *commands.DownloadProduct
 		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
@@ -37,10 +36,9 @@ var _ = Describe("DownloadProduct", func() {
 	}
 
 	BeforeEach(func() {
-		callCount = 0
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
-		fakeStower = newMockStower([]mockItem{}, &callCount)
+		fakeStower = newMockStower([]mockItem{})
 		environFunc = func() []string { return nil }
 		fakeWriter = gbytes.NewBuffer()
 	})
@@ -85,7 +83,7 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
-			Expect(*fakeStower.dialCallCount).To(Equal(0))
+			Expect(fakeStower.dialCallCount).To(Equal(0))
 		})
 
 		When("the blobstore flag is set to s3", func() {
@@ -108,7 +106,7 @@ var _ = Describe("DownloadProduct", func() {
 			It("downloads the specified product from s3", func() {
 				command.Execute(commandArgs)
 
-				Expect(*fakeStower.dialCallCount).Should(BeNumerically(">", 0))
+				Expect(fakeStower.dialCallCount).Should(BeNumerically(">", 0))
 				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
 			})
 		})

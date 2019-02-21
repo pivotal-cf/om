@@ -17,11 +17,6 @@ import (
 )
 
 var _ = Describe("S3Client", func() {
-	var callCount int
-	BeforeEach(func() {
-		callCount = 0
-	})
-
 	Describe("GetAllProductVersions", func() {
 		When("there are multiple files of the same 'version', differing by beta version", func() {
 			var (
@@ -37,7 +32,7 @@ var _ = Describe("S3Client", func() {
 					newMockItem("[product-slug,1.1.1]someotherfile-0.0.2.zip"),
 				}
 
-				stower = newMockStower(itemsList, &callCount)
+				stower = newMockStower(itemsList)
 				config = commands.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
@@ -73,8 +68,7 @@ var _ = Describe("S3Client", func() {
 					containerError: errors.New("expected element type <Error> but have StowErrorType"),
 				}
 				stower = &mockStower{
-					dialCallCount: &callCount,
-					location:      location,
+					location: location,
 				}
 				config = commands.S3Configuration{
 					Bucket:          "bucket",
@@ -100,7 +94,7 @@ var _ = Describe("S3Client", func() {
 				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.348.ova"),
 			}
 
-			stower := newMockStower(itemsList, &callCount)
+			stower := newMockStower(itemsList)
 
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
@@ -123,7 +117,7 @@ var _ = Describe("S3Client", func() {
 				itemsList := []mockItem{
 					newMockItem("[product-slug,1.1.1]somefile-0.0.2.zip"),
 				}
-				stower := newMockStower(itemsList, &callCount)
+				stower := newMockStower(itemsList)
 				config := commands.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
@@ -153,7 +147,7 @@ var _ = Describe("S3Client", func() {
 				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
 			}
 
-			stower := newMockStower(itemsList, &callCount)
+			stower := newMockStower(itemsList)
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
@@ -177,7 +171,7 @@ var _ = Describe("S3Client", func() {
 				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
 			}
 
-			stower := newMockStower(itemsList, &callCount)
+			stower := newMockStower(itemsList)
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
@@ -201,7 +195,7 @@ var _ = Describe("S3Client", func() {
 				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
 			}
 
-			stower := newMockStower(itemsList, &callCount)
+			stower := newMockStower(itemsList)
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
@@ -245,9 +239,8 @@ var _ = Describe("S3Client", func() {
 			container := mockContainer{item: item}
 			location := mockLocation{container: &container}
 			stower := &mockStower{
-				location:      location,
-				itemsList:     []mockItem{item},
-				dialCallCount: &callCount,
+				location:  location,
+				itemsList: []mockItem{item},
 			}
 
 			config := commands.S3Configuration{
@@ -270,9 +263,8 @@ var _ = Describe("S3Client", func() {
 			container := mockContainer{item: item}
 			location := mockLocation{container: &container}
 			stower := &mockStower{
-				location:      location,
-				itemsList:     []mockItem{item},
-				dialCallCount: &callCount,
+				location:  location,
+				itemsList: []mockItem{item},
 			}
 
 			config := commands.S3Configuration{
@@ -301,8 +293,7 @@ var _ = Describe("S3Client", func() {
 				containerError: errors.New("expected element type <Error> but have StowErrorType"),
 			}
 			stower := &mockStower{
-				dialCallCount: &callCount,
-				location:      location,
+				location: location,
 			}
 			config := commands.S3Configuration{
 				Bucket:          "bucket",
@@ -374,7 +365,7 @@ var _ = Describe("S3Client", func() {
 	It("returns an error on stower failure", func() {
 		dialError := errors.New("dial error")
 		itemsList := []mockItem{{}}
-		stower := newMockStower(itemsList, &callCount)
+		stower := newMockStower(itemsList)
 		stower.dialError = dialError
 
 		config := commands.S3Configuration{
@@ -397,23 +388,22 @@ var _ = Describe("S3Client", func() {
 type mockStower struct {
 	itemsList      []mockItem
 	location       mockLocation
-	dialCallCount  *int
+	dialCallCount  int
 	dialError      error
 	containerError error
 	itemError      error
 	config         commands.Config
 }
 
-func newMockStower(itemsList []mockItem, callCount *int) *mockStower {
+func newMockStower(itemsList []mockItem) *mockStower {
 	return &mockStower{
-		itemsList:     itemsList,
-		dialCallCount: callCount,
+		itemsList: itemsList,
 	}
 }
 
 func (s *mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
 	s.config = config
-	*s.dialCallCount++
+	s.dialCallCount++
 	if s.dialError != nil {
 		return nil, s.dialError
 	}
