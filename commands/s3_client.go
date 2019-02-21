@@ -76,27 +76,19 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 		return nil, err
 	}
 
-	productFileCompiledRegex := regexp.MustCompile(fmt.Sprintf(`%s\-%s`, slug, Semver2Regex))
+	productFileCompiledRegex := regexp.MustCompile(fmt.Sprintf(`^\[%s,(.*)\]`, slug))
 
 	var versions []string
 	versionFound := make(map[string]bool)
 	for _, fileName := range files {
 		match := productFileCompiledRegex.FindStringSubmatch(fileName)
-		if len(match) > MatchGroupCountForMainSemverVersion {
-			namedResultsOfCaptureGroups := make(map[string]string)
-			for i, name := range productFileCompiledRegex.SubexpNames() {
-				if i != 0 && name != "" {
-					namedResultsOfCaptureGroups[name] = match[i]
-				}
-			}
-
-			version := fmt.Sprintf("%s.%s.%s", namedResultsOfCaptureGroups["major"], namedResultsOfCaptureGroups["minor"], namedResultsOfCaptureGroups["patch"])
+		if match != nil {
+			version := match[1]
 			if !versionFound[version] {
 				versions = append(versions, version)
 				versionFound[version] = true
 			}
 		}
-
 	}
 
 	if len(versions) == 0 {
@@ -113,27 +105,36 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 		return nil, err
 	}
 
-	validFile := regexp.MustCompile(fmt.Sprintf(`^%s-%s`, slug, version))
-	var artifacts []string
+	validFile := regexp.MustCompile(fmt.Sprintf(`^\[%s,%s\]`, slug, version))
+	var prefixedFilepaths []string
+	var globMatchedFilepaths []string
 
 	for _, f := range files {
 		if validFile.MatchString(f) {
-			matched, _ := filepath.Match(glob, f)
-			if matched {
-				artifacts = append(artifacts, f)
-			}
+			prefixedFilepaths = append(prefixedFilepaths, f)
 		}
 	}
 
-	if len(artifacts) > 1 {
-		return nil, fmt.Errorf("the glob '%s' matches multiple files. Write your glob to match exactly one of the following:\n  %s", glob, strings.Join(artifacts, "\n  "))
+	if len(prefixedFilepaths) == 0 {
+		return nil, fmt.Errorf("no product files with expected prefix [%s,%s] found. Please ensure the file you're trying to download was initially persisted from Pivotal Network net using an appropriately configured download-product command", slug, version)
 	}
 
-	if len(artifacts) == 0 {
+	for _, f := range prefixedFilepaths {
+		matched, _ := filepath.Match(glob, f)
+		if matched {
+			globMatchedFilepaths = append(globMatchedFilepaths, f)
+		}
+	}
+
+	if len(globMatchedFilepaths) > 1 {
+		return nil, fmt.Errorf("the glob '%s' matches multiple files. Write your glob to match exactly one of the following:\n  %s", glob, strings.Join(globMatchedFilepaths, "\n  "))
+	}
+
+	if len(globMatchedFilepaths) == 0 {
 		return nil, fmt.Errorf("the glob '%s' matches no file", glob)
 	}
 
-	return &FileArtifact{Name: artifacts[0]}, nil
+	return &FileArtifact{Name: globMatchedFilepaths[0]}, nil
 }
 
 func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, destinationFile *os.File) error {
@@ -226,8 +227,11 @@ func (s *S3Client) listFiles() ([]string, error) {
 		return nil, err
 	}
 
+	if len(paths) == 0 {
+		return nil, fmt.Errorf("bucket contains no files")
+	}
+
 	return paths, nil
 }
 
 const Semver2Regex = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
-const MatchGroupCountForMainSemverVersion = 4

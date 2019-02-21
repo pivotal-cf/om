@@ -125,7 +125,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return err
 	}
 
-	prefixPath := fmt.Sprintf("%s-%s_", c.Options.PivnetProductSlug, productVersion)
+	prefixPath := fmt.Sprintf("[%s,%s]", c.Options.PivnetProductSlug, productVersion)
 	productFileName, productFileArtifact, err := c.downloadProductFile(c.Options.PivnetProductSlug, productVersion, c.Options.PivnetFileGlob, prefixPath)
 	if err != nil {
 		return fmt.Errorf("could not download product: %s", err)
@@ -258,7 +258,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		return "", nil, err
 	}
 
-	expectedFileFormat := regexp.MustCompile(fmt.Sprintf(`%s.*%s`, slug, Semver2Regex))
+	expectedFileFormat := regexp.MustCompile(fmt.Sprintf(`^\[%s,%s\]`, slug, regexp.QuoteMeta(version)))
 	var productFilePath string
 	if expectedFileFormat.MatchString(path.Base(fileArtifact.Name)) {
 		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))

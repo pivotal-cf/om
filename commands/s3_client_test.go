@@ -22,36 +22,8 @@ var _ = Describe("S3Client", func() {
 		callCount = 0
 	})
 
-	Context("GetAllProductVersions", func() {
-		It("returns versions matching the slug", func() {
-			itemsList := []mockItem{
-				newMockItem("product-slug-1.0.0-alpha.preview+123.github_somefile-0.0.1.zip"),
-				newMockItem("product-slug-1.1.1_somefile-0.0.2.zip"),
-				newMockItem("another-slug-1.2.3_somefile-0.0.3.zip"),
-				newMockItem("another-slug-1.1.1_somefile-0.0.4.zip"),
-			}
-			stower := newMockStower(itemsList, &callCount)
-			config := commands.S3Configuration{
-				Bucket:          "bucket",
-				AccessKeyID:     "access-key-id",
-				SecretAccessKey: "secret-access-key",
-				RegionName:      "region",
-				Endpoint:        "endpoint",
-			}
-
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			versions, err := client.GetAllProductVersions("product-slug")
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(versions).To(Equal([]string{
-				"1.0.0",
-				"1.1.1",
-			}))
-		})
-
-		When("there are multiple files of the same 'version', differing only in their tag", func() {
+	Describe("GetAllProductVersions", func() {
+		When("there are multiple files of the same 'version', differing by beta version", func() {
 			var (
 				stower *mockStower
 				config commands.S3Configuration
@@ -59,12 +31,10 @@ var _ = Describe("S3Client", func() {
 
 			BeforeEach(func() {
 				itemsList := []mockItem{
-					newMockItem("alpha.preview.github_somefile-product-slug-1.0.0+abuildtag.zip"),
-					newMockItem("alpha.preview.github_somefile-product-slug-1.0.0+otherbuildtag.zip"),
-					newMockItem("product-slug-1.1.1_somefile-0.0.2.zip"),
-					newMockItem("product-slug-1.1.1_someotherfile-0.0.2.zip"),
-					newMockItem("another-slug-1.2.3_somefile-0.0.3.zip"),
-					newMockItem("another-slug-1.1.1_somefile-0.0.4.zip"),
+					newMockItem("[product-slug,1.0.0-beta.1]someproductfile.zip"),
+					newMockItem("[product-slug,1.0.0-beta.2]someproductfile.zip"),
+					newMockItem("[product-slug,1.1.1]somefile-0.0.2.zip"),
+					newMockItem("[product-slug,1.1.1]someotherfile-0.0.2.zip"),
 				}
 
 				stower = newMockStower(itemsList, &callCount)
@@ -77,7 +47,7 @@ var _ = Describe("S3Client", func() {
 				}
 			})
 
-			It("reports only one file for the duplicate version", func() {
+			It("reports all versions, including the beta versions", func() {
 				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
@@ -85,7 +55,8 @@ var _ = Describe("S3Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(versions).To(Equal([]string{
-					"1.0.0",
+					"1.0.0-beta.1",
+					"1.0.0-beta.2",
 					"1.1.1",
 				}))
 			})
@@ -150,10 +121,7 @@ var _ = Describe("S3Client", func() {
 		When("configuring s3", func() {
 			It("can support v2 signing", func() {
 				itemsList := []mockItem{
-					newMockItem("product-slug-1.0.0-alpha.preview+123.github_somefile-0.0.1.zip"),
-					newMockItem("product-slug-1.1.1_somefile-0.0.2.zip"),
-					newMockItem("another-slug-1.2.3_somefile-0.0.3.zip"),
-					newMockItem("another-slug-1.1.1_somefile-0.0.4.zip"),
+					newMockItem("[product-slug,1.1.1]somefile-0.0.2.zip"),
 				}
 				stower := newMockStower(itemsList, &callCount)
 				config := commands.S3Configuration{
@@ -178,11 +146,11 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	Context("GetLatestProductFile", func() {
+	Describe("GetLatestProductFile", func() {
 		It("returns a file artifact", func() {
 			itemsList := []mockItem{
-				newMockItem("product-slug-1.0.0-pcf-vsphere-2.1-build.341.ova"),
-				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.348.ova"),
+				newMockItem("[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
 			}
 
 			stower := newMockStower(itemsList, &callCount)
@@ -199,14 +167,14 @@ var _ = Describe("S3Client", func() {
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(fileArtifact.Name).To(Equal("product-slug-1.1.1-pcf-vsphere-2.1-build.348.ova"))
+			Expect(fileArtifact.Name).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
 		It("errors when two files match the same glob", func() {
 			itemsList := []mockItem{
-				newMockItem("product-slug-1.0.0-pcf-vsphere-2.1-build.341.ova"),
-				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.345.ova"),
-				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.348.ova"),
+				newMockItem("[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.345.ova"),
+				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
 			}
 
 			stower := newMockStower(itemsList, &callCount)
@@ -226,11 +194,11 @@ var _ = Describe("S3Client", func() {
 			Expect(err.Error()).To(ContainSubstring("the glob '*vsphere*ova' matches multiple files. Write your glob to match exactly one of the following"))
 		})
 
-		It("errors when zero files match the same glob", func() {
+		It("errors when zero prefixed files match the glob", func() {
 			itemsList := []mockItem{
-				newMockItem("product-slug-1.0.0-pcf-vsphere-2.1-build.341.ova"),
-				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.345.ova"),
-				newMockItem("product-slug-1.1.1-pcf-vsphere-2.1-build.348.ova"),
+				newMockItem("[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.345.ova"),
+				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
 			}
 
 			stower := newMockStower(itemsList, &callCount)
