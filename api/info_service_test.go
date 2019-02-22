@@ -25,6 +25,9 @@ var _ = Describe("Info Service", func() {
 				{"1.12-build1", false},
 				{"2.0-build1", false},
 				{"2.3-build33", true},
+				{"2.1.0-build2", false},
+				{"2.2.2-build2", true},
+				{"2.5.0-build33", true},
 			}
 			for _, test := range tests {
 				Expect(api.Info{Version: test.ver}.VersionAtLeast(2, 2)).To(Equal(test.result))
