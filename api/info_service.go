@@ -14,19 +14,24 @@ type Info struct {
 }
 
 func (i Info) VersionAtLeast(major, minor int) bool {
-	// Given: X.Y-build.Z
+	// Given: X.Y-build.Z or X.Y.Z-build.A
 	// Extract X and Y
 	idx := strings.Index(i.Version, ".")
-	majv := i.Version[:idx]                                  // take substring up to '.'
-	minv := i.Version[idx+1 : strings.Index(i.Version, "-")] // take substring between '.' and '-'
+	majv := i.Version[:idx]                                        // take substring up to '.'
+	legacyMinv := i.Version[idx+1 : strings.Index(i.Version, "-")] // take substring between '.' and '-'
 
 	maj, err := strconv.Atoi(majv)
 	if err != nil {
 		panic("invalid version: " + i.Version)
 	}
-	min, err := strconv.Atoi(minv)
+
+	min, err := strconv.Atoi(legacyMinv)
 	if err != nil {
-		panic("invalid version: " + i.Version)
+		semverMinv := legacyMinv[:strings.Index(legacyMinv, ".")] // take substring up to '.'
+		min, err = strconv.Atoi(semverMinv)
+		if err != nil {
+			panic("invalid version: " + i.Version)
+		}
 	}
 
 	if maj < major || (maj == major && min < minor) {
