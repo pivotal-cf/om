@@ -30,7 +30,7 @@ var _ = Describe("download-product command", func() {
 
 			// upload artifact to it
 			bucketName = fmt.Sprintf("bucket-%d", config.GinkgoConfig.ParallelNode)
-			runCommand("mc", "mb", "testing/"+bucketName)
+			runCommand("mc", "mb", "--ignore-existing", "testing/"+bucketName)
 		})
 
 		AfterEach(func() {
