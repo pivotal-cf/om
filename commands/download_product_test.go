@@ -232,8 +232,16 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		Context("when the download-stemcell flag is set", func() {
+		Context("when the stemcell-iaas flag is set", func() {
 			BeforeEach(func() {
+				commandArgs = []string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+					"--stemcell-iaas", "google",
+				}
 				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(1, pivnet.Release{
 					ID: 9999,
 				}, nil)
@@ -296,14 +304,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("grabs the latest stemcell for the product that matches the glob", func() {
-				err = command.Execute([]string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--output-directory", tempDir,
-					"--stemcell-iaas", "google",
-				})
+				err = command.Execute(commandArgs)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(fakePivnetDownloader.ReleaseDependenciesCallCount()).To(Equal(1))
@@ -338,7 +339,7 @@ var _ = Describe("DownloadProduct", func() {
 					}`, downloadedFilePath, stemcellFile.Name())))
 			})
 
-			Context("when the product is not a tile and download-stemcell flag is set", func() {
+			Context("and the product is not a tile", func() {
 				BeforeEach(func() {
 					fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 						ID: 12345,
@@ -353,7 +354,7 @@ var _ = Describe("DownloadProduct", func() {
 					}, nil)
 				})
 
-				It("exit gracefully when the product is not a tile", func() {
+				It("exits 0 and prints a warning when the product is not a tile", func() {
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
 						"--pivnet-file-glob", "*.tgz",
@@ -362,6 +363,7 @@ var _ = Describe("DownloadProduct", func() {
 						"--output-directory", tempDir,
 						"--stemcell-iaas", "google",
 					})
+
 					Expect(err).NotTo(HaveOccurred())
 					Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
 					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(1))
