@@ -3,14 +3,15 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/graymeta/stow"
-	"github.com/pivotal-cf/pivnet-cli/filter"
 	"io"
 	"os"
 	"path"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/graymeta/stow"
+	"github.com/pivotal-cf/pivnet-cli/filter"
 
 	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/go-pivnet"
@@ -71,7 +72,7 @@ type DownloadProduct struct {
 		S3SecretAccessKey   string   `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
 		S3RegionName        string   `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
 		S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
-		S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting  the s3 compatible blobstore"`
+		S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
 		S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
 		S3Path              string   `long:"s3-path"                          description:"specify the lookup path where the s3 artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
 		Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
