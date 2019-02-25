@@ -107,6 +107,22 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(fakeStower.dialCallCount).Should(BeNumerically(">", 0))
 				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
 			})
+
+			PWhen("stemcell-iaas is also set", func() {
+				BeforeEach(func() {
+					commandArgs = append(commandArgs, "--stemcell-iaas", "google")
+				})
+
+				It("downloads the stemcell specified in the metadata of the downloaded tile from S3", func() {
+
+				})
+				PIt("doesn't download the stemcell again if it's already in the cache", func() {
+				})
+				PWhen("a stemcell satisfying the specification is not available in S3", func() {
+					It("exits 1, prints an error with the needed stemcell, and the S3 path", func() {
+					})
+				})
+			})
 		})
 
 		Context("when a valid product-version-regex is provided", func() {
