@@ -34,7 +34,7 @@ type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
 	GetLatestProductFile(slug, version, glob string) (*FileArtifact, error)
 	DownloadProductToFile(fa *FileArtifact, file *os.File) error
-	DownloadProductStemcell(fa *FileArtifact) (*stemcell, error)
+	DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error)
 }
 
 func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
@@ -147,7 +147,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 
 	stemcell, err := c.downloadClient.DownloadProductStemcell(productFileArtifact)
 	if err != nil {
-		return fmt.Errorf("could not information about stemcell: %s", err)
+		return fmt.Errorf("could not get information about stemcell: %s", err)
 	}
 
 	prefixPath = ""

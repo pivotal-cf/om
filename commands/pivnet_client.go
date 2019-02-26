@@ -59,7 +59,7 @@ type FileArtifact struct {
 	productFileID int
 }
 
-type stemcell struct {
+type Stemcell struct {
 	Slug    string
 	Version string
 }
@@ -116,7 +116,7 @@ func (p *pivnetClient) DownloadProductToFile(fa *FileArtifact, file *os.File) er
 	return nil
 }
 
-func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) {
+func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error) {
 	dependencies, err := p.downloader.ReleaseDependencies(fa.slug, fa.releaseID)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch stemcell dependency for %s: %s", fa.slug, err)
@@ -127,7 +127,7 @@ func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*stemcell, err
 		return nil, fmt.Errorf("could not sort stemcell dependency: %s", err)
 	}
 
-	return &stemcell{Slug: stemcellSlug, Version: stemcellVersion}, nil
+	return &Stemcell{Slug: stemcellSlug, Version: stemcellVersion}, nil
 }
 
 func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []pivnet.ProductFile) error {

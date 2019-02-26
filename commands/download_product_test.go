@@ -28,6 +28,8 @@ var _ = Describe("DownloadProduct", func() {
 		environFunc          func() []string
 		tempDir              string
 		err                  error
+		file                 *os.File
+		fileContents         = "hello world"
 	)
 
 	fakePivnetFactory := func(config pivnet.ClientConfig, logger log.Logger) commands.PivnetDownloader {
@@ -35,14 +37,39 @@ var _ = Describe("DownloadProduct", func() {
 	}
 
 	BeforeEach(func() {
+		var err error
+		file, err = os.Create("[product-slug,1.0.0-beta.1]product.pivotal")
+		Expect(err).ToNot(HaveOccurred())
+		defer file.Close()
+
+		_, err = file.WriteString(fileContents)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = file.Close()
+
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
-		fakeStower = newMockStower([]mockItem{})
+		itemsList := []mockItem{newMockItem(file.Name())}
+		container := &mockContainer{
+			item: itemsList[0],
+		}
+		location := mockLocation{
+			container: container,
+		}
+		fakeStower = &mockStower{
+			location:  location,
+			itemsList: itemsList,
+		}
 		environFunc = func() []string { return nil }
 	})
 
 	JustBeforeEach(func() {
 		command = commands.NewDownloadProduct(environFunc, logger, GinkgoWriter, fakePivnetFactory, fakeStower)
+	})
+
+	AfterEach(func() {
+		err := os.Remove(file.Name())
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Context("when the flags are set correctly", func() {
@@ -86,11 +113,12 @@ var _ = Describe("DownloadProduct", func() {
 
 		When("the blobstore flag is set to s3", func() {
 			BeforeEach(func() {
+				command = commands.NewDownloadProduct(environFunc, logger, GinkgoWriter, fakePivnetFactory, fakeStower)
 				commandArgs = []string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
+					"--pivnet-product-slug", "product-slug",
+					"--product-version", "1.0.0-beta.1",
 					"--output-directory", tempDir,
 					"--blobstore", "s3",
 					"--s3-bucket", "bucket",
@@ -102,26 +130,11 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("downloads the specified product from s3", func() {
-				command.Execute(commandArgs)
+				err := command.Execute(commandArgs)
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeStower.dialCallCount).Should(BeNumerically(">", 0))
 				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
-			})
-
-			PWhen("stemcell-iaas is also set", func() {
-				BeforeEach(func() {
-					commandArgs = append(commandArgs, "--stemcell-iaas", "google")
-				})
-
-				It("downloads the stemcell specified in the metadata of the downloaded tile from S3", func() {
-
-				})
-				PIt("doesn't download the stemcell again if it's already in the cache", func() {
-				})
-				PWhen("a stemcell satisfying the specification is not available in S3", func() {
-					It("exits 1, prints an error with the needed stemcell, and the S3 path", func() {
-					})
-				})
 			})
 		})
 
