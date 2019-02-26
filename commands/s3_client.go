@@ -1,9 +1,13 @@
 package commands
 
 import (
+	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -208,8 +212,55 @@ func (s3 S3Client) streamBufferToFile(destinationFile *os.File, wrappedBlobReade
 	return err
 }
 
-func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*stemcell, error) {
-	return nil, errors.New("downloading stemcells for s3 is not supported at this time")
+func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error) {
+	// Open a zip archive for reading.
+	tileZipReader, err := zip.OpenReader(fa.Name)
+	if err != nil {
+		log.Fatal(`could not parse tile. Ensure that downloaded file is a valid pivotal tile`, err)
+	}
+
+	defer tileZipReader.Close()
+
+	metadataRegex := regexp.MustCompile(`^metadata/.*\.yml`)
+
+	for _, file := range tileZipReader.File {
+		// check if the file matches the name for application portfolio xml
+
+		if metadataRegex.MatchString(file.Name) {
+			metadataReadCloser, err := file.Open()
+			if err != nil {
+				return nil, err
+			}
+
+			metadataBuffer := new(bytes.Buffer)
+			_, err = metadataBuffer.ReadFrom(metadataReadCloser)
+			if err != nil {
+				return nil, err
+			}
+
+			metadata := stemcellMetadata{}
+			err = yaml.Unmarshal(metadataBuffer.Bytes(), &metadata)
+			if err != nil {
+				return nil, err
+			}
+
+			return &Stemcell{
+				Slug:    metadata.Metadata.Os,
+				Version: metadata.Metadata.Version,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile: %s", fa.Name)
+}
+
+type stemcellMetadata struct {
+	Metadata internalStemcellMetadata `yaml:"stemcell_criteria"`
+}
+
+type internalStemcellMetadata struct {
+	Os                   string `yaml:"os"`
+	Version              string `yaml:"version"`
+	PatchSecurityUpdates string `yaml:"enable_patch_security_updates"`
 }
 
 var InvalidEndpointErrorMessageTemplate = "Could not reach provided endpoint: '%s': %s"

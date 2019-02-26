@@ -1,12 +1,11 @@
 package commands_test
 
 import (
-	"net/url"
-
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"net/url"
 
 	"io"
 	"io/ioutil"
@@ -306,30 +305,6 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("errors when cannot open file", func() {
-			item := newMockItem(file.Name())
-			item.fileError = errors.New("could not open file")
-			container := mockContainer{item: item}
-			location := mockLocation{container: &container}
-			stower := &mockStower{
-				location:  location,
-				itemsList: []mockItem{item},
-			}
-
-			config := commands.S3Configuration{
-				Bucket:          "bucket",
-				AccessKeyID:     "access-key-id",
-				SecretAccessKey: "secret-access-key",
-				RegionName:      "region",
-				Endpoint:        "endpoint",
-			}
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
-			Expect(err).To(HaveOccurred())
-		})
-
 		It("writes to a file when the file exists", func() {
 			item := newMockItem(file.Name())
 			item.fakeFileName = file.Name()
@@ -384,6 +359,72 @@ var _ = Describe("S3Client", func() {
 
 			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
 			Expect(err.Error()).To(ContainSubstring("Could not reach provided endpoint: 'endpoint': expected element type <Error> but have StowErrorType"))
+		})
+
+		It("errors when cannot open file", func() {
+			item := newMockItem(file.Name())
+			item.fileError = errors.New("could not open file")
+			container := mockContainer{item: item}
+			location := mockLocation{container: &container}
+			stower := &mockStower{
+				location:  location,
+				itemsList: []mockItem{item},
+			}
+
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("DownloadProductStemcell", func() {
+		It("downloads the stemcell specified in the metadata of the downloaded tile from S3", func() {
+			exampleTileFileName := "./[example-product,1.0-build.0]example.pivotal"
+			versionFromExampleTile := "97.28"
+			stemcellSlugFromExampleTile := "ubuntu-xenial"
+			item := newMockItem(exampleTileFileName)
+			item.fakeFileName = exampleTileFileName
+			container := mockContainer{item: item}
+			location := mockLocation{container: &container}
+			stower := &mockStower{
+				location:  location,
+				itemsList: []mockItem{item},
+			}
+
+			config := commands.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			stemcell, err := client.DownloadProductStemcell(&commands.FileArtifact{Name: exampleTileFileName})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(stemcell.Version).To(Equal(versionFromExampleTile))
+			Expect(stemcell.Slug).To(Equal(stemcellSlugFromExampleTile))
+		})
+
+		PIt("doesn't download the stemcell again if it's already in the cache", func() {
+
+		})
+
+		PWhen("a Stemcell satisfying the specification is not available in S3", func() {
+			It("exits 1, prints an error with the needed Stemcell, and the S3 path", func() {
+
+			})
 		})
 	})
 
