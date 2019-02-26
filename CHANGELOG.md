@@ -1,3 +1,11 @@
+## 0.54.0 (unreleased)
+
+### Bug Fixes
+
+* when trying to delete a product on Ops Manager during a selective deploy (`apply-changes --product-name tile`), Ops
+  Manager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build number). A
+  change was made to the info service to accept the new semver formatting as well as the old versioning. 
+
 ## 0.53.0 
 
 ### Bug Fixes
