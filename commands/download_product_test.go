@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"fmt"
+	"github.com/pivotal-cf/om/validator"
 	"io/ioutil"
 	"os"
 	"path"
@@ -15,7 +16,6 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"github.com/pivotal-cf/om/validator"
 )
 
 var _ = Describe("DownloadProduct", func() {
@@ -38,7 +38,7 @@ var _ = Describe("DownloadProduct", func() {
 
 	BeforeEach(func() {
 		var err error
-		file, err = os.Create("[product-slug,1.0.0-beta.1]product.pivotal")
+		file, err = ioutil.TempFile("", "[product-slug,1.0.0-beta.1]product*.pivotal")
 		Expect(err).ToNot(HaveOccurred())
 		defer file.Close()
 
@@ -49,7 +49,7 @@ var _ = Describe("DownloadProduct", func() {
 
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
-		itemsList := []mockItem{newMockItem(file.Name())}
+		itemsList := []mockItem{newMockItem("[product-slug,1.0.0-beta.1]product.pivotal")}
 		container := &mockContainer{
 			item: itemsList[0],
 		}
@@ -406,19 +406,7 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		Context("when the file is already downloaded", func() {
-			BeforeEach(func() {
-				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
-				file, err := os.Create(filePath)
-				Expect(err).NotTo(HaveOccurred())
-				_, err = file.WriteString("something-not-important")
-				Expect(err).NotTo(HaveOccurred())
-				err = file.Close()
-				Expect(err).NotTo(HaveOccurred())
-
-				validator := validator.NewSHA256Calculator()
-				sum, err := validator.Checksum(filePath)
-				Expect(err).NotTo(HaveOccurred())
-
+			setupPivnetAPIForProduct := func(shaSum string) {
 				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 					ID: 54321,
 				}, nil)
@@ -427,7 +415,7 @@ var _ = Describe("DownloadProduct", func() {
 					{
 						ID:           54321,
 						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
-						SHA256:       sum,
+						SHA256:       shaSum,
 						Name:         "Example Cloud Foundry",
 					},
 				}, nil)
@@ -487,36 +475,97 @@ var _ = Describe("DownloadProduct", func() {
 						},
 					}},
 				}, nil)
-			})
+			}
 
-			It("does not download the file again", func() {
-				err = command.Execute([]string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--output-directory", tempDir,
-				})
+			createFilePath := func() string {
+				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
+				file, err := os.Create(filePath)
 				Expect(err).NotTo(HaveOccurred())
+				_, err = file.WriteString("something-not-important")
+				Expect(err).NotTo(HaveOccurred())
+				err = file.Close()
+				Expect(err).NotTo(HaveOccurred())
+				return filePath
+			}
 
-				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
-				Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
-				Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(0))
+			When("a sha sum is provided by Pivnet", func() {
+				BeforeEach(func() {
+					filePath := createFilePath()
 
-				logStr, _ := logger.InfoArgsForCall(0)
-				Expect(logStr).To(ContainSubstring("already exists, skip downloading"))
+					validator := validator.NewSHA256Calculator()
+					sum, err := validator.Checksum(filePath)
+					Expect(err).NotTo(HaveOccurred())
+					setupPivnetAPIForProduct(sum)
+				})
+
+				It("does not download the file again", func() {
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(0))
+
+					logStr, _ := logger.InfoArgsForCall(0)
+					Expect(logStr).To(ContainSubstring("already exists, skip downloading"))
+				})
+
+				It("does not panic when downloading the stemcell if file already downloaded", func() {
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--stemcell-iaas", "google",
+						"--output-directory", tempDir,
+					})
+					Expect(err).ToNot(HaveOccurred())
+				})
 			})
 
-			It("does not panic when downloading the stemcell if file already downloaded", func() {
-				err = command.Execute([]string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--stemcell-iaas", "google",
-					"--output-directory", tempDir,
+			When("no sha sum is provided", func() {
+				It("does not re-download the product", func() {
+					createFilePath()
+					setupPivnetAPIForProduct("")
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.ProductFilesForReleaseCallCount()).To(Equal(1))
+					Expect(fakePivnetDownloader.DownloadProductFileCallCount()).To(Equal(0))
+
+					logStr, _ := logger.InfoArgsForCall(0)
+					Expect(logStr).To(ContainSubstring("already exists, skip downloading"))
 				})
-				Expect(err).ToNot(HaveOccurred())
+			})
+
+			When("the sha is invalid", func() {
+				It("downloads it, again", func() {
+					createFilePath()
+					setupPivnetAPIForProduct("asdfasdfasdf")
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+					})
+					Expect(err).ToNot(HaveOccurred())
+				})
 			})
 		})
 

@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"net/url"
+	"strings"
 
 	"io"
 	"io/ioutil"
@@ -308,7 +309,6 @@ var _ = Describe("S3Client", func() {
 
 		It("writes to a file when the file exists", func() {
 			item := newMockItem(file.Name())
-			item.fakeFileName = file.Name()
 			container := mockContainer{item: item}
 			location := mockLocation{container: &container}
 			stower := &mockStower{
@@ -660,15 +660,13 @@ func (m mockContainer) Put(name string, r io.Reader, size int64, metadata map[st
 
 type mockItem struct {
 	stow.Item
-	idString     string
-	fakeFileName string
-	fileError    error
+	idString  string
+	fileError error
 }
 
 func newMockItem(idString string) mockItem {
 	return mockItem{
-		idString:     idString,
-		fakeFileName: idString,
+		idString: idString,
 	}
 }
 
@@ -677,13 +675,7 @@ func (m mockItem) Open() (io.ReadCloser, error) {
 		return nil, m.fileError
 	}
 
-	if m.fakeFileName != "" {
-		reader, err := os.Open(m.fakeFileName)
-		Expect(err).ToNot(HaveOccurred())
-		return ioutil.NopCloser(reader), nil
-	}
-
-	return nil, nil
+	return ioutil.NopCloser(strings.NewReader("hello world")), nil
 }
 
 func (m mockItem) ID() string {

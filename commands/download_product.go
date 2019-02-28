@@ -305,6 +305,10 @@ func checkFileExists(path, expectedSum string) (bool, error) {
 		}
 	}
 
+	if expectedSum == "" {
+		return true, nil
+	}
+
 	validate := validator.NewSHA256Calculator()
 	sum, err := validate.Checksum(path)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 )
@@ -65,6 +66,35 @@ var _ = Describe("download-product command", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
+
+				fileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]product.pivotal"))
+				Expect(err).ToNot(HaveOccurred())
+
+				By("running the command again, it uses the cache")
+				command = exec.Command(pathToMain, "download-product",
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "example-product",
+					"--product-version", "1.10.1",
+					"--output-directory", tmpDir,
+					"--blobstore", "s3",
+					"--s3-bucket", bucketName,
+					"--s3-access-key-id", "minio",
+					"--s3-secret-access-key", "password",
+					"--s3-region-name", "unknown",
+					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--stemcell-iaas", "google",
+				)
+
+				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+				Eventually(session, "10s").Should(gexec.Exit(0))
+				Expect(string(session.Err.Contents())).To(ContainSubstring("[example-product,1.10.1]product.pivotal already exists, skip downloading"))
+				Expect(string(session.Err.Contents())).To(ContainSubstring("[ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))
+
+				cachedFileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]product.pivotal"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(cachedFileInfo.ModTime()).To(Equal(fileInfo.ModTime()))
 			})
 		})
 
