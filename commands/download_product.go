@@ -34,7 +34,7 @@ type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
 	GetLatestProductFile(slug, version, glob string) (*FileArtifact, error)
 	DownloadProductToFile(fa *FileArtifact, file *os.File) error
-	DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error)
+	GetLatestStemcellForProduct(fa *FileArtifact, downloadedProductFileName string) (*Stemcell, error)
 }
 
 func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
@@ -127,8 +127,12 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return err
 	}
 
-	prefixPath := fmt.Sprintf("[%s,%s]", c.Options.PivnetProductSlug, productVersion)
-	productFileName, productFileArtifact, err := c.downloadProductFile(c.Options.PivnetProductSlug, productVersion, c.Options.PivnetFileGlob, prefixPath)
+	productFileName, productFileArtifact, err := c.downloadProductFile(
+		c.Options.PivnetProductSlug,
+		productVersion,
+		c.Options.PivnetFileGlob,
+		fmt.Sprintf("[%s,%s]", c.Options.PivnetProductSlug, productVersion),
+	)
 	if err != nil {
 		return fmt.Errorf("could not download product: %s", err)
 	}
@@ -145,13 +149,17 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return nil
 	}
 
-	stemcell, err := c.downloadClient.DownloadProductStemcell(productFileArtifact)
+	stemcell, err := c.downloadClient.GetLatestStemcellForProduct(productFileArtifact, productFileName)
 	if err != nil {
 		return fmt.Errorf("could not get information about stemcell: %s", err)
 	}
 
-	prefixPath = ""
-	stemcellFileName, _, err := c.downloadProductFile(stemcell.Slug, stemcell.Version, fmt.Sprintf("*%s*", c.Options.StemcellIaas), prefixPath)
+	stemcellFileName, _, err := c.downloadProductFile(
+		stemcell.Slug,
+		stemcell.Version,
+		fmt.Sprintf("*%s*", c.Options.StemcellIaas),
+		fmt.Sprintf("[%s,%s]", stemcell.Slug, stemcell.Version),
+	)
 	if err != nil {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}

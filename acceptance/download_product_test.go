@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"archive/zip"
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
@@ -35,6 +36,36 @@ var _ = Describe("download-product command", func() {
 
 		AfterEach(func() {
 			runCommand("mc", "rm", "--force", "--recursive", "testing/"+bucketName)
+		})
+
+		When("specifying the stemcell iaas to download", func() {
+			It("downloads the product and correct stemcell", func() {
+				pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
+				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/[example-product,1.10.1]product.pivotal")
+				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/[ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
+
+				tmpDir, err := ioutil.TempDir("", "")
+				Expect(err).ToNot(HaveOccurred())
+				command := exec.Command(pathToMain, "download-product",
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "example-product",
+					"--product-version", "1.10.1",
+					"--output-directory", tmpDir,
+					"--blobstore", "s3",
+					"--s3-bucket", bucketName,
+					"--s3-access-key-id", "minio",
+					"--s3-secret-access-key", "password",
+					"--s3-region-name", "unknown",
+					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--stemcell-iaas", "google",
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+				Eventually(session, "10s").Should(gexec.Exit(0))
+				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
+			})
 		})
 
 		When("specifying the version of the AWS signature", func() {
@@ -257,4 +288,22 @@ func fileContents(paths ...string) []byte {
 	contents, err := ioutil.ReadFile(filepath.Join(path))
 	Expect(err).ToNot(HaveOccurred())
 	return contents
+}
+
+func createPivotalFile(productFileName, metadataFilename string) string {
+	tempfile, err := ioutil.TempFile("", productFileName)
+	Expect(err).NotTo(HaveOccurred())
+
+	zipper := zip.NewWriter(tempfile)
+	file, err := zipper.Create("metadata/props.yml")
+	Expect(err).NotTo(HaveOccurred())
+
+	contents, err := ioutil.ReadFile(metadataFilename)
+	Expect(err).NotTo(HaveOccurred())
+
+	_, err = file.Write(contents)
+	Expect(err).NotTo(HaveOccurred())
+
+	Expect(zipper.Close()).NotTo(HaveOccurred())
+	return tempfile.Name()
 }

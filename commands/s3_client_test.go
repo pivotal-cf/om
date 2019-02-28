@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"archive/zip"
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -386,44 +387,120 @@ var _ = Describe("S3Client", func() {
 		})
 	})
 
-	Describe("DownloadProductStemcell", func() {
-		It("downloads the stemcell specified in the metadata of the downloaded tile from S3", func() {
-			exampleTileFileName := "./[example-product,1.0-build.0]example.pivotal"
-			versionFromExampleTile := "97.28"
-			stemcellSlugFromExampleTile := "ubuntu-xenial"
-			item := newMockItem(exampleTileFileName)
-			item.fakeFileName = exampleTileFileName
-			container := mockContainer{item: item}
-			location := mockLocation{container: &container}
-			stower := &mockStower{
-				location:  location,
-				itemsList: []mockItem{item},
-			}
+	Describe("GetLatestStemcellForProduct", func() {
+		When("the s3 bucket has stemcells that product can used", func() {
+			It("returns the latest stemcell", func() {
+				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-97.28.yml")
 
-			config := commands.S3Configuration{
-				Bucket:          "bucket",
-				AccessKeyID:     "access-key-id",
-				SecretAccessKey: "secret-access-key",
-				RegionName:      "region",
-				Endpoint:        "endpoint",
-			}
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
+				stower := &mockStower{
+					itemsList: []mockItem{
+						newMockItem("[ubuntu-xenial,97.28]stemcell.tgz"),
+						newMockItem("[ubuntu-xenial,97.54]stemcell.tgz"),
+						newMockItem("[ubuntu-xenial,97.10]stemcell.tgz"),
+						newMockItem("[ubuntu-xenial,97.101]stemcell.tgz"),
+						newMockItem("[ubuntu-xenial,97.asdf]stemcell.tgz"),
+					},
+				}
 
-			stemcell, err := client.DownloadProductStemcell(&commands.FileArtifact{Name: exampleTileFileName})
-			Expect(err).ToNot(HaveOccurred())
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
 
-			Expect(stemcell.Version).To(Equal(versionFromExampleTile))
-			Expect(stemcell.Slug).To(Equal(stemcellSlugFromExampleTile))
+				stemcell, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(stemcell.Version).To(Equal("97.101"))
+				Expect(stemcell.Slug).To(Equal("ubuntu-xenial"))
+			})
 		})
 
-		PIt("doesn't download the stemcell again if it's already in the cache", func() {
+		Context("failure cases", func() {
+			It("errors with malformed stemcell version in the product", func() {
+				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-bad-version.yml")
 
-		})
+				stower := &mockStower{
+					itemsList: []mockItem{},
+				}
 
-		PWhen("a Stemcell satisfying the specification is not available in S3", func() {
-			It("exits 1, prints an error with the needed Stemcell, and the S3 path", func() {
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
 
+				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				Expect(err).To(MatchError("versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: whoops"))
+			})
+
+			It("errors when the product file does not have stemcell information", func() {
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+				client, err := commands.NewS3Client(nil, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.GetLatestStemcellForProduct(nil, "./fixtures/example-product.yml")
+				Expect(err).To(HaveOccurred())
+			})
+
+			It("errors when there are no available stemcell versions on s3", func() {
+				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-97.28.yml")
+
+				stower := &mockStower{
+					itemsList: []mockItem{},
+				}
+
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				Expect(err).To(MatchError("could not find stemcells on s3: bucket contains no files"))
+			})
+
+			It("errors when cannot get latest stemcell version", func() {
+				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-97.28.yml")
+
+				stower := &mockStower{
+					itemsList: []mockItem{
+						newMockItem("[ubuntu-xenial,96.28]stemcell.tgz"),
+						newMockItem("[ubuntu-xenial,96.54]stemcell.tgz"),
+						newMockItem("[ubuntu-xenial,96.10]stemcell.tgz"),
+					},
+				}
+
+				config := commands.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "region",
+					Endpoint:        "endpoint",
+				}
+				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				Expect(err).To(MatchError("no versions could be found equal to or greater than 97.28"))
 			})
 		})
 	})
@@ -615,4 +692,22 @@ func (m mockItem) ID() string {
 
 func (m mockItem) Size() (int64, error) {
 	return 0, nil
+}
+
+func createPivotalFile(productFileName, metadataFilename string) string {
+	tempfile, err := ioutil.TempFile("", productFileName)
+	Expect(err).NotTo(HaveOccurred())
+
+	zipper := zip.NewWriter(tempfile)
+	file, err := zipper.Create("metadata/props.yml")
+	Expect(err).NotTo(HaveOccurred())
+
+	contents, err := ioutil.ReadFile(metadataFilename)
+	Expect(err).NotTo(HaveOccurred())
+
+	_, err = file.Write(contents)
+	Expect(err).NotTo(HaveOccurred())
+
+	Expect(zipper.Close()).NotTo(HaveOccurred())
+	return tempfile.Name()
 }

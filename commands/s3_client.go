@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -212,11 +211,51 @@ func (s3 S3Client) streamBufferToFile(destinationFile *os.File, wrappedBlobReade
 	return err
 }
 
-func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error) {
-	// Open a zip archive for reading.
-	tileZipReader, err := zip.OpenReader(fa.Name)
+func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProductFileName string) (*Stemcell, error) {
+	definedStemcell, err := stemcellFromProduct(downloadedProductFileName)
 	if err != nil {
-		log.Fatal(`could not parse tile. Ensure that downloaded file is a valid pivotal tile`, err)
+		return nil, err
+	}
+
+	definedMajor, definedPatch, err := stemcellVersionPartsFromString(definedStemcell.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	allStemcellVersions, err := s3.GetAllProductVersions(definedStemcell.Slug)
+	if err != nil {
+		return nil, fmt.Errorf("could not find stemcells on s3: %s", err)
+	}
+
+	var filteredVersions []string
+	for _, version := range allStemcellVersions {
+		major, patch, _ := stemcellVersionPartsFromString(version)
+
+		if major == definedMajor && patch >= definedPatch {
+			filteredVersions = append(filteredVersions, version)
+		}
+	}
+
+	if len(filteredVersions) == 0 {
+		return nil, fmt.Errorf("no versions could be found equal to or greater than %s", definedStemcell.Version)
+	}
+
+	latestVersion, err := getLatestStemcellVersion(filteredVersions)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Stemcell{
+		Version: latestVersion,
+		Slug:    definedStemcell.Slug,
+	}, nil
+}
+
+func stemcellFromProduct(filename string) (*Stemcell, error) {
+	// Open a zip archive for reading.
+	tileZipReader, err := zip.OpenReader(filename)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse tile. Ensure that downloaded file is a valid pivotal tile: %s", err)
 	}
 
 	defer tileZipReader.Close()
@@ -250,7 +289,7 @@ func (s3 S3Client) DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error) 
 			}, nil
 		}
 	}
-	return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile: %s", fa.Name)
+	return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile: %s", filename)
 }
 
 type stemcellMetadata struct {

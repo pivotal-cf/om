@@ -1,0 +1,1048 @@
+---
+name: example-product
+product_version: "1.0-build.0"
+minimum_version_for_upgrade: "0"
+metadata_version: "2.5"
+label: 'Ops Manager: Example Product'
+description: An example product to demonstrate Ops Manager product-author features
+rank: 1
+service_broker: false # Default value
+opsmanager_syslog: true
+stemcell_criteria:
+  os: "ubuntu-xenial"
+  version: "97.28"
+
+  # allows you to opt-out of the default behaviour of Ops Manager 1.8+ to always
+  # use the latest patch update of an available stemcell version. Set to 'false'
+  # to use the exact version match of the stemcell.
+  #
+  # default: true
+  enable_patch_security_updates: true
+releases:
+  - name: example-release
+    file: "example-release-2.5.release43.tgz"
+    version: "2.5.release43"
+  - name: os-conf
+    file: os-conf
+    version: '15'
+
+variables:
+  - name: credhub-password
+    type: password
+  - name: generated-secret-migrated-to-credhub
+    type: password
+  - name: generated-rsa-key-migrated-to-credhub
+    type: rsa
+  - name: generated-simple-creds-migrated-to-credhub
+    type: user
+  - name: generated-salted-creds-migrated-to-credhub
+    type: user
+
+post_deploy_errands:
+  - name: example-errand
+    colocated: false
+    impact_warning: 'Vms will restart'
+  - name: example_colocated_errand
+    colocated: true
+    run_default: on
+    instances:
+      - web_server/first
+    label: colocated errand on web_server
+    description: This errand does little more than print a message in order to prove colocated errands work.
+    impact_warning: null
+
+pre_delete_errands:
+  - name: example-errand
+    impact_warning: 'Pre Delete warning'
+
+form_types:
+  - name: example-form
+    label: Configurable Properties
+    description: All the properties that you can configure!
+    markdown: |
+      ## I am markdown, hear me _roar_.
+
+      ![Alt text](http://placekitten.com/g/400/200)
+
+      Things to do:
+
+      1. Learn [markdown](https://daringfireball.net/projects/markdown/).
+      1. ...
+      1. Profit!
+    property_inputs:
+      - reference: .web_server.example_string
+        label: Example string
+        description: 'Configure a property of type string'
+      - reference: .web_server.example_string_with_placeholder
+        label: Example string containing Placeholder text
+        description: 'Optional field. Configuration not necessary'
+        placeholder: 'Ghost text. Spooky!'
+      - reference: .web_server.example_migrated_integer
+        label: Example integer
+        description: 'Configure a property of type integer'
+      - reference: .web_server.example_boolean
+        label: Example boolean
+        description: 'Configure a property of type boolean'
+      - reference: .web_server.example_dropdown
+        label: Example dropdown
+        description: 'Configure a property of type dropdown'
+      - reference: .web_server.example_domain
+        label: Example domain
+        description: 'Configure a property of type domain'
+      - reference: .web_server.example_wildcard_domain
+        label: Example wildcard_domain
+        description: 'Configure a property of type wildcard_domain'
+      - reference: .web_server.example_string_list
+        label: Example string_list
+        description: 'Configure a property of type string_list'
+      - reference: .web_server.example_text
+        label: Example text
+        description: 'Configure a property of type text (setting to "magic value" will cause the web server job instance count to go to 0)'
+      - reference: .web_server.example_ldap_url
+        label: Example ldap_url
+        description: 'Configure a property of type ldap_url'
+      - reference: .web_server.example_email
+        label: Example email
+        description: 'Configure a property of type email'
+      - reference: .web_server.example_http_url
+        label: Example http_url
+        description: 'Configure a property of type http_url'
+      - reference: .web_server.example_ip_address
+        label: Example ip_address
+        description: 'Configure a property of type ip_address'
+      - reference: .web_server.example_ip_ranges
+        label: Example ip_ranges
+        description: 'Configure a property of type ip_ranges'
+      - reference: .web_server.example_multi_select_options
+        label: Example multi_select_options
+        description: 'Configure a property of type multi_select_options'
+      - reference: .web_server.example_network_address_list
+        label: Example network_address_list
+        description: 'Configure a property of type network_address_list (this property was marked with freeze_on_deploy, and so will not be editable after changes are first applied)'
+      - reference: .web_server.example_network_address
+        label: Example network_address
+        description: 'Configure a property of type network_address'
+      - reference: .web_server.example_port
+        label: Example port
+        description: 'Configure a property of type port'
+      - reference: .web_server.example_smtp_authentication
+        label: Example smtp_authentication
+        description: 'Configure a property of type smtp_authentication'
+      - reference: .web_server.client_certificate
+        label: Example certificate
+        description: 'Configure a certificate'
+      - reference: .web_server.example_vm_type_dropdown
+        label: Example vm type dropdown
+        description: 'The larger the VM the more cookies we can bake'
+      - reference: .web_server.example_disk_type_dropdown
+        label: Example disk type dropdown
+        description: 'The larger the disk the more cookies we store'
+  - name: example_collections_form
+    label: 'Collection example'
+    description: 'A collection example form'
+    property_inputs:
+      - reference: .properties.example_collection
+        label: 'Albums collection'
+        description: 'The albums'
+        property_inputs:
+          - reference: album
+            label: 'Name of the Album'
+            description: 'ex Graceland'
+          - reference: artist
+            label: 'Name of the Artist'
+            description: 'ex Paul Simon'
+          - reference: explicit
+            label: 'Explicit?'
+            description: '$#!%&'
+          - reference: secret_meaning
+            label: 'Secret Meaning'
+            description: 'If you play it backwards...'
+          - reference: secret_meaning_rsa_cert_credentials
+            label: 'Secret Meaning RSA Cert'
+          - reference: secret_meaning_simple_credentials
+            label: 'Secret Meaning Simple Creds'
+          - reference: genre
+            label: 'Genre'
+            description: Are there others?
+          - reference: vm_type
+            label: 'Music VM Type'
+          - reference: disk_type
+            label: 'Music Disk Type'
+          - reference: example_service_network_az_single_select
+            label: 'Country of Origin (Service Network Single AZ Select) Note: Only applicable when service_broker is turned on'
+          - reference: example_service_network_az_multi_select
+            label: 'CF-Pop Service Network Multi AZ picker? Note: Only applicable when service_broker is turned on'
+  - name: example_certificate_collections_form
+    label: 'Certificate Collection example'
+    description: 'A certificate collection example form'
+    property_inputs:
+      - reference: .properties.example_cert_collection
+        label: 'Certificate collection'
+        description: 'Add some certificates here'
+        property_inputs:
+          - reference: example_cert_from_collection_name
+            label: 'Certificate Name'
+            description: 'A description, e.g. "My cert for *.example.com"'
+          - reference: example_cert_from_collection
+            label: 'Certificate'
+            description: 'Put your cert here'
+  - name: example_selector_form
+    label: 'Selector Example'
+    description: 'A selector example form'
+    property_inputs:
+      - reference: .properties.example_selector
+        label: 'Food Choices'
+        selector_property_inputs:
+          - reference: .properties.example_selector.pizza_option
+            label: 'Pizza'
+            property_inputs:
+              - reference: .properties.example_selector.pizza_option.pepperoni
+                label: 'Add Pepperoni'
+              - reference: .properties.example_selector.pizza_option.pineapple
+                label: 'Add Pineapple'
+                description: 'Nothing like an apple, would not buy again'
+              - reference: .properties.example_selector.pizza_option.other_toppings
+                label: 'Other toppings'
+              - reference: .properties.example_selector.pizza_option.cheesy_vm_type
+                label: 'Cheesy VM Type'
+          - reference: .properties.example_selector.filet_mignon_option
+            label: 'Filet Mignon'
+            property_inputs:
+              - reference: .properties.example_selector.filet_mignon_option.rarity_dropdown
+                label: 'How rare?'
+                description: 'Extinct.'
+              - reference: .properties.example_selector.filet_mignon_option.review
+                label: 'Write your review'
+                description: '"Contained live jaguar, would not buy again."'
+              - reference: .properties.example_selector.filet_mignon_option.secret_sauce
+                label: 'Secret Sauce'
+                description: 'Probably mayonnaise'
+          - reference: .properties.example_selector.beverage_option
+            label: 'Beverage'
+            property_inputs:
+              - reference: .properties.example_selector.beverage_option.cola
+                label: 'What kind of soda?'
+      - reference: .properties.example_selector_with_deployed_director_accessors
+        label: 'Utilize director username and password in example product metadata'
+        description: 'If selected, director needs to be deployed before example product'
+        selector_property_inputs:
+        - reference: .properties.example_selector_with_deployed_director_accessors.enable_option
+          label: 'Utilize it'
+        - reference: .properties.example_selector_with_deployed_director_accessors.disable_option
+          label: 'Do not utilize it'
+  - name: example_runtime_configs_form
+    label: 'Runtime Config Selector Example'
+    description: 'A runtime config example form'
+    property_inputs:
+      - reference: .properties.example_runtime_config_selector
+        label: 'Enable Runtime Config'
+        selector_property_inputs:
+        - reference: .properties.example_runtime_config_selector.enable_option
+          label: 'Enabled'
+          property_inputs:
+            - reference: .properties.example_runtime_config_selector.enable_option.salutation
+              label: 'Salutation'
+        - reference: .properties.example_runtime_config_selector.disable_option
+          label: 'Disabled'
+  - name: example_secrets_form
+    label: 'Secrets and Credentials Example'
+    description: 'A secrets and credentials form'
+    property_inputs:
+      - reference: .properties.super_secret
+        label: 'Super secret top-level product property'
+      - reference: .web_server.configured_secret
+        label: 'So secret, you do not know the secret exists'
+        description: A configurable property of type secret
+      - reference: .web_server.configured_simple_credentials
+        label: 'Very very simple credentials'
+        description: A configurable property of type simple_credentials
+      - reference: .web_server.configured_rsa_cert_credentials
+        label: 'Credentials with a certificate of achievement. They achieved the highest level of dodgeball at summer camp.'
+        description: A configurable property of type rsa_cert_credentials
+  - name: static_ips_form
+    label: 'Static IPs'
+    description: 'Where you go to set static IPs'
+    markdown: |
+      ![Alt text](https://placebear.com/g/200/300)
+    property_inputs:
+      - reference: .web_server.static_ips
+        label: Web Server IPs
+        description: Optional comma-separated list of static IPs that will be assigned to the web server
+
+property_blueprints:
+  - name: super_secret
+    type: secret
+    configurable: true
+    optional: true
+  - name: example_selector
+    type: selector
+    configurable: true
+    default: Pizza
+    freeze_on_deploy: true
+    option_templates:
+      - name: pizza_option
+        select_value: Pizza
+        named_manifests:
+          - name: my_snippet
+            manifest: |
+              pizza_toppings:
+                pepperoni: (( .properties.example_selector.pizza_option.pepperoni.value ))
+                pineapple: (( .properties.example_selector.pizza_option.pineapple.value ))
+                other: (( .properties.example_selector.pizza_option.other_toppings.value ))
+                cheesy_vm_type: (( .properties.example_selector.pizza_option.cheesy_vm_type.value ))
+          - name: provides_section
+            manifest: |
+              as: 'pizza_link_web_server_job'
+          - name: consumes_section
+            manifest: |
+              from: 'pizza_link_web_server_job'
+        property_blueprints:
+          - name: pepperoni
+            type: boolean
+            configurable: true
+            freeze_on_deploy: true
+          - name: pineapple
+            type: boolean
+            configurable: true
+            default: true
+          - name: other_toppings
+            type: string
+            configurable: true
+            optional: true
+            constraints:
+            - must_match_regex: '\A[^!@#$%^&*()]*\z'
+              error_message: 'This name cannot contain special characters.'
+          - name: cheesy_vm_type
+            type: vm_type_dropdown
+            configurable: true
+            optional: true
+            resource_definitions:
+            - name: ram
+              configurable: true
+              default: 1024
+            - name: ephemeral_disk
+              configurable: true
+              default: 1024
+            - name: cpu
+              configurable: true
+              default: 1
+      - name: filet_mignon_option
+        select_value: Filet Mignon
+        named_manifests:
+          - name: my_snippet
+            manifest: |
+              rarity: (( .properties.example_selector.filet_mignon_option.rarity_dropdown.value ))
+              review: (( .properties.example_selector.filet_mignon_option.review.value ))
+              secret_sauce: (( .properties.example_selector.filet_mignon_option.secret_sauce.value ))
+          - name: provides_section
+            manifest: |
+              as: 'filet_mignon_link_web_server_job'
+          - name: consumes_section
+            manifest: |
+              from: 'filet_mignon_link_web_server_job'
+        property_blueprints:
+          - name: rarity_dropdown
+            type: dropdown_select
+            configurable: true
+            default: rare
+            options:
+              - name: rare
+                label: 'Rare'
+              - name: medium
+                label: 'Medium'
+              - name: well-done
+                label: 'Well done'
+          - name: review
+            type: string
+            configurable: true
+            default: A+++++ power seller of mail order steak
+            optional: false
+          - name: secret_sauce
+            type: secret
+            configurable: true
+            optional: true
+      - name: beverage_option
+        select_value: Beverage
+        property_blueprints:
+          - name: cola
+            label: Cola
+            type: string
+            configurable: true
+            optional: true
+        named_manifests:
+          - name: my_snippet
+            manifest: |
+              beverage: (( .properties.example_selector.beverage_option.cola.value ))
+          - name: provides_section
+            manifest: |
+              as: 'beverage_link_web_server_job'
+          - name: consumes_section
+            manifest: |
+              from: 'beverage_link_web_server_job'
+  - name: example_collection
+    type: collection
+    configurable: true
+    property_blueprints:
+      - name: album
+        type: string
+        freeze_on_deploy: true
+      - name: artist
+        type: string
+        freeze_on_deploy: true
+      - name: explicit
+        type: boolean
+      - name: secret_meaning
+        type: secret
+        configurable: true
+        optional: true
+      - name: secret_meaning_rsa_cert_credentials
+        type: rsa_cert_credentials
+        configurable: true
+        optional: true
+      - name: secret_meaning_simple_credentials
+        type: simple_credentials
+        configurable: true
+        optional: true
+      - name: vm_type
+        type: vm_type_dropdown
+        optional: true
+        configurable: true
+      - name: disk_type
+        type: disk_type_dropdown
+        configurable: true
+        optional: true
+      - name: genre
+        type: dropdown_select
+        configurable: true
+        optional: true
+        options:
+          - name: rock
+            label: 'Rock'
+          - name: country
+            label: 'Country'
+          - name: edm
+            label: 'Beep Boop PSH'
+      - name: example_service_network_az_single_select # Only used if service_broker is turned on
+        type: service_network_az_single_select
+        configurable: true
+        optional: true
+      - name: example_service_network_az_multi_select # Only used if service_broker is turned on
+        type: service_network_az_multi_select
+        configurable: true
+        optional: true
+    default:
+      - album: Christmas Carols
+        artist: Ops Manatee
+        explicit: true
+        genre: edm
+  - name: example_cert_collection
+    type: collection
+    configurable: true
+    optional: true
+    property_blueprints:
+      - name: example_cert_from_collection_name
+        type: string
+        configurable: true
+      - name: example_cert_from_collection
+        type: rsa_cert_credentials
+        configurable: true
+        optional: true
+    named_manifests:
+    - name: hello_ert_team
+      manifest: |
+        private_key: (( current_record.example_cert_from_collection.private_key_pem ))
+        certificate: (( current_record.example_cert_from_collection.cert_pem ))
+  - type: selector
+    name: example_runtime_config_selector
+    configurable: true
+    default: 'Yes'
+    option_templates:
+    - name: disable_option
+      select_value: 'No'
+      named_manifests:
+      - name: some_named_snippet
+        manifest:
+    - name: enable_option
+      select_value: 'Yes'
+      property_blueprints:
+        - name: salutation
+          type: string
+          configurable: true
+          optional: true
+          default: 'Hello'
+      named_manifests:
+      - name: some_named_snippet
+        manifest: |
+          releases:
+           - name: os-conf
+             version: 15
+          addons:
+            - name: misc
+              jobs:
+                - name: login_banner
+                  release: os-conf
+                  properties:
+                    login_banner:
+                      text: |
+                        (( .properties.example_runtime_config_selector.enable_option.salutation.value )). You are welcome here. Always be kind. 🤗
+              include:
+                deployments:
+                  - (( .deployment_name ))
+  - type: selector
+    name: example_selector_with_deployed_director_accessors
+    configurable: true
+    default: 'No'
+    option_templates:
+    - name: disable_option
+      select_value: 'No'
+      named_manifests:
+      - name: director_deploy_accessors_snippet
+        manifest:
+    - name: enable_option
+      select_value: 'Yes'
+      named_manifests:
+      - name: director_deploy_accessors_snippet
+        manifest: |
+          director_username: (( $director.username ))
+          director_password: (( $director.password ))
+
+job_types:
+  - name: example-errand
+    description: The very best illustrative errand that prints all the properties, including secrets.
+    templates:
+      - name: example-errand
+        release: example-release
+        manifest: |
+          credhub:
+            concatenated_password: prefix-((( credhub-password )))-suffix
+            password: ((( credhub-password )))
+          migrated_to_credhub:
+            secret: ((( generated-secret-migrated-to-credhub )))
+            rsa_public_key: ((( generated-rsa-key-migrated-to-credhub.public_key )))
+            rsa_private_key: ((( generated-rsa-key-migrated-to-credhub.private_key )))
+            simple_creds_username: ((( generated-simple-creds-migrated-to-credhub.username )))
+            simple_creds_password: ((( generated-simple-creds-migrated-to-credhub.password )))
+            salted_creds_username: ((( generated-salted-creds-migrated-to-credhub.username )))
+            salted_creds_password: ((( generated-salted-creds-migrated-to-credhub.password )))
+          generated:
+            root_rsa_certificate: (( $ops_manager.ca_certificate ))
+            http_proxy: (( $ops_manager.http_proxy ))
+            https_proxy: (( $ops_manager.https_proxy ))
+            no_proxy: (( $ops_manager.no_proxy ))
+            dns_enabled: (( $ops_manager.dns_enabled ))
+            restricted_view_api_access_credentials: (( $ops_manager.restricted_view_api_access_credentials ))
+            rsa_cert_credentials:
+              present: (( .web_server.generated_rsa_cert_credentials.value_present? ))
+              public_key_pem: (( .web_server.generated_rsa_cert_credentials.public_key_pem ))
+              cert_and_private_key_pems: (( .web_server.generated_rsa_cert_credentials.cert_and_private_key_pems ))
+              cert_pem: (( .web_server.generated_rsa_cert_credentials.cert_pem ))
+              private_key_pem: (( .web_server.generated_rsa_cert_credentials.private_key_pem ))
+            rsa_pkey_credentials:
+              present: (( .web_server.generated_rsa_pkey_credentials.value_present? ))
+              public_key_pem: (( .web_server.generated_rsa_pkey_credentials.public_key_pem ))
+              private_key_pem: (( .web_server.generated_rsa_pkey_credentials.private_key_pem ))
+              public_key_openssh: (( .web_server.generated_rsa_pkey_credentials.public_key_openssh ))
+              public_key_fingerprint: (( .web_server.generated_rsa_pkey_credentials.public_key_fingerprint ))
+            salted_credentials:
+              present: (( .web_server.generated_salted_credentials.value_present? ))
+              sha512_hashed_password: (( .web_server.generated_salted_credentials.sha512_hashed_password ))
+              identity: (( .web_server.generated_salted_credentials.identity ))
+              salt: (( .web_server.generated_salted_credentials.salt ))
+              password: (( .web_server.generated_salted_credentials.password ))
+            simple_credentials:
+              present: (( .web_server.generated_simple_credentials.value_present? ))
+              identity: (( .web_server.generated_simple_credentials.identity ))
+              password: (( .web_server.generated_simple_credentials.password ))
+            secret:
+              present: (( .web_server.generated_secret.value_present? ))
+              value: (( .web_server.generated_secret.value ))
+            uuid: (( .web_server.generated_uuid.value ))
+            for_migration_to_credhub:
+              rsa_cert_credentials:
+                public_key_pem: (( .web_server.generated_rsa_cert_credentials_to_migrate_to_credhub_1_0.public_key_pem ))
+                cert_and_private_key_pems: (( .web_server.generated_rsa_cert_credentials_to_migrate_to_credhub_1_0.cert_and_private_key_pems ))
+              rsa_pkey_credentials:
+                public_key_pem: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.public_key_pem ))
+                private_key_pem: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.private_key_pem ))
+                public_key_openssh: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.public_key_openssh ))
+                public_key_fingerprint: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.public_key_fingerprint ))
+              salted_credentials:
+                sha512_hashed_password: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.sha512_hashed_password ))
+                identity: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.identity ))
+                salt: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.salt ))
+                password: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.password ))
+              simple_credentials:
+                identity: (( .web_server.generated_simple_credentials_to_migrate_to_credhub_1_0.identity ))
+                password: (( .web_server.generated_simple_credentials_to_migrate_to_credhub_1_0.password ))
+              secret: (( .web_server.generated_secret_to_migrate_to_credhub_1_0.value ))
+          configured:
+            string: (( .web_server.example_string.value ))
+            integer: (( .web_server.example_migrated_integer.value ))
+            boolean: (( .web_server.example_boolean.value ))
+            dropdown: (( .web_server.example_dropdown.value ))
+            domain: (( .web_server.example_domain.value ))
+            wildcard_domain: (( .web_server.example_wildcard_domain.value ))
+            string_list: (( .web_server.example_string_list.value ))
+            text: (( .web_server.example_text.value ))
+            ldap_url: (( .web_server.example_ldap_url.value ))
+            email: (( .web_server.example_email.value ))
+            http_url: (( .web_server.example_http_url.value ))
+            ip_address: (( .web_server.example_ip_address.value ))
+            ip_ranges:
+              value: (( .web_server.example_ip_ranges.value ))
+              parsed_ip_ranges: (( .web_server.example_ip_ranges.parsed_ip_ranges ))
+            multi_select_options: (( .web_server.example_multi_select_options.value ))
+            network_address_list:
+              value: (( .web_server.example_network_address_list.value ))
+              parsed_network_addresses: (( .web_server.example_network_address_list.parsed_network_addresses ))
+            network_address: (( .web_server.example_network_address.value ))
+            port: (( .web_server.example_port.value ))
+            smtp_authentication: (( .web_server.example_smtp_authentication.value ))
+            ca_certificate: (( .web_server.client_certificate.value ))
+            example_vm_type_dropdown_value: (( .web_server.example_vm_type_dropdown.value ))
+            example_disk_type_dropdown_value: (( .web_server.example_disk_type_dropdown.value ))
+            record_collection: (( .properties.example_collection.value ))
+            selector: (( .properties.example_selector.selected_option.parsed_manifest(my_snippet) ))
+            selector_specific_option: (( .properties.example_selector.filet_mignon_option.secret_sauce.value ))
+            selector_value: (( .properties.example_selector.value ))
+            top_level_secret: (( .properties.super_secret.value ))
+            concat_secrets: (( .web_server.configured_simple_credentials.identity )):(( .web_server.configured_simple_credentials.password ))
+            secret: (( .web_server.configured_secret.value ))
+            secret_ternary: "(( .web_server.configured_secret.value ? '.web_server.configured_secret.value was true' : '.web_server.configured_secret.value was false' ))"
+            secret_or: (( .web_server.configured_secret.value || '.web_server.configured_secret.value was false' ))
+            rsa_cert_credentials:
+              public_key_pem: (( .web_server.configured_rsa_cert_credentials.public_key_pem ))
+              cert_and_private_key_pems: (( .web_server.configured_rsa_cert_credentials.cert_and_private_key_pems ))
+            simple_credentials:
+              identity: (( .web_server.configured_simple_credentials.identity ))
+              password: (( .web_server.configured_simple_credentials.password ))
+          director_provided_accessors:
+            hostname: (( $director.hostname ))
+            deployment_ip: (( $director.deployment_ip ))
+            username_and_pass: (( .properties.example_selector_with_deployed_director_accessors.selected_option.parsed_manifest(director_deploy_accessors_snippet) ))
+            ntp_servers: (( $director.ntp_servers ))
+            ca_public_key: (( $director.ca_public_key ))
+            tld: (( $director.tld ))
+            bosh_metrics_forwarder_client_name: (( $director.bosh_metrics_forwarder_client_name ))
+            bosh_metrics_forwarder_client_secret: (( $director.bosh_metrics_forwarder_client_secret ))
+          product:
+            deployment_name: (( ..example-product.deployment_name ))
+            network_name: (( ..example-product.network_name ))
+          self:
+            stemcell_version: (( $self.stemcell_version ))
+    errand: true
+    resource_label: an errand to log properties
+    run_post_deploy_errand_default: on
+    run_pre_delete_errand_default: on
+    static_ip: 0
+    dynamic_ip: 1
+    max_in_flight: 1
+    single_az_only: true
+    default_internet_connected: false
+    instance_definition:
+      name: instances
+      configurable: false
+      default: 1
+    resource_definitions:
+      - name: ram
+        configurable: true
+        default: 1024
+      - name: ephemeral_disk
+        configurable: true
+        default: 1024
+      - name: persistent_disk
+        configurable: false
+        default: 0
+      - name: cpu
+        configurable: true
+        default: 1
+    property_blueprints: []
+  - name: web_server
+    resource_label: Web Server
+    templates:
+      - name: web_server
+        release: example-release
+        provides: |
+          web_server_info: (( .properties.example_selector.selected_option.parsed_manifest(provides_section) ))
+        consumes: |
+          web_server_info: (( .properties.example_selector.selected_option.parsed_manifest(consumes_section) ))
+      - name: time_logger
+        release: example-release
+      - name: example_colocated_errand
+        release: example-release
+    release: example-release
+    static_ip: 1
+    dynamic_ip: 0
+    max_in_flight: 1
+    single_az_only: true
+    default_internet_connected: false
+    instance_definition:
+      name: instances
+      configurable: true
+      default: 1
+      constraints:
+        max: 1
+      zero_if:
+        property_reference: '.properties.example_selector'
+        property_values:
+          - Filet Mignon
+          - Beverage
+    resource_definitions:
+      - name: ram
+        configurable: true
+        default: 1024
+      - name: ephemeral_disk
+        configurable: true
+        default: 2048
+      - name: persistent_disk
+        configurable: true
+        default: 1024
+        constraints:
+          min: 1024
+      - name: cpu
+        configurable: true
+        default: 1
+    property_blueprints:
+    - name: property_with_nil_value
+      type: string
+    - name: property_with_false_value
+      type: boolean
+      configurable: false
+      default: false
+    - name: property_with_true_value
+      type: boolean
+      configurable: false
+      default: true
+    - name: static_ips
+      type: ip_ranges
+      configurable: true
+      optional: true
+    - name: generated_rsa_cert_credentials
+      type: rsa_cert_credentials
+    - name: generated_rsa_cert_credentials_to_migrate_to_credhub_1_0
+      type: rsa_cert_credentials
+    - name: generated_rsa_pkey_credentials
+      type: rsa_pkey_credentials
+    - name: generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0
+      type: rsa_pkey_credentials
+    - name: generated_salted_credentials
+      type: salted_credentials
+    - name: generated_salted_credentials_to_migrate_to_credhub_1_0
+      type: salted_credentials
+    - name: generated_simple_credentials
+      type: simple_credentials
+    - name: generated_simple_credentials_to_migrate_to_credhub_1_0
+      type: simple_credentials
+    - name: generated_secret
+      type: secret
+    - name: generated_secret_to_migrate_to_credhub_1_0
+      type: secret
+    - name: generated_uuid
+      type: uuid
+    - name: configured_secret
+      type: secret
+      configurable: true
+      optional: true
+    - name: configured_simple_credentials
+      type: simple_credentials
+      configurable: true
+      optional: true
+    - name: configured_rsa_cert_credentials
+      type: rsa_cert_credentials
+      configurable: true
+      optional: true
+    - name: example_string_with_placeholder
+      type: string
+      configurable: true
+      optional: true
+      placeholder: 'Configure me!'
+    - name: example_string
+      type: string
+      configurable: true
+      default: 'Hello world'
+      constraints:
+      - must_match_regex: '\A[^!@#$%^&*()]*\z'
+        error_message: 'This name cannot contain special characters.'
+      - must_match_regex: '\A[^0-9]*\z'
+        error_message: 'This name cannot contain digits.'
+    - name: example_migrated_integer
+      type: integer
+      configurable: true
+      default: 1
+    - name: example_boolean
+      type: boolean
+      configurable: true
+      default: true
+    - name: example_dropdown
+      type: dropdown_select
+      configurable: true
+      default: kiwi
+      options:
+        - name: kiwi
+          label: 'label for kiwi'
+        - name: lime
+          label: 'label for lime'
+        - name: avocado
+          label: 'label for avocado'
+    - name: example_domain
+      type: domain
+      configurable: true
+      default: www.example.com
+    - name: example_wildcard_domain
+      type: wildcard_domain
+      configurable: true
+      default: 'example.com'
+    - name: example_string_list
+      type: string_list
+      configurable: true
+      default: 'a,list,of,strings'
+    - name: example_text
+      type: text
+      configurable: true
+      default: 'some_text'
+    - name: example_ldap_url
+      type: ldap_url
+      configurable: true
+      default: 'ldap://example.com'
+    - name: example_email
+      type: email
+      configurable: true
+      default: foo@example.com
+    - name: example_http_url
+      type: http_url
+      configurable: true
+      default: 'http://www.example.com'
+    - name: example_ip_address
+      type: ip_address
+      configurable: true
+      default: '192.168.0.1'
+    - name: example_ip_ranges
+      type: ip_ranges
+      configurable: true
+      default: '1.1.1.1-1.1.1.4,2.2.2.1-2.2.2.4'
+    - name: example_multi_select_options
+      type: multi_select_options
+      configurable: true
+      default: ['earth', 'jupiter']
+      options:
+        - name: mercury
+          label: 'label for mercury'
+        - name: venus
+          label: 'label for venus'
+        - name: earth
+          label: 'label for earth'
+        - name: mars
+          label: 'label for mars'
+        - name: jupiter
+          label: 'label for jupiter'
+        - name: saturn
+          label: 'label for saturn'
+        - name: uranus
+          label: 'label for uranus'
+        - name: neptune
+          label: 'label for neptune'
+    - name: example_network_address_list
+      type: network_address_list
+      configurable: true
+      default: '1.1.1.1,example.com,foo.bar.example.com'
+      freeze_on_deploy: true
+    - name: example_network_address
+      type: network_address
+      configurable: true
+      default: '1.1.1.1'
+    - name: example_port
+      type: port
+      configurable: true
+      default: 1111
+    - name: example_smtp_authentication
+      type: smtp_authentication
+      configurable: true
+      default: plain
+    - name: client_certificate
+      type: ca_certificate
+      configurable: true
+      optional: true
+    - name: example_vm_type_dropdown
+      type: vm_type_dropdown
+      configurable: true
+      optional: true
+      resource_definitions:
+      - name: ram
+        configurable: true
+        default: 1024
+      - name: ephemeral_disk
+        configurable: true
+        default: 1024
+      - name: cpu
+        configurable: true
+        default: 1
+    - name: example_disk_type_dropdown
+      type: disk_type_dropdown
+      configurable: true
+      optional: true
+      resource_definitions:
+      - name: persistent_disk
+        default: 2000
+    manifest: |
+      credhub:
+        concatenated_password: prefix-((( credhub-password )))-suffix
+        password: ((( credhub-password )))
+      migrated_to_credhub:
+        secret: ((( generated-secret-migrated-to-credhub )))
+        rsa_public_key: ((( generated-rsa-key-migrated-to-credhub.public_key )))
+        rsa_private_key: ((( generated-rsa-key-migrated-to-credhub.private_key )))
+        simple_creds_username: ((( generated-simple-creds-migrated-to-credhub.username )))
+        simple_creds_password: ((( generated-simple-creds-migrated-to-credhub.password )))
+        salted_creds_username: ((( generated-salted-creds-migrated-to-credhub.username )))
+        salted_creds_password: ((( generated-salted-creds-migrated-to-credhub.password )))
+      generated:
+        dns_enabled: (( $ops_manager.dns_enabled ))
+        root_rsa_certificate: (( $ops_manager.ca_certificate ))
+        rsa_cert_credentials:
+          present: (( generated_rsa_cert_credentials.value_present? ))
+          public_key_pem: (( generated_rsa_cert_credentials.public_key_pem ))
+          cert_and_private_key_pems: (( generated_rsa_cert_credentials.cert_and_private_key_pems ))
+          cert_pem: (( generated_rsa_cert_credentials.cert_pem ))
+          private_key_pem: (( generated_rsa_cert_credentials.private_key_pem ))
+        rsa_pkey_credentials:
+          present: (( generated_rsa_pkey_credentials.value_present? ))
+          public_key_pem: (( generated_rsa_pkey_credentials.public_key_pem ))
+          private_key_pem: (( generated_rsa_pkey_credentials.private_key_pem ))
+          public_key_openssh: (( generated_rsa_pkey_credentials.public_key_openssh ))
+          public_key_fingerprint: (( generated_rsa_pkey_credentials.public_key_fingerprint ))
+        salted_credentials:
+          present: (( generated_salted_credentials.value_present? ))
+          sha512_hashed_password: (( generated_salted_credentials.sha512_hashed_password ))
+          identity: (( generated_salted_credentials.identity ))
+          salt: (( generated_salted_credentials.salt ))
+          password: (( generated_salted_credentials.password ))
+        simple_credentials:
+          present: (( generated_simple_credentials.value_present? ))
+          identity: (( generated_simple_credentials.identity ))
+          password: (( generated_simple_credentials.password ))
+        secret:
+          present: (( .web_server.generated_secret.value_present? ))
+          value: (( .web_server.generated_secret.value ))
+        uuid: (( generated_uuid.value ))
+        # Note that ':' is a special value in yaml, so ternaries need to be quoted...
+        ternary_with_property_example: "(( property_with_true_value.value ? 'hello world' : generated_uuid.value ))"
+        ternary_with_boolean_example: "(( false ? true : false ))"
+        for_migration_to_credhub:
+          rsa_cert_credentials:
+            public_key_pem: (( .web_server.generated_rsa_cert_credentials_to_migrate_to_credhub_1_0.public_key_pem ))
+            cert_and_private_key_pems: (( .web_server.generated_rsa_cert_credentials_to_migrate_to_credhub_1_0.cert_and_private_key_pems ))
+          rsa_pkey_credentials:
+            public_key_pem: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.public_key_pem ))
+            private_key_pem: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.private_key_pem ))
+            public_key_openssh: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.public_key_openssh ))
+            public_key_fingerprint: (( .web_server.generated_rsa_pkey_credentials_to_migrate_to_credhub_1_0.public_key_fingerprint ))
+          salted_credentials:
+            sha512_hashed_password: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.sha512_hashed_password ))
+            identity: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.identity ))
+            salt: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.salt ))
+            password: (( .web_server.generated_salted_credentials_to_migrate_to_credhub_1_0.password ))
+          simple_credentials:
+            identity: (( .web_server.generated_simple_credentials_to_migrate_to_credhub_1_0.identity ))
+            password: (( .web_server.generated_simple_credentials_to_migrate_to_credhub_1_0.password ))
+          secret: (( .web_server.generated_secret_to_migrate_to_credhub_1_0.value ))
+      configured:
+        concat_example: Hello, (( example_string.value ))! Nice to (( example_text.value )) you.
+        string: (( example_string.value ))
+        integer: (( example_migrated_integer.value ))
+        boolean: (( example_boolean.value ))
+        dropdown: (( example_dropdown.value ))
+        domain: (( example_domain.value ))
+        wildcard_domain: (( example_wildcard_domain.value ))
+        string_list: (( example_string_list.value ))
+        text: (( example_text.value ))
+        ldap_url: (( example_ldap_url.value ))
+        email: (( example_email.value ))
+        http_url: (( example_http_url.value ))
+        ip_address: (( example_ip_address.value ))
+        ip_ranges:
+          value: (( example_ip_ranges.value ))
+          parsed_ip_ranges: (( example_ip_ranges.parsed_ip_ranges ))
+        multi_select_options: (( example_multi_select_options.value ))
+        network_address_list:
+          value: (( example_network_address_list.value ))
+          parsed_network_addresses: (( example_network_address_list.parsed_network_addresses ))
+        network_address: (( example_network_address.value ))
+        port: (( example_port.value ))
+        smtp_authentication: (( example_smtp_authentication.value ))
+        ca_certificate: (( client_certificate.value ))
+        example_vm_type_dropdown_value: (( example_vm_type_dropdown.value ))
+        example_disk_type_dropdown_value: (( example_disk_type_dropdown.value ))
+        record_collection: (( property_with_nil_value.value || .properties.example_collection.value ))
+        certificate_collection_manifest_snippet: (( .properties.example_cert_collection.parsed_manifest(hello_ert_team) ))
+        selector: (( .properties.example_selector.selected_option.parsed_manifest(my_snippet) ))
+        selector_specific_option: (( .properties.example_selector.filet_mignon_option.secret_sauce.value ))
+        selector_value: (( .properties.example_selector.value ))
+        top_level_secret: (( .properties.super_secret.value ))
+        concat_secrets: (( .web_server.configured_simple_credentials.identity )):(( .web_server.configured_simple_credentials.password ))
+        secret: (( .web_server.configured_secret.value ))
+        secret_ternary: "(( .web_server.configured_secret.value ? '.web_server.configured_secret.value was true' : '.web_server.configured_secret.value was false' ))"
+        secret_or: (( .web_server.configured_secret.value || '.web_server.configured_secret.value was false' ))
+        rsa_cert_credentials:
+          public_key_pem: "(( property_with_true_value.value ? configured_rsa_cert_credentials.public_key_pem : false ))"
+          cert_and_private_key_pems: (( property_with_false_value.value || configured_rsa_cert_credentials.cert_and_private_key_pems ))
+        simple_credentials:
+          identity: (( property_with_nil_value.value || configured_simple_credentials.identity ))
+          password: (( false || configured_simple_credentials.password ))
+      ops_manager_provided_accessors:
+        name: (( name ))
+        ram: (( ram ))
+        cpu: (( cpu ))
+        ephemeral_disk: (( ephemeral_disk ))
+        persistent_disk: (( persistent_disk ))
+        instances: (( instances ))
+        any_instances: (( any_instances ))
+      director_provided_accessors:
+        hostname: (( $director.hostname ))
+        deployment_ip: (( $director.deployment_ip ))
+        username_and_pass: (( .properties.example_selector_with_deployed_director_accessors.selected_option.parsed_manifest(director_deploy_accessors_snippet) ))
+        ntp_servers: (( $director.ntp_servers ))
+        ca_public_key: (( $director.ca_public_key ))
+        tld: (( $director.tld ))
+        bosh_metrics_forwarder_client_name: (( $director.bosh_metrics_forwarder_client_name ))
+        bosh_metrics_forwarder_client_secret: (( $director.bosh_metrics_forwarder_client_secret ))
+      product:
+        deployment_name: (( .deployment_name ))
+        network_name: (( .network_name ))
+      self:
+        stemcell_version: (( $self.stemcell_version ))
+  - name: no_op
+    resource_label: No Operation
+    templates:
+      - name: no_op
+        release: example-release
+    static_ip: 0
+    dynamic_ip: 1
+    max_in_flight: 100%
+    single_az_only: false
+    default_internet_connected: false
+    instance_definition:
+      name: instances
+      configurable: true
+      default: 0
+    resource_definitions:
+      - name: ram
+        configurable: true
+        default: 1024
+      - name: ephemeral_disk
+        configurable: true
+        default: 2048
+      - name: persistent_disk
+        configurable: true
+        default: 8_192
+        constraints:
+          min: 7000
+      - name: cpu
+        configurable: true
+        default: 1
+    property_blueprints: []
+
+runtime_configs:
+  - name: kindness_banner_everywhere
+    runtime_config: "(( .properties.example_runtime_config_selector.selected_option.parsed_manifest(some_named_snippet) ))"
+
+icon_image: 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

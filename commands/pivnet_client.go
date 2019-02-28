@@ -116,7 +116,7 @@ func (p *pivnetClient) DownloadProductToFile(fa *FileArtifact, file *os.File) er
 	return nil
 }
 
-func (p *pivnetClient) DownloadProductStemcell(fa *FileArtifact) (*Stemcell, error) {
+func (p *pivnetClient) GetLatestStemcellForProduct(fa *FileArtifact, _ string) (*Stemcell, error) {
 	dependencies, err := p.downloader.ReleaseDependencies(fa.slug, fa.releaseID)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch stemcell dependency for %s: %s", fa.slug, err)
@@ -145,44 +145,72 @@ func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []piv
 }
 
 func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string, error) {
-	const errorForVersion = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
-
-	var stemcellSlug string
-	var stemcellVersion string
-	var stemcellVersionMajor int
-	var stemcellVersionMinor int
+	var (
+		stemcellSlug string
+		versions     []string
+	)
 
 	for _, dependency := range dependencies {
 		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
-			versionString := dependency.Release.Version
-			splitVersions := strings.Split(versionString, ".")
-			if len(splitVersions) == 1 {
-				splitVersions = []string{splitVersions[0], "0"}
-			}
-			if len(splitVersions) != 2 {
-				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
-			}
-			major, err := strconv.Atoi(splitVersions[0])
-			if err != nil {
-				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
-			}
-			minor, err := strconv.Atoi(splitVersions[1])
-			if err != nil {
-				return stemcellSlug, stemcellVersion, fmt.Errorf(errorForVersion, versionString)
-			}
-
-			if major > stemcellVersionMajor {
-				stemcellVersionMajor = major
-				stemcellVersionMinor = minor
-				stemcellVersion = versionString
-				stemcellSlug = dependency.Release.Product.Slug
-			} else if major == stemcellVersionMajor && minor > stemcellVersionMinor {
-				stemcellVersionMinor = minor
-				stemcellVersion = versionString
-				stemcellSlug = dependency.Release.Product.Slug
-			}
+			stemcellSlug = dependency.Release.Product.Slug
+			versions = append(versions, dependency.Release.Version)
 		}
 	}
 
+	stemcellVersion, err := getLatestStemcellVersion(versions)
+	if err != nil {
+		return "", "", err
+	}
+
 	return stemcellSlug, stemcellVersion, nil
+}
+
+const errorForVersion = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
+
+func getLatestStemcellVersion(versions []string) (string, error) {
+	var (
+		stemcellVersion      string
+		stemcellVersionMajor int
+		stemcellVersionMinor int
+	)
+
+	for _, versionString := range versions {
+		major, minor, err := stemcellVersionPartsFromString(versionString)
+		if err != nil {
+			return "", err
+		}
+
+		if major > stemcellVersionMajor {
+			stemcellVersionMajor = major
+			stemcellVersionMinor = minor
+			stemcellVersion = versionString
+		} else if major == stemcellVersionMajor && minor > stemcellVersionMinor {
+			stemcellVersionMinor = minor
+			stemcellVersion = versionString
+		}
+	}
+
+	return stemcellVersion, nil
+}
+
+func stemcellVersionPartsFromString(version string) (int, int, error) {
+	splitVersions := strings.Split(version, ".")
+	if len(splitVersions) == 1 {
+		splitVersions = []string{splitVersions[0], "0"}
+	}
+	if len(splitVersions) != 2 {
+		return 0, 0, fmt.Errorf(errorForVersion, version)
+	}
+
+	major, err := strconv.Atoi(splitVersions[0])
+	if err != nil {
+		return 0, 0, fmt.Errorf(errorForVersion, version)
+	}
+
+	minor, err := strconv.Atoi(splitVersions[1])
+	if err != nil {
+		return 0, 0, fmt.Errorf(errorForVersion, version)
+	}
+
+	return major, minor, nil
 }
