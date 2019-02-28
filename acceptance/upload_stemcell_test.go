@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -63,23 +62,20 @@ func (t *UploadStemcellTestServer) ServeHTTP(w http.ResponseWriter, req *http.Re
 }
 
 var _ = Describe("upload-stemcell command", func() {
-	var (
-		stemcellName  string
-		content       *os.File
-		server        *httptest.Server
-		uploadHandler func(http.ResponseWriter, *http.Request)
-		snip          chan struct{}
-	)
+	var stemcellName string
 
-	BeforeEach(func() {
-		var err error
-		content, err = ioutil.TempFile("", "cool_name.com")
+	createStemcell := func(filename string) string {
+		dir, err := ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = content.WriteString("content so validation does not fail")
+		path := filepath.Join(dir, filename)
+		err = ioutil.WriteFile(path, []byte("content so validation does not fail"), 0777)
 		Expect(err).NotTo(HaveOccurred())
+		return path
+	}
 
-		uploadHandler = func(w http.ResponseWriter, req *http.Request) {
+	createSuccessfulUploadHandler := func() func(w http.ResponseWriter, req *http.Request) {
+		return func(w http.ResponseWriter, req *http.Request) {
 			err := req.ParseMultipartForm(100)
 			if err != nil {
 				panic(err)
@@ -89,24 +85,22 @@ var _ = Describe("upload-stemcell command", func() {
 			_, err = w.Write([]byte("{}"))
 			Expect(err).ToNot(HaveOccurred())
 		}
-	})
-
-	JustBeforeEach(func() {
-		server = httptest.NewTLSServer(&UploadStemcellTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
-	})
-
-	AfterEach(func() {
-		server.Close()
-	})
+	}
+	setupServerWithUploadHandler := func(f func(w http.ResponseWriter, req *http.Request)) *httptest.Server {
+		return httptest.NewTLSServer(&UploadStemcellTestServer{UploadHandler: http.HandlerFunc(f)})
+	}
 
 	It("successfully sends the stemcell to the Ops Manager", func() {
+		server := setupServerWithUploadHandler(createSuccessfulUploadHandler())
+		defer server.Close()
+
 		command := exec.Command(pathToMain,
 			"--target", server.URL,
 			"--username", "some-username",
 			"--password", "pass",
 			"--skip-ssl-validation",
 			"upload-stemcell",
-			"--stemcell", content.Name(),
+			"--stemcell", createStemcell("stemcell.tgz"),
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -117,13 +111,41 @@ var _ = Describe("upload-stemcell command", func() {
 		Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
 		Eventually(session.Out).Should(gbytes.Say("finished upload"))
 
-		Expect(stemcellName).To(Equal(filepath.Base(content.Name())))
+		Expect(stemcellName).To(Equal("stemcell.tgz"))
+	})
+
+	When("the stemcell name has the `download-product` prefix", func() {
+		It("successfully sends the stemcell to the Ops Manager", func() {
+			server := setupServerWithUploadHandler(createSuccessfulUploadHandler())
+			defer server.Close()
+
+			filename := createStemcell("[ubuntu-xenial,97.88]stemcell.tgz")
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "pass",
+				"--skip-ssl-validation",
+				"upload-stemcell",
+				"--stemcell", filename,
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session, 10*time.Second).Should(gexec.Exit(0))
+			Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
+			Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
+			Eventually(session.Out).Should(gbytes.Say("finished upload"))
+
+			Expect(stemcellName).To(Equal("stemcell.tgz"))
+			Expect(filename).To(BeAnExistingFile())
+		})
 	})
 
 	Context("when the stemcell already exists", func() {
 		It("exits early with no error", func() {
 			var diagnosticReport []byte
-			server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				switch req.URL.Path {
 				case "/uaa/oauth/token":
@@ -149,12 +171,12 @@ var _ = Describe("upload-stemcell command", func() {
 				}
 			}))
 
-			diagnosticReport = []byte(fmt.Sprintf(`{
+			diagnosticReport = []byte(`{
 			 "stemcells": [
 					"bosh-stemcell-3215-vsphere-esxi-ubuntu-trusty-go_agent.tgz",
-					%q
+					"stemcell.tgz"
 				]
-			}`, filepath.Base(content.Name())))
+			}`)
 
 			server.StartTLS()
 			defer server.Close()
@@ -165,7 +187,7 @@ var _ = Describe("upload-stemcell command", func() {
 				"--password", "some-password",
 				"--skip-ssl-validation",
 				"upload-stemcell",
-				"--stemcell", content.Name(),
+				"--stemcell", createStemcell("stemcell.tgz"),
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -178,20 +200,12 @@ var _ = Describe("upload-stemcell command", func() {
 
 	Context("when an error occurs", func() {
 		Context("when the content to upload is empty", func() {
-			var emptyContent *os.File
-
-			BeforeEach(func() {
-				var err error
-				emptyContent, err = ioutil.TempFile("", "")
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			AfterEach(func() {
-				err := os.Remove(emptyContent.Name())
-				Expect(err).NotTo(HaveOccurred())
-			})
-
 			It("returns an error", func() {
+				emptyContent, err := ioutil.TempFile("", "")
+				Expect(err).NotTo(HaveOccurred())
+				server := setupServerWithUploadHandler(func(w http.ResponseWriter, req *http.Request) {})
+				defer server.Close()
+
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
 					"--username", "some-username",
@@ -210,19 +224,17 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 
 		Context("when the content cannot be read", func() {
-			BeforeEach(func() {
-				err := os.Remove(content.Name())
-				Expect(err).NotTo(HaveOccurred())
-			})
-
 			It("returns an error", func() {
+				server := setupServerWithUploadHandler(func(w http.ResponseWriter, req *http.Request) {})
+				defer server.Close()
+
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
 					"--username", "some-username",
 					"--password", "some-password",
 					"--skip-ssl-validation",
 					"upload-stemcell",
-					"--stemcell", content.Name(),
+					"--stemcell", "/unknown/path/whatever",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -234,10 +246,15 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 
 		Context("when the server returns EOF during upload", func() {
+			var (
+				snip   chan struct{}
+				server *httptest.Server
+			)
+
 			BeforeEach(func() {
 				snip = make(chan struct{})
 				uploadCallCount := 0
-				uploadHandler = func(w http.ResponseWriter, req *http.Request) {
+				server = setupServerWithUploadHandler(func(w http.ResponseWriter, req *http.Request) {
 					uploadCallCount++
 
 					if uploadCallCount == 1 {
@@ -249,11 +266,10 @@ var _ = Describe("upload-stemcell command", func() {
 							panic(err)
 						}
 
-						stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
 						_, err = w.Write([]byte("{}"))
 						Expect(err).ToNot(HaveOccurred())
 					}
-				}
+				})
 			})
 
 			JustBeforeEach(func() {
@@ -271,7 +287,7 @@ var _ = Describe("upload-stemcell command", func() {
 					"--password", "some-password",
 					"--skip-ssl-validation",
 					"upload-stemcell",
-					"--stemcell", content.Name(),
+					"--stemcell", createStemcell("stemcell.tgz"),
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
