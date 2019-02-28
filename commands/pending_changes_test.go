@@ -62,6 +62,88 @@ var _ = Describe("PendingChanges", func() {
 			Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 		})
 
+		Context("when the check flag is provided", func() {
+			var options []string
+
+			BeforeEach(func() {
+				options = []string{"--check"}
+			})
+			When("there are pending changes", func() {
+				BeforeEach(func() {
+					pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								GUID:   "some-product",
+								Action: "unchanged",
+								Errands: []api.Errand{
+									{
+										Name:       "some-errand",
+										PostDeploy: "on",
+										PreDelete:  "false",
+									},
+									{
+										Name:       "some-errand-2",
+										PostDeploy: "when-change",
+										PreDelete:  "false",
+									},
+								},
+							},
+							{
+								GUID:    "some-other-product-without-errand",
+								Action:  "install",
+								Errands: []api.Errand{},
+							},
+							{
+								GUID:   "some-other-product",
+								Action: "install",
+								Errands: []api.Errand{
+									{
+										Name:       "some-errand",
+										PostDeploy: "on",
+										PreDelete:  "false",
+									},
+									{
+										Name:       "some-errand-2",
+										PostDeploy: "when-change",
+										PreDelete:  "false",
+									},
+								},
+							},
+							{
+								GUID:    "some-other-product-without-errand",
+								Action:  "install",
+								Errands: []api.Errand{},
+							},
+						},
+					}, nil)
+				})
+
+				It("lists change information for all products and returns an error", func() {
+					err := command.Execute(options)
+					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+					Expect(err).To(HaveOccurred())
+				})
+			})
+
+			When("there are no pending changes", func() {
+				BeforeEach(func() {
+					pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+						ChangeList: []api.ProductChange{
+							{
+								GUID:   "some-product-without-errands",
+								Action: "unchanged",
+							},
+						},
+					}, nil)
+				})
+				It("lists change information for all products and does not return an error", func() {
+					err := command.Execute(options)
+					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+					Expect(err).NotTo(HaveOccurred())
+				})
+			})
+		})
+
 		Context("when the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
@@ -71,7 +153,7 @@ var _ = Describe("PendingChanges", func() {
 			})
 		})
 
-		Context("failure cases", func() {
+		Describe("failure cases", func() {
 			Context("when an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
