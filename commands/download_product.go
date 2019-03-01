@@ -60,7 +60,7 @@ type DownloadProduct struct {
 	stower         download_clients.Stower
 	downloadClient ProductDownloader
 	Options        struct {
-		Blobstore           string   `long:"blobstore"             short:"b"  description:"enables download from external blobstores when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
+		Source              string   `long:"source"                short:"s"  description:"enables download from external sources when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
 		ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		OutputDir           string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
@@ -221,7 +221,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 
 func (c *DownloadProduct) createClient() error {
 	var err error
-	switch c.Options.Blobstore {
+	switch c.Options.Source {
 	case "s3":
 		config := c.createS3Config()
 		c.downloadClient, err = download_clients.NewS3Client(c.stower, config, c.progressWriter)
@@ -271,7 +271,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 
 	var productFilePath string
-	if c.Options.Blobstore != "" || c.Options.S3Bucket == "" {
+	if c.Options.Source != "" || c.Options.S3Bucket == "" {
 		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))
 	} else {
 		productFilePath = path.Join(c.Options.OutputDir, prefixPath+path.Base(fileArtifact.Name))
