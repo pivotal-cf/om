@@ -7,7 +7,7 @@ import (
 	sync "sync"
 
 	pivnet "github.com/pivotal-cf/go-pivnet"
-	commands "github.com/pivotal-cf/om/commands"
+	download_clients "github.com/pivotal-cf/om/download_clients"
 )
 
 type PivnetDownloader struct {
@@ -436,4 +436,4 @@ func (fake *PivnetDownloader) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.PivnetDownloader = new(PivnetDownloader)
+var _ download_clients.PivnetDownloader = new(PivnetDownloader)

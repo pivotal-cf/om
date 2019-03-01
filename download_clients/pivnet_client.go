@@ -1,4 +1,4 @@
-package commands
+package download_clients
 
 import (
 	"fmt"
@@ -53,7 +53,7 @@ type pivnetClient struct {
 
 type FileArtifact struct {
 	Name          string
-	sha256        string
+	SHA256        string
 	slug          string
 	releaseID     int
 	productFileID int
@@ -101,7 +101,7 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (*FileAr
 
 	return &FileArtifact{
 		Name:          productFiles[0].AWSObjectKey,
-		sha256:        productFiles[0].SHA256,
+		SHA256:        productFiles[0].SHA256,
 		releaseID:     release.ID,
 		slug:          slug,
 		productFileID: productFiles[0].ID,

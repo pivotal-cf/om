@@ -5,7 +5,7 @@ import (
 	sync "sync"
 
 	pivnet "github.com/pivotal-cf/go-pivnet"
-	commands "github.com/pivotal-cf/om/commands"
+	download_clients "github.com/pivotal-cf/om/download_clients"
 )
 
 type PivnetFilter struct {
@@ -210,4 +210,4 @@ func (fake *PivnetFilter) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.PivnetFilter = new(PivnetFilter)
+var _ download_clients.PivnetFilter = new(PivnetFilter)

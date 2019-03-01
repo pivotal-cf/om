@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pivotal-cf/om/download_clients"
 	"io"
 	"os"
 	"path"
@@ -32,18 +33,18 @@ type outputList struct {
 
 type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
-	GetLatestProductFile(slug, version, glob string) (*FileArtifact, error)
-	DownloadProductToFile(fa *FileArtifact, file *os.File) error
-	GetLatestStemcellForProduct(fa *FileArtifact, downloadedProductFileName string) (*Stemcell, error)
+	GetLatestProductFile(slug, version, glob string) (*download_clients.FileArtifact, error)
+	DownloadProductToFile(fa *download_clients.FileArtifact, file *os.File) error
+	GetLatestStemcellForProduct(fa *download_clients.FileArtifact, downloadedProductFileName string) (*download_clients.Stemcell, error)
 }
 
-func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
+func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) download_clients.PivnetDownloader {
 	return gp.NewClient(config, logger)
 }
 
 type DefaultStow struct{}
 
-func (d DefaultStow) Dial(kind string, config Config) (stow.Location, error) {
+func (d DefaultStow) Dial(kind string, config download_clients.Config) (stow.Location, error) {
 	location, err := stow.Dial(kind, config)
 	return location, err
 }
@@ -55,8 +56,8 @@ type DownloadProduct struct {
 	environFunc    func() []string
 	logger         pivnetlog.Logger
 	progressWriter io.Writer
-	pivnetFactory  PivnetFactory
-	stower         Stower
+	pivnetFactory  download_clients.PivnetFactory
+	stower         download_clients.Stower
 	downloadClient ProductDownloader
 	Options        struct {
 		Blobstore           string   `long:"blobstore"             short:"b"  description:"enables download from external blobstores when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
@@ -86,8 +87,8 @@ func NewDownloadProduct(
 	environFunc func() []string,
 	logger pivnetlog.Logger,
 	progressWriter io.Writer,
-	factory PivnetFactory,
-	stower Stower,
+	factory download_clients.PivnetFactory,
+	stower download_clients.Stower,
 ) *DownloadProduct {
 	return &DownloadProduct{
 		environFunc:    environFunc,
@@ -167,8 +168,8 @@ func (c *DownloadProduct) Execute(args []string) error {
 	return c.writeOutputFile(productFileName, stemcellFileName, stemcell.Version)
 }
 
-func (c DownloadProduct) createS3Config() S3Configuration {
-	config := S3Configuration{
+func (c DownloadProduct) createS3Config() download_clients.S3Configuration {
+	config := download_clients.S3Configuration{
 		Bucket:          c.Options.S3Bucket,
 		AccessKeyID:     c.Options.S3AccessKeyID,
 		SecretAccessKey: c.Options.S3SecretAccessKey,
@@ -223,13 +224,13 @@ func (c *DownloadProduct) createClient() error {
 	switch c.Options.Blobstore {
 	case "s3":
 		config := c.createS3Config()
-		c.downloadClient, err = NewS3Client(c.stower, config, c.progressWriter)
+		c.downloadClient, err = download_clients.NewS3Client(c.stower, config, c.progressWriter)
 		if err != nil {
 			return fmt.Errorf("could not create an s3 client: %s", err)
 		}
 	default:
 		filter := filter.NewFilter(c.logger)
-		c.downloadClient = NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
+		c.downloadClient = download_clients.NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
 	}
 	return nil
 }
@@ -263,7 +264,7 @@ func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileNam
 	return json.NewEncoder(outputFile).Encode(outputList)
 }
 
-func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string) (string, *FileArtifact, error) {
+func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string) (string, *download_clients.FileArtifact, error) {
 	fileArtifact, err := c.downloadClient.GetLatestProductFile(slug, version, glob)
 	if err != nil {
 		return "", nil, err
@@ -276,7 +277,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		productFilePath = path.Join(c.Options.OutputDir, prefixPath+path.Base(fileArtifact.Name))
 	}
 
-	exist, err := checkFileExists(productFilePath, fileArtifact.sha256)
+	exist, err := checkFileExists(productFilePath, fileArtifact.SHA256)
 	if err != nil {
 		return productFilePath, nil, err
 	}

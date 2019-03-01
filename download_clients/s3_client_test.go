@@ -1,4 +1,4 @@
-package commands_test
+package download_clients_test
 
 import (
 	"archive/zip"
@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/om/download_clients"
 	"net/url"
 	"strings"
 
@@ -13,7 +14,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/pivotal-cf/om/commands"
 	"github.com/pkg/errors"
 )
 
@@ -22,7 +22,7 @@ var _ = Describe("S3Client", func() {
 		When("there are multiple files of the same 'version', differing by beta version", func() {
 			var (
 				stower *mockStower
-				config commands.S3Configuration
+				config download_clients.S3Configuration
 			)
 
 			BeforeEach(func() {
@@ -34,7 +34,7 @@ var _ = Describe("S3Client", func() {
 				}
 
 				stower = newMockStower(itemsList)
-				config = commands.S3Configuration{
+				config = download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
@@ -44,7 +44,7 @@ var _ = Describe("S3Client", func() {
 			})
 
 			It("reports all versions, including the beta versions", func() {
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				versions, err := client.GetAllProductVersions("product-slug")
@@ -61,7 +61,7 @@ var _ = Describe("S3Client", func() {
 		DescribeTable("the path variable", func(path string) {
 			var (
 				stower *mockStower
-				config commands.S3Configuration
+				config download_clients.S3Configuration
 			)
 
 			itemsList := []mockItem{
@@ -74,7 +74,7 @@ var _ = Describe("S3Client", func() {
 			}
 
 			stower = newMockStower(itemsList)
-			config = commands.S3Configuration{
+			config = download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -82,7 +82,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 				Path:            path,
 			}
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			versions, err := client.GetAllProductVersions("product-slug")
@@ -103,7 +103,7 @@ var _ = Describe("S3Client", func() {
 		When("the container returns 'expected element type <Error>", func() {
 			var (
 				stower *mockStower
-				config commands.S3Configuration
+				config download_clients.S3Configuration
 			)
 
 			BeforeEach(func() {
@@ -113,7 +113,7 @@ var _ = Describe("S3Client", func() {
 				stower = &mockStower{
 					location: location,
 				}
-				config = commands.S3Configuration{
+				config = download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
@@ -123,7 +123,7 @@ var _ = Describe("S3Client", func() {
 			})
 			It("returns an error, containing endpoint information, saying S3 could not be reached", func() {
 
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetAllProductVersions("someslug")
@@ -139,7 +139,7 @@ var _ = Describe("S3Client", func() {
 
 			stower := newMockStower(itemsList)
 
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -147,7 +147,7 @@ var _ = Describe("S3Client", func() {
 			}
 
 			It("gives an error message indicating the key and value that were not matched", func() {
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetAllProductVersions("someslug")
@@ -161,7 +161,7 @@ var _ = Describe("S3Client", func() {
 					newMockItem("[product-slug,1.1.1]somefile-0.0.2.zip"),
 				}
 				stower := newMockStower(itemsList)
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
@@ -170,7 +170,7 @@ var _ = Describe("S3Client", func() {
 					EnableV2Signing: true,
 				}
 
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetAllProductVersions("product-slug")
@@ -191,7 +191,7 @@ var _ = Describe("S3Client", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -199,7 +199,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
@@ -215,7 +215,7 @@ var _ = Describe("S3Client", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -223,7 +223,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
@@ -239,7 +239,7 @@ var _ = Describe("S3Client", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -247,7 +247,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.GetLatestProductFile("product-slug", "1.1.1", "*.zip")
@@ -264,7 +264,7 @@ var _ = Describe("S3Client", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -273,7 +273,7 @@ var _ = Describe("S3Client", func() {
 				Path:            path,
 			}
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
@@ -316,20 +316,20 @@ var _ = Describe("S3Client", func() {
 				itemsList: []mockItem{item},
 			}
 
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
 				RegionName:      "region",
 				Endpoint:        "endpoint",
 			}
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			err = client.DownloadProductToFile(&download_clients.FileArtifact{Name: "don't care"}, file)
 			Expect(err).ToNot(HaveOccurred())
 
 			contents, err := ioutil.ReadFile(file.Name())
@@ -344,7 +344,7 @@ var _ = Describe("S3Client", func() {
 			stower := &mockStower{
 				location: location,
 			}
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -355,10 +355,10 @@ var _ = Describe("S3Client", func() {
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			err = client.DownloadProductToFile(&download_clients.FileArtifact{Name: "don't care"}, file)
 			Expect(err.Error()).To(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType"))
 		})
 
@@ -372,17 +372,17 @@ var _ = Describe("S3Client", func() {
 				itemsList: []mockItem{item},
 			}
 
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
 				RegionName:      "region",
 				Endpoint:        "endpoint",
 			}
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
+			err = client.DownloadProductToFile(&download_clients.FileArtifact{Name: "don't care"}, file)
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -402,14 +402,14 @@ var _ = Describe("S3Client", func() {
 					},
 				}
 
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				stemcell, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
@@ -428,14 +428,14 @@ var _ = Describe("S3Client", func() {
 					itemsList: []mockItem{},
 				}
 
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
@@ -443,14 +443,14 @@ var _ = Describe("S3Client", func() {
 			})
 
 			It("errors when the product file does not have stemcell information", func() {
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(nil, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(nil, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetLatestStemcellForProduct(nil, "./fixtures/example-product.yml")
@@ -464,14 +464,14 @@ var _ = Describe("S3Client", func() {
 					itemsList: []mockItem{},
 				}
 
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
@@ -489,14 +489,14 @@ var _ = Describe("S3Client", func() {
 					},
 				}
 
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 					RegionName:      "region",
 					Endpoint:        "endpoint",
 				}
-				client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
@@ -508,8 +508,8 @@ var _ = Describe("S3Client", func() {
 	Describe("property validation and defaults", func() {
 		DescribeTable("required property validation", func(param string) {
 			stower := &mockStower{}
-			config := commands.S3Configuration{}
-			_, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			config := download_clients.S3Configuration{}
+			_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).To(HaveOccurred())
 
 			Expect(err.Error()).To(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param))
@@ -521,7 +521,7 @@ var _ = Describe("S3Client", func() {
 		)
 
 		It("defaults optional properties", func() {
-			config := commands.S3Configuration{
+			config := download_clients.S3Configuration{
 				Bucket:          "bucket",
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
@@ -529,7 +529,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 			stower := &mockStower{itemsList: []mockItem{}}
-			client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			retrievedDisableSSLValue, retrievedValuePresence := client.Config.Config("disable_ssl")
@@ -539,7 +539,7 @@ var _ = Describe("S3Client", func() {
 
 		When("both region and endpoint are given", func() {
 			It("returns an error if they do not match", func() {
-				config := commands.S3Configuration{
+				config := download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
@@ -547,7 +547,7 @@ var _ = Describe("S3Client", func() {
 					Endpoint:        "endpoint",
 				}
 				stower := &mockStower{itemsList: []mockItem{}}
-				_, err := commands.NewS3Client(stower, config, GinkgoWriter)
+				_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
@@ -559,7 +559,7 @@ var _ = Describe("S3Client", func() {
 		stower := newMockStower(itemsList)
 		stower.dialError = dialError
 
-		config := commands.S3Configuration{
+		config := download_clients.S3Configuration{
 			Bucket:          "bucket",
 			AccessKeyID:     "access-key-id",
 			SecretAccessKey: "secret-access-key",
@@ -567,7 +567,7 @@ var _ = Describe("S3Client", func() {
 			Endpoint:        "endpoint",
 		}
 
-		client, err := commands.NewS3Client(stower, config, GinkgoWriter)
+		client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = client.GetAllProductVersions("product-slug")
@@ -581,7 +581,7 @@ type mockStower struct {
 	location      mockLocation
 	dialCallCount int
 	dialError     error
-	config        commands.Config
+	config        download_clients.Config
 }
 
 func newMockStower(itemsList []mockItem) *mockStower {
@@ -590,7 +590,7 @@ func newMockStower(itemsList []mockItem) *mockStower {
 	}
 }
 
-func (s *mockStower) Dial(kind string, config commands.Config) (stow.Location, error) {
+func (s *mockStower) Dial(kind string, config download_clients.Config) (stow.Location, error) {
 	s.config = config
 	s.dialCallCount++
 	if s.dialError != nil {

@@ -1,4 +1,4 @@
-package commands
+package download_clients
 
 import (
 	"archive/zip"

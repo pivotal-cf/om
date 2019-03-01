@@ -4,7 +4,7 @@ package fakes
 import (
 	sync "sync"
 
-	commands "github.com/pivotal-cf/om/commands"
+	download_clients "github.com/pivotal-cf/om/download_clients"
 )
 
 type Config struct {
@@ -152,4 +152,4 @@ func (fake *Config) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.Config = new(Config)
+var _ download_clients.Config = new(Config)

@@ -2,11 +2,12 @@ package commands_test
 
 import (
 	"fmt"
+	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/download_clients/fakes"
 	"github.com/pivotal-cf/om/validator"
 	"io/ioutil"
 	"os"
 	"path"
-	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,7 +16,6 @@ import (
 	"github.com/pivotal-cf/go-pivnet/logger/loggerfakes"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
-	"github.com/pivotal-cf/om/commands/fakes"
 )
 
 var _ = Describe("DownloadProduct", func() {
@@ -24,7 +24,6 @@ var _ = Describe("DownloadProduct", func() {
 		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
-		fakeStower           *mockStower
 		environFunc          func() []string
 		tempDir              string
 		err                  error
@@ -32,7 +31,7 @@ var _ = Describe("DownloadProduct", func() {
 		fileContents         = "hello world"
 	)
 
-	fakePivnetFactory := func(config pivnet.ClientConfig, logger log.Logger) commands.PivnetDownloader {
+	fakePivnetFactory := func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
 		return fakePivnetDownloader
 	}
 
@@ -49,22 +48,11 @@ var _ = Describe("DownloadProduct", func() {
 
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}
-		itemsList := []mockItem{newMockItem("[product-slug,1.0.0-beta.1]product.pivotal")}
-		container := &mockContainer{
-			item: itemsList[0],
-		}
-		location := mockLocation{
-			container: container,
-		}
-		fakeStower = &mockStower{
-			location:  location,
-			itemsList: itemsList,
-		}
 		environFunc = func() []string { return nil }
 	})
 
 	JustBeforeEach(func() {
-		command = commands.NewDownloadProduct(environFunc, logger, GinkgoWriter, fakePivnetFactory, fakeStower)
+		command = commands.NewDownloadProduct(environFunc, logger, GinkgoWriter, fakePivnetFactory, nil)
 	})
 
 	AfterEach(func() {
@@ -108,34 +96,6 @@ var _ = Describe("DownloadProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
-			Expect(fakeStower.dialCallCount).To(Equal(0))
-		})
-
-		When("the blobstore flag is set to s3", func() {
-			BeforeEach(func() {
-				command = commands.NewDownloadProduct(environFunc, logger, GinkgoWriter, fakePivnetFactory, fakeStower)
-				commandArgs = []string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "product-slug",
-					"--product-version", "1.0.0-beta.1",
-					"--output-directory", tempDir,
-					"--blobstore", "s3",
-					"--s3-bucket", "bucket",
-					"--s3-access-key-id", "access-key-id",
-					"--s3-secret-access-key", "secret-access-key",
-					"--s3-region-name", "region-name",
-					"--s3-endpoint", "endpoint",
-				}
-			})
-
-			It("downloads the specified product from s3", func() {
-				err := command.Execute(commandArgs)
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(fakeStower.dialCallCount).Should(BeNumerically(">", 0))
-				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(0))
-			})
 		})
 
 		Context("when a valid product-version-regex is provided", func() {
@@ -734,61 +694,6 @@ output-directory: %s
 				})
 			})
 
-			When("S3 configuration is provided, and blobstore is set", func() {
-				BeforeEach(func() {
-					tmpDir, err := ioutil.TempDir("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					filename := filepath.Join(tmpDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-					err = ioutil.WriteFile(
-						filename,
-						[]byte("yay"),
-						0777,
-					)
-					Expect(err).NotTo(HaveOccurred())
-
-					item := newMockItem(filename)
-					container := mockContainer{item: item}
-					location := mockLocation{container: &container}
-					fakeStower = &mockStower{
-						location:  location,
-						itemsList: []mockItem{item},
-					}
-
-					commandArgs = []string{
-						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
-						"--pivnet-product-slug", "mayhem-crew",
-						"--product-version", `2.0.0`,
-						"--blobstore", "s3",
-						"--s3-bucket", "validBucket",
-						"--s3-access-key-id", "access-key",
-						"--s3-secret-access-key", "secret-key",
-						"--s3-region-name", "some-region",
-						"--output-directory", tempDir,
-						"--s3-path", tmpDir,
-					}
-				})
-				It("doesn't prefix", func() {
-					err = command.Execute(commandArgs)
-					Expect(err).NotTo(HaveOccurred())
-
-					unPrefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-					Expect(unPrefixedFileName).To(BeAnExistingFile())
-				})
-
-				It("writes the prefixed filename to the download-file.json", func() {
-					err = command.Execute(commandArgs)
-					Expect(err).NotTo(HaveOccurred())
-
-					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
-					fileContent, err := ioutil.ReadFile(downloadReportFileName)
-					Expect(err).NotTo(HaveOccurred())
-					Expect(downloadReportFileName).To(BeAnExistingFile())
-					unPrefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, unPrefixedFileName)))
-				})
-			})
 		})
 	})
 
