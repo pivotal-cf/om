@@ -5,16 +5,16 @@
 * when trying to delete a product on Ops Manager during a selective deploy (`apply-changes --product-name tile`), Ops
   Manager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build number). A
   change was made to the info service to accept the new semver formatting as well as the old versioning. 
-  
-### WARNING
-
-The behavior of `download-product` in this release is not final. Please hold off on using this feature until a release without this warning.
 
 ## 0.53.0 
 
 ### Bug Fixes
 
 * `download-product` would panic if the product was already downloaded and you asked for a stemcell. This has been fixed to behave appropriately
+
+### WARNING
+
+The behavior of `download-product` in this release is not final. Please hold off on using this feature until a release without this warning.
 
 ## 0.52.0
 ### Breaking changes
