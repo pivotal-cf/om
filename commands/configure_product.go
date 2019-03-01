@@ -160,7 +160,7 @@ func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID
 	}
 
 	var names []string
-	for name, _ := range userProvidedConfig {
+	for name := range userProvidedConfig {
 		names = append(names, name)
 	}
 

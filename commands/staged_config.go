@@ -34,11 +34,6 @@ type stagedConfigService interface {
 	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
 }
 
-//go:generate counterfeiter -o ./fakes/config_parser.go --fake-name ConfigParser . configParser
-type configParser interface {
-	ParseProperties(name configparser.PropertyName, property api.ResponseProperty, handler configparser.CredentialHandler) (map[string]interface{}, error)
-}
-
 func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
 	return StagedConfig{
 		service: service,

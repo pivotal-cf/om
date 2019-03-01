@@ -30,8 +30,7 @@ var _ = Describe("StagedProducts", func() {
 	Describe("Stage", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				resp = &http.Response{
+				resp := &http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
 				}
@@ -77,8 +76,7 @@ var _ = Describe("StagedProducts", func() {
 		Context("when the same type of product is already deployed", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var resp *http.Response
-					resp = &http.Response{
+					resp := &http.Response{
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
 					}
@@ -122,8 +120,7 @@ var _ = Describe("StagedProducts", func() {
 		Context("when the same type of product is already staged", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var resp *http.Response
-					resp = &http.Response{
+					resp := &http.Response{
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
 					}
@@ -179,8 +176,7 @@ var _ = Describe("StagedProducts", func() {
 			Context("when a GET to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						resp = &http.Response{
+						resp := &http.Response{
 							StatusCode: http.StatusOK,
 							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 						}
@@ -327,8 +323,7 @@ var _ = Describe("StagedProducts", func() {
 		Context("when a GET to the staged products endpoint returns an error", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var resp *http.Response
-					resp = &http.Response{
+					resp := &http.Response{
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
 					}
@@ -381,8 +376,7 @@ var _ = Describe("StagedProducts", func() {
 	Describe("ListStagedProducts", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				resp = &http.Response{
+				resp := &http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
 				}

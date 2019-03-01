@@ -3,12 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-
 	"github.com/pkg/errors"
 )
-
-var readAll = ioutil.ReadAll
 
 type Errand struct {
 	Name       string      `json:"name"`

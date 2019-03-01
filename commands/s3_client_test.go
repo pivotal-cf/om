@@ -299,7 +299,7 @@ var _ = Describe("S3Client", func() {
 			_, err = file.WriteString(fileContents)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = file.Close()
+			Expect(file.Close()).ToNot(HaveOccurred())
 		})
 
 		AfterEach(func() {
@@ -577,13 +577,11 @@ var _ = Describe("S3Client", func() {
 })
 
 type mockStower struct {
-	itemsList      []mockItem
-	location       mockLocation
-	dialCallCount  int
-	dialError      error
-	containerError error
-	itemError      error
-	config         commands.Config
+	itemsList     []mockItem
+	location      mockLocation
+	dialCallCount int
+	dialError     error
+	config        commands.Config
 }
 
 func newMockStower(itemsList []mockItem) *mockStower {
@@ -604,7 +602,7 @@ func (s *mockStower) Dial(kind string, config commands.Config) (stow.Location, e
 
 func (s *mockStower) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
 	for _, item := range s.itemsList {
-		fn(item, nil)
+		_ = fn(item, nil)
 	}
 
 	return nil

@@ -404,7 +404,7 @@ func (c ConfigureDirector) getProductGUID() (string, error) {
 func (c ConfigureDirector) getUserProvidedJobNames(config *directorConfig) []string {
 	var names []string
 
-	for name, _ := range config.ResourceConfiguration {
+	for name := range config.ResourceConfiguration {
 		names = append(names, name)
 	}
 

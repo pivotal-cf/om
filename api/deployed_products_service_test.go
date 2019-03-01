@@ -104,8 +104,7 @@ key-4: 2147483648
 	Describe("List", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				resp = &http.Response{
+				resp := &http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
 				}

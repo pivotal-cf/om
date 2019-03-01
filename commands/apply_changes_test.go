@@ -17,18 +17,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type netError struct {
-	error
-}
-
-func (ne netError) Temporary() bool {
-	return true
-}
-
-func (ne netError) Timeout() bool {
-	return false
-}
-
 var _ = Describe("ApplyChanges", func() {
 	var (
 		service        *fakes.ApplyChangesService

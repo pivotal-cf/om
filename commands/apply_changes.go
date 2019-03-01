@@ -87,9 +87,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if !info.VersionAtLeast(2, 2) {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
-		for _, product := range ac.Options.ProductNames {
-			changedProducts = append(changedProducts, product)
-		}
+		changedProducts = append(changedProducts, ac.Options.ProductNames...)
 	}
 
 	if ac.Options.SkipUnchangedProducts {

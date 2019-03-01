@@ -41,7 +41,7 @@ func (t TileMetadata) Execute(args []string) error {
 	defer file.Close()
 
 	for _, f := range file.File {
-		matched, err := regexp.MatchString("metadata/.+\\.yml", f.Name)
+		matched, err := regexp.MatchString(`metadata/.+\.yml`, f.Name)
 		if err != nil {
 			return fmt.Errorf("failed to match file name regex: %s", err)
 		}

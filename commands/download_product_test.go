@@ -45,7 +45,7 @@ var _ = Describe("DownloadProduct", func() {
 		_, err = file.WriteString(fileContents)
 		Expect(err).NotTo(HaveOccurred())
 
-		err = file.Close()
+		Expect(file.Close()).ToNot(HaveOccurred())
 
 		logger = &loggerfakes.FakeLogger{}
 		fakePivnetDownloader = &fakes.PivnetDownloader{}

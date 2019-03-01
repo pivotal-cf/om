@@ -176,7 +176,7 @@ func sortCredentialMap(cm map[string]string) ([]string, []string) {
 	key := make([]string, len(cm))
 	i := 0
 
-	for k, _ := range cm {
+	for k := range cm {
 		key[i] = k
 		i++
 	}

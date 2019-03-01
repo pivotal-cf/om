@@ -203,7 +203,6 @@ func (f *Form) writeToPipe() {
 
 	_ = f.pw.Close()
 	f.doneWriting <- nil
-	return
 }
 
 func writeFileToPipe(fileName string, writer *io.PipeWriter) error {

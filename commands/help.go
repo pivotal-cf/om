@@ -45,10 +45,7 @@ func NewHelp(output io.Writer, flags string, commands jhanda.CommandSet) Help {
 }
 
 func (h Help) Execute(args []string) error {
-	var globalFlags []string
-	for _, flag := range strings.Split(h.flags, "\n") {
-		globalFlags = append(globalFlags, flag)
-	}
+	globalFlags := strings.Split(h.flags, "\n")
 
 	var context TemplateContext
 	if len(args) == 0 {
@@ -86,7 +83,7 @@ func (h Help) buildGlobalContext() TemplateContext {
 		names  []string
 	)
 
-	for name, _ := range h.commands {
+	for name := range h.commands {
 		names = append(names, name)
 		if len(name) > length {
 			length = len(name)
