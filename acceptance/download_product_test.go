@@ -98,6 +98,32 @@ var _ = Describe("download-product command", func() {
 			})
 		})
 
+		When("the bucket does not exist", func() {
+			It("gives a helpful error message", func() {
+				tmpDir, err := ioutil.TempDir("", "")
+				Expect(err).ToNot(HaveOccurred())
+				command := exec.Command(pathToMain, "download-product",
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.yml",
+					"--pivnet-product-slug", "example-product",
+					"--product-version", "1.10.1",
+					"--output-directory", tmpDir,
+					"--blobstore", "s3",
+					"--s3-bucket", "unknown",
+					"--s3-access-key-id", "minio",
+					"--s3-secret-access-key", "password",
+					"--s3-region-name", "unknown",
+					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-enable-v2-signing", "true",
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+				Eventually(session, "10s").Should(gexec.Exit(1))
+				Expect(session.Err).To(gbytes.Say(`could not reach provided endpoint and bucket `))
+			})
+		})
+
 		When("specifying the version of the AWS signature", func() {
 			It("supports v2 signing", func() {
 				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")

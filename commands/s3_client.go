@@ -3,7 +3,6 @@ package commands
 import (
 	"archive/zip"
 	"bytes"
-	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io"
@@ -171,18 +170,11 @@ func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, destinationFile *os.F
 }
 
 func (s *S3Client) initializeBlobReader(filename string) (blobToRead io.ReadCloser, fileSize int64, err error) {
-	location, err := s.stower.Dial("s3", s.Config)
+	container, err := s.getContainer()
 	if err != nil {
 		return nil, 0, err
 	}
-	container, err := location.Container(s.bucket)
-	if err != nil {
-		endpoint, _ := s.Config.Config("endpoint")
-		if endpoint != "" {
-			return nil, 0, errors.New(fmt.Sprintf(InvalidEndpointErrorMessageTemplate, endpoint, err.Error()))
-		}
-		return nil, 0, err
-	}
+
 	item, err := container.Item(filename)
 	if err != nil {
 		return nil, 0, err
@@ -302,19 +294,9 @@ type internalStemcellMetadata struct {
 	PatchSecurityUpdates string `yaml:"enable_patch_security_updates"`
 }
 
-var InvalidEndpointErrorMessageTemplate = "Could not reach provided endpoint: '%s': %s"
-
 func (s *S3Client) listFiles() ([]string, error) {
-	location, err := s.stower.Dial("s3", s.Config)
+	container, err := s.getContainer()
 	if err != nil {
-		return nil, err
-	}
-	container, err := location.Container(s.bucket)
-	if err != nil {
-		endpoint, _ := s.Config.Config("endpoint")
-		if endpoint != "" {
-			return nil, errors.New(fmt.Sprintf(InvalidEndpointErrorMessageTemplate, endpoint, err.Error()))
-		}
 		return nil, err
 	}
 
@@ -338,4 +320,27 @@ func (s *S3Client) listFiles() ([]string, error) {
 	return paths, nil
 }
 
-const Semver2Regex = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
+func (s *S3Client) getContainer() (stow.Container, error) {
+	location, err := s.stower.Dial("s3", s.Config)
+	if err != nil {
+		return nil, err
+	}
+	container, err := location.Container(s.bucket)
+	if err != nil {
+		endpoint, _ := s.Config.Config("endpoint")
+		if endpoint != "" {
+			return nil, fmt.Errorf(
+				"could not reach provided endpoint and bucket '%s/%s': %s\nCheck bucket and endpoint configuration",
+				endpoint,
+				s.bucket,
+				err,
+			)
+		}
+		return nil, fmt.Errorf(
+			"could not reach provided bucket '%s': %s\nCheck bucket and endpoint configuration",
+			s.bucket,
+			err,
+		)
+	}
+	return container, nil
+}

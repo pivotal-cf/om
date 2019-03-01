@@ -127,7 +127,7 @@ var _ = Describe("S3Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetAllProductVersions("someslug")
-				Expect(err.Error()).To(ContainSubstring("Could not reach provided endpoint: 'endpoint': expected element type <Error> but have StowErrorType"))
+				Expect(err.Error()).To(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType"))
 			})
 		})
 
@@ -359,7 +359,7 @@ var _ = Describe("S3Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.DownloadProductToFile(&commands.FileArtifact{Name: "don't care"}, file)
-			Expect(err.Error()).To(ContainSubstring("Could not reach provided endpoint: 'endpoint': expected element type <Error> but have StowErrorType"))
+			Expect(err.Error()).To(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType"))
 		})
 
 		It("errors when cannot open file", func() {
