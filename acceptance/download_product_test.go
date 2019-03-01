@@ -42,8 +42,8 @@ var _ = Describe("download-product command", func() {
 		When("specifying the stemcell iaas to download", func() {
 			It("downloads the product and correct stemcell", func() {
 				pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/[example-product,1.10.1]product.pivotal")
-				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/[ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
+				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[example-product,1.10.1]product.pivotal")
+				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
@@ -60,6 +60,8 @@ var _ = Describe("download-product command", func() {
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", "http://127.0.0.1:9001",
 					"--stemcell-iaas", "google",
+					"--s3-stemcell-path", "/another/stemcell",
+					"--s3-product-path", "/some/product",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -84,6 +86,8 @@ var _ = Describe("download-product command", func() {
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", "http://127.0.0.1:9001",
 					"--stemcell-iaas", "google",
+					"--s3-stemcell-path", "/another/stemcell",
+					"--s3-product-path", "/some/product",
 				)
 
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -254,7 +258,7 @@ var _ = Describe("download-product command", func() {
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", "http://127.0.0.1:9001",
-					"--s3-path", "/some-path",
+					"--s3-product-path", "/some-path",
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

@@ -75,7 +75,8 @@ type DownloadProduct struct {
 		S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
 		S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
 		S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
-		S3Path              string   `long:"s3-path"                          description:"specify the lookup path where the s3 artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+		S3ProductPath       string   `long:"s3-product-path"                  description:"specify the lookup path where the s3 product artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+		S3StemcellPath      string   `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
 		Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
 		StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 		VarsEnv             []string `long:"vars-env"                         description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
@@ -177,7 +178,8 @@ func (c DownloadProduct) createS3Config() download_clients.S3Configuration {
 		Endpoint:        c.Options.S3Endpoint,
 		DisableSSL:      c.Options.S3DisableSSL,
 		EnableV2Signing: c.Options.S3EnableV2Signing,
-		Path:            c.Options.S3Path,
+		ProductPath:     c.Options.S3ProductPath,
+		StemcellPath:    c.Options.S3StemcellPath,
 	}
 	return config
 }

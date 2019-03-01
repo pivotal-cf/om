@@ -80,7 +80,7 @@ var _ = Describe("S3Client", func() {
 				SecretAccessKey: "secret-access-key",
 				RegionName:      "region",
 				Endpoint:        "endpoint",
-				Path:            path,
+				ProductPath:     path,
 			}
 			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
@@ -270,7 +270,7 @@ var _ = Describe("S3Client", func() {
 				SecretAccessKey: "secret-access-key",
 				RegionName:      "region",
 				Endpoint:        "endpoint",
-				Path:            path,
+				ProductPath:     path,
 			}
 
 			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)

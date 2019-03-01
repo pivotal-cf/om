@@ -30,14 +30,15 @@ type Stower interface {
 }
 
 type S3Configuration struct {
-	Bucket          string `yaml:"bucket" validate:"required"`
-	AccessKeyID     string `yaml:"access-key-id" validate:"required"`
-	SecretAccessKey string `yaml:"secret-access-key" validate:"required"`
-	RegionName      string `yaml:"region-name" validate:"required"`
-	Endpoint        string `yaml:"endpoint"`
-	DisableSSL      bool   `yaml:"disable-ssl"`
-	EnableV2Signing bool   `yaml:"enable-v2-signing"`
-	Path            string `yaml:"path"`
+	Bucket          string `validate:"required"`
+	AccessKeyID     string `validate:"required"`
+	SecretAccessKey string `validate:"required"`
+	RegionName      string `validate:"required"`
+	Endpoint        string
+	DisableSSL      bool
+	EnableV2Signing bool
+	ProductPath     string
+	StemcellPath    string
 }
 
 type S3Client struct {
@@ -45,7 +46,8 @@ type S3Client struct {
 	bucket         string
 	Config         stow.Config
 	progressWriter io.Writer
-	path           string
+	productPath    string
+	stemcellPath   string
 }
 
 func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer) (*S3Client, error) {
@@ -71,11 +73,16 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 		Config:         stowConfig,
 		bucket:         config.Bucket,
 		progressWriter: progressWriter,
-		path:           config.Path,
+		productPath:    config.ProductPath,
+		stemcellPath:   config.StemcellPath,
 	}, nil
 }
 
 func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
+	return s3.getAllProductVersionsFromPath(slug, s3.productPath)
+}
+
+func (s3 S3Client) getAllProductVersionsFromPath(slug, path string) ([]string, error) {
 	files, err := s3.listFiles()
 	if err != nil {
 		return nil, err
@@ -83,7 +90,7 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 
 	productFileCompiledRegex := regexp.MustCompile(
 		fmt.Sprintf(`^/?%s/?\[%s,(.*?)\]`,
-			regexp.QuoteMeta(strings.Trim(s3.path, "/")),
+			regexp.QuoteMeta(strings.Trim(path, "/")),
 			slug,
 		),
 	)
@@ -106,7 +113,6 @@ func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 	}
 
 	return versions, nil
-
 }
 
 func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifact, error) {
@@ -116,8 +122,9 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 	}
 
 	validFile := regexp.MustCompile(
-		fmt.Sprintf(`^/?%s/?\[%s,%s\]`,
-			regexp.QuoteMeta(strings.Trim(s3.path, "/")),
+		fmt.Sprintf(`^/?(%s|%s)/?\[%s,%s\]`,
+			regexp.QuoteMeta(strings.Trim(s3.productPath, "/")),
+			regexp.QuoteMeta(strings.Trim(s3.stemcellPath, "/")),
 			slug,
 			regexp.QuoteMeta(version),
 		),
@@ -214,7 +221,7 @@ func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProduc
 		return nil, err
 	}
 
-	allStemcellVersions, err := s3.GetAllProductVersions(definedStemcell.Slug)
+	allStemcellVersions, err := s3.getAllProductVersionsFromPath(definedStemcell.Slug, s3.stemcellPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not find stemcells on s3: %s", err)
 	}
