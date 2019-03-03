@@ -36,7 +36,7 @@ var _ = Describe("MetadataExtractor", func() {
 		zipper := zip.NewWriter(productFile)
 
 		productWriter, err := zipper.CreateHeader(&zip.FileHeader{
-			Name:               "./metadata/some-product.yml",
+			Name:               "metadata/some-product.yml",
 			UncompressedSize64: uint64(stat.Size()),
 			ModifiedTime:       uint16(stat.ModTime().Unix()),
 		})
@@ -199,6 +199,42 @@ var _ = Describe("MetadataExtractor", func() {
 
 				It("returns an error", func() {
 					_, err := metadataExtractor.ExtractMetadata(wrongProductFile.Name())
+					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
+				})
+			})
+
+			Context("when the metadata file is in a subdirectory", func() {
+				var nestedProductFile *os.File
+				BeforeEach(func() {
+					var err error
+					nestedProductFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					stat, err := nestedProductFile.Stat()
+					Expect(err).NotTo(HaveOccurred())
+
+					zipper := zip.NewWriter(nestedProductFile)
+
+					productWriter, err := zipper.CreateHeader(&zip.FileHeader{
+						Name:               "__MACOSX/metadata/._metadata.yml",
+						UncompressedSize64: uint64(stat.Size()),
+						ModifiedTime:       uint16(stat.ModTime().Unix()),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = io.WriteString(productWriter, validYAML)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = zipper.Close()
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					os.Remove(nestedProductFile.Name())
+				})
+
+				It("returns an error", func() {
+					_, err := metadataExtractor.ExtractMetadata(nestedProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})
