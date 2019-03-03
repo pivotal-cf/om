@@ -19,6 +19,32 @@ product_version: 1.8.14
 name: some-product`
 )
 
+func createProductFile(metadataFilePath, contents string) *os.File {
+	var err error
+	productFile, err := ioutil.TempFile("", "")
+	Expect(err).NotTo(HaveOccurred())
+
+	stat, err := productFile.Stat()
+	Expect(err).NotTo(HaveOccurred())
+
+	zipper := zip.NewWriter(productFile)
+
+	productWriter, err := zipper.CreateHeader(&zip.FileHeader{
+		Name:               metadataFilePath,
+		UncompressedSize64: uint64(stat.Size()),
+		ModifiedTime:       uint16(stat.ModTime().Unix()),
+	})
+	Expect(err).NotTo(HaveOccurred())
+
+	_, err = io.WriteString(productWriter, contents)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = zipper.Close()
+	Expect(err).NotTo(HaveOccurred())
+
+	return productFile
+}
+
 var _ = Describe("MetadataExtractor", func() {
 	var (
 		metadataExtractor extractor.MetadataExtractor
@@ -26,28 +52,7 @@ var _ = Describe("MetadataExtractor", func() {
 	)
 
 	BeforeEach(func() {
-		var err error
-		productFile, err = ioutil.TempFile("", "")
-		Expect(err).NotTo(HaveOccurred())
-
-		stat, err := productFile.Stat()
-		Expect(err).NotTo(HaveOccurred())
-
-		zipper := zip.NewWriter(productFile)
-
-		productWriter, err := zipper.CreateHeader(&zip.FileHeader{
-			Name:               "metadata/some-product.yml",
-			UncompressedSize64: uint64(stat.Size()),
-			ModifiedTime:       uint16(stat.ModTime().Unix()),
-		})
-		Expect(err).NotTo(HaveOccurred())
-
-		_, err = io.WriteString(productWriter, validYAML)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = zipper.Close()
-		Expect(err).NotTo(HaveOccurred())
-
+		productFile = createProductFile("metadata/some-product.yml", validYAML)
 		metadataExtractor = extractor.MetadataExtractor{}
 	})
 
@@ -76,14 +81,7 @@ var _ = Describe("MetadataExtractor", func() {
 			Context("when no metadata file is found", func() {
 				var badProductFile *os.File
 				BeforeEach(func() {
-					var err error
-					badProductFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					zipper := zip.NewWriter(badProductFile)
-
-					err = zipper.Close()
-					Expect(err).NotTo(HaveOccurred())
+					badProductFile = createProductFile("", validYAML)
 				})
 
 				AfterEach(func() {
@@ -100,25 +98,7 @@ var _ = Describe("MetadataExtractor", func() {
 				var badProductFile *os.File
 
 				BeforeEach(func() {
-					var err error
-					badProductFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-					stat, err := badProductFile.Stat()
-					Expect(err).NotTo(HaveOccurred())
-
-					zipper := zip.NewWriter(badProductFile)
-					productWriter, err := zipper.CreateHeader(&zip.FileHeader{
-						Name:               "./metadata/some-product.yml",
-						UncompressedSize64: uint64(stat.Size()),
-						ModifiedTime:       uint16(stat.ModTime().Unix()),
-					})
-					Expect(err).NotTo(HaveOccurred())
-
-					_, err = io.WriteString(productWriter, `%%%`)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = zipper.Close()
-					Expect(err).NotTo(HaveOccurred())
+					badProductFile = createProductFile("./metadata/some-product.yml", `%%%`)
 				})
 
 				AfterEach(func() {
@@ -135,26 +115,7 @@ var _ = Describe("MetadataExtractor", func() {
 				var badProductFile *os.File
 
 				BeforeEach(func() {
-					var err error
-					badProductFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					stat, err := badProductFile.Stat()
-					Expect(err).NotTo(HaveOccurred())
-
-					zipper := zip.NewWriter(badProductFile)
-					productWriter, err := zipper.CreateHeader(&zip.FileHeader{
-						Name:               "./metadata/some-product.yml",
-						UncompressedSize64: uint64(stat.Size()),
-						ModifiedTime:       uint16(stat.ModTime().Unix()),
-					})
-					Expect(err).NotTo(HaveOccurred())
-
-					_, err = io.WriteString(productWriter, `foo: bar`)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = zipper.Close()
-					Expect(err).NotTo(HaveOccurred())
+					badProductFile = createProductFile("./metadata/some-product.yml", `foo: bar`)
 				})
 
 				AfterEach(func() {
@@ -171,26 +132,7 @@ var _ = Describe("MetadataExtractor", func() {
 				var wrongProductFile *os.File
 
 				BeforeEach(func() {
-					var err error
-					wrongProductFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					stat, err := wrongProductFile.Stat()
-					Expect(err).NotTo(HaveOccurred())
-
-					zipper := zip.NewWriter(wrongProductFile)
-					productWriter, err := zipper.CreateHeader(&zip.FileHeader{
-						Name:               "some-product.yml",
-						UncompressedSize64: uint64(stat.Size()),
-						ModifiedTime:       uint16(stat.ModTime().Unix()),
-					})
-					Expect(err).NotTo(HaveOccurred())
-
-					_, err = io.WriteString(productWriter, validYAML)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = zipper.Close()
-					Expect(err).NotTo(HaveOccurred())
+					wrongProductFile = createProductFile("some-product.yml", validYAML)
 				})
 
 				AfterEach(func() {
@@ -206,27 +148,7 @@ var _ = Describe("MetadataExtractor", func() {
 			Context("when the metadata file is in a subdirectory", func() {
 				var nestedProductFile *os.File
 				BeforeEach(func() {
-					var err error
-					nestedProductFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
-
-					stat, err := nestedProductFile.Stat()
-					Expect(err).NotTo(HaveOccurred())
-
-					zipper := zip.NewWriter(nestedProductFile)
-
-					productWriter, err := zipper.CreateHeader(&zip.FileHeader{
-						Name:               "__MACOSX/metadata/._metadata.yml",
-						UncompressedSize64: uint64(stat.Size()),
-						ModifiedTime:       uint16(stat.ModTime().Unix()),
-					})
-					Expect(err).NotTo(HaveOccurred())
-
-					_, err = io.WriteString(productWriter, validYAML)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = zipper.Close()
-					Expect(err).NotTo(HaveOccurred())
+					nestedProductFile = createProductFile("__MACOSX/metadata/._metadata.yml", validYAML)
 				})
 
 				AfterEach(func() {
