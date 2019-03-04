@@ -39,6 +39,7 @@ type S3Configuration struct {
 	EnableV2Signing bool
 	ProductPath     string
 	StemcellPath    string
+	AuthType        string
 }
 
 type S3Client struct {
@@ -59,6 +60,9 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 
 	disableSSL := strconv.FormatBool(config.DisableSSL)
 	enableV2Signing := strconv.FormatBool(config.EnableV2Signing)
+	if config.AuthType == "" {
+		config.AuthType = "accesskey"
+	}
 	stowConfig := stow.ConfigMap{
 		s3.ConfigAccessKeyID: config.AccessKeyID,
 		s3.ConfigSecretKey:   config.SecretAccessKey,
@@ -66,7 +70,7 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 		s3.ConfigEndpoint:    config.Endpoint,
 		s3.ConfigDisableSSL:  disableSSL,
 		s3.ConfigV2Signing:   enableV2Signing,
-		s3.ConfigAuthType:    "accesskey",
+		s3.ConfigAuthType:    config.AuthType,
 	}
 
 	return &S3Client{

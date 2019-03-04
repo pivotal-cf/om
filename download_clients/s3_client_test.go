@@ -555,6 +555,27 @@ var _ = Describe("S3Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
+		When("AuthType is set", func() {
+			It("passes the auth_type down to stow", func() {
+				config := download_clients.S3Configuration{
+					Bucket:          "bucket",
+					AccessKeyID:     "access-key-id",
+					SecretAccessKey: "secret-access-key",
+					RegionName:      "wrongRegion",
+					Endpoint:        "endpoint",
+					AuthType:        "iam",
+				}
+
+				stower := &mockStower{itemsList: []mockItem{}}
+				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				retrievedAuthTypeValue, retrievedValuePresence := client.Config.Config("auth_type")
+				Expect(retrievedValuePresence).To(Equal(true))
+				Expect(retrievedAuthTypeValue).To(Equal("iam"))
+
+			})
+		})
 	})
 
 	It("returns an error on stower failure", func() {
