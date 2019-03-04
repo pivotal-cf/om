@@ -42,14 +42,14 @@ var _ = Describe("download-product command", func() {
 		When("specifying the stemcell iaas to download", func() {
 			It("downloads the product and correct stemcell", func() {
 				pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[example-product,1.10.1]product.pivotal")
+				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[example-product,1.10.1]example-product.pivotal")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-file-glob", "example-product.pivotal",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
 					"--output-directory", tmpDir,
@@ -69,7 +69,7 @@ var _ = Describe("download-product command", func() {
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 
-				fileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]product.pivotal"))
+				fileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]example-product.pivotal"))
 				Expect(err).ToNot(HaveOccurred())
 
 				By("running the command again, it uses the cache")
@@ -93,10 +93,10 @@ var _ = Describe("download-product command", func() {
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
-				Expect(string(session.Err.Contents())).To(ContainSubstring("[example-product,1.10.1]product.pivotal already exists, skip downloading"))
+				Expect(string(session.Err.Contents())).To(ContainSubstring("[example-product,1.10.1]example-product.pivotal already exists, skip downloading"))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))
 
-				cachedFileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]product.pivotal"))
+				cachedFileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]example-product.pivotal"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(cachedFileInfo.ModTime()).To(Equal(fileInfo.ModTime()))
 			})

@@ -100,7 +100,7 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 		if productGUID, ok := productGuidMapping[productName]; ok {
 			errandsPayload[productGUID] = errandConfig
 		} else {
-			return InstallationsServiceOutput{},  fmt.Errorf("failed to fetch product GUID for product: %s", productName)
+			return InstallationsServiceOutput{}, fmt.Errorf("failed to fetch product GUID for product: %s", productName)
 		}
 	}
 

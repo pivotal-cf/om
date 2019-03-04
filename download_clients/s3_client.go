@@ -154,7 +154,10 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 	}
 
 	for _, f := range prefixedFilepaths {
-		matched, _ := filepath.Match(glob, filepath.Base(f))
+		removePrefixRegex := regexp.MustCompile(`^\[.*\]`)
+		baseFilename := removePrefixRegex.ReplaceAllString(filepath.Base(f), "")
+
+		matched, _ := filepath.Match(glob, baseFilename)
 		if matched {
 			globMatchedFilepaths = append(globMatchedFilepaths, f)
 		}

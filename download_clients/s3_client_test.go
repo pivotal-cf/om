@@ -209,6 +209,29 @@ var _ = Describe("S3Client", func() {
 			Expect(fileArtifact.Name).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
+		It("removes the prefix when globbing", func() {
+			itemsList := []mockItem{
+				newMockItem("[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
+				newMockItem("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"),
+			}
+
+			stower := newMockStower(itemsList)
+			config := download_clients.S3Configuration{
+				Bucket:          "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				RegionName:      "region",
+				Endpoint:        "endpoint",
+			}
+
+			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "pcf-vsphere*ova")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fileArtifact.Name).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
+		})
+
 		It("errors when two files match the same glob", func() {
 			itemsList := []mockItem{
 				newMockItem("[product-slug,1.0.0]pcf-vsphere-2.1-build.341.ova"),
