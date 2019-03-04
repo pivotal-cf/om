@@ -535,6 +535,10 @@ var _ = Describe("S3Client", func() {
 			retrievedDisableSSLValue, retrievedValuePresence := client.Config.Config("disable_ssl")
 			Expect(retrievedValuePresence).To(Equal(true))
 			Expect(retrievedDisableSSLValue).To(Equal("false"))
+
+			retrievedAuthTypeValue, retrievedValuePresence := client.Config.Config("auth_type")
+			Expect(retrievedValuePresence).To(Equal(true))
+			Expect(retrievedAuthTypeValue).To(Equal("accesskey"))
 		})
 
 		When("both region and endpoint are given", func() {

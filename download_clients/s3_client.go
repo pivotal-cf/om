@@ -66,6 +66,7 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 		s3.ConfigEndpoint:    config.Endpoint,
 		s3.ConfigDisableSSL:  disableSSL,
 		s3.ConfigV2Signing:   enableV2Signing,
+		s3.ConfigAuthType:    "accesskey",
 	}
 
 	return &S3Client{
