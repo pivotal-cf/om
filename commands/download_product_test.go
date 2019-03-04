@@ -658,6 +658,7 @@ output-directory: %s
 					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
 					Expect(prefixedFileName).To(BeAnExistingFile())
 				})
+
 				It("writes the prefixed filename to the download-file.json", func() {
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())

@@ -70,6 +70,7 @@ type DownloadProduct struct {
 		ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 		S3Bucket            string   `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
 		S3AccessKeyID       string   `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
+		S3AuthType          string   `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
 		S3SecretAccessKey   string   `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
 		S3RegionName        string   `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
 		S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
@@ -173,6 +174,7 @@ func (c DownloadProduct) createS3Config() download_clients.S3Configuration {
 	config := download_clients.S3Configuration{
 		Bucket:          c.Options.S3Bucket,
 		AccessKeyID:     c.Options.S3AccessKeyID,
+		AuthType:        c.Options.S3AuthType,
 		SecretAccessKey: c.Options.S3SecretAccessKey,
 		RegionName:      c.Options.S3RegionName,
 		Endpoint:        c.Options.S3Endpoint,
