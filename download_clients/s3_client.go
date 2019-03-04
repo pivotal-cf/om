@@ -31,8 +31,8 @@ type Stower interface {
 
 type S3Configuration struct {
 	Bucket          string `validate:"required"`
-	AccessKeyID     string `validate:"required"`
-	SecretAccessKey string `validate:"required"`
+	AccessKeyID     string
+	SecretAccessKey string
 	RegionName      string `validate:"required"`
 	Endpoint        string
 	DisableSSL      bool
@@ -63,6 +63,12 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 	if config.AuthType == "" {
 		config.AuthType = "accesskey"
 	}
+
+	err = validateAccessKeyAuthType(config)
+	if err != nil {
+		return nil, err
+	}
+
 	stowConfig := stow.ConfigMap{
 		s3.ConfigAccessKeyID: config.AccessKeyID,
 		s3.ConfigSecretKey:   config.SecretAccessKey,
@@ -213,6 +219,18 @@ func (s3 S3Client) startProgressBar(size int64, item io.Reader) (progressBar *pr
 func (s3 S3Client) streamBufferToFile(destinationFile *os.File, wrappedBlobReader io.Reader) error {
 	_, err := io.Copy(destinationFile, wrappedBlobReader)
 	return err
+}
+
+func validateAccessKeyAuthType(config S3Configuration) error {
+	if config.AuthType == "iam" {
+		return nil
+	}
+
+	if config.AccessKeyID == "" || config.SecretAccessKey == "" {
+		return fmt.Errorf("the flags \"s3-access-key-id\" and \"s3-secret-access-key\" are required when the \"auth-type\" is \"accesskey\"")
+	}
+
+	return nil
 }
 
 func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProductFileName string) (*Stemcell, error) {

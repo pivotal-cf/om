@@ -538,8 +538,6 @@ var _ = Describe("S3Client", func() {
 			Expect(err.Error()).To(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param))
 		},
 			Entry("requires Bucket", "Bucket"),
-			Entry("requires AccessKeyID", "AccessKeyID"),
-			Entry("requires SecretAccessKey", "SecretAccessKey"),
 			Entry("requires RegionName", "RegionName"),
 		)
 
@@ -579,24 +577,55 @@ var _ = Describe("S3Client", func() {
 			})
 		})
 		When("AuthType is set", func() {
-			It("passes the auth_type down to stow", func() {
-				config := download_clients.S3Configuration{
+			var config download_clients.S3Configuration
+			BeforeEach(func() {
+				config = download_clients.S3Configuration{
 					Bucket:          "bucket",
 					AccessKeyID:     "access-key-id",
 					SecretAccessKey: "secret-access-key",
 					RegionName:      "wrongRegion",
 					Endpoint:        "endpoint",
-					AuthType:        "iam",
+					AuthType:        "fakeAuthType",
 				}
+			})
 
+			It("passes the auth_type down to stow", func() {
 				stower := &mockStower{itemsList: []mockItem{}}
 				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 
 				retrievedAuthTypeValue, retrievedValuePresence := client.Config.Config("auth_type")
 				Expect(retrievedValuePresence).To(Equal(true))
-				Expect(retrievedAuthTypeValue).To(Equal("iam"))
+				Expect(retrievedAuthTypeValue).To(Equal("fakeAuthType"))
 
+			})
+
+			When("AuthType is 'iam' and the id/secret are not provided", func() {
+				BeforeEach(func() {
+					config.AuthType = "iam"
+					config.AccessKeyID = ""
+					config.SecretAccessKey = ""
+				})
+
+				It("does not raise a validation error", func() {
+					stower := &mockStower{itemsList: []mockItem{}}
+					_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+			When("AuthType is accesskey/default and the id/secret are not provided", func() {
+				BeforeEach(func() {
+					config.AuthType = "accesskey"
+					config.AccessKeyID = ""
+					config.SecretAccessKey = ""
+
+				})
+
+				It("raises a validation error", func() {
+					stower := &mockStower{itemsList: []mockItem{}}
+					_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+					Expect(err).To(HaveOccurred())
+				})
 			})
 		})
 	})
