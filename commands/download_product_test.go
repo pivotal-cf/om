@@ -196,6 +196,22 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(logStr).To(Equal("warning: could not parse semver version from: 2.0.x"))
 				})
 			})
+
+			When("there are no valid versions found for given product regex", func() {
+				BeforeEach(func() {
+					fakePivnetDownloader.ReleasesForProductSlugReturns([]pivnet.Release{
+						{
+							ID:      3,
+							Version: "3.1.2",
+						},
+					}, nil)
+				})
+
+				It("returns an error", func() {
+					err = command.Execute(commandArgs)
+					Expect(err).To(MatchError("no valid versions found for product 'elastic-runtime' and product version regex '2\\..\\..*'\nexisting versions: 3.1.2"))
+				})
+			})
 		})
 
 		Context("when the globs returns multiple files", func() {

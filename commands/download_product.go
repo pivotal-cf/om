@@ -188,7 +188,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 	if c.Options.ProductVersionRegex != "" {
 		re, err := regexp.Compile(c.Options.ProductVersionRegex)
 		if err != nil {
-			return "", fmt.Errorf("could not compile regex: %s: %s", c.Options.ProductVersionRegex, err)
+			return "", fmt.Errorf("could not compile regex '%s': %s", c.Options.ProductVersionRegex, err)
 		}
 
 		productVersions, err := c.downloadClient.GetAllProductVersions(c.Options.PivnetProductSlug)
@@ -213,7 +213,11 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 		sort.Sort(versions)
 
 		if len(versions) == 0 {
-			return "", fmt.Errorf("no valid versions found for product '%s'", c.Options.PivnetProductSlug)
+			existingVersions := strings.Join(productVersions, ", ")
+			if existingVersions == "" {
+				existingVersions = "none"
+			}
+			return "", fmt.Errorf("no valid versions found for product '%s' and product version regex '%s'\nexisting versions: %s", c.Options.PivnetProductSlug, c.Options.ProductVersionRegex, existingVersions)
 		}
 
 		return versions[len(versions)-1].Original(), nil
