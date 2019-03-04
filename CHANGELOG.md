@@ -1,10 +1,20 @@
 ## 0.54.0 (unreleased)
 
-### Bug Fixes
 
+### Breaking Changes
+* download-product's prefix format and behavior has changed.
+  - the prefix format is now `[example-product,1.2.3]original-filename.pivotal`.
+  - the prefix is added to _all_ product files if `s3-bucket` is set in the config when downloading from Pivnet.
+
+### Features
+* download-product now supports downloading stemcells from S3, too.
+* download-product allows use of an instance iam account when `s3-auth-method: iam` is set.
+
+### Bug Fixes
 * when trying to delete a product on Ops Manager during a selective deploy (`apply-changes --product-name tile`), Ops
   Manager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build number). A
   change was made to the info service to accept the new semver formatting as well as the old versioning. 
+* upload-product (among other things) is no longer sensitive to subdirectories in tile metadata directories
 
 ## 0.53.0 
 
