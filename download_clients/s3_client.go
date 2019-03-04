@@ -187,8 +187,8 @@ func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, destinationFile *os.F
 	return nil
 }
 
-func (s *S3Client) initializeBlobReader(filename string) (blobToRead io.ReadCloser, fileSize int64, err error) {
-	container, err := s.getContainer()
+func (s3 *S3Client) initializeBlobReader(filename string) (blobToRead io.ReadCloser, fileSize int64, err error) {
+	container, err := s3.getContainer()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -219,18 +219,6 @@ func (s3 S3Client) startProgressBar(size int64, item io.Reader) (progressBar *pr
 func (s3 S3Client) streamBufferToFile(destinationFile *os.File, wrappedBlobReader io.Reader) error {
 	_, err := io.Copy(destinationFile, wrappedBlobReader)
 	return err
-}
-
-func validateAccessKeyAuthType(config S3Configuration) error {
-	if config.AuthType == "iam" {
-		return nil
-	}
-
-	if config.AccessKeyID == "" || config.SecretAccessKey == "" {
-		return fmt.Errorf("the flags \"s3-access-key-id\" and \"s3-secret-access-key\" are required when the \"auth-type\" is \"accesskey\"")
-	}
-
-	return nil
 }
 
 func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProductFileName string) (*Stemcell, error) {
@@ -271,6 +259,79 @@ func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProduc
 		Version: latestVersion,
 		Slug:    definedStemcell.Slug,
 	}, nil
+}
+
+func (s3 *S3Client) listFiles() ([]string, error) {
+	container, err := s3.getContainer()
+	if err != nil {
+		return nil, err
+	}
+
+	var paths []string
+	err = s3.stower.Walk(container, stow.NoPrefix, 100, func(item stow.Item, err error) error {
+		if err != nil {
+			return err
+		}
+		paths = append(paths, item.ID())
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(paths) == 0 {
+		return nil, fmt.Errorf("bucket contains no files")
+	}
+
+	return paths, nil
+}
+
+func (s3 *S3Client) getContainer() (stow.Container, error) {
+	location, err := s3.stower.Dial("s3", s3.Config)
+	if err != nil {
+		return nil, err
+	}
+	container, err := location.Container(s3.bucket)
+	if err != nil {
+		endpoint, _ := s3.Config.Config("endpoint")
+		if endpoint != "" {
+			return nil, fmt.Errorf(
+				"could not reach provided endpoint and bucket '%s/%s': %s\nCheck bucket and endpoint configuration",
+				endpoint,
+				s3.bucket,
+				err,
+			)
+		}
+		return nil, fmt.Errorf(
+			"could not reach provided bucket '%s': %s\nCheck bucket and endpoint configuration",
+			s3.bucket,
+			err,
+		)
+	}
+	return container, nil
+}
+
+func validateAccessKeyAuthType(config S3Configuration) error {
+	if config.AuthType == "iam" {
+		return nil
+	}
+
+	if config.AccessKeyID == "" || config.SecretAccessKey == "" {
+		return fmt.Errorf("the flags \"s3-access-key-id\" and \"s3-secret-access-key\" are required when the \"auth-type\" is \"accesskey\"")
+	}
+
+	return nil
+}
+
+type stemcellMetadata struct {
+	Metadata internalStemcellMetadata `yaml:"stemcell_criteria"`
+}
+
+type internalStemcellMetadata struct {
+	Os                   string `yaml:"os"`
+	Version              string `yaml:"version"`
+	PatchSecurityUpdates string `yaml:"enable_patch_security_updates"`
 }
 
 func stemcellFromProduct(filename string) (*Stemcell, error) {
@@ -320,65 +381,4 @@ func stemcellFromProduct(filename string) (*Stemcell, error) {
 		}
 	}
 	return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile: %s", filename)
-}
-
-type stemcellMetadata struct {
-	Metadata internalStemcellMetadata `yaml:"stemcell_criteria"`
-}
-
-type internalStemcellMetadata struct {
-	Os                   string `yaml:"os"`
-	Version              string `yaml:"version"`
-	PatchSecurityUpdates string `yaml:"enable_patch_security_updates"`
-}
-
-func (s *S3Client) listFiles() ([]string, error) {
-	container, err := s.getContainer()
-	if err != nil {
-		return nil, err
-	}
-
-	var paths []string
-	err = s.stower.Walk(container, stow.NoPrefix, 100, func(item stow.Item, err error) error {
-		if err != nil {
-			return err
-		}
-		paths = append(paths, item.ID())
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(paths) == 0 {
-		return nil, fmt.Errorf("bucket contains no files")
-	}
-
-	return paths, nil
-}
-
-func (s *S3Client) getContainer() (stow.Container, error) {
-	location, err := s.stower.Dial("s3", s.Config)
-	if err != nil {
-		return nil, err
-	}
-	container, err := location.Container(s.bucket)
-	if err != nil {
-		endpoint, _ := s.Config.Config("endpoint")
-		if endpoint != "" {
-			return nil, fmt.Errorf(
-				"could not reach provided endpoint and bucket '%s/%s': %s\nCheck bucket and endpoint configuration",
-				endpoint,
-				s.bucket,
-				err,
-			)
-		}
-		return nil, fmt.Errorf(
-			"could not reach provided bucket '%s': %s\nCheck bucket and endpoint configuration",
-			s.bucket,
-			err,
-		)
-	}
-	return container, nil
 }
