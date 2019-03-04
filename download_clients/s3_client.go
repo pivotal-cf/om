@@ -165,7 +165,11 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 	}
 
 	if len(globMatchedFilepaths) == 0 {
-		return nil, fmt.Errorf("the glob '%s' matches no file", glob)
+		availableFiles := strings.Join(prefixedFilepaths, ", ")
+		if availableFiles == "" {
+			availableFiles = "none"
+		}
+		return nil, fmt.Errorf("the glob '%s' matches no file\navailable files: %s", glob, availableFiles)
 	}
 
 	return &FileArtifact{Name: globMatchedFilepaths[0]}, nil
