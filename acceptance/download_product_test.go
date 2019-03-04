@@ -43,7 +43,7 @@ var _ = Describe("download-product command", func() {
 			It("downloads the product and correct stemcell", func() {
 				pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[example-product,1.10.1]product.pivotal")
-				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
+				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
@@ -94,7 +94,7 @@ var _ = Describe("download-product command", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[example-product,1.10.1]product.pivotal already exists, skip downloading"))
-				Expect(string(session.Err.Contents())).To(ContainSubstring("[ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))
+				Expect(string(session.Err.Contents())).To(ContainSubstring("[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))
 
 				cachedFileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]product.pivotal"))
 				Expect(err).ToNot(HaveOccurred())

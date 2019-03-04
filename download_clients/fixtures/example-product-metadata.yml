@@ -9,8 +9,8 @@ rank: 1
 service_broker: false # Default value
 opsmanager_syslog: true
 stemcell_criteria:
-  os: "ubuntu-xenial"
-  version: "97.28"
+  os: {{.StemcellName}}
+  version: "{{.StemcellVersion}}"
 
   # allows you to opt-out of the default behaviour of Ops Manager 1.8+ to always
   # use the latest patch update of an available stemcell version. Set to 'false'

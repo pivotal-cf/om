@@ -287,8 +287,16 @@ func stemcellFromProduct(filename string) (*Stemcell, error) {
 				return nil, err
 			}
 
+			stemcellNameToPivnetProductName := map[string]string{
+				"ubuntu-xenial": "stemcells-ubuntu-xenial",
+				"ubuntu-trusty": "stemcells",
+				"windows2016":   "stemcells-windows-server",
+				"windows1803":   "stemcells-windows-server",
+				"windows2019":   "stemcells-windows-server",
+			}
+
 			return &Stemcell{
-				Slug:    metadata.Metadata.Os,
+				Slug:    stemcellNameToPivnetProductName[metadata.Metadata.Os],
 				Version: metadata.Metadata.Version,
 			}, nil
 		}

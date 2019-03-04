@@ -2,6 +2,7 @@ package download_clients_test
 
 import (
 	"archive/zip"
+	"fmt"
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -15,6 +16,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+	"text/template"
 )
 
 var _ = Describe("S3Client", func() {
@@ -389,16 +391,19 @@ var _ = Describe("S3Client", func() {
 
 	Describe("GetLatestStemcellForProduct", func() {
 		When("the s3 bucket has stemcells that product can used", func() {
-			It("returns the latest stemcell", func() {
-				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-97.28.yml")
+			DescribeTable("returns the latest stemcell", func(stemcellName, stemcellProductName string) {
+				exampleTileFileName := createPivotalFile(
+					"[example-product,1.0-build.0]example*pivotal",
+					stemcellName,
+					"97.28",
+				)
 
 				stower := &mockStower{
 					itemsList: []mockItem{
-						newMockItem("[ubuntu-xenial,97.28]stemcell.tgz"),
-						newMockItem("[ubuntu-xenial,97.54]stemcell.tgz"),
-						newMockItem("[ubuntu-xenial,97.10]stemcell.tgz"),
-						newMockItem("[ubuntu-xenial,97.101]stemcell.tgz"),
-						newMockItem("[ubuntu-xenial,97.asdf]stemcell.tgz"),
+						newMockItem(fmt.Sprintf("[%s,97.28]stemcell.tgz", stemcellProductName)),
+						newMockItem(fmt.Sprintf("[%s,97.10]stemcell.tgz", stemcellProductName)),
+						newMockItem(fmt.Sprintf("[%s,97.101]stemcell.tgz", stemcellProductName)),
+						newMockItem(fmt.Sprintf("[%s,97.asdf]stemcell.tgz", stemcellProductName)),
 					},
 				}
 
@@ -416,13 +421,23 @@ var _ = Describe("S3Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stemcell.Version).To(Equal("97.101"))
-				Expect(stemcell.Slug).To(Equal("ubuntu-xenial"))
-			})
+				Expect(stemcell.Slug).To(Equal(stemcellProductName))
+			},
+				Entry("supporting xenial", "ubuntu-xenial", "stemcells-ubuntu-xenial"),
+				Entry("supporting trusty", "ubuntu-trusty", "stemcells"),
+				Entry("supporting windows2016", "windows2016", "stemcells-windows-server"),
+				Entry("supporting windows1803", "windows1803", "stemcells-windows-server"),
+				Entry("supporting windows2019", "windows2019", "stemcells-windows-server"),
+			)
 		})
 
 		Context("failure cases", func() {
 			It("errors with malformed stemcell version in the product", func() {
-				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-bad-version.yml")
+				exampleTileFileName := createPivotalFile(
+					"[example-product,1.0-build.0]example*pivotal",
+					"ubuntu-xenial",
+					"bad-version",
+				)
 
 				stower := &mockStower{
 					itemsList: []mockItem{},
@@ -439,7 +454,7 @@ var _ = Describe("S3Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
-				Expect(err).To(MatchError("versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: whoops"))
+				Expect(err).To(MatchError("versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: bad-version"))
 			})
 
 			It("errors when the product file does not have stemcell information", func() {
@@ -458,7 +473,11 @@ var _ = Describe("S3Client", func() {
 			})
 
 			It("errors when there are no available stemcell versions on s3", func() {
-				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-97.28.yml")
+				exampleTileFileName := createPivotalFile(
+					"[example-product,1.0-build.0]example*pivotal",
+					"ubuntu-xenial",
+					"97.28",
+				)
 
 				stower := &mockStower{
 					itemsList: []mockItem{},
@@ -479,13 +498,17 @@ var _ = Describe("S3Client", func() {
 			})
 
 			It("errors when cannot get latest stemcell version", func() {
-				exampleTileFileName := createPivotalFile("[example-product,1.0-build.0]example*pivotal", "./fixtures/example-product-xenial-97.28.yml")
+				exampleTileFileName := createPivotalFile(
+					"[example-product,1.0-build.0]example*pivotal",
+					"ubuntu-xenial",
+					"97.28",
+				)
 
 				stower := &mockStower{
 					itemsList: []mockItem{
-						newMockItem("[ubuntu-xenial,96.28]stemcell.tgz"),
-						newMockItem("[ubuntu-xenial,96.54]stemcell.tgz"),
-						newMockItem("[ubuntu-xenial,96.10]stemcell.tgz"),
+						newMockItem("[stemcells-ubuntu-xenial,96.28]stemcell.tgz"),
+						newMockItem("[stemcells-ubuntu-xenial,96.54]stemcell.tgz"),
+						newMockItem("[stemcells-ubuntu-xenial,96.10]stemcell.tgz"),
 					},
 				}
 
@@ -709,7 +732,7 @@ func (m mockItem) Size() (int64, error) {
 	return 0, nil
 }
 
-func createPivotalFile(productFileName, metadataFilename string) string {
+func createPivotalFile(productFileName, stemcellName, stemcellVersion string) string {
 	tempfile, err := ioutil.TempFile("", productFileName)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -717,10 +740,21 @@ func createPivotalFile(productFileName, metadataFilename string) string {
 	file, err := zipper.Create("metadata/props.yml")
 	Expect(err).NotTo(HaveOccurred())
 
-	contents, err := ioutil.ReadFile(metadataFilename)
+	contents, err := ioutil.ReadFile("./fixtures/example-product-metadata.yml")
 	Expect(err).NotTo(HaveOccurred())
 
-	_, err = file.Write(contents)
+	context := struct {
+		StemcellName    string
+		StemcellVersion string
+	}{
+		StemcellName:    stemcellName,
+		StemcellVersion: stemcellVersion,
+	}
+
+	tmpl, err := template.New("example-product").Parse(string(contents))
+	Expect(err).NotTo(HaveOccurred())
+
+	err = tmpl.Execute(file, context)
 	Expect(err).NotTo(HaveOccurred())
 
 	Expect(zipper.Close()).NotTo(HaveOccurred())
