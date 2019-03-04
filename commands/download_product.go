@@ -231,8 +231,8 @@ func (c *DownloadProduct) createClient() error {
 			return fmt.Errorf("could not create an s3 client: %s", err)
 		}
 	default:
-		filter := filter.NewFilter(c.logger)
-		c.downloadClient = download_clients.NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, filter)
+		pivnetFilter := filter.NewFilter(c.logger)
+		c.downloadClient = download_clients.NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, pivnetFilter)
 	}
 	return nil
 }
