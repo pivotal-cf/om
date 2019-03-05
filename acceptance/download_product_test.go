@@ -72,6 +72,11 @@ var _ = Describe("download-product command", func() {
 				fileInfo, err := os.Stat(filepath.Join(tmpDir, "[example-product,1.10.1]example-product.pivotal"))
 				Expect(err).ToNot(HaveOccurred())
 
+				By("ensuring an assign stemcell artifact is created")
+				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
+
 				By("running the command again, it uses the cache")
 				command = exec.Command(pathToMain, "download-product",
 					"--pivnet-api-token", "token",

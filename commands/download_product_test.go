@@ -330,7 +330,7 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(releaseID).To(Equal(9999))
 				Expect(fileID).To(Equal(5678))
 
-				fileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+				fileName := path.Join(tempDir, "download-file.json")
 				fileContent, err := ioutil.ReadFile(fileName)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fileName).To(BeAnExistingFile())
@@ -342,6 +342,17 @@ var _ = Describe("DownloadProduct", func() {
 						"stemcell_path": "%s",
 						"stemcell_version": "97.19"
 					}`, downloadedFilePath, stemcellFile.Name())))
+
+				fileName = path.Join(tempDir, "assign-stemcell.yml")
+				fileContent, err = ioutil.ReadFile(fileName)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fileName).To(BeAnExistingFile())
+				Expect(string(fileContent)).To(MatchJSON(`
+					{
+						"product": "elastic-runtime",
+						"stemcell": "97.19"
+					}`))
+
 			})
 
 			Context("and the product is not a tile", func() {
@@ -663,7 +674,7 @@ output-directory: %s
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
-					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					downloadReportFileName := path.Join(tempDir, "download-file.json")
 					fileContent, err := ioutil.ReadFile(downloadReportFileName)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
@@ -702,7 +713,7 @@ output-directory: %s
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
-					downloadReportFileName := path.Join(tempDir, commands.DownloadProductOutputFilename)
+					downloadReportFileName := path.Join(tempDir, "download-file.json")
 					fileContent, err := ioutil.ReadFile(downloadReportFileName)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
