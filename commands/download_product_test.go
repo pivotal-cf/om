@@ -262,7 +262,7 @@ var _ = Describe("DownloadProduct", func() {
 				fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
 					{Release: pivnet.DependentRelease{
 						ID:      199678,
-						Version: "97.19",
+						Version: "97.190", //When refactored, validate that quoted stemcell is still tested. a trailing zero should not be chopped off.
 						Product: pivnet.Product{
 							ID:   111,
 							Slug: "stemcells-ubuntu-xenial",
@@ -319,7 +319,7 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(2))
 
 				str, version := fakePivnetDownloader.ReleaseForVersionArgsForCall(1)
-				Expect(version).To(Equal("97.19"))
+				Expect(version).To(Equal("97.190"))
 				Expect(str).To(Equal("stemcells-ubuntu-xenial"))
 
 				fakePivnetDownloader.DownloadProductFileArgsForCall(0)
@@ -340,7 +340,7 @@ var _ = Describe("DownloadProduct", func() {
 						"product_path": "%s",
 						"product_slug": "elastic-runtime",
 						"stemcell_path": "%s",
-						"stemcell_version": "97.19"
+						"stemcell_version": "97.190"
 					}`, downloadedFilePath, stemcellFile.Name())))
 
 				fileName = path.Join(tempDir, "assign-stemcell.yml")
@@ -350,9 +350,8 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(string(fileContent)).To(MatchJSON(`
 					{
 						"product": "elastic-runtime",
-						"stemcell": "97.19"
+						"stemcell": "97.190"					
 					}`))
-
 			})
 
 			Context("and the product is not a tile", func() {
