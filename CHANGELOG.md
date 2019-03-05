@@ -1,6 +1,5 @@
 ## 0.54.0 (unreleased)
 
-
 ### Breaking Changes
 * download-product's prefix format and behavior has changed.
   - the prefix format is now `[example-product,1.2.3]original-filename.pivotal`.
@@ -9,14 +8,20 @@
 ### Features
 * download-product now supports downloading stemcells from S3, too.
 * download-product allows use of an instance iam account when `s3-auth-method: iam` is set.
+* apply-changes now has the ability to define errands via a config file when running (as a one-off errand run).
+  The [apply-changes readme](https://github.com/pivotal-cf/om/docs/apply-changes/README.md) details how this 
+  config file should look.
+
 
 ### Bug Fixes
-* when trying to delete a product on Ops Manager during a selective deploy (`apply-changes --product-name tile`), Ops
-  Manager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build number). A
-  change was made to the info service to accept the new semver formatting as well as the old versioning. 
+* when trying to delete a product on Ops Manager during a selective deploy (`apply-changes --product-name tile`),
+  OpsManager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build
+  number). A change was made to the info service to accept the new semver formatting as well as the old 
+  versioning. 
 * upload-product (among other things) is no longer sensitive to subdirectories in tile metadata directories
-* to support 2.5, the Redis Team (jplebre and edwardecook) submitted a PR to support new semver versioning for OpsManager
-  in addition to supporting the current versioning format.
+* to support 2.5, the Redis Team (jplebre and edwardecook) submitted a PR to support new semver versioning for 
+  OpsManager in addition to supporting the current versioning format.
+
 
 ## 0.53.0 
 
