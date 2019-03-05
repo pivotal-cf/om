@@ -132,7 +132,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 	}
 
 	if c.Options.StemcellIaas == "" {
-		return c.writeOutputFile(productFileName, "", "")
+		return c.writeDownloadProductOutput(productFileName, "", "")
 	}
 
 	c.logger.Info("Downloading stemcell")
@@ -158,7 +158,12 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
-	return c.writeOutputFile(productFileName, stemcellFileName, stemcell.Version)
+	err = c.writeDownloadProductOutput(productFileName, stemcellFileName, stemcell.Version)
+	if err != nil {
+		return err
+	}
+
+	return c.writeAssignStemcellInput(stemcell.Version)
 }
 
 func (c DownloadProduct) createS3Config() download_clients.S3Configuration {
@@ -245,7 +250,7 @@ func (c *DownloadProduct) validate() error {
 	return nil
 }
 
-func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileName string, stemcellVersion string) error {
+func (c DownloadProduct) writeDownloadProductOutput(productFileName string, stemcellFileName string, stemcellVersion string) error {
 	downloadProductFilename := "download-file.json"
 	c.logger.Info(fmt.Sprintf("Writing a list of downloaded artifact to %s", downloadProductFilename))
 	downloadProductPayload := struct {
@@ -271,6 +276,10 @@ func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileNam
 		return fmt.Errorf("could not encode JSON for %s: %s", downloadProductFilename, err)
 	}
 
+	return nil
+}
+
+func (c DownloadProduct) writeAssignStemcellInput(stemcellVersion string) error {
 	assignStemcellFileName := "assign-stemcell.yml"
 	c.logger.Info(fmt.Sprintf("Writing a assign stemcll artifact to %s", assignStemcellFileName))
 	assignStemcellPayload := struct {
@@ -281,7 +290,7 @@ func (c DownloadProduct) writeOutputFile(productFileName string, stemcellFileNam
 		Stemcell: stemcellVersion,
 	}
 
-	outputFile, err = os.Create(path.Join(c.Options.OutputDir, assignStemcellFileName))
+	outputFile, err := os.Create(path.Join(c.Options.OutputDir, assignStemcellFileName))
 	if err != nil {
 		return fmt.Errorf("could not create %s: %s", assignStemcellFileName, err)
 	}
