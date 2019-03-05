@@ -1,4 +1,4 @@
-## 0.54.0 (unreleased)
+## 0.54.0
 
 ### Breaking Changes
 * download-product's prefix format and behavior has changed.
@@ -11,6 +11,10 @@
 * apply-changes now has the ability to define errands via a config file when running (as a one-off errand run).
   The [apply-changes readme](https://github.com/pivotal-cf/om/docs/apply-changes/README.md) details how this 
   config file should look.
+* pending-changes now supports a `--check` flag, that will return an exit code 0(pass) or 1(fail) when running the command, 
+  to allow you to fail in CI if there are pending changes in the deployment. 
+* download-product will now create a config file (`assign-stemcell.yml`) that can be fed into `assign-stemcell`. It will have the appropriate
+  format with the information it received from download-product
 
 
 ### Bug Fixes
@@ -19,9 +23,24 @@
   number). A change was made to the info service to accept the new semver formatting as well as the old 
   versioning. 
 * upload-product (among other things) is no longer sensitive to subdirectories in tile metadata directories
-* to support 2.5, the Redis Team (jplebre and edwardecook) submitted a PR to support new semver versioning for 
+* to support 2.5, @jplebre and @edwardecook submitted a PR to support new semver versioning for 
   OpsManager in addition to supporting the current versioning format.
+  
+### WARNING
 
+To anyone who is having go install fail, it will fail until graymeta/stow#199 is merged.
+
+Here is the error you are probably seeing.
+
+```
+$ go install
+# github.com/pivotal-cf/om/commands
+commands/s3_client.go:62:3: undefined: s3.ConfigV2Signing
+```
+to work around, you can include `om` in your project without using `go get` or `go install`. you will need to add the following to your `go.mod`:
+```
+replace github.com/graymeta/stow => github.com/jtarchie/stow v0.0.0-20190209005554-0bff39424d5b
+```
 
 ## 0.53.0 
 
