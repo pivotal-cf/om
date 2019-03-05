@@ -15,6 +15,8 @@
   Manager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build number). A
   change was made to the info service to accept the new semver formatting as well as the old versioning. 
 * upload-product (among other things) is no longer sensitive to subdirectories in tile metadata directories
+* to support 2.5, the Redis Team (jplebre and edwardecook) submitted a PR to support new semver versioning for OpsManager
+  in addition to supporting the current versioning format.
 
 ## 0.53.0 
 
