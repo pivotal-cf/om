@@ -154,7 +154,7 @@ func main() {
 	commandSet["bosh-env"] = commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
-	commandSet["config-template"] = commands.NewConfigTemplate(metadataExtractor, stdout)
+	commandSet["config-template"] = commands.NewConfigTemplate()
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(api, stdout)
 	commandSet["configure-director"] = commands.NewConfigureDirector(os.Environ, api, stdout)
 	commandSet["configure-ldap-authentication"] = commands.NewConfigureLDAPAuthentication(api, stdout)

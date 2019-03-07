@@ -35,7 +35,7 @@ Commands:
   bosh-env                        prints bosh environment variables
   certificate-authorities         lists certificates managed by Ops Manager
   certificate-authority           prints requested certificate authority
-  config-template                 **EXPERIMENTAL** generates a config template for the product
+  config-template                 generates a config template from a Pivnet product
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
   configure-director              configures the director
   configure-ldap-authentication   configures Ops Manager with LDAP authentication

@@ -29,6 +29,7 @@ require (
 	github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d
 	github.com/pivotal-cf/pivnet-cli v0.0.55
 	github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd
+	github.com/pivotalservices/tile-config-generator v0.0.14
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect
