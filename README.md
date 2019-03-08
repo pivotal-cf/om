@@ -129,3 +129,8 @@ Commands:
   version                         prints the om release version
 
 ```
+
+## Shell completion
+If you use `bash` or `zsh` on MacOS or Linux, and would like to take advantage of
+those shells' auto-complete functionality, you can use the script in the
+[shell_completion](./shell_completion) directory.
