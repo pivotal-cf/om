@@ -1,0 +1,375 @@
+---
+name: VMware-NSX-T
+product_version: "2.2.1.9149087"
+minimum_version_for_upgrade: "2.0"
+metadata_version: "2.0"
+label: 'VMware NSX-T'
+description: VMware NSX-T for Pivotal Application Service
+rank: 1
+service_broker: false # Default value
+releases:
+- name: nsx-cf-cni
+  file: "nsx-cf-cni-release-2.2.1.9149087.tgz"
+  version: "2.2.1.9149087"
+
+variables: []
+
+post_deploy_errands: []
+
+pre_delete_errands: []
+
+form_types:
+- name: nsx_mgr_form
+  label: 'NSX Manager'
+  description: 'NSX Manager Configuration'
+  property_inputs:
+  - reference: .properties.nsx_api_managers
+    label: 'NSX Manager Address'
+    description: 'Address of NSX Manager'
+  - reference: .properties.nsx_auth
+    label: |
+      Use Client Certificates or Username/Password for NSX Manager
+      Authentication
+    selector_property_inputs:
+    - reference: .properties.nsx_auth.client_cert
+      label: 'Client Certificate Authentication'
+      property_inputs:
+        - reference: .properties.nsx_auth.client_cert.nsx_api_client_cert
+          label: 'Certificate and Private Key for NSX Manager'
+          description: ''
+    - reference: .properties.nsx_auth.simple
+      label: 'Basic Authentication with Username and Password'
+      property_inputs:
+      - reference: .properties.nsx_auth.simple.nsx_api_user
+        label: 'NSX Manager Admin Username'
+        description: 'Admin username of NSX Manager'
+      - reference: .properties.nsx_auth.simple.nsx_api_password
+        label: 'NSX Manager Admin Password'
+        description: 'Admin password of NSX Manager'
+  - reference: .properties.nsx_api_ca_cert
+    label: 'NSX Manager CA Cert'
+    description: |
+      CA certificate for verifying NSX https endpoint. Server certificate
+      verification will be disabled if CA certificate is not provided.
+- name: ncp_form
+  label: 'NCP'
+  description: 'NCP Configuration'
+  property_inputs:
+  - reference: .properties.foundation_name
+    label: 'PAS Foundation Name'
+    description: |
+      This string uniquely identifies a PAS Foundation in NSX API. It is used
+      as the prefix in the names of NSX resources created by NCP for the PAS
+      Foundation.
+  - reference: .properties.overlay_tz
+    label: 'Overlay Transport Zone'
+    description: |
+      This string uniquely identifies the NSX overlay transport zone for
+      logical switches for container networking. You can specify the name or
+      the UUID of the transport zone to be used. If you are using a name, you
+      need to ensure the name is uniquely identifying a single transport zone
+      in NSX.
+  - reference: .properties.tier0_router
+    label: 'Tier-0 Router'
+    description: |
+      This string uniquely identifies the T0 router for container networking.
+      You can specify the name or the UUID of the T0 router to be used. If you
+      are using a name, you need to ensure the name is uniquely identifying a
+      single T0 router in NSX.
+  - reference: ".properties.container_ip_blocks"
+    label: IP Blocks of Container Networks
+    property_inputs:
+    - reference: name
+      label: IP Block Name
+      description: |
+        You can create a new IP block, or use a pre-existing one. If you want
+        to create a new block, specify the desired name. If you wish to use an
+        existing IP block, provide its name or UUID. When using a name, you
+        need to ensure it uniquely identifies a single IP block in NSX.
+    - reference: cidr
+      label: CIDR
+      description: |
+        When creating a new IP block, you need to enter a valid CIDR block here
+        (e.g. 10.1.0.0/16). When using a pre-existing IP block in NSX, this
+        field can be left empty.
+  - reference: .properties.subnet_prefix
+    label: 'Subnet Prefix of Container Networks'
+    description: 'Prefix should be less than 31.'
+  - reference: .properties.enable_snat
+    label: 'Enable SNAT for Container Networks'
+  - reference: ".properties.external_ip_pools"
+    label: IP Pools used to provide External (NAT) IP Addresses to Org Networks
+    property_inputs:
+    - reference: name
+      label: IP Pool Name
+      description: |
+        You can create a new IP pool, or use a pre-existing one. If you want to
+        create a new IP pool, specify the desired name. If you wish to use an
+        existing IP pool, provide its name or UUID. When using a name, you need
+        to ensure it uniquely identifies a single IP pool in NSX.
+    - reference: cidr
+      label: CIDR
+      description: |
+        When creating a new IP pool, you need to enter a valid IP subnet here
+        (e.g. 32.64.33.0/24). When using a pre-existing IP pool in NSX, this
+        field can be left empty.
+    - reference: allocation_ranges
+      label: IP Ranges
+      description: |
+        When creating a new IP pool, you need to enter a comma separated list
+        of valid IP ranges within the subnet (e.g.
+        32.64.33.10-32.64.33.60,32.64.33.70-32.64.33.99). When using a
+        pre-existing IP pool in NSX, this field can be left empty.
+  - reference: .properties.top_firewall_section_marker
+    label: 'Top Firewall Section Marker'
+    description: |
+      If this option is set, all firewall sections created by NCP will be
+      created right below the marker section. You can spefify the name or the
+      UUID of the firewall section. If you are using a name, you need to ensure
+      the name is uniquely identifying a single firewall section in NSX.
+  - reference: .properties.bottom_firewall_section_marker
+    label: 'Bottom Firewall Section Marker'
+    description: |
+      If this option is set, all firewall sections created by NCP will be
+      created right above the marker section. You can spefify the name or the
+      UUID of the firewall section. If you are using a name, you need to ensure
+      the name is uniquely identifying a single firewall section in NSX.
+  - reference: .properties.log_dropped_traffic
+    label: 'Log Dropped Application Traffic'
+    description: |
+      Traffic hitting distributed firewall DENY rules wil be logged if enabled.
+  - reference: .properties.ncp_debug_log
+    label: 'Enable Debug Level for NCP Logging'
+- name: nsx_node_agent_form
+  label : 'NSX Node Agent'
+  description: 'NSX Node Agent Configuration'
+  property_inputs:
+  - reference: .properties.nsx_node_agent_debug_log
+    label: 'Enable Debug Level for NSX Node Agent Logging '
+
+property_blueprints:
+- name: nsx_api_managers
+  type: string
+  configurable: true
+- name: nsx_auth
+  type: selector
+  default: client_cert
+  configurable: true
+  option_templates:
+  - name: client_cert
+    select_value: client_cert
+    property_blueprints:
+      - name: nsx_api_client_cert
+        type: rsa_cert_credentials
+        configurable: true
+  - name: simple
+    select_value: simple
+    property_blueprints:
+    - name: nsx_api_user
+      type: string
+      configurable: true
+    - name: nsx_api_password
+      type: secret
+      configurable: true
+- name: nsx_api_ca_cert
+  type: ca_certificate
+  configurable: true
+  optional: true
+- name: foundation_name
+  type: string
+  configurable: true
+  constraints:
+  - must_match_regex: '^.{1,40}$'
+    error_message: 'is limited to 40 characters'
+  - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+    error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+- name: overlay_tz
+  type: string
+  configurable: true
+  constraints:
+  - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+    error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+- name: tier0_router
+  type: string
+  configurable: true
+  constraints:
+  - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+    error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+- name: container_ip_blocks
+  type: collection
+  configurable: true
+  freeze_on_deploy: false
+  property_blueprints:
+  - name: name
+    type: string
+    configurable: true
+    constraints:
+    - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+      error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+    freeze_on_deploy: true
+    unique: true
+  - name: cidr
+    type: string
+    configurable: true
+    constraints:
+    - must_match_regex: '^([0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9]|[1-2][0-9]|3[0-2])$'
+      error_message: 'is an invalid CIDR block'
+    optional: true
+    freeze_on_deploy: true
+- name: external_ip_pools
+  type: collection
+  configurable: true
+  optional: true
+  freeze_on_deploy: false
+  property_blueprints:
+  - name: name
+    type: string
+    configurable: true
+    constraints:
+    - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+      error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+    freeze_on_deploy: true
+    unique: true
+  - name: cidr
+    type: string
+    configurable: true
+    constraints:
+    - must_match_regex: '^([0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9]|[1-2][0-9]|3[0-2])$'
+      error_message: 'is an invalid CIDR block'
+    optional: true
+    freeze_on_deploy: true
+  - name: allocation_ranges
+    type: ip_ranges
+    configurable: true
+    optional: true
+    freeze_on_deploy: true
+- name: top_firewall_section_marker
+  type: string
+  configurable: true
+  constraints:
+  - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+    error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+  optional: true
+- name: bottom_firewall_section_marker
+  type: string
+  configurable: true
+  constraints:
+  - must_match_regex: '^[0-9a-zA-Z\.\-_ ]+$'
+    error_message: 'should consist only of [0-9a-zA-Z\.\-_ ]'
+  optional: true
+- name: subnet_prefix
+  type: integer
+  default: 24
+  configurable: true
+- name: enable_snat
+  type: boolean
+  default: true
+  configurable: true
+- name: log_dropped_traffic
+  type: boolean
+  default: false
+  configurable: true
+- name: ncp_debug_log
+  type: boolean
+  default: false
+  configurable: true
+- name: nsx_node_agent_debug_log
+  type: boolean
+  default: false
+  configurable: true
+- name: generated_pcf_client_cert
+  type: rsa_cert_credentials
+  configurable: false
+
+job_types: []
+
+runtime_configs:
+- name: nsx-t
+  runtime_config: |
+    releases:
+    - name: nsx-cf-cni
+      version: 2.2.1.9149087
+    addons:
+    - name: ncp
+      jobs:
+      - name: ncp
+        release: nsx-cf-cni
+      include:
+        jobs:
+        - name: bbs
+          release: diego
+        stemcell:
+        - os: ubuntu-trusty
+      properties:
+        ncp:
+          debug_log: (( .properties.ncp_debug_log.value ))
+          cluster: (( .properties.foundation_name.value ))
+          coe:
+            adaptor: pcf
+          nsx_v3:
+            # NSX-API Properties
+            nsx_api_managers: (( .properties.nsx_api_managers.value ))
+            nsx_api_user: (( .properties.nsx_auth.simple.nsx_api_user.value ))
+            nsx_api_password: (( .properties.nsx_auth.simple.nsx_api_password.value ))
+            nsx_api_client_cert: (( .properties.nsx_auth.client_cert.nsx_api_client_cert.cert_pem ))
+            nsx_api_client_key: (( .properties.nsx_auth.client_cert.nsx_api_client_cert.private_key_pem ))
+            nsx_api_ca_cert: (( .properties.nsx_api_ca_cert.value ))
+            insecure: '(( .properties.nsx_api_ca_cert.value_present? ? false: true ))'
+            subnet_prefix: (( .properties.subnet_prefix.value ))
+            log_dropped_traffic: (( .properties.log_dropped_traffic.value ))
+            overlay_tz: (( .properties.overlay_tz.value ))
+            tier0_router: (( .properties.tier0_router.value ))
+            container_ip_blocks: (( .properties.container_ip_blocks.value ))
+            external_ip_pools: (( .properties.external_ip_pools.value ))
+            top_firewall_section_marker: (( .properties.top_firewall_section_marker.value ))
+            bottom_firewall_section_marker: (( .properties.bottom_firewall_section_marker.value ))
+          cf:
+            # PCF Properties
+            enable_snat: (( .properties.enable_snat.value ))
+            uaa_client_id: (( ..cf.uaa.container_networking_interface_client_credentials.identity))
+            uaa_client_secret: (( ..cf.uaa.container_networking_interface_client_credentials.password))
+            bbs_ca_cert: (( $ops_manager.ca_certificate ))
+            bbs_client_cert: (( .properties.generated_pcf_client_cert.cert_pem ))
+            bbs_client_key: (( .properties.generated_pcf_client_cert.private_key_pem ))
+            policy_ca_cert: (( $ops_manager.ca_certificate ))
+            policy_client_cert: (( .properties.generated_pcf_client_cert.cert_pem ))
+            policy_client_key: (( .properties.generated_pcf_client_cert.private_key_pem ))
+    - name: openvswitch
+      jobs:
+      - name: openvswitch
+        release: nsx-cf-cni
+      include:
+        jobs:
+        - name: rep
+          release: diego
+        stemcell:
+        - os: ubuntu-trusty
+    - name: cni
+      jobs:
+      - name: cni
+        release: nsx-cf-cni
+      include:
+        jobs:
+        - name: rep
+          release: diego
+        stemcell:
+        - os: ubuntu-trusty
+      properties:
+        cni:
+          bosh_dns_enabled: (( $director.dns_release_present ))
+    - name: nsx-node-agent
+      jobs:
+      - name: nsx-node-agent
+        release: nsx-cf-cni
+      include:
+        jobs:
+        - name: rep
+          release: diego
+        stemcell:
+        - os: ubuntu-trusty
+      properties:
+        nsx_node_agent:
+          bosh_dns_enabled: (( $director.dns_release_present ))
+          debug_log: (( .properties.nsx_node_agent_debug_log.value ))
+icon_image: |          
+  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

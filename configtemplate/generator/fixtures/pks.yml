@@ -1,0 +1,2024 @@
+description: Pivotal Container Service
+form_types:
+- description: PKS API Service
+  label: PKS API
+  name: pks-api
+  property_inputs:
+  - label: Certificate to secure the PKS API
+    reference: .pivotal-container-service.pks_tls
+  - description: The hostname used to access PKS. This needs to match the wildcard
+      domain provided when generating the pks api certificate, or in the SAN for the
+      certificate if you provided your own.
+    label: API Hostname (FQDN)
+    reference: .properties.pks_api_hostname
+- description: Configuration for Plan 1
+  label: Plan 1
+  markdown: Select 'Active' to allow users of the PKS CLI to create a cluster using
+    this template plan.
+  name: plan1
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan1_selector
+    selector_property_inputs:
+    - label: Active
+      property_inputs:
+      - description: the name that appears for end users to choose
+        label: Name
+        reference: .properties.plan1_selector.active.name
+      - description: The plan description for the service instance
+        label: Description
+        reference: .properties.plan1_selector.active.description
+      - description: ⚠️ Master and ETCD nodes will be colocated. Delete any existing
+          clusters that use this plan before modifying the number of master instances.
+          Setting the number of Master/ETCD nodes to 3 is a beta component.
+        label: Master/ETCD Node Instances
+        reference: .properties.plan1_selector.active.master_instances
+      - description: The K8s etcd and master vm type
+        label: Master/ETCD VM Type
+        reference: .properties.plan1_selector.active.master_vm_type
+      - description: The K8s master persistent disk type
+        label: Master Persistent Disk Type
+        reference: .properties.plan1_selector.active.master_persistent_disk_type
+      - description: Specify the availability zones you want your master and ETCD
+          nodes spread across equally. If only one master/ETCD has been selected,
+          choose a single AZ for your singleton job.
+        label: Master/ETCD Availability Zones
+        reference: .properties.plan1_selector.active.master_az_placement
+      - description: The number of K8s worker instances
+        label: Worker Node Instances
+        reference: .properties.plan1_selector.active.worker_instances
+      - description: The K8s worker vm type
+        label: Worker VM Type
+        reference: .properties.plan1_selector.active.worker_vm_type
+      - description: The K8s worker persistent disk type
+        label: Worker Persistent Disk Type
+        reference: .properties.plan1_selector.active.worker_persistent_disk_type
+      - description: Specify the availability zones you want your worker nodes spread
+          across equally.
+        label: Worker Availability Zones
+        reference: .properties.plan1_selector.active.worker_az_placement
+      - description: The errand vm type
+        label: Errand VM Type
+        reference: .properties.plan1_selector.active.errand_vm_type
+      - description: ⚠️  Kubernetes yml that contains specifications of addons to
+          run on every cluster. This is an experimental feature. Please consider carefully
+          before applying this to your plan.
+        label: (Optional) Add-ons - Use with caution
+        reference: .properties.plan1_selector.active.addons_spec
+      - description: ⚠️  Privileged containers run with host-like permissions. Allowing
+          your users to deploy privileged containers in clusters using this plan can
+          create security vulnerabilities and may impact other tiles. Use with caution.
+        label: Enable Privileged Containers - Use with caution
+        reference: .properties.plan1_selector.active.allow_privileged_containers
+      - description: ⚠️  This admission controller will deny exec and attach commands
+          to pods that run with escalated privileges that allow host access. If checked,
+          the admission controller will be disabled. Clusters in this plan can then
+          create security vulnerabilities and may impact other tiles. Use with caution.
+        label: Disable DenyEscalatingExec
+        reference: .properties.plan1_selector.active.disable_deny_escalating_exec
+      reference: .properties.plan1_selector.active
+- description: Configuration for Plan 2
+  label: Plan 2
+  markdown: Select 'Active' to allow users of the PKS CLI to create a cluster using
+    this template plan.
+  name: plan2
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan2_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan2_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: the name that appears for end users to choose
+        label: Name
+        reference: .properties.plan2_selector.active.name
+      - description: The plan description for the service instance
+        label: Description
+        reference: .properties.plan2_selector.active.description
+      - description: ⚠️ Master and ETCD nodes will be colocated. Delete any existing
+          clusters that use this plan before modifying the number of master instances.
+          Setting the number of Master/ETCD nodes to 3 is a beta component.
+        label: Master/ETCD Node Instances
+        reference: .properties.plan2_selector.active.master_instances
+      - description: The K8s etcd and master vm type
+        label: Master/ETCD VM Type
+        reference: .properties.plan2_selector.active.master_vm_type
+      - description: The K8s master persistent disk type
+        label: Master Persistent Disk Type
+        reference: .properties.plan2_selector.active.master_persistent_disk_type
+      - description: Specify the availability zones you want your master and ETCD
+          nodes spread across equally. If only one master/ETCD has been selected,
+          choose a single AZ for your singleton job.
+        label: Master/ETCD Availability Zones
+        reference: .properties.plan2_selector.active.master_az_placement
+      - description: The number of K8s worker instances
+        label: Worker Node Instances
+        reference: .properties.plan2_selector.active.worker_instances
+      - description: The K8s worker vm type
+        label: Worker VM Type
+        reference: .properties.plan2_selector.active.worker_vm_type
+      - description: The K8s worker persistent disk type
+        label: Worker Persistent Disk Type
+        reference: .properties.plan2_selector.active.worker_persistent_disk_type
+      - description: Specify the availability zones you want your worker nodes spread
+          across equally.
+        label: Worker Availability Zones
+        reference: .properties.plan2_selector.active.worker_az_placement
+      - description: The errand vm type
+        label: Errand VM Type
+        reference: .properties.plan2_selector.active.errand_vm_type
+      - description: ⚠️  Kubernetes yml that contains specifications of addons to
+          run on every cluster. This is an experimental feature. Please consider carefully
+          before applying this to your plan.
+        label: (Optional) Add-ons - Use with caution
+        reference: .properties.plan2_selector.active.addons_spec
+      - description: ⚠️  Privileged containers run with host-like permissions. Allowing
+          your users to deploy privileged containers in clusters using this plan can
+          create security vulnerabilities and may impact other tiles. Use with caution.
+        label: Enable Privileged Containers - Use with caution
+        reference: .properties.plan2_selector.active.allow_privileged_containers
+      - description: ⚠️  This admission controller will deny exec and attach commands
+          to pods that run with escalated privileges that allow host access. If checked,
+          the admission controller will be disabled. Clusters in this plan can then
+          create security vulnerabilities and may impact other tiles. Use with caution.
+        label: Disable DenyEscalatingExec
+        reference: .properties.plan2_selector.active.disable_deny_escalating_exec
+      reference: .properties.plan2_selector.active
+- description: Configuration for Plan 3
+  label: Plan 3
+  markdown: Select 'Active' to allow users of the PKS CLI to create a cluster using
+    this template plan.
+  name: plan3
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan3_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan3_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: the name that appears for end users to choose
+        label: Name
+        reference: .properties.plan3_selector.active.name
+      - description: The plan description for the service instance
+        label: Description
+        reference: .properties.plan3_selector.active.description
+      - description: ⚠️ Master and ETCD nodes will be colocated. Delete any existing
+          clusters that use this plan before modifying the number of master instances.
+          Setting the number of Master/ETCD nodes to 3 is a beta component.
+        label: Master/ETCD Node Instances
+        reference: .properties.plan3_selector.active.master_instances
+      - description: The K8s etcd and master vm type
+        label: Master/ETCD VM Type
+        reference: .properties.plan3_selector.active.master_vm_type
+      - description: The K8s master persistent disk type
+        label: Master Persistent Disk Type
+        reference: .properties.plan3_selector.active.master_persistent_disk_type
+      - description: Specify the availability zones you want your master and ETCD
+          nodes spread across equally. If only one master/ETCD has been selected,
+          choose a single AZ for your singleton job.
+        label: Master/ETCD Availability Zones
+        reference: .properties.plan3_selector.active.master_az_placement
+      - description: The number of K8s worker instances
+        label: Worker Node Instances
+        reference: .properties.plan3_selector.active.worker_instances
+      - description: The K8s worker vm type
+        label: Worker VM Type
+        reference: .properties.plan3_selector.active.worker_vm_type
+      - description: The K8s worker persistent disk type
+        label: Worker Persistent Disk Type
+        reference: .properties.plan3_selector.active.worker_persistent_disk_type
+      - description: Specify the availability zones you want your worker nodes spread
+          across equally.
+        label: Worker Availability Zones
+        reference: .properties.plan3_selector.active.worker_az_placement
+      - description: The errand vm type
+        label: Errand VM Type
+        reference: .properties.plan3_selector.active.errand_vm_type
+      - description: ⚠️  Kubernetes yml that contains specifications of addons to
+          run on every cluster. This is an experimental feature. Please consider carefully
+          before applying this to your plan.
+        label: (Optional) Add-ons - Use with caution
+        reference: .properties.plan3_selector.active.addons_spec
+      - description: ⚠️  Privileged containers run with host-like permissions. Allowing
+          your users to deploy privileged containers in clusters using this plan can
+          create security vulnerabilities and may impact other tiles. Use with caution.
+        label: Enable Privileged Containers - Use with caution
+        reference: .properties.plan3_selector.active.allow_privileged_containers
+      - description: ⚠️  This admission controller will deny exec and attach commands
+          to pods that run with escalated privileges that allow host access. If checked,
+          the admission controller will be disabled. Clusters in this plan can then
+          create security vulnerabilities and may impact other tiles. Use with caution.
+        label: Disable DenyEscalatingExec
+        reference: .properties.plan3_selector.active.disable_deny_escalating_exec
+      reference: .properties.plan3_selector.active
+- description: Kubernetes Cloud Provider Configuration
+  label: Kubernetes Cloud Provider
+  markdown: Kubernetes has the concept of a Cloud Provider, which is a module which
+    provides an interface for managing TCP Load Balancers, Worker Nodes (Instances)
+    and Networking Routes. Provide Kubernetes information about your cloud here.
+  name: cloud_provider
+  property_inputs:
+  - description: ""
+    label: Choose your IaaS
+    reference: .properties.cloud_provider
+    selector_property_inputs:
+    - label: vSphere
+      property_inputs:
+      - label: vCenter Master Credentials
+        reference: .properties.cloud_provider.vsphere.vcenter_master_creds
+      - label: vCenter Host
+        reference: .properties.cloud_provider.vsphere.vcenter_ip
+      - label: Datacenter Name
+        reference: .properties.cloud_provider.vsphere.vcenter_dc
+      - label: Datastore Name
+        reference: .properties.cloud_provider.vsphere.vcenter_ds
+      - description: The name should be the same as the VM Folder in the Ops Manager
+          Director tile, under the vCenter config page.
+        label: Stored VM Folder
+        reference: .properties.cloud_provider.vsphere.vcenter_vms
+      reference: .properties.cloud_provider.vsphere
+    - label: GCP
+      property_inputs:
+      - label: GCP Project ID
+        reference: .properties.cloud_provider.gcp.project_id
+      - description: Specify the VPC network name that will be used by the Kubernetes
+          Cloud Provider
+        label: VPC Network
+        reference: .properties.cloud_provider.gcp.network
+      - description: A service account used by kubernetes to configure load balancers,
+          persistent volumes, firewalls, vms, etc. on behalf of the kubernetes master.
+        label: GCP Master Service Account ID
+        reference: .properties.cloud_provider.gcp.master_service_account
+      - description: A service account used by kubernetes workers. This account should
+          have fewer permissions than the master.
+        label: GCP Worker Service Account ID
+        reference: .properties.cloud_provider.gcp.worker_service_account
+      reference: .properties.cloud_provider.gcp
+- description: Configure PKS Logging
+  label: Logging
+  name: logging
+  property_inputs:
+  - label: Enable Syslog for PKS?
+    reference: .properties.syslog_migration_selector
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.syslog_migration_selector.disabled
+    - label: "Yes"
+      property_inputs:
+      - description: The address or host for the syslog server
+        label: Address
+        reference: .properties.syslog_migration_selector.enabled.address
+      - description: The port on which the syslog server listens
+        label: Port
+        reference: .properties.syslog_migration_selector.enabled.port
+      - description: The transport protocol used to send syslog messages to the server
+        label: Transport Protocol
+        reference: .properties.syslog_migration_selector.enabled.transport_protocol
+      - description: Send logs encrypted to syslog server via TLS
+        label: Enable TLS
+        reference: .properties.syslog_migration_selector.enabled.tls_enabled
+      - description: Either the accepted fingerprint (SHA1) or name of remote peer,
+          e.g. *.example.com
+        label: Permitted Peer
+        reference: .properties.syslog_migration_selector.enabled.permitted_peer
+      - description: This certificate will ensure that logs get securely transported
+          to the syslog destination
+        label: TLS Certificate
+        reference: .properties.syslog_migration_selector.enabled.ca_cert
+      reference: .properties.syslog_migration_selector.enabled
+  - label: Enable VMware vRealize Log Insight Integration?
+    reference: .properties.pks-vrli
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.pks-vrli.disabled
+    - label: "Yes"
+      property_inputs:
+      - description: The IP address or FQDN of the vRLI host
+        label: Host
+        reference: .properties.pks-vrli.enabled.host
+      - description: Encrypt logs being sent to vRLI
+        label: Enable SSL?
+        reference: .properties.pks-vrli.enabled.use_ssl
+      - description: Disabling will skip certificate verification for vRLI host
+        label: Disable SSL certificate validation
+        reference: .properties.pks-vrli.enabled.skip_cert_verify
+      - description: PEM of the Certificate Authority used to sign the vRLI certificate
+        label: CA certificate
+        reference: .properties.pks-vrli.enabled.ca_cert
+      - description: Specify the time (in milliseconds) for rate limiting. 0 is no
+          limit
+        label: Rate limiting
+        reference: .properties.pks-vrli.enabled.rate_limit_msec
+      reference: .properties.pks-vrli.enabled
+- description: Networking Configurations
+  label: Networking
+  name: networking
+  property_inputs:
+  - label: Container Networking Interface
+    reference: .properties.network_selector
+    selector_property_inputs:
+    - label: Flannel
+      reference: .properties.network_selector.flannel
+    - label: NSX-T
+      property_inputs:
+      - description: Enter the NSX Manager hostname or IP address
+        label: NSX Manager hostname
+        reference: .properties.network_selector.nsx.nsx-t-host
+      - description: Enter the credentials for the NSX super-user principal identity
+        label: NSX Manager Super User Principal Identity Certificate
+        reference: .properties.network_selector.nsx.nsx-t-superuser-certificate
+      - description: Optional custom CA certificate to be used to connect to NSX Manager
+        label: NSX Manager CA Cert
+        reference: .properties.network_selector.nsx.nsx-t-ca-cert
+      - description: Select to disable SSL certificate verification when connecting
+          to the NSX Manager
+        label: Disable SSL certificate verification
+        reference: .properties.network_selector.nsx.nsx-t-insecure
+      - description: Select if Network Address Translation (NAT) needs to be enforced
+          for kubernetes nodes
+        label: NAT mode
+        reference: .properties.network_selector.nsx.nat_mode
+      - description: Enter the UUID of the IP Block to be used for kubernetes Pods
+        label: Pods IP Block ID
+        reference: .properties.network_selector.nsx.ip-block-id
+      - description: Enter the UUID of the IP Block to be used for kubernetes Nodes
+          (The IP range should not overlap with the service network)
+        label: Nodes IP Block ID
+        reference: .properties.network_selector.nsx.nodes-ip-block-id
+      - description: Enter the UUID of the Tier-0 logical router configured in NSX
+          manager
+        label: T0 Router ID
+        reference: .properties.network_selector.nsx.t0-router-id
+      - description: Enter the UUID of the Floating IP Pool configured in NSX manager
+          (for the current release only a single ID is supported)
+        label: Floating IP Pool ID
+        reference: .properties.network_selector.nsx.floating-ip-pool-ids
+      - description: Enter one or more Domain Name Servers used by the kubernetes
+          Nodes
+        label: Nodes DNS
+        reference: .properties.network_selector.nsx.cloud-config-dns
+      - description: Enter the list of vSphere cluster names (comma separated) where
+          kubernetes clusters will be deployed
+        label: vSphere Cluster Names
+        reference: .properties.network_selector.nsx.vcenter_cluster
+      reference: .properties.network_selector.nsx
+  - label: HTTP/HTTPS Proxy (for vSphere only)
+    reference: .properties.proxy_selector
+    selector_property_inputs:
+    - label: Disabled
+      reference: .properties.proxy_selector.disabled
+    - label: Enabled
+      property_inputs:
+      - default: ""
+        description: This is the proxy server for your environment for http traffic
+        label: HTTP Proxy URL
+        reference: .properties.proxy_selector.enabled.http_proxy_url
+      - default: ""
+        description: This is the username / password for the proxy server
+        label: HTTP Proxy Credentials
+        reference: .properties.proxy_selector.enabled.http_proxy_credentials
+      - default: ""
+        description: This is the proxy server for your environment for http traffic
+        label: HTTPS Proxy URL
+        reference: .properties.proxy_selector.enabled.https_proxy_url
+      - default: ""
+        description: This is the username / password for the proxy server
+        label: HTTPS Proxy Credentials
+        reference: .properties.proxy_selector.enabled.https_proxy_credentials
+      - default: ""
+        description: A comma separated list of addresses to bypass proxy
+        label: No Proxy
+        reference: .properties.proxy_selector.enabled.no_proxy
+      reference: .properties.proxy_selector.enabled
+  - description: 'Warning: Not allowing internet access will require a NAT instance.'
+    label: Allow outbound internet access from Kubernetes cluster vms (IaaS-dependent)
+    reference: .properties.vm_extensions
+- description: UAA Configuration
+  label: UAA
+  name: uaa
+  property_inputs:
+  - description: Set the lifetime of the access token for the `pks` API.
+    label: PKS API Access Token Lifetime (in seconds)
+    reference: .properties.uaa_pks_cli_access_token_lifetime
+  - description: Set the lifetime of the refresh token for the `pks` API.
+    label: PKS API Refresh Token Lifetime (in seconds)
+    reference: .properties.uaa_pks_cli_refresh_token_lifetime
+  - label: |
+      Configure your UAA user account store with either internal or external authentication mechanisms
+    reference: .properties.uaa
+    selector_property_inputs:
+    - label: Internal UAA
+      reference: .properties.uaa.internal
+    - description: null
+      label: LDAP Server
+      property_inputs:
+      - description: |
+          Required for LDAP. Must start with `ldap://` or `ldaps://`.
+          Multiple entries can be separated by spaces.
+        label: Server URL
+        placeholder: |
+          ldaps://example.com
+        reference: .properties.uaa.ldap.url
+      - description: |
+          Required for LDAP. This is the unique username and password for
+          binding to the server.
+        label: LDAP Credentials
+        reference: .properties.uaa.ldap.credentials
+      - description: |
+          Required for LDAP. Example: `ou=Users,dc=example,dc=com`.
+        label: User Search Base
+        placeholder: ou=Groups,dc=example,dc=com
+        reference: .properties.uaa.ldap.search_base
+      - description: Required for LDAP. Replace `{0}` with username.
+        label: User Search Filter
+        reference: .properties.uaa.ldap.search_filter
+      - description: |
+          Required if mapping LDAP groups to Admin role. Example:
+          `ou=Groups,dc=example,dc=com`.
+        label: Group Search Base
+        placeholder: ou=Groups,dc=example,dc=com
+        reference: .properties.uaa.ldap.group_search_base
+      - description: |
+          Required if mapping LDAP groups to Admin role. Replace `{0}`
+          with user DN.
+        label: Group Search Filter
+        reference: .properties.uaa.ldap.group_search_filter
+      - description: |
+          Required only for ldaps://. This is the server certificate if
+          using a Self Signed Certificate. If using a CA certificate,
+          this must be the root certificate from your CA.
+        label: Server SSL Cert
+        reference: .properties.uaa.ldap.server_ssl_cert
+      - description: |
+          Required only for ldaps:// and using a Self Signed Certificate.
+        label: Server SSL Cert AltName
+        reference: .properties.uaa.ldap.server_ssl_cert_alias
+      - description: |
+          The name of the attribute that contains the first name.
+        label: First Name Attribute
+        reference: .properties.uaa.ldap.first_name_attribute
+      - description: |
+          The name of the attribute that contains the last name.
+        label: Last Name Attribute
+        reference: .properties.uaa.ldap.last_name_attribute
+      - description: |
+          The name of the attribute that contains the user's email
+          address.
+        label: Email Attribute
+        reference: .properties.uaa.ldap.mail_attribute_name
+      - description: |
+          Comma-separated list of domains, e.g. example.com. This is used
+          for inviting external users to Apps Manager.
+        label: Email Domain(s)
+        reference: .properties.uaa.ldap.email_domains
+      - label: LDAP Referrals
+        reference: .properties.uaa.ldap.ldap_referrals
+      reference: .properties.uaa.ldap
+- description: Configure PKS Monitoring Integration(s)
+  label: Monitoring
+  name: monitoring
+  property_inputs:
+  - description: Enable Wavefront by VMware Integration
+    label: Wavefront Integration
+    reference: .properties.wavefront
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.wavefront.disabled
+    - label: "Yes"
+      property_inputs:
+      - description: 'The URL of your Wavefront Subscription, ex: https://try.wavefront.com/api'
+        label: Wavefront URL
+        reference: .properties.wavefront.enabled.wavefront_api_url
+      - description: The API token for your Wavefront Subscription
+        label: Wavefront Access Token
+        reference: .properties.wavefront.enabled.wavefront_token
+      - description: 'A list of Email addresses &/or Wavefront Target IDs (comma separated)
+          that triggered alerts will be sent to, e.g.: user@example.com,Wavefront_TargetID'
+        label: Wavefront Alert Recipient
+        reference: .properties.wavefront.enabled.wavefront_alert_targets
+      reference: .properties.wavefront.enabled
+- description: Usage Data
+  label: Usage Data
+  markdown: |
+    VMware’s Customer Experience Improvement Program (“CEIP”) and the Pivotal
+    Telemetry Program (“Telemetry”) provides VMware and Pivotal with information that
+    enables the companies to improve their products and services, fix problems, and
+    advise you on how best to deploy and use our products.  As part of the CEIP and
+    Telemetry, VMware and Pivotal collect technical information about your
+    organization’s use of the Pivotal Container Service (“PKS”) on a regular basis.
+
+    Since PKS is jointly developed and sold by VMware and Pivotal, we will share
+    this information with one another. Information collected under CEIP or Telemetry
+    does not personally identify any individual.
+
+    Additional information regarding the data collected through CEIP or Telemetry,
+    and the purposes for which it is used by VMware is set forth in the Trust &
+    Assurance Center at http://www.vmware.com/trustvmware/ceip.html and for Pivotal
+    on the Pivotal Telemetry pages at https://pivotal.io/legal/pks-telemetry.  If
+    you prefer not to participate in CEIP and Telemetry for PKS, you should not join
+    below. You may join or leave CEIP and Telemetry for PKS at any time.
+  name: telemetry
+  property_inputs:
+  - label: |
+      Information about PKS configuration and usage can be collected to provide
+      better support and product improvements.
+    reference: .properties.telemetry_selector
+    selector_property_inputs:
+    - label: Yes, I want to join the CEIP and Telemetry Program for PKS
+      reference: .properties.telemetry_selector.enabled
+    - label: No, I do not want to join the CEIP and Telemetry Program for PKS
+      reference: .properties.telemetry_selector.disabled
+icon_image: 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
+job_types:
+- dynamic_ip: 1
+  instance_definition:
+    configurable: false
+    constraints:
+      max: 1
+      min: 1
+    default: 1
+    name: instances
+    type: integer
+  manifest: |
+    ---
+    startup_banner: true
+    port: 8080
+    username: ((( odb_broker_basicauth.username )))
+    password: ((( odb_broker_basicauth.password )))
+    disable_cf_startup_checks: true
+    expose_operational_errors: false
+    bosh:
+      url: https://(( $director.hostname || $director.deployment_ip )):25555
+      root_ca_cert: (( $director.ca_public_key ))
+      authentication:
+        uaa:
+          url: https://(( $director.hostname ||  $director.deployment_ip )):8443
+          client_id: (( $self.uaa_client_name ))
+          client_secret: (( $self.uaa_client_secret ))
+    service_adapter:
+      path: /var/vcap/jobs/service-adapter/bin/service-adapter
+    service_deployment:
+      releases:
+        - name: kubo
+          version: "0.18.0"
+          jobs:
+          - kube-apiserver
+          - kube-controller-manager
+          - kube-scheduler
+          - kubelet
+          - kube-proxy
+          - kubernetes-roles
+          - flanneld
+          - nginx
+          - kubernetes-api-route-registrar
+          - apply-specs
+          - secure-var-vcap
+        - name: cfcr-etcd
+          version: "1.3.1"
+          jobs:
+          - etcd
+        - name: docker
+          version: "32.0.1"
+          jobs:
+          - docker
+        - name: pks-nsx-t
+          version: "0.21.1"
+          jobs:
+          - nsx-pod-networking
+          - ncp
+        - name: pks-vrli
+          version: "0.3.0"
+          jobs:
+          - fluentd
+        - name: pks-telemetry
+          version: "0.9.2"
+          jobs:
+          - telemetry-pod
+        - name: syslog-migration
+          version: "11.1.1"
+          jobs:
+          - syslog_forwarder
+        - name: bpm
+          version: "0.6.0"
+          jobs:
+          - bpm
+        - name: wavefront-proxy
+          version: "0.7.0"
+          jobs:
+          - wavefront-proxy
+        - name: pks-helpers
+          version: "28.0.0"
+          jobs:
+          - drain-cluster
+      stemcell:
+        os: ubuntu-trusty
+        version: (( $self.stemcell_version ))
+    service_catalog:
+      id: DF8EECC4-7225-42D0-8459-4A6C584314CA
+      service_name: p.pks
+      service_description: Default on-demand Kubernetes service.
+      bindable: true
+      plan_updatable: true
+      tags:  ["pivotal", "kubernetes", "k8s"]
+      metadata:
+        display_name: Kubernetes
+        image_url: data:image/png;base64,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
+        support_url: "TBA"
+        documentation_url: "TBA"
+        provider_display_name: Pivotal
+      global_properties: (( .properties.cloud_provider.selected_option.parsed_manifest(global_properties) ))
+      plans:
+      - (( .properties.plan1_selector.selected_option.parsed_manifest(plan1_snippet) ))
+      - (( .properties.plan2_selector.selected_option.parsed_manifest(plan2_snippet) ))
+      - (( .properties.plan3_selector.selected_option.parsed_manifest(plan3_snippet) ))
+  max_in_flight: 1
+  name: pivotal-container-service
+  property_blueprints:
+  - configurable: true
+    name: pks_tls
+    type: rsa_cert_credentials
+  resource_definitions:
+  - configurable: true
+    default: 8192
+    name: ram
+    type: integer
+  - configurable: true
+    default: 16384
+    name: ephemeral_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 3072
+    default: 10240
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    default: 2
+    name: cpu
+    type: integer
+  resource_label: Pivotal Container Service
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - manifest: |
+      deployment:
+        broker_deployment_name: (( ..pivotal-container-service.deployment_name ))
+        kubo_odb_ca: ((( kubo_odb_ca.certificate )))
+        director_url: https://(( $director.hostname || $director.deployment_ip )):25555
+      syslog: (( .properties.syslog_migration_selector.selected_option.parsed_manifest(syslog_migration) ))
+    name: service-adapter
+    release: kubo-service-adapter
+  - consumes: (( .properties.network_selector.selected_option.parsed_manifest(broker_link)
+      ))
+    manifest: |
+      pks:
+        db_password: (( .properties.cf_mysql_pks_db_password.value ))
+        tls:
+          certificate: (( .pivotal-container-service.pks_tls.cert_pem ))
+          private_key: (( .pivotal-container-service.pks_tls.private_key_pem ))
+        internal_tls:
+          certificate: ((( pks_api_internal.certificate )))
+          private_key: ((( pks_api_internal.private_key )))
+        username: ((( pks_api_basicauth.username )))
+        password: ((( pks_api_basicauth.password )))
+        pks_client_secret: (( .properties.pks_api_uaa_client.value ))
+        uaa_service_admin_client_secret: (( .properties.pks_services_admin_uaa_client.value ))
+        uaa_service_admin_client_id: service_admin_client
+        telemetry:
+          enabled: true
+          eventEmitterBaseUrl: http://localhost:8012
+        plans:
+          8A0E21A8-8072-4D80-B365-D1F502085560:
+            worker_instances: (( .properties.plan1_selector.active.worker_instances.value ))
+          58375a45-17f7-4291-acf1-455bfdc8e371:
+            worker_instances: (( .properties.plan2_selector.active.worker_instances.value ))
+          241118e5-69b2-4ef9-b47f-4d2ab071aff5:
+            worker_instances: (( .properties.plan3_selector.active.worker_instances.value ))
+    name: pks-api
+    provides: |
+      pks_uaa_service_admin_client: {as: pks_uaa_service_admin_client, shared: true}
+    release: pks-api
+  - manifest: |
+      bosh:
+        url: https://(( $director.hostname || $director.deployment_ip )):25555
+        root_ca_cert: (( $director.ca_public_key ))
+        authentication:
+          uaa:
+            url: https://(( $director.hostname ||  $director.deployment_ip )):8443
+            client_id: (( $self.uaa_client_name ))
+            client_secret: (( $self.uaa_client_secret ))
+      cloud_config_name: (( ..pivotal-container-service.deployment_name ))
+      cloud_config: (( .properties.cloud_provider.selected_option.parsed_manifest(cloud_config) ))
+    name: bosh-update-config
+    release: pks-api
+  - name: broker
+    provides: 'broker: { as: odb-broker }'
+    release: on-demand-service-broker
+  - consumes: |
+      broker: { from: odb-broker }
+    manifest: |
+      enabled: (( .properties.network_selector.selected_option.parsed_manifest(nsx_t_proxy_broker_enabled) ))
+      log_level: INFO
+      port: 3000
+      username: ((( odb_broker_basicauth.username )))
+      password: ((( odb_broker_basicauth.password )))
+      create_network_with_lb: (( .properties.network_selector.nsx.lb-created-by-proxy.value ))
+      generate_lb_name: true
+      lb_service_id_parameter: nsxt_lb_service_id
+      fip_address_parameter: nsxt_fip_address
+      network_name_parameter: nsxt_network_name
+      kubernetes_master_host_parameter: kubernetes_master_host
+      bosh:
+        log_level: INFO
+        url: https://(( $director.hostname || $director.deployment_ip )):25555
+        authentication:
+          uaa:
+            client_id: (( $self.uaa_client_name ))
+            client_secret: (( $self.uaa_client_secret ))
+        root_ca_cert: (( $director.ca_public_key ))
+        cloud_config_prefix: pks
+        cloud_config_dns: (( .properties.network_selector.nsx.cloud-config-dns.value || "ignored" ))
+      nsxt:
+        log_level: INFO
+        host: (( .properties.network_selector.nsx.nsx-t-host.value || "ignored" ))
+        superuser_cert: (( .properties.network_selector.nsx.nsx-t-superuser-certificate.cert_pem || "ignored" ))
+        superuser_key: (( .properties.network_selector.nsx.nsx-t-superuser-certificate.private_key_pem || "ignored" ))
+        ca_cert: (( .properties.network_selector.nsx.nsx-t-ca-cert.value ))
+        insecure: (( .properties.network_selector.nsx.nsx-t-insecure.value || false ))
+        t0_router_id: (( .properties.network_selector.nsx.t0-router-id.value || "ignored" ))
+        ip_block_id: (( .properties.network_selector.nsx.nodes-ip-block-id.value || "ignored" ))
+        floating_ip_pool_ids:
+          - (( .properties.network_selector.nsx.floating-ip-pool-ids.value || "ignored" ))
+        nat_mode: (( .properties.network_selector.nsx.nat_mode.value || false ))
+        network_prefix: pks
+    name: pks-nsx-t-osb-proxy
+    release: pks-nsx-t
+  - manifest: |
+      cf_mysql:
+        mysql:
+          admin_password: (( .properties.cf_mysql_mysql_admin_password.value ))
+          cluster_health:
+            password: (( .properties.cf_mysql_mysql_cluster_health_password.value ))
+          galera_healthcheck:
+            endpoint_password: (( .properties.cf_mysql_mysql_galera_healthcheck_endpoint_password.value ))
+            db_password: (( .properties.cf_mysql_mysql_galera_healthcheck_db_password.value ))
+          seeded_databases:
+            - name: pks
+              username: pks
+              password: (( .properties.cf_mysql_pks_db_password.value ))
+            - name: uaa
+              username: uaa
+              password: (( .properties.cf_mysql_uaa_db_password.value ))
+            - name: telemetry
+              username: telemetry
+              password: (( .properties.cf_mysql_telemetry_db_password.value ))
+    name: mysql
+    release: cf-mysql
+  - manifest: |
+      release_level_backup: true
+      uaadb:
+        address: 127.0.0.1
+        databases:
+        - name: uaa
+          tag: uaa
+        db_scheme: mysql
+        port: 3306
+        roles:
+        - name: uaa
+          password: (( .properties.cf_mysql_uaa_db_password.value ))
+          tag: admin
+      uaa:
+        port: 35684
+        url: https://(( .properties.pks_api_hostname.value )):8443
+        jwt:
+          policy:
+            active_key_id: key-1
+            keys:
+              key-1:
+                signingKey: ((( uaa_jwt_signing_key_1.private_key )))
+        sslCertificate: (( .pivotal-container-service.pks_tls.cert_pem ))
+        sslPrivateKey: (( .pivotal-container-service.pks_tls.private_key_pem ))
+        clients:
+          admin:
+            authorized-grant-types: client_credentials
+            scope: uaa.none
+            authorities: uaa.admin,clients.read,clients.write,clients.secret,scim.read,scim.write,clients.admin,pks.clusters.admin,pks.clusters.manage
+            secret: (( .properties.pks_uaa_management_admin_client.value ))
+          service_admin_client:
+            authorized-grant-types: client_credentials
+            scope: uaa.none
+            authorities: clients.admin
+            secret: (( .properties.pks_services_admin_uaa_client.value ))
+          pks_cli:
+            authorized-grant-types: password,refresh_token
+            scope: pks.clusters.admin,pks.clusters.manage
+            authorities: uaa.resource
+            access-token-validity: (( .properties.uaa_pks_cli_access_token_lifetime.value ))
+            refresh-token-validity: (( .properties.uaa_pks_cli_refresh_token_lifetime.value ))
+            secret: ""
+          pks_client:
+            authorized-grant-types: client_credentials
+            scope: uaa.none
+            authorities: pks.clusters.admin,pks.clusters.manage,uaa.resource
+            access-token-validity: 86400 # 1 day
+            secret: (( .properties.pks_api_uaa_client.value ))
+        ldap:
+          sslCertificate: (( .properties.uaa.ldap.server_ssl_cert.value ))
+          mailAttributeName: (( .properties.uaa.ldap.mail_attribute_name.value ))
+          url: (( .properties.uaa.ldap.url.value ))
+          searchBase: (( .properties.uaa.ldap.search_base.value ))
+          searchFilter: (( .properties.uaa.ldap.search_filter.value ))
+          enabled: (( .properties.uaa.ldap.url.value_present? ))
+          emailDomain: (( .properties.uaa.ldap.email_domains.parsed_strings ))
+          referral: (( .properties.uaa.ldap.ldap_referrals.value ))
+          groups:
+            profile_type: '(( .properties.uaa.ldap.group_search_base.value_present? ? "groups-map-to-scopes": "no-groups" ))'
+            searchBase: (( .properties.uaa.ldap.group_search_base.value ))
+            groupSearchFilter: (( .properties.uaa.ldap.group_search_filter.value ))
+          userDN: (( .properties.uaa.ldap.credentials.identity ))
+          userPassword: (( .properties.uaa.ldap.credentials.password ))
+          sslCertificateAlias: (( .properties.uaa.ldap.server_ssl_cert_alias.value ))
+        scim:
+          user:
+            override: true
+          users:
+            - name: admin
+              password: (( .properties.uaa_admin_password.value ))
+              groups:
+                - uaa.admin
+                - pks.clusters.admin
+          groups:
+            pks.clusters.admin: "Allows a user to admin PKS"
+            pks.clusters.manage: "Allows a user to manage PKS clusters"
+      login:
+        saml:
+          signatureAlgorithm: SHA256
+          activeKeyId: active-pks-saml-key
+          keys:
+            active-pks-saml-key:
+              key: (((uaa_active_pks_saml_key.private_key)))
+              passphrase: ""
+              certificate: (((uaa_active_pks_saml_key.certificate)))
+    name: uaa
+    release: uaa
+  - name: bbr-uaadb
+    release: uaa
+  - name: database-backup-restorer
+    release: backup-and-restore-sdk
+  - consumes: (( .properties.network_selector.selected_option.parsed_manifest(broker_link)
+      ))
+    manifest: |
+      service_instances_api:
+        url: https://localhost:9021/service_instances
+        root_ca_cert: ((( pks_api_internal.ca )))
+        authentication:
+          basic:
+            username: ((( pks_api_basicauth.username )))
+            password: ((( pks_api_basicauth.password )))
+    name: upgrade-all-service-instances
+    release: on-demand-service-broker
+  - manifest: |
+      syslog: (( .properties.syslog_migration_selector.selected_option.parsed_manifest(syslog_migration) ))
+    name: syslog_forwarder
+    release: syslog-migration
+  - name: delete-all-clusters
+    release: pks-api
+  - manifest: |
+      (( .properties.network_selector.selected_option.parsed_manifest(precheck) ))
+    name: pks-nsx-t-precheck
+    release: pks-nsx-t
+  - manifest: |
+      (( .properties.network_selector.selected_option.parsed_manifest(ops_files) ))
+    name: pks-nsx-t-ops-files
+    release: pks-nsx-t
+  - manifest: |
+      (( .properties.wavefront.selected_option.parsed_manifest(wavefront_properties) ))
+    name: pks-wavefront-ops-files
+    release: wavefront-proxy
+  - manifest: |
+      (( .properties.wavefront.selected_option.parsed_manifest(wavefront_alert_creation_properties) ))
+    name: wavefront-alert-creation
+    release: wavefront-proxy
+  - manifest: |
+      (( .properties.wavefront.selected_option.parsed_manifest(wavefront_properties) ))
+    name: wavefront-alert-deletion
+    release: wavefront-proxy
+  - manifest: |
+      (( .properties.pks-vrli.selected_option.parsed_manifest(ops_files) ))
+    name: pks-vrli-ops-files
+    release: pks-vrli
+  - manifest: |
+      (( .properties.telemetry_selector.selected_option.parsed_manifest(telemetry) ))
+    name: telemetry
+    provides: |
+      pks_telemetry: {as: pks_telemetry, shared: true}
+    release: pks-telemetry
+  - manifest: |
+      telemetry_ca: |
+         (((telemetry_ca.certificate)))
+      interval: (( .properties.telemetry_selector.enabled.interval.value ))
+    name: telemetry-pod-ops-files
+    release: pks-telemetry
+  - manifest: |
+      pks_tile_version: "1.1.3-build.11"
+      aggregator_endpoint: https://telemetry.pks.internal:8011/api/send?objectType=Event\&sourceID=PKSServer
+      server_port: 8012
+      aggregator_ca_cert: "(((telemetry_ca.certificate)))"
+      pks_cloud_provider: (( .properties.cloud_provider.value ))
+    name: event-emitter
+    release: event-emitter
+label: Pivotal Container Service
+metadata_git_sha: babb1e8ccfa342cb1f44527e774abc9ab574f634
+metadata_version: "2.1"
+minimum_version_for_upgrade: 1.0.2-build.62
+name: pivotal-container-service
+post_deploy_errands:
+- colocated: true
+  description: Validates NSX-T configuration and tags resources
+  label: NSX-T Validation errand
+  name: pks-nsx-t-precheck
+  run_default: false
+- colocated: true
+  description: Upgrades all Kubernetes clusters provisioned by PKS after the PKS Tile
+    upgrade is applied
+  label: Upgrade all clusters errand
+  name: upgrade-all-service-instances
+  run_default: true
+- colocated: true
+  description: Create pre-defined Wavefront alerts
+  label: Create pre-defined Wavefront alerts errand
+  name: wavefront-alert-creation
+  run_default: false
+pre_delete_errands:
+- colocated: true
+  description: Deletes all clusters provisioned by PKS when the PKS tile is deleted
+  label: Delete all clusters errand
+  name: delete-all-clusters
+  run_default: true
+- colocated: true
+  description: Delete pre-defined Wavefront alerts errand
+  label: Delete pre-defined Wavefront alerts errand
+  name: wavefront-alert-deletion
+  run_default: false
+product_version: 1.1.3-build.11
+property_blueprints:
+- name: cf_mysql_mysql_admin_password
+  type: secret
+- name: cf_mysql_mysql_cluster_health_password
+  type: secret
+- name: cf_mysql_mysql_galera_healthcheck_endpoint_password
+  type: secret
+- name: cf_mysql_mysql_galera_healthcheck_db_password
+  type: secret
+- name: cf_mysql_pks_db_password
+  type: secret
+- name: cf_mysql_uaa_db_password
+  type: secret
+- name: cf_mysql_telemetry_db_password
+  type: secret
+- name: pks_api_uaa_client
+  type: secret
+- name: pks_uaa_management_admin_client
+  type: secret
+- name: pks_services_admin_uaa_client
+  type: secret
+- name: uaa_admin_password
+  type: secret
+- configurable: true
+  freeze_on_deploy: true
+  name: cloud_provider
+  option_templates:
+  - name: gcp
+    named_manifests:
+    - manifest: |
+        routing_mode: external
+        authorization_mode: rbac
+        deployments_network: (( $self.service_network ))
+        iaas: gcp
+        project_id: (( .properties.cloud_provider.gcp.project_id.value ))
+        network: (( .properties.cloud_provider.gcp.network.value ))
+        ops_files_paths:
+        - (( .properties.wavefront.selected_option.parsed_manifest(ops_file_add_wavefront) ))
+        - /var/vcap/jobs/telemetry-pod-ops-files/manifests/add-agent-job.yml
+      name: global_properties
+    - manifest: |
+        vm_extensions:
+          - name: service_account_master
+            cloud_properties:
+              service_account: (( .properties.cloud_provider.gcp.master_service_account.value ))
+          - name: service_account_worker
+            cloud_properties:
+              service_account: (( .properties.cloud_provider.gcp.worker_service_account.value ))
+      name: cloud_config
+    property_blueprints:
+    - configurable: true
+      name: project_id
+      type: string
+    - configurable: true
+      name: network
+      type: string
+    - configurable: true
+      name: master_service_account
+      type: string
+    - configurable: true
+      name: worker_service_account
+      type: string
+    select_value: GCP
+  - name: vsphere
+    named_manifests:
+    - manifest: |
+        routing_mode: external
+        authorization_mode: rbac
+        deployments_network: (( $self.service_network ))
+        iaas: vsphere
+        vcenter_ip: (( .properties.cloud_provider.vsphere.vcenter_ip.value ))
+        vcenter_master_user: (( .properties.cloud_provider.vsphere.vcenter_master_creds.identity ))
+        vcenter_master_password: (( .properties.cloud_provider.vsphere.vcenter_master_creds.password ))
+        vcenter_dc: (( .properties.cloud_provider.vsphere.vcenter_dc.value ))
+        vcenter_ds: (( .properties.cloud_provider.vsphere.vcenter_ds.value ))
+        vcenter_vms: (( .properties.cloud_provider.vsphere.vcenter_vms.value ))
+        proxy: (( .properties.proxy_selector.selected_option.parsed_manifest(proxy) ))
+        ops_files_paths:
+        - (( .properties.network_selector.selected_option.parsed_manifest(ops_file_nsx_t_add) ))
+        - (( .properties.network_selector.selected_option.parsed_manifest(ops_file_nsx_t_prepare_master_vm) ))
+        - (( .properties.network_selector.selected_option.parsed_manifest(ops_file_nsx_t_add_fip_to_tls_certs) ))
+        - (( .properties.network_selector.selected_option.parsed_manifest(ops_file_remove_flannel) ))
+        - (( .properties.wavefront.selected_option.parsed_manifest(ops_file_add_wavefront) ))
+        - (( .properties.pks-vrli.selected_option.parsed_manifest(ops_file_add_fluentd) ))
+        - /var/vcap/jobs/telemetry-pod-ops-files/manifests/add-agent-job.yml
+      name: global_properties
+    - manifest: |
+        vm_extensions:
+          - name: disk_enable_uuid
+            cloud_properties:
+              vmx_options:
+                disk.enableUUID: "1"
+      name: cloud_config
+    property_blueprints:
+    - configurable: true
+      name: vcenter_master_creds
+      type: simple_credentials
+    - configurable: true
+      name: vcenter_ip
+      type: string
+    - configurable: true
+      name: vcenter_dc
+      type: string
+    - configurable: true
+      name: vcenter_ds
+      type: string
+    - configurable: true
+      name: vcenter_vms
+      type: string
+    select_value: vSphere
+  type: selector
+- configurable: true
+  default: flannel
+  freeze_on_deploy: true
+  name: network_selector
+  option_templates:
+  - name: flannel
+    named_manifests:
+    - manifest: ""
+      name: ops_file_remove_flannel
+    - manifest: ""
+      name: ops_file_nsx_t_add
+    - manifest: ""
+      name: ops_file_nsx_t_prepare_master_vm
+    - manifest: ""
+      name: ops_file_nsx_t_add_fip_to_tls_certs
+    - manifest: |
+        vcenter-user: "ignored"
+        vcenter-password: "ignored"
+        vcenter-host: "ignored"
+        vcenter-insecure: "ignored"
+        vcenter-datacenter: "ignored"
+        vcenter-cluster: "ignored"
+        nsx-t-superuser-certificate: "ignored"
+        nsx-t-superuser-key: "ignored"
+        nsx-t-host: "ignored"
+        nsx-t-ca-cert: "ignored"
+        nsx-t-insecure: "ignored"
+        t0-router-id: "ignored"
+        ip-block-id: "ignored"
+        floating-ip-pool-ids: ["ignored"]
+        network-automation: "ignored"
+        nodes-ip-block-id: "ignored"
+      name: precheck
+    - manifest: |
+        nsx-t-host: "ignored"
+        nsx-t-superuser-certificate: "ignored"
+        nsx-t-superuser-key: "ignored"
+        nsx-t-ca-cert: "ignored"
+        nsx-t-insecure: "ignored"
+        fip_address_parameter: "ignored"
+        lb-created-by-proxy: "ignored"
+        t0-router-id: "ignored"
+        floating-ip-pool-id: "ignored"
+        nodes-ip-block-id: "ignored"
+      name: ops_files
+    - manifest: |
+        broker: { from: odb-broker }
+      name: broker_link
+    - manifest: |
+        false
+      name: nsx_t_proxy_broker_enabled
+    select_value: flannel
+  - name: nsx
+    named_manifests:
+    - manifest: /var/vcap/jobs/pks-nsx-t-ops-files/manifests/remove_flannel.yml
+      name: ops_file_remove_flannel
+    - manifest: /var/vcap/jobs/pks-nsx-t-ops-files/manifests/add_pks_nsx_t.yml
+      name: ops_file_nsx_t_add
+    - manifest: |
+        "(( .properties.network_selector.nsx.network_automation.value ? '/var/vcap/jobs/pks-nsx-t-ops-files/manifests/prepare_master_vm.yml' : '' ))"
+      name: ops_file_nsx_t_prepare_master_vm
+    - manifest: |
+        "(( .properties.network_selector.nsx.network_automation.value ? '/var/vcap/jobs/pks-nsx-t-ops-files/manifests/add_fip_to_tls_certs.yml' : '' ))"
+      name: ops_file_nsx_t_add_fip_to_tls_certs
+    - manifest: |
+        vcenter-user: (( .properties.cloud_provider.vsphere.vcenter_master_creds.identity ))
+        vcenter-password: (( .properties.cloud_provider.vsphere.vcenter_master_creds.password ))
+        vcenter-host: (( .properties.cloud_provider.vsphere.vcenter_ip.value ))
+        vcenter-insecure: true
+        vcenter-datacenter: (( .properties.cloud_provider.vsphere.vcenter_dc.value ))
+        vcenter-cluster: (( .properties.network_selector.nsx.vcenter_cluster.value ))
+        nsx-t-superuser-certificate: (( .properties.network_selector.nsx.nsx-t-superuser-certificate.cert_pem ))
+        nsx-t-superuser-key: (( .properties.network_selector.nsx.nsx-t-superuser-certificate.private_key_pem ))
+        nsx-t-host: (( .properties.network_selector.nsx.nsx-t-host.value ))
+        nsx-t-ca-cert: (( .properties.network_selector.nsx.nsx-t-ca-cert.value ))
+        nsx-t-insecure: (( .properties.network_selector.nsx.nsx-t-insecure.value ))
+        t0-router-id: (( .properties.network_selector.nsx.t0-router-id.value ))
+        ip-block-id: (( .properties.network_selector.nsx.ip-block-id.value ))
+        floating-ip-pool-ids:
+          - (( .properties.network_selector.nsx.floating-ip-pool-ids.value ))
+        network-automation: (( .properties.network_selector.nsx.network_automation.value ))
+        nodes-ip-block-id: (( .properties.network_selector.nsx.nodes-ip-block-id.value ))
+      name: precheck
+    - manifest: |
+        nsx-t-host: (( .properties.network_selector.nsx.nsx-t-host.value ))
+        nsx-t-superuser-certificate: (( .properties.network_selector.nsx.nsx-t-superuser-certificate.cert_pem ))
+        nsx-t-superuser-key: (( .properties.network_selector.nsx.nsx-t-superuser-certificate.private_key_pem ))
+        nsx-t-ca-cert: (( .properties.network_selector.nsx.nsx-t-ca-cert.value ))
+        nsx-t-insecure: (( .properties.network_selector.nsx.nsx-t-insecure.value ))
+        fip_address_parameter: "nsxt_fip_address"
+        lb-created-by-proxy: (( .properties.network_selector.nsx.lb-created-by-proxy.value ))
+        t0-router-id: (( .properties.network_selector.nsx.t0-router-id.value ))
+      name: ops_files
+    - manifest: |
+        broker: { from: "(( .properties.network_selector.nsx.network_automation.value ? 'proxy-broker' : 'odb-broker' ))" }
+      name: broker_link
+    - manifest: |
+        (( .properties.network_selector.nsx.network_automation.value ))
+      name: nsx_t_proxy_broker_enabled
+    property_blueprints:
+    - configurable: true
+      name: nsx-t-host
+      type: network_address
+    - configurable: true
+      name: nsx-t-ca-cert
+      optional: true
+      type: ca_certificate
+    - configurable: true
+      default: false
+      name: nsx-t-insecure
+      type: boolean
+    - configurable: true
+      name: nsx-t-superuser-certificate
+      type: rsa_cert_credentials
+    - configurable: true
+      name: vcenter_cluster
+      type: string
+    - configurable: true
+      name: t0-router-id
+      type: string
+    - configurable: true
+      name: ip-block-id
+      type: string
+    - configurable: true
+      name: floating-ip-pool-ids
+      type: string
+    - configurable: true
+      default: true
+      freeze_on_deploy: true
+      name: network_automation
+      type: boolean
+    - configurable: true
+      default: true
+      name: nat_mode
+      type: boolean
+    - configurable: true
+      name: nodes-ip-block-id
+      type: string
+    - configurable: true
+      name: cloud-config-dns
+      type: network_address_list
+    - configurable: false
+      default: false
+      name: lb-created-by-proxy
+      type: boolean
+    select_value: nsx
+  type: selector
+- configurable: true
+  name: vm_extensions
+  optional: true
+  options:
+  - label: Enable outbound internet access
+    name: public_ip
+  type: multi_select_options
+- configurable: true
+  default: Disabled
+  name: proxy_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: null
+      name: proxy
+    select_value: Disabled
+  - name: enabled
+    named_manifests:
+    - manifest: |
+        http_proxy:
+          url: "(( .properties.proxy_selector.enabled.http_proxy_url.value ))"
+          username: "(( .properties.proxy_selector.enabled.http_proxy_credentials.identity ))"
+          password: "(( .properties.proxy_selector.enabled.http_proxy_credentials.password ))"
+        https_proxy:
+          url: "(( .properties.proxy_selector.enabled.https_proxy_url.value ))"
+          username: "(( .properties.proxy_selector.enabled.https_proxy_credentials.identity ))"
+          password: "(( .properties.proxy_selector.enabled.https_proxy_credentials.password ))"
+        no_proxy: "(( .properties.proxy_selector.enabled.no_proxy.value ))"
+      name: proxy
+    property_blueprints:
+    - configurable: true
+      name: http_proxy_url
+      optional: true
+      type: http_url
+    - configurable: true
+      name: http_proxy_credentials
+      optional: true
+      type: simple_credentials
+    - configurable: true
+      name: https_proxy_url
+      optional: true
+      type: http_url
+    - configurable: true
+      name: https_proxy_credentials
+      optional: true
+      type: simple_credentials
+    - configurable: true
+      name: no_proxy
+      optional: true
+      type: network_address_list
+    select_value: Enabled
+  type: selector
+- configurable: true
+  default: Plan Active
+  name: plan1_selector
+  option_templates:
+  - name: active
+    named_manifests:
+    - manifest: |
+        name: (( .properties.plan1_selector.active.name.value ))
+        plan_id: 8A0E21A8-8072-4D80-B365-D1F502085560
+        description: (( .properties.plan1_selector.active.description.value ))
+        lifecycle_errands:
+          post_deploy:
+          - name: apply-addons
+          - name: wavefront-proxy-errand
+          - name: telemetry-pod
+          pre_delete:
+          - name: drain-cluster
+        properties:
+          addons-spec: (( .properties.plan1_selector.active.addons_spec.value ))
+          allow-privileged-containers: (( .properties.plan1_selector.active.allow_privileged_containers.value ))
+          disable_deny_escalating_exec: (( .properties.plan1_selector.active.disable_deny_escalating_exec.value ))
+        instance_groups:
+        - name: master
+          persistent_disk_type: (( .properties.plan1_selector.active.master_persistent_disk_type.value ))
+          vm_type: (( .properties.plan1_selector.active.master_vm_type.value ))
+          instances: (( .properties.plan1_selector.active.master_instances.value ))
+          networks: [(( $self.service_network ))]
+          vm_extensions: (( .properties.vm_extensions.value || []))
+          azs: (( .properties.plan1_selector.active.master_az_placement.value ))
+        - name: worker
+          persistent_disk_type: (( .properties.plan1_selector.active.worker_persistent_disk_type.value ))
+          vm_type: (( .properties.plan1_selector.active.worker_vm_type.value ))
+          instances: (( .properties.plan1_selector.active.worker_instances.value ))
+          networks: [(( $self.service_network ))]
+          vm_extensions: (( .properties.vm_extensions.value || []))
+          azs: (( .properties.plan1_selector.active.worker_az_placement.value ))
+        - name: apply-addons
+          vm_type: (( .properties.plan1_selector.active.errand_vm_type.value ))
+          instances: 1
+          networks: [(( $self.service_network ))]
+          azs: (( .properties.plan1_selector.active.worker_az_placement.value ))
+          lifecycle: errand
+      name: plan1_snippet
+    property_blueprints:
+    - configurable: true
+      default: small
+      name: name
+      type: string
+    - configurable: true
+      default: 'Example: This plan will configure a lightweight kubernetes cluster.
+        Not recommended for production workloads.'
+      name: description
+      type: text
+    - configurable: true
+      name: master_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: worker_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: medium
+      name: master_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      default: "10240"
+      name: master_persistent_disk_type
+      type: disk_type_dropdown
+    - configurable: true
+      default: medium
+      name: worker_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      default: "10240"
+      name: worker_persistent_disk_type
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 3
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 1
+      name: master_instances
+      type: integer
+    - configurable: true
+      constraints:
+        max: 50
+        min: 1
+      default: 3
+      name: worker_instances
+      type: integer
+    - configurable: true
+      default: micro
+      name: errand_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      name: addons_spec
+      optional: true
+      type: text
+    - configurable: true
+      name: allow_privileged_containers
+      optional: true
+      type: boolean
+    - configurable: true
+      name: disable_deny_escalating_exec
+      optional: true
+      type: boolean
+    select_value: Plan Active
+  type: selector
+- configurable: true
+  name: plan2_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: null
+      name: plan2_snippet
+    select_value: Plan Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        name: (( .properties.plan2_selector.active.name.value ))
+        plan_id: 58375a45-17f7-4291-acf1-455bfdc8e371
+        description: (( .properties.plan2_selector.active.description.value ))
+        lifecycle_errands:
+          post_deploy:
+          - name: apply-addons
+          - name: wavefront-proxy-errand
+          - name: telemetry-pod
+          pre_delete:
+          - name: drain-cluster
+        properties:
+          addons-spec: (( .properties.plan2_selector.active.addons_spec.value ))
+          allow-privileged-containers: (( .properties.plan2_selector.active.allow_privileged_containers.value ))
+          disable_deny_escalating_exec: (( .properties.plan2_selector.active.disable_deny_escalating_exec.value ))
+        instance_groups:
+        - name: master
+          persistent_disk_type: (( .properties.plan2_selector.active.master_persistent_disk_type.value ))
+          vm_type: (( .properties.plan2_selector.active.master_vm_type.value ))
+          instances: (( .properties.plan2_selector.active.master_instances.value ))
+          networks: [(( $self.service_network ))]
+          vm_extensions: (( .properties.vm_extensions.value || []))
+          azs: (( .properties.plan2_selector.active.master_az_placement.value ))
+        - name: worker
+          persistent_disk_type: (( .properties.plan2_selector.active.worker_persistent_disk_type.value ))
+          vm_type: (( .properties.plan2_selector.active.worker_vm_type.value ))
+          instances: (( .properties.plan2_selector.active.worker_instances.value ))
+          networks: [(( $self.service_network ))]
+          vm_extensions: (( .properties.vm_extensions.value || []))
+          azs: (( .properties.plan2_selector.active.worker_az_placement.value ))
+        - name: apply-addons
+          vm_type: (( .properties.plan2_selector.active.errand_vm_type.value ))
+          instances: 1
+          networks: [(( $self.service_network ))]
+          azs: (( .properties.plan2_selector.active.worker_az_placement.value ))
+          lifecycle: errand
+      name: plan2_snippet
+    property_blueprints:
+    - configurable: true
+      default: medium
+      name: name
+      type: string
+    - configurable: true
+      default: 'Example: This plan will configure a medium sized kubernetes cluster,
+        suitable for more pods.'
+      name: description
+      type: text
+    - configurable: true
+      name: master_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: worker_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: large
+      name: master_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      default: "10240"
+      name: master_persistent_disk_type
+      type: disk_type_dropdown
+    - configurable: true
+      default: medium
+      name: worker_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      default: "10240"
+      name: worker_persistent_disk_type
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 3
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 3
+      name: master_instances
+      type: integer
+    - configurable: true
+      constraints:
+        max: 50
+        min: 1
+      default: 5
+      name: worker_instances
+      type: integer
+    - configurable: true
+      default: micro
+      name: errand_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      name: addons_spec
+      optional: true
+      type: text
+    - configurable: true
+      name: allow_privileged_containers
+      optional: true
+      type: boolean
+    - configurable: true
+      name: disable_deny_escalating_exec
+      optional: true
+      type: boolean
+    select_value: Plan Active
+  type: selector
+- configurable: true
+  name: plan3_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: null
+      name: plan3_snippet
+    select_value: Plan Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        name: (( .properties.plan3_selector.active.name.value ))
+        plan_id: 241118e5-69b2-4ef9-b47f-4d2ab071aff5
+        description: (( .properties.plan3_selector.active.description.value ))
+        lifecycle_errands:
+          post_deploy:
+          - name: apply-addons
+          - name: wavefront-proxy-errand
+          - name: telemetry-pod
+          pre_delete:
+          - name: drain-cluster
+        properties:
+          addons-spec: (( .properties.plan3_selector.active.addons_spec.value ))
+          allow-privileged-containers: (( .properties.plan3_selector.active.allow_privileged_containers.value ))
+          disable_deny_escalating_exec: (( .properties.plan3_selector.active.disable_deny_escalating_exec.value ))
+        instance_groups:
+        - name: master
+          persistent_disk_type: (( .properties.plan3_selector.active.master_persistent_disk_type.value ))
+          vm_type: (( .properties.plan3_selector.active.master_vm_type.value ))
+          instances: (( .properties.plan3_selector.active.master_instances.value ))
+          networks: [(( $self.service_network ))]
+          vm_extensions: (( .properties.vm_extensions.value || []))
+          azs: (( .properties.plan3_selector.active.master_az_placement.value ))
+        - name: worker
+          persistent_disk_type: (( .properties.plan3_selector.active.worker_persistent_disk_type.value ))
+          vm_type: (( .properties.plan3_selector.active.worker_vm_type.value ))
+          instances: (( .properties.plan3_selector.active.worker_instances.value ))
+          networks: [(( $self.service_network ))]
+          vm_extensions: (( .properties.vm_extensions.value || []))
+          azs: (( .properties.plan3_selector.active.worker_az_placement.value ))
+        - name: apply-addons
+          vm_type: (( .properties.plan3_selector.active.errand_vm_type.value ))
+          instances: 1
+          networks: [(( $self.service_network ))]
+          azs: (( .properties.plan3_selector.active.worker_az_placement.value ))
+          lifecycle: errand
+      name: plan3_snippet
+    property_blueprints:
+    - configurable: true
+      default: large
+      name: name
+      type: string
+    - configurable: true
+      default: 'Example: This plan will configure a large kubernetes cluster for resource
+        heavy workloads, or a high number of workloads.'
+      name: description
+      type: text
+    - configurable: true
+      name: master_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: worker_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: master_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      default: "10240"
+      name: master_persistent_disk_type
+      type: disk_type_dropdown
+    - configurable: true
+      name: worker_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      default: "10240"
+      name: worker_persistent_disk_type
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 3
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 3
+      name: master_instances
+      type: integer
+    - configurable: true
+      constraints:
+        max: 50
+        min: 1
+      name: worker_instances
+      type: integer
+    - configurable: true
+      default: micro
+      name: errand_vm_type
+      type: vm_type_dropdown
+    - configurable: true
+      name: addons_spec
+      optional: true
+      type: text
+    - configurable: true
+      name: allow_privileged_containers
+      optional: true
+      type: boolean
+    - configurable: true
+      name: disable_deny_escalating_exec
+      optional: true
+      type: boolean
+    select_value: Plan Active
+  type: selector
+- configurable: true
+  default: internal
+  name: uaa
+  option_templates:
+  - name: internal
+    select_value: internal
+  - name: ldap
+    property_blueprints:
+    - configurable: true
+      name: url
+      type: ldap_url
+    - configurable: true
+      name: credentials
+      type: simple_credentials
+    - configurable: true
+      name: search_base
+      type: string
+    - configurable: true
+      default: cn={0}
+      name: search_filter
+      type: string
+    - configurable: true
+      name: group_search_base
+      optional: true
+      type: string
+    - configurable: true
+      default: member={0}
+      name: group_search_filter
+      type: string
+    - configurable: true
+      name: server_ssl_cert
+      optional: true
+      type: text
+    - configurable: true
+      name: server_ssl_cert_alias
+      optional: true
+      type: string
+    - configurable: true
+      default: mail
+      name: mail_attribute_name
+      type: string
+    - configurable: true
+      name: email_domains
+      optional: true
+      type: string_list
+    - configurable: true
+      name: first_name_attribute
+      optional: true
+      type: string
+    - configurable: true
+      name: last_name_attribute
+      optional: true
+      type: string
+    - configurable: true
+      default: follow
+      name: ldap_referrals
+      optional: false
+      options:
+      - label: Automatically follow any referrals
+        name: follow
+      - label: Ignore referrals and return partial result
+        name: ignore
+      - label: Throw exception for each referral and abort authentication
+        name: throw
+      type: dropdown_select
+    select_value: ldap
+  type: selector
+- configurable: true
+  name: pks_api_hostname
+  optional: false
+  type: string
+- configurable: true
+  default: 600
+  name: uaa_pks_cli_access_token_lifetime
+  optional: false
+  type: integer
+- configurable: true
+  default: 21600
+  name: uaa_pks_cli_refresh_token_lifetime
+  optional: false
+  type: integer
+- configurable: true
+  default: disabled
+  name: syslog_migration_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: |
+        migration:
+          disabled: true
+      name: syslog_migration
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: |
+        forward_files: true
+        address: (( .properties.syslog_migration_selector.enabled.address.value ))
+        port: (( .properties.syslog_migration_selector.enabled.port.value ))
+        transport: (( .properties.syslog_migration_selector.enabled.transport_protocol.value ))
+        tls_enabled: (( .properties.syslog_migration_selector.enabled.tls_enabled.value ))
+        permitted_peer: (( .properties.syslog_migration_selector.enabled.permitted_peer.value ))
+        ca_cert: (( .properties.syslog_migration_selector.enabled.ca_cert.value ))
+        migration:
+          disabled: false
+      name: syslog_migration
+    property_blueprints:
+    - configurable: true
+      name: address
+      optional: false
+      type: string
+    - configurable: true
+      name: port
+      optional: false
+      type: integer
+    - configurable: true
+      default: tcp
+      name: transport_protocol
+      optional: false
+      options:
+      - label: TCP
+        name: tcp
+      - label: UDP
+        name: udp
+      - label: RELP
+        name: relp
+      type: dropdown_select
+    - configurable: true
+      default: true
+      name: tls_enabled
+      type: boolean
+    - configurable: true
+      name: permitted_peer
+      optional: true
+      type: string
+    - configurable: true
+      name: ca_cert
+      optional: true
+      type: text
+    select_value: enabled
+  type: selector
+- configurable: true
+  default: disabled
+  name: wavefront
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: /var/vcap/jobs/pks-wavefront-ops-files/manifests/add-wavefront-job.yml
+      name: ops_file_add_wavefront
+    - manifest: |
+        wavefront-api-url: "ignored"
+        wavefront-token: "ignored"
+      name: wavefront_properties
+    - manifest: |
+        wavefront-api-url: "ignored"
+        wavefront-token: "ignored"
+        wavefront-alert-targets: "ignored"
+      name: wavefront_alert_creation_properties
+    - manifest: ""
+      name: wavefront_proxy_post_deploy_errand
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: /var/vcap/jobs/pks-wavefront-ops-files/manifests/add-wavefront-job.yml
+      name: ops_file_add_wavefront
+    - manifest: |
+        wavefront-api-url: (( .properties.wavefront.enabled.wavefront_api_url.value ))
+        wavefront-token: (( .properties.wavefront.enabled.wavefront_token.value ))
+      name: wavefront_properties
+    - manifest: |
+        wavefront-api-url: (( .properties.wavefront.enabled.wavefront_api_url.value ))
+        wavefront-token: (( .properties.wavefront.enabled.wavefront_token.value ))
+        wavefront-alert-targets: (( .properties.wavefront.enabled.wavefront_alert_targets.value ))
+      name: wavefront_alert_creation_properties
+    - manifest: wavefront-proxy-errand
+      name: wavefront_proxy_post_deploy_errand
+    property_blueprints:
+    - configurable: true
+      name: wavefront_api_url
+      optional: false
+      type: http_url
+    - configurable: true
+      name: wavefront_token
+      optional: false
+      type: secret
+    - configurable: true
+      name: wavefront_alert_targets
+      optional: true
+      type: string
+    select_value: enabled
+  type: selector
+- configurable: true
+  default: disabled
+  name: pks-vrli
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: ""
+      name: ops_file_add_fluentd
+    - manifest: |
+        fluentd_vrli_host: "ignored"
+        fluentd_vrli_rate_limit_msec: "ignored"
+        fluentd_vrli_skip_cert_verify: "ignored"
+        fluentd_vrli_ca_cert: "ignored"
+        fluentd_vrli_use_ssl: "ignored"
+      name: ops_files
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: /var/vcap/jobs/pks-vrli-ops-files/manifests/add-fluentd-job.yml
+      name: ops_file_add_fluentd
+    - manifest: |
+        fluentd_vrli_host: (( .properties.pks-vrli.enabled.host.value ))
+        fluentd_vrli_rate_limit_msec: (( .properties.pks-vrli.enabled.rate_limit_msec.value ))
+        fluentd_vrli_use_ssl: (( .properties.pks-vrli.enabled.use_ssl.value ))
+        fluentd_vrli_skip_cert_verify: (( .properties.pks-vrli.enabled.skip_cert_verify.value ))
+        fluentd_vrli_ca_cert: (( .properties.pks-vrli.enabled.ca_cert.value ))
+      name: ops_files
+    property_blueprints:
+    - configurable: true
+      name: host
+      optional: false
+      type: network_address
+    - configurable: true
+      default: true
+      name: use_ssl
+      type: boolean
+    - configurable: true
+      default: false
+      name: skip_cert_verify
+      type: boolean
+    - configurable: true
+      name: ca_cert
+      optional: true
+      type: ca_certificate
+    - configurable: false
+      default: 0
+      name: rate_limit_msec
+      type: integer
+    select_value: enabled
+  type: selector
+- configurable: true
+  name: telemetry_selector
+  option_templates:
+  - name: enabled
+    named_manifests:
+    - manifest: |
+        telemetry_enabled: true
+        vcenter_server: (( .properties.cloud_provider.vsphere.vcenter_ip.value ))
+        pks_instance_id: (( ..pivotal-container-service.deployment_name ))
+        telemetry_url: (( .properties.telemetry_selector.enabled.telemetry_url.value ))
+        pks_db_password: (( .properties.cf_mysql_telemetry_db_password.value ))
+        pks_db_host: localhost
+        tls_server:
+          certificate: ((( telemetry_server_tls.certificate )))
+          private_key: ((( telemetry_server_tls.private_key )))
+        tls_ca:
+          certificate: ((( telemetry_ca.certificate )))
+      name: telemetry
+    property_blueprints:
+    - configurable: true
+      default: https://vcsa.vmware.com
+      name: telemetry_url
+      optional: false
+      type: http_url
+    - configurable: true
+      default: 600
+      name: interval
+      optional: false
+      type: integer
+    select_value: enabled
+  - name: disabled
+    named_manifests:
+    - manifest: |
+        telemetry_enabled: false
+        telemetry_url: http://ignored
+        pks_instance_id: (( ..pivotal-container-service.deployment_name ))
+        pks_db_password: (( .properties.cf_mysql_telemetry_db_password.value ))
+        pks_db_host: localhost
+        tls_server:
+          certificate: ((( telemetry_server_tls.certificate )))
+          private_key: ((( telemetry_server_tls.private_key )))
+        tls_ca:
+          certificate: ((( telemetry_ca.certificate )))
+      name: telemetry
+    select_value: disabled
+  type: selector
+provides_product_versions:
+- name: pivotal-container-service
+  version: 1.1.3-build.11
+rank: 50
+releases:
+- file: compiled-release-cf-mysql-36.14.0-stemcell.3586.26.tgz
+  name: cf-mysql
+  sha1: a291e507ca02347290e9e4e9f85a52795d6ab56a
+  version: 36.14.0
+- file: compiled-release-docker-32.0.1-stemcell.3586.26.tgz
+  name: docker
+  sha1: c4598c8106862b7624efaf11ce0bcec67c9685e9
+  version: 32.0.1
+- file: compiled-release-kubo-0.18.0-stemcell.3586.26.tgz
+  name: kubo
+  sha1: cf76dd7e7bf1332c5b8fb33d22979ed7986b304d
+  version: 0.18.0
+- file: compiled-release-cfcr-etcd-1.3.1-stemcell.3586.26.tgz
+  name: cfcr-etcd
+  sha1: fc2e48f20b829258e4e72cc2324fa7444ea688a9
+  version: 1.3.1
+- file: compiled-release-kubo-service-adapter-1.1.3-build.1.3586.26.tgz
+  name: kubo-service-adapter
+  sha1: 9404fb57b74c56e9527cad58665ba5eecf802003
+  version: 1.1.3-build.1
+- file: compiled-release-on-demand-service-broker-0.21.2-stemcell.3586.26.tgz
+  name: on-demand-service-broker
+  sha1: 7d4a88fd8940fa35b068fb9ccee620dde84a4ede
+  version: 0.21.2
+- file: compiled-release-pks-api-1.1.3-build.1.3586.26.tgz
+  name: pks-api
+  sha1: 64fc724d608c5730971016ab71b6c949f14c9f14
+  version: 1.1.3-build.1
+- file: compiled-release-pks-helpers-28.0.0-stemcell.3586.26.tgz
+  name: pks-helpers
+  sha1: 80de15c2fd3d462021d3716f3526e79b1d8bcb52
+  version: 28.0.0
+- file: pks-nsx-t-0.21.1.tgz
+  name: pks-nsx-t
+  sha1: 508fffef57c10e26985c1332a3ccd8d7fe6deeda
+  version: 0.21.1
+- file: compiled-release-pks-vrli-0.3.0-stemcell.3586.26.tgz
+  name: pks-vrli
+  sha1: 951e958c4facc67ceef8a03543674e4a376a41d5
+  version: 0.3.0
+- file: compiled-release-syslog-migration-11.1.1-stemcell.3586.26.tgz
+  name: syslog-migration
+  sha1: 6f97283f1db3a569d7721ae10588cd714ec01747
+  version: 11.1.1
+- file: compiled-release-pks-telemetry-0.9.2-stemcell.3586.26.tgz
+  name: pks-telemetry
+  sha1: c43ffa9f70b9291c497df5222d882468ddabb06d
+  version: 0.9.2
+- file: compiled-release-event-emitter-0.13.0-stemcell.3586.26.tgz
+  name: event-emitter
+  sha1: e857575be6a6ef548358ca9f17b978411de49098
+  version: 0.13.0
+- file: compiled-release-uaa-55.2.0-stemcell.3586.26.tgz
+  name: uaa
+  sha1: d9632b688065840dcbcc7b45f720477174a51736
+  version: "55.2"
+- file: compiled-release-bpm-0.6.0-stemcell.3586.26.tgz
+  name: bpm
+  sha1: 095b935427d7eca9f7cc92291dae02ebd499248a
+  version: 0.6.0
+- file: compiled-release-backup-and-restore-sdk-1.6.0-stemcell.3586.26.tgz
+  name: backup-and-restore-sdk
+  sha1: fb3ddf5bd9d00272be3864b0310f68a57ae851a5
+  version: 1.6.0
+- file: compiled-release-wavefront-proxy-0.7.0-stemcell.3586.26.tgz
+  name: wavefront-proxy
+  sha1: f6151773c2b6cb8c3fb98271566d067ad15d8096
+  version: 0.7.0
+runtime_configs:
+- name: enable-pks-helpers
+  runtime_config: |
+    releases:
+     - name: pks-helpers
+       version: "28.0.0"
+    addons:
+      - name: bosh-dns-enable
+        jobs:
+        - name: bosh-dns-enable
+          release: pks-helpers
+        include:
+          jobs:
+          - name: kubo-dns-aliases
+            release: kubo
+serial: false
+service_broker: true
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: "3586.26"
+variables:
+- name: kubo_odb_ca
+  options:
+    common_name: ca
+    is_ca: true
+  type: certificate
+- name: pks_api_internal
+  options:
+    alternative_names:
+    - localhost
+    - 127.0.0.1
+    ca: kubo_odb_ca
+    common_name: localhost
+  type: certificate
+- name: uaa_jwt_signing_key_1
+  type: rsa
+- name: uaa_active_pks_saml_key
+  options:
+    common_name: ca
+    is_ca: true
+  type: certificate
+- name: pks_api_basicauth
+  type: user
+- name: odb_broker_basicauth
+  type: user
+- name: telemetry_ca
+  options:
+    common_name: ca
+    is_ca: true
+  type: certificate
+- name: telemetry_server_tls
+  options:
+    ca: telemetry_ca
+    common_name: telemetry.pks.internal
+  type: certificate

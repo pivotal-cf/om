@@ -1,0 +1,1497 @@
+---
+
+name: p-cloudcache
+label: Pivotal CloudCache
+service_broker: true
+product_version: "1.3.1-build.7"
+metadata_version: "1.10"
+rank: 1
+minimum_version_for_upgrade: "1.1.0"
+icon_image: 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
+
+requires_product_versions:
+- name: cf
+  version: ">= 1.12.0.build.154"
+
+provides_product_versions:
+- name: p-cloudcache
+  version: "1.3.1-build.7"
+
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: "3468.21"
+  enable_patch_security_updates: true
+
+releases:
+- name: gemfire
+  file: gemfire-1.3.1-build.12-ubuntu-3468.21.tgz
+  version: "1.3.1-build.12"
+- name: cloudcache-service-adapter
+  file: cloudcache-service-adapter-1.3.1-build.13-ubuntu-3468.21.tgz
+  version: "1.3.1-build.13"
+- name: on-demand-service-broker
+  file: on-demand-service-broker-0.19.0+build.2-ubuntu-3468.tgz
+  version: "0.19.0"
+- name: routing
+  file: routing-0.171.0+build.2-ubuntu-3468.tgz
+  version: "0.171.0"
+- name: syslog-migration
+  file: syslog-migration-11.1.0+build.2-ubuntu-3468.tgz
+  version: "11.1.0"
+- name: cloudcache-metrics
+  file: cloudcache-metrics-1.3.1-build.12-ubuntu-3468.21.tgz
+  version: "1.3.1-build.12"
+- name: service-metrics
+  file: service-metrics-1.5.12+build.2-ubuntu-3468.tgz
+  version: "1.5.12"
+- name: loggregator
+  file: loggregator-100+build.2-ubuntu-3468.tgz
+  version: "100"
+- name: consul
+  file: consul-191+build.2-ubuntu-3468.tgz
+  version: "191"
+- name: bpm
+  file: bpm-0.2.0+build.2-ubuntu-3468.tgz
+  version: "0.2.0"
+
+post_deploy_errands:
+- name: register-broker
+- name: smoke-tests
+- name: upgrade-all-service-instances
+
+pre_delete_errands:
+- name: delete-all-service-instances-and-deregister-broker
+
+
+cf_service_access: &cf_service_access
+  type: selector
+  configurable: true
+  optional: false
+  option_templates:
+  - name: enable
+    select_value: enable
+  - name: disable
+    select_value: disable
+  - name: manual
+    select_value: manual
+
+errand_defaults: &errand_defaults
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 1024
+    constraints:
+      min: 1024
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 20480
+    constraints:
+      min: 20480
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 2
+    constraints:
+      min: 1
+      power_of_two: true
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: false
+  instance_definition:
+    default: 1
+    configurable: false
+  manifest: |
+    broker_name: cloudcache-broker
+    disable_ssl_cert_verification: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    cf:
+      api_url: (( $runtime.system_api_url ))
+      apps_domain: (( $runtime.apps_domain ))
+      admin_username: (( ..cf.uaa.admin_credentials.identity ))
+      admin_password: (( ..cf.uaa.admin_credentials.password ))
+    smoke_tests:
+      service_plan: (( .properties.errand_plan.selected_option.parsed_manifest(plan_name_snippet) ))
+      password: (( .properties.smoke_test_password.password ))
+
+property_blueprints:
+- name: vm_extensions
+  type: multi_select_options
+  configurable: true
+  optional: true
+  options:
+  - name: "public_ip"
+    label: "Allow outbound internet access from service instances (IaaS-dependent)"
+
+- name: default_distributed_system_id
+  type: integer
+  configurable: true
+  optional: false
+  default: 0
+  constraints:
+    min: 0
+    max: 255
+
+- name: smoke_test_password
+  type: simple_credentials
+  label: Smoke Test Password
+
+- name: errand_plan
+  type: selector
+  configurable: true
+  optional: false
+  option_templates:
+
+  - name: plan1
+    select_value: plan1
+    named_manifests:
+    - name: plan_name_snippet
+      manifest: |
+        name: (( .properties.plan1_enable_service_plan.enable.plan_name.value ))
+
+  - name: plan2
+    select_value: plan2
+    named_manifests:
+    - name: plan_name_snippet
+      manifest: |
+        name: (( .properties.plan2_enable_service_plan.enable.plan_name.value ))
+
+  - name: plan3
+    select_value: plan3
+    named_manifests:
+    - name: plan_name_snippet
+      manifest: |
+        name: (( .properties.plan3_enable_service_plan.enable.plan_name.value ))
+
+  - name: plan4
+    select_value: plan4
+    named_manifests:
+    - name: plan_name_snippet
+      manifest: |
+        name: (( .properties.plan4_enable_service_plan.enable.plan_name.value ))
+
+  - name: plan5
+    select_value: plan5
+    named_manifests:
+    - name: plan_name_snippet
+      manifest: |
+        name: (( .properties.plan5_enable_service_plan.enable.plan_name.value ))
+
+
+- name: dev_plan_enable_service_plan
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: dev_plan_snippet
+      manifest: ''
+  - name: enable
+    select_value: enable
+    property_blueprints:
+    - name: plan_name
+      type: string
+      default: 'dev-plan'
+      configurable: true
+      optional: false
+      constraints:
+      - must_match_regex: '^[^\s]*$'
+        error_message: 'cannot include spaces.'
+      - must_match_regex: '^[^!@#$%^&*()]*$'
+        error_message: 'cannot include symbols.'
+    - name: plan_description
+      type: text
+      default: 'Plan Description'
+      configurable: true
+      optional: false
+    - name: service_metrics
+      type: boolean
+      default: false
+      configurable: true
+      optional: true
+    - name: cf_service_access
+      type: dropdown_select
+      configurable: true
+      default: enable
+      options:
+      - name: enable
+        label: 'Enable Service Access'
+      - name: disable
+        label: 'Disable Service Access'
+      - name: manual
+        label: 'Leave Service Access Unchanged'
+    - name: service_instance_quota
+      type: integer
+      configurable: true
+      optional: false
+      default: 10
+    - name: service_instance_azs
+      type: service_network_az_multi_select
+      configurable: true
+      optional: false
+    - name: vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    named_manifests:
+    - name: dev_plan_snippet
+      manifest: |
+        name : dev-plan
+        plan_id: a74e9b33-3a95-4f0f-820f-12cf3cea00de
+        description : (( .properties.dev_plan_enable_service_plan.enable.plan_description.value ))
+        cf_service_access: (( .properties.dev_plan_enable_service_plan.enable.cf_service_access.value ))
+        lifecycle_errands:
+          post_deploy:
+            name: prime-cluster-for-pcc
+            instances: [locator-server/first]
+        metadata:
+          display_name: Caching
+          bullets: [gemfire]
+        update:
+          canaries: 1
+          max_in_flight: 1
+          canary_watch_time: 1000-600000
+          update_watch_time: 1000-600000
+          serial: true
+        quotas:
+          service_instance_limit: (( .properties.dev_plan_enable_service_plan.enable.service_instance_quota.value ))
+        properties:
+          dev_plan: true
+          service_metrics : (( .properties.dev_plan_enable_service_plan.enable.service_metrics.value ))
+        instance_groups:
+        - name: locator-server
+          vm_type: (( .properties.dev_plan_enable_service_plan.enable.vm_type.value ))
+          persistent_disk_type: (( .properties.dev_plan_enable_service_plan.enable.persistent_disk_type.value ))
+          instances: 1
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.dev_plan_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+
+- name: syslog
+  type: selector
+  configurable: true
+  default: disable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: syslog_snippet
+      manifest: |
+        migration:
+          disabled: true
+  - name: enable
+    select_value: enable
+    named_manifests:
+    - name: syslog_snippet
+      manifest: |
+        enabled_for_service_instances: ((.properties.syslog.enable.syslog_enabled_for_service_instances.value))
+        address: ((.properties.syslog.enable.syslog_address.value ))
+        port: ((.properties.syslog.enable.syslog_port.value ))
+        transport: ((.properties.syslog.enable.syslog_protocol.value ))
+        custom_rule: |
+          # Write mark messages to keep the connection from being idle
+          global(processInternalMessages="on")
+          $ActionWriteAllMarkMessages     on
+          $RepeatedMsgReduction           off
+          $ModLoad                        immark
+          $MarkMessagePeriod              300
+        tls_enabled: (( .properties.syslog.enable.syslog_tls.value ))
+        permitted_peer: (( .properties.syslog.enable.syslog_permitted_peer.value ))
+        ca_cert: (( .properties.syslog.enable.syslog_ca_cert.value ))
+    property_blueprints:
+    - name: syslog_enabled_for_service_instances
+      type: boolean
+      configurable: true
+      optional: false
+      default: false
+    - name: syslog_address
+      type: network_address
+      configurable: true
+    - name: syslog_port
+      type: port
+      configurable: true
+    - name: syslog_protocol
+      type: dropdown_select
+      configurable: true
+      default: tcp
+      options:
+      - name: tcp
+        label: 'TCP'
+      - name: udp
+        label: 'UDP'
+      - name: relp
+        label: 'RELP'
+    - name: syslog_tls
+      type: boolean
+      configurable: true
+      default: false
+    - name: syslog_permitted_peer
+      type: string
+      configurable: true
+      optional: true
+    - name: syslog_ca_cert
+      type: ca_certificate
+      configurable: true
+      optional: true
+
+
+- name: plan1_enable_service_plan
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: plan1_snippet
+      manifest: ''
+  - name: enable
+    select_value: enable
+    property_blueprints:
+    - name: plan_name
+      type: string
+      default: extra-small
+      configurable: true
+      optional: false
+      constraints:
+      - must_match_regex: '^[^\s]*$'
+        error_message: 'cannot include spaces.'
+      - must_match_regex: '^[^!@#$%^&*()]*$'
+        error_message: 'cannot include symbols.'
+    - name: plan_description
+      type: text
+      default: 'Plan Description'
+      configurable: true
+      optional: false
+    - name: service_metrics
+      type: boolean
+      default: false
+      configurable: true
+      optional: true
+    - name: cf_service_access
+      type: dropdown_select
+      configurable: true
+      default: enable
+      options:
+      - name: enable
+        label: 'Enable Service Access'
+      - name: disable
+        label: 'Disable Service Access'
+      - name: manual
+        label: 'Leave Service Access Unchanged'
+    - name: service_instance_quota
+      type: integer
+      configurable: true
+      optional: false
+      default: 10
+    - name: max_servers_per_cluster
+      type: integer
+      configurable: true
+      optional: false
+      default: 32
+      constraints:
+        min: 4
+        max: 32
+    - name: default_num_servers
+      type: integer
+      configurable: true
+      optional: false
+      default: 4
+      constraints:
+        min: 4
+        max: 32
+    - name: service_instance_azs
+      type: service_network_az_multi_select
+      configurable: true
+      optional: false
+    - name: locator_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: locator_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    - name: server_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: server_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    named_manifests:
+    - name: plan1_snippet
+      manifest: |
+        name : (( .properties.plan1_enable_service_plan.enable.plan_name.value ))
+        plan_id: 8b4d5f78-6719-4ccc-8b70-59bd396c0991
+        description : (( .properties.plan1_enable_service_plan.enable.plan_description.value ))
+        cf_service_access: (( .properties.plan1_enable_service_plan.enable.cf_service_access.value ))
+        lifecycle_errands:
+          post_deploy:
+            name: prime-cluster-for-pcc
+            instances: [server/first]
+        metadata:
+          display_name: Caching
+          bullets: [gemfire]
+        update:
+          canaries: 1
+          max_in_flight: 32
+          canary_watch_time: 1000-600000
+          update_watch_time: 1000-600000
+          serial: true
+        quotas:
+          service_instance_limit: (( .properties.plan1_enable_service_plan.enable.service_instance_quota.value ))
+        properties:
+          max_servers_per_cluster: (( .properties.plan1_enable_service_plan.enable.max_servers_per_cluster.value ))
+          service_metrics : (( .properties.plan1_enable_service_plan.enable.service_metrics.value ))
+        instance_groups:
+        - name: locator
+          vm_type: (( .properties.plan1_enable_service_plan.enable.locator_vm_type.value ))
+          persistent_disk_type: (( .properties.plan1_enable_service_plan.enable.locator_persistent_disk_type.value ))
+          instances: 3
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan1_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+        - name: server
+          vm_type: (( .properties.plan1_enable_service_plan.enable.server_vm_type.value ))
+          persistent_disk_type: (( .properties.plan1_enable_service_plan.enable.server_persistent_disk_type.value ))
+          instances: (( .properties.plan1_enable_service_plan.enable.default_num_servers.value ))
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan1_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+
+- name: plan2_enable_service_plan
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: plan2_snippet
+      manifest: ''
+  - name: enable
+    select_value: enable
+    property_blueprints:
+    - name: plan_name
+      type: string
+      default: small
+      configurable: true
+      optional: false
+      constraints:
+      - must_match_regex: '^[^\s]*$'
+        error_message: 'cannot include spaces.'
+      - must_match_regex: '^[^!@#$%^&*()]*$'
+        error_message: 'cannot include symbols.'
+    - name: plan_description
+      type: text
+      default: 'Plan Description'
+      configurable: true
+      optional: false
+    - name: service_metrics
+      type: boolean
+      default: false
+      configurable: true
+      optional: true
+    - name: cf_service_access
+      type: dropdown_select
+      configurable: true
+      default: enable
+      options:
+      - name: enable
+        label: 'Enable Service Access'
+      - name: disable
+        label: 'Disable Service Access'
+      - name: manual
+        label: 'Leave Service Access Unchanged'
+    - name: service_instance_quota
+      type: integer
+      configurable: true
+      optional: false
+      default: 10
+    - name: max_servers_per_cluster
+      type: integer
+      configurable: true
+      optional: false
+      default: 32
+      constraints:
+        min: 4
+        max: 32
+    - name: default_num_servers
+      type: integer
+      configurable: true
+      optional: false
+      default: 4
+      constraints:
+        min: 4
+        max: 32
+    - name: service_instance_azs
+      type: service_network_az_multi_select
+      configurable: true
+      optional: false
+    - name: locator_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: locator_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    - name: server_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: server_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    named_manifests:
+    - name: plan2_snippet
+      manifest: |
+        name : (( .properties.plan2_enable_service_plan.enable.plan_name.value ))
+        plan_id: afd5b714-fd28-11e6-beff-731db4449825
+        description : (( .properties.plan2_enable_service_plan.enable.plan_description.value ))
+        cf_service_access: (( .properties.plan2_enable_service_plan.enable.cf_service_access.value ))
+        lifecycle_errands:
+          post_deploy:
+            name: prime-cluster-for-pcc
+            instances: [server/first]
+        metadata:
+          display_name: Caching
+          bullets: [gemfire]
+        update:
+          canaries: 1
+          max_in_flight: 32
+          canary_watch_time: 1000-600000
+          update_watch_time: 1000-600000
+          serial: true
+        quotas:
+          service_instance_limit: (( .properties.plan2_enable_service_plan.enable.service_instance_quota.value ))
+        properties:
+          max_servers_per_cluster: (( .properties.plan2_enable_service_plan.enable.max_servers_per_cluster.value ))
+          service_metrics : (( .properties.plan2_enable_service_plan.enable.service_metrics.value ))
+        instance_groups:
+        - name: locator
+          vm_type: (( .properties.plan2_enable_service_plan.enable.locator_vm_type.value ))
+          persistent_disk_type: (( .properties.plan2_enable_service_plan.enable.locator_persistent_disk_type.value ))
+          instances: 3
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan2_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+        - name: server
+          vm_type: (( .properties.plan2_enable_service_plan.enable.server_vm_type.value ))
+          persistent_disk_type: (( .properties.plan2_enable_service_plan.enable.server_persistent_disk_type.value ))
+          instances: (( .properties.plan2_enable_service_plan.enable.default_num_servers.value ))
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan2_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+
+- name: plan3_enable_service_plan
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: plan3_snippet
+      manifest: ''
+  - name: enable
+    select_value: enable
+    property_blueprints:
+    - name: plan_name
+      type: string
+      default: medium
+      configurable: true
+      optional: false
+      constraints:
+      - must_match_regex: '^[^\s]*$'
+        error_message: 'cannot include spaces.'
+      - must_match_regex: '^[^!@#$%^&*()]*$'
+        error_message: 'cannot include symbols.'
+    - name: plan_description
+      type: text
+      default: 'Plan Description'
+      configurable: true
+      optional: false
+    - name: service_metrics
+      type: boolean
+      default: false
+      configurable: true
+      optional: true
+    - name: cf_service_access
+      type: dropdown_select
+      configurable: true
+      default: enable
+      options:
+      - name: enable
+        label: 'Enable Service Access'
+      - name: disable
+        label: 'Disable Service Access'
+      - name: manual
+        label: 'Leave Service Access Unchanged'
+    - name: service_instance_quota
+      type: integer
+      configurable: true
+      optional: false
+      default: 10
+    - name: max_servers_per_cluster
+      type: integer
+      configurable: true
+      optional: false
+      default: 32
+      constraints:
+        min: 4
+        max: 32
+    - name: default_num_servers
+      type: integer
+      configurable: true
+      optional: false
+      default: 4
+      constraints:
+        min: 4
+        max: 32
+    - name: service_instance_azs
+      type: service_network_az_multi_select
+      configurable: true
+      optional: false
+    - name: locator_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: locator_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    - name: server_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: server_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    named_manifests:
+    - name: plan3_snippet
+      manifest: |
+        name : (( .properties.plan3_enable_service_plan.enable.plan_name.value ))
+        plan_id: cc3068be-fd28-11e6-a16f-7f26ae4015ff
+        description : (( .properties.plan3_enable_service_plan.enable.plan_description.value ))
+        cf_service_access: (( .properties.plan3_enable_service_plan.enable.cf_service_access.value ))
+        lifecycle_errands:
+          post_deploy:
+            name: prime-cluster-for-pcc
+            instances: [server/first]
+        metadata:
+          display_name: Caching
+          bullets: [gemfire]
+        update:
+          canaries: 1
+          max_in_flight: 32
+          canary_watch_time: 1000-600000
+          update_watch_time: 1000-600000
+          serial: true
+        quotas:
+          service_instance_limit: (( .properties.plan3_enable_service_plan.enable.service_instance_quota.value ))
+        properties:
+          max_servers_per_cluster: (( .properties.plan3_enable_service_plan.enable.max_servers_per_cluster.value ))
+          service_metrics : (( .properties.plan3_enable_service_plan.enable.service_metrics.value ))
+        instance_groups:
+        - name: locator
+          vm_type: (( .properties.plan3_enable_service_plan.enable.locator_vm_type.value ))
+          persistent_disk_type: (( .properties.plan3_enable_service_plan.enable.locator_persistent_disk_type.value ))
+          instances: 3
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan3_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+        - name: server
+          vm_type: (( .properties.plan3_enable_service_plan.enable.server_vm_type.value ))
+          persistent_disk_type: (( .properties.plan3_enable_service_plan.enable.server_persistent_disk_type.value ))
+          instances: (( .properties.plan3_enable_service_plan.enable.default_num_servers.value ))
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan3_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+
+- name: plan4_enable_service_plan
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: plan4_snippet
+      manifest: ''
+  - name: enable
+    select_value: enable
+    property_blueprints:
+    - name: plan_name
+      type: string
+      default: large
+      configurable: true
+      optional: false
+      constraints:
+      - must_match_regex: '^[^\s]*$'
+        error_message: 'cannot include spaces.'
+      - must_match_regex: '^[^!@#$%^&*()]*$'
+        error_message: 'cannot include symbols.'
+    - name: plan_description
+      type: text
+      default: 'Plan Description'
+      configurable: true
+      optional: false
+    - name: service_metrics
+      type: boolean
+      default: false
+      configurable: true
+      optional: true
+    - name: cf_service_access
+      type: dropdown_select
+      configurable: true
+      default: enable
+      options:
+      - name: enable
+        label: 'Enable Service Access'
+      - name: disable
+        label: 'Disable Service Access'
+      - name: manual
+        label: 'Leave Service Access Unchanged'
+    - name: service_instance_quota
+      type: integer
+      configurable: true
+      optional: false
+      default: 10
+    - name: max_servers_per_cluster
+      type: integer
+      configurable: true
+      optional: false
+      default: 32
+      constraints:
+        min: 4
+        max: 32
+    - name: default_num_servers
+      type: integer
+      configurable: true
+      optional: false
+      default: 4
+      constraints:
+        min: 4
+        max: 32
+    - name: service_instance_azs
+      type: service_network_az_multi_select
+      configurable: true
+      optional: false
+    - name: locator_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: locator_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    - name: server_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: server_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    named_manifests:
+    - name: plan4_snippet
+      manifest: |
+        name : (( .properties.plan4_enable_service_plan.enable.plan_name.value ))
+        plan_id: daf6f57a-fd28-11e6-b56b-77893f635286
+        description : (( .properties.plan4_enable_service_plan.enable.plan_description.value ))
+        cf_service_access: (( .properties.plan4_enable_service_plan.enable.cf_service_access.value ))
+        lifecycle_errands:
+          post_deploy:
+            name: prime-cluster-for-pcc
+            instances: [server/first]
+        metadata:
+          display_name: Caching
+          bullets: [gemfire]
+        update:
+          canaries: 1
+          max_in_flight: 32
+          canary_watch_time: 1000-600000
+          update_watch_time: 1000-600000
+          serial: true
+        quotas:
+          service_instance_limit: (( .properties.plan4_enable_service_plan.enable.service_instance_quota.value ))
+        properties:
+          max_servers_per_cluster: (( .properties.plan4_enable_service_plan.enable.max_servers_per_cluster.value ))
+          service_metrics : (( .properties.plan4_enable_service_plan.enable.service_metrics.value ))
+        instance_groups:
+        - name: locator
+          vm_type: (( .properties.plan4_enable_service_plan.enable.locator_vm_type.value ))
+          persistent_disk_type: (( .properties.plan4_enable_service_plan.enable.locator_persistent_disk_type.value ))
+          instances: 3
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan4_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+        - name: server
+          vm_type: (( .properties.plan4_enable_service_plan.enable.server_vm_type.value ))
+          persistent_disk_type: (( .properties.plan4_enable_service_plan.enable.server_persistent_disk_type.value ))
+          instances: (( .properties.plan4_enable_service_plan.enable.default_num_servers.value ))
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan4_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+
+- name: plan5_enable_service_plan
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: plan5_snippet
+      manifest: ''
+  - name: enable
+    select_value: enable
+    property_blueprints:
+    - name: plan_name
+      type: string
+      default: extra-large
+      configurable: true
+      optional: false
+      constraints:
+      - must_match_regex: '^[^\s]*$'
+        error_message: 'cannot include spaces.'
+      - must_match_regex: '^[^!@#$%^&*()]*$'
+        error_message: 'cannot include symbols.'
+    - name: plan_description
+      type: text
+      default: 'Plan Description'
+      configurable: true
+      optional: false
+    - name: service_metrics
+      type: boolean
+      default: false
+      configurable: true
+      optional: true
+    - name: cf_service_access
+      type: dropdown_select
+      configurable: true
+      default: enable
+      options:
+      - name: enable
+        label: 'Enable Service Access'
+      - name: disable
+        label: 'Disable Service Access'
+      - name: manual
+        label: 'Leave Service Access Unchanged'
+    - name: service_instance_quota
+      type: integer
+      configurable: true
+      optional: false
+      default: 10
+    - name: max_servers_per_cluster
+      type: integer
+      configurable: true
+      optional: false
+      default: 32
+      constraints:
+        min: 4
+        max: 32
+    - name: default_num_servers
+      type: integer
+      configurable: true
+      optional: false
+      default: 4
+      constraints:
+        min: 4
+        max: 32
+    - name: service_instance_azs
+      type: service_network_az_multi_select
+      configurable: true
+      optional: false
+    - name: locator_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: locator_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    - name: server_vm_type
+      type: vm_type_dropdown
+      configurable: true
+    - name: server_persistent_disk_type
+      type: disk_type_dropdown
+      configurable: true
+    named_manifests:
+    - name: plan5_snippet
+      manifest: |
+        name : (( .properties.plan5_enable_service_plan.enable.plan_name.value ))
+        plan_id: e653b64c-fd28-11e6-b423-13b8d5bfca36
+        description : (( .properties.plan5_enable_service_plan.enable.plan_description.value ))
+        cf_service_access: (( .properties.plan5_enable_service_plan.enable.cf_service_access.value ))
+        lifecycle_errands:
+          post_deploy:
+            name: prime-cluster-for-pcc
+            instances: [server/first]
+        metadata:
+          display_name: Caching
+          bullets: [gemfire]
+        update:
+          canaries: 1
+          max_in_flight: 32
+          canary_watch_time: 1000-600000
+          update_watch_time: 1000-600000
+          serial: true
+        quotas:
+          service_instance_limit: (( .properties.plan5_enable_service_plan.enable.service_instance_quota.value ))
+        properties:
+          max_servers_per_cluster: (( .properties.plan5_enable_service_plan.enable.max_servers_per_cluster.value ))
+          service_metrics : (( .properties.plan5_enable_service_plan.enable.service_metrics.value ))
+        instance_groups:
+        - name: locator
+          vm_type: (( .properties.plan5_enable_service_plan.enable.locator_vm_type.value ))
+          persistent_disk_type: (( .properties.plan5_enable_service_plan.enable.locator_persistent_disk_type.value ))
+          instances: 3
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan5_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+        - name: server
+          vm_type: (( .properties.plan5_enable_service_plan.enable.server_vm_type.value ))
+          persistent_disk_type: (( .properties.plan5_enable_service_plan.enable.server_persistent_disk_type.value ))
+          instances: (( .properties.plan5_enable_service_plan.enable.default_num_servers.value ))
+          networks: [ (( $self.service_network )) ]
+          azs: (( .properties.plan5_enable_service_plan.enable.service_instance_azs.value ))
+          vm_extensions: (( .properties.vm_extensions.value ))
+
+form_types:
+- name: settings
+  label: Settings
+  description: Configure properties for Pivotal Cloud Cache tile
+  property_inputs:
+  - reference: .properties.errand_plan
+    label: Plan to use for smoke test
+    description: The selected plan will be used to run a smoke test to verify the tile works correctly after installation. You must make sure this plan is enabled, or the errand will fail.
+    selector_property_inputs:
+
+    - reference: .properties.errand_plan.plan1
+      label: Plan 1
+
+    - reference: .properties.errand_plan.plan2
+      label: Plan 2
+
+    - reference: .properties.errand_plan.plan3
+      label: Plan 3
+
+    - reference: .properties.errand_plan.plan4
+      label: Plan 4
+
+    - reference: .properties.errand_plan.plan5
+      label: Plan 5
+
+  - reference: .properties.vm_extensions
+    label: VM options
+    description: "Please refer to the Ops Manager documentation for IaaS specific behavior. Log forwarding and backups may require internet access."
+  - reference: .properties.default_distributed_system_id
+    label: Default distributed system id
+    description: "When a service instance is created without a custom distributed system id, this value will be used."
+
+- name: caching-plan1
+  label: Plan 1
+  description: Configure service properties for Plan 1
+  markdown: |
+    Use this page to configure how Plan 1 appears to end-users and how each Service Instance behaves.
+  property_inputs:
+  - reference: ".properties.plan1_enable_service_plan"
+    label: Service Plan Access
+    description: Controls whether this service plan is added to the service catalog
+    selector_property_inputs:
+    -  reference: ".properties.plan1_enable_service_plan.disable"
+       label: "Plan Disabled"
+    -  reference: ".properties.plan1_enable_service_plan.enable"
+       label: "Plan Enabled"
+       property_inputs:
+       - reference: ".properties.plan1_enable_service_plan.enable.plan_name"
+         label: Plan Name
+         description: Plan name which shows up on PCF marketplace
+       - reference: ".properties.plan1_enable_service_plan.enable.plan_description"
+         label: Plan Description
+       - reference: ".properties.plan1_enable_service_plan.enable.service_metrics"
+         label: Enable metrics for service instances
+       - reference: ".properties.plan1_enable_service_plan.enable.cf_service_access"
+         label: CF Service Access
+         description: Controls whether this service plan is displayed on marketplace
+         dropdown_select_property_inputs:
+         - reference: '.properties.plan1_enable_service_plan.enable.cf_service_access.enable'
+         - reference: '.properties.plan1_enable_service_plan.enable.cf_service_access.disable'
+         - reference: '.properties.plan1_enable_service_plan.enable.cf_service_access.manual'
+       - reference: ".properties.plan1_enable_service_plan.enable.service_instance_quota"
+         label: Maximum service instances
+         description: Maximum allowed Pivotal Cloud Cache service instances
+       - reference: ".properties.plan1_enable_service_plan.enable.max_servers_per_cluster"
+         label: Maximum servers per cluster
+         description: Maximum allowed servers per service instance
+       - reference: ".properties.plan1_enable_service_plan.enable.default_num_servers"
+         label: Default Number of Servers
+         description: Default number of server instances to spin up as part this plan.
+           Can be overriden by developer using arbitrary parameter "num_servers". Needs to be
+           less than "Maximum allowed servers per service instance"
+       - reference: ".properties.plan1_enable_service_plan.enable.service_instance_azs"
+         label: Availability zones for service instances
+       - reference: ".properties.plan1_enable_service_plan.enable.locator_vm_type"
+         label: VM type for the Locator VMs
+       - reference: ".properties.plan1_enable_service_plan.enable.locator_persistent_disk_type"
+         label: Persistent disk type for the Locator VMs
+       - reference: ".properties.plan1_enable_service_plan.enable.server_vm_type"
+         label: VM type for the Server VMs
+       - reference: ".properties.plan1_enable_service_plan.enable.server_persistent_disk_type"
+         label: Persistent disk type for the Server VMs
+
+- name: caching-plan2
+  label: Plan 2
+  description: Configure service properties for Plan 2
+  markdown: |
+    Use this page to configure how Plan 2 appears to end-users and how each Service Instance behaves.
+  property_inputs:
+  - reference: ".properties.plan2_enable_service_plan"
+    label: Service Plan Access
+    description: Controls whether this service plan is added to the service catalog
+    selector_property_inputs:
+    -  reference: ".properties.plan2_enable_service_plan.disable"
+       label: "Plan Disabled"
+    -  reference: ".properties.plan2_enable_service_plan.enable"
+       label: "Plan Enabled"
+       property_inputs:
+       - reference: ".properties.plan2_enable_service_plan.enable.plan_name"
+         label: Plan Name
+         description: Plan name which shows up on PCF marketplace
+       - reference: ".properties.plan2_enable_service_plan.enable.plan_description"
+         label: Plan Description
+       - reference: ".properties.plan2_enable_service_plan.enable.service_metrics"
+         label: Enable metrics for service instances
+       - reference: ".properties.plan2_enable_service_plan.enable.cf_service_access"
+         label: CF Service Access
+         description: Controls whether this service plan is displayed on marketplace
+         dropdown_select_property_inputs:
+         - reference: '.properties.plan2_enable_service_plan.enable.cf_service_access.enable'
+         - reference: '.properties.plan2_enable_service_plan.enable.cf_service_access.disable'
+         - reference: '.properties.plan2_enable_service_plan.enable.cf_service_access.manual'
+       - reference: ".properties.plan2_enable_service_plan.enable.service_instance_quota"
+         label: Maximum service instances
+         description: Maximum allowed Pivotal Cloud Cache service instances
+       - reference: ".properties.plan2_enable_service_plan.enable.max_servers_per_cluster"
+         label: Maximum servers per cluster
+         description: Maximum allowed servers per service instance
+       - reference: ".properties.plan2_enable_service_plan.enable.default_num_servers"
+         label: Default Number of Servers
+         description: Default number of server instances to spin up as part this plan.
+           Can be overriden by developer using arbitrary parameter "num_servers". Needs to be
+           less than "Maximum allowed servers per service instance"
+       - reference: ".properties.plan2_enable_service_plan.enable.service_instance_azs"
+         label: Availability zones for service instances
+       - reference: ".properties.plan2_enable_service_plan.enable.locator_vm_type"
+         label: VM type for the Locator VMs
+       - reference: ".properties.plan2_enable_service_plan.enable.locator_persistent_disk_type"
+         label: Persistent disk type for the Locator VMs
+       - reference: ".properties.plan2_enable_service_plan.enable.server_vm_type"
+         label: VM type for the Server VMs
+       - reference: ".properties.plan2_enable_service_plan.enable.server_persistent_disk_type"
+         label: Persistent disk type for the Server VMs
+
+- name: caching-plan3
+  label: Plan 3
+  description: Configure service properties for Plan 3
+  markdown: |
+    Use this page to configure how Plan 3 appears to end-users and how each Service Instance behaves.
+  property_inputs:
+  - reference: ".properties.plan3_enable_service_plan"
+    label: Service Plan Access
+    description: Controls whether this service plan is added to the service catalog
+    selector_property_inputs:
+    -  reference: ".properties.plan3_enable_service_plan.disable"
+       label: "Plan Disabled"
+    -  reference: ".properties.plan3_enable_service_plan.enable"
+       label: "Plan Enabled"
+       property_inputs:
+       - reference: ".properties.plan3_enable_service_plan.enable.plan_name"
+         label: Plan Name
+         description: Plan name which shows up on PCF marketplace
+       - reference: ".properties.plan3_enable_service_plan.enable.plan_description"
+         label: Plan Description
+       - reference: ".properties.plan3_enable_service_plan.enable.service_metrics"
+         label: Enable metrics for service instances
+       - reference: ".properties.plan3_enable_service_plan.enable.cf_service_access"
+         label: CF Service Access
+         description: Controls whether this service plan is displayed on marketplace
+         dropdown_select_property_inputs:
+         - reference: '.properties.plan3_enable_service_plan.enable.cf_service_access.enable'
+         - reference: '.properties.plan3_enable_service_plan.enable.cf_service_access.disable'
+         - reference: '.properties.plan3_enable_service_plan.enable.cf_service_access.manual'
+       - reference: ".properties.plan3_enable_service_plan.enable.service_instance_quota"
+         label: Maximum service instances
+         description: Maximum allowed Pivotal Cloud Cache service instances
+       - reference: ".properties.plan3_enable_service_plan.enable.max_servers_per_cluster"
+         label: Maximum servers per cluster
+         description: Maximum allowed servers per service instance
+       - reference: ".properties.plan3_enable_service_plan.enable.default_num_servers"
+         label: Default Number of Servers
+         description: Default number of server instances to spin up as part this plan.
+           Can be overriden by developer using arbitrary parameter "num_servers". Needs to be
+           less than "Maximum allowed servers per service instance"
+       - reference: ".properties.plan3_enable_service_plan.enable.service_instance_azs"
+         label: Availability zones for service instances
+       - reference: ".properties.plan3_enable_service_plan.enable.locator_vm_type"
+         label: VM type for the Locator VMs
+       - reference: ".properties.plan3_enable_service_plan.enable.locator_persistent_disk_type"
+         label: Persistent disk type for the Locator VMs
+       - reference: ".properties.plan3_enable_service_plan.enable.server_vm_type"
+         label: VM type for the Server VMs
+       - reference: ".properties.plan3_enable_service_plan.enable.server_persistent_disk_type"
+         label: Persistent disk type for the Server VMs
+
+- name: caching-plan4
+  label: Plan 4
+  description: Configure service properties for Plan 4
+  markdown: |
+    Use this page to configure how Plan 4 appears to end-users and how each Service Instance behaves.
+  property_inputs:
+  - reference: ".properties.plan4_enable_service_plan"
+    label: Service Plan Access
+    description: Controls whether this service plan is added to the service catalog
+    selector_property_inputs:
+    -  reference: ".properties.plan4_enable_service_plan.disable"
+       label: "Plan Disabled"
+    -  reference: ".properties.plan4_enable_service_plan.enable"
+       label: "Plan Enabled"
+       property_inputs:
+       - reference: ".properties.plan4_enable_service_plan.enable.plan_name"
+         label: Plan Name
+         description: Plan name which shows up on PCF marketplace
+       - reference: ".properties.plan4_enable_service_plan.enable.plan_description"
+         label: Plan Description
+       - reference: ".properties.plan4_enable_service_plan.enable.service_metrics"
+         label: Enable metrics for service instances
+       - reference: ".properties.plan4_enable_service_plan.enable.cf_service_access"
+         label: CF Service Access
+         description: Controls whether this service plan is displayed on marketplace
+         dropdown_select_property_inputs:
+         - reference: '.properties.plan4_enable_service_plan.enable.cf_service_access.enable'
+         - reference: '.properties.plan4_enable_service_plan.enable.cf_service_access.disable'
+         - reference: '.properties.plan4_enable_service_plan.enable.cf_service_access.manual'
+       - reference: ".properties.plan4_enable_service_plan.enable.service_instance_quota"
+         label: Maximum service instances
+         description: Maximum allowed Pivotal Cloud Cache service instances
+       - reference: ".properties.plan4_enable_service_plan.enable.max_servers_per_cluster"
+         label: Maximum servers per cluster
+         description: Maximum allowed servers per service instance
+       - reference: ".properties.plan4_enable_service_plan.enable.default_num_servers"
+         label: Default Number of Servers
+         description: Default number of server instances to spin up as part this plan.
+           Can be overriden by developer using arbitrary parameter "num_servers". Needs to be
+           less than "Maximum allowed servers per service instance"
+       - reference: ".properties.plan4_enable_service_plan.enable.service_instance_azs"
+         label: Availability zones for service instances
+       - reference: ".properties.plan4_enable_service_plan.enable.locator_vm_type"
+         label: VM type for the Locator VMs
+       - reference: ".properties.plan4_enable_service_plan.enable.locator_persistent_disk_type"
+         label: Persistent disk type for the Locator VMs
+       - reference: ".properties.plan4_enable_service_plan.enable.server_vm_type"
+         label: VM type for the Server VMs
+       - reference: ".properties.plan4_enable_service_plan.enable.server_persistent_disk_type"
+         label: Persistent disk type for the Server VMs
+
+- name: caching-plan5
+  label: Plan 5
+  description: Configure service properties for Plan 5
+  markdown: |
+    Use this page to configure how Plan 5 appears to end-users and how each Service Instance behaves.
+  property_inputs:
+  - reference: ".properties.plan5_enable_service_plan"
+    label: Service Plan Access
+    description: Controls whether this service plan is added to the service catalog
+    selector_property_inputs:
+    -  reference: ".properties.plan5_enable_service_plan.disable"
+       label: "Plan Disabled"
+    -  reference: ".properties.plan5_enable_service_plan.enable"
+       label: "Plan Enabled"
+       property_inputs:
+       - reference: ".properties.plan5_enable_service_plan.enable.plan_name"
+         label: Plan Name
+         description: Plan name which shows up on PCF marketplace
+       - reference: ".properties.plan5_enable_service_plan.enable.plan_description"
+         label: Plan Description
+       - reference: ".properties.plan5_enable_service_plan.enable.service_metrics"
+         label: Enable metrics for service instances
+       - reference: ".properties.plan5_enable_service_plan.enable.cf_service_access"
+         label: CF Service Access
+         description: Controls whether this service plan is displayed on marketplace
+         dropdown_select_property_inputs:
+         - reference: '.properties.plan5_enable_service_plan.enable.cf_service_access.enable'
+         - reference: '.properties.plan5_enable_service_plan.enable.cf_service_access.disable'
+         - reference: '.properties.plan5_enable_service_plan.enable.cf_service_access.manual'
+       - reference: ".properties.plan5_enable_service_plan.enable.service_instance_quota"
+         label: Maximum service instances
+         description: Maximum allowed Pivotal Cloud Cache service instances
+       - reference: ".properties.plan5_enable_service_plan.enable.max_servers_per_cluster"
+         label: Maximum servers per cluster
+         description: Maximum allowed servers per service instance
+       - reference: ".properties.plan5_enable_service_plan.enable.default_num_servers"
+         label: Default Number of Servers
+         description: Default number of server instances to spin up as part this plan.
+           Can be overriden by developer using arbitrary parameter "num_servers". Needs to be
+           less than "Maximum allowed servers per service instance"
+       - reference: ".properties.plan5_enable_service_plan.enable.service_instance_azs"
+         label: Availability zones for service instances
+       - reference: ".properties.plan5_enable_service_plan.enable.locator_vm_type"
+         label: VM type for the Locator VMs
+       - reference: ".properties.plan5_enable_service_plan.enable.locator_persistent_disk_type"
+         label: Persistent disk type for the Locator VMs
+       - reference: ".properties.plan5_enable_service_plan.enable.server_vm_type"
+         label: VM type for the Server VMs
+       - reference: ".properties.plan5_enable_service_plan.enable.server_persistent_disk_type"
+         label: Persistent disk type for the Server VMs
+
+
+- name: dev_plan
+  label: "Dev Plan"
+  description: Plan for test development
+  property_inputs:
+  - reference: ".properties.dev_plan_enable_service_plan"
+    label: Plan for test development
+    selector_property_inputs:
+    -  reference: ".properties.dev_plan_enable_service_plan.disable"
+       label: "Plan Disabled"
+    -  reference: ".properties.dev_plan_enable_service_plan.enable"
+       label: "Plan Enabled"
+       property_inputs:
+       - reference: ".properties.dev_plan_enable_service_plan.enable.plan_name"
+         label: Plan Name
+         description: Plan name which shows up on PCF marketplace
+       - reference: ".properties.dev_plan_enable_service_plan.enable.plan_description"
+         label: Plan Description
+       - reference: ".properties.dev_plan_enable_service_plan.enable.service_metrics"
+         label: Enable metrics for service instances
+       - reference: ".properties.dev_plan_enable_service_plan.enable.cf_service_access"
+         label: CF Service Access
+         description: Controls whether this service plan is displayed on marketplace
+         dropdown_select_property_inputs:
+         - reference: '.properties.dev_plan_enable_service_plan.enable.cf_service_access.enable'
+         - reference: '.properties.dev_plan_enable_service_plan.enable.cf_service_access.disable'
+         - reference: '.properties.dev_plan_enable_service_plan.enable.cf_service_access.manual'
+       - reference: ".properties.dev_plan_enable_service_plan.enable.service_instance_quota"
+         label: Maximum service instances
+         description: Maximum allowed Pivotal Cloud Cache service instances
+       - reference: ".properties.dev_plan_enable_service_plan.enable.service_instance_azs"
+         label: Availability zones for service instances
+       - reference: ".properties.dev_plan_enable_service_plan.enable.vm_type"
+         label: VM type for the locator-server VM
+       - reference: ".properties.dev_plan_enable_service_plan.enable.persistent_disk_type"
+         label: Persistent disk type for the locator-server VM
+
+- name: syslog
+  label: Syslog
+  description: Configure properties for Pivotal Cloud Cache log forwarding
+  property_inputs:
+  - reference: .properties.syslog
+    label: 'Do you want to configure Syslog for Pivotal Cloud Cache?'
+    selector_property_inputs:
+    - reference: .properties.syslog.disable
+      label: 'No'
+    - reference: .properties.syslog.enable
+      label: 'Yes'
+      property_inputs:
+      - reference: .properties.syslog.enable.syslog_address
+        label: 'Address'
+      - reference: .properties.syslog.enable.syslog_port
+        label: 'Port'
+      - reference: .properties.syslog.enable.syslog_protocol
+        label: 'Transport Protocol'
+      - reference: .properties.syslog.enable.syslog_enabled_for_service_instances
+        label: 'Send service instance logs to external syslog'
+        description: 'The service instance logs will be sent to the host and port configured above'
+      - reference: .properties.syslog.enable.syslog_tls
+        label: 'Enable TLS'
+      - reference: .properties.syslog.enable.syslog_permitted_peer
+        label: 'Permitted Peer'
+        description: 'When TLS is enabled, enter the accepted fingerprint [SHA1] or name of remote peer, e.g. *.example.com'
+      - reference: .properties.syslog.enable.syslog_ca_cert
+        label: 'SSL Certificate'
+        description: 'Only for when TLS is enabled'
+job_types:
+
+- name: cloudcache-broker
+  resource_label: Pivotal Cloud Cache Service Broker
+  templates:
+  - name: service-adapter
+    release: cloudcache-service-adapter
+    consumes: |
+      nats: { from: nats, deployment: (( ..cf.deployment_name )) }
+      consul_common: { from: consul_common_link, deployment: (( ..cf.deployment_name )) }
+      consul_client: { from: consul_client_link, deployment: (( ..cf.deployment_name )) }
+  - name: broker
+    release: on-demand-service-broker
+  - name: syslog_forwarder
+    release: syslog-migration
+  - name: service-metrics
+    release: service-metrics
+  - name: metron_agent
+    release: loggregator
+  - name: service-metrics-adapter
+    release: on-demand-service-broker
+  - name: consul_agent
+    release: consul
+    consumes: |
+      consul_common: { from: consul_common_link, deployment: (( ..cf.deployment_name )) }
+      consul_client: { from: consul_client_link, deployment: (( ..cf.deployment_name )) }
+      consul_server: { from: consul_server_link, deployment: (( ..cf.deployment_name )) }
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: true
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    configurable: true
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    configurable: true
+    default: 1024
+    constraints:
+      min: 1024
+  - name: cpu
+    type: integer
+    configurable: true
+    default: 1
+  instance_definition:
+    default: 1
+    configurable: false
+  property_blueprints:
+  - name: broker_credentials
+    type: simple_credentials
+  manifest: |
+    feature_flags:
+      username_guids: true
+      wan_enabled: true
+      deploy_jars: true
+      bpm_enabled: true
+    default_distributed_system_id: (( .properties.default_distributed_system_id.value ))
+    port: 8080
+    username: (( .cloudcache-broker.broker_credentials.identity ))
+    password: (( .cloudcache-broker.broker_credentials.password ))
+    disable_ssl_cert_verification: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    cf:
+      system_domain: (( $runtime.system_domain ))
+      url: (( $runtime.system_api_url ))
+      root_ca_cert: (( $director.ca_public_key ))
+      authentication:
+        url: (( $runtime.uaa_url ))
+        client_credentials:
+          client_id: (( ..cf.uaa.cloudcache_broker_client_credentials.identity ))
+          secret: (( ..cf.uaa.cloudcache_broker_client_credentials.password ))
+    bosh:
+      url: https://(( $director.hostname )):25555
+      root_ca_cert: (( $director.ca_public_key ))
+      authentication:
+        uaa:
+          url: https://(( $director.hostname )):8443
+          client_id: (( $self.uaa_client_name ))
+          client_secret: (( $self.uaa_client_secret ))
+    loggregator:
+      tls:
+        ca_cert: (( $ops_manager.ca_certificate ))
+        metron:
+          key: (( ..cf.doppler.metron_tls_cert.private_key_pem ))
+          cert: (( ..cf.doppler.metron_tls_cert.cert_pem ))
+    cf_deployment_name: (( ..cf.deployment_name ))
+    service_adapter:
+      path: /var/vcap/jobs/service-adapter/bin/service-adapter
+    service_deployment:
+      stemcell:
+        os: ubuntu-trusty
+        version: (( $self.stemcell_version ))
+      releases:
+      - name: gemfire
+        version: "1.3.1-build.12"
+        jobs: [gemfire-locator, gemfire-server, prime-cluster-for-pcc]
+      - name: routing
+        version: "0.171.0"
+        jobs: [route_registrar]
+      - name: syslog-migration
+        version: "11.1.0"
+        jobs: [syslog_forwarder]
+      - name: cloudcache-metrics
+        version: "1.3.1-build.12"
+        jobs: [service-metrics-adapter]
+      - name: service-metrics
+        version: "1.5.12"
+        jobs: [service-metrics]
+      - name: loggregator
+        version: "100"
+        jobs: [metron_agent]
+      - name: consul
+        version: "191"
+        jobs: [consul_agent]
+      - name: bpm
+        version: "0.2.0"
+        jobs: [gemfire-locator, gemfire-server]
+    service_catalog:
+      id: 3edcf74e-bb5a-46d0-822f-78efd5f3279e
+      service_name: p-cloudcache
+      service_description: &description Pivotal Cloud Cache offers the ability to deploy a GemFire cluster as a service in Pivotal Cloud Foundry.
+      bindable: true
+      plan_updatable: false
+      metadata:
+        display_name: &display-name Pivotal Cloud Cache
+        image_url: "data:image/png;base64,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"
+        long_description: *description
+        provider_display_name: *display-name
+        documentation_url: "http://p-cloudcache-docs-staging.cfapps.io/p-cloud-cache/index.html"
+        # support_url: <support url>
+      global_properties:
+        service_instance_limit: 50
+      tags: [gemfire, cloudcache, database, pivotal]
+      plans:
+      - (( .properties.plan1_enable_service_plan.selected_option.parsed_manifest(plan1_snippet) ))
+      - (( .properties.plan2_enable_service_plan.selected_option.parsed_manifest(plan2_snippet) ))
+      - (( .properties.plan3_enable_service_plan.selected_option.parsed_manifest(plan3_snippet) ))
+      - (( .properties.plan4_enable_service_plan.selected_option.parsed_manifest(plan4_snippet) ))
+      - (( .properties.plan5_enable_service_plan.selected_option.parsed_manifest(plan5_snippet) ))
+      - (( .properties.dev_plan_enable_service_plan.selected_option.parsed_manifest(dev_plan_snippet) ))
+    syslog: (( .properties.syslog.selected_option.parsed_manifest(syslog_snippet) ))
+    service_metrics:
+      origin: p.cloudcache
+      monit_dependencies: [broker]
+    metron_agent:
+      deployment: cloudcache-service-broker
+
+
+- name: register-broker
+  <<: *errand_defaults
+  run_post_deploy_errand_default: true
+  resource_label: Register broker
+  templates:
+  - name: register-broker
+    release: on-demand-service-broker
+
+- name: smoke-tests
+  <<: *errand_defaults
+  run_post_deploy_errand_default: true
+  resource_label: Smoke test
+  templates:
+  - name: smoke-tests
+    release: cloudcache-service-adapter
+
+- name: upgrade-all-service-instances
+  <<: *errand_defaults
+  run_post_deploy_errand_default: true
+  resource_label: Upgrade all service instances
+  templates:
+  - name: upgrade-all-service-instances
+    release: on-demand-service-broker
+
+- name: delete-all-service-instances-and-deregister-broker
+  <<: *errand_defaults
+  resource_label: Delete all service instances and deregister broker
+  templates:
+  - name: delete-all-service-instances-and-deregister-broker
+    release: on-demand-service-broker

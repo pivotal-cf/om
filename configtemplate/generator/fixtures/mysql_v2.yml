@@ -1,0 +1,2019 @@
+description: MySQL for Pivotal Cloud Foundry v2
+form_types:
+- description: Use this page to configure how Plan 1 appears to end-users and how
+    each Service Instance behaves.
+  label: Plan 1
+  name: plan-1
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan1_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan1_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: Check this box to deploy a second MySQL server as a standby replica.
+          This can be used to increase uptime and availability of the service offering.
+        label: Multi-node deployment
+        reference: .properties.plan1_selector.active.multi_node_deployment
+      - description: Enable or disable access to the plan for developers in all organizations
+          in your PCF Foundation, or manually control access to the plan.
+        label: Service Plan Access
+        reference: .properties.plan1_selector.active.access_dropdown
+      - description: The name that appears in the PCF marketplace for this plan.
+        label: Plan Name
+        reference: .properties.plan1_selector.active.name
+      - description: The description that should appear in the PCF marketplace for
+          this plan.
+        label: Plan Description
+        reference: .properties.plan1_selector.active.description
+      - description: Configure the maximum number of service instances of this plan
+          that can be created. If not set, the global quota will act as the plan quota.
+          If both the global quota and plan quota are set, the lower of the two will
+          take effect for the plan.
+        label: Plan Quota
+        reference: .properties.plan1_selector.active.instance_limit
+      - description: VM type for the MySQL server
+        label: MySQL VM Type
+        reference: .properties.plan1_selector.active.vm_type
+      - description: The amount of persistent disk for the MySQL VM
+        label: MySQL Persistent Disk
+        reference: .properties.plan1_selector.active.disk_size
+      - description: If you opted to make the plan a "Multi-node deployment", you
+          should choose two zones so that the two MySQL servers will be deployed in
+          separate zones.
+        label: MySQL Availability Zone(s)
+        reference: .properties.plan1_selector.active.az_multi_select
+      reference: .properties.plan1_selector.active
+- description: Use this page to configure how Plan 2 appears to end-users and how
+    each Service Instance behaves.
+  label: Plan 2
+  name: plan-2
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan2_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan2_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: Check this box to deploy a second MySQL server as a standby replica.
+          This can be used to increase uptime and availability of the service offering.
+        label: Multi-node deployment
+        reference: .properties.plan2_selector.active.multi_node_deployment
+      - description: Enable or disable access to the plan for developers in all organizations
+          in your PCF Foundation, or manually control access to the plan.
+        label: Service Plan Access
+        reference: .properties.plan2_selector.active.access_dropdown
+      - description: The name that appears in the PCF marketplace for this plan.
+        label: Plan Name
+        reference: .properties.plan2_selector.active.name
+      - description: The description that should appear in the PCF marketplace for
+          this plan.
+        label: Plan Description
+        reference: .properties.plan2_selector.active.description
+      - description: Configure the maximum number of service instances of this plan
+          that can be created. If not set, the global quota will act as the plan quota.
+          If both the global quota and plan quota are set, the lower of the two will
+          take effect for the plan.
+        label: Plan Quota
+        reference: .properties.plan2_selector.active.instance_limit
+      - description: VM type for the MySQL server
+        label: MySQL VM Type
+        reference: .properties.plan2_selector.active.vm_type
+      - description: The amount of persistent disk for the MySQL VM
+        label: MySQL Persistent Disk
+        reference: .properties.plan2_selector.active.disk_size
+      - description: If you opted to make the plan a "Multi-node deployment", you
+          should choose two zones so that the two MySQL servers will be deployed in
+          separate zones.
+        label: MySQL Availability Zone(s)
+        reference: .properties.plan2_selector.active.az_multi_select
+      reference: .properties.plan2_selector.active
+- description: Use this page to configure how Plan 3 appears to end-users and how
+    each Service Instance behaves.
+  label: Plan 3
+  name: plan-3
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan3_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan3_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: Check this box to deploy a second MySQL server as a standby replica.
+          This can be used to increase uptime and availability of the service offering.
+        label: Multi-node deployment
+        reference: .properties.plan3_selector.active.multi_node_deployment
+      - description: Enable or disable access to the plan for developers in all organizations
+          in your PCF Foundation, or manually control access to the plan.
+        label: Service Plan Access
+        reference: .properties.plan3_selector.active.access_dropdown
+      - description: The name that appears in the PCF marketplace for this plan.
+        label: Plan Name
+        reference: .properties.plan3_selector.active.name
+      - description: The description that should appear in the PCF marketplace for
+          this plan.
+        label: Plan Description
+        reference: .properties.plan3_selector.active.description
+      - description: Configure the maximum number of service instances of this plan
+          that can be created. If not set, the global quota will act as the plan quota.
+          If both the global quota and plan quota are set, the lower of the two will
+          take effect for the plan.
+        label: Plan Quota
+        reference: .properties.plan3_selector.active.instance_limit
+      - description: VM type for the MySQL server
+        label: MySQL VM Type
+        reference: .properties.plan3_selector.active.vm_type
+      - description: The amount of persistent disk for the MySQL VM
+        label: MySQL Persistent Disk
+        reference: .properties.plan3_selector.active.disk_size
+      - description: If you opted to make the plan a "Multi-node deployment", you
+          should choose two zones so that the two MySQL servers will be deployed in
+          separate zones.
+        label: MySQL Availability Zone(s)
+        reference: .properties.plan3_selector.active.az_multi_select
+      reference: .properties.plan3_selector.active
+- description: Use this page to configure how Plan 4 appears to end-users and how
+    each Service Instance behaves.
+  label: Plan 4
+  name: plan-4
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan4_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan4_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: Check this box to deploy a second MySQL server as a standby replica.
+          This can be used to increase uptime and availability of the service offering.
+        label: Multi-node deployment
+        reference: .properties.plan4_selector.active.multi_node_deployment
+      - description: Enable or disable access to the plan for developers in all organizations
+          in your PCF Foundation, or manually control access to the plan.
+        label: Service Plan Access
+        reference: .properties.plan4_selector.active.access_dropdown
+      - description: The name that appears in the PCF marketplace for this plan.
+        label: Plan Name
+        reference: .properties.plan4_selector.active.name
+      - description: The description that should appear in the PCF marketplace for
+          this plan.
+        label: Plan Description
+        reference: .properties.plan4_selector.active.description
+      - description: Configure the maximum number of service instances of this plan
+          that can be created. If not set, the global quota will act as the plan quota.
+          If both the global quota and plan quota are set, the lower of the two will
+          take effect for the plan.
+        label: Plan Quota
+        reference: .properties.plan4_selector.active.instance_limit
+      - description: VM type for the MySQL server
+        label: MySQL VM Type
+        reference: .properties.plan4_selector.active.vm_type
+      - description: The amount of persistent disk for the MySQL VM
+        label: MySQL Persistent Disk
+        reference: .properties.plan4_selector.active.disk_size
+      - description: If you opted to make the plan a "Multi-node deployment", you
+          should choose two zones so that the two MySQL servers will be deployed in
+          separate zon
+        label: MySQL Availability Zone(s)
+        reference: .properties.plan4_selector.active.az_multi_select
+      reference: .properties.plan4_selector.active
+- description: Use this page to configure how Plan 5 appears to end-users and how
+    each Service Instance behaves.
+  label: Plan 5
+  name: plan-5
+  property_inputs:
+  - label: Plan
+    reference: .properties.plan5_selector
+    selector_property_inputs:
+    - label: Inactive
+      reference: .properties.plan5_selector.inactive
+    - label: Active
+      property_inputs:
+      - description: Check this box to deploy a second MySQL server as a standby replica.
+          This can be used to increase uptime and availability of the service offering.
+        label: Multi-node deployment
+        reference: .properties.plan5_selector.active.multi_node_deployment
+      - description: Enable or disable access to the plan for developers in all organizations
+          in your PCF Foundation, or manually control access to the plan.
+        label: Service Plan Access
+        reference: .properties.plan5_selector.active.access_dropdown
+      - description: The name that appears in the PCF marketplace for this plan.
+        label: Plan Name
+        reference: .properties.plan5_selector.active.name
+      - description: The description that should appear in the PCF marketplace for
+          this plan.
+        label: Plan Description
+        reference: .properties.plan5_selector.active.description
+      - description: Configure the maximum number of service instances of this plan
+          that can be created. If not set, the global quota will act as the plan quota.
+          If both the global quota and plan quota are set, the lower of the two will
+          take effect for the plan.
+        label: Plan Quota
+        reference: .properties.plan5_selector.active.instance_limit
+      - description: VM type for the MySQL server
+        label: MySQL VM Type
+        reference: .properties.plan5_selector.active.vm_type
+      - description: The amount of persistent disk for the MySQL VM
+        label: MySQL Persistent Disk
+        reference: .properties.plan5_selector.active.disk_size
+      - description: If you opted to make the plan a "Multi-node deployment", you
+          may choose two zones so that the two MySQL servers will be deployed in separate
+          zones.
+        label: MySQL Availability Zone(s)
+        reference: .properties.plan5_selector.active.az_multi_select
+      reference: .properties.plan5_selector.active
+- description: Settings that will be applied to all service instances
+  label: Settings
+  name: settings
+  property_inputs:
+  - description: Allow outbound internet access from service instances (IaaS-dependent).
+      Please refer to the Ops Manager documentation for IaaS specific behavior. Log
+      forwarding and backups may require internet access.
+    label: Assign Public IP Addresses for all Service VMs
+    reference: .properties.vm_extensions
+  - description: Configure the maximum number of service instances that can be created
+      across all plans.
+    label: Maximum service instances
+    reference: .properties.global_service_instance_limit
+- description: Use this page to configure settings on the MySQL servers.
+  label: Mysql Configuration
+  name: mysql_config
+  property_inputs:
+  - description: 'When checked, table names are stored as given but compared in lowercase.
+      For more information read: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_lower_case_table_names'
+    label: Enable Lower Case Table Names
+    reference: .properties.enable_lower_case_table_names
+  - description: When checked, developers may set their own value for lower_case_table_names
+      and will not be required to use the property set in "Enable Lower Case Table
+      Names" checkbox above.
+    label: Allow Developers To Override Lower Case Table Names
+    reference: .properties.allow_lower_case_table_names_via_config_param
+  - description: 'Check the box to enable the ability to load data from the local
+      file system. For more information see: https://dev.mysql.com/doc/refman/5.7/en/load-data-local.html.'
+    label: Enable Local Infile
+    reference: .properties.local_infile
+- description: Configure blob store for MySQL backups
+  label: Backups
+  name: backups
+  property_inputs:
+  - label: Backup configuration
+    reference: .properties.backups_selector
+    selector_property_inputs:
+    - label: Ceph or Amazon S3
+      property_inputs:
+      - description: The access key used for uploading backups to your blobstore.
+        label: Access Key ID
+        reference: .properties.backups_selector.s3.access_key_id
+      - description: The secret access key used for uploading backups to your blobstore.
+        label: Secret Access Key
+        reference: .properties.backups_selector.s3.secret_access_key
+      - description: Leave blank for Amazon S3, otherwise URL should start with https://
+          or http://
+        label: Endpoint URL
+        reference: .properties.backups_selector.s3.endpoint_url
+      - description: The region in your blobstore to which backups should be sent.
+          Note that for non-S3 providers this may not be required.
+        label: Region
+        reference: .properties.backups_selector.s3.region
+      - description: The bucket in which backups will be sent. It will be created
+          if it does not already exist.
+        label: Bucket Name
+        reference: .properties.backups_selector.s3.bucket_name
+      - description: The path within the bucket that backups will be sent. It will
+          be created if it does not already exist.
+        label: Bucket Path
+        reference: .properties.backups_selector.s3.path
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.s3.cron_schedule
+      - description: Check the box to enable email alerts when backups fail for MySQL
+          instances. Note that this requires Email Notifications to be enabled in
+          ERT
+        label: Enable Email Alerts
+        reference: .properties.backups_selector.s3.enable_email_alerts
+      reference: .properties.backups_selector.s3
+    - label: SCP
+      property_inputs:
+      - description: SCP username
+        label: Username
+        reference: .properties.backups_selector.scp.user
+      - description: SCP private key. Do not password protect.
+        label: Private Key
+        reference: .properties.backups_selector.scp.key
+      - description: Hostname of SCP server to back up to
+        label: Hostname
+        reference: .properties.backups_selector.scp.server
+      - description: Path to backup destination directory. Note that backup artifacts
+          will be additionally nested inside of a directory named after service instance
+          deployment names.
+        label: Destination Directory
+        reference: .properties.backups_selector.scp.destination
+      - description: SCP uses the SSH protocol, so provide the TCP port your server
+          uses for SSH.
+        label: SCP Port
+        reference: .properties.backups_selector.scp.port
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.scp.cron_schedule
+      - description: Host fingerprint (optional, used to prevent server spoofing or
+          man-in-the-middle attacks). If the fingerprint is provided and doesn’t match,
+          then the backup will fail.
+        label: Fingerprint
+        reference: .properties.backups_selector.scp.fingerprint
+      - description: Check the box to enable email alerts when backups fail for MySQL
+          instances. Note that this requires Email Notifications to be enabled in
+          ERT
+        label: Enable Email Alerts
+        reference: .properties.backups_selector.scp.enable_email_alerts
+      reference: .properties.backups_selector.scp
+    - label: GCS
+      property_inputs:
+      - description: GCP project ID
+        label: Project ID
+        reference: .properties.backups_selector.gcs.project_id
+      - description: Will be created if it does not already exist
+        label: Bucket name
+        reference: .properties.backups_selector.gcs.bucket_name
+      - description: JSON contents
+        label: Service Account JSON
+        reference: .properties.backups_selector.gcs.service_account_json
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.gcs.cron_schedule
+      - description: Check the box to enable email alerts when backups fail for MySQL
+          instances. Note that this requires Email Notifications to be enabled in
+          ERT
+        label: Enable Email Alerts
+        reference: .properties.backups_selector.gcs.enable_email_alerts
+      reference: .properties.backups_selector.gcs
+    - label: Azure
+      property_inputs:
+      - description: Azure account
+        label: Account
+        reference: .properties.backups_selector.azure.account
+      - label: Azure Storage Access Key
+        reference: .properties.backups_selector.azure.storage_access_key
+      - label: Container Name
+        reference: .properties.backups_selector.azure.container
+      - description: Path to backup destination directory on Azure storage
+        label: Destination Directory
+        reference: .properties.backups_selector.azure.path
+      - label: Blob Store Base URL
+        reference: .properties.backups_selector.azure.blob_store_base_url
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.azure.cron_schedule
+      - description: Check the box to enable email alerts when backups fail for MySQL
+          instances. Note that this requires Email Notifications to be enabled in
+          ERT
+        label: Enable Email Alerts
+        reference: .properties.backups_selector.azure.enable_email_alerts
+      reference: .properties.backups_selector.azure
+  verifiers:
+  - name: Verifiers::BlobstoreVerifier
+    properties:
+      access_key_id: .properties.backups_selector.s3.access_key_id
+      bucket_name: .properties.backups_selector.s3.bucket_name
+      endpoint: .properties.backups_selector.s3.endpoint_url
+      region: .properties.backups_selector.s3.region
+      secret_access_key: .properties.backups_selector.s3.secret_access_key
+- description: Use this page to configure security settings for the MySQL service.
+  label: Security
+  markdown: "Allow or require all communication to service VMs over TLS.  \nRead https://docs.pivotal.io/p-mysql/prepare-tls.html
+    before changing the value.  \nTo use TLS, developers MUST update their service
+    instance with the `enable_tls` configuration parameter.\n"
+  name: security
+  property_inputs:
+  - description: null
+    label: TLS Options
+    reference: .properties.enable_tls_selector
+    selector_property_inputs:
+    - label: Required - All connections MUST use TLS. Any application that is not
+        using TLS communication with MySQL will break
+      reference: .properties.enable_tls_selector.required
+    - label: Optional - Developers may configure their service VMs to use TLS
+      reference: .properties.enable_tls_selector.enabled
+    - label: Not Configured
+      reference: .properties.enable_tls_selector.disabled
+  - description: When checked, service instance credentials will be stored in Credhub.
+      Enable only when installing with PCF 2.0 or greater and this feature is also
+      enabled in the PAS tile.
+    label: Enable Secure Service Instance Credentials
+    reference: .properties.enable_secure_binding_credentials
+- description: Configure monitoring behavior of the MySQL service.
+  label: Monitoring
+  name: monitoring
+  property_inputs:
+  - description: Select the polling interval for MYSQL metrics in seconds
+    label: Metrics Polling Interval
+    reference: .properties.mysql_metrics_frequency
+  - description: 'Adds tables and commands to the INFORMATION_SCHEMA database. The
+      tables and commands can be used to understand the server activity better and
+      identify the source of the load. For more information, see: https://www.percona.com/doc/percona-server/5.7/diagnostics/user_stats.html'
+    label: Enable User Statistics Logging
+    reference: .properties.userstat
+  - description: 'The MySQL service will keep a record of server activity. The server
+      tracks who connected to the system and what queries were processed. For more
+      information, see: https://www.percona.com/doc/percona-server/5.7/management/audit_log_plugin.html'
+    label: Enable Server Activity Logging
+    reference: .properties.audit_logging_enabled
+  - description: Will create a user with read access to the database on each service
+      instance. The user is named "roadmin". Unchecking will disable and delete the
+      user.
+    label: Enable Read Only Admin User
+    reference: .properties.enable_read_only_admin
+- description: Syslog
+  label: Syslog
+  name: syslog_migration
+  property_inputs:
+  - label: Do you want to configure Syslog for the MySQL service?
+    reference: .properties.syslog_migration_selector
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.syslog_migration_selector.disabled
+    - label: "Yes"
+      property_inputs:
+      - description: The address or host for the syslog server
+        label: Address
+        reference: .properties.syslog_migration_selector.enabled.address
+      - description: The port on which the syslog server listens
+        label: Port
+        reference: .properties.syslog_migration_selector.enabled.port
+      - description: The transport protocol used to send syslog messages to the server
+        label: Transport Protocol
+        reference: .properties.syslog_migration_selector.enabled.transport_protocol
+      - description: Send logs encrypted to syslog server via TLS
+        label: Enable TLS
+        reference: .properties.syslog_migration_selector.enabled.tls_enabled
+      - description: Either the accepted fingerprint (SHA1) or name of remote peer,
+          e.g. *.example.com
+        label: Permitted Peer
+        reference: .properties.syslog_migration_selector.enabled.permitted_peer
+      - description: This certificate will ensure that logs get securely transported
+          to the syslog destination
+        label: SSL Certificate
+        reference: .properties.syslog_migration_selector.enabled.ca_cert
+      reference: .properties.syslog_migration_selector.enabled
+- description: Configuration for the upgrade-all-service-instances errand
+  label: Service Instance Upgrades
+  name: service_instance_upgrades
+  property_inputs:
+  - description: The maximum number of service instances that will be in an upgrading
+      state at the same time. This should be set to a maximum of 1 less than the BOSH
+      worker count.
+    label: Number of simultaneous upgrades
+    reference: .properties.simultaneous_upgrades
+  - description: Number of service instances to upgrade first before going on to upgrade
+      the rest of the instances.
+    label: Number of upgrade canary instances
+    reference: .properties.canary_instances
+icon_image: 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
+job_types:
+- dynamic_ip: 1
+  instance_definition:
+    configurable: true
+    constraints:
+      min: 1
+    default: 1
+    label: Instances
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: dedicated-mysql-broker
+  property_blueprints:
+  - name: broker_http_auth_credentials
+    type: simple_credentials
+  resource_definitions:
+  - configurable: true
+    default: 1024
+    label: RAM
+    name: ram
+    type: integer
+  - configurable: true
+    default: 1024
+    label: Ephemeral Disk
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    label: Persistent Disk
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    default: 1
+    label: CPU
+    name: cpu
+    type: integer
+  resource_label: MySQL Broker
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - name: mysql-service-adapter
+    release: dedicated-mysql-adapter
+  - consumes: |
+      "(( .properties.enable_secure_binding_credentials.value ? .properties.secure_binding_credhub_link_selector.selected_option.parsed_manifest(secure_binding_enabled) : .properties.secure_binding_credhub_link_selector.selected_option.parsed_manifest(secure_binding_disabled) ))"
+    manifest: |
+      ---
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      port: 8080
+      username: broker
+      password: "(( broker_http_auth_credentials.password ))"
+      bosh:
+        url: https://(( $director.hostname )):25555
+        root_ca_cert: "(( $director.ca_public_key ))"
+        authentication:
+          uaa:
+            url: https://(( $director.hostname )):8443
+            client_id: "(( $self.uaa_client_name ))"
+            client_secret: "(( $self.uaa_client_secret ))"
+      cf:
+        url: https://api.(( $runtime.system_domain ))
+        authentication:
+          url: "(( $runtime.uaa_url ))"
+          user_credentials:
+            username: "(( ..cf.uaa.system_services_credentials.identity ))"
+            password: "(( ..cf.uaa.system_services_credentials.password ))"
+      secure_binding_credentials: "(( .properties.enable_secure_binding_credentials.value ? .properties.secure_binding_selector.selected_option.parsed_manifest(secure_binding_enabled) : .properties.secure_binding_selector.selected_option.parsed_manifest(secure_binding_disabled) ))"
+      service_catalog:
+        bindable: true
+        id: 548966e5-e333-4d65-8773-7b4e3bb6ca97
+        service_name: p.mysql
+        service_description: Dedicated instances of MySQL
+        plan_updatable: true
+        global_properties:
+          broker_mysql_dial_timeout_in_seconds: 5
+          broker_mysql_read_timeout_in_seconds: 5
+          enable_read_only_admin: "(( .properties.enable_read_only_admin.value ))"
+          audit_log:
+            enabled: "(( .properties.audit_logging_enabled.value ))"
+          userstat:
+            enabled: "(( .properties.userstat.value ))"
+          local_infile: "(( .properties.local_infile.value ))"
+          enable_lower_case_table_names: "(( .properties.enable_lower_case_table_names.value
+            ))"
+          allow_lower_case_table_names_via_config_param: "(( .properties.allow_lower_case_table_names_via_config_param.value
+            ))"
+          service-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(service_backups_snippet)
+            ))"
+          services_tls_enabled: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(services_tls_enabled) ))"
+          services_tls_ca: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(services_tls_enabled) ? '((/services/tls_ca.certificate))' : '' ))"
+          services_tls_ca_credhub_ref: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(services_tls_enabled) ? '/services/tls_ca' : ''  ))"
+          enforce_client_tls: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(enforce_client_tls) ))"
+          cf_mysql:
+            mysql:
+              admin_username: admin
+              cluster_ips:
+              - 127.0.0.1
+          syslog: "(( .properties.syslog_migration_selector.selected_option.parsed_manifest(syslog_migration)
+            ))"
+          metron_agent:
+            deployment: dedicated-mysql-broker
+          loggregator:
+            tls:
+              ca_cert: "(( $ops_manager.ca_certificate ))"
+              metron:
+                cert: "(( .properties.metron_tls_cert.cert_pem ))"
+                key: "(( .properties.metron_tls_cert.private_key_pem ))"
+          mysql-metrics:
+            galera_metrics_enabled: false
+            host: /tmp/mysql.sock
+            origin: p.mysql
+            metrics_frequency: "(( .properties.mysql_metrics_frequency.value ))"
+          enable_metrics: true
+          cf_deployment_name: "(( ..cf.deployment_name ))"
+        global_quotas:
+          service_instance_limit: "(( .properties.global_service_instance_limit.value ))"
+        tags:
+        - mysql
+        plans:
+        - "(( .properties.plan1_selector.selected_option.parsed_manifest(plan) ))"
+        - "(( .properties.plan2_selector.selected_option.parsed_manifest(plan) ))"
+        - "(( .properties.plan3_selector.selected_option.parsed_manifest(plan) ))"
+        - "(( .properties.plan4_selector.selected_option.parsed_manifest(plan) ))"
+        - "(( .properties.plan5_selector.selected_option.parsed_manifest(plan) ))"
+        metadata:
+          display_name: MySQL for Pivotal Cloud Foundry v2
+          provider_display_name: Pivotal Software
+          long_description: Easily provision a dedicated MySQL server with a single command.
+            Select the plan that is best suited for your application and then bind that
+            service to create unique credentials to securely access the database.
+          image_url: data:image/png;base64,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
+          documentation_url: https://docs.pivotal.io/p-mysql/2-3/use.html
+      service_deployment:
+        releases:
+        - name: dedicated-mysql
+          version: "0.61.3"
+          jobs:
+          - configure-leader-follower
+          - inspect
+          - lf-agent
+          - make-leader
+          - make-read-only
+          - mysql
+        - name: mysql-backup
+          version: "2.4.0"
+          jobs:
+          - streaming-mysql-backup-client
+          - streaming-mysql-backup-tool
+        - name: service-backup
+          version: "18.1.11"
+          jobs:
+          - service-backup
+        - name: syslog-migration
+          version: "11.1.1"
+          jobs:
+          - syslog_forwarder
+        - name: consul
+          version: "194"
+          addon: true
+          jobs:
+          - consul_agent
+        - name: loggregator
+          version: "100"
+          jobs:
+          - metron_agent
+        - name: mysql-monitoring
+          version: "8.19.0"
+          jobs:
+          - mysql-metrics
+        stemcell:
+          os: ubuntu-trusty
+          version: "(( $self.stemcell_version ))"
+    name: broker
+    release: on-demand-service-broker
+  - name: service-metrics-adapter
+    release: on-demand-service-broker
+  - manifest: |
+      ---
+      service_metrics:
+        origin: p.mysql
+        monit_dependencies:
+        - broker
+    name: service-metrics
+    release: service-metrics
+  - manifest: |
+      ---
+      metron_agent:
+        deployment: "(( .deployment_name ))"
+      loggregator:
+        tls:
+          metron:
+            cert: "(( .properties.metron_tls_cert.cert_pem ))"
+            key: "(( .properties.metron_tls_cert.private_key_pem ))"
+          ca_cert: "(( $ops_manager.ca_certificate ))"
+    name: metron_agent
+    release: loggregator
+  - consumes: |
+      consul_server:
+        from: consul_server_link
+        deployment: (( ..cf.deployment_name ))
+      consul_client:
+        from: consul_client_link
+        deployment: (( ..cf.deployment_name ))
+      consul_common:
+        from: consul_common_link
+        deployment: (( ..cf.deployment_name ))
+    name: consul_agent
+    release: consul
+  - manifest: |
+      ---
+      syslog: "(( .properties.syslog_migration_selector.selected_option.parsed_manifest(syslog_migration)
+        ))"
+    name: syslog_forwarder
+    release: syslog-migration
+  - consumes: |
+      "(( .properties.enable_secure_binding_credentials.value ? .properties.secure_binding_credhub_link_selector.selected_option.parsed_manifest(secure_binding_enabled) : .properties.secure_binding_credhub_link_selector.selected_option.parsed_manifest(secure_binding_disabled) ))"
+    manifest: |
+      ---
+      cf:
+        api_url: https://api.(( $runtime.system_domain ))
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      secure_binding_credentials: "(( .properties.enable_secure_binding_credentials.value ? .properties.secure_binding_selector.selected_option.parsed_manifest(secure_binding_enabled) : .properties.secure_binding_selector.selected_option.parsed_manifest(secure_binding_disabled) ))"
+    name: find-non-tls-bindings
+    release: dedicated-mysql-adapter
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    default: 1
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: register-broker
+  resource_definitions:
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 2048
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: Register On-demand MySQL Broker
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - manifest: |
+      ---
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      broker_name: dedicated-mysql-broker
+      cf:
+        api_url: https://api.(( $runtime.system_domain ))
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+    name: register-broker
+    release: on-demand-service-broker
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    default: 1
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: smoke-tests
+  property_blueprints:
+  - default:
+      identity: admin
+    name: smoke_tests_credentials
+    type: simple_credentials
+  resource_definitions:
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 2048
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: Smoke Tests
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - manifest: |
+      ---
+      app_domain: "(( $runtime.apps_domain ))"
+      password: "(( smoke_tests_credentials.password ))"
+      smoke_tests_org: system
+      smoke_tests_space: pivotal-services
+      enable_tls: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(enforce_client_tls) ))"
+      cf:
+        api_url: https://api.(( $runtime.system_domain ))
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+    name: smoke-tests
+    release: dedicated-mysql-adapter
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    default: 1
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: plugin-tests
+  property_blueprints:
+  - default:
+      identity: admin
+    name: smoke_tests_credentials
+    type: simple_credentials
+  resource_definitions:
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 2048
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: Plugin Tests
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - manifest: |
+      ---
+      password: "(( smoke_tests_credentials.password ))"
+      smoke_tests_org: system
+      smoke_tests_space: pivotal-services
+      enable_tls: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(enforce_client_tls) ))"
+      cf:
+        api_url: https://api.(( $runtime.system_domain ))
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+    name: plugin-tests
+    release: dedicated-mysql-adapter
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    default: 1
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: delete-all-service-instances-and-deregister-broker
+  resource_definitions:
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 2048
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: Delete All Service Instances and Deregister Broker
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - manifest: |
+      ---
+      broker_name: dedicated-mysql-broker
+    name: delete-all-service-instances-and-deregister-broker
+    release: on-demand-service-broker
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    default: 1
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: upgrade-all-service-instances
+  resource_definitions:
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 2048
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: Upgrade all On-demand MySQL Service Instances
+  run_post_deploy_errand_default: true
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - manifest: |-
+      ---
+      max_in_flight: "(( .properties.simultaneous_upgrades.value ))"
+      canaries: "(( .properties.canary_instances.value ))"
+    name: upgrade-all-service-instances
+    release: on-demand-service-broker
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    default: 1
+    name: instances
+    type: integer
+  max_in_flight: 1
+  name: orphan-deployments
+  resource_definitions:
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1024
+    default: 2048
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 1
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: Find Orphaned MySQL Service Instance Deployments
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - name: orphan-deployments
+    release: on-demand-service-broker
+label: MySQL for Pivotal Cloud Foundry v2
+metadata_version: "1.12"
+minimum_version_for_upgrade: 2.0.0-alpha
+name: pivotal-mysql
+post_deploy_errands:
+- name: register-broker
+- name: smoke-tests
+- name: upgrade-all-service-instances
+pre_delete_errands:
+- name: delete-all-service-instances-and-deregister-broker
+product_version: 2.3.1-build.11
+property_blueprints:
+- configurable: false
+  default:
+    domains:
+    - metron
+  name: metron_tls_cert
+  type: rsa_cert_credentials
+- configurable: true
+  constraints:
+    max: 200
+    min: 0
+  default: 50
+  name: global_service_instance_limit
+  optional: false
+  type: integer
+- configurable: true
+  constraints:
+    min: 10
+  default: 30
+  name: mysql_metrics_frequency
+  optional: false
+  type: integer
+- configurable: true
+  constraints:
+    min: 0
+  default: 1
+  name: simultaneous_upgrades
+  optional: false
+  type: integer
+- configurable: true
+  constraints:
+    min: 0
+  default: 0
+  name: canary_instances
+  optional: false
+  type: integer
+- configurable: true
+  default: false
+  name: userstat
+  type: boolean
+- configurable: true
+  default: false
+  name: audit_logging_enabled
+  type: boolean
+- configurable: true
+  default: false
+  name: enable_read_only_admin
+  type: boolean
+- configurable: true
+  default: disabled
+  name: enable_tls_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: "false"
+      name: services_tls_enabled
+    - manifest: "false"
+      name: enforce_client_tls
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: "true"
+      name: services_tls_enabled
+    - manifest: "false"
+      name: enforce_client_tls
+    select_value: enabled
+  - name: required
+    named_manifests:
+    - manifest: "true"
+      name: services_tls_enabled
+    - manifest: "true"
+      name: enforce_client_tls
+    select_value: required
+  type: selector
+- configurable: true
+  default: false
+  name: enable_secure_binding_credentials
+  type: boolean
+- configurable: false
+  default: only_option
+  name: secure_binding_selector
+  option_templates:
+  - name: only_option
+    named_manifests:
+    - name: secure_binding_disabled
+    - manifest: |
+        enabled: true
+        authentication:
+          uaa:
+            client_id: "(( ..cf.uaa.services_credhub_credentials.identity ))"
+            client_secret: "(( ..cf.uaa.services_credhub_credentials.password ))"
+            ca_cert: "(( $ops_manager.ca_certificate ))"
+      name: secure_binding_enabled
+    select_value: only_option
+  type: selector
+- configurable: false
+  default: only_option
+  name: secure_binding_credhub_link_selector
+  option_templates:
+  - name: only_option
+    named_manifests:
+    - manifest: |
+        {}
+      name: secure_binding_disabled
+    - manifest: |
+        credhub:
+          from: credhub
+          deployment: (( ..cf.deployment_name ))
+      name: secure_binding_enabled
+    select_value: only_option
+  type: selector
+- configurable: true
+  name: vm_extensions
+  optional: true
+  options:
+  - label: "Yes"
+    name: public_ip
+  type: multi_select_options
+- configurable: true
+  default: false
+  name: local_infile
+  type: boolean
+- configurable: true
+  default: false
+  name: enable_lower_case_table_names
+  type: boolean
+- configurable: true
+  default: false
+  name: allow_lower_case_table_names_via_config_param
+  type: boolean
+- configurable: true
+  name: backups_selector
+  option_templates:
+  - name: s3
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            endpoint_url: (( .properties.backups_selector.s3.endpoint_url.value ))
+            region: (( .properties.backups_selector.s3.region.value ))
+            bucket_name: (( .properties.backups_selector.s3.bucket_name.value ))
+            bucket_path: (( .properties.backups_selector.s3.path.value ))
+            access_key_id: (( .properties.backups_selector.s3.access_key_id.value ))
+            secret_access_key: (( .properties.backups_selector.s3.secret_access_key.value ))
+          type: s3
+        source_folder: "/var/vcap/store/mysql-backups/"
+        source_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/client"
+        cleanup_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/cleanup-directories"
+        cron_schedule: "(( .properties.backups_selector.s3.cron_schedule.value ))"
+        add_deployment_name_to_backup_path: true
+        exit_if_in_progress: true
+        alerts: "(( .properties.backups_selector.s3.enable_email_alerts.value ? .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_enabled) : .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_disabled) ))"
+      name: service_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: access_key_id
+      type: string
+    - configurable: true
+      name: secret_access_key
+      type: string
+    - configurable: true
+      name: endpoint_url
+      optional: true
+      type: http_url
+    - configurable: true
+      name: bucket_name
+      type: string
+    - configurable: true
+      name: path
+      type: string
+    - configurable: true
+      default: 0 */8 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: false
+      name: enable_email_alerts
+      type: boolean
+    - configurable: true
+      name: region
+      optional: true
+      type: string
+    select_value: S3 Backups
+  - name: scp
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            user: (( .properties.backups_selector.scp.user.value ))
+            server: (( .properties.backups_selector.scp.server.value ))
+            destination: (( .properties.backups_selector.scp.destination.value ))
+            fingerprint: (( .properties.backups_selector.scp.fingerprint.value ))
+            key: (( .properties.backups_selector.scp.key.value ))
+            port: (( .properties.backups_selector.scp.port.value ))
+          type: scp
+        source_folder: "/var/vcap/store/mysql-backups/"
+        source_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/client"
+        cleanup_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/cleanup-directories"
+        cron_schedule: "(( .properties.backups_selector.scp.cron_schedule.value ))"
+        add_deployment_name_to_backup_path: true
+        exit_if_in_progress: true
+        alerts: "(( .properties.backups_selector.scp.enable_email_alerts.value ? .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_enabled) : .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_disabled) ))"
+      name: service_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: user
+      type: string
+    - configurable: true
+      name: server
+      type: string
+    - configurable: true
+      name: destination
+      type: string
+    - configurable: true
+      name: fingerprint
+      optional: true
+      type: string
+    - configurable: true
+      name: key
+      type: text
+    - configurable: true
+      name: port
+      type: integer
+    - configurable: true
+      default: 0 */8 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: false
+      name: enable_email_alerts
+      type: boolean
+    select_value: SCP Backups
+  - name: gcs
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            project_id: (( .properties.backups_selector.gcs.project_id.value ))
+            bucket_name: (( .properties.backups_selector.gcs.bucket_name.value ))
+            service_account_json: (( .properties.backups_selector.gcs.service_account_json.value ))
+          type: gcs
+        source_folder: "/var/vcap/store/mysql-backups/"
+        source_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/client"
+        cleanup_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/cleanup-directories"
+        cron_schedule: "(( .properties.backups_selector.gcs.cron_schedule.value ))"
+        add_deployment_name_to_backup_path: true
+        exit_if_in_progress: true
+        alerts: "(( .properties.backups_selector.gcs.enable_email_alerts.value ? .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_enabled) : .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_disabled) ))"
+      name: service_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: project_id
+      type: string
+    - configurable: true
+      name: bucket_name
+      type: string
+    - configurable: true
+      name: service_account_json
+      type: text
+    - configurable: true
+      default: 0 */8 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: false
+      name: enable_email_alerts
+      type: boolean
+    select_value: GCS
+  - name: azure
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            storage_account: (( .properties.backups_selector.azure.account.value ))
+            path: (( .properties.backups_selector.azure.path.value ))
+            storage_access_key: (( .properties.backups_selector.azure.storage_access_key.value ))
+            container: (( .properties.backups_selector.azure.container.value ))
+            blob_store_base_url: (( .properties.backups_selector.azure.blob_store_base_url.value ))
+          type: azure
+        source_folder: "/var/vcap/store/mysql-backups/"
+        source_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/client"
+        cleanup_executable: "/var/vcap/jobs/streaming-mysql-backup-client/bin/cleanup-directories"
+        cron_schedule: "(( .properties.backups_selector.azure.cron_schedule.value ))"
+        add_deployment_name_to_backup_path: true
+        exit_if_in_progress: true
+        alerts: "(( .properties.backups_selector.azure.enable_email_alerts.value ? .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_enabled) : .properties.alerts_selector.selected_option.parsed_manifest(email_alerts_disabled) ))"
+      name: service_backups_snippet
+    property_blueprints:
+    - configurable: true
+      constraints:
+      - error_message: Storage account names must be between 3 and 24 characters.
+          Only lowercase letters and numbers are valid.
+        must_match_regex: ^[a-z0-9]{3,24}$
+      name: account
+      type: string
+    - configurable: true
+      name: storage_access_key
+      type: text
+    - configurable: true
+      name: path
+      type: string
+    - configurable: true
+      default: 0 */8 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      constraints:
+      - error_message: Container names must be between 3 and 63 characters. Only lowercase
+          letters, numbers and hyphen are valid.
+        must_match_regex: ^[a-z0-9-]{3,63}$
+      name: container
+      type: string
+    - configurable: true
+      name: blob_store_base_url
+      optional: true
+      type: string
+    - configurable: true
+      default: false
+      name: enable_email_alerts
+      type: boolean
+    select_value: Azure Backups
+  type: selector
+- configurable: false
+  default: only_option
+  name: alerts_selector
+  option_templates:
+  - name: only_option
+    named_manifests:
+    - name: email_alerts_disabled
+    - manifest: |
+        product_name: p.mysql
+        config:
+          skip_ssl_validation: (( ..cf.ha_proxy.skip_cert_verify.value ))
+          cloud_controller:
+            url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+            user: (( ..cf.uaa.admin_credentials.identity ))
+            password: (( ..cf.uaa.admin_credentials.password ))
+          notifications:
+            service_url: https://notifications.(( ..cf.cloud_controller.system_domain.value ))
+            cf_org: system
+            cf_space: system
+            client_id: (( ..cf.uaa.dedicated_mysql_notifications_client_credentials.identity ))
+            client_secret: (( ..cf.uaa.dedicated_mysql_notifications_client_credentials.password ))
+      name: email_alerts_enabled
+    select_value: only_option
+  type: selector
+- configurable: true
+  default: Active
+  name: plan1_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - name: plan
+    select_value: Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        plan_id: 07cf3296-b8e3-4c6b-8d74-b11a89599627
+        name: (( .properties.plan1_selector.active.name.value ))
+        description: (( .properties.plan1_selector.active.description.value ))
+        cf_service_access: (( .properties.plan1_selector.active.access_dropdown.value ))
+        quotas:
+         service_instance_limit: (( .properties.plan1_selector.active.instance_limit.value ))
+        metadata:
+         display_name: (( .properties.plan1_selector.active.name.value ))
+         bullets:
+         - (( .properties.plan1_selector.active.description.value ))
+        instance_groups:
+        - "(( .properties.plan1_selector.active.multi_node_deployment.value ? .properties.plan1_instance_group.selected_option.parsed_manifest(two_instances) : .properties.plan1_instance_group.selected_option.parsed_manifest(one_instance) ))"
+        lifecycle_errands: "(( .properties.plan1_selector.active.multi_node_deployment.value ? .properties.plan_lifecycle_errands.selected_option.parsed_manifest(lf_errands) : .properties.plan_lifecycle_errands.selected_option.parsed_manifest(no_errands) ))"
+        properties:
+          leader_follower:
+            enabled: "(( .properties.plan1_selector.active.multi_node_deployment.value ))"
+      name: plan
+    property_blueprints:
+    - configurable: true
+      default: false
+      name: multi_node_deployment
+      type: boolean
+    - configurable: true
+      name: vm_type
+      optional: false
+      resource_definitions:
+      - default: 4096
+        name: ram
+      - default: 1
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      name: disk_size
+      optional: false
+      resource_definitions:
+      - default: 6144
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      name: az_multi_select
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: enable
+      name: access_dropdown
+      optional: false
+      options:
+      - label: Enable
+        name: enable
+      - label: Disable
+        name: disable
+      - label: Manual
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      constraints:
+      - error_message: must contain only lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z0-9\-]*$
+      default: db-small
+      name: name
+      optional: false
+      type: string
+    - configurable: true
+      default: This plan provides a small dedicated MySQL instance.
+      name: description
+      optional: false
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      name: instance_limit
+      optional: true
+      type: integer
+    select_value: Active
+  type: selector
+- configurable: true
+  default: Active
+  name: plan2_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - name: plan
+    select_value: Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        plan_id: dfa6376b-0a1b-4b25-99e6-eccf873b05df
+        name: (( .properties.plan2_selector.active.name.value ))
+        description: (( .properties.plan2_selector.active.description.value ))
+        cf_service_access: (( .properties.plan2_selector.active.access_dropdown.value ))
+        quotas:
+         service_instance_limit: (( .properties.plan2_selector.active.instance_limit.value ))
+        metadata:
+         display_name: (( .properties.plan2_selector.active.name.value ))
+         bullets:
+         - (( .properties.plan2_selector.active.description.value ))
+        instance_groups:
+        - "(( .properties.plan2_selector.active.multi_node_deployment.value ? .properties.plan2_instance_group.selected_option.parsed_manifest(two_instances) : .properties.plan2_instance_group.selected_option.parsed_manifest(one_instance) ))"
+        lifecycle_errands: "(( .properties.plan2_selector.active.multi_node_deployment.value ? .properties.plan_lifecycle_errands.selected_option.parsed_manifest(lf_errands) : .properties.plan_lifecycle_errands.selected_option.parsed_manifest(no_errands) ))"
+        properties:
+          leader_follower:
+            enabled: "(( .properties.plan2_selector.active.multi_node_deployment.value ))"
+      name: plan
+    property_blueprints:
+    - configurable: true
+      default: false
+      name: multi_node_deployment
+      type: boolean
+    - configurable: true
+      name: vm_type
+      optional: false
+      resource_definitions:
+      - default: 8192
+        name: ram
+      - default: 2
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      name: disk_size
+      optional: false
+      resource_definitions:
+      - default: 15000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      name: az_multi_select
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: enable
+      name: access_dropdown
+      optional: false
+      options:
+      - label: Enable
+        name: enable
+      - label: Disable
+        name: disable
+      - label: Manual
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      constraints:
+      - error_message: must contain only lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z0-9\-]*$
+      default: db-medium
+      name: name
+      optional: false
+      type: string
+    - configurable: true
+      default: This plan provides a medium dedicated MySQL instance.
+      name: description
+      optional: false
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      name: instance_limit
+      optional: true
+      type: integer
+    select_value: Active
+  type: selector
+- configurable: true
+  default: Active
+  name: plan3_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - name: plan
+    select_value: Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        plan_id: 2e5983e7-1259-453a-bb3d-288fcaa84570
+        name: (( .properties.plan3_selector.active.name.value ))
+        description: (( .properties.plan3_selector.active.description.value ))
+        cf_service_access: (( .properties.plan3_selector.active.access_dropdown.value ))
+        quotas:
+         service_instance_limit: (( .properties.plan3_selector.active.instance_limit.value ))
+        metadata:
+         display_name: (( .properties.plan3_selector.active.name.value ))
+         bullets:
+         - (( .properties.plan3_selector.active.description.value ))
+        instance_groups:
+        - "(( .properties.plan3_selector.active.multi_node_deployment.value ? .properties.plan3_instance_group.selected_option.parsed_manifest(two_instances) : .properties.plan3_instance_group.selected_option.parsed_manifest(one_instance) ))"
+        lifecycle_errands: "(( .properties.plan3_selector.active.multi_node_deployment.value ? .properties.plan_lifecycle_errands.selected_option.parsed_manifest(lf_errands) : .properties.plan_lifecycle_errands.selected_option.parsed_manifest(no_errands) ))"
+        properties:
+          leader_follower:
+            enabled: "(( .properties.plan3_selector.active.multi_node_deployment.value ))"
+      name: plan
+    property_blueprints:
+    - configurable: true
+      default: false
+      name: multi_node_deployment
+      type: boolean
+    - configurable: true
+      name: vm_type
+      optional: false
+      resource_definitions:
+      - default: 16384
+        name: ram
+      - default: 4
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      name: disk_size
+      optional: false
+      resource_definitions:
+      - default: 30000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      name: az_multi_select
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: enable
+      name: access_dropdown
+      optional: false
+      options:
+      - label: Enable
+        name: enable
+      - label: Disable
+        name: disable
+      - label: Manual
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      constraints:
+      - error_message: must contain only lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z0-9\-]*$
+      default: db-large
+      name: name
+      optional: false
+      type: string
+    - configurable: true
+      default: This plan provides a large dedicated MySQL instance.
+      name: description
+      optional: false
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      name: instance_limit
+      optional: true
+      type: integer
+    select_value: Active
+  type: selector
+- configurable: true
+  default: Inactive
+  name: plan4_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - name: plan
+    select_value: Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        plan_id: 147dfd57-5343-4dd4-a1fa-3e9c8adfe4d3
+        name: (( .properties.plan4_selector.active.name.value ))
+        description: (( .properties.plan4_selector.active.description.value ))
+        cf_service_access: (( .properties.plan4_selector.active.access_dropdown.value ))
+        quotas:
+         service_instance_limit: (( .properties.plan4_selector.active.instance_limit.value ))
+        metadata:
+         display_name: (( .properties.plan4_selector.active.name.value ))
+         bullets:
+         - (( .properties.plan4_selector.active.description.value ))
+        instance_groups:
+         - "(( .properties.plan4_selector.active.multi_node_deployment.value ? .properties.plan4_instance_group.selected_option.parsed_manifest(two_instances) : .properties.plan4_instance_group.selected_option.parsed_manifest(one_instance) ))"
+        lifecycle_errands: "(( .properties.plan4_selector.active.multi_node_deployment.value ? .properties.plan_lifecycle_errands.selected_option.parsed_manifest(lf_errands) : .properties.plan_lifecycle_errands.selected_option.parsed_manifest(no_errands) ))"
+        properties:
+          leader_follower:
+            enabled: "(( .properties.plan4_selector.active.multi_node_deployment.value ))"
+      name: plan
+    property_blueprints:
+    - configurable: true
+      default: false
+      name: multi_node_deployment
+      type: boolean
+    - configurable: true
+      name: vm_type
+      optional: false
+      resource_definitions:
+      - default: 16384
+        name: ram
+      - default: 4
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      name: disk_size
+      optional: false
+      resource_definitions:
+      - default: 50000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      name: az_multi_select
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: enable
+      name: access_dropdown
+      optional: false
+      options:
+      - label: Enable
+        name: enable
+      - label: Disable
+        name: disable
+      - label: Manual
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      constraints:
+      - error_message: must contain only lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z0-9\-]*$
+      name: name
+      optional: false
+      type: string
+    - configurable: true
+      name: description
+      optional: false
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      name: instance_limit
+      optional: true
+      type: integer
+    select_value: Active
+  type: selector
+- configurable: true
+  default: Inactive
+  name: plan5_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - name: plan
+    select_value: Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        plan_id: 95542765-041a-4f6e-a6e0-971fc2e6a5de
+        name: (( .properties.plan5_selector.active.name.value ))
+        description: (( .properties.plan5_selector.active.description.value ))
+        cf_service_access: (( .properties.plan5_selector.active.access_dropdown.value ))
+        quotas:
+         service_instance_limit: (( .properties.plan5_selector.active.instance_limit.value ))
+        metadata:
+         display_name: (( .properties.plan5_selector.active.name.value ))
+         bullets:
+         - (( .properties.plan5_selector.active.description.value ))
+        instance_groups:
+         - "(( .properties.plan5_selector.active.multi_node_deployment.value ? .properties.plan5_instance_group.selected_option.parsed_manifest(two_instances) : .properties.plan5_instance_group.selected_option.parsed_manifest(one_instance) ))"
+        lifecycle_errands: "(( .properties.plan5_selector.active.multi_node_deployment.value ? .properties.plan_lifecycle_errands.selected_option.parsed_manifest(lf_errands) : .properties.plan_lifecycle_errands.selected_option.parsed_manifest(no_errands) ))"
+        properties:
+          leader_follower:
+            enabled: "(( .properties.plan5_selector.active.multi_node_deployment.value ))"
+      name: plan
+    property_blueprints:
+    - configurable: true
+      default: false
+      name: multi_node_deployment
+      type: boolean
+    - configurable: true
+      name: vm_type
+      optional: false
+      resource_definitions:
+      - default: 32768
+        name: ram
+      - default: 8
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      name: disk_size
+      optional: false
+      resource_definitions:
+      - default: 100000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      name: az_multi_select
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      default: enable
+      name: access_dropdown
+      optional: false
+      options:
+      - label: Enable
+        name: enable
+      - label: Disable
+        name: disable
+      - label: Manual
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      constraints:
+      - error_message: must contain only lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z0-9\-]*$
+      name: name
+      optional: false
+      type: string
+    - configurable: true
+      name: description
+      optional: false
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      name: instance_limit
+      optional: true
+      type: integer
+    select_value: Active
+  type: selector
+- configurable: false
+  default: auto_selected
+  name: plan1_instance_group
+  option_templates:
+  - name: auto_selected
+    named_manifests:
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan1_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan1_selector.active.disk_size.value ))
+        instances: 1
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan1_selector.active.az_multi_select.value ))
+      name: one_instance
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan1_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan1_selector.active.disk_size.value ))
+        instances: 2
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan1_selector.active.az_multi_select.value ))
+      name: two_instances
+    select_value: auto_selected
+  type: selector
+- configurable: false
+  default: auto_selected
+  name: plan_lifecycle_errands
+  option_templates:
+  - name: auto_selected
+    named_manifests:
+    - manifest: |
+        post_deploy:
+          - name: configure-leader-follower
+            instances:
+            - mysql/first
+      name: lf_errands
+    - manifest: |
+        {}
+      name: no_errands
+    select_value: auto_selected
+  type: selector
+- configurable: false
+  default: auto_selected
+  name: plan2_instance_group
+  option_templates:
+  - name: auto_selected
+    named_manifests:
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan2_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan2_selector.active.disk_size.value ))
+        instances: 1
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan2_selector.active.az_multi_select.value ))
+      name: one_instance
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan2_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan2_selector.active.disk_size.value ))
+        instances: 2
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan2_selector.active.az_multi_select.value ))
+      name: two_instances
+    select_value: auto_selected
+  type: selector
+- configurable: false
+  default: auto_selected
+  name: plan3_instance_group
+  option_templates:
+  - name: auto_selected
+    named_manifests:
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan3_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan3_selector.active.disk_size.value ))
+        instances: 1
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan3_selector.active.az_multi_select.value ))
+      name: one_instance
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan3_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan3_selector.active.disk_size.value ))
+        instances: 2
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan3_selector.active.az_multi_select.value ))
+      name: two_instances
+    select_value: auto_selected
+  type: selector
+- configurable: false
+  default: auto_selected
+  name: plan4_instance_group
+  option_templates:
+  - name: auto_selected
+    named_manifests:
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan4_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan4_selector.active.disk_size.value ))
+        instances: 1
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan4_selector.active.az_multi_select.value ))
+      name: one_instance
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan4_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan4_selector.active.disk_size.value ))
+        instances: 2
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan4_selector.active.az_multi_select.value ))
+      name: two_instances
+    select_value: auto_selected
+  type: selector
+- configurable: false
+  default: auto_selected
+  name: plan5_instance_group
+  option_templates:
+  - name: auto_selected
+    named_manifests:
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan5_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan5_selector.active.disk_size.value ))
+        instances: 1
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan5_selector.active.az_multi_select.value ))
+      name: one_instance
+    - manifest: |
+        name: mysql
+        vm_type: (( .properties.plan5_selector.active.vm_type.value ))
+        vm_extensions: (( .properties.vm_extensions.value ))
+        persistent_disk_type: (( .properties.plan5_selector.active.disk_size.value ))
+        instances: 2
+        networks: [(( $self.service_network ))]
+        azs: (( .properties.plan5_selector.active.az_multi_select.value ))
+      name: two_instances
+    select_value: auto_selected
+  type: selector
+- configurable: true
+  default: disabled
+  name: syslog_migration_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: |
+        address: "N/A"
+        port: "N/A"
+        transport: udp # unused but must be set to tcp, udp, or relp
+        migration:
+          disabled: true
+      name: syslog_migration
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: |
+        forward_files: true
+        address: (( .properties.syslog_migration_selector.enabled.address.value ))
+        director: (( $director.hostname ))
+        port: (( .properties.syslog_migration_selector.enabled.port.value ))
+        transport: (( .properties.syslog_migration_selector.enabled.transport_protocol.value ))
+        tls_enabled: (( .properties.syslog_migration_selector.enabled.tls_enabled.value ))
+        permitted_peer: (( .properties.syslog_migration_selector.enabled.permitted_peer.value ))
+        ca_cert: (( .properties.syslog_migration_selector.enabled.ca_cert.value ))
+        migration:
+          disabled: false
+      name: syslog_migration
+    property_blueprints:
+    - configurable: true
+      name: address
+      optional: false
+      type: string
+    - configurable: true
+      name: port
+      optional: false
+      type: integer
+    - configurable: true
+      default: tcp
+      name: transport_protocol
+      optional: false
+      options:
+      - label: TCP
+        name: tcp
+      - label: UDP
+        name: udp
+      - label: RELP
+        name: relp
+      type: dropdown_select
+    - configurable: true
+      default: true
+      name: tls_enabled
+      type: boolean
+    - configurable: true
+      name: permitted_peer
+      optional: true
+      type: string
+    - configurable: true
+      name: ca_cert
+      optional: true
+      type: text
+    select_value: enabled
+  type: selector
+provides_product_versions:
+- name: pivotal-mysql
+  version: 2.3.0
+rank: 1
+releases:
+- file: dedicated-mysql-adapter-0.80.10-ubuntu-trusty-3541.34-20180620-183834-489824644.tgz
+  name: dedicated-mysql-adapter
+  sha1: 3535ce08da145cbbe1724f14b33abb8195426c3d
+  version: 0.80.10
+- file: dedicated-mysql-0.61.3-ubuntu-trusty-3541.34-20180620-183631-764457434.tgz
+  name: dedicated-mysql
+  sha1: 238f70bbc0edc04411cab1a6f6d986a5e52cf45c
+  version: 0.61.3
+- file: on-demand-service-broker-0.21.2-ubuntu-trusty-3541.34-20180620-183834-70057072.tgz
+  name: on-demand-service-broker
+  sha1: bce80580cfa8443240c54ee5b044a8d3cf513c6c
+  version: 0.21.2
+- file: mysql-backup-2.4.0-ubuntu-trusty-3541.34-20180620-194745-596115106.tgz
+  name: mysql-backup
+  sha1: bf35d26b34f3ee02a78297a7ae7f6af2bc294f71
+  version: 2.4.0
+- file: mysql-monitoring-8.19.0-ubuntu-trusty-3541.34-20180620-183920-294549829.tgz
+  name: mysql-monitoring
+  sha1: 2e3279a88c5770236a588cb1519c0999cf8545d6
+  version: 8.19.0
+- file: service-backup-18.1.11-ubuntu-trusty-3541.34-20180620-194138-367220558.tgz
+  name: service-backup
+  sha1: c763c971503bb3a16eec84ca77a12308697bc7f7
+  version: 18.1.11
+- file: service-metrics-1.5.12-ubuntu-trusty-3541.34-20180620-183516-693694247.tgz
+  name: service-metrics
+  sha1: 5b2b26c59a81ad1be4d767e098f83464299d97a6
+  version: 1.5.12
+- file: loggregator-100-ubuntu-trusty-3541.34-20180620-183412-64077521.tgz
+  name: loggregator
+  sha1: 910759ca9cf5234037e626673f8da63de6a5fff2
+  version: "100"
+- file: consul-194-ubuntu-trusty-3541.34-20180620-234103-497452834.tgz
+  name: consul
+  sha1: 791f03941185acfff93f3090120859ee428ab338
+  version: "194"
+- file: syslog-migration-11.1.1-ubuntu-trusty-3541.34-20180620-195008-05010952.tgz
+  name: syslog-migration
+  sha1: d19226689cdc6dbdc14c4f122d270a4924098f0d
+  version: 11.1.1
+requires_product_versions:
+- name: cf
+  version: '>= 1.12.0-build.0'
+service_broker: true
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: "3541.34"

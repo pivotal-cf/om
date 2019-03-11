@@ -19,12 +19,14 @@ require (
 	github.com/gosuri/uilive v0.0.0-20170323041506-ac356e6e42cd // indirect
 	github.com/graymeta/stow v0.0.0-20181228161447-b469cfb112f8
 	github.com/hashicorp/go-version v1.1.0
+	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/leodido/go-urn v1.1.0 // indirect
+	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.2
-	github.com/pivotal-cf/go-pivnet v0.0.50
+	github.com/pivotal-cf/go-pivnet v0.0.48
 	github.com/pivotal-cf/jhanda v0.0.0-20180509215011-1b5ae1681a45
 	github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d
 	github.com/pivotal-cf/pivnet-cli v0.0.55
@@ -40,6 +42,7 @@ require (
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.26.0
 	gopkg.in/yaml.v2 v2.2.1
+	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
 
 replace github.com/graymeta/stow => github.com/jtarchie/stow v0.0.0-20190209005554-0bff39424d5b

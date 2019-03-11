@@ -1,0 +1,2482 @@
+description: RabbitMQ is a robust and scalable high-performance multi-protocol messaging
+  broker.
+form_types:
+- description: RabbitMQ cluster configuration
+  label: RabbitMQ
+  name: rabbitmq-broker
+  property_inputs:
+  - description: Failure to follow these manual steps may cause data loss for a pre-provisioned
+      RabbitMQ during an upgrade.
+    label: |
+      It is dangerous to upgrade to 1.13 from a previous version without
+      completing these manual steps described in http://docs.pivotal.io/rabbitmq-cf/1-13/upgrade.html
+    reference: .properties.multitenant_pre_upgrade_acknowledgement
+  - label: RabbitMQ admin user credentials
+    reference: .rabbitmq-server.server_admin_credentials
+  - description: Management plugin must be enabled
+    label: RabbitMQ plugins
+    reference: .rabbitmq-server.plugins
+  - description: Ports that will be proxied to RabbitMQ nodes
+    label: RabbitMQ cluster HAproxy ports
+    reference: .rabbitmq-server.ports
+  - description: If you wish RabbitMQ to use SSL provide a certificate in PEM format
+      here. This will apply to both amqps (port 5671) and https for management (port
+      15672).
+    label: RabbitMQ server certificate
+    reference: .rabbitmq-server.rsa_certificate
+  - description: You may provide an SSL certificate-authority certificate in PEM format
+      here. This allows the RabbitMQ server to validate client-provided certificates.
+      Note that this field can be considered a list of certificates of CAs to trust.
+    label: RabbitMQ server CA certificate
+    reference: .rabbitmq-server.ssl_cacert
+  - description: ""
+    label: Enable 'verify_peer' SSL certificate verification (default is 'verify_none')
+    reference: .rabbitmq-server.ssl_verify
+  - description: ""
+    label: Require peer certificate validation
+    reference: .rabbitmq-server.ssl_fail_if_no_peer_cert
+  - description: ""
+    label: SSL certificate verification depth
+    reference: .rabbitmq-server.ssl_verification_depth
+  - description: Leave blank to be generated
+    label: Erlang cookie used by RabbitMQ nodes and rabbitmqctl
+    reference: .rabbitmq-server.cookie
+  - description: RabbitMQ config file contents, can be blank
+    label: RabbitMQ configuration
+    reference: .rabbitmq-server.config
+  - description: Choose the versions of TLS you want RabbitMQ to support
+    label: RabbitMQ TLS Versions
+    reference: .rabbitmq-server.ssl_versions
+  - label: External load balancer DNS name
+    reference: .rabbitmq-broker.dns_host
+  - description: Select the polling interval for the RabbitMQ service metrics in seconds
+    label: Metrics polling interval
+    reference: .properties.metrics_polling_interval
+  - description: Select the disk free limit after which RabbitMQ will raise an alarm.
+      This value is related to the choosen vm type and persistent disk type of the
+      RabbitMQ nodes, too low disk size or too high alarm can prevent RabbitMQ to
+      start. Refer to the PCF RabbitMQ documentation for more details. https://docs.pivotal.io/rabbitmq-cf/1-8/install-config.html#-disk-size-concerns
+    label: Disk free alarm limit
+    reference: .properties.disk_alarm_threshold
+    selector_property_inputs:
+    - label: 50MB (legacy)
+      reference: .properties.disk_alarm_threshold.fixed50
+    - label: 100% Memory (default)
+      reference: .properties.disk_alarm_threshold.relative100
+    - label: 150% Memory (recommended)
+      reference: .properties.disk_alarm_threshold.relative150
+    - label: 200% Memory (conservative)
+      reference: .properties.disk_alarm_threshold.relative200
+- description: Static IP Allocations
+  label: Networking
+  name: rabbitmq-networking
+  property_inputs:
+  - description: Enter a comma-delimited list of IP addresses grouped in the order
+      of AZs configured. These will be the IP addresses assigned to your Pre-Provisioned
+      HAproxy nodes.
+    label: Pre-Provisioned HAProxy Static IPs
+    reference: .rabbitmq-haproxy.static_ips
+  - description: Enter a comma-delimited list of IP addresses grouped in the order
+      of AZs configured. These will be the IP addresses assigned to your Pre-Provisioned
+      RabbitMQ Server nodes.
+    label: Pre-Provisioned RabbitMQ Server Static IPs
+    reference: .rabbitmq-server.static_ips
+  - description: Enter an IP address. It will be the IP address assigned to your Pre-Provisioned
+      Service Broker node.
+    label: Pre-Provisioned Service Broker Static IP
+    reference: .rabbitmq-broker.static_ips
+  - description: Enter an IP address. It will be the IP address assigned to your On
+      Demand Service Broker node.
+    label: On Demand Service Broker Static IP
+    reference: .on-demand-broker.static_ips
+  verifiers:
+  - name: Verifiers::StaticIpsVerifier
+- description: RabbitMQ Policy definition applied to new instances
+  label: RabbitMQ Policy
+  name: rabbitmq-policy
+  property_inputs:
+  - label: Enable custom policy on new instances
+    reference: .rabbitmq-broker.operator_set_policy_enabled
+  - description: If the above checkbox is ticked, then this policy will be applied
+      to all new instances.
+    label: Policy for new instances
+    reference: .rabbitmq-broker.policy_definition
+  - label: Select the network partition behavior of the RabbitMQ cluster
+    reference: .rabbitmq-server.cluster_partition_handling
+- description: Forwards syslog messages to a syslog server
+  label: Syslog
+  name: syslog
+  property_inputs:
+  - label: Do you want to configure syslog forwarding?
+    reference: .properties.syslog_selector
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.syslog_selector.disabled
+    - label: "Yes"
+      property_inputs:
+      - label: Syslog address
+        reference: .properties.syslog_selector.enabled.address
+      - label: Syslog port
+        reference: .properties.syslog_selector.enabled.port
+      - label: Transport protocol
+        reference: .properties.syslog_selector.enabled.syslog_transport
+      - label: Format for logs
+        reference: .properties.syslog_selector.enabled.syslog_format
+      - label: Enable TLS
+        reference: .properties.syslog_selector.enabled.syslog_tls
+      - description: When TLS is enabled, enter the accepted fingerprint [SHA1] or
+          name of remote peer, e.g. *.example.com
+        label: Permitted Peer
+        reference: .properties.syslog_selector.enabled.syslog_permitted_peer
+      - label: Custom CA Certificate
+        reference: .properties.syslog_selector.enabled.syslog_ca_cert
+      reference: .properties.syslog_selector.enabled
+- description: Global Service Plan Configuration
+  label: Global Settings
+  name: global-settings
+  property_inputs:
+  - label: |
+      For users upgrading from RabbitMQ for PCF v1.12: On-Demand instances using RabbitMQ 3.6 will be removed in this upgrade.
+      Please ensure all applications have moved to RabbitMQ 3.7 On-Demand instances, and that you have deleted all RabbitMQ 3.6
+      On-Demand instances. If any RabbitMQ 3.6 On-Demand instances exist, they will cause this upgrade to fail and may cause data loss.
+      Read more here: http://docs.pivotal.io/rabbitmq-cf/1-13/upgrade.html.
+    reference: .properties.on_demand_broker_pre_upgrade_acknowledgement
+  - description: Set the total number of dedicated service instances which can be
+      deployed (max = 50)
+    label: Dedicated Instance Service Quota
+    reference: .on-demand-broker.global_service_instance_quota
+  - description: Please refer to the Ops Manager documentation for IaaS specific behavior.
+      Log forwarding and backups may require internet access.
+    label: Dedicated Instance VM Options
+    reference: .properties.on_demand_broker_vm_extensions
+  - description: App Developers can have the ability to share their Cloud Foundry
+      Service Instances across Orgs and Spaces
+    label: '[Beta] Shareable Instances'
+    reference: .properties.global_settings_shareable_instances
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.global_settings_shareable_instances.disabled
+    - label: "Yes"
+      reference: .properties.global_settings_shareable_instances.enabled
+  - description: The Securing Service Instance Credentials with Runtime CredHub feature
+      must be enabled in PAS for this feature to work
+    label: '[Beta] On Demand - Secure Service Instance Credentials with Runtime CredHub'
+    reference: .properties.global_settings_secure_bindings
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.global_settings_secure_bindings.disabled
+    - label: "Yes"
+      reference: .properties.global_settings_secure_bindings.enabled
+- description: Use this page to configure security settings for the RabbitMQ for PCF
+    On Demand service
+  label: Security
+  markdown: A CA certificate must be added to Credhub when enabling TLS. See the docs
+    for more information.
+  name: security
+  property_inputs:
+  - description: null
+    label: TLS Options
+    reference: .properties.enable_tls_selector
+    selector_property_inputs:
+    - label: Optional - Developers may configure their On Demand service VMs to use
+        TLS
+      reference: .properties.enable_tls_selector.optional
+    - label: Not Configured
+      reference: .properties.enable_tls_selector.disabled
+- description: RMQ 3.7 - Plan 1 Configuration
+  label: 'On Demand Instance (RMQ 3.7): Plan 1'
+  name: dedicated-instance-plan-1
+  property_inputs:
+  - description: Controls whether this service plan is displayed on marketplace. Disable
+      smoke tests errand if not set to Enable Service Access.
+    label: CF Service Access
+    reference: .properties.on_demand_broker_plan_1_cf_service_access
+  - description: The plan name that will appear in the CF marketplace. All lowercase
+      with no spaces and unique.
+    label: Plan Name
+    reference: .properties.on_demand_broker_plan_1_name
+  - configurable: true
+    description: The plan description that will appear in the CF marketplace
+    label: Plan Description
+    optional: false
+    reference: .properties.on_demand_broker_plan_1_description
+    type: text
+  - description: The plan features that will appear in Apps Manager
+    label: Plan Features
+    reference: .properties.on_demand_broker_plan_1_features
+  - description: Set the total number of dedicated service instances which can be
+      deployed (max = 50)
+    label: Plan Quota
+    reference: .properties.on_demand_broker_plan_1_instance_quota
+  - description: The number of RabbitMQ nodes in the cluster. Must be 1, 3, 5 or 7.
+    label: Number of Nodes
+    reference: .properties.on_demand_broker_plan_1_rabbitmq_number_of_nodes
+  - description: Select how you want the RabbitMQ cluster to respond in the event
+      of a partition (see documentation for more detail).
+    label: Network Partition Behaviour
+    reference: .properties.on_demand_broker_plan_1_rabbitmq_cluster_partition_handling_strategy
+  - description: The AZ(s) that the service instance will be deployed into
+    label: AZ Placement
+    reference: .properties.on_demand_broker_plan_1_rabbitmq_az_placement
+  - description: The type of VM that the RabbitMQ node will be created on
+    label: RabbitMQ VM Type
+    reference: .properties.on_demand_broker_plan_1_rabbitmq_vm_type
+  - description: Please configure this value to be 2x the amount of RAM of the selected
+      VM type. Refer to the PCF RabbitMQ documentation for more details.
+    label: Persistent Disk Type
+    reference: .properties.on_demand_broker_plan_1_rabbitmq_persistent_disk_type
+  - label: I acknowledge that I have configured the Persistent Disk Size to be at
+      least 2x the amount of RAM of the selected VM type
+    reference: .properties.on_demand_broker_plan_1_disk_limit_acknowledgement
+- description: RMQ 3.7 - Plan 2 Configuration
+  label: 'On Demand Instance (RMQ 3.7): Plan 2'
+  name: dedicated-instance-plan-2
+  property_inputs:
+  - label: Enable This Plan
+    reference: .properties.on_demand_broker_plan_2_selector
+    selector_property_inputs:
+    - label: Plan Disable
+      reference: .properties.on_demand_broker_plan_2_selector.disabled
+    - label: Plan Enable
+      property_inputs:
+      - description: Controls whether this service plan is displayed on marketplace
+        label: CF Service Access
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.cf_service_access
+      - description: The plan name that will appear in the CF marketplace. All lowercase
+          with no spaces and unique.
+        label: Plan Name
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.name
+      - configurable: true
+        description: The plan description that will appear in the CF marketplace
+        label: Plan Description
+        optional: false
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.description
+        type: text
+      - description: The plan features that will appear in Apps Manager
+        label: Plan Features
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.features
+      - description: Set the total number of dedicated service instances which can
+          be deployed (max = 50)
+        label: Plan Quota
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.instance_quota
+      - description: The number of RabbitMQ nodes in the cluster. Must be 1, 3, 5
+          or 7.
+        label: Number of Nodes
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_number_of_nodes
+      - description: Select how you want the RabbitMQ cluster to respond in the event
+          of a partition (see documentation for more detail).
+        label: Network Partition Behaviour
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_cluster_partition_handling_strategy
+      - description: The AZ that the service instance will be deployed into
+        label: AZ Placement
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_az_placement
+      - description: The type of VM that the RabbitMQ node will be created on
+        label: RabbitMQ VM Type
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_vm_type
+      - description: Please configure this value to be 2x the amount of RAM of the
+          selected VM type. Refer to the PCF RabbitMQ documentation for more details.
+        label: Persistent Disk Type
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_persistent_disk_type
+      - label: I acknowledge that I have configured the Persistent Disk Size to be
+          at least 2x the amount of RAM of the selected VM type
+        reference: .properties.on_demand_broker_plan_2_selector.enabled.disk_limit_acknowledgement
+      reference: .properties.on_demand_broker_plan_2_selector.enabled
+- description: RMQ 3.7 - Plan 3 Configuration
+  label: 'On Demand Instance (RMQ 3.7): Plan 3'
+  name: dedicated-instance-plan-3
+  property_inputs:
+  - label: Enable This Plan
+    reference: .properties.on_demand_broker_plan_3_selector
+    selector_property_inputs:
+    - label: Plan Disable
+      reference: .properties.on_demand_broker_plan_3_selector.disabled
+    - label: Plan Enable
+      property_inputs:
+      - description: Controls whether this service plan is displayed on marketplace
+        label: CF Service Access
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.cf_service_access
+      - description: The plan name that will appear in the CF marketplace. All lowercase
+          with no spaces and unique.
+        label: Plan Name
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.name
+      - configurable: true
+        description: The plan description that will appear in the CF marketplace
+        label: Plan Description
+        optional: false
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.description
+        type: text
+      - description: The plan features that will appear in Apps Manager
+        label: Plan Features
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.features
+      - description: Set the total number of dedicated service instances which can
+          be deployed (max = 50)
+        label: Plan Quota
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.instance_quota
+      - description: The number of RabbitMQ nodes in the cluster. Must be 1, 3, 5
+          or 7.
+        label: Number of Nodes
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_number_of_nodes
+      - description: Select how you want the RabbitMQ cluster to respond in the event
+          of a partition (see documentation for more detail).
+        label: Network Partition Behaviour
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_cluster_partition_handling_strategy
+      - description: The AZ that the service instance will be deployed into
+        label: AZ Placement
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_az_placement
+      - description: The type of VM that the RabbitMQ node will be created on
+        label: RabbitMQ VM Type
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_vm_type
+      - description: Please configure this value to be 2x the amount of RAM of the
+          selected VM type. Refer to the PCF RabbitMQ documentation for more details.
+        label: Persistent Disk Type
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_persistent_disk_type
+      - label: I acknowledge that I have configured the Persistent Disk Size to be
+          at least 2x the amount of RAM of the selected VM type
+        reference: .properties.on_demand_broker_plan_3_selector.enabled.disk_limit_acknowledgement
+      reference: .properties.on_demand_broker_plan_3_selector.enabled
+- description: RMQ 3.7 - Plan 4 Configuration
+  label: 'On Demand Instance (RMQ 3.7): Plan 4'
+  name: dedicated-instance-plan-4
+  property_inputs:
+  - label: Enable This Plan
+    reference: .properties.on_demand_broker_plan_4_selector
+    selector_property_inputs:
+    - label: Plan Disable
+      reference: .properties.on_demand_broker_plan_4_selector.disabled
+    - label: Plan Enable
+      property_inputs:
+      - description: Controls whether this service plan is displayed on marketplace
+        label: CF Service Access
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.cf_service_access
+      - description: The plan name that will appear in the CF marketplace. All lowercase
+          with no spaces and unique.
+        label: Plan Name
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.name
+      - configurable: true
+        description: The plan description that will appear in the CF marketplace
+        label: Plan Description
+        optional: false
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.description
+        type: text
+      - description: The plan features that will appear in Apps Manager
+        label: Plan Features
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.features
+      - description: Set the total number of dedicated service instances which can
+          be deployed (max = 50)
+        label: Plan Quota
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.instance_quota
+      - description: The number of RabbitMQ nodes in the cluster. Must be 1, 3, 5
+          or 7.
+        label: Number of Nodes
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_number_of_nodes
+      - description: Select how you want the RabbitMQ cluster to respond in the event
+          of a partition (see documentation for more detail).
+        label: Network Partition Behaviour
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_cluster_partition_handling_strategy
+      - description: The AZ that the service instance will be deployed into
+        label: AZ Placement
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_az_placement
+      - description: The type of VM that the RabbitMQ node will be created on
+        label: RabbitMQ VM Type
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_vm_type
+      - description: Please configure this value to be 2x the amount of RAM of the
+          selected VM type. Refer to the PCF RabbitMQ documentation for more details.
+        label: Persistent Disk Type
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_persistent_disk_type
+      - label: I acknowledge that I have configured the Persistent Disk Size to be
+          at least 2x the amount of RAM of the selected VM type
+        reference: .properties.on_demand_broker_plan_4_selector.enabled.disk_limit_acknowledgement
+      reference: .properties.on_demand_broker_plan_4_selector.enabled
+- description: RMQ 3.7 - Plan 5 Configuration
+  label: 'On Demand Instance (RMQ 3.7): Plan 5'
+  name: dedicated-instance-plan-5
+  property_inputs:
+  - label: Enable This Plan
+    reference: .properties.on_demand_broker_plan_5_selector
+    selector_property_inputs:
+    - label: Plan Disable
+      reference: .properties.on_demand_broker_plan_5_selector.disabled
+    - label: Plan Enable
+      property_inputs:
+      - description: Controls whether this service plan is displayed on marketplace
+        label: CF Service Access
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.cf_service_access
+      - description: The plan name that will appear in the CF marketplace. All lowercase
+          with no spaces and unique.
+        label: Plan Name
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.name
+      - configurable: true
+        description: The plan description that will appear in the CF marketplace
+        label: Plan Description
+        optional: false
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.description
+        type: text
+      - description: The plan features that will appear in Apps Manager
+        label: Plan Features
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.features
+      - description: Set the total number of dedicated service instances which can
+          be deployed (max = 50)
+        label: Plan Quota
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.instance_quota
+      - description: The number of RabbitMQ nodes in the cluster. Must be 1, 3, 5
+          or 7.
+        label: Number of Nodes
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_number_of_nodes
+      - description: Select how you want the RabbitMQ cluster to respond in the event
+          of a partition (see documentation for more detail).
+        label: Network Partition Behaviour
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_cluster_partition_handling_strategy
+      - description: The AZ that the service instance will be deployed into
+        label: AZ Placement
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_az_placement
+      - description: The type of VM that the RabbitMQ node will be created on
+        label: RabbitMQ VM Type
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_vm_type
+      - description: Please configure this value to be 2x the amount of RAM of the
+          selected VM type. Refer to the PCF RabbitMQ documentation for more details.
+        label: Persistent Disk Type
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_persistent_disk_type
+      - label: I acknowledge that I have configured the Persistent Disk Size to be
+          at least 2x the amount of RAM of the selected VM type
+        reference: .properties.on_demand_broker_plan_5_selector.enabled.disk_limit_acknowledgement
+      reference: .properties.on_demand_broker_plan_5_selector.enabled
+icon_image: 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
+job_types:
+- description: RabbitMQ service broker for Cloud Foundry Cloud Controller
+  dynamic_ip: 0
+  instance_definition:
+    configurable: true
+    constraints:
+      max: 1
+      min: 0
+    default: 1
+    label: Instances
+    name: instances
+    type: integer
+  label: RabbitMQ service broker
+  manifest: |
+    ---
+    metron_agent:
+      deployment: cf-rabbitmq
+
+    loggregator:
+      tls:
+        ca_cert: "(( $ops_manager.ca_certificate ))"
+        metron:
+          cert: "(( .properties.metron_tls_cert.cert_pem ))"
+          key: "(( .properties.metron_tls_cert.private_key_pem ))"
+
+    service_metrics:
+      execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+      origin: p-rabbitmq
+      metrics_command: "/var/vcap/packages/rabbitmq-broker-metrics/heartbeat.sh"
+      metrics_command_args:
+      - "(( broker_http_auth_credentials.identity ))"
+      - "(( broker_http_auth_credentials.password ))"
+
+    route_registrar:
+      routes:
+      - name: pivotal-rabbitmq-broker
+        port: 4567
+        registration_interval: 20s
+        uris:
+        - pivotal-rabbitmq-broker.(( ..cf.cloud_controller.system_domain.value ))
+
+    syslog:
+      forward_files: false
+      address: "(( .properties.syslog_selector.enabled.address.value ))"
+      port: "(( .properties.syslog_selector.enabled.port.value ))"
+      transport: "(( .properties.syslog_selector.enabled.syslog_transport.value ))"
+      tls_enabled: "(( .properties.syslog_selector.enabled.syslog_tls.value ))"
+      permitted_peer: "(( .properties.syslog_selector.enabled.syslog_permitted_peer.value ))"
+      ca_cert: "(( .properties.syslog_selector.enabled.syslog_ca_cert.value ))"
+
+      migration:
+        disabled: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_migration_disabled) ))"
+        message_format: "(( .properties.syslog_selector.enabled.syslog_format.value ))"
+
+      custom_rule: |
+        module(load="imfile")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-broker/startup_stdout.log"
+              Tag="rabbitmq_broker_startup_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-broker/startup_stderr.log"
+              Tag="rabbitmq_broker_startup_stderr")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/route_registrar/route_registrar.log"
+              Tag="rabbitmq_broker_route_registrar_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/route_registrar/route_registrar.err.log"
+              Tag="rabbitmq_broker_route_registrar_stderr")
+  max_in_flight: 1
+  name: rabbitmq-broker
+  property_blueprints:
+  - default:
+      identity: vcap
+    name: vm_credentials
+    type: salted_credentials
+  - default:
+      identity: admin
+    name: broker_http_auth_credentials
+    type: simple_credentials
+  - configurable: true
+    name: dns_host
+    optional: true
+    type: string
+  - configurable: true
+    default: false
+    name: operator_set_policy_enabled
+    type: boolean
+  - configurable: true
+    name: policy_definition
+    optional: true
+    type: text
+  - configurable: true
+    name: static_ips
+    optional: true
+    type: ip_ranges
+  resource_definitions:
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 2048
+    label: RAM
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 4096
+    label: Ephemeral Disk
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    label: Persistent Disk
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1
+      power_of_two: true
+    default: 1
+    label: CPU
+    name: cpu
+    type: integer
+  resource_label: RabbitMQ service broker
+  single_az_only: true
+  static_ip: 1
+  templates:
+  - manifest: |
+      ---
+      broker:
+        name: p-rabbitmq
+        host: pivotal-rabbitmq-broker.(( ..cf.cloud_controller.system_domain.value ))
+        username: "(( .rabbitmq-broker.broker_http_auth_credentials.identity ))"
+        password: "(( .rabbitmq-broker.broker_http_auth_credentials.password ))"
+
+      cf:
+        api_url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+    name: broker-registrar
+    release: cf-rabbitmq-multitenant-broker
+  - consumes: 'cloud_controller: {from: cloud_controller, deployment: "(( ..cf.deployment_name
+      ))"}'
+    manifest: |
+      ---
+      tls_support: "(( .rabbitmq-server.rsa_certificate.value_present? ? 'enabled' : 'disabled'  ))"
+      broker:
+        name: p-rabbitmq
+
+      cf:
+        api_url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+
+      smoke_tests:
+        org: system
+    name: smoke-tests
+    release: cf-rabbitmq-multitenant-broker
+  - manifest: |
+      ---
+      broker:
+        name: p-rabbitmq
+
+      cf:
+        api_url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+    name: broker-deregistrar
+    release: cf-rabbitmq-multitenant-broker
+  - manifest: |
+      ---
+      rabbitmq-broker:
+        route: pivotal-rabbitmq-broker
+        cc_endpoint: https://api.(( ..cf.cloud_controller.system_domain.value ))
+
+        rabbitmq:
+          management_domain: pivotal-rabbitmq.(( ..cf.cloud_controller.system_domain.value ))
+          hosts: "(( .rabbitmq-haproxy.static_ips.value ))"
+          dns_host: "(( dns_host.value ))"
+          operator_set_policy:
+            enabled: "(( operator_set_policy_enabled.value ))"
+            policy_name: operator_set_policy
+            policy_definition: "(( policy_definition.value ))"
+            policy_priority: 50
+          management:
+            username: "(( .rabbitmq-server.server_admin_credentials.identity ))"
+          administrator:
+            username: "(( .rabbitmq-server.service_broker_rabbitmq_admin_credentials.identity ))"
+            password: "(( .rabbitmq-server.service_broker_rabbitmq_admin_credentials.password ))"
+          ssl: "(( .rabbitmq-server.rsa_certificate.cert_pem ))"
+
+        service:
+          username: "(( broker_http_auth_credentials.identity ))"
+          password: "(( broker_http_auth_credentials.password ))"
+          shareable: (( .properties.global_settings_shareable_instances.selected_option.parsed_manifest(shareable_instances_snippet) ))
+
+        logging:
+          level: info
+          print_stack_traces: true
+    name: rabbitmq-broker
+    release: cf-rabbitmq-multitenant-broker
+  - name: cf-cli-6-linux
+    release: cf-cli
+  - name: metron_agent
+    release: loggregator
+  - name: service-metrics
+    release: service-metrics
+  - name: rabbitmq-broker-metrics
+    release: rabbitmq-metrics
+  - consumes: 'nats: {from: nats, deployment: "(( ..cf.deployment_name ))"}'
+    name: route_registrar
+    release: routing
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    release: consul
+  - name: syslog_forwarder
+    release: syslog-migration
+- description: Provides a load-balancer for accessing RabbitMQ server cluster
+  dynamic_ip: 0
+  instance_definition:
+    configurable: true
+    default: 1
+    label: Instances
+    name: instances
+    type: integer
+  label: HAProxy for RabbitMQ
+  manifest: |
+    ---
+    metron_agent:
+      deployment: cf-rabbitmq
+
+    loggregator:
+      tls:
+        ca_cert: "(( $ops_manager.ca_certificate ))"
+        metron:
+          cert: "(( .properties.metron_tls_cert.cert_pem ))"
+          key: "(( .properties.metron_tls_cert.private_key_pem ))"
+
+    service_metrics:
+      execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+      origin: p-rabbitmq
+      metrics_command: "/var/vcap/packages/rabbitmq-haproxy-metrics/bin/rabbitmq-haproxy-metrics"
+      metrics_command_args:
+      - "-haproxyNetwork=unix"
+      - "-haproxyAddress=/var/vcap/sys/run/rabbitmq-haproxy/haproxy.sock"
+      - "-logPath=/var/vcap/sys/log/service-metrics/rabbitmq-haproxy-metrics.log"
+    rabbitmq-haproxy:
+      do-not-configure-syslog: true
+
+    route_registrar:
+      routes:
+      - name: pivotal-rabbitmq
+        port: 15672
+        registration_interval: 20s
+        uris:
+        - pivotal-rabbitmq.(( ..cf.cloud_controller.system_domain.value ))
+
+    syslog:
+      address: "(( .properties.syslog_selector.enabled.address.value ))"
+      port: "(( .properties.syslog_selector.enabled.port.value ))"
+      transport: "(( .properties.syslog_selector.enabled.syslog_transport.value ))"
+      tls_enabled: "(( .properties.syslog_selector.enabled.syslog_tls.value ))"
+      permitted_peer: "(( .properties.syslog_selector.enabled.syslog_permitted_peer.value ))"
+      ca_cert: "(( .properties.syslog_selector.enabled.syslog_ca_cert.value ))"
+      forward_files: false
+
+      migration:
+        disabled: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_migration_disabled) ))"
+        message_format: "(( .properties.syslog_selector.enabled.syslog_format.value ))"
+        insistent_custom_rule: 'local2.*                        -/var/vcap/sys/log/rabbitmq-haproxy/haproxy.log'
+
+      custom_rule: |
+        module(load="imfile")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/rabbitmq-haproxy/haproxy.log"
+        Tag="rabbitmq_haproxy")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/rabbitmq-haproxy/pre-start.stderr.log"
+        Tag="rabbitmq_haproxy_pre_start_stderr")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/rabbitmq-haproxy/pre-start.stdout.log"
+        Tag="rabbitmq_haproxy_pre_start_stdout")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/rabbitmq-haproxy/startup_stderr.log"
+        Tag="rabbitmq_haproxy_pre_startup_stderr")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/rabbitmq-haproxy/startup_stdout.log"
+        Tag="rabbitmq_haproxy_pre_startup_stdout")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/route_registrar/route_registrar.log"
+        Tag="rabbitmq_route_registrar_stdout")
+
+        input(type="imfile"
+        File="/var/vcap/sys/log/route_registrar/route_registrar.err.log"
+        Tag="rabbitmq_route_registrar_stderr")
+  max_in_flight: 1
+  name: rabbitmq-haproxy
+  property_blueprints:
+  - default:
+      identity: vcap
+    label: VM credentials
+    name: vm_credentials
+    type: salted_credentials
+  - configurable: true
+    name: static_ips
+    optional: true
+    type: ip_ranges
+  resource_definitions:
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 2048
+    label: RAM
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 4096
+    label: Ephemeral Disk
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    label: Persistent Disk
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1
+      power_of_two: true
+    default: 1
+    label: CPU
+    name: cpu
+    type: integer
+  resource_label: HAProxy for RabbitMQ
+  single_az_only: false
+  static_ip: 1
+  templates:
+  - name: rabbitmq-haproxy
+    release: cf-rabbitmq
+  - name: metron_agent
+    release: loggregator
+  - name: service-metrics
+    release: service-metrics
+  - name: rabbitmq-haproxy-metrics
+    release: rabbitmq-metrics
+  - consumes: 'nats: {from: nats, deployment: "(( ..cf.deployment_name ))"}'
+    name: route_registrar
+    release: routing
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    release: consul
+  - name: syslog_forwarder
+    release: syslog-migration
+- dynamic_ip: 0
+  instance_definition:
+    configurable: true
+    constraints:
+      may_only_increase: true
+      min: 1
+    default: 3
+    label: Instances
+    name: instances
+    type: integer
+  label: RabbitMQ Node
+  manifest: |
+    ---
+    metron_agent:
+      deployment: cf-rabbitmq
+
+    loggregator:
+      tls:
+        ca_cert: "(( $ops_manager.ca_certificate ))"
+        metron:
+          cert: "(( .properties.metron_tls_cert.cert_pem ))"
+          key: "(( .properties.metron_tls_cert.private_key_pem ))"
+
+    service_metrics:
+      execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+      origin: p-rabbitmq
+      metrics_command: "/var/vcap/packages/rabbitmq-server-metrics/bin/rabbitmq-server-metrics"
+      metrics_command_args:
+      - "-erlangBinPath=/var/vcap/packages/erlang/bin/"
+      - "-rabbitmqCtlPath=/var/vcap/packages/rabbitmq-server/bin/rabbitmqctl"
+      - "-logPath=/var/vcap/sys/log/service-metrics/rabbitmq-server-metrics.log"
+      - "-rabbitmqUsername=(( server_admin_credentials.identity ))"
+      - "-rabbitmqPassword=(( server_admin_credentials.password ))"
+      - "-rabbitmqApiEndpoint=http://127.0.0.1:15672"
+
+    syslog_daemon_config:
+      enable: false
+
+    syslog:
+      forward_files: false
+      address: "(( .properties.syslog_selector.enabled.address.value ))"
+      port: "(( .properties.syslog_selector.enabled.port.value ))"
+      transport: "(( .properties.syslog_selector.enabled.syslog_transport.value ))"
+      tls_enabled: "(( .properties.syslog_selector.enabled.syslog_tls.value ))"
+      permitted_peer: "(( .properties.syslog_selector.enabled.syslog_permitted_peer.value ))"
+      ca_cert: "(( .properties.syslog_selector.enabled.syslog_ca_cert.value ))"
+
+      migration:
+        disabled: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_migration_disabled) ))"
+        message_format: "(( .properties.syslog_selector.enabled.syslog_format.value ))"
+
+      custom_rule: |
+        module(load="imfile")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/rabbit@*-sasl.log"
+              Tag="rabbitmq_server_sasl")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/rabbit@*.log"
+              Tag="rabbitmq_server")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/startup_stderr.log"
+              Tag="rabbitmq_server_startup_stderr")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/startup_stdout.log"
+              Tag="rabbitmq_server_startup_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/shutdown_stdout.log"
+              Tag="rabbitmq_server_shutdown_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/shutdown_stderr.log"
+              Tag="rabbitmq_server_shutdown_stderr")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/management-ui/access.log*"
+              Tag="rabbitmq_server_http_api_access")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/upgrade.log"
+              Tag="rabbitmq_server_upgrade")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/init.log"
+              Tag="rabbitmq_server_init")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/node-check.log"
+              Tag="rabbitmq_server_node_check")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/cluster-check.log"
+              Tag="rabbitmq_server_cluster_check")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/post-deploy.stderr.log"
+              Tag="rabbitmq_server_post_deploy_stderr")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/post-deploy.stdout.log"
+              Tag="rabbitmq_server_post_deploy_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/drain.log"
+              Tag="rabbitmq_server_drain")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/rabbitmq-server/pre-start.log"
+              Tag="rabbitmq_server_pre_start")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/route_registrar/route_registrar.log"
+              Tag="rabbitmq_route_registrar_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/route_registrar/route_registrar.err.log"
+              Tag="rabbitmq_route_registrar_stderr")
+  max_in_flight: 1
+  name: rabbitmq-server
+  property_blueprints:
+  - default:
+      identity: vcap
+    label: VM credentials
+    name: vm_credentials
+    type: salted_credentials
+  - configurable: true
+    description: Username and password to create an administrator account within the
+      RabbitMQ cluster. This must be provided and can be used to access the RabbitMQ
+      Management site as a full admin
+    label: RabbitMQ server administrator credentials
+    name: server_admin_credentials
+    optional: false
+    type: simple_credentials
+  - default:
+      identity: broker
+    name: service_broker_rabbitmq_admin_credentials
+    type: salted_credentials
+  - configurable: true
+    default:
+    - rabbitmq_management
+    description: Select which RabbitMQ plugins you wish to enable. Note the Management
+      plugin is required for integration with Cloud Foundry
+    label: RabbitMQ Plugins to enable
+    name: plugins
+    options:
+    - label: rabbitmq_amqp1_0
+      name: rabbitmq_amqp1_0
+    - label: rabbitmq_auth_backend_ldap
+      name: rabbitmq_auth_backend_ldap
+    - label: rabbitmq_auth_mechanism_ssl
+      name: rabbitmq_auth_mechanism_ssl
+    - label: rabbitmq_consistent_hash_exchange
+      name: rabbitmq_consistent_hash_exchange
+    - label: rabbitmq_federation
+      name: rabbitmq_federation
+    - label: rabbitmq_federation_management
+      name: rabbitmq_federation_management
+    - label: rabbitmq_management
+      name: rabbitmq_management
+    - label: rabbitmq_management_visualiser
+      name: rabbitmq_management_visualiser
+    - label: rabbitmq_mqtt
+      name: rabbitmq_mqtt
+    - label: rabbitmq_shovel
+      name: rabbitmq_shovel
+    - label: rabbitmq_shovel_management
+      name: rabbitmq_shovel_management
+    - label: rabbitmq_stomp
+      name: rabbitmq_stomp
+    - label: rabbitmq_tracing
+      name: rabbitmq_tracing
+    - label: rabbitmq_web_stomp
+      name: rabbitmq_web_stomp
+    - label: rabbitmq_web_stomp_examples
+      name: rabbitmq_web_stomp_examples
+    - label: rabbitmq_event_exchange
+      name: rabbitmq_event_exchange
+    - label: rabbitmq_jms_topic_exchange
+      name: rabbitmq_jms_topic_exchange
+    type: multi_select_options
+  - configurable: true
+    description: If you wish RabbitMQ to use SSL (both amqps (port 5671) and https
+      for management (port 15672)), provide an SSL private key in PEM format here.
+    label: RSA certificate
+    name: rsa_certificate
+    optional: true
+    type: rsa_cert_credentials
+  - configurable: true
+    description: If you wish RabbitMQ to use SSL (both amqps (port 5671) and https
+      for management (port 15672)), provide an SSL certificate-authority certificate
+      in PEM format here. This allows the broker to validate client-provided certificates.
+      Note that this field can be considered a list of certificates of CAs to trust.
+    label: SSL Certificate Authority Certificate (PEM format)
+    name: ssl_cacert
+    optional: true
+    type: ca_certificate
+  - configurable: true
+    description: Select the SSL verification option you would like the server to use
+    label: SSL certificate server verification
+    name: ssl_verify
+    optional: true
+    type: boolean
+  - configurable: true
+    constraints:
+      max: 32
+      min: 1
+    default: 5
+    description: Select certificate verification depth you would like to use
+    label: SSL certificate verification depth
+    name: ssl_verification_depth
+    type: integer
+  - configurable: true
+    description: Should RabbitMQ server reject connection if there is no peer cert
+    label: SSL certificate peer validation
+    name: ssl_fail_if_no_peer_cert
+    optional: true
+    type: boolean
+  - configurable: true
+    description: The Erlang cookie used by all the RabbitMQ nodes within the cluster.
+      This will be generated if you do not provide it, but if you wish to connect
+      directly to the Erlang nodes then you may like to specify the cookie explicitly
+      here.
+    label: Erlang cookie
+    name: cookie
+    optional: true
+    type: string
+  - configurable: true
+    description: You can specify the contents of the rabbitmq.config file here. This
+      is an Erlang term-file (as normal). This file is applied to all nodes within
+      the cluster.
+    label: rabbitmq.config (Erlang term-file format)
+    name: config
+    optional: true
+    type: text
+  - configurable: true
+    default:
+    - tlsv1.1
+    - tlsv1.2
+    name: ssl_versions
+    options:
+    - label: TLS v1.0 (required for JDK 6.0)
+      name: tlsv1
+    - label: TLS v1.1
+      name: tlsv1.1
+    - label: TLS v1.2
+      name: tlsv1.2
+    type: multi_select_options
+  - configurable: true
+    default: pause_minority
+    label: Select the network partition behavior of the RabbitMQ cluster
+    name: cluster_partition_handling
+    optional: false
+    options:
+    - label: pause_minority
+      name: pause_minority
+    - label: autoheal
+      name: autoheal
+    type: dropdown_select
+  - configurable: true
+    default: 15672, 5672, 5671, 1883, 8883, 61613, 61614, 15674
+    description: Comma separated list of ports. Defaults to 15672 (Management), 5672
+      (AMQP), 5671 (AMQP+SSL), 1883 (MQTT), 8883 (MQTT+SSL), 61613 (STOMP), 61614
+      (STOMP+SSL), 15674 (WebSTOMP). Extend this list if you enable other protocol
+      plugins or have a custom configuration.
+    label: Ports to forward to the RabbitMQ cluster
+    name: ports
+    optional: false
+    type: string
+  - configurable: true
+    name: static_ips
+    optional: true
+    type: ip_ranges
+  resource_definitions:
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 8192
+    label: RAM
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 2048
+    default: 16384
+    label: Ephemeral Disk
+    name: ephemeral_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 4096
+    default: 30720
+    label: Persistent Disk
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 2
+      power_of_two: true
+    default: 2
+    label: CPU
+    name: cpu
+    type: integer
+  resource_label: RabbitMQ node
+  single_az_only: false
+  static_ip: 1
+  templates:
+  - manifest: |
+      rabbitmq-server:
+        version: "3.7"
+        ports: "(( ports.value ))"
+        plugins: "(( plugins.value ))"
+        config: "(( config.value ))"
+        cookie: "(( cookie.value ))"
+        cluster_partition_handling: "(( cluster_partition_handling.value ))"
+        disk_alarm_threshold: "(( .properties.disk_alarm_threshold.selected_option.parsed_manifest(disk_alarm_threshold) ))"
+
+        administrators:
+          management:
+            username: "(( server_admin_credentials.identity ))"
+            password: "(( server_admin_credentials.password ))"
+          broker:
+            username: "(( service_broker_rabbitmq_admin_credentials.identity ))"
+            password: "(( service_broker_rabbitmq_admin_credentials.password ))"
+
+        ssl:
+          enabled: "(( rsa_certificate.value_present? ))"
+          versions: "(( ssl_versions.value ))"
+          key: "(( rsa_certificate.private_key_pem ))"
+          cert: "(( rsa_certificate.cert_pem ))"
+          cacert: "(( ssl_cacert.value ))"
+          verify: "(( ssl_verify.value ))"
+          verification_depth: "(( ssl_verification_depth.value ))"
+          fail_if_no_peer_cert: "(( ssl_fail_if_no_peer_cert.value ))"
+    name: rabbitmq-server
+    release: cf-rabbitmq
+  - name: metron_agent
+    release: loggregator
+  - name: service-metrics
+    release: service-metrics
+  - name: rabbitmq-server-metrics
+    release: rabbitmq-metrics
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    release: consul
+  - name: syslog_forwarder
+    release: syslog-migration
+- dynamic_ip: 0
+  instance_definition:
+    configurable: true
+    constraints:
+      max: 1
+    default: 1
+    name: instances
+    type: integer
+  manifest: |
+    ---
+    syslog:
+      address: "(( .properties.syslog_selector.enabled.address.value ))"
+      port: "(( .properties.syslog_selector.enabled.port.value ))"
+      transport: "(( .properties.syslog_selector.enabled.syslog_transport.value ))"
+      tls_enabled: "(( .properties.syslog_selector.enabled.syslog_tls.value ))"
+      permitted_peer: "(( .properties.syslog_selector.enabled.syslog_permitted_peer.value ))"
+      ca_cert: "(( .properties.syslog_selector.enabled.syslog_ca_cert.value ))"
+      forward_files: false
+
+      migration:
+        disabled: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_migration_disabled) ))"
+        message_format: "(( .properties.syslog_selector.enabled.syslog_format.value ))"
+
+      custom_rule: |
+        module(load="imfile")
+        input(type="imfile"
+              File="/var/vcap/sys/log/broker/post-start.stdout.log"
+              Tag="rabbitmq_on_demand_broker_post_start_stdout")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/broker/post-start.stderr.log"
+              Tag="rabbitmq_on_demand_broker_post_start_stderr")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/broker/broker.log"
+              Tag="rabbitmq_on_demand_broker")
+
+        input(type="imfile"
+              File="/var/vcap/sys/log/broker/broker-ctl.log"
+              Tag="rabbitmq_on_demand_broker_ctl")
+
+    route_registrar:
+      routes:
+      - name: rabbitmq-odb
+        registration_interval: 20s
+        port: 8080
+        uris:
+        - rabbitmq-odb.(( ..cf.cloud_controller.system_domain.value ))
+  max_in_flight: 1
+  name: on-demand-broker
+  property_blueprints:
+  - configurable: true
+    constraints:
+      max: 50
+      min: 0
+    default: 20
+    name: global_service_instance_quota
+    type: integer
+  - configurable: true
+    name: static_ips
+    optional: true
+    type: ip_ranges
+  resource_definitions:
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 8192
+    default: 8192
+    name: ephemeral_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 1024
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: RabbitMQ on-demand broker
+  single_az_only: true
+  static_ip: 1
+  templates:
+  - manifest: |
+      ---
+      tls_support: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(services_tls_support) ))"
+      broker:
+        name: p.rabbitmq
+      cf:
+        api_url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+        org: "system"
+        service_offering_name: p.rabbitmq
+        plans:
+        - name: "(( .properties.on_demand_broker_plan_1_name.value ))"
+    name: on-demand-broker-smoke-tests
+    release: rabbitmq-on-demand-adapter
+  - manifest: |
+      ---
+      broker_name: rabbitmq-odb
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      cf:
+        api_url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+    name: register-broker
+    release: on-demand-service-broker
+  - name: upgrade-all-service-instances
+    release: on-demand-service-broker
+  - name: delete-all-service-instances
+    release: on-demand-service-broker
+    timeout_minutes: 10000
+  - manifest: |
+      ---
+      broker_name: rabbitmq-odb
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      cf:
+        api_url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+    name: deregister-broker
+    release: on-demand-service-broker
+  - name: rabbitmq-service-adapter
+    release: rabbitmq-on-demand-adapter
+  - name: cf-cli-6-linux
+    release: cf-cli
+  - consumes: 'nats: {from: nats, deployment: "(( ..cf.deployment_name ))"}'
+    name: route_registrar
+    release: routing
+  - consumes: 'credhub: (( .properties.global_settings_secure_bindings.selected_option.parsed_manifest(credhub_link)
+      ))'
+    manifest: |
+      ---
+      startup_banner: true
+      port: 8080
+      username: "(( .properties.broker_basic_auth.identity ))"
+      password: "(( .properties.broker_basic_auth.password ))"
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      secure_binding_credentials: "(( .properties.global_settings_secure_bindings.selected_option.parsed_manifest(secure_bindings_snippet) ))"
+
+      service_catalog:
+        id: 4B1402E1-0781-4959-99D0-A9E4995BF0F7
+        service_name: p.rabbitmq
+        service_description: RabbitMQ service to provide dedicated instances of this high-performance multi-protocol messaging broker
+        bindable: true
+        plan_updatable: false
+
+        tags:
+        - rabbitmq
+        global_quotas:
+          service_instance_limit: "(( .on-demand-broker.global_service_instance_quota.value ))"
+
+        metadata:
+          display_name: "RabbitMQ On-Demand"
+          image_url: data:image/png;base64,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
+          provider_display_name: Pivotal
+          documentation_url: https://docs.pivotal.io/rabbitmq-cf/
+          shareable: "(( .properties.global_settings_shareable_instances.selected_option.parsed_manifest(shareable_instances_snippet) ))"
+          long_description: RabbitMQ for PCF allows developers to easily connect
+            distributed applications using the robust messaging capabilities of
+            RabbitMQ - the most widely deployed open source message broker.
+            Instances of this service provide isolated RabbitMQ node(s) on demand.
+            Creation of the service may take a short while depending upon the
+            number of configured nodes in the plan.
+
+        global_properties:
+          cf_deployment_name: "(( ..cf.deployment_name ))"
+          cf_domain: "(( ..cf.cloud_controller.system_domain.value ))"
+          tls_support: "(( .properties.enable_tls_selector.selected_option.parsed_manifest(services_tls_support) ))"
+
+          route_registrar:
+            registration_interval: 20s
+            port: 15672
+
+          metrics:
+            enable_consul: "(( $ops_manager.dns_enabled ? false : true ))"
+            origin: p.rabbitmq
+            execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+            tls:
+              ca_cert: "(( $ops_manager.ca_certificate ))"
+              metron:
+                cert: "(( .properties.metron_tls_cert.cert_pem ))"
+                key: "(( .properties.metron_tls_cert.private_key_pem ))"
+
+          syslog:
+            address: "(( .properties.syslog_selector.enabled.address.value ))"
+            port: "(( .properties.syslog_selector.enabled.port.value ))"
+            transport: "(( .properties.syslog_selector.enabled.syslog_transport.value ))"
+            tls_enabled: "(( .properties.syslog_selector.enabled.syslog_tls.value ))"
+            permitted_peer: "(( .properties.syslog_selector.enabled.syslog_permitted_peer.value ))"
+            ca_cert: "(( .properties.syslog_selector.enabled.syslog_ca_cert.value ))"
+            forward_files: false
+
+            migration:
+              disabled: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_migration_disabled) ))"
+              message_format: "(( .properties.syslog_selector.enabled.syslog_format.value ))"
+
+            custom_rule: |
+              module(load="imfile")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/rabbit@*-sasl.log"
+                    Tag="rabbitmq_server_sasl")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/rabbit@*.log"
+                    Tag="rabbitmq_server")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/startup_stderr.log"
+                    Tag="rabbitmq_server_startup_stderr")
+
+              input(type="imfile"
+                    File="/varappPath/vcap/sys/log/rabbitmq-server/startup_stdout.log"
+                    Tag="rabbitmq_server_startup_stdout")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/shutdown_stdout.log"
+                    Tag="rabbitmq_server_shutdown_stdout")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/shutdown_stderr.log"
+                    Tag="rabbitmq_server_shutdown_stderr")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/management-ui/access.log*"
+                    Tag="rabbitmq_server_http_api_access")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/upgrade.log"
+                    Tag="rabbitmq_server_upgrade")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/init.log"
+                    Tag="rabbitmq_server_init")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/node-check.log"
+                    Tag="rabbitmq_server_node_check")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/cluster-check.log"
+                    Tag="rabbitmq_server_cluster_check")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/post-deploy.stderr.log"
+                    Tag="rabbitmq_server_post_deploy_stderr")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/post-deploy.stdout.log"
+                    Tag="rabbitmq_server_post_deploy_stdout")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/drain.log"
+                    Tag="rabbitmq_server_drain")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/rabbitmq-server/pre-start.log"
+                    Tag="rabbitmq_server_pre_start")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/route_registrar/route_registrar.log"
+                    Tag="rabbitmq_route_registrar_stdout")
+
+              input(type="imfile"
+                    File="/var/vcap/sys/log/route_registrar/route_registrar.err.log"
+                    Tag="rabbitmq_route_registrar_stderr")
+
+        plans:
+        - name: "(( .properties.on_demand_broker_plan_1_name.value ))"
+          plan_id: 96ca56ae-bdaf-4f1e-8076-92534c3d68d3
+          description: "(( .properties.on_demand_broker_plan_1_description.value ))"
+          cf_service_access: "(( .properties.on_demand_broker_plan_1_cf_service_access.value ))"
+
+          metadata:
+            display_name: "(( .properties.on_demand_broker_plan_1_name.value ))"
+            bullets:
+            - "(( .properties.on_demand_broker_plan_1_features.value ))"
+
+          quotas:
+            service_instance_limit: "(( .properties.on_demand_broker_plan_1_instance_quota.value ))"
+
+          properties:
+            cluster_partition_handling: "(( .properties.on_demand_broker_plan_1_rabbitmq_cluster_partition_handling_strategy.value ))"
+            rabbitmq_server_version: "3.7"
+
+          instance_groups:
+          - name: rabbitmq-server
+            vm_type: "(( .properties.on_demand_broker_plan_1_rabbitmq_vm_type.value ))"
+            instances: "(( .properties.on_demand_broker_plan_1_rabbitmq_number_of_nodes.value ))"
+            persistent_disk_type: "(( .properties.on_demand_broker_plan_1_rabbitmq_persistent_disk_type.value ))"
+            azs: "(( .properties.on_demand_broker_plan_1_rabbitmq_az_placement.value ))"
+            vm_extensions: "(( .properties.on_demand_broker_vm_extensions.value ))"
+            migrated_from:
+            - name: rmq
+            networks:
+            - "(( $self.service_network ))"
+
+        - "(( .properties.on_demand_broker_plan_2_selector.selected_option.parsed_manifest(plan_2_manifest) ))"
+        - "(( .properties.on_demand_broker_plan_3_selector.selected_option.parsed_manifest(plan_3_manifest) ))"
+        - "(( .properties.on_demand_broker_plan_4_selector.selected_option.parsed_manifest(plan_4_manifest) ))"
+        - "(( .properties.on_demand_broker_plan_5_selector.selected_option.parsed_manifest(plan_5_manifest) ))"
+
+      bosh:
+        url: https://(( $director.hostname )):25555
+        root_ca_cert: "(( $director.ca_public_key ))"
+        authentication:
+          uaa:
+            client_id: "(( $self.uaa_client_name ))"
+            client_secret: "(( $self.uaa_client_secret ))"
+
+      cf:
+        url: https://api.(( ..cf.cloud_controller.system_domain.value ))
+        authentication:
+          url: https://uaa.(( ..cf.cloud_controller.system_domain.value ))
+          user_credentials:
+            username: "(( ..cf.uaa.system_services_credentials.identity ))"
+            password: "(( ..cf.uaa.system_services_credentials.password ))"
+
+      service_adapter:
+        path: "/var/vcap/packages/rabbitmq-service-adapter/bin/service-adapter"
+
+      service_deployment:
+        releases:
+        - name: cf-rabbitmq
+          version: "250.0.0"
+          jobs:
+          - rabbitmq-haproxy
+          - rabbitmq-server
+
+        - name: routing
+          version: "0.179.0"
+          jobs:
+          - route_registrar
+
+        - name: rabbitmq-metrics
+          version: "9.14.0"
+          jobs:
+          - rabbitmq-server-metrics
+
+        - name: service-metrics
+          version: "1.5.13"
+          jobs:
+          - service-metrics
+
+        - name: loggregator
+          version: "103.0"
+          jobs:
+          - metron_agent
+
+        - name: consul
+          version: "195"
+          jobs:
+          - consul_agent
+
+        - name: syslog-migration
+          version: "11.1.1"
+          jobs:
+          - syslog_forwarder
+
+        stemcell:
+          os: ubuntu-trusty
+          version: "(( $self.stemcell_version ))"
+    name: broker
+    release: on-demand-service-broker
+  - name: service-metrics-adapter
+    release: on-demand-service-broker
+  - name: syslog_forwarder
+    release: syslog-migration
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    release: consul
+  - manifest: |
+      ---
+      service_metrics:
+        origin: p.rabbitmq
+        execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+        monit_dependencies:
+        - broker
+    name: service-metrics
+    release: service-metrics
+  - manifest: |
+      ---
+      metron_agent:
+        deployment: on-demand-broker
+      loggregator:
+        tls:
+          ca_cert: "(( $ops_manager.ca_certificate ))"
+          metron:
+            cert: "(( .properties.metron_tls_cert.cert_pem ))"
+            key: "(( .properties.metron_tls_cert.private_key_pem ))"
+    name: metron_agent
+    release: loggregator
+label: RabbitMQ
+metadata_version: "2.1"
+minimum_version_for_upgrade: 1.12.0
+name: p-rabbitmq
+post_deploy_errands:
+- colocated: true
+  instances:
+  - rabbitmq-broker
+  label: Broker Registrar
+  name: broker-registrar
+- colocated: true
+  instances:
+  - rabbitmq-broker
+  label: Multitenant Smoke Tests
+  name: smoke-tests
+- colocated: true
+  instances:
+  - on-demand-broker
+  label: Register On Demand Service Broker
+  name: register-broker
+- colocated: true
+  instances:
+  - on-demand-broker
+  label: On Demand Instance Smoke Tests
+  name: on-demand-broker-smoke-tests
+- colocated: true
+  instances:
+  - on-demand-broker
+  label: Upgrade All Service Instances
+  name: upgrade-all-service-instances
+pre_delete_errands:
+- colocated: true
+  instances:
+  - rabbitmq-broker
+  label: Deregister and Purge Instances
+  name: broker-deregistrar
+- colocated: true
+  instances:
+  - on-demand-broker
+  label: Delete All Service Instances
+  name: delete-all-service-instances
+- colocated: true
+  instances:
+  - on-demand-broker
+  label: Deregister On-Demand Service Broker
+  name: deregister-broker
+product_version: 1.13.0
+property_blueprints:
+- configurable: true
+  name: multitenant_pre_upgrade_acknowledgement
+  options:
+  - label: I confirm this is either a fresh installation or I followed the necessary
+      manual steps
+    name: acknowledge
+    optional: false
+  type: multi_select_options
+- name: broker_basic_auth
+  type: simple_credentials
+- configurable: true
+  description: Disk free limit
+  name: disk_alarm_threshold
+  option_templates:
+  - name: fixed50
+    named_manifests:
+    - manifest: '"50000000"'
+      name: disk_alarm_threshold
+    select_value: fixed_50_mb
+  - name: relative100
+    named_manifests:
+    - manifest: '"{mem_relative,1.0}"'
+      name: disk_alarm_threshold
+    select_value: mem_relative_1_0
+  - name: relative150
+    named_manifests:
+    - manifest: '"{mem_relative,1.5}"'
+      name: disk_alarm_threshold
+    select_value: mem_relative_1_5
+  - name: relative200
+    named_manifests:
+    - manifest: '"{mem_relative,2.0}"'
+      name: disk_alarm_threshold
+    select_value: mem_relative_2_0
+  type: selector
+- configurable: true
+  default: "No"
+  name: global_settings_secure_bindings
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: nil
+      name: credhub_link
+    - manifest: 'enabled: false'
+      name: secure_bindings_snippet
+    select_value: "No"
+  - name: enabled
+    named_manifests:
+    - manifest: '{from: credhub, deployment: "(( ..cf.deployment_name ))"}'
+      name: credhub_link
+    - manifest: |
+        enabled: true
+        authentication:
+          uaa:
+            client_id: (( ..cf.uaa.services_credhub_credentials.identity ))
+            client_secret: (( ..cf.uaa.services_credhub_credentials.password ))
+            ca_cert: (( $ops_manager.ca_certificate ))
+      name: secure_bindings_snippet
+    select_value: "Yes"
+  type: selector
+- configurable: true
+  default: "No"
+  name: global_settings_shareable_instances
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: "false"
+      name: shareable_instances_snippet
+    select_value: "No"
+  - name: enabled
+    named_manifests:
+    - manifest: "true"
+      name: shareable_instances_snippet
+    select_value: "Yes"
+  type: selector
+- configurable: true
+  constraints:
+    min: 10
+  default: 30
+  name: metrics_polling_interval
+  type: integer
+- configurable: false
+  name: metron_tls_cert
+  type: rsa_cert_credentials
+- configurable: true
+  default: enabled
+  name: syslog_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: "true"
+      name: syslog_migration_disabled
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: "false"
+      name: syslog_migration_disabled
+    property_blueprints:
+    - configurable: true
+      name: address
+      optional: false
+      type: network_address
+    - configurable: true
+      name: port
+      optional: false
+      type: port
+    - configurable: true
+      default: tcp
+      name: syslog_transport
+      options:
+      - label: TCP
+        name: tcp
+      - label: UDP
+        name: udp
+      - label: RELP
+        name: relp
+      type: dropdown_select
+    - configurable: true
+      default: rfc5424
+      name: syslog_format
+      options:
+      - label: RFC 5424
+        name: rfc5424
+      - label: Legacy Format
+        name: job_index_id
+      type: dropdown_select
+    - configurable: true
+      default: false
+      name: syslog_tls
+      type: boolean
+    - configurable: true
+      name: syslog_permitted_peer
+      optional: true
+      type: string
+    - configurable: true
+      default: null
+      name: syslog_ca_cert
+      optional: true
+      type: ca_certificate
+    select_value: enabled
+  type: selector
+- configurable: true
+  name: on_demand_broker_pre_upgrade_acknowledgement
+  options:
+  - label: On-Demand instances using RabbitMQ 3.6 have been deleted
+    name: acknowledge
+    optional: false
+  type: multi_select_options
+- configurable: true
+  default: disable
+  name: on_demand_broker_plan_1_cf_service_access
+  options:
+  - label: Enable Service Access
+    name: enable
+  - label: Disable Service Access
+    name: disable
+  - label: Leave Service Access Unchanged
+    name: manual
+  type: dropdown_select
+- configurable: true
+  default: single-node-3.7
+  name: on_demand_broker_plan_1_name
+  type: string
+- configurable: true
+  default: This plan provides a single dedicated RabbitMQ 3.7 node
+  name: on_demand_broker_plan_1_description
+  type: text
+- configurable: true
+  constraints:
+    max: 50
+    min: 0
+  default: 10
+  name: on_demand_broker_plan_1_instance_quota
+  type: integer
+- configurable: true
+  default: RabbitMQ 3.7
+  name: on_demand_broker_plan_1_features
+  type: text
+- configurable: true
+  name: on_demand_broker_plan_1_rabbitmq_az_placement
+  optional: false
+  type: service_network_az_multi_select
+- configurable: true
+  name: on_demand_broker_plan_1_rabbitmq_vm_type
+  resource_definitions:
+  - constraints:
+      min: 1024
+    default: 8000
+    name: ram
+  - constraints:
+      min: 2048
+    default: 16000
+    name: ephemeral_disk
+  - constraints:
+      min: 2
+    default: 2
+    name: cpu
+  type: vm_type_dropdown
+- configurable: true
+  name: on_demand_broker_plan_1_rabbitmq_persistent_disk_type
+  resource_definitions:
+  - constraints:
+      min: 4096
+    default: 30000
+    name: persistent_disk
+  type: disk_type_dropdown
+- configurable: true
+  constraints:
+    max: 7
+    may_only_be_odd_or_zero: true
+    min: 1
+  default: 1
+  name: on_demand_broker_plan_1_rabbitmq_number_of_nodes
+  type: integer
+- configurable: true
+  default: pause_minority
+  name: on_demand_broker_plan_1_rabbitmq_cluster_partition_handling_strategy
+  optional: false
+  options:
+  - label: pause_minority
+    name: pause_minority
+  - label: autoheal
+    name: autoheal
+  type: dropdown_select
+- configurable: true
+  default: non-existant-value
+  name: on_demand_broker_plan_1_disk_limit_acknowledgement
+  options:
+  - label: Acknowledge
+    name: acknowledge
+  type: multi_select_options
+- configurable: true
+  default: disabled
+  name: on_demand_broker_plan_2_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: {}
+      name: plan_2_name
+    - manifest: {}
+      name: plan_2_manifest
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: 'name: "(( .properties.on_demand_broker_plan_2_selector.enabled.name.value
+        ))" '
+      name: plan_2_name
+    - manifest: |
+        name: "(( .properties.on_demand_broker_plan_2_selector.enabled.name.value ))"
+        cf_service_access: "(( .properties.on_demand_broker_plan_2_selector.enabled.cf_service_access.value ))"
+        plan_id: 3e69318e-1843-49f8-8ffe-a837b47b46ec
+        description: "(( .properties.on_demand_broker_plan_2_selector.enabled.description.value ))"
+
+        metadata:
+          display_name: "(( .properties.on_demand_broker_plan_2_selector.enabled.name.value ))"
+          bullets:
+          - "(( .properties.on_demand_broker_plan_2_selector.enabled.features.value ))"
+
+        quotas:
+          service_instance_limit: "(( .properties.on_demand_broker_plan_2_selector.enabled.instance_quota.value ))"
+
+        properties:
+          cluster_partition_handling: "(( .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_cluster_partition_handling_strategy.value ))"
+          rabbitmq_server_version: "3.7"
+
+        instance_groups:
+        - name: rabbitmq-server
+          vm_type: "(( .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_vm_type.value ))"
+          instances: "(( .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_number_of_nodes.value ))"
+          persistent_disk_type: "(( .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_persistent_disk_type.value ))"
+          azs: "(( .properties.on_demand_broker_plan_2_selector.enabled.rabbitmq_az_placement.value ))"
+          vm_extensions: "(( .properties.on_demand_broker_vm_extensions.value ))"
+          networks:
+          - "(( $self.service_network ))"
+          migrated_from:
+          - name: "rmq"
+      name: plan_2_manifest
+    property_blueprints:
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enable Service Access
+        name: enable
+      - label: Disable Service Access
+        name: disable
+      - label: Leave Service Access Unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: name
+      type: string
+    - configurable: true
+      name: description
+      type: text
+    - configurable: true
+      default: RabbitMQ 3.7
+      name: features
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      default: 10
+      name: instance_quota
+      type: integer
+    - configurable: true
+      name: rabbitmq_persistent_disk_type
+      resource_definitions:
+      - constraints:
+          min: 4096
+        default: 30000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 7
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 3
+      name: rabbitmq_number_of_nodes
+      type: integer
+    - configurable: true
+      default: pause_minority
+      name: rabbitmq_cluster_partition_handling_strategy
+      optional: false
+      options:
+      - label: pause_minority
+        name: pause_minority
+      - label: autoheal
+        name: autoheal
+      type: dropdown_select
+    - configurable: true
+      name: rabbitmq_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: rabbitmq_vm_type
+      resource_definitions:
+      - constraints:
+          min: 1024
+        default: 8000
+        name: ram
+      - constraints:
+          min: 2048
+        default: 16000
+        name: ephemeral_disk
+      - constraints:
+          min: 2
+        default: 2
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      default: non-existant-value
+      name: disk_limit_acknowledgement
+      options:
+      - label: Acknowledge
+        name: acknowledge
+      type: multi_select_options
+    select_value: enabled
+  type: selector
+- configurable: true
+  default: disabled
+  name: on_demand_broker_plan_3_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: {}
+      name: plan_3_name
+    - manifest: {}
+      name: plan_3_manifest
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: 'name: "(( .properties.on_demand_broker_plan_3_selector.enabled.name.value
+        ))" '
+      name: plan_3_name
+    - manifest: |
+        name: "(( .properties.on_demand_broker_plan_3_selector.enabled.name.value ))"
+        cf_service_access: "(( .properties.on_demand_broker_plan_3_selector.enabled.cf_service_access.value ))"
+        plan_id: decafd02-bdf9-42eb-b1c2-04f1699bbe47
+        description: "(( .properties.on_demand_broker_plan_3_selector.enabled.description.value ))"
+
+        metadata:
+          display_name: "(( .properties.on_demand_broker_plan_3_selector.enabled.name.value ))"
+          bullets:
+          - "(( .properties.on_demand_broker_plan_3_selector.enabled.features.value ))"
+
+        quotas:
+          service_instance_limit: "(( .properties.on_demand_broker_plan_3_selector.enabled.instance_quota.value ))"
+
+        properties:
+          cluster_partition_handling: "(( .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_cluster_partition_handling_strategy.value ))"
+          rabbitmq_server_version: "3.7"
+
+        instance_groups:
+        - name: rabbitmq-server
+          vm_type: "(( .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_vm_type.value ))"
+          instances: "(( .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_number_of_nodes.value ))"
+          persistent_disk_type: "(( .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_persistent_disk_type.value ))"
+          azs: "(( .properties.on_demand_broker_plan_3_selector.enabled.rabbitmq_az_placement.value ))"
+          vm_extensions: "(( .properties.on_demand_broker_vm_extensions.value ))"
+          networks:
+          - "(( $self.service_network ))"
+          migrated_from:
+          - name: "rmq"
+      name: plan_3_manifest
+    property_blueprints:
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enable Service Access
+        name: enable
+      - label: Disable Service Access
+        name: disable
+      - label: Leave Service Access Unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: name
+      type: string
+    - configurable: true
+      name: description
+      type: text
+    - configurable: true
+      default: RabbitMQ 3.7
+      name: features
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      default: 10
+      name: instance_quota
+      type: integer
+    - configurable: true
+      name: rabbitmq_persistent_disk_type
+      resource_definitions:
+      - constraints:
+          min: 4096
+        default: 30000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 7
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 3
+      name: rabbitmq_number_of_nodes
+      type: integer
+    - configurable: true
+      default: pause_minority
+      name: rabbitmq_cluster_partition_handling_strategy
+      optional: false
+      options:
+      - label: pause_minority
+        name: pause_minority
+      - label: autoheal
+        name: autoheal
+      type: dropdown_select
+    - configurable: true
+      name: rabbitmq_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: rabbitmq_vm_type
+      resource_definitions:
+      - constraints:
+          min: 1024
+        default: 8000
+        name: ram
+      - constraints:
+          min: 2048
+        default: 16000
+        name: ephemeral_disk
+      - constraints:
+          min: 2
+        default: 2
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      default: non-existant-value
+      name: disk_limit_acknowledgement
+      options:
+      - label: Acknowledge
+        name: acknowledge
+      type: multi_select_options
+    select_value: enabled
+  type: selector
+- configurable: true
+  default: disabled
+  name: on_demand_broker_plan_4_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: {}
+      name: plan_4_name
+    - manifest: {}
+      name: plan_4_manifest
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: 'name: "(( .properties.on_demand_broker_plan_4_selector.enabled.name.value
+        ))" '
+      name: plan_4_name
+    - manifest: |
+        name: "(( .properties.on_demand_broker_plan_4_selector.enabled.name.value ))"
+        cf_service_access: "(( .properties.on_demand_broker_plan_4_selector.enabled.cf_service_access.value ))"
+        plan_id: 4657ddb2-43fc-4b22-a0d6-9b8d0fa958a5
+        description: "(( .properties.on_demand_broker_plan_4_selector.enabled.description.value ))"
+
+        metadata:
+          display_name: "(( .properties.on_demand_broker_plan_4_selector.enabled.name.value ))"
+          bullets:
+          - "(( .properties.on_demand_broker_plan_4_selector.enabled.features.value ))"
+
+        quotas:
+          service_instance_limit: "(( .properties.on_demand_broker_plan_4_selector.enabled.instance_quota.value ))"
+
+        properties:
+          cluster_partition_handling: "(( .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_cluster_partition_handling_strategy.value ))"
+          rabbitmq_server_version: "3.7"
+
+        instance_groups:
+        - name: rabbitmq-server
+          vm_type: "(( .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_vm_type.value ))"
+          instances: "(( .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_number_of_nodes.value ))"
+          persistent_disk_type: "(( .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_persistent_disk_type.value ))"
+          networks:
+          - "(( $self.service_network ))"
+          azs: "(( .properties.on_demand_broker_plan_4_selector.enabled.rabbitmq_az_placement.value ))"
+          vm_extensions: "(( .properties.on_demand_broker_vm_extensions.value ))"
+          migrated_from:
+          - name: "rmq"
+      name: plan_4_manifest
+    property_blueprints:
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enable Service Access
+        name: enable
+      - label: Disable Service Access
+        name: disable
+      - label: Leave Service Access Unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: name
+      type: string
+    - configurable: true
+      name: description
+      type: text
+    - configurable: true
+      default: RabbitMQ 3.7
+      name: features
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      default: 10
+      name: instance_quota
+      type: integer
+    - configurable: true
+      name: rabbitmq_persistent_disk_type
+      resource_definitions:
+      - constraints:
+          min: 4096
+        default: 30000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 7
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 3
+      name: rabbitmq_number_of_nodes
+      type: integer
+    - configurable: true
+      default: pause_minority
+      name: rabbitmq_cluster_partition_handling_strategy
+      optional: false
+      options:
+      - label: pause_minority
+        name: pause_minority
+      - label: autoheal
+        name: autoheal
+      type: dropdown_select
+    - configurable: true
+      name: rabbitmq_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: rabbitmq_vm_type
+      resource_definitions:
+      - constraints:
+          min: 1024
+        default: 8000
+        name: ram
+      - constraints:
+          min: 2048
+        default: 16000
+        name: ephemeral_disk
+      - constraints:
+          min: 2
+        default: 2
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      default: non-existant-value
+      name: disk_limit_acknowledgement
+      options:
+      - label: Acknowledge
+        name: acknowledge
+      type: multi_select_options
+    select_value: enabled
+  type: selector
+- configurable: true
+  default: disabled
+  name: on_demand_broker_plan_5_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: {}
+      name: plan_5_name
+    - manifest: {}
+      name: plan_5_manifest
+    select_value: disabled
+  - name: enabled
+    named_manifests:
+    - manifest: 'name: "(( .properties.on_demand_broker_plan_5_selector.enabled.name.value
+        ))" '
+      name: plan_5_name
+    - manifest: |
+        plan_id: e5286038-01cd-4dbb-963d-9870011ee16a
+        name: "(( .properties.on_demand_broker_plan_5_selector.enabled.name.value ))"
+        cf_service_access: "(( .properties.on_demand_broker_plan_5_selector.enabled.cf_service_access.value ))"
+        description: "(( .properties.on_demand_broker_plan_5_selector.enabled.description.value ))"
+
+        metadata:
+          display_name: "(( .properties.on_demand_broker_plan_5_selector.enabled.name.value ))"
+          bullets:
+          - "(( .properties.on_demand_broker_plan_5_selector.enabled.features.value ))"
+
+        quotas:
+          service_instance_limit: "(( .properties.on_demand_broker_plan_5_selector.enabled.instance_quota.value ))"
+
+        properties:
+          cluster_partition_handling: "(( .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_cluster_partition_handling_strategy.value ))"
+          rabbitmq_server_version: "3.7"
+
+        instance_groups:
+        - name: rabbitmq-server
+          vm_type: "(( .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_vm_type.value ))"
+          instances: "(( .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_number_of_nodes.value ))"
+          persistent_disk_type: "(( .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_persistent_disk_type.value ))"
+          azs: "(( .properties.on_demand_broker_plan_5_selector.enabled.rabbitmq_az_placement.value ))"
+          vm_extensions: "(( .properties.on_demand_broker_vm_extensions.value ))"
+          networks:
+          - "(( $self.service_network ))"
+
+          migrated_from:
+          - name: "rmq"
+      name: plan_5_manifest
+    property_blueprints:
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enable Service Access
+        name: enable
+      - label: Disable Service Access
+        name: disable
+      - label: Leave Service Access Unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: name
+      type: string
+    - configurable: true
+      name: description
+      type: text
+    - configurable: true
+      default: RabbitMQ 3.7
+      name: features
+      type: text
+    - configurable: true
+      constraints:
+        max: 50
+        min: 0
+      default: 10
+      name: instance_quota
+      type: integer
+    - configurable: true
+      name: rabbitmq_persistent_disk_type
+      resource_definitions:
+      - constraints:
+          min: 4096
+        default: 30000
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        max: 7
+        may_only_be_odd_or_zero: true
+        min: 1
+      default: 3
+      name: rabbitmq_number_of_nodes
+      type: integer
+    - configurable: true
+      default: pause_minority
+      name: rabbitmq_cluster_partition_handling_strategy
+      optional: false
+      options:
+      - label: pause_minority
+        name: pause_minority
+      - label: autoheal
+        name: autoheal
+      type: dropdown_select
+    - configurable: true
+      name: rabbitmq_az_placement
+      optional: false
+      type: service_network_az_multi_select
+    - configurable: true
+      name: rabbitmq_vm_type
+      resource_definitions:
+      - constraints:
+          min: 1024
+        default: 8000
+        name: ram
+      - constraints:
+          min: 2048
+        default: 16000
+        name: ephemeral_disk
+      - constraints:
+          min: 2
+        default: 2
+        name: cpu
+      type: vm_type_dropdown
+    - configurable: true
+      default: non-existant-value
+      name: disk_limit_acknowledgement
+      options:
+      - label: Acknowledge
+        name: acknowledge
+      type: multi_select_options
+    select_value: enabled
+  type: selector
+- configurable: true
+  name: on_demand_broker_vm_extensions
+  optional: true
+  options:
+  - label: Allow outbound internet access (IaaS-dependent)
+    name: public_ip
+  type: multi_select_options
+- configurable: false
+  default: disabled
+  name: on_demand_broker_dedicated_cluster_plan_selector
+  option_templates:
+  - name: enabled
+    select_value: enabled
+  - name: disabled
+    select_value: disabled
+  type: selector
+- configurable: true
+  default: disabled
+  name: enable_tls_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: disabled
+      name: services_tls_support
+    select_value: disabled
+  - name: optional
+    named_manifests:
+    - manifest: optional
+      name: services_tls_support
+    select_value: optional
+  type: selector
+provides_product_versions:
+- name: p-rabbitmq
+  version: 1.13.0
+rank: 50
+releases:
+- file: bosh-io-release-for-cf-cli.tgz
+  name: cf-cli
+  sha1: 6749a07026e335f7744f013c9707911fb72170b5
+  version: 1.5.0
+- file: s3-for-cf-rabbitmq.tgz
+  name: cf-rabbitmq
+  sha1: 57f31bb9a577f0ddb60206648cefd3e8bbcd1c47
+  version: 250.0.0
+- file: s3-for-cf-rabbitmq-multitenant-broker.tgz
+  name: cf-rabbitmq-multitenant-broker
+  sha1: 165a8e2f70bcb8a0b120d15a8d86e1eb3a59135b
+  version: 32.0.0
+- file: bosh-io-release-for-consul.tgz
+  name: consul
+  sha1: 53529e3a9646d82087a65f215138ae45b9ba7b6c
+  version: "195"
+- file: bosh-io-release-for-loggregator.tgz
+  name: loggregator
+  sha1: 41fe210afef030a9bae37795fdd7c5e5ca779ea3
+  version: "103.0"
+- file: pivnet-for-on-demand-service-broker.tgz
+  name: on-demand-service-broker
+  sha1: 1f80c596e223d595d9ebf10b8e9cae9f58704577
+  version: 0.21.2
+- file: s3-for-rabbitmq-metrics.tgz
+  name: rabbitmq-metrics
+  sha1: 4f49c26dea229951b416f14901ec7bbc1caf960a
+  version: 9.14.0
+- file: s3-for-rabbitmq-on-demand-adapter.tgz
+  name: rabbitmq-on-demand-adapter
+  sha1: 37fad16b49ea25cf1c7e75e22ba50fd7471fe79f
+  version: 42.0.0
+- file: bosh-io-release-for-routing.tgz
+  name: routing
+  sha1: 203061d0438ed76f25573080f9d1f73f06de5851
+  version: 0.179.0
+- file: pivnet-for-service-metrics.tgz
+  name: service-metrics
+  sha1: 1000237bcb6c6e1efda59d7dab81607b24cce9c6
+  version: 1.5.13
+- file: github-release-for-syslog-migration.tgz
+  name: syslog-migration
+  sha1: 559720706463798be7120e8f1ebbaa48a7d03075
+  version: 11.1.1
+requires_product_versions:
+- name: cf
+  version: '>= 1.11.0'
+serial: false
+service_broker: true
+stemcell_criteria:
+  enable_patch_security_updates: false
+  os: ubuntu-trusty
+  requires_cpi: false
+  version: "3586.24"

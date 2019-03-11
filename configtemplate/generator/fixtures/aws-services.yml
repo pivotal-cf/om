@@ -1,0 +1,2487 @@
+---
+name: aws-services
+metadata_version: '1.7'
+product_version: 1.4.9
+minimum_version_for_upgrade: 0.1.1
+label: Service Broker for AWS
+description: Expose Amazon Web Services to your cloud foundry applications
+rank: 1
+requires_product_versions:
+- name: cf
+  version: ">= 1.7.0.0"
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: '3468.54'
+releases:
+- name: aws-services
+  file: aws-services-246-sha2.tgz
+  version: '246'
+post_deploy_errands:
+- name: deploy-errand
+pre_delete_errands:
+- name: delete-errand
+form_types:
+- name: aws_form
+  label: AWS Config
+  description: Properties required to manage AWS
+  property_inputs:
+  - label: Access Key ID
+    reference: ".properties.aws_access_key_id"
+  - label: Secret Access Key
+    reference: ".properties.aws_secret_access_key"
+  - label: Temporary Credentials Timeout
+    reference: ".properties.temporary_credentials_timeout"
+    description: 'Time in minutes for temporary credentials to expire, 0 means never
+      expire
+
+'
+  - label: AWS Endpoint
+    reference: ".properties.aws_endpoints"
+    selector_property_inputs:
+    - reference: ".properties.aws_endpoints.custom_option"
+      label: Custom
+      property_inputs:
+      - reference: ".properties.aws_endpoints.custom_option.endpoints_model"
+        label: AWS Endpoints Model
+        description: 'A JSON Representation of the custom aws endpoints.
+
+'
+      - reference: ".properties.aws_endpoints.custom_option.region"
+        label: Default Region
+      - reference: ".properties.aws_endpoints.custom_option.ca_cert"
+        label: CA Bundle
+    - reference: ".properties.aws_endpoints.default_option"
+      label: Default
+      property_inputs:
+      - reference: ".properties.aws_endpoints.default_option.region"
+        label: Default Region
+        description: 'Not all services are available in all regions. You might need
+          to override the region for each service if the default selected is not available.
+
+'
+  - label: Default Availability Zone
+    reference: ".properties.aws_default_az"
+    description: 'Service instances will be placed in the following availability zone.
+      Otherwise leave blank to allow Amazon to control the placement
+
+'
+  - label: Default Tags
+    reference: ".properties.aws_tags"
+    description: 'These tags can also be used with cost allocation reporting to track
+      cost associated with Amazon resources, or used in a Condition statement in an
+      IAM policy. Format: Key=Value Key2=Value2
+
+'
+- name: storage_form
+  label: Broker Config
+  description: Configure Broker Settings and the backing database
+  property_inputs:
+  - label: App Instances
+    reference: ".properties.app_instances"
+  - label: Broker IAM Policy Name
+    reference: ".properties.broker_policy_name"
+  - label: Backing database
+    reference: ".properties.backing_db_selector"
+    selector_property_inputs:
+    - reference: ".properties.backing_db_selector.p_mysql"
+      label: Pivotal MySQL (v2)
+      property_inputs:
+      - reference: ".properties.backing_db_selector.p_mysql.plan_name"
+        label: Plan name to use when creating p.mysql instance
+      - reference: ".properties.backing_db_selector.p_mysql.service_instance_name"
+        label: Instance name to use when creating p.mysql instance
+    - reference: ".properties.backing_db_selector.external_mysql"
+      label: External MySQL
+      property_inputs:
+      - label: Database Host
+        reference: ".properties.backing_db_selector.external_mysql.db_host"
+      - label: Database Port
+        reference: ".properties.backing_db_selector.external_mysql.db_port"
+      - label: Database Username
+        reference: ".properties.backing_db_selector.external_mysql.db_username"
+      - label: Database Password
+        reference: ".properties.backing_db_selector.external_mysql.db_password"
+      - label: Database Name
+        reference: ".properties.backing_db_selector.external_mysql.db_name"
+        description: 'Ensure the provided database exists on the host before installing.
+
+'
+    - reference: ".properties.backing_db_selector.external_postgres"
+      label: External Postgres
+      property_inputs:
+      - label: Database Host
+        reference: ".properties.backing_db_selector.external_postgres.db_host"
+      - label: Database Port
+        reference: ".properties.backing_db_selector.external_postgres.db_port"
+      - label: Database Username
+        reference: ".properties.backing_db_selector.external_postgres.db_username"
+      - label: Database Password
+        reference: ".properties.backing_db_selector.external_postgres.db_password"
+      - label: Database Name
+        reference: ".properties.backing_db_selector.external_postgres.db_name"
+        description: 'Ensure the provided database exists on the host before installing.
+
+'
+  - label: Database SSL Connection
+    reference: ".properties.db_ssl_selector"
+    selector_property_inputs:
+    - reference: ".properties.db_ssl_selector.enabled_option"
+      label: Enabled
+      property_inputs:
+      - reference: ".properties.db_ssl_selector.enabled_option.root_cert"
+        label: Root Certificate
+    - reference: ".properties.db_ssl_selector.disabled_option"
+      label: Disabled
+- name: dynamodb_form
+  label: DynamoDB Config
+  description: Amazon DynamoDB
+  property_inputs:
+  - label: Override Default AWS Region
+    reference: ".properties.dynamodb_region"
+    description: 'Credentials returned will allow applications to create tables in
+      the following region. Otherwise leave blank to use the global defaults
+
+'
+  - label: Enable in Marketplace
+    reference: ".properties.dynamodb_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Service Key Policy Name
+    reference: ".properties.dynamodb_service_key_policy_name"
+    description: 'Name for the managed policy on which to base service keys
+
+'
+  - label: Quota Limit
+    reference: ".properties.dynamodb_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+- name: rds_form
+  label: RDS Config
+  description: Amazon Relational Database Service (RDS)
+  property_inputs:
+  - label: Override Default AWS Region
+    reference: ".properties.rds_default_region"
+    description: 'Service instances will be placed in the following region. Otherwise
+      leave blank to use the global defaults
+
+'
+  - label: Override Default AWS Availability Zone
+    reference: ".properties.rds_default_az"
+    description: 'Service instances will be placed in the following availability zone.
+      Otherwise leave blank to use the global defaults
+
+'
+  - label: RDS Instance Prefix
+    reference: ".properties.rds_instance_prefix"
+    description: 'RDS database instance identifiers in AWS will be prefixed with the
+      value provided in this field. Must be a maximum of two alphanumeric characters.
+
+'
+  - label: Service Key Policy Name
+    reference: ".properties.rds_service_key_policy_name"
+    description: 'Name for the managed policies on which to base service keys
+
+'
+  - label: Networking
+    reference: ".properties.rds_networking_selector"
+    selector_property_inputs:
+    - reference: ".properties.rds_networking_selector.custom_option"
+      label: Custom VPC
+      property_inputs:
+      - reference: ".properties.rds_networking_selector.custom_option.subnet_group_name"
+        label: DB Subnet Group Name
+      - reference: ".properties.rds_networking_selector.custom_option.security_group_ids"
+        label: VPC Security Group Ids
+        description: Comma separated security group ids
+      - reference: ".properties.rds_networking_selector.custom_option.publicly_accessible"
+        label: Publicly Accessible
+    - reference: ".properties.rds_networking_selector.default_option"
+      label: Default VPC
+      property_inputs:
+      - reference: ".properties.rds_networking_selector.default_option.publicly_accessible"
+        label: Publicly Accessible
+  - label: Enable Storage Encryption for All Plans
+    reference: ".properties.rds_storage_encryption"
+    description: 'Enable whether the DB instance should be encrypted for all service
+      plans. Note not all instance classes support encryption. Please see RDS documentation.
+
+'
+  - label: Enable PostgreSQL in Marketplace
+    reference: ".properties.rds_postgres_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Quota Limit
+    reference: ".properties.rds_postgres_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - reference: ".properties.rds_postgres_plans"
+    label: PostgreSQL Plans
+    description: PostgreSQL plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: CreateDBInstance_Engine
+      label: Engine
+      description: must be "postgres"
+    - reference: CreateDBInstance_EngineVersion
+      label: Engine Version
+      description: 'Version number of the database engine to be used for this instance.
+        e.g. 9.6.1, 9.5.4, 9.4.9, etc.
+
+'
+    - reference: CreateDBInstance_DBInstanceClass
+      label: DB Instance Class
+      description: 'The DB instance class that allocates the computational, network,
+        and memory capacity required by planned workload of this DB instance.
+
+'
+    - reference: CreateDBInstance_AllocatedStorage
+      label: Allocated Storage (GB)
+    - reference: CreateDBInstance_StorageType
+      label: Storage Type
+      description: |
+        - gp2 - General Purpose (SSD) storage is suitable for a broad range of database workloads. Provides baseline of 3 IOPS/GB and ability to burst to 3,000 IOPS.
+        - io1 - Provisioned IOPS (SSD) storage is suitable for I/O-intensive database workloads. Provides flexibility to provision I/O ranging from 1,000 to 30,000 IOPS.
+        - standard - Magnetic storage may be used for small database workloads where data is accessed less frequently.
+    - reference: CreateDBInstance_Iops
+      label: Iops (enter if your storage type is io1)
+      description: PostgreSQL supports IOPS / GB ratios between 3 and 10
+    - reference: CreateDBInstance_BackupRetentionPeriod
+      label: Backup Retention Period
+      description: 'The number of days for which automated backups are retained. Setting
+        this parameter to a positive number enables backups. Setting this parameter
+        to 0 disables automated backups.
+
+'
+    - reference: CreateDBInstance_PreferredBackupWindow
+      label: Preferred Backup Window
+      description: 'The daily time range during which automated backups are created
+        if automated backups are enabled. Must be in Universal Coordinated Time (UTC)
+        in the format hh24:mi-hh24:mi. Must be at least 30 minutes. e.g. 13:00-14:00
+
+'
+    - reference: CreateDBInstance_CopyTagsToSnapshot
+      label: Copy Tags to Snapshot
+      description: Copy instance tags to database snapshots
+    - reference: CreateDBInstance_MultiAZ
+      label: Multi AZ
+      description: 'Select to have Amazon RDS maintain a synchronous standby replica
+        in a different Availability Zone than the DB instance. Amazon RDS will automatically
+        fail over to the standby in the case of a planned or unplanned outage of the
+        primary.
+
+'
+    - reference: CreateDBInstance_StorageEncrypted
+      label: Enable Storage Encryption
+      description: 'Enable whether the DB instance should be encrypted for this service
+        plan. Checking ''Enable Storage Encryption for All Plans'' will override this
+        setting. Note not all instance classes support encryption. Please see RDS
+        documentation.
+
+'
+    - reference: Grants
+      label: User Privileges
+      description: 'A comma separated list of privileges to GRANT to users created
+        for database instances. New users are created using these privileges on every
+        service bind operation.
+
+'
+    - reference: RequireSSL
+      label: Require SSL for communication
+      description: 'Require an SSL Connection when using the database.
+
+'
+    - reference: CreateDBInstance_DBParameterGroupName
+      label: DB Parameter Group Name
+      description: 'The name of the DB parameter group to associate with DB instances
+
+'
+  - label: Enable MySQL in Marketplace
+    reference: ".properties.rds_mysql_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Quota Limit
+    reference: ".properties.rds_mysql_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - reference: ".properties.rds_mysql_plans"
+    label: MySQL Plans
+    description: MySQL plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: CreateDBInstance_Engine
+      label: Engine
+      description: must be "mysql"
+    - reference: CreateDBInstance_EngineVersion
+      label: Engine Version
+      description: 'Version number of the database engine to be used for this instance.
+        e.g. 5.6.27, 5.6.28, etc.
+
+'
+    - reference: CreateDBInstance_DBInstanceClass
+      label: DB Instance Class
+      description: 'The DB instance class that allocates the computational, network,
+        and memory capacity required by planned workload of this DB instance.
+
+'
+    - reference: CreateDBInstance_AllocatedStorage
+      label: Allocated Storage (GB)
+    - reference: CreateDBInstance_StorageType
+      label: Storage Type
+      description: |
+        - gp2 - General Purpose (SSD) storage is suitable for a broad range of database workloads. Provides baseline of 3 IOPS/GB and ability to burst to 3,000 IOPS.
+        - io1 - Provisioned IOPS (SSD) storage is suitable for I/O-intensive database workloads. Provides flexibility to provision I/O ranging from 1,000 to 30,000 IOPS.
+        - standard - Magnetic storage may be used for small database workloads where data is accessed less frequently.
+    - reference: CreateDBInstance_Iops
+      label: Iops (enter if your storage type is io1)
+      description: MySQL supports IOPS / GB ratios between 3 and 10
+    - reference: CreateDBInstance_BackupRetentionPeriod
+      label: Backup Retention Period
+      description: 'The number of days for which automated backups are retained. Setting
+        this parameter to a positive number enables backups. Setting this parameter
+        to 0 disables automated backups.
+
+'
+    - reference: CreateDBInstance_PreferredBackupWindow
+      label: Preferred Backup Window
+      description: 'The daily time range during which automated backups are created
+        if automated backups are enabled. Must be in Universal Coordinated Time (UTC)
+        in the format hh24:mi-hh24:mi. Must be at least 30 minutes. e.g. 13:00-14:00
+
+'
+    - reference: CreateDBInstance_CopyTagsToSnapshot
+      label: Copy Tags to Snapshot
+      description: Copy instance tags to database snapshots
+    - reference: CreateDBInstance_MultiAZ
+      label: Multi AZ
+      description: 'Select to have Amazon RDS maintain a synchronous standby replica
+        in a different Availability Zone than the DB instance. Amazon RDS will automatically
+        fail over to the standby in the case of a planned or unplanned outage of the
+        primary.
+
+'
+    - reference: CreateDBInstance_StorageEncrypted
+      label: Enable Storage Encryption
+      description: 'Enable whether the DB instance should be encrypted for this service
+        plan. Checking ''Enable Storage Encryption for All Plans'' will override this
+        setting. Note not all instance classes support encryption. Please see RDS
+        documentation.
+
+'
+    - reference: Grants
+      label: User Privileges
+      description: 'A comma separated list of privileges to GRANT to users created
+        for database instances. New users are created using these privileges on every
+        service bind operation.
+
+'
+    - reference: RequireSSL
+      label: Require SSL for communication
+      description: 'Require an SSL Connection when using the database.
+
+'
+    - reference: CreateDBInstance_DBParameterGroupName
+      label: DB Parameter Group Name
+      description: 'The name of the DB parameter group to associate with DB instances
+
+'
+  - label: Enable SQL Server in Marketplace
+    reference: ".properties.rds_sqlserver_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Quota Limit
+    reference: ".properties.rds_sqlserver_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - reference: ".properties.rds_sqlserver_plans"
+    label: SQL Server Plans
+    description: SQL Server plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: CreateDBInstance_Engine
+      label: Engine
+      description: must be "sqlserver-ex"
+    - reference: CreateDBInstance_EngineVersion
+      label: Engine Version
+      description: 'Version number of the database engine to be used for this instance.
+        e.g. 12.00.4422.0.v1, etc.
+
+'
+    - reference: CreateDBInstance_DBInstanceClass
+      label: DB Instance Class
+      description: 'The DB instance class that allocates the computational, network,
+        and memory capacity required by planned workload of this DB instance.
+
+'
+    - reference: CreateDBInstance_AllocatedStorage
+      label: Allocated Storage (GB)
+    - reference: CreateDBInstance_StorageType
+      label: Storage Type
+      description: |
+        - gp2 - General Purpose (SSD) storage is suitable for a broad range of database workloads. Provides baseline of 3 IOPS/GB and ability to burst to 3,000 IOPS.
+        - io1 - Provisioned IOPS (SSD) storage is suitable for I/O-intensive database workloads. Provides flexibility to provision I/O ranging from 1,000 to 30,000 IOPS.
+        - standard - Magnetic storage may be used for small database workloads where data is accessed less frequently.
+    - reference: CreateDBInstance_Iops
+      label: Iops (enter if your storage type is io1)
+      description: SQL Server supports IOPS / GB ratios between 3 and 10
+    - reference: CreateDBInstance_BackupRetentionPeriod
+      label: Backup Retention Period
+      description: 'The number of days for which automated backups are retained. Setting
+        this parameter to a positive number enables backups. Setting this parameter
+        to 0 disables automated backups.
+
+'
+    - reference: CreateDBInstance_PreferredBackupWindow
+      label: Preferred Backup Window
+      description: 'The daily time range during which automated backups are created
+        if automated backups are enabled. Must be in Universal Coordinated Time (UTC)
+        in the format hh24:mi-hh24:mi. Must be at least 30 minutes. e.g. 13:00-14:00
+
+'
+    - reference: CreateDBInstance_LicenseModel
+      label: License Model
+      description: 'The license model associated with database engine.
+
+'
+    - reference: CreateDBInstance_CopyTagsToSnapshot
+      label: Copy Tags to Snapshot
+      description: Copy instance tags to database snapshots
+    - reference: RequireSSL
+      label: Require SSL for communication
+      description: 'Require an SSL Connection when using the database.
+
+'
+    - reference: CreateDBInstance_StorageEncrypted
+      label: Enable Storage Encryption
+      description: 'Enable whether the DB instance should be encrypted for this service
+        plan. Checking ''Enable Storage Encryption for All Plans'' will override this
+        setting. Note not all instance classes support encryption. Please see RDS
+        documentation.
+
+'
+  - label: Enable MariaDB in Marketplace
+    reference: ".properties.rds_mariadb_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Quota Limit
+    reference: ".properties.rds_mariadb_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - reference: ".properties.rds_mariadb_plans"
+    label: MariaDB Plans
+    description: MariaDB plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: CreateDBInstance_Engine
+      label: Engine
+      description: must be "mariadb"
+    - reference: CreateDBInstance_EngineVersion
+      label: Engine Version
+      description: 'Version number of the database engine to be used for this instance.
+        e.g. 10.0.17, 10.0.24, etc.
+
+'
+    - reference: CreateDBInstance_DBInstanceClass
+      label: DB Instance Class
+      description: 'The DB instance class that allocates the computational, network,
+        and memory capacity required by planned workload of this DB instance.
+
+'
+    - reference: CreateDBInstance_AllocatedStorage
+      label: Allocated Storage (GB)
+    - reference: CreateDBInstance_StorageType
+      label: Storage Type
+      description: |
+        - gp2 - General Purpose (SSD) storage is suitable for a broad range of database workloads. Provides baseline of 3 IOPS/GB and ability to burst to 3,000 IOPS.
+        - io1 - Provisioned IOPS (SSD) storage is suitable for I/O-intensive database workloads. Provides flexibility to provision I/O ranging from 1,000 to 30,000 IOPS.
+        - standard - Magnetic storage may be used for small database workloads where data is accessed less frequently.
+    - reference: CreateDBInstance_Iops
+      label: Iops (enter if your storage type is io1)
+      description: MariaDB supports IOPS / GB ratios between 3 and 10
+    - reference: CreateDBInstance_BackupRetentionPeriod
+      label: Backup Retention Period
+      description: 'The number of days for which automated backups are retained. Setting
+        this parameter to a positive number enables backups. Setting this parameter
+        to 0 disables automated backups.
+
+'
+    - reference: CreateDBInstance_PreferredBackupWindow
+      label: Preferred Backup Window
+      description: 'The daily time range during which automated backups are created
+        if automated backups are enabled. Must be in Universal Coordinated Time (UTC)
+        in the format hh24:mi-hh24:mi. Must be at least 30 minutes. e.g. 13:00-14:00
+
+'
+    - reference: CreateDBInstance_CopyTagsToSnapshot
+      label: Copy Tags to Snapshot
+      description: Copy instance tags to database snapshots
+    - reference: CreateDBInstance_MultiAZ
+      label: Multi AZ
+      description: 'Select to have Amazon RDS maintain a synchronous standby replica
+        in a different Availability Zone than the DB instance. Amazon RDS will automatically
+        fail over to the standby in the case of a planned or unplanned outage of the
+        primary.
+
+'
+    - reference: CreateDBInstance_StorageEncrypted
+      label: Enable Storage Encryption
+      description: 'Enable whether the DB instance should be encrypted for this service
+        plan. Checking ''Enable Storage Encryption for All Plans'' will override this
+        setting. Note not all instance classes support encryption. Please see RDS
+        documentation.
+
+'
+    - reference: Grants
+      label: User Privileges
+      description: 'A comma separated list of privileges to GRANT to users created
+        for database instances. New users are created using these privileges on every
+        service bind operation.
+
+'
+    - reference: RequireSSL
+      label: Require SSL for communication
+      description: 'Require an SSL Connection when using the database.
+
+'
+    - reference: CreateDBInstance_DBParameterGroupName
+      label: DB Parameter Group Name
+      description: 'The name of the DB parameter group to associate with DB instances
+
+'
+  - label: Enable Aurora in Marketplace
+    reference: ".properties.rds_aurora_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Quota Limit
+    reference: ".properties.rds_aurora_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - reference: ".properties.rds_aurora_plans"
+    label: Aurora Plans
+    description: Aurora plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: CreateDBCluster_Engine
+      label: Engine
+      description: must be "aurora"
+    - reference: CreateDBCluster_EngineVersion
+      label: Engine Version
+      description: 'Version number of the database engine to be used for this instance.
+        e.g. 5.6.10a, etc.
+
+'
+    - reference: CreateDBInstance_DBInstanceClass
+      label: DB Instance Class
+      description: 'The DB instance class that allocates the computational, network,
+        and memory capacity required by planned workload of this DB instance.
+
+'
+    - reference: CreateDBCluster_BackupRetentionPeriod
+      label: Backup Retention Period
+      description: 'The number of days for which automated backups are retained. You
+        must specify a minimum value of 1. Must be a value from 1 to 35.
+
+'
+    - reference: CreateDBCluster_PreferredBackupWindow
+      label: Preferred Backup Window
+      description: 'The daily time range during which automated backups are created
+        if automated backups are enabled. Must be in Universal Coordinated Time (UTC)
+        in the format hh24:mi-hh24:mi. Must be at least 30 minutes. e.g. 13:00-14:00
+
+'
+    - reference: CreateDBInstance_CopyTagsToSnapshot
+      label: Copy Tags to Snapshot
+      description: Copy instance tags to database snapshots
+    - reference: CreateDBCluster_StorageEncrypted
+      label: Enable Storage Encryption
+      description: 'Enable whether the DB instance should be encrypted for this service
+        plan. Checking ''Enable Storage Encryption for All Plans'' will override this
+        setting. Note not all instance classes support encryption. Please see RDS
+        documentation.
+
+'
+    - reference: Grants
+      label: User Privileges
+      description: 'A comma separated list of privileges to GRANT to users created
+        for database instances. New users are created using these privileges on every
+        service bind operation.
+
+'
+    - reference: RequireSSL
+      label: Require SSL for communication
+      description: 'Require an SSL Connection when using the database.
+
+'
+    - reference: CreateDBInstance_DBParameterGroupName
+      label: DB Cluster Parameter Group Name
+      description: 'The name of the DB cluster parameter group to associate with DB
+        clusters.
+
+'
+  - label: Enable Oracle in Marketplace
+    reference: ".properties.rds_oracle_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Quota Limit
+    reference: ".properties.rds_oracle_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - reference: ".properties.rds_oracle_plans"
+    label: Oracle Plans
+    description: Oracle plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: CreateDBInstance_Engine
+      label: Engine
+      description: must be "oracle-ee"
+    - reference: CreateDBInstance_EngineVersion
+      label: Engine Version
+      description: 'Version number of the database engine to be used for this instance.
+        e.g. 12.00.4422.0.v1, etc.
+
+'
+    - reference: CreateDBInstance_DBInstanceClass
+      label: DB Instance Class
+      description: 'The DB instance class that allocates the computational, network,
+        and memory capacity required by planned workload of this DB instance.
+
+'
+    - reference: CreateDBInstance_AllocatedStorage
+      label: Allocated Storage (GB)
+    - reference: CreateDBInstance_StorageType
+      label: Storage Type
+      description: |
+        - gp2 - General Purpose (SSD) storage is suitable for a broad range of database workloads. Provides baseline of 3 IOPS/GB and ability to burst to 3,000 IOPS.
+        - io1 - Provisioned IOPS (SSD) storage is suitable for I/O-intensive database workloads. Provides flexibility to provision I/O ranging from 1,000 to 30,000 IOPS.
+        - standard - Magnetic storage may be used for small database workloads where data is accessed less frequently.
+    - reference: CreateDBInstance_Iops
+      label: Iops (enter if your storage type is io1)
+      description: Oracle supports IOPS / GB ratios between 3 and 10
+    - reference: CreateDBInstance_BackupRetentionPeriod
+      label: Backup Retention Period
+      description: 'The number of days for which automated backups are retained. Setting
+        this parameter to a positive number enables backups. Setting this parameter
+        to 0 disables automated backups.
+
+'
+    - reference: CreateDBInstance_PreferredBackupWindow
+      label: Preferred Backup Window
+      description: 'The daily time range during which automated backups are created
+        if automated backups are enabled. Must be in Universal Coordinated Time (UTC)
+        in the format hh24:mi-hh24:mi. Must be at least 30 minutes. e.g. 13:00-14:00
+
+'
+    - reference: CreateDBInstance_LicenseModel
+      label: License Model
+      description: 'The license model associated with database engine.
+
+'
+    - reference: CreateDBInstance_CopyTagsToSnapshot
+      label: Copy Tags to Snapshot
+      description: Copy instance tags to database snapshots
+    - reference: CreateDBInstance_MultiAZ
+      label: Multi AZ
+      description: 'Select to have Amazon RDS maintain a synchronous standby replica
+        in a different Availability Zone than the DB instance. Amazon RDS will automatically
+        fail over to the standby in the case of a planned or unplanned outage of the
+        primary.
+
+'
+    - reference: CreateDBInstance_StorageEncrypted
+      label: Enable Storage Encryption
+      description: 'Enable whether the DB instance should be encrypted for this service
+        plan. Checking ''Enable Storage Encryption for All Plans'' will override this
+        setting. Note not all instance classes support encryption. Please see RDS
+        documentation.
+
+'
+- name: s3_form
+  label: S3 Config
+  description: Amazon Simple Storage Service
+  property_inputs:
+  - label: Override Default AWS Region
+    reference: ".properties.s3_region"
+    description: 'S3 Buckets will be placed in the following region. Otherwise leave
+      blank to use the global defaults
+
+'
+  - label: Enable in Marketplace
+    reference: ".properties.s3_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Service Key Policy Name
+    reference: ".properties.s3_service_key_policy_name"
+    description: 'Name for the managed policy on which to base service keys
+
+'
+  - label: Quota Limit
+    reference: ".properties.s3_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - label: Bucket Prefix
+    reference: ".properties.s3_bucket_prefix"
+    description: 'This prefix will be used for all bucket names
+
+'
+  - reference: ".properties.s3_plans"
+    label: S3 Plans
+    description: S3 plans provided by the service broker
+    property_inputs:
+    - reference: name
+      label: Plan Name
+      description: 'The CLI-friendly name of the plan that will appear in the catalog.
+        All lowercase, no spaces.
+
+'
+    - reference: description
+      label: Plan Description
+      description: Long description of the service plan
+    - reference: bullets
+      label: Plan Features
+      description: 'Features of this plan, to be displayed in a bulleted-list. Separate
+        each bullet with a new line
+
+'
+    - reference: free
+      label: Free
+      description: Whether this plan appears as free in the marketplace
+    - reference: KMSKeyARN
+      label: Server Side Encryption - KMS Key ARN (SSE-KMS)
+      description: 'The KMS key you specify must use should be of the format "arn:aws:kms:region:acct-id:key/key-id"
+
+'
+- name: sqs_form
+  label: SQS Config
+  description: Amazon Simple Queue Service
+  property_inputs:
+  - label: Override Default AWS Region
+    reference: ".properties.sqs_region"
+    description: 'SQS Queues will be placed in the following region. Otherwise leave
+      blank to use the global defaults
+
+'
+  - label: Enable in Marketplace
+    reference: ".properties.sqs_public"
+    description: 'Enable the service in the CF Marketplace
+
+'
+  - label: Service Key Policy Name
+    reference: ".properties.sqs_service_key_policy_name"
+    description: 'Name for the managed policy on which to base service keys
+
+'
+  - label: Quota Limit
+    reference: ".properties.sqs_max_instances"
+    description: 'Limits the total number of service instances allowed to be created,
+      with 0 being disabled/off
+
+'
+  - label: Queue Prefix
+    reference: ".properties.sqs_queue_prefix"
+    description: 'This prefix will be used for all queues
+
+'
+  - label: Default Visibility Timeout
+    reference: ".properties.sqs_visibility_timeout"
+    description: 'The visibility timeout for the queue. An integer from 0 to 43200
+      (12 hours).
+
+'
+  - label: Message Retention Period
+    reference: ".properties.sqs_retention_period"
+    description: 'The number of seconds Amazon SQS retains a message. Integer representing
+      seconds, from 60 (1 minute) to 1209600 (14 days).
+
+'
+  - label: Max Message Size
+    reference: ".properties.sqs_message_size"
+    description: 'The limit of how many bytes a message can contain before Amazon
+      SQS rejects it. An integer from 1024 bytes (1 KiB) up to 262144 bytes (256 KiB).
+
+'
+  - label: Delivery Delay
+    reference: ".properties.sqs_delivery_delay"
+    description: 'The time in seconds that the delivery of all messages in the queue
+      will be delayed. An integer from 0 to 900 (15 minutes).
+
+'
+  - label: Rx Message Wait Time
+    reference: ".properties.sqs_message_wait_time"
+    description: 'The time for which a ReceiveMessage call will wait for a message
+      to arrive. An integer from 0 to 20 (seconds).
+
+'
+  - label: Redrive Policy
+    reference: ".properties.sqs_redrive_selector"
+    description: 'The parameters for dead letter queue functionality of the source
+      queue.
+
+'
+    selector_property_inputs:
+    - reference: ".properties.sqs_redrive_selector.enabled_option"
+      label: Enabled
+      property_inputs:
+      - label: Dead Letter Queue
+        reference: ".properties.sqs_redrive_selector.enabled_option.dead_letter_queue"
+        description: 'The name of the exisiting queue that will serve as the dead
+          letter queue.
+
+'
+      - label: Max Receives
+        reference: ".properties.sqs_redrive_selector.enabled_option.max_receives"
+        description: 'The maximum number of times a message can be received before
+          it is sent to the Dead Letter Queue.
+
+'
+    - reference: ".properties.sqs_redrive_selector.disabled_option"
+      label: Disabled
+property_blueprints:
+- name: broker_credentials
+  type: salted_credentials
+  default:
+    identity: broker
+- name: aws_access_key_id
+  configurable: true
+  type: string
+- name: aws_secret_access_key
+  configurable: true
+  type: secret
+- name: aws_tags
+  type: text
+  configurable: true
+  optional: true
+- name: temporary_credentials_timeout
+  configurable: true
+  type: integer
+  default: 60
+- name: aws_default_az
+  type: string
+  configurable: true
+  optional: true
+- name: aws_endpoints
+  type: selector
+  configurable: true
+  default: Default
+  option_templates:
+  - name: custom_option
+    select_value: Custom
+    named_manifests:
+    - name: region
+      manifest: "(( .properties.aws_endpoints.custom_option.region.value ))"
+    property_blueprints:
+    - name: endpoints_model
+      type: text
+      configurable: true
+      optional: false
+    - name: region
+      type: string
+      configurable: true
+      optional: false
+    - name: ca_cert
+      type: ca_certificate
+      optional: true
+      configurable: true
+  - name: default_option
+    select_value: Default
+    named_manifests:
+    - name: region
+      manifest: "(( .properties.aws_endpoints.default_option.region.value ))"
+    property_blueprints:
+    - name: region
+      type: dropdown_select
+      configurable: true
+      default: us-east-1
+      options: &1
+      - name: us-east-1
+        label: US East (N. Virginia) [us-east-1]
+      - name: us-east-2
+        label: US East (Ohio) [us-east-2]
+      - name: us-west-1
+        label: US West (N. California) [us-west-1]
+      - name: us-west-2
+        label: US West (Oregon) [us-west-2]
+      - name: ca-central-1
+        label: Canada (Central) [ca-central-1]
+      - name: eu-west-1
+        label: EU (Ireland) [eu-west-1]
+      - name: eu-central-1
+        label: EU (Frankfurt) [eu-central-1]
+      - name: eu-west-2
+        label: EU (London) [eu-west-2]
+      - name: ap-northeast-1
+        label: Asia Pacific (Tokyo) [ap-northeast-1]
+      - name: ap-northeast-2
+        label: Asia Pacific (Seoul) [ap-northeast-2]
+      - name: ap-southeast-1
+        label: Asia Pacific (Singapore) [ap-southeast-1]
+      - name: ap-southeast-2
+        label: Asia Pacific (Sydney) [ap-southeast-2]
+      - name: ap-south-1
+        label: Asia Pacific (Mumbai) [ap-south-1]
+      - name: sa-east-1
+        label: South America (Sao Paulo) [sa-east-1]
+      - name: us-gov-west-1
+        label: US GovCloud [us-gov-west-1]
+      - name: cn-north-1
+        label: China (Beijing) [cn-north-1]
+- name: app_instances
+  configurable: true
+  type: integer
+  default: 2
+- name: broker_policy_name
+  configurable: true
+  type: string
+  default: PCFInstallationPolicy
+- name: db_ssl_selector
+  type: selector
+  configurable: true
+  default: Enabled
+  option_templates:
+  - name: enabled_option
+    select_value: Enabled
+    property_blueprints:
+    - name: root_cert
+      type: ca_certificate
+      configurable: true
+  - name: disabled_option
+    select_value: Disabled
+- name: backing_db_selector
+  type: selector
+  configurable: true
+  default: External MySQL
+  option_templates:
+  - name: p_mysql
+    select_value: Pivotal MySQL (v2)
+    property_blueprints:
+    - name: plan_name
+      configurable: true
+      type: string
+    - name: service_instance_name
+      configurable: true
+      type: string
+    named_manifests:
+    - name: store_config
+      manifest: |
+        PlanName : (( .properties.backing_db_selector.p_mysql.plan_name.value ))
+        ServiceName : (( .properties.backing_db_selector.p_mysql.service_instance_name.value ))
+  - name: external_mysql
+    select_value: External MySQL
+    property_blueprints:
+    - name: db_username
+      configurable: true
+      type: string
+    - name: db_password
+      configurable: true
+      type: secret
+    - name: db_host
+      configurable: true
+      type: network_address
+    - name: db_port
+      configurable: true
+      type: port
+      default: 3306
+    - name: db_name
+      configurable: true
+      type: string
+    named_manifests:
+    - name: store_config
+      manifest: |
+        Driver: mysql
+        CACertificate: (( .properties.db_ssl_selector.enabled_option.root_cert.value ))
+        User: (( .properties.backing_db_selector.external_mysql.db_username.value ))
+        Password: (( .properties.backing_db_selector.external_mysql.db_password.value ))
+        Host: (( .properties.backing_db_selector.external_mysql.db_host.value ))
+        Port: (( .properties.backing_db_selector.external_mysql.db_port.value ))
+        Database: (( .properties.backing_db_selector.external_mysql.db_name.value ))
+  - name: external_postgres
+    select_value: External Postgres
+    property_blueprints:
+    - name: db_username
+      configurable: true
+      type: string
+    - name: db_password
+      configurable: true
+      type: secret
+    - name: db_host
+      configurable: true
+      type: network_address
+    - name: db_port
+      configurable: true
+      type: port
+      default: 5432
+    - name: db_name
+      configurable: true
+      type: string
+    named_manifests:
+    - name: store_config
+      manifest: |
+        Driver: postgres
+        CACertificate: (( .properties.db_ssl_selector.enabled_option.root_cert.value ))
+        User: (( .properties.backing_db_selector.external_postgres.db_username.value ))
+        Password: (( .properties.backing_db_selector.external_postgres.db_password.value ))
+        Host: (( .properties.backing_db_selector.external_postgres.db_host.value ))
+        Port: (( .properties.backing_db_selector.external_postgres.db_port.value ))
+        Database: (( .properties.backing_db_selector.external_postgres.db_name.value ))
+- name: dynamodb_service_id
+  type: uuid
+- name: dynamodb_plan_id
+  type: uuid
+- name: dynamodb_public
+  type: boolean
+  configurable: true
+  default: true
+- name: dynamodb_service_key_policy_name
+  type: string
+  configurable: true
+  default: PCFAppDeveloperPolicy-dynamodb
+- name: dynamodb_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: dynamodb_region
+  type: dropdown_select
+  configurable: true
+  optional: true
+  options: *1
+- name: s3_service_id
+  type: uuid
+- name: s3_plan_id
+  type: uuid
+- name: s3_bucket_prefix
+  type: string
+  default: cf
+  configurable: true
+- name: s3_public
+  type: boolean
+  configurable: true
+  default: true
+- name: s3_service_key_policy_name
+  type: string
+  configurable: true
+  default: PCFAppDeveloperPolicy-s3
+- name: s3_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: s3_region
+  type: dropdown_select
+  configurable: true
+  optional: true
+  options: *1
+- name: s3_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: KMSKeyARN
+    type: string
+    configurable: true
+    optional: true
+  default:
+  - name: standard
+    description: Amazon Simple Storage Service is storage for the Internet.
+    free: false
+    bullets: |
+      Secure
+      Durable
+      Highly-scalable
+- name: sqs_service_id
+  type: uuid
+- name: sqs_plan_id
+  type: uuid
+- name: sqs_queue_prefix
+  type: string
+  default: cf
+  configurable: true
+- name: sqs_public
+  type: boolean
+  configurable: true
+  default: true
+- name: sqs_service_key_policy_name
+  type: string
+  configurable: true
+  default: PCFAppDeveloperPolicy-sqs
+- name: sqs_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: sqs_visibility_timeout
+  type: integer
+  default: 30
+  configurable: true
+- name: sqs_retention_period
+  type: integer
+  default: 345600
+  configurable: true
+- name: sqs_message_size
+  type: integer
+  default: 262144
+  configurable: true
+- name: sqs_delivery_delay
+  type: integer
+  default: 0
+  configurable: true
+- name: sqs_message_wait_time
+  type: integer
+  default: 0
+  configurable: true
+- name: sqs_redrive_selector
+  type: selector
+  configurable: true
+  default: Disabled
+  option_templates:
+  - name: enabled_option
+    select_value: Enabled
+    property_blueprints:
+    - name: dead_letter_queue
+      type: string
+    - name: max_receives
+      type: integer
+    named_manifests:
+    - name: redrive_policy
+      manifest: '{"maxReceiveCount":"(( .properties.sqs_redrive_selector.enabled_option.max_receives.value
+        ))", "deadLetterTargetArn":"(( .properties.sqs_redrive_selector.enabled_option.dead_letter_queue.value
+        ))"}'
+  - name: disabled_option
+    select_value: Disabled
+    named_manifests:
+    - name: redrive_policy
+      manifest: ''
+- name: sqs_region
+  type: dropdown_select
+  configurable: true
+  optional: true
+  options: *1
+- name: rds_master_credentials
+  type: simple_credentials
+  default:
+    identity: masterusername
+- name: rds_storage_encryption
+  type: boolean
+  configurable: true
+  default: false
+- name: rds_service_key_policy_name
+  type: string
+  configurable: true
+  default: PCFAppDeveloperPolicy-rds
+- name: rds_networking_selector
+  type: selector
+  configurable: true
+  default: Default
+  option_templates:
+  - name: default_option
+    select_value: Default
+    property_blueprints:
+    - name: publicly_accessible
+      type: boolean
+      default: true
+    named_manifests:
+    - name: publicly_accessible
+      manifest: "(( .properties.rds_networking_selector.default_option.publicly_accessible.value
+        ))"
+  - name: custom_option
+    select_value: Custom
+    property_blueprints:
+    - name: subnet_group_name
+      type: string
+      configurable: true
+    - name: security_group_ids
+      type: string
+      configurable: true
+    - name: publicly_accessible
+      type: boolean
+      configurable: true
+      default: false
+    named_manifests:
+    - name: publicly_accessible
+      manifest: "(( .properties.rds_networking_selector.custom_option.publicly_accessible.value
+        ))"
+- name: rds_postgres_service_id
+  type: uuid
+- name: rds_postgres_public
+  type: boolean
+  configurable: true
+  default: true
+- name: rds_postgres_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: rds_default_region
+  type: dropdown_select
+  configurable: true
+  optional: true
+  options: *1
+- name: rds_default_az
+  type: string
+  optional: true
+  configurable: true
+- name: rds_instance_prefix
+  type: string
+  optional: false
+  configurable: true
+  default: cf
+  constraints:
+  - must_match_regex: "^[a-zA-Z\\d][a-zA-Z\\d]?$"
+    error_message: Must be a maximum of two alphanumeric characters.
+- name: rds_postgres_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_Engine
+    type: string
+    configurable: false
+    default: postgres
+  - name: CreateDBInstance_EngineVersion
+    type: string
+    default: 9.6.1
+  - name: CreateDBInstance_CopyTagsToSnapshot
+    type: boolean
+    default: true
+  - name: CreateDBInstance_DBInstanceClass
+    type: string
+    default: db.t2.micro
+  - name: CreateDBInstance_MultiAZ
+    type: boolean
+  - name: CreateDBInstance_StorageEncrypted
+    type: boolean
+  - name: CreateDBInstance_AllocatedStorage
+    type: integer
+    default: 5
+  - name: CreateDBInstance_StorageType
+    type: string
+    default: gp2
+  - name: CreateDBInstance_Iops
+    configurable: true
+    optional: true
+    type: integer
+  - name: CreateDBInstance_BackupRetentionPeriod
+    type: integer
+    default: 1
+  - name: CreateDBInstance_PreferredBackupWindow
+    type: string
+    configurable: true
+    optional: true
+  - name: Grants
+    type: string
+    configurable: true
+    default: CREATE, TEMP, CONNECT
+  - name: RequireSSL
+    type: boolean
+    configurable: true
+    default: false
+  - name: CreateDBInstance_DBParameterGroupName
+    type: string
+    configurable: true
+    optional: true
+  default:
+  - name: basic
+    description: For small projects and during development.
+    free: false
+    bullets: |
+      Shared processor
+      SSD storage
+      No redundancy
+    CreateDBInstance_Engine: postgres
+    CreateDBInstance_EngineVersion: 9.6.1
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.t2.micro
+    CreateDBInstance_MultiAZ: false
+    CreateDBInstance_AllocatedStorage: 10
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops:
+    CreateDBInstance_BackupRetentionPeriod: 0
+  - name: standard
+    description: For a small production database, multi-AZ, 2vCPU, 7.5GB
+    free: false
+    bullets: |
+      Two processors
+      Multi-AZ redundancy
+      Small production instance
+    CreateDBInstance_Engine: postgres
+    CreateDBInstance_EngineVersion: 9.6.1
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.large
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 100
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+  - name: premium
+    description: For a mid-sized database, multi-AZ, 4 vCPU, 15GB
+    free: false
+    bullets: |
+      Four processors
+      Multi-AZ redundancy
+      Medium production instance
+    CreateDBInstance_Engine: postgres
+    CreateDBInstance_EngineVersion: 9.6.1
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.xlarge
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 200
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+  - name: enterprise
+    description: For a large database, multi-AZ, 8 vCPU, 32GB
+    free: false
+    bullets: |
+      Eight processors
+      Multi-AZ redundancy
+      Large production instance
+    CreateDBInstance_Engine: postgres
+    CreateDBInstance_EngineVersion: 9.6.1
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.2xlarge
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 500
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 3000
+    CreateDBInstance_BackupRetentionPeriod: 7
+- name: rds_mysql_service_id
+  type: uuid
+- name: rds_mysql_public
+  type: boolean
+  configurable: true
+  default: true
+- name: rds_mysql_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: rds_mysql_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_Engine
+    type: string
+    configurable: false
+    default: mysql
+  - name: CreateDBInstance_EngineVersion
+    type: string
+    default: 5.6.27
+  - name: CreateDBInstance_CopyTagsToSnapshot
+    type: boolean
+    default: true
+  - name: CreateDBInstance_DBInstanceClass
+    type: string
+    default: db.t2.micro
+  - name: CreateDBInstance_MultiAZ
+    type: boolean
+  - name: CreateDBInstance_StorageEncrypted
+    type: boolean
+  - name: CreateDBInstance_AllocatedStorage
+    type: integer
+    default: 5
+  - name: CreateDBInstance_StorageType
+    type: string
+    default: gp2
+  - name: CreateDBInstance_Iops
+    configurable: true
+    optional: true
+    type: integer
+  - name: CreateDBInstance_BackupRetentionPeriod
+    type: integer
+    default: 1
+  - name: CreateDBInstance_PreferredBackupWindow
+    type: string
+    configurable: true
+    optional: true
+  - name: Grants
+    type: string
+    configurable: true
+    default: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER,
+      CREATE TEMPORARY TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER
+      ROUTINE, EVENT, TRIGGER
+  - name: RequireSSL
+    type: boolean
+    configurable: true
+    default: false
+  - name: CreateDBInstance_DBParameterGroupName
+    type: string
+    configurable: true
+    optional: true
+  default:
+  - name: basic
+    description: For small projects and during development.
+    free: false
+    bullets: |
+      Shared processor
+      SSD storage
+      No redundancy
+    CreateDBInstance_Engine: mysql
+    CreateDBInstance_EngineVersion: 5.6.27
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.t2.micro
+    CreateDBInstance_MultiAZ: false
+    CreateDBInstance_AllocatedStorage: 10
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops:
+    CreateDBInstance_BackupRetentionPeriod: 0
+  - name: standard
+    description: For a small production database, multi-AZ, 2vCPU, 7.5GB
+    free: false
+    bullets: |
+      Two processors
+      Multi-AZ redundancy
+      Small production instance
+    CreateDBInstance_Engine: mysql
+    CreateDBInstance_EngineVersion: 5.6.27
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.large
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 100
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+  - name: premium
+    description: For a mid-sized database, multi-AZ, 4 vCPU, 15GB
+    free: false
+    bullets: |
+      Four processors
+      Multi-AZ redundancy
+      Medium production instance
+    CreateDBInstance_Engine: mysql
+    CreateDBInstance_EngineVersion: 5.6.27
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.xlarge
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 200
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+  - name: enterprise
+    description: For a large database, multi-AZ, 8 vCPU, 32GB
+    free: false
+    bullets: |
+      Eight processors
+      Multi-AZ redundancy
+      Large production instance
+    CreateDBInstance_Engine: mysql
+    CreateDBInstance_EngineVersion: 5.6.27
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.2xlarge
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 500
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 3000
+    CreateDBInstance_BackupRetentionPeriod: 7
+- name: rds_sqlserver_service_id
+  type: uuid
+- name: rds_sqlserver_public
+  type: boolean
+  configurable: true
+  default: true
+- name: rds_sqlserver_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: rds_sqlserver_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_Engine
+    type: string
+    configurable: false
+    default: sqlserver-ex
+  - name: CreateDBInstance_EngineVersion
+    type: string
+    default: 12.00.4422.0.v1
+  - name: CreateDBInstance_CopyTagsToSnapshot
+    type: boolean
+    default: true
+  - name: CreateDBInstance_DBInstanceClass
+    type: string
+    default: db.t2.micro
+  - name: CreateDBInstance_AllocatedStorage
+    type: integer
+    default: 5
+  - name: CreateDBInstance_StorageType
+    type: string
+    default: gp2
+  - name: CreateDBInstance_Iops
+    configurable: true
+    optional: true
+    type: integer
+  - name: CreateDBInstance_BackupRetentionPeriod
+    type: integer
+    default: 1
+  - name: CreateDBInstance_PreferredBackupWindow
+    type: string
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_LicenseModel
+    type: string
+    default: license-included
+  - name: CreateDBInstance_StorageEncrypted
+    type: boolean
+  - name: RequireSSL
+    type: boolean
+    configurable: true
+    default: false
+  default:
+  - name: basic
+    description: For small projects and during development. 1 vCPU, 1GB
+    free: false
+    bullets: |
+      One processor
+      Small instance
+      No backups
+    CreateDBInstance_Engine: sqlserver-ex
+    CreateDBInstance_EngineVersion: 12.00.4422.0.v1
+    CreateDBInstance_DBInstanceClass: db.t2.micro
+    CreateDBInstance_AllocatedStorage: 20
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops:
+    CreateDBInstance_BackupRetentionPeriod: 0
+    CreateDBInstance_LicenseModel: license-included
+    CreateDBInstance_CopyTagsToSnapshot: true
+  - name: standard
+    description: For a small production database, 2 vCPU, 8GB
+    free: false
+    bullets: |
+      Two processors
+      Small production instance
+    CreateDBInstance_Engine: sqlserver-web
+    CreateDBInstance_EngineVersion: 12.00.4422.0.v1
+    CreateDBInstance_DBInstanceClass: db.m4.large
+    CreateDBInstance_AllocatedStorage: 20
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops:
+    CreateDBInstance_BackupRetentionPeriod: 7
+    CreateDBInstance_LicenseModel: license-included
+    CreateDBInstance_MultiAZ: false
+    CreateDBInstance_CopyTagsToSnapshot: true
+  - name: premium
+    description: For a medium production database, 2 vCPU, 8GB
+    free: false
+    bullets: |
+      Two processors
+      Small production instance
+    CreateDBInstance_Engine: sqlserver-se
+    CreateDBInstance_EngineVersion: 12.00.4422.0.v1
+    CreateDBInstance_DBInstanceClass: db.m4.large
+    CreateDBInstance_AllocatedStorage: 200
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+    CreateDBInstance_LicenseModel: license-included
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_CopyTagsToSnapshot: true
+  - name: enterprise
+    description: For a large database, 4 vCPU, 16GB
+    free: false
+    bullets: |
+      Four processors
+      Large production instance
+    CreateDBInstance_Engine: sqlserver-se
+    CreateDBInstance_EngineVersion: 11.00.6020.0.v1
+    CreateDBInstance_DBInstanceClass: db.m4.xlarge
+    CreateDBInstance_AllocatedStorage: 500
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 3000
+    CreateDBInstance_BackupRetentionPeriod: 7
+    CreateDBInstance_LicenseModel: license-included
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_CopyTagsToSnapshot: true
+- name: rds_mariadb_service_id
+  type: uuid
+- name: rds_mariadb_public
+  type: boolean
+  configurable: true
+  default: true
+- name: rds_mariadb_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: rds_mariadb_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_Engine
+    type: string
+    configurable: false
+    default: mariadb
+  - name: CreateDBInstance_EngineVersion
+    type: string
+    default: 10.0.24
+  - name: CreateDBInstance_CopyTagsToSnapshot
+    type: boolean
+    default: true
+  - name: CreateDBInstance_DBInstanceClass
+    type: string
+    default: db.t2.micro
+  - name: CreateDBInstance_MultiAZ
+    type: boolean
+  - name: CreateDBInstance_StorageEncrypted
+    type: boolean
+  - name: CreateDBInstance_AllocatedStorage
+    type: integer
+    default: 5
+  - name: CreateDBInstance_StorageType
+    type: string
+    default: gp2
+  - name: CreateDBInstance_Iops
+    configurable: true
+    optional: true
+    type: integer
+  - name: CreateDBInstance_BackupRetentionPeriod
+    type: integer
+    default: 1
+  - name: CreateDBInstance_PreferredBackupWindow
+    type: string
+    configurable: true
+    optional: true
+  - name: Grants
+    type: string
+    configurable: true
+    default: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER,
+      CREATE TEMPORARY TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER
+      ROUTINE, EVENT, TRIGGER
+  - name: RequireSSL
+    type: boolean
+    configurable: true
+    default: false
+  - name: CreateDBInstance_DBParameterGroupName
+    type: string
+    configurable: true
+    optional: true
+  default:
+  - name: basic
+    description: For small projects and during development.
+    free: false
+    bullets: |
+      Shared processor
+      SSD storage
+      No redundancy
+    CreateDBInstance_Engine: mariadb
+    CreateDBInstance_EngineVersion: 10.0.24
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.t2.micro
+    CreateDBInstance_MultiAZ: false
+    CreateDBInstance_AllocatedStorage: 10
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops:
+    CreateDBInstance_BackupRetentionPeriod: 0
+  - name: standard
+    description: For a small production database, multi-AZ, 2vCPU, 7.5GB
+    free: false
+    bullets: |
+      Two processors
+      Multi-AZ redundancy
+      Small production instance
+    CreateDBInstance_Engine: mariadb
+    CreateDBInstance_EngineVersion: 10.0.24
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.large
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 100
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+  - name: premium
+    description: For a mid-sized database, multi-AZ, 4 vCPU, 15GB
+    free: false
+    bullets: |
+      Four processors
+      Multi-AZ redundancy
+      Medium production instance
+    CreateDBInstance_Engine: mariadb
+    CreateDBInstance_EngineVersion: 10.0.24
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.xlarge
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 200
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_BackupRetentionPeriod: 7
+  - name: enterprise
+    description: For a large database, multi-AZ, 8 vCPU, 32GB
+    free: false
+    bullets: |
+      Eight processors
+      Multi-AZ redundancy
+      Large production instance
+    CreateDBInstance_Engine: mariadb
+    CreateDBInstance_EngineVersion: 10.0.24
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.m4.2xlarge
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_AllocatedStorage: 500
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 3000
+    CreateDBInstance_BackupRetentionPeriod: 7
+- name: rds_aurora_service_id
+  type: uuid
+- name: rds_aurora_public
+  type: boolean
+  configurable: true
+  default: true
+- name: rds_aurora_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: rds_aurora_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_CopyTagsToSnapshot
+    type: boolean
+    default: true
+  - name: CreateDBInstance_DBInstanceClass
+    type: string
+    default: db.r3.large
+  - name: Grants
+    type: string
+    configurable: true
+    default: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER,
+      CREATE TEMPORARY TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER
+      ROUTINE, EVENT, TRIGGER
+  - name: RequireSSL
+    type: boolean
+    configurable: true
+    default: false
+  - name: CreateDBInstance_DBParameterGroupName
+    type: string
+    configurable: true
+    optional: true
+  - name: CreateDBCluster_Engine
+    type: string
+    configurable: false
+    default: aurora
+  - name: CreateDBCluster_EngineVersion
+    type: string
+    default: 5.6.10a
+  - name: CreateDBCluster_BackupRetentionPeriod
+    type: integer
+    default: 1
+  - name: CreateDBCluster_PreferredBackupWindow
+    type: string
+    configurable: true
+    optional: true
+  - name: CreateDBCluster_StorageEncrypted
+    type: boolean
+  default:
+  - name: basic
+    description: For small projects and during development. 2 vCPU, 15GB
+    free: false
+    bullets: |
+      Two processors
+      Small instance
+      No backups
+    CreateDBCluster_Engine: aurora
+    CreateDBCluster_EngineVersion: 5.6.10a
+    CreateDBCluster_BackupRetentionPeriod: 1
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.r3.large
+  - name: standard
+    description: For a small production database, 4 vCPU, 30.5GB
+    free: false
+    bullets: |
+      Four processors
+      Small production instance
+    CreateDBCluster_Engine: aurora
+    CreateDBCluster_EngineVersion: 5.6.10a
+    CreateDBCluster_BackupRetentionPeriod: 7
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.r3.xlarge
+  - name: premium
+    description: For a mid-sized database, 8 vCPU, 61GB
+    free: false
+    bullets: |
+      Eight processors
+      Medium production instance
+    CreateDBCluster_Engine: aurora
+    CreateDBCluster_EngineVersion: 5.6.10a
+    CreateDBCluster_BackupRetentionPeriod: 7
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.r3.2xlarge
+  - name: enterprise
+    description: For a large database, 16 vCPU, 122GB
+    free: false
+    bullets: |
+      Sixteen processors
+      Large production instance
+    CreateDBCluster_Engine: aurora
+    CreateDBCluster_EngineVersion: 5.6.10a
+    CreateDBCluster_BackupRetentionPeriod: 7
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_DBInstanceClass: db.r3.4xlarge
+- name: rds_oracle_service_id
+  type: uuid
+- name: rds_oracle_public
+  type: boolean
+  configurable: true
+  default: true
+- name: rds_oracle_max_instances
+  type: integer
+  default: 0
+  configurable: true
+- name: rds_oracle_plans
+  type: collection
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+  - name: description
+    type: string
+  - name: free
+    type: boolean
+    configurable: true
+    default: true
+  - name: bullets
+    type: text
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_Engine
+    type: string
+    configurable: false
+    default: oracle-ee
+  - name: CreateDBInstance_EngineVersion
+    type: string
+    default: 12.1.0.2.v3
+  - name: CreateDBInstance_CopyTagsToSnapshot
+    type: boolean
+    default: true
+  - name: CreateDBInstance_DBInstanceClass
+    type: string
+    default: db.t2.micro
+  - name: CreateDBInstance_MultiAZ
+    type: boolean
+  - name: CreateDBInstance_AllocatedStorage
+    type: integer
+    default: 10
+  - name: CreateDBInstance_StorageType
+    type: string
+    default: gp2
+  - name: CreateDBInstance_Iops
+    configurable: true
+    optional: true
+    type: integer
+  - name: CreateDBInstance_BackupRetentionPeriod
+    type: integer
+    default: 1
+  - name: CreateDBInstance_PreferredBackupWindow
+    type: string
+    configurable: true
+    optional: true
+  - name: CreateDBInstance_LicenseModel
+    type: string
+    default: bring-your-own-license
+  - name: CreateDBInstance_StorageEncrypted
+    type: boolean
+  default:
+  - name: basic
+    description: For small projects and during development.
+    free: false
+    bullets: |
+      Shared processor
+      SSD storage
+      No redundancy
+    CreateDBInstance_Engine: oracle-se2
+    CreateDBInstance_EngineVersion: 12.1.0.2.v3
+    CreateDBInstance_DBInstanceClass: db.t2.micro
+    CreateDBInstance_AllocatedStorage: 10
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops:
+    CreateDBInstance_MultiAZ: false
+    CreateDBInstance_BackupRetentionPeriod: 0
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_LicenseModel: bring-your-own-license
+  - name: standard
+    description: For a small production database, multi-AZ, 2vCPU, 8GB
+    free: false
+    bullets: |
+      Two processors
+      Multi-AZ redundancy
+      Small production instance
+    CreateDBInstance_Engine: oracle-se2
+    CreateDBInstance_EngineVersion: 12.1.0.2.v3
+    CreateDBInstance_DBInstanceClass: db.m4.large
+    CreateDBInstance_AllocatedStorage: 100
+    CreateDBInstance_StorageType: gp2
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_BackupRetentionPeriod: 7
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_LicenseModel: bring-your-own-license
+  - name: premium
+    description: For a mid-sized database, multi-AZ, 4 vCPU, 16GB
+    free: false
+    bullets: |
+      Four processors
+      Multi-AZ redundancy
+      Medium production instance
+    CreateDBInstance_Engine: oracle-se2
+    CreateDBInstance_EngineVersion: 12.1.0.2.v3
+    CreateDBInstance_DBInstanceClass: db.m4.xlarge
+    CreateDBInstance_AllocatedStorage: 200
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 1000
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_BackupRetentionPeriod: 7
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_LicenseModel: bring-your-own-license
+  - name: enterprise
+    description: For a large database, multi-AZ, 8 vCPU, 32GB
+    free: false
+    bullets: |
+      Eight processors
+      Multi-AZ redundancy
+      Large production instance
+    CreateDBInstance_Engine: oracle-ee
+    CreateDBInstance_EngineVersion: 12.1.0.2.v3
+    CreateDBInstance_DBInstanceClass: db.m4.2xlarge
+    CreateDBInstance_AllocatedStorage: 500
+    CreateDBInstance_StorageType: io1
+    CreateDBInstance_Iops: 3000
+    CreateDBInstance_MultiAZ: true
+    CreateDBInstance_BackupRetentionPeriod: 7
+    CreateDBInstance_CopyTagsToSnapshot: true
+    CreateDBInstance_LicenseModel: bring-your-own-license
+job_types:
+- name: deploy-errand
+  resource_label: Deploy Broker
+  errand: true
+  templates:
+  - name: deploy-broker
+    release: aws-services
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: true
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    configurable: true
+    default: 1024
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: true
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  manifest: |
+    cf:
+      admin_username: (( ..cf.uaa.system_services_credentials.identity ))
+      admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      ha_proxy:
+        skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+      system_api_url:  "https://api.(( ..cf.cloud_controller.system_domain.value ))"
+      system_domain: (( ..cf.cloud_controller.system_domain.value ))
+    aws_broker:
+      http_proxy: (( $ops_manager.http_proxy ))
+      https_proxy: (( $ops_manager.https_proxy ))
+      no_proxy: (( $ops_manager.no_proxy ))
+      cf:
+        instances: (( .properties.app_instances.value ))
+      policy_name: (( .properties.broker_policy_name.value ))
+      rds:
+        EnableStorageEncryption: (( .properties.rds_storage_encryption.value ))
+        SubnetGroupName: (( .properties.rds_networking_selector.custom_option.subnet_group_name.value ))
+        VpcSecurityGroupIds: (( .properties.rds_networking_selector.custom_option.security_group_ids.value ))
+        PubliclyAccessible: (( .properties.rds_networking_selector.selected_option.parsed_manifest(publicly_accessible) ))
+        MasterUsername: (( .properties.rds_master_credentials.identity ))
+        MasterPasswordSalt: (( .properties.rds_master_credentials.password ))
+        InstancePrefix: (( .properties.rds_instance_prefix.value  ))
+        ServiceKeyPolicyName: (( .properties.rds_service_key_policy_name.value ))
+        Services:
+        - id: (( .properties.rds_postgres_service_id.value ))
+          description: Create and manage Amazon RDS PostgreSQL deployments
+          bindable: true
+          name: aws-rds-postgres
+          public: (( .properties.rds_postgres_public.value ))
+          metadata:
+            displayName: Amazon RDS for PostgreSQL
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/rds/postgresql/"
+            longDescription: >
+              Deploy scalable PostgreSQL deployments
+              in minutes with cost-efficient and resizable
+              hardware capacity
+          plans: (( .properties.rds_postgres_plans.value ))
+        - id: (( .properties.rds_mysql_service_id.value ))
+          description: Create and manage Amazon RDS MySQL deployments
+          bindable: true
+          name: aws-rds-mysql
+          public: (( .properties.rds_mysql_public.value ))
+          metadata:
+            displayName: Amazon RDS for MySQL
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/rds/mysql/"
+            longDescription: >
+              Deploy scalable MySQL deployments
+              in minutes with cost-efficient and resizable
+              hardware capacity
+          plans: (( .properties.rds_mysql_plans.value ))
+        - id: (( .properties.rds_mariadb_service_id.value ))
+          description: Create and manage Amazon RDS MariaDB deployments
+          bindable: true
+          name: aws-rds-mariadb
+          public: (( .properties.rds_mariadb_public.value ))
+          metadata:
+            displayName: Amazon RDS for MariaDB
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/rds/mariadb/"
+            longDescription: >
+              Deploy scalable MariaDB deployments
+              in minutes with cost-efficient and resizable
+              hardware capacity
+          plans: (( .properties.rds_mariadb_plans.value ))
+        - id: (( .properties.rds_aurora_service_id.value ))
+          description: Create and manage Amazon RDS Aurora deployments
+          bindable: true
+          name: aws-rds-aurora
+          public: (( .properties.rds_aurora_public.value ))
+          metadata:
+            displayName: Amazon Aurora - MySQL
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/rds/aurora/"
+            longDescription: >
+              Deploy scalable Amazon Aurora deployments
+              in minutes with cost-efficient and resizable
+              hardware capacity
+          plans: (( .properties.rds_aurora_plans.value ))
+        - id: (( .properties.rds_sqlserver_service_id.value ))
+          description: Create and manage Amazon RDS SQL Server deployments
+          bindable: true
+          name: aws-rds-sqlserver
+          public: (( .properties.rds_sqlserver_public.value ))
+          metadata:
+            displayName: Amazon RDS for SQL Server
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/rds/sqlserver/"
+            longDescription: >
+              Deploy scalable SQL Server deployments
+              in minutes with cost-efficient and resizable
+              hardware capacity
+          plans: (( .properties.rds_sqlserver_plans.value ))
+        - id: (( .properties.rds_oracle_service_id.value ))
+          description: Create and manage Amazon RDS Oracle deployments
+          bindable: true
+          name: aws-rds-oracle
+          public: (( .properties.rds_oracle_public.value ))
+          metadata:
+            displayName: Amazon RDS for Oracle Database
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/rds/oracle/"
+            longDescription: >
+              Deploy scalable Amazon RDS for Oracle Database deployments
+              in minutes with cost-efficient and resizable
+              hardware capacity
+          plans: (( .properties.rds_oracle_plans.value ))
+        ServiceProperties:
+          (( .properties.rds_postgres_service_id.value )):
+            DefaultRegion: (( .properties.rds_default_region.value  || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            DefaultAvailabilityZone: (( .properties.rds_default_az.value || .properties.aws_default_az.value ))
+          (( .properties.rds_mysql_service_id.value )):
+            DefaultRegion: (( .properties.rds_default_region.value  || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            DefaultAvailabilityZone: (( .properties.rds_default_az.value || .properties.aws_default_az.value ))
+          (( .properties.rds_mariadb_service_id.value )):
+            DefaultRegion: (( .properties.rds_default_region.value  || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            DefaultAvailabilityZone: (( .properties.rds_default_az.value || .properties.aws_default_az.value ))
+          (( .properties.rds_aurora_service_id.value )):
+            DefaultRegion: (( .properties.rds_default_region.value  || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            DefaultAvailabilityZone: (( .properties.rds_default_az.value || .properties.aws_default_az.value ))
+          (( .properties.rds_sqlserver_service_id.value )):
+            DefaultRegion: (( .properties.rds_default_region.value  || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            DefaultAvailabilityZone: (( .properties.rds_default_az.value || .properties.aws_default_az.value ))
+          (( .properties.rds_oracle_service_id.value )):
+            DefaultRegion: (( .properties.rds_default_region.value  || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            DefaultAvailabilityZone: (( .properties.rds_default_az.value || .properties.aws_default_az.value ))
+      sqs:
+        ServiceKeyPolicyName: (( .properties.sqs_service_key_policy_name.value ))
+        Services:
+        - id: (( .properties.sqs_service_id.value ))
+          description: Create and manage Amazon SQS queues
+          bindable: true
+          name: aws-sqs
+          public: (( .properties.sqs_public.value ))
+          metadata:
+            displayName: Amazon Simple Queue Service (SQS)
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/sqs/"
+            longDescription: >
+              Amazon Simple Queue Service (SQS) is a fast, reliable,
+              scalable, fully managed message queuing service.
+          plans:
+          - id: (( .properties.sqs_plan_id.value ))
+            name: standard
+            description: Amazon Simple Queue Service
+            free: false
+            bullets:
+        ServiceProperties:
+          (( .properties.sqs_service_id.value )):
+            DefaultRegion: (( .properties.sqs_region.value || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            InstancePrefix: (( .properties.sqs_queue_prefix.value ))
+        PlanProperties:
+          (( .properties.sqs_plan_id.value )):
+            CreateQueue :
+              Attributes:
+                DelaySeconds : (( .properties.sqs_delivery_delay.value ))
+                MaximumMessageSize : (( .properties.sqs_message_size.value ))
+                MessageRetentionPeriod : (( .properties.sqs_retention_period.value ))
+                ReceiveMessageWaitTimeSeconds : (( .properties.sqs_message_wait_time.value ))
+                RedrivePolicy : (( .properties.sqs_redrive_selector.selected_option.parsed_manifest(redrive_policy) ))
+                VisibilityTimeout : (( .properties.sqs_visibility_timeout.value ))
+      s3:
+        ServiceKeyPolicyName: (( .properties.s3_service_key_policy_name.value ))
+        Services:
+        - id: (( .properties.s3_service_id.value ))
+          description: Create and manage Amazon S3 buckets
+          bindable: true
+          name: aws-s3
+          public: (( .properties.s3_public.value ))
+          metadata:
+            displayName: Amazon Simple Storage Service (S3)
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/s3/"
+            longDescription: >
+              Amazon Simple Storage Service (Amazon S3), provides
+              developers and IT teams with secure, durable,
+              highly-scalable cloud storage.
+          plans: (( .properties.s3_plans.value ))
+        ServiceProperties:
+          (( .properties.s3_service_id.value )):
+            DefaultRegion: (( .properties.s3_region.value || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+            InstancePrefix: (( .properties.s3_bucket_prefix.value ))
+      dynamodb:
+        ServiceKeyPolicyName: (( .properties.dynamodb_service_key_policy_name.value ))
+        Services:
+        - id: (( .properties.dynamodb_service_id.value ))
+          description: Create and manage Amazon DynamoDB tables
+          bindable: true
+          name: aws-dynamodb
+          public: (( .properties.dynamodb_public.value ))
+          metadata:
+            displayName: Amazon DynamoDB
+            providerDisplayName: Amazon Web Services, Inc.
+            documentationUrl: "https://aws.amazon.com/dynamodb/"
+            longDescription: >
+              Amazon DynamoDB is a fast and flexible NoSQL database
+              service for all applications that need consistent,
+              single-digit millisecond latency at any scale
+          plans:
+          - id: (( .properties.dynamodb_plan_id.value ))
+            name: standard
+            description: Create Amazon DynamoDB tables
+            free: false
+            bullets: |
+              Key-value Data Model Support
+              Seamless Scaling
+              High Availability
+              Develop Locally, Scale Globally
+        ServiceProperties:
+          (( .properties.dynamodb_service_id.value )):
+            DefaultRegion: (( .properties.dynamodb_region.value || .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+      server:
+        Store: (( .properties.backing_db_selector.selected_option.parsed_manifest(store_config) ))
+        Quotas:
+          (( .properties.dynamodb_service_id.value )): (( .properties.dynamodb_max_instances.value ))
+          (( .properties.rds_postgres_service_id.value )): (( .properties.rds_postgres_max_instances.value ))
+          (( .properties.rds_mysql_service_id.value )): (( .properties.rds_mysql_max_instances.value ))
+          (( .properties.rds_mariadb_service_id.value )): (( .properties.rds_mariadb_max_instances.value ))
+          (( .properties.rds_sqlserver_service_id.value )): (( .properties.rds_sqlserver_max_instances.value ))
+          (( .properties.rds_aurora_service_id.value )): (( .properties.rds_aurora_max_instances.value ))
+          (( .properties.rds_oracle_service_id.value )): (( .properties.rds_oracle_max_instances.value ))
+          (( .properties.s3_service_id.value )): (( .properties.s3_max_instances.value ))
+          (( .properties.sqs_service_id.value )): (( .properties.sqs_max_instances.value ))
+        AWS:
+          CustomEndpoints: (( .properties.aws_endpoints.custom_option.endpoints_model.value ))
+          CustomCACert: (( .properties.aws_endpoints.custom_option.ca_cert.value ))
+          DefaultRegion: (( .properties.aws_endpoints.selected_option.parsed_manifest(region) ))
+          DefaultAvailabilityZone: (( .properties.aws_default_az.value ))
+          AccessKeyId: (( .properties.aws_access_key_id.value ))
+          SecretAccessKey: (( .properties.aws_secret_access_key.value ))
+          Tags:
+            _internal: (( .properties.aws_tags.value ))
+            aws_broker: (( .properties.aws_access_key_id.value ))
+        BrokerUsername: (( .properties.broker_credentials.identity ))
+        BrokerPassword: (( .properties.broker_credentials.password ))
+        ServiceKeyTimeout: (( .properties.temporary_credentials_timeout.value ))
+        LogLevel: DEBUG
+- name: delete-errand
+  resource_label: Remove Broker
+  errand: true
+  templates:
+  - name: delete-broker
+    release: aws-services
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: true
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    configurable: true
+    default: 1024
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: true
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  manifest: |
+    cf:
+      admin_username: (( ..cf.uaa.system_services_credentials.identity ))
+      admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      ha_proxy:
+        skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+      system_api_url: "https://api.(( ..cf.cloud_controller.system_domain.value ))"
+      system_domain: (( ..cf.cloud_controller.system_domain.value ))
+- name: compilation
+  resource_label: compilation
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: true
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    configurable: true
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    configurable: true
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: true
+    default: 1
+icon_image: iVBORw0KGgoAAAANSUhEUgAAAIEAAACBCAYAAADnoNlQAAAABHNCSVQICAgIfAhkiAAAGflJREFUeJztXW9QG+edfoTYRVgCJJQqVkwrkRj7HNMzcL2atthWHOfsi5sxnt6Nm34xmcuH3o1nTM9JkzQ+G/uUSTKJJ/KVmeuHZCJfb3r1zGUsT8Yeu02IoP9MbwaLKW5jYweUQKHUIAm0RqwQug9ryUJaSe+7elcCN88Mg1jtn5fdZ3//39+rwf2OUyc7AQCLi+3JbdHYRiwt6WT312qnUV42Jv1RFkB5WS9QNoEjR8+qPtYSQVPqATDDaWcbxFgHYtG/gRizYyFSg3ic7f/HcYvg+NvgtNdRXu5BRdk5HDrqZ3qNEmD1kiDx0MWoA+KCDdFoeUnGUcHPo4K/jnL+Ep479lJJxlAgVhcJTjvbEFk8gsid3VgQK0s9HFms0U+igr+ASu2/rxYpsfJJ0O20YT72b5iPfAuReWOph0MMjSaONfpPoOO7ceSYq9TDyYWVS4LTzjbMR36IOWELc91ebHDcIgyGMytVOqy8m3va2YZwxA0h/Eiph8IcGk0c1VV90PMHVxIZVg4J7ueHn44VRobSk6DbaUMo8uFfxMNPh0YTR3XNebzQtb+kwyjlxfF61znMhvatep1fKCr4eRgMPyiVAVmam3/KeQDh2XeL6uZptYBOl/k5HYIg/Y7FgEikOGNLoNrgg0HXXmwVUXwSvH7Mi9DsDlWvoddLPzwH8Lz0WSkSZJiPAJH5u79VJAfHLaK66vliSoXikeC0sw3B2Z+p8vbrdEB1NWDQF/bASRGLSRJDEIDQLBCNsr9GtcGHF53N7E+cieKQ4M2TryIQeIGp7tfpAJMJqK6S3vZSIhIBAgH2hKjg52Gs/jscPvpLdifNhPokYCn+tVrAZATM5tI/+GyYnQUCQek3C2g0cdSa/lVN9aAeCVi6fhwHPGiRRL5Wy2BwRYAoAlNTEiFYwGR6B88ff5bNyZZDHRJ0O22Ynv1Dwfo/8fBNJkYDKwFiMYkMt6cLP5dKdgJ7ErAggFYrifwHLQwHVmKwkgx6wy287FzPZlAS2JLglPMAZqb/pyADsLoaqFu3esQ+LQQB+GysMAOSMRHYkaBQAnAc8MW64rh4KwF/mpIkg1IwJAIbEhSqAu73tz8bIhFg1K9cKjAiQuEkKJQAdetWt+FXKGIxYGJCua3AgAhlhRwMAIoJoNUCDev/sgkASPehrg6wWpUdL4QfwRsn3i5kCIVJgleO3lQUB9DpgIfrSyL+2+tsaDKa4bBYYeR5bDHWLvt+MDiDoCjCOzWR/CkaBAHwfypJB1rU1r6mtNBVOQle7zqHULA9/45pKIH+d1is6KhvQHudDTUcXaQxFBXhGfPDdeMafAEGvn4+RCLAJyP0RNBo4qg1P61kfoQyEpxyHsD07Z9SH2cySqKvSHBYrOhqbMEOy1om5+udmkTn1Svqk0GpwVjBz8NcvYk2FU3/OnY7bQiEvFhaorMnikgAI8/jtS1/i//8yjdg1xuYndeuN+C76/8KGmjUVRPl5ZKtNBcGFhfJj4vFOCyVPYWevv+guRw9Cb7+tY+xEKmmOqaIBGgymeHduRe7reTXGwzOYCEWg5EwKeWwWLG/zo5LE2MIRkWlQ82NsjJAvwYIhYB4nPy4qFiLfU/q8LOPPiQ9hE4dvHnyVczMvEh1jE4neQFFgESAJ3Pqfb8QhmfcD8+YH77gNILi8odo5Hk4LFY4LFa0r7PBlkOShKIiHD0X1VUPSmwEjSYOq7meVC2Qk6DbacPE9AhVRLCIXkA+AvROTaJraIBajLfX2dDV2JLhRSRQNCIM36Q7Zo1+EkdfIfI7yZ/O17/2MaJiFfH+Wq1EAI4jPkQpchEgFBXx9G8+wouD/4dRIUx97o9nQ/jRzY8Rior42gMW6NIIrdNq8bTtYfzo1seIKHHtSFBeLpXKzc6RHxONGkjVAplxd+pkJ+4IdCa27UtFKfww8jzcW7fLEmAwOAP7+2fhGSu8btN1/RocPRcxGJzJ+K6G4+Fpe6Lga+SEySTZVjSYm3sO3U5bvt3ISDA79wbVxS2WoiWCsonqweAMHD0XMnR+IfAFpuHouSBLhB2WtejcuJnZtWRRV5e9SloO0Wg5BPFMvt3yk+CNE29TTfvW64tWB9BkMuPwhswbrwYBEgiKIhw9F+CXUS1djS3EHoZifLGOzsYKCztw2tmWa5fcRh6tMajVAusfUU0N2PWGpOVu11ehyVSboQZCURFNl84p0v80aDKZcXV3ZsA04X2MCnPwTk2qYzDenpaSTqTIk2TK/XBpi0StVuABM/ngCNFR34CO+g1Ekb9n+vvgHhlmPgY5dDW24Hhj7mqvUFSEe2QYrutDbIn5yci9iTIkePCBbdmqlrOTgFYKqBAPaDKZ4WpuJQ779k5NwtFzgekYcsHI8/Dt3p8zlpCKMyPD6BoaYEMGWrcxhzTIbhMIiy6qmMBDClOhWdDV2IKru9up4v7ukRtMx5APQVGE68YQ8f4H6xvg27OfjQGp09FJXSH8SDbbILvBd0f4JvEFTEam3oB763YcrG+gOsYvhLOqASPPo32dDU0mM5qMZllbQmkK2T0yjK7GFuLsZA3H463mVjQZzejo7yM6JissFqkYhTQ+MR/5IYAM/SX/ptOGhzduYGYM5iOAXwjDdWOIyOhKpI/3rcvrKmdAqS5P1CmQhJ2ZqC+aWsUs4WR5Epx8KUDcH4hhcigXAfxCGF1DA0RGX3udDa7mVmJdnQ+F6PKO+gZ0NbZkHcuZkeHCJEIsBly/QS4NZCaxZDqcp51tCM3+C/EgbF9ikhvoqG/A8cYW2e/Oj/uxp/cyrkz/Oec57HoDPNuewAub/pqpv95kMuOZhzdApy2nzj34gjNw3bgGDTRwWDLtpiaTubDUdFkZsBQn9xTiS5vg/dUrqZsyn95jbf+FhQU70QlNRiY1gkaexyXHnoy4PCC9Kd/+9Ud54/IOixXex/diY3UN0TVDURH9039GKCpirS5/iaROq4XDYsVjlofgGfdT5wm8UxMYDM7g7611Gf+nw2LF+fFPMRmZpzpnEpU6YCZAlnKOxTj8wzc/xKWeTxObMg3DO/PfIL44oyJRV3OrrGFFKio76hvw7tbtOfcZDM7APXIjqy1BmkLeYVkL7869iiKSnjE/2sUP8NHOJzO+czW3KrcPEhN1Sae6pRmIy20CmrIxRnEBu96AkacOZGwnDf3mI4BSfZ5PlxcSmu7cuBlvNbdmbH+s56JytSCKkm1AAo5bxIk3kund5XGCRfGfiS/KKDLYlcUO6Ojvy3uDHRZrVgIMBmfwWM9FdPT3KTLo3CPDsL9/FieGrsp+v8VYC+/OvYpsD9f1a+idmszYnu1eEIGmI0s0Wp4aM1hOgkjkq8QXraarMMuG9rpM9+3MyHBe908yAnfJfndmZBiOngtM6gC7hgbQfNmDkEwZ2RZjLVwybzTpedOxw7K2sJpImlRzZPFI4uM9EnQ7bcSTSBj1CchWAi53g9Lh3rojpx3BOoXcdOmcbObw4N1YBC28UxOy0kDJuZKgeTEXFhyJj/dIEFn6LvnFyAuMckHOZRoMzuQV3+11NtlwcsE+dw6MCmG0//IDWYngam5VpBbkwtxy94QYWi05EVLiQPdIsCjuIb4YI1Ug9w/LVQE1mczo3LgZnm274NuzH+faMtXAYHAGnVevMBlXNvgC07Iks+kN8O7cC1dLKzo3bkaTicxeklNXdn2BLxhN+P7ugiD3XMQFcSPRgTods8JRuYqgxI0x8jw66hvQuaGRKPLXOXBFlSKSdHjG/DgzMpwR2dxirF32/yTqCnKFneW2ZytoJUZ1FXmtgbQajOueJCC1BwxsEkXZDCBfcBqdGzdj9KkDeIsw9HtmZLiocwY7r16RVQupsOkNOLxhM0aeOgD31u1Z1YWcXVAQeJ68uDca2wgk1EFinSASMMoWZhN7nrYn8FaW4FE2kBiSLBEURari1YP1DRh96kBhRh8NSF/UqPgAkCDBUryR+AIqFpDG4nHi+oHB4Ax6pyZxZmRY9VIyOdASr4bjca5tF1wtylxKKhCEwQEgUTsq2QRLMbLQH8epNpEkFo9Dq8lew3JmZBiecT+8UxNF0f35MCqEofnpO8m/m0xm2PUGtK+z5Zz9fHjDZhg5PmlgNpkKtAHkUElRkXzqZKdEgoXoFqIDGGbmfMF7waA4kJUAJ4auwnVjaEU8+FzwBabhC0xLaqI/d9j5YH0DglERnQNXZItbCgaNtF6KN9KtIMZQFQRFEZ/dEfBQ5RpZAgwGZ9DR31ecngAqwH1XcnU1tsiWxR/esBkz4kLG9lGBYpZRLnAc2dT2pdh6ySYgLSBhrAr+OH8nKwEcPRdWLQESCIrS2/5MlgDWS5syBTAzL4dUaseXauh6DNDomjyw6w3Yav5CxnY1J46UCu6RYVkiyNVPeFm5jDyhmyjG7GX5ZqeoBbmMWSgqov0XP7+vCJCAe2QYp29cy7nPYHCGnfSjcLHLsLj0FeK9aebB5YCR52VrCZnV5K9QdA5ckU1CJeC6Tl6+zhJ06oCRTdAhQwC/EIbreu435X5AtvhCrpJ5RSBVB5F5Y+F9DBVALnFEM4lDLXRu3Hx3niO7PkfpcI8MY3w+syjUlUdVUIPCnS/JItNy8wCKNX8wHa6WVtj1BninJpIlX6GoCON7P1btmv/72WiG22ikbK3HEkUngdxblpj9U2x4tu1KEjKVmDWc1PjCrq9CR38vczvFM+bPIEFBdQQFoujqQC5xxCxAwhAH6xuww7IW7q3sF25LjZauBJREHaTDF2AQKpVBk8mMoLgAI1+BoLiw7I32bNtVeAGHQshJPVVyCIRYESRQA4my7lBUTMbnmy974AtMw643ZNgliQSVw2JdJqpHhTkYeV51dUXbbjcv5gnXbtRo4nTqQKUbwbrFS3udDe3r7ACW31z31u3oqG+QlQCuG9fgGfOjc2B5idrBu9VNaiNX/EARSGdIVehCZagoO0d8YjUWgQTQZGTb3cS9dXuyLiG1AmiLsRaullb4gtP4Xlo9YueGzWivs8nGMFjbLHLGcSmDZGXFXpdXLkHCWh+m3lD7+2dR//69xt/ukWFZ0X6wvgHn2nZlTGYJRUXmpWtyngBz45hiKV86dRCm6JGTA+k58xqOZ1p6lfqmuZpbl1XzJPQ9iVHoF8Iwvvdj5m+pHAmYewzE6oAblEigqyRbe2WJTcdOuTerXUEjiWxIfWgH6xuWGYFn7galuoYGcH7cD78QzqqP1WhHZ+TlCc8se5gAtSQoKyM7gtTizAO5Is2D9Q3MwrWOngsZOh+QqpQ6+vvgsFjRZDTDdf0a7O+fXfYWnh/3J38cPReZjCcVnRsaMzwBvxBmWzsRi5FLAm35byQXkdNeB5C/wpPRkvHeqQn4hXBG6ZV76w4m3ceCotRqpslohpHn4Z2akB76jSF4d+5dVsx6flzyCDxjftj1VfCM+1UrZrHrDbJNq5jnTWie01Ls1l1JoCXrhRaLMXMTs03IZNUaNiiK6OjvQ0d/H+z6quTbnl7NvG+dDcGomGyOqSY8256Qbb7JPG9CY7t9/8TbkiQo0/4cwD8RHSQITApO3SPD6NzYmDHj5q3m1uSbXCiMPA/vzr3Ja3TUb5Ddb/SpA8mH47BYVWld7966XXZ2kev6NfaBKFJJUMHPAwmbgGbxJJoumnmQbfLou3eDOoXArjfAt3v/shufbYpX6ttZw/Hw7nySmX1i5Hl4tu2SLaIZDM6oM3GG9BmV838EUl1EUg+BkZsISGXa2ZpAvLt1+934vrKHYddXKe5eVsPxTPIKDosVvt37ZVPnoaiozgzqSITcKCwv/x2QSoIKbpDowGiUafi4a2gg6balY986G3x79idz/jTwBacV1/D3Tk0WFCBqr7PBu3MvPtr5ZFYiqlZOT/OSlpf/FEhNIGnLfwOALG86O8e0kXXijZATmTUcj8MbNuPwhs3wC2F4pyaScYD0BxWMiskb67BY4QtMy6qAxFqHdn2V7LS3UWEOnRs3J6OLTSZzzqKPRPCnyVQLh8WaNxn0TH8fk4U4ZBEIkO2n0cQTZsDyov8fdJItu6XS4lYkXcNzIdEh1NXSKjvhA5BcwtROJrmumThfulupFKqvl0TTvCpljaTlYWNSuyASUSWj2DU0gMd6LhacUcuVkEq3xruGBrJOM2e1qCYgkc/+/ll1J9TQrJFUwScDMstJUFHhJT6J0lW+88A7NZHsGpavB4DS86fCyPPsc/kp6J2axGM9F9H+iw/UL6G7fZt8X17rTnxMkwTlp4hPQqp7FKJraADG936MZ/r7cH7cT0WIYDRzjl8C6cGoXK6oUsPSL4Rx+sY1NF/2MOuilheCQJ7qr+DnUxfAyJwIeOL7d4i7lti+xKx/EQkSBlq2osxRYU7qP6g3wL11h+yq6ICUQ/AFp9GRllxKIDETKLFIdrZClFQEowvwBWYwKsyVpjZgbIxcOtcYPXiha3/iz0wS0KyGrtdLax+uUGTrHJoPxV5BpWDQGIRAxlI4mfUE+nLy1jWCwDSCyBJ2vUERAQDJICw0YllU0Nhna/ST6WshZZLg0FE/9IZbxCf9E+GCC6sMq2ZOZCwGTFN4HLoKd/om+coiHd9NfNIVKg1GhXDWvgC5EIqKeKa/r6jd0ArC7WnyMDHHLeK5Yy+lb5YnwZFjrkSGiQgrVBok+gKEoiIGgzNovuyR3W//Lz/A6RvXksGcUk2Jo4Yoki99AwBrKn8ltzn7vIM1+p9gQSRPL8/OFtVTIIV7ZHjZQ+2dmlwWBEoUksqVm694TFCUpGk0cej5g7Jf5Tzw+PNR4iVyOU4KJavU3YwVjDy/bB6BmpVEqkIQpAUySVFT3YsXTjrkvsr9gA2GMwgEyKRBNCqJJmvpJlaSICiKRW9+yRyxGPDZGPn+OaQAkK/k/Pnjz4LjFokvdnt6RRqJ9x2mpugmAlVX9eWaX5J/3kFV1ZvkV4PEUMpFoj4HBQSBfK0jIK8UAEhI8Nyxl4izi4DE0LFx4t0/BwViMcD/af79UlFdcz7fLDOyGUh6PfmCGIDkKdCw9XOQwf8pnZSt4OdTcwTZQEaCI0fPoqa6l/zqkHruM5qn8Dkg3U9ae8tg+AHJbuT9CfT8QdzhbhK7jIDkwjxcz6z1HTUSRZfzd38vxchmUWm198bMc1KJPcPFPqgRCNBL1mqDD0eOuUh2zR0nSMepk52YnnmL6hidTiKC2jdQEKQHHJm/+1slKaTXS51ddTrpswrzFZchEKC3sThuEV+oWU8645yOBADw2tGrmA03UR2jBhEiEamydna2tG4px0mLTOj1zFaJSyISkaQprbdlfuDbNHNJ6EkA0BWeJMCCCJGI9GaEZlVrmFEwdDpp+eDqqsKkhFIC5IgMZoMyEpx2tmFqug/xON3xSogQi0n58tu3V+6Dz4bqaokMtGtKKyWArjKIY69SL2Ct7LW81PMp9j2pw/w8XXPsxUVgLgxUGfITIRIBJiel4FM4DCwtKRpqSbGwIFUABwJAbEmyJcryOGSBADDqJ1sBPRUct4gHqh7FxZ4Q7TCVSYIEaErRUqHVZvcaBEFKTd+v4WeTEbBY5FXF7Wny5exSodHEUWt+mmpOaerhSg5ahleO3oQQfoT6OK0WsK69JypVfPjtj34Zjvr1aLKuS27zTYzDNzEO98Bvk9u6Hs+/Pqj3k5vwjpDN5M8Jk1FKtmm1ktifmFBexl9b+5pcsQgpCicBADhfnsAdQdlMDZNREpWzs0yGkoom6zq4v/UdbLE+lHUffzAA+xsnAQDxV/J7vyd6LqPrw0tsBqjVSv9/WFDu0ppM7+D5488WMgw2zSyNla2IRf9A7TEAqk1iabKug/fZQ6hJUTn+YACjgRnYTbWwGSUJ5P2EwVutFLFYYeF1BgQAWJHg0FE/up2bMD2rjAgqwP2t7yQJMDjxR3ReOLdMjNtNtejauWeZOkiF5uXvFWWcisGIAADLBteHjvphrt5EVZuoEtof/XJSBYQiETje7s7Q46OBGXS89xM2+r3YYEgAgHWX8wQRaFLPKsBRf2/GtOvXvQhGSs5LdmBMAECNBtdSvNqk2GtggFQvQKnOl/MU3AO/xahKHdmJoAIBADW7nL/sXI/Xj3kRmmW/YEARcHzn7oxt3k9uloYEBcYB8kHdRS9eOOmAyfQONBrK8NfnSKKCn4fFvF0tAgDFWO/g+ePP4pTz5wjPvlssz8E3MY4d9ZIman/0y4qMvxXhHegNt1Cje1ztJuTFWf7myNGzMFdvoprjWABSH3pHy1dhL+GqIoqg0cRhMr2Dl53ENQGFoHhrIB066sfLzvWorX1NbfXg+f3v4A9KTTRqdDp4nz20zGMA7kUTSULFRYWuMgiLebsaBmA2sAkb06LbaUMo8qGa3gNpxPD8H4bQ/t/vAFgeNi66OtBo4qiuOU9SGMoaJVkcMykVzLXfo5rcQgHfxDgcb3cnJQIA2Iwm7Kh/JEmAFQO94Ras5vpSEAAolSRIx+td5zAb2kddpEIIuSyid+QmfBPj8Pz+d8ltqaqBWZIoF3SVQegrT5AWhKqFlUECQFIRgngGs3Pb1SLDigHHLaKq6s1C0r8ssfJu9v1MBl1lEJW694pp9JFgZd/kN068jTvCd1ZKZlIx9IZb0PHdpRb72bCySZDAKecBRCMvYk7YsmqkQwU/D92ay9CXdxZ7xTlarI4bmoo3T76KBfEfIS7YqGZDFQOJB68rP5XeIWwlY/WRIBWnnAewuPhtRKOtmL/zYNGlBMctgq/wg+e84LXu1fTgU7G6SZCOU84DWIo9gaXYeixEtyC2aGAmLSr4eWi5EDjtdZSXe1BRdm6li3lS3F8kyIbTzjYsLn0FALC4tANYyh0tKtPeRJlGWqLsPnrY2fD/pBUi8eh6HuAAAAAASUVORK5CYII=

@@ -1,0 +1,469 @@
+---
+description: Route Services service broker for Apigee Edge
+icon_image: iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyhpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTExIDc5LjE1ODMyNSwgMjAxNS8wOS8xMC0wMToxMDoyMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OEQ5M0Q3RkRGM0E4MTFFNUIwNkZCNTU3NzlCMzc0RUIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OEQ5M0Q3RkVGM0E4MTFFNUIwNkZCNTU3NzlCMzc0RUIiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4RDkzRDdGQkYzQTgxMUU1QjA2RkI1NTc3OUIzNzRFQiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4RDkzRDdGQ0YzQTgxMUU1QjA2RkI1NTc3OUIzNzRFQiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqQ5KTAAACeLSURBVHja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
+label: Apigee
+metadata_version: '1.8'
+minimum_version_for_upgrade: 0.0.1
+name: apigee-edge-for-pcf-service-broker
+product_version: 3.1.0
+rank: 1
+requires_product_versions:
+- name: cf
+  version: '>= 1.9'
+serial: true
+service_broker: false
+
+
+releases:
+- file: apigee-edge-for-pcf-service-broker-3.1.0.tgz
+  name: apigee-edge-for-pcf-service-broker
+  version: '3.1.0'
+
+stemcell_criteria:
+  os: ubuntu-trusty
+  requires_cpi: false
+  version: '3586'
+
+
+property_blueprints:
+- configurable: true
+  default: apigee-edge-for-pcf-service-broker-org
+  name: org
+  type: string
+- configurable: true
+  default: apigee-edge-for-pcf-service-broker-space
+  name: space
+  type: string
+- configurable: true
+  default: false
+  name: apply_open_security_group
+  type: boolean
+- configurable: true
+  default: false
+  name: allow_paid_service_plans
+  type: boolean
+- configurable: true
+  default: true
+  name: apigee_cf_service_broker_enable_global_access_to_plans
+  type: boolean
+- configurable: true
+  default: 99
+  name: microgateway_decorator_buildpack_order
+  type: integer
+- configurable: true
+  default: 1
+  name: meta_buildpack_buildpack_order
+  type: integer
+- configurable: true
+  default:
+  - APIGEE_PROXY_NAME_TEMPLATE: cf-${route}
+    apigee_dashboard_url: https://enterprise.apigee.com/platform/#/
+    apigee_mgmt_api_url: https://api.enterprise.apigee.com/v1
+    apigee_proxy_domain: apigee.net
+    apigee_proxy_host_template: ${org}-${env}.${domain}
+    configuration_name: Default Configuration
+  label: Configurations for your Apigee organizations and environments.
+  name: apigee_configurations
+  optional: false
+  property_blueprints:
+  - description: Something to help you sort through multiple configurations
+    label: Name for this configuration
+    name: configuration_name
+    type: string
+  - description: This configuration's Apigee organization
+    label: Apigee Organization
+    name: org
+    type: string
+  - description: This configuration's Apigee environment
+    label: Apigee Environment
+    name: env
+    type: string
+  - default: https://enterprise.apigee.com/platform/#/
+    description: URL for Apigee Edge management UI
+    label: Dashboard URL
+    name: apigee_dashboard_url
+    type: string
+  - default: https://api.enterprise.apigee.com/v1
+    description: Apigee Edge Management API endpoint
+    label: Apigee Management API URL
+    name: apigee_mgmt_api_url
+    type: string
+  - default: apigee.net
+    description: Domain for proxy host template
+    label: Apigee Proxy Domain
+    name: apigee_proxy_domain
+    type: string
+  - default: ${org}-${env}.${domain}
+    description: ES6 template literal for generated proxy host. Note that without any placeholders, will be used as-is.
+    label: Apigee Proxy Host Template
+    name: apigee_proxy_host_template
+    type: string
+  - default: cf-${route}
+    description: ES6 template literal for generated proxy name
+    label: Apigee Proxy Name Template
+    name: APIGEE_PROXY_NAME_TEMPLATE
+    type: string
+  type: collection
+- configurable: true
+  description: The url value to be set in the 'HTTPS_PROXY' environment variable. (e.g httpsproxyurl.com:8081)
+  label: HTTPS proxy url
+  name: https_proxy_url
+  optional: true
+  type: string
+- configurable: true
+  description: The username to be set in the 'HTTPS_PROXY' environment variable. (e.g final url will be https://USERNAME:*****@httpsproxyurl.com:8081)
+  label: HTTPS proxy username
+  name: https_proxy_username
+  optional: true
+  type: string
+- configurable: true
+  description: The password to be set in the 'HTTPS_PROXY' environment variable. (e.g final url will be https://username:PASSWORD@httpsproxyurl.com:8081)
+  label: HTTPS proxy password
+  name: https_proxy_password
+  optional: true
+  type: secret
+- configurable: true
+  description: The url value to be set in the 'HTTP_PROXY' environment variable. (e.g httpproxyurl.com:8081)
+  label: HTTP proxy url
+  name: http_proxy_url
+  optional: true
+  type: string
+- configurable: true
+  description: The username to be set in the 'HTTP_PROXY' environment variable. (e.g final url will be http://USERNAME:*****@httpproxyurl.com:8081)
+  label: HTTP proxy username
+  name: http_proxy_username
+  optional: true
+  type: string
+- configurable: true
+  description: The password to be set in the 'HTTP_PROXY' environment variable. (e.g final url will be http://username:PASSWORD@httpproxyurl.com:8081)
+  label: HTTP proxy password
+  name: http_proxy_password
+  optional: true
+  type: secret
+- configurable: true
+  description: Tells npm to use a custom url value for the registry property. If left blank, the property defaults to 'https://registry.npmjs.org/'.
+  label: npm registry url
+  name: npm_registry
+  optional: true
+  type: string
+- configurable: true
+  description: Sets the npm 'cert' property needed to access the npm registry. If left blank, the property defaults to 'null'.
+  label: npm registry client certificate
+  name: npm_cert
+  optional: true
+  type: ca_certificate
+- configurable: true
+  description: Sets the npm 'key' property needed to access the npm registry. If left blank, the property defaults to 'null'
+  label: npm registry client key
+  name: npm_key
+  optional: true
+  type: text
+- configurable: true
+  default: true
+  description: Whether or not to do SSL key validation when making requests to the registry via https.
+  label: Use strict-ssl
+  name: npm_strict_ssl
+  optional: false
+  type: boolean
+- configurable: true
+  description: Sets any needed CA certificates ('ca[]' property) used for accessing the npm registry. If left blank, the property defaults to the npm CA certificate.
+  label: CA Certificate(s)
+  name: npm_ca_collection
+  optional: true
+  property_blueprints:
+  - configurable: true
+    description: A CA certificate used for access a npm registry.
+    label: CA Certificate
+    name: ca_cert
+    optional: true
+    type: ca_certificate
+  type: collection
+
+
+form_types:
+- description: Custom Properties for Apigee Edge
+  label: Apigee Edge Tile
+  name: apigee-form
+  property_inputs:
+  - description: Configurations for your Apigee organizations and environments.
+    label: Configurations for your Apigee organizations and environments.
+    property_inputs:
+    - description: Something to help you sort through multiple configurations
+      label: Name for this configuration
+      reference: configuration_name
+    - description: This configuration's Apigee organization
+      label: Apigee Organization
+      reference: org
+    - description: This configuration's Apigee environment
+      label: Apigee Environment
+      reference: env
+    - description: URL for Apigee Edge management UI
+      label: Dashboard URL
+      reference: apigee_dashboard_url
+    - description: Apigee Edge Management API endpoint
+      label: Apigee Management API URL
+      reference: apigee_mgmt_api_url
+    - description: Domain for proxy host template
+      label: Apigee Proxy Domain
+      reference: apigee_proxy_domain
+    - description: ES6 template literal for generated proxy host. Note that without any placeholders, will be used as-is.
+      label: Apigee Proxy Host Template
+      reference: apigee_proxy_host_template
+    - description: ES6 template literal for generated proxy name
+      label: Apigee Proxy Name Template
+      reference: APIGEE_PROXY_NAME_TEMPLATE
+    reference: .properties.apigee_configurations
+- description: Used to configure an http/https proxy in environments with restricted internet access.
+  label: HTTP(S) Proxy
+  name: proxy-form
+  property_inputs:
+  - description: The url value to be set in the 'HTTPS_PROXY' environment variable. (e.g httpsproxyurl.com:8081)
+    label: HTTPS proxy url
+    reference: .properties.https_proxy_url
+  - description: The username to be set in the 'HTTPS_PROXY' environment variable. (e.g final url will be https://USERNAME:*****@httpsproxyurl.com:8081)
+    label: HTTPS proxy username
+    reference: .properties.https_proxy_username
+  - description: The password to be set in the 'HTTPS_PROXY' environment variable. (e.g final url will be https://username:PASSWORD@httpsproxyurl.com:8081)
+    label: HTTPS proxy password
+    reference: .properties.https_proxy_password
+  - description: The url value to be set in the 'HTTP_PROXY' environment variable. (e.g httpproxyurl.com:8081)
+    label: HTTP proxy url
+    reference: .properties.http_proxy_url
+  - description: The username to be set in the 'HTTP_PROXY' environment variable. (e.g final url will be http://USERNAME:*****@httpproxyurl.com:8081)
+    label: HTTP proxy username
+    reference: .properties.http_proxy_username
+  - description: The password to be set in the 'HTTP_PROXY' environment variable. (e.g final url will be http://username:PASSWORD@httpproxyurl.com:8081)
+    label: HTTP proxy password
+    reference: .properties.http_proxy_password
+- description: Used to set optional npm configuration properties that will be used for installing service broker dependencies
+  label: NPM Configuration
+  name: npm-form
+  property_inputs:
+  - description: Tells npm to use a custom url value for the registry property. If left blank, the property defaults to 'https://registry.npmjs.org/'.
+    label: npm registry url
+    reference: .properties.npm_registry
+  - description: Sets the npm 'cert' property needed to access the npm registry. If left blank, the property defaults to 'null'.
+    label: npm registry client certificate
+    reference: .properties.npm_cert
+  - description: Sets the npm 'key' property needed to access the npm registry. If left blank, the property defaults to 'null'
+    label: npm registry client key
+    reference: .properties.npm_key
+  - description: Whether or not to do SSL key validation when making requests to the registry via https.
+    label: Use strict-ssl
+    reference: .properties.npm_strict_ssl
+  - description: Sets any needed CA certificates ('ca[]' property) used for accessing the npm registry. If left blank, the property defaults to the npm CA certificate.
+    label: CA Certificate(s)
+    property_inputs:
+    - description: A CA certificate used for access a npm registry.
+      label: CA Certificate
+      reference: ca_cert
+    reference: .properties.npm_ca_collection
+- description: Configurable settings for buildpacks
+  label: Buildpack Settings
+  name: buildpacks
+  property_inputs:
+  - description: Enter order for the microgateway_decorator buildpack
+    label: microgateway_decorator Buildpack Order
+    reference: .properties.microgateway_decorator_buildpack_order
+  - description: Enter order for the meta_buildpack buildpack
+    label: meta_buildpack Buildpack Order
+    reference: .properties.meta_buildpack_buildpack_order
+- description: Determine availability of services
+  label: Service Access
+  name: service_access
+  property_inputs:
+  - description: Enable global access to plans in the marketplace
+    label: Enable global access to plans of service apigee_cf_service_broker
+    reference: .properties.apigee_cf_service_broker_enable_global_access_to_plans
+
+
+job_types:
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    configurable: false
+    default: 1
+    name: instances
+    type: integer
+  manifest: |
+    allow_paid_service_plans: (( .properties.allow_paid_service_plans.value ))
+    apigee_cf_service_broker:
+      app_manifest:
+        buildpack: nodejs_buildpack
+        command: node server.js
+        path: apigee.zip
+      auto_services: []
+      enable_global_access_to_plans: (( .properties.apigee_cf_service_broker_enable_global_access_to_plans.value ))
+      name: apigee_cf_service_broker
+      password: (( .deploy-all.app_credentials.password ))
+      user: (( .deploy-all.app_credentials.identity ))
+    apigee_configurations: (( .properties.apigee_configurations.value ))
+    app_domains:
+    - (( ..cf.cloud_controller.apps_domain.value ))
+    apply_open_security_group: (( .properties.apply_open_security_group.value ))
+    cf:
+      admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      admin_user: (( ..cf.uaa.system_services_credentials.identity ))
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    http_proxy_password: (( .properties.http_proxy_password.value ))
+    http_proxy_url: (( .properties.http_proxy_url.value ))
+    http_proxy_username: (( .properties.http_proxy_username.value ))
+    https_proxy_password: (( .properties.https_proxy_password.value ))
+    https_proxy_url: (( .properties.https_proxy_url.value ))
+    https_proxy_username: (( .properties.https_proxy_username.value ))
+    meta_buildpack:
+      buildpack_order: (( .properties.meta_buildpack_buildpack_order.value ))
+      name: meta_buildpack
+    microgateway_decorator:
+      buildpack_order: (( .properties.microgateway_decorator_buildpack_order.value ))
+      name: microgateway_decorator
+    npm_ca_collection: (( .properties.npm_ca_collection.value ))
+    npm_cert: (( .properties.npm_cert.value ))
+    npm_key: (( .properties.npm_key.value ))
+    npm_registry: (( .properties.npm_registry.value ))
+    npm_strict_ssl: (( .properties.npm_strict_ssl.value ))
+    org: (( .properties.org.value ))
+    security:
+      password: (( .deploy-all.app_credentials.password ))
+      user: (( .deploy-all.app_credentials.identity ))
+    space: (( .properties.space.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    uaa:
+      admin_client: (( ..cf.uaa.admin_client_credentials.identity ))
+      admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+  max_in_flight: 1
+  name: deploy-all
+  property_blueprints:
+  - default:
+      identity: vcap
+    name: vm_credentials
+    type: salted_credentials
+  - name: app_credentials
+    type: salted_credentials
+  resource_definitions:
+  - configurable: true
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: true
+    default: 4096
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 0
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: deploy-all
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - name: deploy-all
+    release: apigee-edge-for-pcf-service-broker
+- dynamic_ip: 1
+  errand: true
+  instance_definition:
+    configurable: false
+    default: 1
+    name: instances
+    type: integer
+  manifest: |
+    allow_paid_service_plans: (( .properties.allow_paid_service_plans.value ))
+    apigee_cf_service_broker:
+      app_manifest:
+        buildpack: nodejs_buildpack
+        command: node server.js
+        path: apigee.zip
+      auto_services: []
+      enable_global_access_to_plans: (( .properties.apigee_cf_service_broker_enable_global_access_to_plans.value ))
+      name: apigee_cf_service_broker
+    apigee_configurations: (( .properties.apigee_configurations.value ))
+    app_domains:
+    - (( ..cf.cloud_controller.apps_domain.value ))
+    apply_open_security_group: (( .properties.apply_open_security_group.value ))
+    cf:
+      admin_password: (( ..cf.uaa.system_services_credentials.password ))
+      admin_user: (( ..cf.uaa.system_services_credentials.identity ))
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    http_proxy_password: (( .properties.http_proxy_password.value ))
+    http_proxy_url: (( .properties.http_proxy_url.value ))
+    http_proxy_username: (( .properties.http_proxy_username.value ))
+    https_proxy_password: (( .properties.https_proxy_password.value ))
+    https_proxy_url: (( .properties.https_proxy_url.value ))
+    https_proxy_username: (( .properties.https_proxy_username.value ))
+    meta_buildpack:
+      buildpack_order: (( .properties.meta_buildpack_buildpack_order.value ))
+      name: meta_buildpack
+    microgateway_decorator:
+      buildpack_order: (( .properties.microgateway_decorator_buildpack_order.value ))
+      name: microgateway_decorator
+    npm_ca_collection: (( .properties.npm_ca_collection.value ))
+    npm_cert: (( .properties.npm_cert.value ))
+    npm_key: (( .properties.npm_key.value ))
+    npm_registry: (( .properties.npm_registry.value ))
+    npm_strict_ssl: (( .properties.npm_strict_ssl.value ))
+    org: (( .properties.org.value ))
+    space: (( .properties.space.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    uaa:
+      admin_client: (( ..cf.uaa.admin_client_credentials.identity ))
+      admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+  max_in_flight: 1
+  name: delete-all
+  property_blueprints:
+  - default:
+      identity: vcap
+    name: vm_credentials
+    type: salted_credentials
+  - name: app_credentials
+    type: salted_credentials
+  resource_definitions:
+  - configurable: true
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: true
+    default: 4096
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    constraints:
+      min: 0
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    default: 1
+    name: cpu
+    type: integer
+  resource_label: delete-all
+  single_az_only: true
+  static_ip: 0
+  templates:
+  - name: delete-all
+    release: apigee-edge-for-pcf-service-broker
+
+
+
+post_deploy_errands:
+- name: deploy-all
+
+pre_delete_errands:
+- name: delete-all
+
+update:
+  canaries: 1
+  canary_watch_time: 10000-100000
+  max_in_flight: 1
+  update_watch_time: 10000-100000
+
+provides_product_versions:
+- name: apigee-edge-for-pcf-service-broker
+  version: '3.1.0'

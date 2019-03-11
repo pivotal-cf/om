@@ -1,0 +1,806 @@
+---
+name: p-push-notifications
+product_version: 1.10.0-build.8
+metadata_version: '1.7'
+minimum_version_for_upgrade: 1.4.4.0
+provides_product_versions:
+- name: p-push-notifications
+  version: 1.10.0-build.8
+requires_product_versions:
+- name: cf
+  version: ">= 1.3"
+- name: p-rabbitmq
+  version: ">= 1.3"
+label: Pivotal Push Notification Service
+description: Create virtual endpoints that will allow to you take full control of
+  the data being sent to an application.
+icon_image: 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
+rank: 1
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: '3363'
+  requires_cpi: false
+releases:
+- file: p-push-notifications-1.10.0-build.8.tgz
+  name: p-push-notifications
+  version: 1.10.0-build.8
+  md5: 561345949493dd9a2be54c8eb240673f
+post_deploy_errands:
+- name: push-push-notifications
+pre_delete_errands:
+- name: delete-push-notifications
+form_types:
+- name: Security Settings
+  label: Security Settings
+  description: Used for symmetric encryption of push certificates and API keys.
+  property_inputs:
+  - reference: ".push-push-notifications.api_db_encryption_key"
+    label: 'Encryption Key: (To generate using OpenSSL, run this command in terminal:
+      ''openssl enc -aes-128-cbc -k somepassword -P -md sha1'')'
+    description: 'To generate using OpenSSL, run this command in terminal: ''openssl
+      enc -aes-128-cbc -k somepassword -P -md sha1'''
+- name: Push Tenant Settings
+  label: Push Tenant Settings
+  description: Default system tenant name
+  property_inputs:
+  - reference: ".push-push-notifications.default_system_tenant_name"
+    label: Set the default system tenant name. Leave empty for a system generated
+      name
+- name: Push Deployment Settings
+  label: Push Deployment Settings
+  description: Configure Push Deployment Settings
+  property_inputs:
+  - reference: ".properties.deployment_type"
+    label: Deployment Settings
+    selector_property_inputs:
+    - reference: ".properties.deployment_type.development"
+      label: Development (1 instance per microservice)
+    - reference: ".properties.deployment_type.production"
+      label: Production (2 instances per microservice)
+    - reference: ".properties.deployment_type.custom"
+      label: Custom
+      property_inputs:
+      - reference: ".properties.deployment_type.custom.push_api_instance_count"
+        label: Push Api Instance Count
+      - reference: ".properties.deployment_type.custom.push_dashboard_instance_count"
+        label: Push Dashboard Instance Count
+      - reference: ".properties.deployment_type.custom.push_broker_instance_count"
+        label: Push Broker Instance Count
+      - reference: ".properties.deployment_type.custom.push_analytics_instance_count"
+        label: Push Analytics Instance Count
+      - reference: ".properties.deployment_type.custom.push_scheduler_instance_count"
+        label: Push Scheduler Instance Count
+- name: Available Platforms
+  label: Available Platforms
+  description: Available Platforms
+  property_inputs:
+  - reference: ".properties.create_platform_whitelist"
+    label: Select the platforms which will be available for developers in the dashboard's
+      platform creation interface. This will not adversely affect any existing configured
+      platforms.
+- name: MySQL Settings
+  label: MySQL Settings
+  description: Configuration details for MySQL.
+  property_inputs:
+  - reference: ".properties.mysql"
+    label: MySQL Database Location
+    description: Where to put the MySQL database.
+    selector_property_inputs:
+    - reference: ".properties.mysql.internal"
+      label: MySQL Service
+      description: Use the MySQL database-as-a-service for Cloud Foundry.
+      property_inputs:
+      - reference: ".properties.mysql.internal.service_plan"
+        label: Service plan to use for the MySQL service.
+        description: Pivotal MySQL service plan
+    - reference: ".properties.mysql.external"
+      label: External
+      description: Connect to an external MySQL database.
+      property_inputs:
+      - reference: ".properties.mysql.external.host"
+        label: MySQL Host
+        description: The MySQL host to used to connect to the server. Required if
+          MySQL is installed outside of Ops Manager. Do not enter if using Pivotal
+          MySQL.
+      - reference: ".properties.mysql.external.port"
+        label: MySQL Port
+        description: The MySQL port to used to connect to the server. Required if
+          MySQL is installed outside of Ops Manager. Do not enter if using Pivotal
+          MySQL.
+      - reference: ".properties.mysql.external.username"
+        label: MySQL Username
+        description: The MySQL username used to connect to the server. Required if
+          MySQL is installed outside of Ops Manager. Do not enter if using Pivotal
+          MySQL.
+      - reference: ".properties.mysql.external.password"
+        label: MySQL Password
+        description: The MySQL password used to connect to the server. Required if
+          MySQL is installed outside of Ops Manager. Do not enter if using Pivotal
+          MySQL.
+      - reference: ".properties.mysql.external.database"
+        label: MySQL Database
+        description: The database used to connect to the server. Required if MySQL
+          is installed outside of Ops Manager. Do not enter if using Pivotal MySQL.
+  verifiers:
+  - name: Verifiers::MysqlDatabaseVerifier
+    properties:
+      host: ".properties.mysql.external.host"
+      port: ".properties.mysql.external.port"
+      username: ".properties.mysql.external.username"
+      password: ".properties.mysql.external.password"
+      database: ".properties.mysql.external.database"
+- name: Analytics Redis Settings
+  label: Analytics Redis Settings
+  description: Configuration details for the Redis instance used to hold Analytics
+  property_inputs:
+  - reference: ".properties.redis_analytics"
+    label: Redis Database Location
+    description: Where to put the Redis database.
+    selector_property_inputs:
+    - reference: ".properties.redis_analytics.internal"
+      label: Redis Service
+      description: Use the Redis service for Cloud Foundry.
+      property_inputs:
+      - reference: ".properties.redis_analytics.internal.service_plan"
+        label: Service plan to use for Redis.
+        description: Pivotal Redis service plan
+    - reference: ".properties.redis_analytics.external"
+      label: External
+      description: Connect to an external Redis server.
+      property_inputs:
+      - reference: ".properties.redis_analytics.external.host"
+        label: Redis Host
+        description: The Redis host to used to connect to the server. Required if
+          Redis is installed outside of Ops Manager. Do not enter if using Pivotal
+          Redis.
+      - reference: ".properties.redis_analytics.external.port"
+        label: Redis Port
+        description: The Redis port to used to connect to the server. Required if
+          Redis is installed outside of Ops Manager. Do not enter if using Pivotal
+          Redis.
+      - reference: ".properties.redis_analytics.external.password"
+        label: Redis Password
+        description: The Redis password used to connect to the server. Required if
+          Redis is installed outside of Ops Manager. Do not enter if using Pivotal
+          Redis.
+      - reference: ".properties.redis_analytics.external.db_number"
+        label: Redis Database Number
+        description: The database data will be written to. Required if Redis is installed
+          outside of Ops Manager. Do not enter if using Pivotal Redis.
+- name: proxy_settings_form
+  label: Proxy Settings
+  description: Configure Proxy Settings
+  markdown: |
+    If the push server is behind a proxy, you can route communication with push providers through a proxy server.
+
+    This can be configured later in the environment variables.
+
+    For further details, please refer to the 'Configurable Environment Variables' section of our [DevOps Guide](https://docs.pivotal.io/push/devops.html)
+  property_inputs:
+  - reference: ".properties.gcm_proxy"
+    label: GCM Proxy Settings
+    selector_property_inputs:
+    - reference: ".properties.gcm_proxy.none"
+      label: None
+    - reference: ".properties.gcm_proxy.http"
+      label: HTTP
+      property_inputs:
+      - reference: ".properties.gcm_proxy.http.host"
+        label: Server Host
+      - reference: ".properties.gcm_proxy.http.port"
+        label: Server Port
+    - reference: ".properties.gcm_proxy.socks"
+      label: SOCKS
+      property_inputs:
+      - reference: ".properties.gcm_proxy.socks.host"
+        label: Server Host
+      - reference: ".properties.gcm_proxy.socks.port"
+        label: Server Port
+  - reference: ".properties.fcm_proxy"
+    label: FCM Proxy Settings
+    selector_property_inputs:
+    - reference: ".properties.fcm_proxy.none"
+      label: None
+    - reference: ".properties.fcm_proxy.http"
+      label: HTTP
+      property_inputs:
+      - reference: ".properties.fcm_proxy.http.host"
+        label: Server Host
+      - reference: ".properties.fcm_proxy.http.port"
+        label: Server Port
+    - reference: ".properties.fcm_proxy.socks"
+      label: SOCKS
+      property_inputs:
+      - reference: ".properties.fcm_proxy.socks.host"
+        label: Server Host
+      - reference: ".properties.fcm_proxy.socks.port"
+        label: Server Port
+  - reference: ".properties.baidu_proxy"
+    label: Baidu Proxy Settings
+    selector_property_inputs:
+    - reference: ".properties.baidu_proxy.none"
+      label: None
+    - reference: ".properties.baidu_proxy.http"
+      label: HTTP
+      property_inputs:
+      - reference: ".properties.baidu_proxy.http.host"
+        label: Server Host
+      - reference: ".properties.baidu_proxy.http.port"
+        label: Server Port
+    - reference: ".properties.baidu_proxy.socks"
+      label: SOCKS
+      property_inputs:
+      - reference: ".properties.baidu_proxy.socks.host"
+        label: Server Host
+      - reference: ".properties.baidu_proxy.socks.port"
+        label: Server Port
+  - reference: ".properties.apns_proxy"
+    label: APNS Proxy Settings
+    selector_property_inputs:
+    - reference: ".properties.apns_proxy.none"
+      label: None
+    - reference: ".properties.apns_proxy.socks"
+      label: SOCKS
+      property_inputs:
+      - reference: ".properties.apns_proxy.socks.host"
+        label: Server Host
+      - reference: ".properties.apns_proxy.socks.port"
+        label: Server Port
+property_blueprints:
+- name: gcm_proxy
+  type: selector
+  configurable: true
+  default: None
+  option_templates:
+  - name: none
+    select_value: None
+    named_manifests:
+    - name: gcm_proxy_snippet
+      manifest: {}
+  - name: http
+    select_value: HTTP
+    named_manifests:
+    - name: gcm_proxy_snippet
+      manifest: |
+        http:
+          host: (( .properties.gcm_proxy.http.host.value ))
+          port: (( .properties.gcm_proxy.http.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+  - name: socks
+    select_value: Socks
+    named_manifests:
+    - name: gcm_proxy_snippet
+      manifest: |
+        socks:
+          host: (( .properties.gcm_proxy.socks.host.value ))
+          port: (( .properties.gcm_proxy.socks.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+- name: fcm_proxy
+  type: selector
+  configurable: true
+  default: None
+  option_templates:
+  - name: none
+    select_value: None
+    named_manifests:
+    - name: fcm_proxy_snippet
+      manifest: {}
+  - name: http
+    select_value: HTTP
+    named_manifests:
+    - name: fcm_proxy_snippet
+      manifest: |
+        http:
+          host: (( .properties.fcm_proxy.http.host.value ))
+          port: (( .properties.fcm_proxy.http.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+  - name: socks
+    select_value: Socks
+    named_manifests:
+    - name: fcm_proxy_snippet
+      manifest: |
+        socks:
+          host: (( .properties.fcm_proxy.socks.host.value ))
+          port: (( .properties.fcm_proxy.socks.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+- name: baidu_proxy
+  type: selector
+  configurable: true
+  default: None
+  option_templates:
+  - name: none
+    select_value: None
+    named_manifests:
+    - name: baidu_proxy_snippet
+      manifest: {}
+  - name: http
+    select_value: HTTP
+    named_manifests:
+    - name: baidu_proxy_snippet
+      manifest: |
+        http:
+          host: (( .properties.baidu_proxy.http.host.value ))
+          port: (( .properties.baidu_proxy.http.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+  - name: socks
+    select_value: Socks
+    named_manifests:
+    - name: baidu_proxy_snippet
+      manifest: |
+        socks:
+          host: (( .properties.baidu_proxy.socks.host.value ))
+          port: (( .properties.baidu_proxy.socks.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+- name: apns_proxy
+  type: selector
+  configurable: true
+  default: None
+  option_templates:
+  - name: none
+    select_value: None
+    named_manifests:
+    - name: apns_proxy_snippet
+      manifest: {}
+  - name: socks
+    select_value: Socks
+    named_manifests:
+    - name: apns_proxy_snippet
+      manifest: |
+        socks:
+          host: (( .properties.apns_proxy.socks.host.value ))
+          port: (( .properties.apns_proxy.socks.port.value ))
+    property_blueprints:
+    - name: host
+      type: network_address
+      configurable: true
+    - name: port
+      type: port
+      configurable: true
+- name: deployment_type
+  type: selector
+  configurable: true
+  default: Production
+  option_templates:
+  - name: development
+    select_value: Development
+    named_manifests:
+    - name: push_deployment_snippet
+      manifest: |
+        push_api_instance_count: 1
+        push_dashboard_instance_count: 1
+        push_analytics_instance_count: 1
+        push_broker_instance_count: 1
+        push_scheduler_instance_count: 1
+  - name: production
+    select_value: Production
+    named_manifests:
+    - name: push_deployment_snippet
+      manifest: |
+        push_api_instance_count: 2
+        push_dashboard_instance_count: 2
+        push_analytics_instance_count: 2
+        push_broker_instance_count: 2
+        push_scheduler_instance_count: 2
+  - name: custom
+    select_value: Custom
+    named_manifests:
+    - name: push_deployment_snippet
+      manifest: |
+        push_api_instance_count: (( .properties.deployment_type.custom.push_api_instance_count.value ))
+        push_dashboard_instance_count: (( .properties.deployment_type.custom.push_dashboard_instance_count.value ))
+        push_analytics_instance_count: (( .properties.deployment_type.custom.push_analytics_instance_count.value ))
+        push_broker_instance_count: (( .properties.deployment_type.custom.push_broker_instance_count.value ))
+        push_scheduler_instance_count: (( .properties.deployment_type.custom.push_scheduler_instance_count.value ))
+    property_blueprints:
+    - name: push_api_instance_count
+      type: integer
+      default: 1
+      constraints:
+        min: 1
+        max: 100
+    - name: push_dashboard_instance_count
+      type: integer
+      default: 1
+      constraints:
+        min: 1
+        max: 100
+    - name: push_analytics_instance_count
+      type: integer
+      default: 1
+      constraints:
+        min: 1
+        max: 100
+    - name: push_broker_instance_count
+      type: integer
+      default: 1
+      constraints:
+        min: 1
+        max: 100
+    - name: push_scheduler_instance_count
+      type: integer
+      default: 1
+      constraints:
+        min: 1
+        max: 100
+- name: create_platform_whitelist
+  type: multi_select_options
+  configurable: true
+  optional: false
+  default:
+  - ios
+  - android
+  - android-fcm
+  - android-baidu
+  options:
+  - name: ios
+    label: iOS
+  - name: android
+    label: Android
+  - name: android-fcm
+    label: Android (FCM)
+  - name: android-baidu
+    label: Android (Baidu)
+- name: mysql
+  type: selector
+  configurable: true
+  default: MySQL Service
+  option_templates:
+  - name: internal
+    select_value: MySQL Service
+    named_manifests:
+    - name: mysql_snippet
+      manifest: |
+        service_plan: (( .properties.mysql.internal.service_plan.value ))
+        pivotal_service_plan: (( .properties.mysql.internal.service_plan.value ))
+    property_blueprints:
+    - name: service_plan
+      type: string
+      configurable: true
+  - name: external
+    select_value: External DB
+    named_manifests:
+    - name: mysql_snippet
+      manifest: |
+        host: (( .properties.mysql.external.host.value ))
+        port: (( .properties.mysql.external.port.value ))
+        username: (( .properties.mysql.external.username.value ))
+        user: (( .properties.mysql.external.username.value ))
+        password: (( .properties.mysql.external.password.value ))
+        database: (( .properties.mysql.external.database.value ))
+    property_blueprints:
+    - name: host
+      type: string
+      configurable: true
+    - name: port
+      type: integer
+      configurable: true
+    - name: username
+      type: string
+      configurable: true
+    - name: password
+      type: secret
+      configurable: true
+    - name: database
+      type: string
+      configurable: true
+- name: redis_analytics
+  type: selector
+  configurable: true
+  default: Redis Service
+  option_templates:
+  - name: internal
+    select_value: Redis Service
+    named_manifests:
+    - name: redis_snippet
+      manifest: 'service_plan: (( .properties.redis_analytics.internal.service_plan.value ))'
+    property_blueprints:
+    - name: service_plan
+      type: dropdown_select
+      label: Service Plan
+      configurable: true
+      default: dedicated-vm
+      options:
+      - name: shared-vm
+        label: Shared VM
+      - name: dedicated-vm
+        label: Dedicated VM
+  - name: external
+    select_value: External DB
+    named_manifests:
+    - name: redis_snippet
+      manifest: |
+        host: (( .properties.redis_analytics.external.host.value ))
+        port: (( .properties.redis_analytics.external.port.value ))
+        password: (( .properties.redis_analytics.external.password.value ))
+        db_number: (( .properties.redis_analytics.external.db_number.value ))
+    property_blueprints:
+    - name: host
+      type: string
+      configurable: true
+    - name: port
+      type: integer
+      configurable: true
+    - name: password
+      type: secret
+      configurable: true
+    - name: db_number
+      type: integer
+      configurable: true
+      default: 0
+job_types:
+- name: push-push-notifications
+  label: Push Push Notifications Service
+  resource_label: Push Push Notifications Service
+  description: Pushes the Push Notifications service to your Elastic Runtime installation
+  templates:
+  - name: push-all
+    release: p-push-notifications
+  - name: push-api
+    release: p-push-notifications
+  - name: push-analytics
+    release: p-push-notifications
+  - name: push-dashboard
+    release: p-push-notifications
+  - name: push-scheduler
+    release: p-push-notifications
+  - name: register-broker
+    release: p-push-notifications
+  release: p-push-notifications
+  errand: true
+  run_post_deploy_errand_default: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 1024
+    constraints:
+      min: 1024
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 1024
+    constraints:
+      min: 1024
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: false
+    default: 0
+    constraints:
+      min: 0
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 1
+    constraints:
+      min: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    label: VM credentials
+    default:
+      identity: vcap
+  - name: api_db_encryption_key
+    type: secret
+    configurable: true
+  - name: api_secret
+    type: secret
+    configurable: false
+  - name: api_credentials
+    type: simple_credentials
+    configurable: false
+  - name: api_broker_credentials
+    type: simple_credentials
+    configurable: false
+  - name: cc_broker_credentials
+    type: simple_credentials
+    configurable: false
+  - name: dashboard_secret
+    type: secret
+    configurable: false
+  - name: dashboard_uaa_client_secret
+    type: secret
+    configurable: false
+  - name: default_system_tenant_name
+    type: string
+    configurable: true
+    optional: true
+  - name: push_api_uaa_client_secret
+    type: secret
+    configurable: false
+  manifest: |
+    cf:
+      api_url: (( $runtime.system_api_url ))
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+      uaa_url: (( $runtime.uaa_url ))
+      login_url: (( $runtime.login_url ))
+      system_domain: (( $runtime.system_domain ))
+
+      admin_identity: (( ..cf.uaa.admin_credentials.identity ))
+      admin_password: (( ..cf.uaa.admin_credentials.password ))
+      uaa_admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+
+      websocket_port: (( ..cf.properties.logger_endpoint_port.value || "443" ))
+
+    mysql: (( .properties.mysql.selected_option.parsed_manifest(mysql_snippet) ))
+    redis_analytics: (( .properties.redis_analytics.selected_option.parsed_manifest(redis_snippet) ))
+    push_deployment: (( .properties.deployment_type.selected_option.parsed_manifest(push_deployment_snippet) ))
+
+    push_api:
+      application_key: (( api_db_encryption_key.value ))
+      default_system_tenant_name: (( default_system_tenant_name.value ))
+      application_secret: (( api_secret.value ))
+      trust_self_signed_certificate: (( ..cf.ha_proxy.skip_cert_verify.value ))
+      uaa_client_id: "push-api-legacy"
+      uaa_client_secret: (( push_api_uaa_client_secret.value ))
+      identity: (( api_credentials.identity ))
+      password: (( api_credentials.password ))
+
+      proxy:
+        gcm: (( .properties.gcm_proxy.selected_option.parsed_manifest(gcm_proxy_snippet) ))
+        fcm: (( .properties.fcm_proxy.selected_option.parsed_manifest(fcm_proxy_snippet) ))
+        baidu: (( .properties.baidu_proxy.selected_option.parsed_manifest(baidu_proxy_snippet) ))
+        apns: (( .properties.apns_proxy.selected_option.parsed_manifest(apns_proxy_snippet) ))
+
+    push_broker:
+      identity: (( api_broker_credentials.identity ))
+      password: (( api_broker_credentials.password ))
+      trust_all_certs: (( ..cf.ha_proxy.skip_cert_verify.value ))
+
+    push_dashboard:
+      secret_key_base: (( dashboard_secret.value ))
+      uaa_client_id: "push-notifications-dashboard-legacy"
+      uaa_client_secret: (( dashboard_uaa_client_secret.value ))
+      create_platform_whitelist: (( .properties.create_platform_whitelist.value ))
+
+    register_broker:
+      service_username: (( cc_broker_credentials.identity ))
+      service_password: (( cc_broker_credentials.password ))
+- name: delete-push-notifications
+  label: Delete Push Notifications
+  resource_label: Delete Push Notifications
+  description: Deletes the Push Notifications service from your Elastic Runtime installation
+  templates:
+  - name: delete-all
+    release: p-push-notifications
+  release: p-push-notifications
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 1024
+    constraints:
+      min: 1024
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 1024
+    constraints:
+      min: 1024
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: false
+    default: 0
+    constraints:
+      min: 0
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 1
+    constraints:
+      min: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    label: VM credentials
+    default:
+      identity: vcap
+  manifest: |
+    cf:
+      api_url: (( $runtime.system_api_url ))
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+      uaa_url: (( $runtime.uaa_url ))
+      uaa_admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+
+      admin_identity: (( ..cf.uaa.admin_credentials.identity ))
+      admin_password: (( ..cf.uaa.admin_credentials.password ))
+- name: compilation
+  label: compilation
+  resource_label: compilation
+  description: compilation
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 1024
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: true
+    default: 8192
+    constraints:
+      min: 8192
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    default: 1

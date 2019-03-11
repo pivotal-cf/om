@@ -1,0 +1,1943 @@
+description: Redis service for application development and testing
+form_types:
+- description: WARNING - DEDICATED INSTANCES
+  label: WARNING - DEDICATED INSTANCES
+  markdown: |
+    ## Warning:
+    ### Dedicated instances will be deprecated in the next major version of the tile.
+    ### This change is to allow our team to focus more fully on providing a better offering to our customers via shared and on-demand service instances.
+    ### If you have dedicated instances please migrate workloads from dedicated to on-demand instances.
+  name: dedicated-nodes
+- description: Shared-VM plan configuration
+  label: Shared-VM Plan
+  name: cf-redis-broker
+  property_inputs:
+  - description: 'Enter the maximum memory limit per Redis instance. Examples: 50KB,
+      100MB, 1G, etc.'
+    label: Redis Instance Memory Limit
+    reference: .cf-redis-broker.redis_maxmemory
+  - description: Maximum allowed number of Redis service instances.
+    label: Redis Service Instance Limit
+    reference: .cf-redis-broker.service_instance_limit
+- description: On-Demand Service Settings
+  label: On-Demand Service Settings
+  name: on_demand_service_settings
+  property_inputs:
+  - description: Configure the maximum number of service instances that can be created
+      across all plans.
+    label: Maximum service instances across all on-demand plans
+    reference: .redis-on-demand-broker.service_instance_limit
+  - description: Please refer to the Ops Manager documentation for IaaS specific behavior.
+      Log forwarding and backups may require internet access.
+    label: VM options
+    reference: .redis-on-demand-broker.vm_extensions
+  - description: Allow service instances to be shared across orgs and spaces.
+    label: Service Instance Sharing
+    reference: .redis-on-demand-broker.service_instance_sharing
+  - description: Maximum number of service instances that can be upgraded in parallel.
+    label: Maximum Parallel Upgrades
+    reference: .redis-on-demand-broker.maximum_parallel_upgrades
+  - description: Canaries are service instances that are upgraded first. If any canaries
+      fail to upgrade, the upgrade will be halted.
+    label: Number of Canaries to run before proceeding with upgrade
+    reference: .redis-on-demand-broker.upgrade_canary_number
+  - description: If you would like all instances in the specified org and space to
+      be used as canaries set the number of canaries to 0.
+    label: Specify Org and Space that Canaries will be selected from?
+    reference: .properties.canary_org_space_selector
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.canary_org_space_selector.inactive
+    - label: "Yes"
+      property_inputs:
+      - label: Canary Org
+        reference: .properties.canary_org_space_selector.active.org
+      - label: Canary Space
+        reference: .properties.canary_org_space_selector.active.space
+      reference: .properties.canary_org_space_selector.active
+- description: On-Demand Plan 1 Configuration
+  label: On-Demand Plan 1
+  name: cache-small
+  property_inputs:
+  - label: Plan
+    reference: .properties.small_plan_selector
+    selector_property_inputs:
+    - label: Plan Inactive
+      reference: .properties.small_plan_selector.inactive
+    - label: Plan Active
+      property_inputs:
+      - description: The plan name.
+        label: Plan name
+        reference: .properties.small_plan_selector.active.name
+      - description: The plan description should include information about the plan
+          relevant to app developers, including disk, VM size.
+        label: Plan description
+        reference: .properties.small_plan_selector.active.description
+      - description: Maximum number of Redis service instances for this plan.
+        label: Plan Quota
+        reference: .properties.small_plan_selector.active.instance_limit
+      - description: Controls whether this service plan is displayed on the marketplace.
+        label: CF Service Access
+        reference: .properties.small_plan_selector.active.cf_service_access
+      - description: One of the AZs of the service network (configured in the Ops
+          Manager Director tile). Changes can cause data loss.
+        label: AZ to deploy Redis instances of this plan
+        reference: .properties.small_plan_selector.active.az_single_select
+      - description: VM type for Redis server. Downsizing VM can cause data loss.
+        label: Server VM type
+        reference: .properties.small_plan_selector.active.vm_type
+      - description: Persistent disk should be at least 1.5 * VM type's memory. Downsizing
+          can cause data loss.
+        label: Server Disk type
+        reference: .properties.small_plan_selector.active.disk_size
+      - description: Server timeout for an idle client specified in seconds (e.g.
+          `3600`).
+        label: Redis Client Timeout
+        reference: .properties.small_plan_selector.active.timeout
+      - description: Interval (in seconds) at which TCP ACKS are sent to clients (e.g.
+          `300`).
+        label: Redis TCP Keepalive
+        reference: .properties.small_plan_selector.active.tcp_keepalive
+      - description: The max number of connected clients at the same time.
+        label: Max Clients
+        reference: .properties.small_plan_selector.active.maxclients
+      - description: Enable Lua scripting.
+        label: Lua Scripting
+        reference: .properties.small_plan_selector.active.lua_scripting
+      reference: .properties.small_plan_selector.active
+- description: On-Demand Plan 2 Configuration
+  label: On-Demand Plan 2
+  name: cache-medium
+  property_inputs:
+  - label: Plan
+    reference: .properties.medium_plan_selector
+    selector_property_inputs:
+    - label: Plan Inactive
+      reference: .properties.medium_plan_selector.inactive
+    - label: Plan Active
+      property_inputs:
+      - description: The plan name.
+        label: Plan name
+        reference: .properties.medium_plan_selector.active.name
+      - description: The plan description should include information about the plan
+          relevant to app developers, including disk, VM size.
+        label: Plan description
+        reference: .properties.medium_plan_selector.active.description
+      - description: Maximum number of Redis service instances for this plan.
+        label: Plan Quota
+        reference: .properties.medium_plan_selector.active.instance_limit
+      - description: Controls whether this service plan is displayed on the marketplace.
+        label: CF Service Access
+        reference: .properties.medium_plan_selector.active.cf_service_access
+      - description: One of the AZs of the service network (configured in the Ops
+          Manager Director tile). Changes can cause data loss.
+        label: AZ to deploy Redis instances of this plan
+        reference: .properties.medium_plan_selector.active.az_single_select
+      - description: VM type for Redis server. Downsizing VM can cause data loss.
+        label: Server VM type
+        reference: .properties.medium_plan_selector.active.vm_type
+      - description: Persistent disk should be at least 1.5 * VM type's memory. Downsizing
+          can cause data loss.
+        label: Server Disk type
+        reference: .properties.medium_plan_selector.active.disk_size
+      - description: Server timeout for an idle client specified in seconds (e.g.
+          `3600`).
+        label: Redis Client Timeout
+        reference: .properties.medium_plan_selector.active.timeout
+      - description: Interval (in seconds) at which TCP ACKS are sent to clients (e.g.
+          `300`).
+        label: Redis TCP Keepalive
+        reference: .properties.medium_plan_selector.active.tcp_keepalive
+      - description: The max number of connected clients at the same time.
+        label: Max Clients
+        reference: .properties.medium_plan_selector.active.maxclients
+      - description: Enable Lua scripting.
+        label: Lua Scripting
+        reference: .properties.medium_plan_selector.active.lua_scripting
+      reference: .properties.medium_plan_selector.active
+- description: On-Demand Plan 3 Configuration
+  label: On-Demand Plan 3
+  name: cache-large
+  property_inputs:
+  - label: Plan
+    reference: .properties.large_plan_selector
+    selector_property_inputs:
+    - label: Plan Inactive
+      reference: .properties.large_plan_selector.inactive
+    - label: Plan Active
+      property_inputs:
+      - description: The plan name.
+        label: Plan name
+        reference: .properties.large_plan_selector.active.name
+      - description: The plan description should include information about the plan
+          relevant to app developers, including disk, VM size.
+        label: Plan description
+        reference: .properties.large_plan_selector.active.description
+      - description: Maximum number of Redis service instances for this plan.
+        label: Plan Quota
+        reference: .properties.large_plan_selector.active.instance_limit
+      - description: Controls whether this service plan is displayed on the marketplace.
+        label: CF Service Access
+        reference: .properties.large_plan_selector.active.cf_service_access
+      - description: One of the AZs of the service network (configured in the Ops
+          Manager Director tile). Changes can cause data loss.
+        label: AZ to deploy Redis instances of this plan
+        reference: .properties.large_plan_selector.active.az_single_select
+      - description: VM type for Redis server. Downsizing VM can cause data loss.
+        label: Server VM type
+        reference: .properties.large_plan_selector.active.vm_type
+      - description: Persistent disk should be at least 1.5 * VM type's memory. Downsizing
+          can cause data loss.
+        label: Server Disk type
+        reference: .properties.large_plan_selector.active.disk_size
+      - description: Server timeout for an idle client specified in seconds (e.g.
+          `3600`).
+        label: Redis Client Timeout
+        reference: .properties.large_plan_selector.active.timeout
+      - description: Interval (in seconds) at which TCP ACKS are sent to clients (e.g.
+          `300`).
+        label: Redis TCP Keepalive
+        reference: .properties.large_plan_selector.active.tcp_keepalive
+      - description: The max number of connected clients at the same time.
+        label: Max Clients
+        reference: .properties.large_plan_selector.active.maxclients
+      - description: Enable Lua scripting.
+        label: Lua Scripting
+        reference: .properties.large_plan_selector.active.lua_scripting
+      reference: .properties.large_plan_selector.active
+- description: Redis metrics configuration
+  label: Metrics
+  name: redis-metrics
+  property_inputs:
+  - description: Select the polling interval for the Redis service metrics in seconds
+    label: Metrics polling interval
+    reference: .properties.metrics_polling_interval
+- description: Configure blob store for Redis backups
+  label: Backups
+  name: backups_selector
+  property_inputs:
+  - label: Backup configuration
+    reference: .properties.backups_selector
+    selector_property_inputs:
+    - label: Disable Backups
+      reference: .properties.backups_selector.disabled
+    - label: AWS S3
+      property_inputs:
+      - label: Access Key ID
+        reference: .properties.backups_selector.s3.access_key_id
+      - label: Secret Access Key
+        reference: .properties.backups_selector.s3.secret_access_key
+      - description: Specify the endpoint that matches the region the bucket is hosted
+          in, defaults to https://s3.amazonaws.com for us-east-1 if no url is provided
+        label: Endpoint URL
+        reference: .properties.backups_selector.s3.endpoint_url
+      - description: If using AWS S3, this field is required for any non us-east-1
+          regions
+        label: Region
+        reference: .properties.backups_selector.s3.region
+      - description: Signature version used for authentication with the bucket
+        label: Signature Version
+        reference: .properties.backups_selector.s3.signature_version
+      - description: Do not include 's3://' prefix, trailing '/', or underscores,
+          the bucket will be created automatically if it does not already exist
+        label: Bucket Name
+        reference: .properties.backups_selector.s3.bucket_name
+      - description: Specify a folder within the bucket which will hold the backups,
+          do not include a trailing slash
+        label: Bucket Path
+        reference: .properties.backups_selector.s3.path
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.s3.cron_schedule
+      - description: Period of time to allow for backup to complete (measured in minutes)
+        label: Backup timeout
+        reference: .properties.backups_selector.s3.bg_save_timeout
+      reference: .properties.backups_selector.s3
+    - label: SCP
+      property_inputs:
+      - description: SCP username
+        label: Username
+        reference: .properties.backups_selector.scp.user
+      - description: SCP private key. Do not password protect
+        label: Private Key
+        reference: .properties.backups_selector.scp.key
+      - description: Hostname of SCP server to back up to
+        label: Hostname
+        reference: .properties.backups_selector.scp.server
+      - description: Path to backup destination directory on remote server
+        label: Destination Directory
+        reference: .properties.backups_selector.scp.path
+      - description: SCP uses the SSH protocol, so provide the TCP port your server
+          uses for SSH.
+        label: SCP Port
+        reference: .properties.backups_selector.scp.port
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.scp.cron_schedule
+      - description: Period of time to allow for backup to complete (measured in minutes)
+        label: Backup timeout
+        reference: .properties.backups_selector.scp.bg_save_timeout
+      - description: Optional fingerprint field. This adds extra security to validate
+          the destination server.
+        label: Fingerprint
+        reference: .properties.backups_selector.scp.fingerprint
+      reference: .properties.backups_selector.scp
+    - label: Azure
+      property_inputs:
+      - description: Azure account
+        label: Account
+        reference: .properties.backups_selector.azure.account
+      - label: Azure Storage Access Key
+        reference: .properties.backups_selector.azure.storage_access_key
+      - label: Container Name
+        reference: .properties.backups_selector.azure.container
+      - description: Path to backup destination directory on Azure storage
+        label: Destination Directory
+        reference: .properties.backups_selector.azure.path
+      - label: Blob Store Base URL
+        reference: .properties.backups_selector.azure.blob_store_base_url
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.azure.cron_schedule
+      - description: Period of time to allow for backup to complete (measured in minutes)
+        label: Backup timeout
+        reference: .properties.backups_selector.azure.bg_save_timeout
+      reference: .properties.backups_selector.azure
+    - label: GCS
+      property_inputs:
+      - description: GCP project ID
+        label: Project ID
+        reference: .properties.backups_selector.gcs.project_id
+      - description: Will be created if it doesen't already exist
+        label: Bucket name
+        reference: .properties.backups_selector.gcs.bucket_name
+      - description: JSON contents
+        label: Service account private key
+        reference: .properties.backups_selector.gcs.service_account_json
+      - description: Schedule to trigger backups, using normal cron format
+        label: Cron Schedule
+        reference: .properties.backups_selector.gcs.cron_schedule
+      - description: Period of time to allow for backup to complete (measured in minutes)
+        label: Backup timeout
+        reference: .properties.backups_selector.gcs.bg_save_timeout
+      reference: .properties.backups_selector.gcs
+  verifiers:
+  - name: Verifiers::BlobstoreVerifier
+    properties:
+      access_key_id: .properties.backups_selector.s3.access_key_id
+      bucket_name: .properties.backups_selector.s3.bucket_name
+      endpoint: .properties.backups_selector.s3.endpoint_url
+      region: .properties.backups_selector.s3.region
+      secret_access_key: .properties.backups_selector.s3.secret_access_key
+      signature_version: .properties.backups_selector.s3.signature_version
+- description: Configure properties for PCF Redis syslog forwarding
+  label: Syslog
+  name: syslog
+  property_inputs:
+  - label: Do you want to configure syslog forwarding for PCF Redis?
+    reference: .properties.syslog_selector
+    selector_property_inputs:
+    - label: "No"
+      reference: .properties.syslog_selector.inactive
+    - label: Yes without encryption
+      property_inputs:
+      - label: Address
+        reference: .properties.syslog_selector.active.syslog_address
+      - label: Port
+        reference: .properties.syslog_selector.active.syslog_port
+      - label: Transport protocol
+        reference: .properties.syslog_selector.active.syslog_transport
+      - label: Format for logs from dedicated-vm and shared-vm services
+        reference: .properties.syslog_selector.active.syslog_format
+      reference: .properties.syslog_selector.active
+    - label: Yes with TLS encryption
+      property_inputs:
+      - label: Address
+        reference: .properties.syslog_selector.active_with_tls.syslog_address
+      - label: Port
+        reference: .properties.syslog_selector.active_with_tls.syslog_port
+      - description: TLS encryption requires TCP
+        label: Transport protocol
+        reference: .properties.syslog_selector.active_with_tls.syslog_transport
+      - label: Format for logs from dedicated-vm and shared-vm services
+        reference: .properties.syslog_selector.active_with_tls.syslog_format
+      - description: Either the accepted fingerprint (SHA1) or name of remote peer,
+          e.g. *.example.com
+        label: Permitted peer
+        reference: .properties.syslog_selector.active_with_tls.syslog_permitted_peer
+      - description: The CA certificate of the syslog destination
+        label: TLS CA certificate
+        reference: .properties.syslog_selector.active_with_tls.syslog_ca_cert
+      reference: .properties.syslog_selector.active_with_tls
+icon_image: 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
+job_types:
+- instance_definition:
+    configurable: true
+    constraints:
+      max: 1
+      min: 0
+    default: 1
+    name: instances
+  max_in_flight: 100%
+  name: redis-on-demand-broker
+  property_blueprints:
+  - configurable: true
+    constraints:
+      min: 0
+    default: 20
+    name: service_instance_limit
+    type: integer
+  - default:
+      identity: admin
+    name: broker_http_auth_credentials
+    type: simple_credentials
+  - configurable: true
+    name: vm_extensions
+    optional: true
+    options:
+    - label: Allow outbound internet access from service instances (IaaS-dependent)
+      name: public_ip
+    type: multi_select_options
+  - configurable: true
+    default: false
+    name: service_instance_sharing
+    type: boolean
+  - name: redis_config_command
+    type: secret
+  - configurable: true
+    default: 1
+    name: maximum_parallel_upgrades
+    type: integer
+  - configurable: true
+    default: 1
+    name: upgrade_canary_number
+    type: integer
+  resource_definitions:
+  - configurable: true
+    constraints:
+      error_message: Decreasing memory is not allowed
+      may_only_increase: true
+      min: 1024
+    default: 3072
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 4096
+    name: ephemeral_disk
+    type: integer
+  - configurable: false
+    default: 0
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1
+    default: 2
+    name: cpu
+    type: integer
+  resource_label: Redis On-Demand Broker
+  single_az_only: true
+  templates:
+  - name: redis-service-adapter
+    release: redis-service-adapter
+  - name: service-metrics-adapter
+    release: on-demand-service-broker
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    provides: {}
+    release: consul
+  - manifest: |
+      ---
+      service_metrics:
+        origin: p.redis
+        execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+        monit_dependencies:
+        - broker
+    name: service-metrics
+    release: service-metrics
+  - manifest: |
+      ---
+      metron_agent:
+        deployment: redis-on-demand-broker
+      loggregator:
+        tls:
+          ca_cert: "(( $ops_manager.ca_certificate ))"
+          metron:
+            cert: "(( .properties.metron_tls_cert.cert_pem ))"
+            key: "(( .properties.metron_tls_cert.private_key_pem ))"
+    name: metron_agent
+    release: loggregator
+  - manifest: |
+      ---
+      syslog: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_snippet)
+        ))"
+    name: syslog_forwarder
+    release: syslog-migration
+  - manifest: |
+      ---
+      retry:
+        backoff: linear
+        baseline_interval_milliseconds: 200
+        max_attempts: 30
+      cf:
+        api_url: "(( $runtime.system_api_url ))"
+        apps_domain: "(( $runtime.apps_domain ))"
+        system_domain: "(( $runtime.system_domain ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+    name: on-demand-broker-smoke-tests
+    release: redis-service-adapter
+  - manifest: |
+      ---
+      max_in_flight: "(( .redis-on-demand-broker.maximum_parallel_upgrades.value ))"
+      canaries: "(( .redis-on-demand-broker.upgrade_canary_number.value ))"
+      canary_selection_params: "(( .properties.canary_org_space_selector.selected_option.parsed_manifest(canary_org_space_snippet) ))"
+    name: upgrade-all-service-instances
+    release: on-demand-service-broker
+  - manifest: |
+      ---
+      enable_service_access: true
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      broker_name: redis-odb
+      cf:
+        api_url: https://api.(( $runtime.system_domain ))
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+    name: register-broker
+    release: on-demand-service-broker
+  - manifest: |
+      ---
+      broker_name: redis-odb
+    name: delete-all-service-instances-and-deregister-broker
+    release: on-demand-service-broker
+  - consumes: |
+      "(( ..cf.properties.secure_service_instance_credentials.value ? .properties.hidden_on_demand_secure_bindings_selector.selected_option.parsed_manifest(credhub_link_enabled) : .properties.hidden_on_demand_secure_bindings_selector.selected_option.parsed_manifest(credhub_link_disabled) ))"
+    manifest: |
+      ---
+      port: 12345
+      username: "(( broker_http_auth_credentials.identity ))"
+      password: "(( broker_http_auth_credentials.password ))"
+      disable_ssl_cert_verification: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+      secure_binding_credentials: "(( ..cf.properties.secure_service_instance_credentials.value ? .properties.hidden_on_demand_secure_bindings_selector.selected_option.parsed_manifest(secure_bindings_snippet_enabled) : .properties.hidden_on_demand_secure_bindings_selector.selected_option.parsed_manifest(secure_bindings_snippet_disabled) ))"
+      cf:
+        url: https://api.(( $runtime.system_domain ))
+        authentication:
+          url: https://uaa.(( $runtime.system_domain ))
+          user_credentials:
+            username: "(( ..cf.uaa.system_services_credentials.identity ))"
+            password: "(( ..cf.uaa.system_services_credentials.password ))"
+      bosh:
+        url: https://(( $director.hostname || $director.deployment_ip )):25555
+        root_ca_cert: "(( $director.ca_public_key ))"
+        authentication:
+          uaa:
+            url: https://(( $director.hostname || $director.deployment_ip )):8443
+            client_id: "(( $self.uaa_client_name ))"
+            client_secret: "(( $self.uaa_client_secret ))"
+      service_adapter:
+        path: "/var/vcap/packages/redis-service-adapter/bin/service-adapter"
+      service_deployment:
+        releases:
+        - name: redis-service
+          version: "4.0.9"
+          jobs:
+          - redis
+        - name: syslog-migration
+          version: "10"
+          jobs:
+          - syslog_forwarder
+        - name: redis-metrics
+          version: "7.0.3"
+          jobs:
+          - redis-metrics
+        - name: redis-backups
+          version: "8.0.10"
+          jobs:
+          - redis-backups
+        - name: service-backup
+          version: "18.1.9"
+          jobs:
+          - service-backup
+        - name: service-metrics
+          version: "1.5.11"
+          jobs:
+          - service-metrics
+        - name: loggregator
+          version: "101.3"
+          jobs:
+          - metron_agent
+        - name: consul
+          version: "192"
+          jobs:
+          - consul_agent
+        stemcell:
+          os: ubuntu-trusty
+          version: "(( $self.stemcell_version ))"
+      service_catalog:
+        id: 13560975-3F2C-44E8-B1F4-FDADF89CCB93
+        service_name: p.redis
+        service_description: Redis service to provide on-demand dedicated instances configured
+          as a cache.
+        bindable: true
+        plan_updatable: false
+        tags:
+        - redis
+        - pivotal
+        - on-demand
+        metadata:
+          display_name: Redis On-Demand
+          shareable: (( .redis-on-demand-broker.service_instance_sharing.value ))
+          provider_display_name: Pivotal
+          image_url: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAKFRJREFUeNrsXW1sVud5fl7bEDsJYAN1oLjBTikkLREm2lorq4tdpWrUqcKsP5pq62J3+5FpP7B/rctUxWgSU6dJGGnTVmkTRvuR5keFUdWPSG2w66l1NimYlbaQkMRkECcO4JeE1ICTsHOdcx77+PX7cT7u5znPc859SS8vGHjf83Vd9+dzPwXByBaeHmx3fm33/9TsvDoTfuK08yr6v58Rh0dm+CJnBwW+BNYRvNMndo/z2hAgeI/mIxkPCMR1/89FRyCm+SaxADCS4ujhdvH2XLtP7D2+Ve+05OinXW9BiDO+MLDnwALAqGHZe3yC7/Pf2zN2hjO+MEy474dHxvmmswDk3ZXv8wnfk9OrMO4LwhiHDiwAWSd8c4DwfX4cz1hG0RWCZUEo8iVhAbCd9O0+2ffn2Mon8Q5O+mLA+QMWAOss/UFhT9LOdCA8OMqeAQuAycQH6Z/0yc9QB4QJxx0hGONLwQJggosPS9/PMX0qOYNR1zPgEIEFQCv+/m/7xMICW3v2ClgAcmbxYemfEdmr0WcF8AQOOUIwypeCBYCK9HDtB31Xn918e8IDJA1HOGnIAsDEZyFgIWABYOKzELAQsABUJ/8wEz8HQnB4ZJgvBQtAkPj9gpN7ecKM4GQhC4C/Ag/E72FO5BLjvhCMswDkL84/IrwGHgYDnsBQHvMD9Tl193/ivLr4uWf4wJqNp0R319ticipXy5ILOSI+4vtjuXL36x19b2xc+bN776n+f268v/LPN28K8eGHeQsLBvLSXlzICfmHRRaz+yD32rVCNDnvdfXeO3DPPWq+731fHBYcUfjoQ+/99m1PJLKF3FQLChknfjasvrTksN6S9KWWPW3cDIgBvIhseA6Z9wYKGSY/mnmesdLqg+Cw4njBqptG9iiiAC8BngNeEAg7vQFUCkZYAOwgfrNv9e1aqbd+vUd4vK9dk01Rvr0oxLvvemKAd7sw5nsDRRYAc8kPV/+EFVYfbj3Ivn6d955HQATefc97tyNcAPkPZKlvoJAh8g/7Lj+TnsVANQ5lJUFYyADxzXf5XdI7rxZeYhAK80VfEIwOEzIREhQsJ3+nT37zhm8ikQfCN7dkN6bXkTMoznuCYGYCcdoXgWkWAP3k7/PJb5ZZRcZ+82a29iq8gitXTOw5KPoiYOU4snpLyT/ok9+c+hgy+J9oE2LLluWGHAYdcE03bfR6IeAZLC4aI/nO6wnR3XVdTE5NsQegnvwgfr8xx9PiuPitrezmpxEezM05nsG8SUc16ngCAywAaohvVrIPFr+tjYlvghBcurTcppw+rEoOFiwi/ylhQrIPxL+vVV2/PSMeIABvz5kiBEgK9togAgUmf0ggq791C9fvTQdKh7NvmVA1sEIE6g0nf6dP/gfTu0LOJWr9mBDb7xfirruYYKYD92jzJs+0oWJw505aR+JYC/G46O56UUxOvcUeQHzyp1dPg7XfupXjfJvzA7OzaTcUFX1PYJoFwBbyw+q3bWN3P0thwaXLabYYGysCBSZ/CeA+oqxXX8/EyRJAfpQNr1xlETBWANIkP1t99gZyKAIFg8gP0p8WaczmB+lBfrb6+fEGIALp5AaMqg4UDCJ/OqU+JPng9jPyB4QDSBLmWAQKuSU/6voo7TVy336ugVLhxTfS6BswQgTqDLgF+pfzwuXf8UkmP8N7BvAs6M/9yKXsqSLdoNdb2POE1u9EG++2jzvSV8cPP8M3g86z0LzB84f1thI/KLq72sXk1Mn8CYC3pPfb+s7UOdVt2zjeZ1QG1ncgNIQI6Osg7ExzKXEhJfJjRd8JreR/oINdfkb4vMBrr+suFR5IY6hIIQXy6631g/Tbt3M7LyMa0EZ88aLOCUSp9AgUNJNfb8Yf5Ifl5/o+Iw7gAcAT0CcC2isDujNh+jL+iOeY/AyK0FHf7AftlQF97PDm9j+l5bswpgs1fs70MxKbyDrvecIMQj2eACoDBTE5NZ6dEMDbseeUNvKjrZfBoAbah/XNIOzVsQNRQQP5Efc7gZSGpB+Tvyra77lX9LRuFXtaNonO5o2i03lvXrN2ZRBavCpm3r8hJuZmxfjcW2J6/ipfuHREAHmADtX5gAZNcT+TPyWA5H3btov9bfc7pK/dA4F/gxf+DwAxGLt8URx//RUWA0A+Y+pFQA7BPWCvB+A1+xxRflNkwo+xZOn72raLJzs+FYr0YQHvAEIw6ryKdm71TQdUB/R0DQ6p3Jq8oJD87cJb3qvW+nOpbwn9DuH3O8SX1lslpFcwduliPi+2vhIhQoC9jgjM2BYCHGPy63HxD+78jGvxS+N5lYDI4IUQwfMKXnZ/nxvIEqF6EZChQK89HoCOrbpxA3bsyGWHX/Pata61P7hzt+vum4LxudmlECE3QMfghQs62oaVbEleUEB+9a5/Tnv7ZVyf1MWHpQZZzzgx/fT8tRXCsq91q+hp3ZIod1BcvO2KwNHzZ/PhFehZO6AkFFAhAKj39yi94NiSKye778LCH9y12yV9EmsvE3iI2cOQkiqRiO89ev43bs4g04lD7F6MLcoUO1mOAPSaKwBPD/YL1a2MWM+Pqb0Zd/FBeJAPdfsklp4iPpcihLAjbp4BXgHE5+jLv8luORFTh7E9mVpg38FR8wRAR8MPpragxTejoErowf0G8eHmU4Oi0pDpciLGi6kdNkraIEQpAGq37cagBoxuyljGXyb0bHO14RX0d+x0jztJaKJSrFIB8gAXXlU9Y5BsG/ICEfkR86vt9f/Ujkwl/eDagzwgfxIXH4RPO9lGdS5HXz6bDa8AScFXLqj+FpK1AlQCoDbxl5HR3VRWM2wTDr5DpzBQeTOZaDJSP3KcJCFYICA/3H51ib8MxP0U5bs4FhKW+UT3Y4lLcshNRE3cUeQzrG8yUp8PSJwQpBAAJP7alZwe4v1dO62M+03JnJ/64leWKglRGnVA3P3o9nPecQwDL/4itldAUdGw0itAPuD8yyr7A2YcAehITwBUd/zB8lu0Vx/Vw07ZUQchev2rXw8lLEHSB0Vr7/NjJKU7KlG0qskIHgA8AXVI1CFYSEB+tWU/xPxbt1pBfNPd3WOf+0LFBJ1c/18pPIEY9b7wY/JrRlFOtKb1GLkAdbsSJyoLJhEAddbfAtdfWvuDuz6TKOGFh/ek496qdG2DXgBc6TPz1yomIiEIGAQy6AiaG2Q6rr9KglEkRo1vMlIfCsT2Agoxya/W+hvs+lOUvHQ3woBY8AJkWNLxw+c8q+8nJ+G1SBHCz6XHAGK1/OA/tV1bGYIkvbZGth6rDQViewFxBUCd9Tcw60+x+k63lapWkhtxjmHopamK/w/eAkQBx3zo7Euh1w+YdL2ld2VUk5HaqkAsL6AQg/zqrL9hS3wpyncyTtVlkSrF1mEFCPmME59/bBXxcPwnnf+vO96mbDLSLWSroHbpcCwvII4AqLP+Biz0oYpJdWaqJUmqJSFl7O8R4j33uOR7FHc8rXibKueSlpAtQe2CocheQBwBmFdi/dHrj8RfSqDISuuuVUOgntn9yNK03ziWce/zJ5Y8kyOPdLnTgkG2MCRLy7JSVF0gZMgVDDshjnYgIajGGyw6AtCiTgBUdv2lkPiT1h5WJSvdakHy4vza71nnXV739/cuEUie76Gzp10S4Genv9xXM5wBpovXxHXnAS4u3nIHilTzJEz3CpA0HHhxUm/1QG1CMFJ3YFQBUNP1p3mqLx6cwZ27Heu51xprT41gbwCqAvAk8GcpaCAGPIO0yB3HK5C5gqhiDm8AvQ5aRUDdVOFI3YGFCORXt6W3xv3X8KAc+1x3LIuRpQGYwWw/LLv0CqRHYDNk9SNKWIT7CSHUBpAfIqACTU0HxHf+IdRW41GmAj+p5GBBfE3khwuM3vioFkKFtQ+657VcbiXB4m2vxHdkb9cKoow4Mb3tGPV7LKK0HssRaNo8Ovncq/ACFhbA1VACEM4D8AZ9qpGrXbu0lf2wMi5sko/S2suHaw923WnZGMn7gHsK13QC23Q5bjn1A3r68b6l4wFp4i76iXotIEC6MvFhcwXavR+UBc+fV/XpHWEGiIb1AA4qOURs56WJ/PIhqAVYXZS4KIjmNrMkLFvBcvW4k3q3LgkCjg3WmyIMQQJMJv+OKyRkuZ4KVB1ks47K+FuKDV64jsh/GDFOHc8+OKBmmzFwdohKAPqVXACNNf9aJMTDQUUqPOxwrYMPGYjrjuKev+a+S8teTbBwzPgMbOYpR3VDEPr9ZBc6+nDMSRqMcAz4HHw+dchRq6cC54I1B3jpauHFOSKxacx+CuCAGgHopxEAL/lHX/dH/GNIx5/sjadKQMHCJM0fgARLhPQtc2nZEsQBcZHBTkIaiMhEK93Ky0odlEGS4/iD484hbrhux0QG5wTW8gLU5AKaXe4eHhlL6gGoSf7dZ85obyryw2rDrZUPO3V9GceJGBWJOlnGBHFcb8AhVhIXOWnII0urpda+UucgvhPrEfAqFQzp4eRm2zFwQU1FoGYysKGG9Yfl7yM/LAz31JT51wnpogMHJn+m7KEFeSAE+xzrj5gWLbtJBCAJKvXqR3HpIRB4lS4C8jod97qvTG87Bi6AE/R7DPa5HK6yPqCu5geowObNmRRyt3lm0XvYUXFAbV0Vhnc/spQYxFLeNABvB2XVUvKD9BDAOMudi36H4aqfL95euraZhDpO9CUJAeiz/+j5z+i2XtKtRSwLbwDZdcqBH7KEFlwmC9FJyyriXLHgqfSY5M7BYRfeVOrtz9XOw+AEFgrRJ0DB4dFKf1mo4v63CxW1/5RW/MFawlqVvQjf/w9ayXUeZIhA8GGWVYAJ5xW2fx7HXFoFCALEGjo9Zczgi0pElqsjg+W+arV51W3WwUGpQaTeBalupWDFnoAG7e5/c4vIOvDgjs89tyKeBSGkZSzn3oIYYVbhmTz+CseDRqKh0yuHo5aW+yCAubb21bihRgDA5ZGoArCf/DCw2s+Q0p+OcACJObw6fQuOrbdlbX/FffebfSoBngNW4MF7sGHxUbDxpnR3Y5x/UOQysQkIWXi8xuMI/dSg/dEEwMv+9ygRgBwCltFtuAlk6oNLcqXll8trl/6fvyLPZsCaB8t9qFhA7HJv7atxhF4AeipVAxq0uf8Y95XR5F9cUSgNG/IQGrGlrwFwBGPE6ceGgdOjYQVgH1v//ALeiXTX5SARWG0kHNPqNyALsx1vq9YqTCO8APr24H1RBIDeA1i/jpllGBE6/dWJzWvucpuKQIxKPfLIQ9hO/nJrNMwUgHUqBACcHqgtAE8Pdgrq3n+4/wZ7AMjWZ7LDrIo1jwJUHlQvE1ZN/IPuuonq5z122ZDwBFwBZ2jDgGaX24dHpmt5AH1KTihloO5eCajZYyAoElU2JqWiWvNScrtJSn/On1wtJ60lQLVKUvc1QeVBDk2tBbfSYlJZVU0YAG7XFAAF8f86AwTghvuq9DDIGr2OrbqoActWy8LJPQDPBJqQKq22k9OGbXT95aKkKINejfRw1IQB+8LkAHqy6AEAGGEtrVq1cECuRHN3xTFti6lyrqufXa80Amu5ySZcb77sYrTJ9ZeiFWcDEZULtwzjzCpu15fE//gH/eQn0rzBiGs6dfUd1zUOs0jHdSEdN/ipHQ+JLU13i/PvFo1fjILje372kvjeq+ec470u2u+9V2xpvNs9l8e3tolvP7THPf+Lv78h3rq5UPYzhgMk+savTrnXzPT4/l//4I/ECPY0iLn4CqHTc2+8Jm6q27wzHrA68NYt2s/s7poQk1Mz5QWguwsxwuOkX7hxoxB3323MNZ14Z1Y8cf8nXVKEQWN9veja1CoGHcuKB+zWRx+Kcw65TAYeZMT037twzp0l6D3km5ben9rxoEucW/6/WybCJvHso72eV3H5otsbb6qb/8T9D4gT3V9yzyVpWQ8i+eD6ZlcEjMIHHwhxg9wzOeMIwFQlAfgb59cHSb9u2zajtvn+1Ze+6t7sOMD/w4OHqTyFghDn3rtuntUok/tATgNrB259+JFLFhAIDz1EAMImPRyQHz+Xc/JNOzfXzX/4ETHqhCi4D2FFPOy9PXn5jYqeUSpoWCPEVfLE5E1HAJbmnxdKQgDajT9S3u6rnHubZDOQci630fvSV3Gbq216euC/fmZUEjTpBqFu7sO5V7XGgxvZ6ES/jdiKjUMKAfKD+LTLfzHxtG2bMddy/mvfjL0FWC3YOLGmXNJQDvMwAUmmKsu9/zA+LZj4xGdikEm558DITVEuXVZRDWiR6wKCVYB28oM3aOxXcPFNNQLjHdnkqBtPytHd+L+2LHQJLtSRm6OmnfWvNFswyjmhelNJiPHzqLsGpQpwiF4A0Ow3XioAPeQH39RoTuKoCplLXd7gmvawjSQr4lR/jp1N021HU/ZekpTxpIDDgmdukrAaDvWUE4A9pF+BxF9joxXXuFy8W7qZBFzRqFuH29hTkEY+IkybbrUcjI2diqEBDtG3BS9xXV0IYAn5w1oXvKLsNVdq3dBcc8QfjYU5enleBx+1Tbecmw/PqjS+zyzAJdp9A9rLCUAn6UHfm72x36Uxc9QEVXA0FuUWZLYgroCW5mmyunCrKpdoBaBzpQB4KwDpVSvDCIYHcUpUMmmYB2tGUcbLzU5BurjkrwyUHgD9qJ61a3Nxb2R4gBpynOx1adLQtp6CWjmQpGU8HhumjEvNwRCghz2AZJC79eCFBz9OqUkmDeWuOja6ulRlPE6YKucSOD8uBWADk58+PJClrag9BXKjTLl9tg1JQy7jaRAB2q3DNgQ9ANocQE7c/zDWTPYUBPcICG1NA0lDWER4BaYRxGt+2stlPB1hAK0AdAYFgBZNjXzDSsIDuUdA3J4CObAERMFcgzj77lHH91zG0whwin5cuKIcQF0937Aqrm7SngIMNQH5dC9EijNtp/TcTSjjNdvoodJzqoc9gJTDg6Q9BTJpqJpYSeN7U8p4IL7cuNVKD0ABCkpWAT7QYdRCIBmrVtoctOOHzxkRgyatl1O71knje5PKeIOOwELEoqwJMQpoBHqNfK/ejoI/BuwU6cc+vNu464fVgNiuu9LDCktsStktaSlNWt244UES4ptUxotShcFxwxAYjV+fpf7E3twIAHDnib+o7ZafnnJdVVOSU0kWy8i4O2zLcdz+Bfk9ppTx4giY0dZfsQDALJ4g+0isXPr0Q0ZeP8R/Yd1rWFCTylNxewqC4garfNJ5yOVYcLlpCDbsjPu5Jl2nuJ2HOAcrph//9nfUqwIPQACGnd88Q/aRiP0f6DDy+sG1Rh4gygNi2qKdpCvpKFBp2k6a4VLcyoRVHgByALSLgg41iBwBDyuSZJ17wwuAaYt2KOYUxEWtaTtpeERxE6blvMPxuedy15eQKwGAy1trY5DqD5xZi3aS9hRE+R5TluEmzYlU9CSc64bPzNv25fWiu6tHUDYCockCw0ANBMZeU2wNLWfr44HBVNXgbP20XHJsCPLd3/2vuIjtz/wNQSiIP/DipJvcS/Mck+4DIJO72BMC478rNQJhMxWj1yLMF4VYXKT8xAl6D8DQQSC46dRWQ4YHWLRjSs2bIjwwpXGHYoBIaf4G7dinH++zsxmIfjBIfkKAajccy2+HXnrRfWDiduWZNgg0GB7Abd7ni1U5IsmNQieclwn1e4oBItVCNF5/kNMcQCXs/elYWQsa5yE0bRAojkMuRAoSzPu794xahccDRNIRgO18GSpb0EPugI+dkctMwUGgpi15NSnOVb0PAKOWADQ1CbGwwFeiygMWnPSTdNFO3gaBVhNIHiBiggAsLPDTGCG2xAtVAJSieBBodPA+AJwDsB5ILnmTfmgGgWZ94i3vA8ACkEkEB4HGtWylg0CzNAyT9wHIowDceF+I1vxdSLimeCUeBJqB3YN4HwBFuPG+BQKQcwQHgcZxe0sHgYIItiQNuYzHHgAjEB4k7cozbRBopfie9wFgAWDUiGVlV17cngIsYsLLlIVISecTmDrmPI8CME36ibSzyzMXHiTpKZButo5BoNXi+7hrDEwo4+H4Uca1EvTccvcGLJJ+JO3EksyCqqdA10KkJPG9CSEMQhV4UNWuc3HxltkPDT23ihwCOACJYJXSeDiDPQVxdw9S1VOQNL43oYwXZWJQHjs0czMWHA/C/J98s6p7ChEILppJC0mHXiTdXDTpmC0TynhRz8H4uYDKxoIDTw/eyboAAK9/9es1LZlJ8+6SNtJEPZe4Scrgd6VdxotzDhDM3hd+bHYVQoUAHB4pqBGArY7l2mxeogWW9cTnH7PqgZbWLOkgUFi4k5cvrnJz5Wfvb9seK7FnShkv7uIieCkYCGp8CfLKVSFmZ5UJAPYF6CH74PtahWg1sx0QDwg67qKSx4TSG5C0y06SFrMAkICMO0PQlJWNcasSJoV8oTA3J8Tbc5SfOO4IQK+aJKDB7cAyLkbiL+zDn3bprZR4SeYUSGuZxo5D1EIedxMT0/Z8CM0pBfC2HO3uwl7hXXSf6nzspo3GXksMuHzujddE+73r3CGR4Ymzzg0jQDz4Tufeuy5uplT2hAWDEMhBoHDlKQaeVvquf3v1nPjGL0+5AvjWzXTmR+AcMRT02Ue/6ApA1PMF8eHu4xxwTlYBIcAHH1B+4piYnHpeegDXSQ/WgmYgqP+ByZ/F2kbKtM68pD0FtfIgaSdEk3YdWmnx1XPK5bzMASD+p90f8FM7hGi0Z5vwpOQxaelq0jKeKevvk3YdmlLNISH/KxeoP7VXHB4ZlwKAEOA06cdvv1+I9eutu9ZJSmHBB8+UVW0QNGT4K00EDpIeIlauUpDGMScZHpK5xUXvvivExTeoP3WvIwDThaU/UpcCDa4EhLWisDxx21/dIMuwBS8y69/ZstF5v2tpKrAJ04GTCm+m5y3SVwDcEuByCOAJADyATrIvMHiT0DiuaJLSm8nLeW2/tiaVaJWBflPQaUcA9pYKALYI7yP7CoO3CU/LSuXmgQ3p5vPwkJCg3xZ8zBGAAy5Nl37U3QW29pB9xR0notiwXoiG7Kw3oii9yX0FkdG+5dzUmd/fSK2UmEZY9e2H9ogT3Y+5e/1F3b9Q7vGHciTug3WlvDhAAvAKubF4TkxOjZd6ACA/bSWgrU2IluZM3x9ZPYhboipmYAZg2GsU183P9fAQbAh66RL1p7oVgJUCcPRwu3h7jna1AXYJbtuWG+sWZzlvEFmbgpukW4/3APBx6bIjAvPUn9riCEBxpQB4XgAEoJ3sa7AN866dubtnSerX0tX1hMC+GDepEHLCtATnXxaC9jrMOORfys6XBujTpAKAA7+96AjBmlzdM4oZgHLIhy3ub9JuPd4DoBx/FqnJLzkuKgnAhKCsBABoYti8KZf3r3QGYBx32PTJwEm9Ha6K1OAOPSaCfygNAXoEdSIQ3YDoCmSQWEoZG6dNGi7jaQC6/+hFYCkBuFoAPBG4Q34iD+/mm1kmVk465EO320wR3/NW3hHw67P0n+l3AFYTANrhIICl6wJ0utFJuuFUW9Ski4t4D4CY7j99/787BCT4g/pV/6S7q4NcAOrqWABqWMaT/jZg1xcX3eYikC4sGuvrXREZ3LXb/b8Xf3+DZM2+bNx59tFe8fjWNvd7oojS9994zV1//70L59jVj4p3rqhYAnxcNgBV8wDoVwZmsC1YR4wdt4Yuw4NDZ0/HsrpJLD5v5U0E+vZfwF0BWF0APBFA5wFtCx+HAbGQNGkYZXlsko69pKPIGcrd/6JD/pbSH1YSgGMwQqRfn6OuQBWgSBpCBM7MX1vyCvCZyOLvadlYc14Ax/caoab7b9QRgIGwAgDyH+MwwEwkrb2TPE1ZGLOVL/d/wBGA0dIfVlqqN0YuADghLGzI+OIgHUjaaRjbh+T6vXqAI2pWh46V+2Gh4j9XUQ7kpiBlSDJGKyzxObGnAWqaf1aV/2p5AMBJcgHAieVwbYAulxyvOFOOmfiGANxQ0/57stJfNNRwGY7Qm5N5q2cFWhEevDCbaE4BEnsnL13M1mBNG1CcV/XJY5X+olD1v1HPCQQ4Gagd8Abw2te6ZSnzHxQMYGLuLbeU507aYdKnAzXJv6X5f1E9AOCo4GRgNrwCLtOZDXXJv6PV/rIuruuQCFeu8A1nMPRwYiy+AHhjg+hFAD3O77/PN53BAMAFNdvpjcnRX3E9AOC4kpOm3uiAwbAV6rhQk7uFUB+jYm0AYNn+gQyGEm+Yft8/oGzvfxwPABhVE/fwGChG3mN/ZRwIxdmwAnBUySFiwYMFW4kzGMqs/7yy2v9ROgE4PDIjVFUE3uTyFCOnUPfsj/mcJfMAhGhqUpMMRAaUKwKMvEHtcx/aYy9E+ljqjUMkMrSTMIMRCvQ7/kqs2PiDzgPwcEiZGqpZBMFgmAc86+qsfySOFiJ/vKqSYE63EWPkEPTbfUmEKv0l8QAixReRgAsyx81BjIwDz7i6xVaRuRlHAEZcpVEB1ESxJprByCLwbKur+xd9bioWAK+3WI0XgNVQs1wWZGQUeLbVrPjzrH+Nvn8qD0CtF4AECScEGVmD2uc6lvWPLwAqvQAAY5HVKSWDoRd4lvFMq0Ms65/EA1DrBai/YAyGPqg1aLGtfzIBUO0FcCjAYNdfqfUHCom/XlV3IID5gegNiLApJYNhlOuPmr866x+p6486BJA4pPQCcijAYNdfGfcKJIehYhORILZuFWLzJn6gGPYA9X61Je2Km33o9gDUegEALiTPDWDYAjyr6vtZSDhHIwCHR8aFqqlBEtgyiUuDDBvifvqtvUsx6nPOEAHwMCRUlQUB9E+rv7AMRnJDpXZjlaLPNRLQpdcnp26K7q63nd/1KTv1xUUhPnIUdt06ftAY5gFu//Xrqr/lrxzrP0X1YQXyw1OdEATa2nhnIYZZwM4+ly6p/haSxF8QDQoOcsB5YU9BdQzFhW5q5JHilRAcNoGYNG4CFZuKBndyxuQmxmrg+qonf9HnFikKSg716cFh59dnlF4ONAdhjFjeRABLShedGHPhphcO4R0kR3ika1NPDG9Zs8a7BxDiOv+9VDDyQn6M91KfoD7kWP9hOwRAVygA8kMEstopCEsOguMhA7ltGZ4KTwEigfsDYciq5wDSg/zqS9Tkrr/KEEBfKCDVNwsigHNZ8PdMXFiwu++h3MRbVwyaPDHIQvimj/xKXH/1HoDnBQw6vx5RfjNs9ATgysvhkHjlrccB9wpigNf69XaFDvrIDww51n/ETgHwROCEUFkalGhpEaJtm9kPjrsy7D2P8LridVuAkMEVg3WeIJgM9Pir29EnCGzwcUDlFzRoOIkBPxegtm4nb4hJIgBLAcLz0uYQHtFt7yXvI0TAfa0zy7PTR36lrr8+D8DzAiAAp7R8V9qeAJOeHqaIgT7yA71U7b5VIzEtpzI5NSO6uwpCdVUAQFyGkhjcybo6fQ8H3Pq5d4R4802vG+zWLSYuFXAtIabXHPLduu2JAEIGnaKOffz0kR8lv1EdX1TQeiN15QMAHYlBPBjoALt6lWP6NHIGmzZ5HaGq77G+hJ+WuF93DqA0H9DuvDq1eAKqSoSw9iC+PovAKJczQO89Xgj7IATU/Qb6yT+tI+5PzwPwvIBOPx+gp5kfnsAn2mjqzpL0vJuxmYAASDGgMCD/d0kn+Yt+3D+dbQHwRABhwAlt35e0bRjEV7ulE4M6PGhtjS8E+tp7gzjgkH9M96VKJ6U6OXVOdHdh3eTjWr7vzh0hrl3zHoymkCKAm3/lynLml4eR2AO3EvOuY1OL3noJCH/YhDDEfmbGe2b0YUhX0s8MD2DZEzjm/Nqv9TsxWxAzBqsB89xg8S0jfefWbe6rvWXj6uBy9rL7mpm/lj9BgAcIj6DWXEnkE9Tt3VcJmO4zkNalKaR+c3RWBoKx4vb7VycHLXT1QfiDj35B9H36YdHc2FTz30MAxl+/II6/9D/ueyl6OnaIU3/51zQP198NmXWxKoUGcoyX/tyO1ox/OTQYcFv0VQYkcKMvvOqJANxD/BmuvkXEh5U/8pU+l/hR/19/y2dF/yOfdQVg4AfP5scrwP3Fun2IPJrFYAgQ76sf41UO2jP+ZgoAdjV5ehBLHU9pFQHc8FcueAJg2co7WOkTf/atUBa/lveQy5AA9x5JvvTuPcjfm2RHHyrUGXFDvAvR618YvbCM/LDccNGTkt/1P3/7a5Fr5Jz8poQAQU9gQOjsEbAMsNhH/rhyuqR4c8El9ZnZN92E35LH8MAOsWfLx933oHAc/eUv+KLqhbfAxxDymyUAnghMB8IBFoESHPvaNypa/pFfTohDP3/eFYFSyGQf/i9yBs988cueKZoNv+1a77//S9mkISMS+bU3+tglACwCVV1/eADlgETe6Ev/XfsJdMQB/w5eQqXPYuSH/ObkAMqJgJcTKPKz40Fa7VIM/WgsFPlLhYCtOZPfXAFYKQLTeX+CKjX3gMRw/RnGYtpk8pstACwCS6hU60czD4PJn10B8ESgmHcR2NfxybI/j+r6M7ST3/gQtsGKy7ncLIS1A315e5ram8u7/7rDkDCYKV7LZ3PRMrCib8AG8tsjAMuewIFUFhClLQBl4v/iwoLWY6jWfxDEoReeF8M//2leyZ/qwp5shgCrhQAXeEjkHGfeepMdbbMwZBv57RQATwRGXG8gx2XCDbwxqinwPFOFm3ewAJQXAcRauU0OciOPEZDJvjFbT6DB6su/3DWY6eQgWnZLCV8uMaj6GMq1GZciRwlAq5J92RQATwRkcnBYqN6SPCWAVKsEoGWj+7Mo/fyJAtwfjXH3oMTatYfE8D8OZ+FU6jJzU7y90zPZPjzx+qtlf/7kI3/IZNQf7/dmhfzZEgBPBMadXzt89yw7vubvyq/bxwKhciVChjKXv0PHdl0sAElDAm/O2lBWvAE5x68UWN574k+/RTIchFHV6g+5z5Tl8X4+BGBZCFCW2eu8MqHYWOtfDsgDRJ0QBM9h/juHWThqY9x9hiwt8YVBfaZv3+RU0Xkd9zcmxbxBa4vnaLEF2R/82H2r/m7LuvXiqc89KprWrHH/XblsvTsM1CH+s1//c/e9sWGNeP6Vc+6/L/fvSoGFR6X/NuNW/7tuYw+eoQyjIRe3EwnCpwdHhVcu7LH1NDD4Q2b/y4UDmBmAF0KGIFlRMiyXK8CIMM7sl7X6KO/N5OFkG3JzW70b2usIQb/zfkRYOG0Ilh0igLi/WvIPfxcmOYg5gYxVsf5onk66Lne32bvBqBRYeaNR99/7z/9EYrm5m3AJ3jORM/LnUwA8ESj6Czd6hYVJQngCGNKZZFMPuSkIu/tuK+9AFjP8YVAQDOGHBegibLfx8LFRyP5P73YtOn5fDhAKeA9oKkJfQSXhqJQExPCRDLX5Ihw8lEeLzwJQXQiGnV8PigxMI4YYIDHISb5Vcf5Rv2uUwQJQVgRA/sGsCAEjQHwhRvLq6rMAsBAw8RksACwETHwGC0BcMegXFicLc4AZwck9FgANQtDjewR9fDGMwJjwknvjfClYAHQKQbsvBP0cHqTi5o/6xJ/hy8ECkLYYwBt4kr0CLdb+uM1z+FgAsi0Ezb4IwDPo5AtCgmnhJfXGOKnHAmBbiAAx2C8sXoWYEhDPn/RJzy4+C0BmPIN9/jvnDFbH9HDrJ9jSswDkQRA6A4KQV+9gPED4aX4oWADyLAg9fs5gn//enrEznPFj+Qn3nUt2LACMmiFDp+8d7PEFwZak4rRP+DO+lZ9ml54FgEEXOjT7wrAhIAq6w4jxANmv+38usivPAsBIVyDaA+FDM4HXMC2Wx6vPcEY+W/h/AQYA9thmW3hmgSUAAAAASUVORK5CYII=
+          long_description: For the on-demand service, the operator can configure up to
+            three service plans for dynamically provisioned instances with different memory
+            and disk sizes. App Developers can provision instances as needed until the instance
+            quota is met. Operators and App Developers can set certain Redis configurations
+            to tailor an instance to an application's needs. This service offers quotas
+            to manage instance use, log-forwarding and plan-level metrics.
+        global_quotas:
+          service_instance_limit: "(( .redis-on-demand-broker.service_instance_limit.value
+            ))"
+        global_properties:
+          syslog_forwarder:
+            properties:
+              syslog: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_snippet)
+                ))"
+          metron_agent:
+            properties:
+              loggregator:
+                tls:
+                  ca_cert: "(( $ops_manager.ca_certificate ))"
+                  metron:
+                    cert: "(( .properties.metron_tls_cert.cert_pem ))"
+                    key: "(( .properties.metron_tls_cert.private_key_pem ))"
+          consul_agent:
+            properties:
+              consul:
+                client:
+                  enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+            consumes:
+              consul_common:
+                from: consul_common_link
+                deployment: "(( ..cf.deployment_name ))"
+              consul_client:
+                from: consul_client_link
+                deployment: "(( ..cf.deployment_name ))"
+              consul_server: nil
+          service-metrics:
+            properties:
+              service_metrics:
+                execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+                origin: "p.redis"
+                metrics_command: "/var/vcap/packages/redis-metrics/bin/redis-metrics"
+                metrics_command_args: ["-config=/var/vcap/jobs/redis/config/redis.conf"]
+                monit_dependencies: ["redis"]
+          service-backup:
+            properties:
+              service-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(service_backups_odb_snippet)
+                ))"
+          redis-backup:
+            properties:
+              redis-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(redis_backups_snippet)
+                ))"
+        plans:
+        - "(( .properties.small_plan_selector.selected_option.parsed_manifest(small_plan_snippet)
+          ))"
+        - "(( .properties.medium_plan_selector.selected_option.parsed_manifest(medium_plan_snippet)
+          ))"
+        - "(( .properties.large_plan_selector.selected_option.parsed_manifest(large_plan_snippet)
+          ))"
+    name: broker
+    release: on-demand-service-broker
+- instance_definition:
+    configurable: false
+    default: 1
+    name: instances
+  manifest: |
+    ---
+    route_registrar:
+      routes:
+      - health_check:
+          name: redis-broker
+          script_path: "/var/vcap/jobs/cf-redis-broker/bin/health_check.sh"
+        name: broker_0
+        port: 12350
+        registration_interval: 10s
+        tags:
+          component: redis-broker
+          env: production
+        uris:
+        - redis-broker.(( $runtime.system_domain ))
+    cf:
+      apps_domain: "(( $runtime.apps_domain ))"
+      system_domain: "(( $runtime.system_domain ))"
+    redis:
+      config_command: "(( .cf-redis-broker.redis_config_command.value ))"
+      save_command: "(( redis_save_command.value ))"
+      bg_save_command: "(( redis_bg_save_command.value ))"
+      bg_rewrite_aof_command: "(( redis_bg_rewrite_aof_command.value ))"
+      broker:
+        name: "(( .deployment_name ))"
+        description: Redis service to provide pre-provisioned instances configured as
+          a datastore, running on a shared or dedicated VM.
+        long_description: For the dedicated-vm service, the operator pre-provisions a
+          pool of instances, each running on a dedicated VM. For the shared-vm service,
+          the operator allows app developers to provision Redis instances on a shared
+          VM. The shared-vm service is intended for development only. Both services allow
+          the operator to configure instance usage quotas, log forwarding, instance-level
+          metrics and backups.
+        network: default
+        service_instance_limit: "(( service_instance_limit.value ))"
+        auth:
+          username: "(( broker_http_auth_credentials.identity ))"
+          password: "(( broker_http_auth_credentials.password ))"
+      maxmemory: "(( redis_maxmemory.value ))"
+    service_metrics:
+      origin: p-redis
+      execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+      deployment: cf-redis
+      dropsonde_incoming_port: 3457
+      metrics_command: "/var/vcap/packages/redis-broker-metrics/bin/redis-broker-metrics"
+      metrics_command_args:
+      - "-config=/var/vcap/jobs/cf-redis-broker/config/broker.yml"
+      monit_dependencies:
+      - cf-redis-broker
+    service-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(service_backups_snippet)
+      ))"
+    redis-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(redis_backups_snippet)
+      ))"
+  max_in_flight: 100%
+  name: cf-redis-broker
+  property_blueprints:
+  - configurable: true
+    default: 5
+    name: service_instance_limit
+    type: integer
+  - configurable: true
+    default: 512MB
+    name: redis_maxmemory
+    type: string
+  - default:
+      identity: admin
+    name: broker_http_auth_credentials
+    type: simple_credentials
+  - name: redis_config_command
+    type: secret
+  - name: redis_save_command
+    type: secret
+  - name: redis_bg_save_command
+    type: secret
+  - name: redis_bg_rewrite_aof_command
+    type: secret
+  resource_definitions:
+  - configurable: true
+    constraints:
+      error_message: Decreasing memory is not allowed
+      may_only_increase: true
+      min: 1024
+    default: 3072
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 4096
+    name: ephemeral_disk
+    type: integer
+  - configurable: true
+    constraints:
+      error_message: Decreasing disk size not allowed
+      may_only_increase: true
+      min: 1024
+    default: 9216
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1
+    default: 2
+    name: cpu
+    type: integer
+  resource_label: Redis Broker
+  single_az_only: false
+  templates:
+  - manifest: |
+      ---
+      broker:
+        name: p-redis
+        host: redis-broker.(( $runtime.system_domain ))
+        username: "(( .cf-redis-broker.broker_http_auth_credentials.identity ))"
+        password: "(( .cf-redis-broker.broker_http_auth_credentials.password ))"
+      cf:
+        api_url: "(( $runtime.system_api_url ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+      redis:
+        broker:
+          service_instance_limit: "(( .cf-redis-broker.service_instance_limit.value ))"
+          dedicated_node_count: "(( .dedicated-node.instances ))"
+    name: broker-registrar
+    release: cf-redis
+  - manifest: |
+      ---
+      broker:
+        name: p-redis
+        host: redis-broker.(( $runtime.system_domain ))
+        username: "(( .cf-redis-broker.broker_http_auth_credentials.identity ))"
+        password: "(( .cf-redis-broker.broker_http_auth_credentials.password ))"
+      cf:
+        api_url: "(( $runtime.system_api_url ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+        admin_username: "(( ..cf.uaa.system_services_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.system_services_credentials.password ))"
+      redis:
+        broker:
+          service_instance_limit: "(( .cf-redis-broker.service_instance_limit.value ))"
+          dedicated_node_count: "(( .dedicated-node.instances ))"
+    name: broker-deregistrar
+    release: cf-redis
+  - consumes: |
+      redis_broker: {from: redis_broker}
+      dedicated_node: {from: dedicated_node}
+    manifest: |
+      ---
+      cf:
+        api_url: "(( $runtime.system_api_url ))"
+        apps_domain: "(( $runtime.apps_domain ))"
+        system_domain: "(( $runtime.system_domain ))"
+        skip_ssl_validation: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+        admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+        admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+      redis:
+        broker:
+          service_instance_limit: "(( .cf-redis-broker.service_instance_limit.value ))"
+          dedicated_node_count: "(( .dedicated-node.instances ))"
+      retry:
+        backoff: linear
+        baseline_interval_milliseconds: 200
+        max_attempts: 30
+    name: smoke-tests
+    release: cf-redis
+  - consumes: 'dedicated_node: {from: dedicated_node}'
+    name: cf-redis-broker
+    provides: 'redis_broker: {as: redis_broker, shared: true}'
+    release: cf-redis
+  - manifest: |
+      ---
+      syslog: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_configurable_format_snippet)
+        ))"
+    name: syslog_forwarder
+    release: syslog-migration
+  - name: redis-broker-metrics
+    release: redis-metrics
+  - name: service-metrics
+    release: service-metrics
+  - manifest: |
+      ---
+      metron_agent:
+        deployment: cf-redis
+      loggregator:
+        tls:
+          ca_cert: "(( $ops_manager.ca_certificate ))"
+          metron:
+            cert: "(( .properties.metron_tls_cert.cert_pem ))"
+            key: "(( .properties.metron_tls_cert.private_key_pem ))"
+    name: metron_agent
+    release: loggregator
+  - consumes: 'nats: {from: nats, deployment: "(( ..cf.deployment_name ))"}'
+    name: route_registrar
+    release: routing
+  - name: redis-backups
+    release: redis-backups
+  - name: service-backup
+    release: service-backup
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    provides: {}
+    release: consul
+- instance_definition:
+    configurable: true
+    constraints:
+      may_only_increase: true
+    default: 5
+    name: instances
+  manifest: |
+    ---
+    redis:
+      config_command: "(( .cf-redis-broker.redis_config_command.value ))"
+      broker:
+        auth:
+          username: "(( .cf-redis-broker.broker_http_auth_credentials.identity ))"
+          password: "(( .cf-redis-broker.broker_http_auth_credentials.password ))"
+    service_metrics:
+      origin: p-redis
+      execution_interval_seconds: "(( .properties.metrics_polling_interval.value ))"
+      deployment: cf-redis
+      dropsonde_incoming_port: 3457
+      metrics_command: "/var/vcap/packages/redis-metrics/bin/redis-metrics"
+      metrics_command_args:
+      - "-config=/var/vcap/store/redis/redis.conf"
+      - "--legacy-format"
+      monit_dependencies:
+      - redis
+    service-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(service_backups_snippet)
+      ))"
+    redis-backup: "(( .properties.backups_selector.selected_option.parsed_manifest(redis_backups_snippet)
+      ))"
+  max_in_flight: 100%
+  name: dedicated-node
+  resource_definitions:
+  - configurable: true
+    constraints:
+      error_message: Decreasing memory is not allowed
+      may_only_increase: true
+      min: 1024
+    default: 1024
+    name: ram
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1024
+    default: 4096
+    name: ephemeral_disk
+    type: integer
+  - configurable: true
+    constraints:
+      error_message: Decreasing disk size not allowed
+      may_only_increase: true
+      min: 1024
+    default: 4096
+    name: persistent_disk
+    type: integer
+  - configurable: true
+    constraints:
+      min: 1
+    default: 2
+    name: cpu
+    type: integer
+  resource_label: Dedicated Node
+  single_az_only: false
+  templates:
+  - name: dedicated-node
+    provides: 'dedicated_node: {as: dedicated_node, shared: true}'
+    release: cf-redis
+  - manifest: |
+      ---
+      syslog: "(( .properties.syslog_selector.selected_option.parsed_manifest(syslog_configurable_format_snippet)
+        ))"
+    name: syslog_forwarder
+    release: syslog-migration
+  - name: redis-metrics
+    release: redis-metrics
+  - name: service-metrics
+    release: service-metrics
+  - manifest: |
+      ---
+      metron_agent:
+        deployment: cf-redis
+      loggregator:
+        tls:
+          ca_cert: "(( $ops_manager.ca_certificate ))"
+          metron:
+            cert: "(( .properties.metron_tls_cert.cert_pem ))"
+            key: "(( .properties.metron_tls_cert.private_key_pem ))"
+    name: metron_agent
+    release: loggregator
+  - name: redis-backups
+    release: redis-backups
+  - name: service-backup
+    release: service-backup
+  - consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+    manifest: |
+      ---
+      consul:
+        client:
+          enabled: "(( $ops_manager.dns_enabled ? false : true ))"
+    name: consul_agent
+    provides: {}
+    release: consul
+label: Redis
+metadata_version: "2.1"
+minimum_version_for_upgrade: 1.12.0
+name: p-redis
+post_deploy_errands:
+- colocated: true
+  description: Registers the broker for the dedicated and shared-vm service with Cloud
+    Foundry. It is required to use and update these Redis services.
+  label: Broker Registrar
+  name: broker-registrar
+  run_default: true
+- colocated: true
+  description: Tests the dedicated and shared-vm service by creating, binding and
+    writing to sample instances.
+  label: Smoke Tests
+  name: smoke-tests
+  run_default: true
+- colocated: true
+  description: Registers the on-demand broker with Cloud Foundry. It is required to
+    use and update the on-demand Redis service.
+  label: Register On-Demand Broker
+  name: register-broker
+  run_default: true
+- colocated: true
+  description: Tests the on-demand service by creating, binding and writing to sample
+    instances.
+  label: On-Demand Broker Smoke Tests
+  name: on-demand-broker-smoke-tests
+  run_default: true
+- colocated: true
+  description: Upgrades on-demand service instances one-by-one. Should be run with
+    every Redis tile upgrade.
+  label: Upgrade All On-Demand Service Instances
+  name: upgrade-all-service-instances
+  run_default: true
+pre_delete_errands:
+- colocated: true
+  description: Deregisters the broker for the dedicated and shared-vm service from
+    Cloud Foundry.
+  label: Broker Deregistrar
+  name: broker-deregistrar
+  run_default: true
+- colocated: true
+  description: Deregisters the broker for the on-demand service from Cloud Foundry.
+    Deletes all on-demand redis instances.
+  label: Delete All Service Instances and Deregister On-Demand Broker
+  name: delete-all-service-instances-and-deregister-broker
+  run_default: true
+product_version: 1.13.1
+property_blueprints:
+- configurable: true
+  default: Yes without encryption
+  name: syslog_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: |
+        migration:
+          disabled: true
+          cleanup_conf_files:
+          - 00-syslog_forwarder.conf
+          - 00-syslog-file-inputs.conf
+          - 01-syslog-forwarding.conf
+          - 05-syslog_forwarder.conf
+      name: syslog_snippet
+    - manifest: |
+        migration:
+          disabled: true
+          cleanup_conf_files:
+          - 00-syslog_forwarder.conf
+          - 00-syslog-file-inputs.conf
+          - 01-syslog-forwarding.conf
+          - 05-syslog_forwarder.conf
+      name: syslog_configurable_format_snippet
+    select_value: "No"
+  - name: active
+    named_manifests:
+    - manifest: |
+        address: "(( .properties.syslog_selector.active.syslog_address.value ))"
+        port: "(( .properties.syslog_selector.active.syslog_port.value ))"
+        transport: "(( .properties.syslog_selector.active.syslog_transport.value ))"
+        migration:
+          cleanup_conf_files:
+          - 00-syslog_forwarder.conf
+          - 00-syslog-file-inputs.conf
+          - 01-syslog-forwarding.conf
+          - 05-syslog_forwarder.conf
+      name: syslog_snippet
+    - manifest: |
+        address: "(( .properties.syslog_selector.active.syslog_address.value ))"
+        port: "(( .properties.syslog_selector.active.syslog_port.value ))"
+        transport: "(( .properties.syslog_selector.active.syslog_transport.value ))"
+        migration:
+          message_format: (( .properties.syslog_selector.active.syslog_format.value ))
+          cleanup_conf_files:
+          - 00-syslog_forwarder.conf
+          - 00-syslog-file-inputs.conf
+          - 01-syslog-forwarding.conf
+          - 05-syslog_forwarder.conf
+      name: syslog_configurable_format_snippet
+    property_blueprints:
+    - configurable: true
+      name: syslog_address
+      type: network_address
+    - configurable: true
+      name: syslog_port
+      type: port
+    - configurable: true
+      default: tcp
+      name: syslog_transport
+      options:
+      - label: TCP
+        name: tcp
+      - label: UDP
+        name: udp
+      - label: RELP
+        name: relp
+      type: dropdown_select
+    - configurable: true
+      default: rfc5424
+      name: syslog_format
+      options:
+      - label: RFC 5424
+        name: rfc5424
+      - label: Legacy Format
+        name: job_index_id
+      type: dropdown_select
+    select_value: Yes without encryption
+  - name: active_with_tls
+    named_manifests:
+    - manifest: |
+        address: "(( .properties.syslog_selector.active_with_tls.syslog_address.value ))"
+        port: "(( .properties.syslog_selector.active_with_tls.syslog_port.value ))"
+        transport: "(( .properties.syslog_selector.active_with_tls.syslog_transport.value ))"
+        migration:
+          cleanup_conf_files:
+          - 00-syslog_forwarder.conf
+          - 00-syslog-file-inputs.conf
+          - 01-syslog-forwarding.conf
+          - 05-syslog_forwarder.conf
+        tls_enabled: true
+        permitted_peer: "(( .properties.syslog_selector.active_with_tls.syslog_permitted_peer.value ))"
+        ca_cert: "(( .properties.syslog_selector.active_with_tls.syslog_ca_cert.value ))"
+      name: syslog_snippet
+    - manifest: |
+        address: "(( .properties.syslog_selector.active_with_tls.syslog_address.value ))"
+        port: "(( .properties.syslog_selector.active_with_tls.syslog_port.value ))"
+        transport: "(( .properties.syslog_selector.active_with_tls.syslog_transport.value ))"
+        migration:
+          message_format: (( .properties.syslog_selector.active_with_tls.syslog_format.value ))
+          cleanup_conf_files:
+          - 00-syslog_forwarder.conf
+          - 00-syslog-file-inputs.conf
+          - 01-syslog-forwarding.conf
+          - 05-syslog_forwarder.conf
+        tls_enabled: true
+        permitted_peer: "(( .properties.syslog_selector.active_with_tls.syslog_permitted_peer.value ))"
+        ca_cert: "(( .properties.syslog_selector.active_with_tls.syslog_ca_cert.value ))"
+      name: syslog_configurable_format_snippet
+    property_blueprints:
+    - configurable: true
+      name: syslog_address
+      type: network_address
+    - configurable: true
+      name: syslog_port
+      type: port
+    - configurable: false
+      default: tcp
+      name: syslog_transport
+      options:
+      - label: TCP
+        name: tcp
+      type: dropdown_select
+    - configurable: true
+      default: rfc5424
+      name: syslog_format
+      options:
+      - label: RFC 5424
+        name: rfc5424
+      - label: Legacy Format
+        name: job_index_id
+      type: dropdown_select
+    - configurable: true
+      name: syslog_permitted_peer
+      type: string
+    - configurable: true
+      name: syslog_ca_cert
+      type: text
+    select_value: Yes with TLS encryption
+  type: selector
+- configurable: true
+  constraints:
+    min: 10
+  default: 30
+  name: metrics_polling_interval
+  type: integer
+- configurable: false
+  default: '"EVAL"'
+  name: eval_enabled
+  type: string
+- configurable: false
+  default: '"EVALSHA"'
+  name: evalsha_enabled
+  type: string
+- configurable: false
+  default: '""'
+  name: quotes_string
+  type: string
+- configurable: true
+  default: Plan Active
+  name: small_plan_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: null
+      name: small_plan_snippet
+    select_value: Plan Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        name: (( .properties.small_plan_selector.active.name.value ))
+        plan_id: 05491E77-4B47-49D3-97FE-3E8E2B02F905
+        description: (( .properties.small_plan_selector.active.description.value ))
+        metadata:
+          display_name: (( .properties.small_plan_selector.active.name.value ))
+          bullets: [(( .properties.small_plan_selector.active.description.value ))]
+        cf_service_access: (( .properties.small_plan_selector.active.cf_service_access.value ))
+        quotas:
+          service_instance_limit: (( .properties.small_plan_selector.active.instance_limit.value ))
+        instance_groups:
+          - name: redis-instance
+            vm_type: (( .properties.small_plan_selector.active.vm_type.value ))
+            vm_extensions: (( .redis-on-demand-broker.vm_extensions.value ))
+            persistent_disk_type: (( .properties.small_plan_selector.active.disk_size.value ))
+            instances: 1
+            networks: [(( $self.service_network ))]
+            azs: [(( .properties.small_plan_selector.active.az_single_select.value ))]
+        properties:
+          redis:
+            properties:
+              redis:
+                timeout: "(( .properties.small_plan_selector.active.timeout.value ))s"
+                tcp-keepalive: (( .properties.small_plan_selector.active.tcp_keepalive.value ))
+                maxclients: (( .properties.small_plan_selector.active.maxclients.value ))
+                rename-command:
+                  CONFIG: "(( .redis-on-demand-broker.redis_config_command.value ))"
+                  EVAL: "(( .properties.small_plan_selector.active.lua_scripting.value ? .properties.eval_enabled.value : .properties.quotes_string.value ))"
+                  EVALSHA: "(( .properties.small_plan_selector.active.lua_scripting.value ? .properties.evalsha_enabled.value : .properties.quotes_string.value ))"
+      name: small_plan_snippet
+    property_blueprints:
+    - configurable: true
+      constraints:
+      - error_message: length must be between 3 and 30 characters and contain only
+          lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z1-9\-]{3,30}$
+      default: cache-small
+      name: name
+      type: string
+    - configurable: true
+      constraints:
+      - error_message: length must be between 3 and 120 characters.
+        must_match_regex: ^.{3,120}$
+      default: This plan provides a small dedicated Redis instance, tailored for caching
+        use-cases with persistence to disk enabled
+      name: description
+      type: string
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enabled for all orgs and spaces
+        name: enable
+      - label: Disabled for all orgs and spaces
+        name: disable
+      - label: Leave access unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: az_single_select
+      optional: false
+      type: service_network_az_single_select
+    - configurable: true
+      name: vm_type
+      resource_definitions:
+      - default: 1024
+        name: ram
+      type: vm_type_dropdown
+    - configurable: true
+      constraints:
+        min: 1024
+      name: disk_size
+      resource_definitions:
+      - default: 1536
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        min: 0
+      default: 3600
+      name: timeout
+      type: integer
+    - configurable: true
+      constraints:
+        min: 0
+      default: 60
+      name: tcp_keepalive
+      type: integer
+    - configurable: true
+      constraints:
+        max: 10000
+        min: 1
+      default: 1000
+      name: maxclients
+      type: integer
+    - configurable: true
+      default: false
+      name: lua_scripting
+      type: boolean
+    - configurable: true
+      constraints:
+        min: 1
+      default: 20
+      name: instance_limit
+      type: integer
+    select_value: Plan Active
+  type: selector
+- configurable: true
+  default: Plan Active
+  name: medium_plan_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: null
+      name: medium_plan_snippet
+    select_value: Plan Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        name: (( .properties.medium_plan_selector.active.name.value ))
+        plan_id: 4970470C-0F22-4C07-9AFD-BDB3A527760C
+        description: (( .properties.medium_plan_selector.active.description.value ))
+        metadata:
+          display_name: (( .properties.medium_plan_selector.active.name.value ))
+          bullets: [(( .properties.medium_plan_selector.active.description.value ))]
+        cf_service_access: (( .properties.medium_plan_selector.active.cf_service_access.value ))
+        quotas:
+          service_instance_limit: (( .properties.medium_plan_selector.active.instance_limit.value ))
+        instance_groups:
+          - name: redis-instance
+            vm_type: (( .properties.medium_plan_selector.active.vm_type.value ))
+            vm_extensions: (( .redis-on-demand-broker.vm_extensions.value ))
+            persistent_disk_type: (( .properties.medium_plan_selector.active.disk_size.value ))
+            instances: 1
+            networks: [(( $self.service_network ))]
+            azs: [(( .properties.medium_plan_selector.active.az_single_select.value ))]
+        properties:
+          redis:
+            properties:
+              redis:
+                timeout: "(( .properties.medium_plan_selector.active.timeout.value ))s"
+                tcp-keepalive: (( .properties.medium_plan_selector.active.tcp_keepalive.value ))
+                maxclients: (( .properties.medium_plan_selector.active.maxclients.value ))
+                rename-command:
+                  CONFIG: "(( .redis-on-demand-broker.redis_config_command.value ))"
+                  EVAL: "(( .properties.medium_plan_selector.active.lua_scripting.value ? .properties.eval_enabled.value : .properties.quotes_string.value ))"
+                  EVALSHA: "(( .properties.medium_plan_selector.active.lua_scripting.value ? .properties.evalsha_enabled.value : .properties.quotes_string.value ))"
+      name: medium_plan_snippet
+    property_blueprints:
+    - configurable: true
+      constraints:
+      - error_message: length must be between 3 and 30 characters and contain only
+          lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z1-9\-]{3,30}$
+      default: cache-medium
+      name: name
+      type: string
+    - configurable: true
+      constraints:
+      - error_message: length must be between 3 and 120 characters.
+        must_match_regex: ^.{3,120}$
+      default: This plan provides a medium dedicated Redis instance, tailored for
+        caching use-cases with persistence to disk enabled
+      name: description
+      type: string
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enabled for all orgs and spaces
+        name: enable
+      - label: Disabled for all orgs and spaces
+        name: disable
+      - label: Leave access unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: az_single_select
+      optional: false
+      type: service_network_az_single_select
+    - configurable: true
+      name: vm_type
+      resource_definitions:
+      - default: 2048
+        name: ram
+      type: vm_type_dropdown
+    - configurable: true
+      constraints:
+        min: 1024
+      name: disk_size
+      resource_definitions:
+      - default: 3072
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        min: 0
+      default: 3600
+      name: timeout
+      type: integer
+    - configurable: true
+      constraints:
+        min: 0
+      default: 60
+      name: tcp_keepalive
+      type: integer
+    - configurable: true
+      constraints:
+        max: 10000
+        min: 1
+      default: 5000
+      name: maxclients
+      type: integer
+    - configurable: true
+      default: false
+      name: lua_scripting
+      type: boolean
+    - configurable: true
+      constraints:
+        min: 1
+      default: 20
+      name: instance_limit
+      type: integer
+    select_value: Plan Active
+  type: selector
+- configurable: true
+  default: Plan Active
+  name: large_plan_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: null
+      name: large_plan_snippet
+    select_value: Plan Inactive
+  - name: active
+    named_manifests:
+    - manifest: |
+        name: (( .properties.large_plan_selector.active.name.value ))
+        plan_id: 9BADEC46-E939-4A3C-8C49-2CE7B9B19362
+        description: (( .properties.large_plan_selector.active.description.value ))
+        metadata:
+          display_name: (( .properties.large_plan_selector.active.name.value ))
+          bullets: [(( .properties.large_plan_selector.active.description.value ))]
+        cf_service_access: (( .properties.large_plan_selector.active.cf_service_access.value ))
+        quotas:
+          service_instance_limit: (( .properties.large_plan_selector.active.instance_limit.value ))
+        instance_groups:
+          - name: redis-instance
+            vm_type: (( .properties.large_plan_selector.active.vm_type.value ))
+            vm_extensions: (( .redis-on-demand-broker.vm_extensions.value ))
+            persistent_disk_type: (( .properties.large_plan_selector.active.disk_size.value ))
+            instances: 1
+            networks: [(( $self.service_network ))]
+            azs: [(( .properties.large_plan_selector.active.az_single_select.value ))]
+        properties:
+          redis:
+            properties:
+              redis:
+                timeout: "(( .properties.large_plan_selector.active.timeout.value ))s"
+                tcp-keepalive: (( .properties.large_plan_selector.active.tcp_keepalive.value ))
+                maxclients: (( .properties.large_plan_selector.active.maxclients.value ))
+                rename-command:
+                  CONFIG: "(( .redis-on-demand-broker.redis_config_command.value ))"
+                  EVAL: "(( .properties.large_plan_selector.active.lua_scripting.value ? .properties.eval_enabled.value : .properties.quotes_string.value ))"
+                  EVALSHA: "(( .properties.large_plan_selector.active.lua_scripting.value ? .properties.evalsha_enabled.value : .properties.quotes_string.value ))"
+      name: large_plan_snippet
+    property_blueprints:
+    - configurable: true
+      constraints:
+      - error_message: length must be between 3 and 30 characters and contain only
+          lowercase letters, numbers, and dashes.
+        must_match_regex: ^[a-z1-9\-]{3,30}$
+      default: cache-large
+      name: name
+      type: string
+    - configurable: true
+      constraints:
+      - error_message: length must be between 3 and 120 characters.
+        must_match_regex: ^.{3,120}$
+      default: This plan provides a large dedicated Redis instance, tailored for caching
+        use-cases with persistence to disk enabled
+      name: description
+      type: string
+    - configurable: true
+      default: enable
+      name: cf_service_access
+      options:
+      - label: Enabled for all orgs and spaces
+        name: enable
+      - label: Disabled for all orgs and spaces
+        name: disable
+      - label: Leave access unchanged
+        name: manual
+      type: dropdown_select
+    - configurable: true
+      name: az_single_select
+      optional: false
+      type: service_network_az_single_select
+    - configurable: true
+      name: vm_type
+      resource_definitions:
+      - default: 4096
+        name: ram
+      type: vm_type_dropdown
+    - configurable: true
+      constraints:
+        min: 1024
+      name: disk_size
+      resource_definitions:
+      - default: 6144
+        name: persistent_disk
+      type: disk_type_dropdown
+    - configurable: true
+      constraints:
+        min: 0
+      default: 3600
+      name: timeout
+      type: integer
+    - configurable: true
+      constraints:
+        min: 0
+      default: 60
+      name: tcp_keepalive
+      type: integer
+    - configurable: true
+      constraints:
+        max: 10000
+        min: 1
+      default: 10000
+      name: maxclients
+      type: integer
+    - configurable: true
+      default: false
+      name: lua_scripting
+      type: boolean
+    - configurable: true
+      constraints:
+        min: 1
+      default: 20
+      name: instance_limit
+      type: integer
+    select_value: Plan Active
+  type: selector
+- configurable: true
+  default: No Backups
+  name: backups_selector
+  option_templates:
+  - name: disabled
+    named_manifests:
+    - manifest: |
+        destinations: []
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "0 0 * * *"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+      name: service_backups_snippet
+    - manifest: |
+        destinations: []
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "0 0 * * *"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+      name: service_backups_odb_snippet
+    - manifest: 'enable_bbr: true'
+      name: redis_backups_snippet
+    select_value: No Backups
+  - name: s3
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            endpoint_url: (( .properties.backups_selector.s3.endpoint_url.value ))
+            region: (( .properties.backups_selector.s3.region.value ))
+            bucket_name: (( .properties.backups_selector.s3.bucket_name.value ))
+            bucket_path: (( .properties.backups_selector.s3.path.value ))
+            access_key_id: (( .properties.backups_selector.s3.access_key_id.value ))
+            secret_access_key: (( .properties.backups_selector.s3.secret_access_key.value ))
+          type: s3
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.s3.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+      name: service_backups_snippet
+    - manifest: |
+        destinations:
+        - config:
+            endpoint_url: (( .properties.backups_selector.s3.endpoint_url.value ))
+            region: (( .properties.backups_selector.s3.region.value ))
+            bucket_name: (( .properties.backups_selector.s3.bucket_name.value ))
+            bucket_path: (( .properties.backups_selector.s3.path.value ))
+            access_key_id: (( .properties.backups_selector.s3.access_key_id.value ))
+            secret_access_key: (( .properties.backups_selector.s3.secret_access_key.value ))
+          type: s3
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.s3.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+        add_deployment_name_to_backup_path: true
+      name: service_backups_odb_snippet
+    - manifest: |
+        enable_bbr: true
+        bg_save_timeout: (( .properties.backups_selector.s3.bg_save_timeout.value ))
+      name: redis_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: access_key_id
+      type: string
+    - configurable: true
+      name: secret_access_key
+      type: string
+    - configurable: true
+      name: endpoint_url
+      optional: true
+      type: http_url
+    - configurable: true
+      name: region
+      optional: true
+      type: string
+    - configurable: true
+      default: "4"
+      name: signature_version
+      optional: true
+      type: string
+    - configurable: true
+      name: bucket_name
+      type: string
+    - configurable: true
+      name: path
+      type: string
+    - configurable: true
+      default: 0 0 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: 10
+      name: bg_save_timeout
+      type: integer
+    select_value: S3 Backups
+  - name: scp
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            server: (( .properties.backups_selector.scp.server.value ))
+            user: (( .properties.backups_selector.scp.user.value ))
+            destination: (( .properties.backups_selector.scp.path.value ))
+            key: (( .properties.backups_selector.scp.key.value ))
+            port: (( .properties.backups_selector.scp.port.value ))
+            fingerprint: (( .properties.backups_selector.scp.fingerprint.value ))
+            restore_available: false
+          type: scp
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.scp.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+      name: service_backups_snippet
+    - manifest: |
+        destinations:
+        - config:
+            server: (( .properties.backups_selector.scp.server.value ))
+            user: (( .properties.backups_selector.scp.user.value ))
+            destination: (( .properties.backups_selector.scp.path.value ))
+            key: (( .properties.backups_selector.scp.key.value ))
+            port: (( .properties.backups_selector.scp.port.value ))
+            fingerprint: (( .properties.backups_selector.scp.fingerprint.value ))
+            restore_available: false
+          type: scp
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.scp.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+        add_deployment_name_to_backup_path: true
+      name: service_backups_odb_snippet
+    - manifest: |
+        enable_bbr: true
+        bg_save_timeout: (( .properties.backups_selector.scp.bg_save_timeout.value ))
+      name: redis_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: server
+      type: network_address
+    - configurable: true
+      name: user
+      type: string
+    - configurable: true
+      name: key
+      type: text
+    - configurable: true
+      name: path
+      type: string
+    - configurable: true
+      default: "22"
+      name: port
+      type: port
+    - configurable: true
+      default: 0 0 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: 10
+      name: bg_save_timeout
+      type: integer
+    - configurable: true
+      default: ""
+      name: fingerprint
+      optional: true
+      type: string
+    select_value: SCP Backups
+  - name: azure
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            storage_account: (( .properties.backups_selector.azure.account.value ))
+            path: (( .properties.backups_selector.azure.path.value ))
+            storage_access_key: (( .properties.backups_selector.azure.storage_access_key.value ))
+            container: (( .properties.backups_selector.azure.container.value ))
+            blob_store_base_url: (( .properties.backups_selector.azure.blob_store_base_url.value ))
+            restore_available: false
+          type: azure
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.azure.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+      name: service_backups_snippet
+    - manifest: |
+        destinations:
+        - config:
+            storage_account: (( .properties.backups_selector.azure.account.value ))
+            path: (( .properties.backups_selector.azure.path.value ))
+            storage_access_key: (( .properties.backups_selector.azure.storage_access_key.value ))
+            container: (( .properties.backups_selector.azure.container.value ))
+            blob_store_base_url: (( .properties.backups_selector.azure.blob_store_base_url.value ))
+            restore_available: false
+          type: azure
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.azure.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+        add_deployment_name_to_backup_path: true
+      name: service_backups_odb_snippet
+    - manifest: |
+        enable_bbr: true
+        bg_save_timeout: (( .properties.backups_selector.azure.bg_save_timeout.value ))
+      name: redis_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: account
+      type: string
+    - configurable: true
+      name: storage_access_key
+      type: text
+    - configurable: true
+      name: path
+      type: string
+    - configurable: true
+      default: 0 0 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: 10
+      name: bg_save_timeout
+      type: integer
+    - configurable: true
+      name: container
+      type: string
+    - configurable: true
+      name: blob_store_base_url
+      optional: true
+      type: string
+    select_value: Azure Backups
+  - name: gcs
+    named_manifests:
+    - manifest: |
+        destinations:
+        - config:
+            project_id: (( .properties.backups_selector.gcs.project_id.value ))
+            bucket_name: (( .properties.backups_selector.gcs.bucket_name.value ))
+            service_account_json: (( .properties.backups_selector.gcs.service_account_json.value ))
+          type: gcs
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.gcs.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+      name: service_backups_snippet
+    - manifest: |
+        destinations:
+        - config:
+            project_id: (( .properties.backups_selector.gcs.project_id.value ))
+            bucket_name: (( .properties.backups_selector.gcs.bucket_name.value ))
+            service_account_json: (( .properties.backups_selector.gcs.service_account_json.value ))
+          type: gcs
+        source_folder: /var/vcap/store/redis-backup/
+        source_executable: "/var/vcap/jobs/redis-backups/bin/backup --snapshot"
+        cleanup_executable: "/var/vcap/jobs/redis-backups/bin/backup --cleanup"
+        cron_schedule: "(( .properties.backups_selector.gcs.cron_schedule.value ))"
+        service_identifier_executable: "/var/vcap/jobs/redis-backups/bin/backup --identifier"
+        add_deployment_name_to_backup_path: true
+      name: service_backups_odb_snippet
+    - manifest: |
+        enable_bbr: true
+        bg_save_timeout: (( .properties.backups_selector.gcs.bg_save_timeout.value ))
+      name: redis_backups_snippet
+    property_blueprints:
+    - configurable: true
+      name: project_id
+      type: string
+    - configurable: true
+      name: bucket_name
+      type: string
+    - configurable: true
+      name: service_account_json
+      type: text
+    - configurable: true
+      default: 0 0 * * *
+      name: cron_schedule
+      type: string
+    - configurable: true
+      default: 10
+      name: bg_save_timeout
+      type: integer
+    select_value: Google Cloud Storage Backups
+  type: selector
+- configurable: false
+  label: metron_tls_cert
+  name: metron_tls_cert
+  type: rsa_cert_credentials
+- configurable: false
+  default: default
+  name: hidden_on_demand_secure_bindings_selector
+  option_templates:
+  - name: default_option
+    named_manifests:
+    - manifest: |
+        credhub:
+          from: credhub
+          deployment: "(( ..cf.deployment_name ))"
+      name: credhub_link_enabled
+    - manifest: |
+        {}
+      name: credhub_link_disabled
+    - manifest: |
+        enabled: true
+        authentication:
+          uaa:
+            client_id: (( ..cf.uaa.services_credhub_credentials.identity ))
+            client_secret: (( ..cf.uaa.services_credhub_credentials.password ))
+            ca_cert: (( $ops_manager.ca_certificate ))
+      name: secure_bindings_snippet_enabled
+    - manifest: |
+        enabled: false
+      name: secure_bindings_snippet_disabled
+    select_value: default
+  type: selector
+- configurable: true
+  default: "No"
+  name: canary_org_space_selector
+  option_templates:
+  - name: inactive
+    named_manifests:
+    - manifest: null
+      name: canary_org_space_snippet
+    select_value: "No"
+  - name: active
+    named_manifests:
+    - manifest: |-
+        cf_org: "(( .properties.canary_org_space_selector.active.org.value ))"
+        cf_space: "(( .properties.canary_org_space_selector.active.space.value ))"
+      name: canary_org_space_snippet
+    property_blueprints:
+    - configurable: true
+      name: org
+      type: string
+    - configurable: true
+      name: space
+      type: string
+    select_value: "Yes"
+  type: selector
+rank: 50
+releases:
+- file: s3-compiled-release-for-cf-redis.tgz
+  name: cf-redis
+  sha1: c26efae4c630245bd9297cb8775f9198db769625
+  version: 434.0.11
+- file: s3-compiled-release-for-redis-metrics.tgz
+  name: redis-metrics
+  sha1: 0699e494532583e375fe8323fd8639cc9470b622
+  version: 7.0.3
+- file: s3-compiled-release-for-service-metrics.tgz
+  name: service-metrics
+  sha1: be0b52204ba30edb68ae234ebb232a662fff724d
+  version: 1.5.11
+- file: s3-compiled-release-for-loggregator.tgz
+  name: loggregator
+  sha1: b503e66ec56a7bf2edfdbaf810083453145c5c84
+  version: "101.3"
+- file: s3-compiled-release-for-consul.tgz
+  name: consul
+  sha1: eaa9e78758063fd1a5899506bf5930534eb236cf
+  version: "192"
+- file: s3-compiled-release-for-service-backup.tgz
+  name: service-backup
+  sha1: 9cd3e25dad40182648a97af69d7f92ef71ba84f5
+  version: 18.1.9
+- file: s3-compiled-release-for-redis-backups.tgz
+  name: redis-backups
+  sha1: fa2a4ca9067717045866165402c9be2a1feae054
+  version: 8.0.10
+- file: s3-compiled-release-for-redis-service-adapter.tgz
+  name: redis-service-adapter
+  sha1: 5ccece8815e6b616d7641620d769bb4b00ad6dc2
+  version: 7.0.16
+- file: s3-compiled-release-for-on-demand-service-broker.tgz
+  name: on-demand-service-broker
+  sha1: bcb4a929dfe7366c568a27c16740f6ecc545f220
+  version: 0.21.2
+- file: s3-compiled-release-for-syslog-migration.tgz
+  name: syslog-migration
+  sha1: d43cd0740d7421d42d6045af41c4ca917620ee3b
+  version: "10"
+- file: s3-compiled-release-for-routing.tgz
+  name: routing
+  sha1: 793e6f9748492e9ccd368c1f46ef3967b6a1511a
+  version: 0.169.0
+- file: s3-compiled-release-for-redis-service.tgz
+  name: redis-service
+  sha1: e403c3c4773def3a0c40faebbc449158063892fb
+  version: 4.0.9
+service_broker: true
+stemcell_criteria:
+  os: ubuntu-trusty
+  requires_cpi: false
+  version: "3468"

@@ -20,7 +20,7 @@ var (
 
 var _ = SynchronizedBeforeSuite(func() []byte {
 	var err error
-	pathToMain, err = gexec.Build("github.com/pivotal-cf/om", "-ldflags", "-X main.applySleepDurationString=1ms")
+	pathToMain, err = gexec.Build("github.com/pivotal-cf/om", "-ldflags", "-X main.applySleepDurationString=1ms -X main.pivnetHost=http://example.com")
 	Expect(err).NotTo(HaveOccurred())
 
 	minioPath, _ := exec.LookPath("minio")

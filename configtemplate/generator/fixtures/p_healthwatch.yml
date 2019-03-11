@@ -1,0 +1,665 @@
+---
+name: p-healthwatch
+product_version: 1.2.1-build.1
+metadata_version: '2.0'
+minimum_version_for_upgrade: 1.0.0
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: '3468'
+  requires_cpi: false
+releases:
+- name: healthwatch-v1-2
+  path: s3-healthwatch-v1-2-final-release
+  src_file: healthwatch-v1-2-400.0.6.tgz
+  version: 400.0.6
+  url: https://s3.amazonaws.com/platform-monitoring-release/healthwatch-v1.2/final-releases/healthwatch-v1-2/healthwatch-v1-2-400.0.6.tgz
+  md5: 226dbb749c5f2776d544c043f112ad4f
+  file: healthwatch-v1-2-400.0.6.tgz
+  commit_hash: fad448f
+- file: cf-mysql-36.10.0.tgz
+  name: cf-mysql
+  version: 36.10.0
+  sha1: dadf405f2305b6f9b625c1e07bd58aa93caf3cbc
+  url: https://bosh.io/d/github.com/cloudfoundry/cf-mysql-release?v=36.10.0
+- file: loggregator-101.5.tgz
+  name: loggregator
+  version: '101.5'
+  sha1: 7c5f63c91aa6a4fef0c28e6dae2e15bd9ae52575
+  url: https://bosh.io/d/github.com/cloudfoundry/loggregator-release?v=101.5
+- file: consul-release-191.tgz
+  name: consul
+  version: '191'
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=191
+  sha1: 61b429ae13e0fde0ebdb98fce99e08f7baf60a16
+requires_product_versions:
+- name: cf
+  version: ">= 2.1"
+provides_product_versions:
+- name: p-healthwatch
+  version: 1.2.1
+label: PCF Healthwatch
+description: Monitor the health and performance of your Cloud Foundry Platform
+icon_image: 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
+rank: 1
+service_broker: true
+post_deploy_errands:
+- name: push-apps
+  colocated: true
+  run_default: true
+  instances:
+  - healthwatch-forwarder/first
+  label: Push Monitoring Components
+  description: Errand that pushes PCF Healthwatch Components to Pivotal Application
+    Service.
+- name: smoke-tests
+  colocated: true
+  run_default: true
+  instances:
+  - healthwatch-forwarder/first
+  label: Smoke Tests
+  description: Errand that validates the installion of PCF Healthwatch
+pre_delete_errands:
+- name: delete-space
+  colocated: true
+  run_default: true
+  instances:
+  - healthwatch-forwarder/first
+  label: Remove Monitoring Components
+  description: Errand that deletes the CF space containing CF apps pushed PCF Healthwatch
+    installation.
+form_types:
+- name: datastore
+  label: Healthwatch Component Config
+  description: Healthwatch App Components Settings
+  property_inputs:
+  - reference: ".healthwatch-forwarder.foundation_name"
+    label: Foundation Name
+    description: Optional foundation name tag
+  - reference: ".healthwatch-forwarder.ingestor_instance_count"
+    label: Ingestor Count
+    description: Number of application instances for ingestor. Set this to the number
+      of Dopplers in Pivotal Application Service.
+    placeholder: 4
+  - reference: ".healthwatch-forwarder.worker_instance_count"
+    label: Redis Worker Count
+    description: Number of application instances for Redis Workers.
+    placeholder: 4
+  - reference: ".healthwatch-forwarder.canary_instance_count"
+    label: App Canary Health Check Instance Count
+    description: Number of application instances for the App Canary Health Check.
+      Recommended not to exceed 3-5.
+    placeholder: 2
+  - reference: ".healthwatch-forwarder.boshhealth_instance_count"
+    label: BOSH Director Health Check Instance Count
+    description: Number of application instances for the BOSH Director Health Check.
+      Must not be more than 1.
+    placeholder: 1
+  - reference: ".healthwatch-forwarder.boshtasks_instance_count"
+    label: BOSH Deployment Task Check Instance Count
+    description: Number of application instances for the BOSH Deployment Check. Recommended
+      not to exceed 3-5.
+    placeholder: 2
+  - reference: ".healthwatch-forwarder.cli_instance_count"
+    label: CLI Command Health Check Instance Count
+    description: Number of application instances for the CLI Command Health Check.
+      Recommended not to exceed 3-5.
+    placeholder: 2
+  - reference: ".healthwatch-forwarder.opsman_instance_count"
+    label: Ops Manager Check Instance Count
+    description: Number of application instances for the Ops Manager Health Check.
+      Recommended not to exceed 3-5.
+    placeholder: 2
+  - reference: ".healthwatch-forwarder.publish_to_eva"
+    label: Publish events to Event Alerts Tile
+    description: If disabled, events will not be published to the Event Alerts Tile
+      (EVA).
+    placeholder: true
+- name: healthcheck
+  label: Health Check
+  description: Login info for health checks
+  property_inputs:
+  - reference: ".properties.opsman"
+    label: Ops Manager Validation Testing
+    description: |
+      Disabling this will override the Ops Manager Check Instance Count value selected in the Healthwatch
+      Component Config section. The functional app will not deploy, and the Ops Manager URL is no longer required.
+    selector_property_inputs:
+    - reference: ".properties.opsman.enable"
+      label: Enable
+      property_inputs:
+      - reference: ".properties.opsman.enable.url"
+        label: Ops Manager URL
+        description: URL of the Ops Manager environment.
+        placeholder: https://pcf.domain.com
+    - reference: ".properties.opsman.disable"
+      label: Disable
+  - reference: ".healthwatch-forwarder.health_check_az"
+    label: BOSH Health Check Availability Zone
+    description: The availablity zone for BOSH to deploy VMs.
+  - reference: ".healthwatch-forwarder.health_check_vm_type"
+    label: BOSH Health Check VM Type
+    description: The VM type for the BOSH Health Check.
+    placeholder: small
+job_types:
+- name: mysql
+  resource_label: MySQL Server
+  description: MySQL data node. Used for storing metrics data.
+  templates:
+  - name: mysql
+    release: cf-mysql
+  max_in_flight: 1
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 15000
+    constraints:
+      min: 4096
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 30000
+    constraints:
+      min: 10000
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: true
+    default: 102400
+    constraints:
+      min: 32768
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 8
+    constraints:
+      min: 4
+  static_ip: 0
+  dynamic_ip: 1
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    configurable: true
+    default: 1
+    constraints:
+      min: 1
+      max: 1
+  single_az_only: true
+  property_blueprints:
+  - name: mysql_admin_password
+    type: simple_credentials
+    label: MySQL admin password
+    default:
+      identity: admin
+  - name: cluster_healthcheck_credentials
+    type: simple_credentials
+    label: Cluster Healthcheck Credentials
+  - name: database_startup_timeout
+    type: integer
+    configurable: false
+    default: 10800
+  - name: roadmin_password
+    type: secret
+    label: Read-Only User Password
+  - name: skip_name_resolve
+    type: boolean
+    default: true
+    configurable: true
+  - name: galera_healthcheck_credentials
+    type: salted_credentials
+    default:
+      identity: galera
+  - name: galera_healthcheck_db_credentials
+    type: salted_credentials
+  manifest: |
+    ---
+    network_name: default
+    domain: "(( ..cf.cloud_controller.system_domain.value ))"
+    cf_mysql:
+      mysql:
+        admin_username: "(( mysql_admin_password.identity ))"
+        admin_password: "(( mysql_admin_password.password ))"
+        binlog_expire_days: 1
+        cluster_health:
+          password: "(( cluster_healthcheck_credentials.password ))"
+        database_startup_timeout: "(( database_startup_timeout.value ))"
+        enable_local_file: true
+        galera_healthcheck:
+          endpoint_username: "(( galera_healthcheck_credentials.identity ))"
+          endpoint_password: "(( galera_healthcheck_credentials.password ))"
+          db_password: "(( galera_healthcheck_db_credentials.password ))"
+        gcache_size: 8192
+        enable_galera: false
+        innodb_buffer_pool_size: 2G
+        remote_admin_access: true
+        roadmin_enabled: true
+        roadmin_password: "(( roadmin_password.value ))"
+        skip_name_resolve: "(( skip_name_resolve.value ))"
+        wsrep_max_ws_rows: 0
+    platform_monitoring:
+      cf:
+        space: system
+    ssl:
+      skip_cert_verify: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+- name: redis
+  resource_label: Redis Server
+  description: Redis node. Used for aggregating metrics data.
+  templates:
+  - name: redis
+    release: healthwatch-v1-2
+  max_in_flight: 1
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 15000
+    constraints:
+      min: 4096
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 30000
+    constraints:
+      min: 10000
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: true
+    default: 102400
+    constraints:
+      min: 32768
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 4
+    constraints:
+      min: 1
+  static_ip: 0
+  dynamic_ip: 1
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    configurable: true
+    default: 1
+    constraints:
+      min: 1
+      max: 1
+  single_az_only: true
+  property_blueprints:
+  - name: redis_password
+    type: simple_credentials
+    label: Redis password
+    default:
+      identity: admin
+  manifest: |
+    ---
+    port: 6379
+    password: "(( redis_password.password ))"
+- name: healthwatch-forwarder
+  resource_label: Healthwatch Forwarder
+  description: Forwards generated metrics to the Firehose
+  templates:
+  - name: healthwatch-forwarder
+    release: healthwatch-v1-2
+  - name: metron_agent
+    release: loggregator
+  - name: consul_agent
+    release: consul
+    consumes: |
+      consul: nil
+      consul_common: {from: consul_common_link, deployment: (( ..cf.deployment_name ))}
+      consul_client: {from: consul_client_link, deployment: (( ..cf.deployment_name ))}
+      consul_server: {from: consul_server_link, deployment: (( ..cf.deployment_name ))}
+  - name: push-apps
+    release: healthwatch-v1-2
+  - name: smoke-tests
+    release: healthwatch-v1-2
+  - name: delete-space
+    release: healthwatch-v1-2
+  max_in_flight: 1
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 8192
+    constraints:
+      min: 4096
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 30000
+    constraints:
+      min: 10000
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: true
+    default: 102400
+    constraints:
+      min: 32768
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 4
+    constraints:
+      min: 1
+      power_of_two: true
+  static_ip: 0
+  dynamic_ip: 1
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    configurable: true
+    default: 2
+    constraints:
+      min: 2
+      max: 2
+  single_az_only: true
+  property_blueprints:
+  - name: healthwatch_rsa_certificate
+    type: rsa_cert_credentials
+    configurable: false
+    default:
+      domains:
+      - healthwatch
+  - name: cookie_secret
+    type: secret
+  - name: refresh_token_secret
+    type: secret
+  - name: foundation_name
+    type: string
+    optional: true
+    configurable: true
+    label: Optional foundation name tag
+    constraints:
+    - must_match_regex: ^[^!@#$%^&*()"'']*$
+      error_message: 'This name cannot contain the special characters !, @, #, ^,
+        &, $, % , *, parentheses or quotes.'
+  - name: ingestor_instance_count
+    type: integer
+    default: 4
+    configurable: true
+    label: Number of instances of ingestors
+    constraints:
+      min: 1
+  - name: worker_instance_count
+    type: integer
+    default: 4
+    configurable: true
+    label: Number of instances of Redis workers
+    constraints:
+      min: 1
+  - name: canary_instance_count
+    type: integer
+    default: 2
+    configurable: true
+    label: Number of instances of canary health checkers
+    constraints:
+      min: 1
+  - name: boshhealth_instance_count
+    type: integer
+    default: 1
+    configurable: true
+    label: Number of instances of bosh health checkers
+    constraints:
+      min: 1
+      max: 1
+  - name: boshtasks_instance_count
+    type: integer
+    default: 2
+    configurable: true
+    label: Number of instances of bosh tasks checkers
+    constraints:
+      min: 1
+  - name: cli_instance_count
+    type: integer
+    default: 2
+    configurable: true
+    label: Number of instances of cli command health checkers
+    constraints:
+      min: 1
+  - name: opsman_instance_count
+    type: integer
+    default: 2
+    configurable: true
+    label: Number of instances of opsman health checkers
+    constraints:
+      min: 1
+  - name: publish_to_eva
+    type: boolean
+    default: true
+    configurable: true
+    label: Publish events to Event Alerts Tile
+  - name: health_check_az
+    type: service_network_az_single_select
+    configurable: true
+    optional: false
+    label: The availability zone for Bosh to deploy VMs.
+  - name: health_check_vm_type
+    type: vm_type_dropdown
+    configurable: true
+    optional: false
+    label: The VM type for the Bosh Health Check.
+  - name: cf_app_org
+    type: string
+    default: system
+    configurable: false
+  - name: cf_app_space
+    type: string
+    default: healthwatch
+    configurable: false
+  - name: app_db_credentials
+    type: simple_credentials
+    configurable: false
+  - name: read_only_app_db_credentials
+    type: simple_credentials
+    configurable: false
+  - name: apps_rsa_certificate
+    type: rsa_cert_credentials
+    configurable: false
+    default:
+      domains:
+      - healthwatch
+  manifest: |
+    ---
+    loggregator:
+      tls:
+        ca_cert: "(( $ops_manager.ca_certificate ))"
+        metron:
+          cert: "(( ..cf.doppler.metron_tls_cert.cert_pem ))"
+          key: "(( ..cf.doppler.metron_tls_cert.private_key_pem ))"
+    metron:
+      server_name: metron
+    forwarder:
+      ca_cert: "(( $ops_manager.ca_certificate ))"
+      server_cert: "(( healthwatch_rsa_certificate.cert_pem ))"
+      server_key: "(( healthwatch_rsa_certificate.private_key_pem ))"
+      server_name: healthwatch
+      port: 13322
+    alerts:
+      publish_to_eva: "(( publish_to_eva.value ))"
+      uaa_client: "(( ..cf.uaa.healthwatch_alerts_credentials.identity ))"
+      uaa_client_secret: "(( ..cf.uaa.healthwatch_alerts_credentials.password ))"
+      disable: false
+    bosh:
+      basic_auth: false
+      disable_bosh_check: false
+      ip: "(( $director.hostname ))"
+      port: 25555
+      rootCaCert: "(( $director.ca_public_key ))"
+      username: "(( $director.username ))"
+      password: "(( $director.password ))"
+      uaa_port: 8443
+      uaa_url: https://(( $director.hostname ))
+      healthcheck:
+        deployment_name: bosh-health-check
+        timeout: 10m
+        network: "(( $self.service_network ))"
+        azs:
+        - "(( health_check_az.value ))"
+        vm_type: "(( health_check_vm_type.value ))"
+    buildpacks:
+      java: java_buildpack_offline
+    system_domain: "(( ..cf.cloud_controller.system_domain.value ))"
+    cf:
+      mysql:
+        instance_count:
+        - "(( ..cf.mysql.instances ))"
+        - "(( ..cf.database.instances ))"
+        internal_cluster: "(( ..cf.properties.system_database.value ))"
+      api_url: api.(( ..cf.cloud_controller.system_domain.value ))
+      bosh_deployment_name: "(( ..cf.deployment_name ))"
+      deployment_name: cf
+      diego_cell_job: diego_cell
+      diego_api_job: diego_database
+      diego_brain_job: diego_brain
+      doppler_job: doppler
+      router_job: router
+      uaa_job: uaa
+      uaa_url: "(( $runtime.login_url ))"
+      login_url: "(( $runtime.login_url ))"
+      admin_username: "(( ..cf.uaa.admin_credentials.identity ))"
+      admin_password: "(( ..cf.uaa.admin_credentials.password ))"
+      cloud_controller:
+        system_domain: "(( ..cf.cloud_controller.system_domain.value ))"
+      scheduler_job: diego_brain
+    cf_healthcheck:
+      cf:
+        instance_count: "(( cli_instance_count.value ))"
+    cf_mysql:
+      mysql:
+        admin_username: "(( .mysql.mysql_admin_password.identity ))"
+        admin_password: "(( .mysql.mysql_admin_password.password ))"
+    firehose:
+      url: wss://doppler.(( ..cf.cloud_controller.system_domain.value )):(( ..cf.properties.logger_endpoint_port.value
+        || "443" ))
+      user: "(( ..cf.uaa.healthwatch_firehose_credentials.identity ))"
+      password: "(( ..cf.uaa.healthwatch_firehose_credentials.password ))"
+      subscription_id: healthwatch-app-dev
+    healthchecker:
+      boshhealth:
+        instance_count: "(( boshhealth_instance_count.value ))"
+      boshtasks:
+        instance_count: "(( boshtasks_instance_count.value ))"
+      canary:
+        instance_count: "(( canary_instance_count.value ))"
+        clientId: "(( ..cf.uaa.admin_client_credentials.identity ))"
+        clientSecret: "(( ..cf.uaa.admin_client_credentials.password ))"
+        uaa_url: "(( $runtime.login_url ))"
+        url: https://apps.(( ..cf.cloud_controller.system_domain.value ))
+      opsman:
+        instance_count: "(( opsman_instance_count.value ))"
+        url: "(( .properties.opsman.enable.url.value ))"
+        disable: "(( .properties.opsman.selected_option.parsed_manifest(opsman_disable)
+          ))"
+    ingestor:
+      cf:
+        instance_count: "(( ingestor_instance_count.value ))"
+    worker:
+      instance_count: "(( worker_instance_count.value ))"
+    platform_monitoring:
+      db_app_user: "(( app_db_credentials.identity ))"
+      db_app_password: "(( app_db_credentials.password ))"
+      db_app_user_read_only: "(( read_only_app_db_credentials.identity ))"
+      db_app_password_read_only: "(( read_only_app_db_credentials.password ))"
+      db_name: platform_monitoring
+      diego_cell_job: "(( ..cf.diego_cell.name ))"
+      doppler_job: "(( ..cf.doppler.name ))"
+      org: "(( cf_app_org.value ))"
+      router_job: "(( ..cf.router.name ))"
+      space: "(( cf_app_space.value ))"
+      deployment_name: "(( ..p-healthwatch.deployment_name ))"
+    ssl:
+      skip_cert_verify: "(( ..cf.ha_proxy.skip_cert_verify.value ))"
+    uaa:
+      ui_client: "(( ..cf.uaa.healthwatch_ui_credentials.identity ))"
+      ui_secret: "(( ..cf.uaa.healthwatch_ui_credentials.password ))"
+    foundation_name: "(( foundation_name.value ))"
+- name: migrate-v1.1-v1.2
+  resource_label: Migrate v1.1 MySQL Tables
+  description: Errand which migrates v1.1 data
+  errand: true
+  templates:
+  - name: migrate-v1.1-v1.2
+    release: healthwatch-v1-2
+  max_in_flight: 1
+  resource_definitions:
+  - name: ram
+    type: integer
+    label: RAM
+    configurable: true
+    default: 2048
+    constraints:
+      min: 1024
+  - name: ephemeral_disk
+    type: integer
+    label: Ephemeral Disk
+    configurable: true
+    default: 2048
+    constraints:
+      min: 1024
+  - name: persistent_disk
+    type: integer
+    label: Persistent Disk
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    label: CPU
+    configurable: true
+    default: 1
+    constraints:
+      min: 1
+      power_of_two: true
+  static_ip: 0
+  dynamic_ip: 1
+  instance_definition:
+    name: instances
+    type: integer
+    label: Instances
+    configurable: false
+    default: 1
+  single_az_only: true
+  manifest: |
+    ---
+    platform_monitoring:
+      db_name: platform_monitoring
+    cf_mysql:
+      mysql:
+        admin_username: "(( .mysql.mysql_admin_password.identity ))"
+        admin_password: "(( .mysql.mysql_admin_password.password ))"
+    redis:
+      ttl: 1200
+property_blueprints:
+- name: opsman
+  type: selector
+  configurable: true
+  default: enable
+  option_templates:
+  - name: enable
+    select_value: enable
+    named_manifests:
+    - name: opsman_disable
+      manifest: 'false'
+    property_blueprints:
+    - name: url
+      type: string
+      configurable: true
+      label: The URL of the Ops Manager environment
+  - name: disable
+    select_value: disable
+    named_manifests:
+    - name: opsman_disable
+      manifest: 'true'

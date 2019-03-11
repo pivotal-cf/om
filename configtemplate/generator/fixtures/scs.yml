@@ -1,0 +1,620 @@
+---
+name: p-spring-cloud-services
+product_version: 1.5.6
+minimum_version_for_upgrade: 1.0.0
+metadata_version: '1.11'
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: '3468'
+  requires_cpi: false
+releases:
+- name: spring-cloud-broker
+  file: spring-cloud-broker-1.5.6-build.7.tgz
+  version: 1.5.6-build.7
+  md5: d87b2597df142d15b2c8bb67c5c5eb07
+- name: consul
+  url: https://github.com/cloudfoundry-incubator/consul-release/releases/download/v191/consul-release-191.tgz
+  file: consul-release-191.tgz
+  version: '191'
+  md5: ed8f4b2a2fac2fc256d7500cb0fbbcb0
+  commit_hash: 60a8ea4
+requires_product_versions:
+- name: p-rabbitmq
+  version: "~> 1.7"
+label: Spring Cloud Services
+description: Spring Cloud Services  ..
+icon_image: iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAYAAAH/62qrAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyhpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDE0IDc5LjE1Njc5NywgMjAxNC8wOC8yMC0wOTo1MzowMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTQgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RjhBNEFBOTY3RUQ0MTFFNDgwNjdDNUQ2NTQ0ODhBRkUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RjhBNEFBOTc3RUQ0MTFFNDgwNjdDNUQ2NTQ0ODhBRkUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpGOEE0QUE5NDdFRDQxMUU0ODA2N0M1RDY1NDQ4OEFGRSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpGOEE0QUE5NTdFRDQxMUU0ODA2N0M1RDY1NDQ4OEFGRSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqhfuJUAAE5xSURBVHja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
+rank: 50
+post_deploy_errands:
+- name: deploy-service-broker
+- name: register-service-broker
+- name: run-smoke-tests
+pre_delete_errands:
+- name: destroy-service-broker
+variables:
+- name: SCS-ENCRYPTION-KEY
+  type: password
+- name: SCS-BROKER-CREDENTIALS
+  type: user
+- name: SCS-WORKER-PASSWORD
+  type: password
+- name: SCS-INSTANCES-PASSWORD
+  type: password
+- name: SCS-WORKER-CLIENT-SECRET
+  type: password
+- name: SCS-BROKER-DASHBOARD-SECRET
+  type: password
+form_types:
+- name: scs_configuration
+  label: Spring Cloud Services
+  description: Spring Cloud Services configuration
+  property_inputs:
+  - reference: ".deploy-service-broker.broker_max_instances"
+    label: Service instance limit
+    description: Configure the maximum number of service instances that can be provisioned
+      by the Spring Cloud Services service broker.
+  - reference: ".deploy-service-broker.instances_app_push_timeout"
+    label: App push timeout
+    description: Configure the maximum amount of time, in minutes, that the service
+      broker will wait for service instance apps to be deployed successfully. The
+      broker will use a default value if empty.
+  - reference: ".deploy-service-broker.buildpack"
+    label: Buildpack
+    description: Configure the buildpack to use when pushing the service broker apps
+      and service instance apps. Leave empty to auto-detect the buildpack.
+  - reference: ".deploy-service-broker.disable_cert_check"
+    label: Do not validate that SSL certificates are properly configured
+    description: If unchecked, installation will fail if required SSL certificates
+      are missing, and missing certificates will be logged.
+  - reference: ".deploy-service-broker.persistence_store_service"
+    label: Persistence store service
+    description: 'Configure the persistence store service (MySQL compatible database
+      only) used by the Spring Cloud Services service broker. (WARNING: Changing the
+      default persistence store service can cause Spring Cloud Services to no longer
+      work as expected.)'
+  - reference: ".deploy-service-broker.persistence_store_service_plan"
+    label: Persistence store service plan
+    description: 'Configure the persistence store service plan (MySQL compatible database
+      plan only) used by the Spring Cloud Services service broker. (WARNING: Changing
+      the default persistence store service plan can cause Spring Cloud Services to
+      no longer work as expected.)'
+  - reference: ".deploy-service-broker.message_bus_service"
+    label: Message bus service
+    description: 'Configure the message bus service used by the Spring Cloud Services
+      service broker. (WARNING: Changing the default message bus service can cause
+      Spring Cloud Services to no longer work as expected.) NOTE: This does not affect
+      the message bus service used by provisioned service instances.'
+  - reference: ".deploy-service-broker.message_bus_service_plan"
+    label: Message bus service plan
+    description: 'Configure the message bus service plan used by the Spring Cloud
+      Services service broker. (WARNING: Changing the default message bus service
+      plan can cause Spring Cloud Services to no longer work as expected.) NOTE: This
+      does not affect the message bus service plan used by provisioned service instances.'
+  - reference: ".register-service-broker.enable_global_access"
+    label: Enable service access across all organizations
+    description: When checked, all Spring Cloud Services will be added to the marketplace
+      for all organizations during the installation process. Uncheck this box to prevent
+      the installer from changing the current Spring Cloud Services visibility in
+      the marketplace across organizations.
+  - reference: ".deploy-service-broker.secure_credentials"
+    label: Secure service instance credentials
+    description: When checked, service instance credentials will be stored in CredHub.
+      Enable only when installing with PCF 2.0 or greater and this feature is also
+      enabled in the PAS tile.
+property_blueprints:
+- name: hidden_credhub_selector
+  type: selector
+  configurable: false
+  default: default
+  option_templates:
+  - name: default_option
+    select_value: default
+    named_manifests:
+    - name: consumes_section_credhub_disabled
+      manifest: 'credhub: nil
+
+'
+    - name: consumes_section_credhub_enabled
+      manifest: 'credhub: {from: credhub, deployment: "(( ..cf.deployment_name ))"}
+
+'
+job_types:
+- name: deploy-service-broker
+  resource_label: Broker Deployer
+  templates:
+  - name: deploy-service-broker
+    release: spring-cloud-broker
+    consumes: '"(( secure_credentials.value ? .properties.hidden_credhub_selector.selected_option.parsed_manifest(consumes_section_credhub_enabled)
+      : .properties.hidden_credhub_selector.selected_option.parsed_manifest(consumes_section_credhub_disabled)
+      ))"
+
+'
+  - name: consul_agent
+    release: consul
+    consumes: |
+      consul_common: {from: consul_common_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_client: {from: consul_client_link, deployment: "(( ..cf.deployment_name ))"}
+      consul_server: nil
+      consul: nil
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 512
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 4096
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  - name: product_name
+    type: string
+    configurable: false
+  - name: app_name
+    type: string
+    configurable: false
+  - name: app_uri
+    type: string
+    configurable: false
+  - name: broker_org
+    type: string
+    configurable: false
+  - name: broker_space
+    type: string
+    configurable: false
+  - name: instances_org
+    type: string
+    configurable: false
+  - name: instances_space
+    type: string
+    configurable: false
+  - name: memory
+    type: integer
+    configurable: false
+  - name: persistence_store_service
+    type: string
+    configurable: true
+    default: p-mysql
+  - name: persistence_store_service_plan
+    type: string
+    configurable: true
+    default: 100mb
+  - name: message_bus_service
+    type: string
+    configurable: true
+    default: p-rabbitmq
+  - name: message_bus_service_plan
+    type: string
+    configurable: true
+    default: standard
+  - name: hystrix_message_bus_service
+    type: string
+    configurable: false
+    default: p-rabbitmq
+  - name: hystrix_message_bus_service_plan
+    type: string
+    configurable: false
+    default: standard
+  - name: worker_client_id
+    type: string
+    configurable: false
+  - name: worker_credentials_user
+    type: string
+    configurable: false
+    default: admin
+  - name: instances_credentials_user
+    type: string
+    configurable: false
+    default: p-spring-cloud-services
+  - name: broker_max_instances
+    type: integer
+    configurable: true
+    default: 100
+  - name: buildpack
+    type: string
+    configurable: true
+    optional: true
+  - name: disable_cert_check
+    type: boolean
+    configurable: true
+    default: false
+  - name: instances_app_push_timeout
+    type: integer
+    configurable: true
+    optional: true
+  - name: broker_health_check_type
+    type: string
+    configurable: false
+  - name: broker_http_health_check_endpoint
+    type: string
+    configurable: false
+  - name: secure_credentials
+    type: boolean
+    configurable: true
+    default: false
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    app_domains:
+    - (( ..cf.cloud_controller.apps_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    spring_cloud_broker:
+      product_name: (( product_name.value ))
+      app_name: (( app_name.value ))
+      app_uri: (( app_uri.value ))
+      broker:
+        org_name: (( broker_org.value ))
+        space_name: (( broker_space.value ))
+        user: ((( SCS-BROKER-CREDENTIALS.username )))
+        password: ((( SCS-BROKER-CREDENTIALS.password )))
+        max_instances: (( .deploy-service-broker.broker_max_instances.value ))
+        service_registry:
+          name: "p-service-registry"
+          display_name: "Service Registry"
+          id: "e31aadf0-053f-4678-a8d0-b1e62ab78078"
+          plans:
+          - id: "541ae588-0af6-4e63-ba54-4f7a8972e30d"
+            name: "standard"
+            description: "Standard Plan"
+            free: true
+            bindable: true
+            bullets: "Single-tenant,Netflix OSS Eureka"
+        config_server:
+          name: "p-config-server"
+          display_name: "Config Server"
+          id: "233abae5-0699-4acd-99f6-ad83209ce676"
+          plans:
+          - id: "c2d8680f-69a3-48cf-99f4-66fdfdfd6170"
+            name: "standard"
+            description: "Standard Plan"
+            free: true
+            bindable: true
+            bullets: "Single-tenant,Backed by user-provided Git repository"
+        circuit_breaker:
+          name: "p-circuit-breaker-dashboard"
+          display_name: "Circuit Breaker"
+          id: "f4678f95-a536-4e0e-8bdc-17a6199f7ef7"
+          plans:
+          - id: "00d13802-acc5-11e4-89d3-123b93f75cba"
+            name: "standard"
+            description: "Standard Plan"
+            free: true
+            bindable: true
+            bullets: "Single-tenant,Netflix OSS Hystrix Dashboard,Netflix OSS Turbine"
+      worker:
+        client_id: (( worker_client_id.value ))
+        client_secret: ((( SCS-WORKER-CLIENT-SECRET )))
+        user: (( worker_credentials_user.value ))
+        password: ((( SCS-WORKER-PASSWORD )))
+      instances:
+        org_name: (( instances_org.value ))
+        space_name: (( instances_space.value ))
+        instances_user: (( instances_credentials_user.value ))
+        instances_password: ((( SCS-INSTANCES-PASSWORD )))
+        app_push:
+          timeout: (( instances_app_push_timeout.value ))
+        hystrix_message_bus_service: (( hystrix_message_bus_service.value ))
+        hystrix_message_bus_service_plan: (( hystrix_message_bus_service_plan.value ))
+      app_push:
+        timeout: 180
+        memory: (( memory.value ))
+      broker_dashboard_secret: ((( SCS-BROKER-DASHBOARD-SECRET )))
+      persistence_store_service: (( persistence_store_service.value ))
+      persistence_store_service_plan: (( persistence_store_service_plan.value ))
+      message_bus_service: (( message_bus_service.value ))
+      message_bus_service_plan: (( message_bus_service_plan.value ))
+      service_status_timeout_min: 15
+      service_status_poll_interval_ms: 5000
+      encryption_key: ((( SCS-ENCRYPTION-KEY )))
+      cf:
+        admin_user: (( ..cf.uaa.admin_credentials.identity ))
+        admin_password: (( ..cf.uaa.admin_credentials.password ))
+      uaa:
+        admin_client_id: (( ..cf.uaa.admin_client_credentials.identity ))
+        admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+      buildpack: (( buildpack.value ))
+      disable_cert_check: (( disable_cert_check.value ))
+      health_check:
+        broker_health_check_type: (( broker_health_check_type.value ))
+        broker_http_health_check_endpoint: (( broker_http_health_check_endpoint.value ))
+- name: register-service-broker
+  resource_label: Broker Registrar
+  templates:
+  - name: register-service-broker
+    release: spring-cloud-broker
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 512
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  - name: product_name
+    type: string
+    configurable: false
+  - name: app_name
+    type: string
+    configurable: false
+  - name: app_uri
+    type: string
+    configurable: false
+  - name: broker_org
+    type: string
+    configurable: false
+  - name: broker_space
+    type: string
+    configurable: false
+  - name: plan_names
+    type: string
+    configurable: false
+  - name: enable_global_access
+    type: boolean
+    configurable: true
+    default: true
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    app_domains:
+    - (( ..cf.cloud_controller.apps_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    spring_cloud_broker:
+      product_name: (( product_name.value ))
+      broker:
+        org_name: (( broker_org.value ))
+        space_name: (( broker_space.value ))
+        user: ((( SCS-BROKER-CREDENTIALS.username )))
+        password: ((( SCS-BROKER-CREDENTIALS.password )))
+        service_registry:
+          name: "p-service-registry"
+          plans:
+          - name: "standard"
+        config_server:
+          name: "p-config-server"
+          plans:
+          - name: "standard"
+        circuit_breaker:
+          name: "p-circuit-breaker-dashboard"
+          plans:
+          - name: "standard"
+      app_name: (( app_name.value ))
+      app_uri: (( app_uri.value ))
+      encryption_key: ((( SCS-ENCRYPTION-KEY )))
+      cf:
+        admin_user: (( ..cf.uaa.admin_credentials.identity ))
+        admin_password: (( ..cf.uaa.admin_credentials.password ))
+      uaa:
+        admin_client_id: (( ..cf.uaa.admin_client_credentials.identity ))
+        admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+      enable_global_access: (( enable_global_access.value ))
+- name: run-smoke-tests
+  resource_label: Smoke Tests
+  templates:
+  - name: smoke-tests
+    release: spring-cloud-broker
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 512
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 2048
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  - name: product_name
+    type: string
+    configurable: false
+  - name: broker_org
+    type: string
+    configurable: false
+  - name: smoke_test_space
+    type: string
+    configurable: false
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    spring_cloud_broker:
+      product_name: (( product_name.value ))
+      broker:
+        org_name: (( broker_org.value ))
+        service_registry:
+          name: "p-service-registry"
+          plans:
+          - name: "standard"
+        config_server:
+          name: "p-config-server"
+          plans:
+          - name: "standard"
+        circuit_breaker:
+          name: "p-circuit-breaker-dashboard"
+          plans:
+          - name: "standard"
+      instances:
+        app_push:
+          timeout: (( .deploy-service-broker.instances_app_push_timeout.value ))
+      smoke_test:
+        user: (( ..cf.uaa.admin_credentials.identity ))
+        password: (( ..cf.uaa.admin_credentials.password ))
+        space: (( smoke_test_space.value ))
+      encryption_key: ((( SCS-ENCRYPTION-KEY )))
+      cf:
+        admin_user: (( ..cf.uaa.admin_credentials.identity ))
+        admin_password: (( ..cf.uaa.admin_credentials.password ))
+      uaa:
+        admin_client_id: (( ..cf.uaa.admin_client_credentials.identity ))
+        admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+- name: destroy-service-broker
+  resource_label: Broker Deregistrar
+  templates:
+  - name: destroy-service-broker
+    release: spring-cloud-broker
+  errand: true
+  resource_definitions:
+  - name: ram
+    type: integer
+    configurable: false
+    default: 512
+  - name: ephemeral_disk
+    type: integer
+    configurable: false
+    default: 4096
+  - name: persistent_disk
+    type: integer
+    configurable: false
+    default: 0
+  - name: cpu
+    type: integer
+    configurable: false
+    default: 1
+  static_ip: 0
+  dynamic_ip: 1
+  max_in_flight: 1
+  single_az_only: true
+  instance_definition:
+    name: instances
+    type: integer
+    configurable: false
+    default: 1
+  property_blueprints:
+  - name: vm_credentials
+    type: salted_credentials
+    default:
+      identity: vcap
+  - name: product_name
+    type: string
+    configurable: false
+  - name: app_name
+    type: string
+    configurable: false
+  - name: app_uri
+    type: string
+    configurable: false
+  - name: broker_org
+    type: string
+    configurable: false
+  - name: broker_space
+    type: string
+    configurable: false
+  - name: instances_org
+    type: string
+    configurable: false
+  - name: instances_space
+    type: string
+    configurable: false
+  - name: plan_names
+    type: string
+    configurable: false
+  - name: worker_client_id
+    type: string
+    configurable: false
+  manifest: |
+    domain: (( ..cf.cloud_controller.system_domain.value ))
+    app_domains:
+    - (( ..cf.cloud_controller.apps_domain.value ))
+    ssl:
+      skip_cert_verify: (( ..cf.ha_proxy.skip_cert_verify.value ))
+    spring_cloud_broker:
+      product_name: (( product_name.value ))
+      broker:
+        org_name: (( broker_org.value ))
+        space_name: (( broker_space.value ))
+        user: ((( SCS-BROKER-CREDENTIALS.username )))
+        password: ((( SCS-BROKER-CREDENTIALS.password )))
+        service_registry:
+          name: "p-service-registry"
+        config_server:
+          name: "p-config-server"
+        circuit_breaker:
+          name: "p-circuit-breaker-dashboard"
+      worker:
+        client_id: (( worker_client_id.value ))
+        client_secret: ((( SCS-WORKER-CLIENT-SECRET )))
+      instances:
+        org_name: (( instances_org.value ))
+        space_name: (( instances_space.value ))
+        instances_user: (( .deploy-service-broker.instances_credentials_user.value ))
+      app_name: (( app_name.value ))
+      app_uri: (( app_uri.value ))
+      encryption_key: ((( SCS-ENCRYPTION-KEY )))
+      service_status_timeout_min: 15
+      service_status_interval_ms: 5000
+      cf:
+        admin_user: (( ..cf.uaa.admin_credentials.identity ))
+        admin_password: (( ..cf.uaa.admin_credentials.password ))
+      uaa:
+        admin_client_id: (( ..cf.uaa.admin_client_credentials.identity ))
+        admin_client_secret: (( ..cf.uaa.admin_client_credentials.password ))
+update:
+  canaries: 1
+  canary_watch_time: 60000-240000
+  max_in_flight: 1
+  update_watch_time: 60000-240000
