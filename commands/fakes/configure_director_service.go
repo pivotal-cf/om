@@ -107,10 +107,11 @@ type ConfigureDirectorService struct {
 		result1 []api.VMExtension
 		result2 error
 	}
-	UpdateStagedDirectorAvailabilityZonesStub        func(api.AvailabilityZoneInput) error
+	UpdateStagedDirectorAvailabilityZonesStub        func(api.AvailabilityZoneInput, bool) error
 	updateStagedDirectorAvailabilityZonesMutex       sync.RWMutex
 	updateStagedDirectorAvailabilityZonesArgsForCall []struct {
 		arg1 api.AvailabilityZoneInput
+		arg2 bool
 	}
 	updateStagedDirectorAvailabilityZonesReturns struct {
 		result1 error
@@ -651,16 +652,17 @@ func (fake *ConfigureDirectorService) ListStagedVMExtensionsReturnsOnCall(i int,
 	}{result1, result2}
 }
 
-func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZones(arg1 api.AvailabilityZoneInput) error {
+func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZones(arg1 api.AvailabilityZoneInput, arg2 bool) error {
 	fake.updateStagedDirectorAvailabilityZonesMutex.Lock()
 	ret, specificReturn := fake.updateStagedDirectorAvailabilityZonesReturnsOnCall[len(fake.updateStagedDirectorAvailabilityZonesArgsForCall)]
 	fake.updateStagedDirectorAvailabilityZonesArgsForCall = append(fake.updateStagedDirectorAvailabilityZonesArgsForCall, struct {
 		arg1 api.AvailabilityZoneInput
-	}{arg1})
-	fake.recordInvocation("UpdateStagedDirectorAvailabilityZones", []interface{}{arg1})
+		arg2 bool
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateStagedDirectorAvailabilityZones", []interface{}{arg1, arg2})
 	fake.updateStagedDirectorAvailabilityZonesMutex.Unlock()
 	if fake.UpdateStagedDirectorAvailabilityZonesStub != nil {
-		return fake.UpdateStagedDirectorAvailabilityZonesStub(arg1)
+		return fake.UpdateStagedDirectorAvailabilityZonesStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -675,17 +677,17 @@ func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesCallC
 	return len(fake.updateStagedDirectorAvailabilityZonesArgsForCall)
 }
 
-func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesCalls(stub func(api.AvailabilityZoneInput) error) {
+func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesCalls(stub func(api.AvailabilityZoneInput, bool) error) {
 	fake.updateStagedDirectorAvailabilityZonesMutex.Lock()
 	defer fake.updateStagedDirectorAvailabilityZonesMutex.Unlock()
 	fake.UpdateStagedDirectorAvailabilityZonesStub = stub
 }
 
-func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesArgsForCall(i int) api.AvailabilityZoneInput {
+func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesArgsForCall(i int) (api.AvailabilityZoneInput, bool) {
 	fake.updateStagedDirectorAvailabilityZonesMutex.RLock()
 	defer fake.updateStagedDirectorAvailabilityZonesMutex.RUnlock()
 	argsForCall := fake.updateStagedDirectorAvailabilityZonesArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesReturns(result1 error) {

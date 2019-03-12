@@ -29,6 +29,7 @@ var _ = Describe("configure-director command", func() {
 		networksPutCallCount         int
 		resourceConfigMethod         string
 		resourceConfigBody           []byte
+		verifierErrorOccured         bool
 
 		server *httptest.Server
 	)
@@ -38,6 +39,7 @@ var _ = Describe("configure-director command", func() {
 		directorPropertiesCallCount = 0
 		networkAZCallCount = 0
 		networksPutCallCount = 0
+		verifierErrorOccured = false
 
 		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -83,6 +85,9 @@ var _ = Describe("configure-director command", func() {
 
 					azPutCallCount++
 
+					if verifierErrorOccured {
+						w.WriteHeader(207)
+					}
 					_, err = w.Write([]byte(`{}`))
 					Expect(err).ToNot(HaveOccurred())
 				} else {
@@ -542,6 +547,46 @@ properties-configuration:
 			"internet_connected": true,
 			"elb_names": ["my-elb"]
 	  }`))
+		})
+
+		Describe("--ignore-verifier-warnings flag", func() {
+			It("configures the BOSH director using the API, and ignores verifier warnings", func() {
+				configYAML := []byte(`
+---
+az-configuration:
+- name: some-az-1
+- name: some-existing-az
+`)
+
+				verifierErrorOccured = true
+				tempfile, err := ioutil.TempFile("", "config.yaml")
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = tempfile.Write(configYAML)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(tempfile.Close()).ToNot(HaveOccurred())
+
+				command := exec.Command(pathToMain,
+					"--target", server.URL,
+					"--username", "some-username",
+					"--password", "some-password",
+					"--skip-ssl-validation",
+					"configure-director",
+					"--ignore-verifier-warnings",
+					"--config", tempfile.Name(),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, "40s").Should(gexec.Exit(0))
+
+				Expect(azPutCallCount).To(Equal(1))
+				Expect(azConfigurationMethod).To(Equal("PUT"))
+				Expect(azPutConfigurationBody).To(MatchJSON(`{
+			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
+		}`))
+			})
 		})
 	})
 })
