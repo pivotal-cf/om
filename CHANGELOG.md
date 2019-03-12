@@ -1,3 +1,12 @@
+## 0.55.0 (unreleased)
+
+### Features
+* configure-director now has the option to `ignore-verifier-warnings`. 
+  ([PR #338](https://github.com/pivotal-cf/om/pull/338) Thanks @Logiraptor!)
+  This is an _advanced_ feature that should only be used if the user knows how to disable verifiers in 
+  OpsManager. This flag will only disable verifiers for configure-director, and will not disable the 
+  warnings for apply-changes.
+
 ## 0.54.0
 
 ### Breaking Changes
