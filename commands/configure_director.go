@@ -16,10 +16,11 @@ type ConfigureDirector struct {
 	service     configureDirectorService
 	logger      logger
 	Options     struct {
-		ConfigFile string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
-		VarsFile   []string `long:"vars-file"  description:"Load variables from a YAML file"`
-		VarsEnv    []string `long:"vars-env"   description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		OpsFile    []string `long:"ops-file"  description:"YAML operations file"`
+		IgnoreVerifierWarnings bool     `long:"ignore-verifier-warnings" description:"option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER"`
+		ConfigFile             string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
+		VarsFile               []string `long:"vars-file" description:"Load variables from a YAML file"`
+		VarsEnv                []string `long:"vars-env" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		OpsFile                []string `long:"ops-file" description:"YAML operations file"`
 	}
 }
 
@@ -43,7 +44,7 @@ type configureDirectorService interface {
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	ListStagedProductJobs(string) (map[string]string, error)
 	ListStagedVMExtensions() ([]api.VMExtension, error)
-	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput) error
+	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput, bool) error
 	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
 	UpdateStagedDirectorNetworks(api.NetworkInput) error
 	UpdateStagedDirectorProperties(api.DirectorProperties) error
@@ -223,7 +224,7 @@ func (c ConfigureDirector) configureAvailabilityZones(config *directorConfig) er
 
 		err = c.service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 			AvailabilityZones: json.RawMessage(azs),
-		})
+		}, c.Options.IgnoreVerifierWarnings)
 		if err != nil {
 			return fmt.Errorf("availability zones configuration could not be applied: %s", err)
 		}

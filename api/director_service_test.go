@@ -58,7 +58,7 @@ var _ = Describe("Director", func() {
 				AvailabilityZones: json.RawMessage(`[
           			{"clusters":[{"cluster":"pizza","res_pool":"abcd"}],"name":"existing-az","a_field":"some_val"},
           			{"name": "new-az"}
-          			  ]`)})
+          			  ]`)}, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stderr.Invocations()).To(HaveLen(1))
 			message := stderr.PrintlnArgsForCall(0)
@@ -94,7 +94,7 @@ var _ = Describe("Director", func() {
             "name": "some-az"
           }
         ]`),
-			})
+			}, false)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(2))
@@ -140,7 +140,7 @@ var _ = Describe("Director", func() {
 					AvailabilityZones: json.RawMessage(`[
           {"name": "new-az"}
         ]`),
-				})
+				}, false)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(client.DoCallCount()).To(Equal(2))
@@ -156,7 +156,7 @@ var _ = Describe("Director", func() {
 					AvailabilityZones: json.RawMessage(`[
           {"name": "new-az"}
         ]`),
-				})
+				}, false)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stderr.PrintlnCallCount()).To(Equal(1))
@@ -170,7 +170,7 @@ var _ = Describe("Director", func() {
 			It("returns an error when the provided AZ config is malformed", func() {
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("{malformed"),
-				})
+				}, false)
 				Expect(client.DoCallCount()).To(Equal(0))
 				Expect(err).To(MatchError(HavePrefix("provided AZ config is not well-formed JSON")))
 			})
@@ -178,7 +178,7 @@ var _ = Describe("Director", func() {
 			It("returns an error when the provided AZ config does not include a name", func() {
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("[{}]"),
-				})
+				}, false)
 				Expect(client.DoCallCount()).To(Equal(0))
 				Expect(err).To(MatchError(HavePrefix("provided AZ config [0] does not specify the AZ 'name'")))
 			})
@@ -189,7 +189,7 @@ var _ = Describe("Director", func() {
 						StatusCode: http.StatusInternalServerError,
 						Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil,
 				)
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
 				Expect(err).To(MatchError(HavePrefix("received unexpected status while fetching AZ configuration")))
 				Expect(err).To(MatchError(ContainSubstring("500")))
 			})
@@ -199,7 +199,7 @@ var _ = Describe("Director", func() {
 					&http.Response{}, errors.New("api endpoint failed"),
 				)
 
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
 
 				Expect(err).To(MatchError(ContainSubstring(
 					"could not send api request to GET /api/v0/staged/director/availability_zones: api endpoint failed")))
@@ -212,10 +212,42 @@ var _ = Describe("Director", func() {
 						Body:       ioutil.NopCloser(strings.NewReader(`malformed`))}, nil,
 				)
 
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
 
 				Expect(err).To(MatchError(HavePrefix(
 					"problem retrieving existing AZs: response is not well-formed")))
+			})
+
+			It("ignores warnings when the PUT http status is 207 and ignoreVerifierWarnings is true", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{"availability_zones": []}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusMultiStatus,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, true)
+				Expect(err).To(BeNil())
+			})
+
+			It("returns an error when the PUT http status is 207 and ignoreVerifierWarnings is false", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{"availability_zones": []}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusMultiStatus,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
+				Expect(err).To(MatchError(ContainSubstring("Multi-Status")))
 			})
 
 			It("returns an error when the PUT http status is non-200", func() {
@@ -230,7 +262,7 @@ var _ = Describe("Director", func() {
 							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
 					}
 				}
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
@@ -247,7 +279,7 @@ var _ = Describe("Director", func() {
 					}
 				}
 
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{})
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
 
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})

@@ -53,7 +53,7 @@ type NetworkAndAZConfiguration struct {
 
 type DirectorProperties json.RawMessage
 
-func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) error {
+func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput, ignoreVerifierWarnings bool) error {
 	azs := AvailabilityZones{}
 	err := yaml.Unmarshal(input.AvailabilityZones, &azs.AvailabilityZones)
 	if err != nil {
@@ -87,7 +87,7 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput) 
 	}
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
+	if err = validateStatusOKOrVerificationWarning(resp, ignoreVerifierWarnings); err != nil {
 		return err
 	}
 
