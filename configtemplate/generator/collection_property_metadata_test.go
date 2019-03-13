@@ -10,7 +10,7 @@ import (
 var _ = Describe("CollectionPropertyMetadata", func() {
 	Context("IsDefaultAnArray", func() {
 		It("is true", func() {
-			Expect(generator.IsDefaultAnArray(make([]interface{}, 0),)).To(BeTrue())
+			Expect(generator.IsDefaultAnArray(make([]interface{}, 0))).To(BeTrue())
 		})
 		It("is false", func() {
 			Expect(generator.IsDefaultAnArray("foo")).To(BeFalse())
@@ -76,7 +76,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			}
 
 			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, []generator.PropertyMetadata{
-				generator.PropertyMetadata{
+				{
 					Name: "other-name",
 				},
 			})
@@ -101,7 +101,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 		It("contains simple string", func() {
 
 			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyMetadata{
-				generator.PropertyMetadata{
+				{
 					Configurable: "true",
 					Name:         "simple-value",
 				},
@@ -112,7 +112,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 		})
 		It("contains secret type", func() {
 			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyMetadata{
-				generator.PropertyMetadata{
+				{
 					Configurable: "true",
 					Name:         "secret-value",
 					Type:         "secret",
@@ -126,7 +126,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 
 		It("contains credential type", func() {
 			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyMetadata{
-				generator.PropertyMetadata{
+				{
 					Configurable: "true",
 					Name:         "certificate-value",
 					Type:         "rsa_cert_credentials",

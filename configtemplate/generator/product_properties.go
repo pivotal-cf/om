@@ -147,7 +147,7 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 							if !metadata.IsRequired() || metadata.IsDropdown() {
 								selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, metadata.Name)
 								opsFiles[fmt.Sprintf("add-%s", CreateOpsFileName(strings.Replace(selectorProperty, ".", "", 1)))] = []Ops{
-									Ops{
+									{
 										Type:  "replace",
 										Path:  fmt.Sprintf("/product-properties/%s?", selectorProperty),
 										Value: metadata.PropertyType(strings.Replace(selectorProperty, ".", "", 1)),
@@ -160,7 +160,7 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 			} else {
 				if propertyMetadata.IsDropdown() {
 					opsFiles[fmt.Sprintf("add-%s", opsFileName)] = []Ops{
-						Ops{
+						{
 							Type:  "replace",
 							Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
 							Value: propertyMetadata.PropertyType(propertyKey),
@@ -173,7 +173,7 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 					}
 					for i := x; i <= 10; i++ {
 						opsFiles[fmt.Sprintf("add-%d-%s", i, opsFileName)] = []Ops{
-							Ops{
+							{
 								Type:  "replace",
 								Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
 								Value: CollectionOpsFile(i, propertyKey, propertyMetadata.PropertyMetadata),
@@ -182,7 +182,7 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 					}
 				} else if !propertyMetadata.IsRequired() {
 					opsFiles[fmt.Sprintf("add-%s", opsFileName)] = []Ops{
-						Ops{
+						{
 							Type:  "replace",
 							Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
 							Value: propertyMetadata.PropertyType(strings.Replace(property.Reference, ".", "", 1)),
@@ -278,9 +278,9 @@ func multiselectOpsFiles(propertyName string, propertyMetadata *PropertyMetadata
 	for _, option := range propertyMetadata.Options {
 		opsFileName := CreateOpsFileName(strings.Replace(propertyName, ".", "", 1))
 		opsFileName = fmt.Sprintf("%s_%v", opsFileName, option.Name)
-		
+
 		opsFiles[opsFileName] = []Ops{
-			Ops{
+			{
 				Type:  "replace",
 				Path:  fmt.Sprintf("/product-properties/%s?/value/-", propertyName),
 				Value: StringOpsValue(option.Name.(string)),

@@ -1,11 +1,11 @@
 package generator
 
 type Template struct {
-	ProductName         string                   `yaml:"product-name"`
-	NetworkProperties   *NetworkProperties       `yaml:"network-properties"`
-	ProductProperties   map[string]PropertyValue `yaml:"product-properties"`
-	ResourceConfig      map[string]Resource      `yaml:"resource-config,omitempty"`
-	ErrandConfig        map[string]Errand        `yaml:"errand-config,omitempty"`
+	ProductName       string                   `yaml:"product-name"`
+	NetworkProperties *NetworkProperties       `yaml:"network-properties"`
+	ProductProperties map[string]PropertyValue `yaml:"product-properties"`
+	ResourceConfig    map[string]Resource      `yaml:"resource-config,omitempty"`
+	ErrandConfig      map[string]Errand        `yaml:"errand-config,omitempty"`
 }
 
 type FormType struct {

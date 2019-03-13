@@ -56,11 +56,11 @@ var _ = Describe("PropertyMetadata", func() {
 		BeforeEach(func() {
 			propertyMetaData = &generator.PropertyMetadata{
 				OptionTemplates: []generator.OptionTemplate{
-					generator.OptionTemplate{
+					{
 						Name:        "bar-name",
 						SelectValue: "bar",
 					},
-					generator.OptionTemplate{
+					{
 						Name:        "other-name",
 						SelectValue: "other",
 					},
@@ -98,11 +98,11 @@ var _ = Describe("PropertyMetadata", func() {
 		BeforeEach(func() {
 			propertyMetaData = &generator.PropertyMetadata{
 				OptionTemplates: []generator.OptionTemplate{
-					generator.OptionTemplate{
+					{
 						Name:        "bar-name",
 						SelectValue: "bar",
 					},
-					generator.OptionTemplate{
+					{
 						Name:        "other-name",
 						SelectValue: "other",
 					},

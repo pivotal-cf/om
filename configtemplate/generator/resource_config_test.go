@@ -23,11 +23,11 @@ var _ = Describe("Resource Config", func() {
 		It("Should return new resource config", func() {
 			metadata := &generator.Metadata{
 				JobTypes: []generator.JobType{
-					generator.JobType{
+					{
 						Name:               "job1",
 						InstanceDefinition: generator.InstanceDefinition{Configurable: true, Default: 0},
 					},
-					generator.JobType{
+					{
 						Name:               "job2",
 						InstanceDefinition: generator.InstanceDefinition{Configurable: true, Default: 1},
 					},

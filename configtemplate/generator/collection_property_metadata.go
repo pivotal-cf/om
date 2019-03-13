@@ -68,7 +68,7 @@ func CollectionPropertyType(propertyName string,defaultValue interface{}, subPro
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	var collectionProperties []map[string]SimpleType
 	if IsDefaultAnArray(defaultValue) {
-		defaultArrayProperties, err := DefaultsArrayToCollectionArray(propertyName,defaultValue,subProperties)
+		defaultArrayProperties, err := DefaultsArrayToCollectionArray(propertyName, defaultValue, subProperties)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +82,7 @@ func CollectionPropertyType(propertyName string,defaultValue interface{}, subPro
 	}, nil
 }
 
-func CollectionPropertyVars(propertyName string, subProperties []PropertyMetadata,  vars map[string]interface{}){
+func CollectionPropertyVars(propertyName string, subProperties []PropertyMetadata, vars map[string]interface{}) {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	for _, subProperty := range subProperties {
