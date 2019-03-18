@@ -18,7 +18,7 @@ var _ = Describe("ConfigTemplate", func() {
 		command *commands.ConfigTemplate
 	)
 
-	createOutputDirector := func() (string) {
+	createOutputDirectory := func() string {
 		tempDir, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
@@ -49,26 +49,67 @@ var _ = Describe("ConfigTemplate", func() {
 				})
 
 			})
-			When("the output directory already exists without the product's directory", func() {
-				It("creates a new subdirectory named by the product version", func() {
-					tempDir := createOutputDirector()
 
-					args := []string{
+			When("the output directory already exists without the product's directory", func() {
+				var (
+					tempDir string
+					args    []string
+				)
+
+				BeforeEach(func() {
+					tempDir = createOutputDirectory()
+
+					args = []string{
 						"--output-directory", tempDir,
 						"--pivnet-api-token", "b",
 						"--pivnet-product-slug", "c",
 						"--product-version", "d",
 					}
+				})
 
+				It("creates nested subdirectories named by product slug and version", func() {
+					err := command.Execute(args)
+					Expect(err).ToNot(HaveOccurred())
+
+					productDir := filepath.Join(tempDir, "example-product")
+					versionDir := filepath.Join(productDir, "1.1.1")
+
+					Expect(productDir).To(BeADirectory())
+					Expect(versionDir).To(BeADirectory())
+				})
+
+				It("creates the various generated sub directories within the product directory", func() {
+					err := command.Execute(args)
+					Expect(err).ToNot(HaveOccurred())
+
+					featuresDir := filepath.Join(tempDir, "example-product", "1.1.1", "features")
+					Expect(featuresDir).To(BeADirectory())
+
+					networkDir := filepath.Join(tempDir, "example-product", "1.1.1", "network")
+					Expect(networkDir).To(BeADirectory())
+
+					optionalDir := filepath.Join(tempDir, "example-product", "1.1.1", "optional")
+					Expect(optionalDir).To(BeADirectory())
+
+					resourceDir := filepath.Join(tempDir, "example-product", "1.1.1", "resource")
+					Expect(resourceDir).To(BeADirectory())
+				})
+
+				It("creates the correct files", func() {
 					err := command.Execute(args)
 					Expect(err).ToNot(HaveOccurred())
 
 					productDir := filepath.Join(tempDir, "example-product", "1.1.1")
-					Expect(productDir).To(BeADirectory())
-					Expect(filepath.Join(productDir, "product.yml")).To(BeAnExistingFile())
 
-					err = command.Execute(args)
-					Expect(err).ToNot(HaveOccurred())
+					println(productDir)
+
+					Expect(filepath.Join(productDir, "errand-vars.yml")).To(BeAnExistingFile())
+					Expect(filepath.Join(productDir, "product.yml")).To(BeAnExistingFile())
+					Expect(filepath.Join(productDir, "product-default-vars.yml")).To(BeAnExistingFile())
+					Expect(filepath.Join(productDir, "resource-vars.yml")).To(BeAnExistingFile())
+				})
+
+				PIt("fills the product.yml file with the correct tile meta information", func() {
 				})
 			})
 		})
@@ -151,7 +192,7 @@ var _ = Describe("ConfigTemplate", func() {
 				})
 
 				It("returns an error", func() {
-					tempDir := createOutputDirector()
+					tempDir := createOutputDirectory()
 
 					args := []string{
 						"--output-directory", tempDir,
@@ -162,6 +203,28 @@ var _ = Describe("ConfigTemplate", func() {
 
 					err := command.Execute(args)
 					Expect(err).To(MatchError("error getting metadata for example-product at version 1.1.1: cannot get metadata"))
+				})
+			})
+			When("The returned metadata's version is an empty string", func() {
+				BeforeEach(func() {
+					command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+						f := &fakes.MetadataProvider{}
+						f.MetadataBytesReturns([]byte(`{name: example-product, product_version: ""}`), nil)
+						return f
+					})
+				})
+				It("errors", func() {
+					tempDir := createOutputDirectory()
+
+					args := []string{
+						"--output-directory", tempDir,
+						"--pivnet-api-token", "b",
+						"--pivnet-product-slug", "example-product",
+						"--product-version", "1.1.1",
+					}
+
+					err := command.Execute(args)
+					Expect(err).To(HaveOccurred())
 				})
 			})
 		})

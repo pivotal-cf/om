@@ -32,10 +32,14 @@ func (e *Executor) Generate() error {
 		return err
 	}
 	productVersion := metadata.ProductVersion()
+	if productVersion == "" {
+		return fmt.Errorf("version in metadata is blank")
+	}
+
 	productName := metadata.ProductName()
 
 	targetDirectory := e.baseDirectory
-	if !e.doNotIncludeProductVersion {
+	if !e.doNotIncludeProductVersion { //always happens
 		targetDirectory = path.Join(e.baseDirectory, productName, productVersion)
 	}
 	if err = e.createDirectory(targetDirectory); err != nil {

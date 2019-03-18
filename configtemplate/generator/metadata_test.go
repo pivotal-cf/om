@@ -117,7 +117,7 @@ var _ = Describe("Metadata", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(metadata.ProductVersion()).Should(BeEquivalentTo(expectedVersion))
 	}, table.Entry("PAS", "fixtures/pas.yml", "2.1.3"),
-		table.Entry("healthwatch", "fixtures/p_healthwatch.yml", "1.2.1h"),
+		table.Entry("healthwatch", "fixtures/p_healthwatch.yml", "1.2.1"),
 		table.Entry("iso-segment", "fixtures/iso-segment.yml", "2.2.4"),
 		table.Entry("replicated iso-segment", "fixtures/iso-segment-replicator.yml", "2.2.4"),
 	)
