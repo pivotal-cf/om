@@ -3,6 +3,7 @@ package download_clients
 import (
 	"fmt"
 	"github.com/pivotal-cf/go-pivnet"
+	"github.com/pivotal-cf/go-pivnet/download"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
 	"io"
 	"os"
@@ -16,7 +17,7 @@ type PivnetDownloader interface {
 	ReleasesForProductSlug(productSlug string) ([]pivnet.Release, error)
 	ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error)
 	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
-	DownloadProductFile(location *os.File, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
+	DownloadProductFile(location *download.FileInfo, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
 }
 
@@ -109,7 +110,11 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (*FileAr
 }
 
 func (p *pivnetClient) DownloadProductToFile(fa *FileArtifact, file *os.File) error {
-	err := p.downloader.DownloadProductFile(file, fa.slug, fa.releaseID, fa.productFileID, p.progressWriter)
+	fileInfo, err := download.NewFileInfo(file)
+	if err != nil {
+		return fmt.Errorf("could not create fileInfo for download product file %s: %s", fa.slug, err.Error())
+	}
+	err = p.downloader.DownloadProductFile(fileInfo, fa.slug, fa.releaseID, fa.productFileID, p.progressWriter)
 	if err != nil {
 		return fmt.Errorf("could not download product file %s: %s", fa.slug, err)
 	}

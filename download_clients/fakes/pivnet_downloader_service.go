@@ -3,18 +3,18 @@ package fakes
 
 import (
 	io "io"
-	os "os"
 	sync "sync"
 
 	pivnet "github.com/pivotal-cf/go-pivnet"
+	download "github.com/pivotal-cf/go-pivnet/download"
 	download_clients "github.com/pivotal-cf/om/download_clients"
 )
 
 type PivnetDownloader struct {
-	DownloadProductFileStub        func(*os.File, string, int, int, io.Writer) error
+	DownloadProductFileStub        func(*download.FileInfo, string, int, int, io.Writer) error
 	downloadProductFileMutex       sync.RWMutex
 	downloadProductFileArgsForCall []struct {
-		arg1 *os.File
+		arg1 *download.FileInfo
 		arg2 string
 		arg3 int
 		arg4 int
@@ -85,11 +85,11 @@ type PivnetDownloader struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *PivnetDownloader) DownloadProductFile(arg1 *os.File, arg2 string, arg3 int, arg4 int, arg5 io.Writer) error {
+func (fake *PivnetDownloader) DownloadProductFile(arg1 *download.FileInfo, arg2 string, arg3 int, arg4 int, arg5 io.Writer) error {
 	fake.downloadProductFileMutex.Lock()
 	ret, specificReturn := fake.downloadProductFileReturnsOnCall[len(fake.downloadProductFileArgsForCall)]
 	fake.downloadProductFileArgsForCall = append(fake.downloadProductFileArgsForCall, struct {
-		arg1 *os.File
+		arg1 *download.FileInfo
 		arg2 string
 		arg3 int
 		arg4 int
@@ -113,13 +113,13 @@ func (fake *PivnetDownloader) DownloadProductFileCallCount() int {
 	return len(fake.downloadProductFileArgsForCall)
 }
 
-func (fake *PivnetDownloader) DownloadProductFileCalls(stub func(*os.File, string, int, int, io.Writer) error) {
+func (fake *PivnetDownloader) DownloadProductFileCalls(stub func(*download.FileInfo, string, int, int, io.Writer) error) {
 	fake.downloadProductFileMutex.Lock()
 	defer fake.downloadProductFileMutex.Unlock()
 	fake.DownloadProductFileStub = stub
 }
 
-func (fake *PivnetDownloader) DownloadProductFileArgsForCall(i int) (*os.File, string, int, int, io.Writer) {
+func (fake *PivnetDownloader) DownloadProductFileArgsForCall(i int) (*download.FileInfo, string, int, int, io.Writer) {
 	fake.downloadProductFileMutex.RLock()
 	defer fake.downloadProductFileMutex.RUnlock()
 	argsForCall := fake.downloadProductFileArgsForCall[i]

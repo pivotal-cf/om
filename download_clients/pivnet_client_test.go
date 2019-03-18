@@ -10,6 +10,7 @@ import (
 	"github.com/pivotal-cf/go-pivnet/logger/loggerfakes"
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
+	"io/ioutil"
 )
 
 var _ = Describe("PivnetClient", func() {
@@ -162,17 +163,21 @@ var _ = Describe("PivnetClient", func() {
 
 		It("downloads a product file to given destination", func() {
 			fakePivnetDownloader.DownloadProductFileReturns(nil)
+			tmpFile, err := ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
 
 			client := download_clients.NewPivnetClient(logger, nil, fakePivnetFactory, "", fakePivnetFilter)
-			err := client.DownloadProductToFile(createFileArtifact(), nil)
+			err = client.DownloadProductToFile(createFileArtifact(), tmpFile)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("returns an error if the product file could not be downloaded", func() {
 			fakePivnetDownloader.DownloadProductFileReturns(errors.New("download error"))
+			tmpFile, err := ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
 
 			client := download_clients.NewPivnetClient(logger, nil, fakePivnetFactory, "", fakePivnetFilter)
-			err := client.DownloadProductToFile(createFileArtifact(), nil)
+			err = client.DownloadProductToFile(createFileArtifact(), tmpFile)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("could not download product file"))
 		})

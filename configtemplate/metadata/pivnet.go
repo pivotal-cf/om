@@ -169,8 +169,17 @@ type AuthenticatedPivnetClient struct {
 }
 
 func (a AuthenticatedPivnetClient) Do(req *http.Request) (*http.Response, error) {
-	if a.ClientConfig.UsingUAAToken {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", a.ClientConfig.Token))
+	const legacyAPITokenLength = 20
+	if len(a.ClientConfig.Token) > legacyAPITokenLength {
+		baseURL := fmt.Sprintf("%s%s", a.ClientConfig.Host, "/api/v2")
+		tokenFetcher := pivnetapi.NewTokenFetcher(baseURL, a.ClientConfig.Token)
+		var err error
+		accessToken, err := tokenFetcher.GetToken()
+
+		if err != nil {
+			log.Fatalf("Exiting with error: %s", err)
+		}
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	} else {
 		req.Header.Add("Authorization", fmt.Sprintf("Token %s", a.ClientConfig.Token))
 	}

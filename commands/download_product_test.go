@@ -164,8 +164,8 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(slug).To(Equal("elastic-runtime"))
 				Expect(releaseID).To(Equal(4))
 
-				file, slug, releaseID, productFileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
-				Expect(file.Name()).To(Equal(path.Join(tempDir, "cf-2.1-build.11.pivotal")))
+				fileInfo, slug, releaseID, productFileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(0)
+				Expect(fileInfo.Name).To(Equal(path.Join(tempDir, "cf-2.1-build.11.pivotal")))
 				Expect(slug).To(Equal("elastic-runtime"))
 				Expect(releaseID).To(Equal(4))
 				Expect(productFileID).To(Equal(54321))
@@ -324,8 +324,8 @@ var _ = Describe("DownloadProduct", func() {
 
 				fakePivnetDownloader.DownloadProductFileArgsForCall(0)
 
-				stemcellFile, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
-				Expect(stemcellFile.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
+				stemcellFileInfo, slug, releaseID, fileID, _ := fakePivnetDownloader.DownloadProductFileArgsForCall(1)
+				Expect(stemcellFileInfo.Name).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
 				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
 				Expect(releaseID).To(Equal(9999))
 				Expect(fileID).To(Equal(5678))
@@ -341,7 +341,7 @@ var _ = Describe("DownloadProduct", func() {
 						"product_slug": "elastic-runtime",
 						"stemcell_path": "%s",
 						"stemcell_version": "97.190"
-					}`, downloadedFilePath, stemcellFile.Name())))
+					}`, downloadedFilePath, stemcellFileInfo.Name)))
 
 				fileName = path.Join(tempDir, "assign-stemcell.yml")
 				fileContent, err = ioutil.ReadFile(fileName)
