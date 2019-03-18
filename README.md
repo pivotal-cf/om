@@ -6,7 +6,7 @@ _is a mantra, or vibration, that is traditionally chanted_
 
 ## What is it?
 
-A tool that helps you configure and deploy tiles to Ops-Manager.
+A tool that helps configure and deploy tiles with Ops-Manager.
 Currently being maintained by the PCF Platform Automation team,
 with engineering support and review from PCF Release Engineering.
 The (private) backlog for Platform Automation is [here](https://www.pivotaltracker.com/n/projects/1472134).
