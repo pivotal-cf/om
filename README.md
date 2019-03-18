@@ -6,17 +6,19 @@ _is a mantra, or vibration, that is traditionally chanted_
 
 ## What is it?
 
-Magical tool that helps you configure and deploy tiles to an Ops-Manager 1.8+.
-Currently being developed by RelEng, backlog link is [here](https://www.pivotaltracker.com/n/projects/2145041).
+A tool that helps you configure and deploy tiles to Ops-Manager.
+Currently being maintained by the PCF Platform Automation team,
+with engineering support and review from PCF Release Engineering.
+The (private) backlog for Platform Automation is [here](https://www.pivotaltracker.com/n/projects/1472134).
 
 ## Documentation
 
 See [here](docs/README.md) for useful examples and documentation.
 
-Some commands such as `configure-product` accept arguments as JSON. Please refer
-to the Ops Manager API documentation for examples of the fields that can be
-provided. The Ops Manager API documentation is available at
-`https://pcf.your-ops-manager.example.com/docs`
+When working with `om`,
+it can sometimes be useful to reference the Ops Manager API docs.
+You can find them at
+`https://pcf.your-ops-manager.example.com/docs`.
 
 ## Installation
 
