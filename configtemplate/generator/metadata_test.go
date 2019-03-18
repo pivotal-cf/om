@@ -1,6 +1,7 @@
 package generator_test
 
 import (
+	"github.com/onsi/ginkgo/extensions/table"
 	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
@@ -109,37 +110,15 @@ var _ = Describe("Metadata", func() {
 		})
 	})
 
-	Context("Product Version", func() {
-		It("Should return 2.1.3 as product version", func() {
-			fileData, err := ioutil.ReadFile("fixtures/pas.yml")
-			Expect(err).ShouldNot(HaveOccurred())
-			metadata, err := generator.NewMetadata(fileData)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(metadata.ProductVersion()).Should(BeEquivalentTo("2.1.3"))
-		})
-
-		It("Should return 1.2.1h as product version", func() {
-			fileData, err := ioutil.ReadFile("fixtures/p_healthwatch.yml")
-			Expect(err).ShouldNot(HaveOccurred())
-			metadata, err := generator.NewMetadata(fileData)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(metadata.ProductVersion()).Should(BeEquivalentTo("1.2.1"))
-		})
-
-		It("Should return 2.2.4 as product version", func() {
-			fileData, err := ioutil.ReadFile("fixtures/iso-segment.yml")
-			Expect(err).ShouldNot(HaveOccurred())
-			metadata, err := generator.NewMetadata(fileData)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(metadata.ProductVersion()).Should(BeEquivalentTo("2.2.4"))
-		})
-
-		It("Should return 2.2.4 as product version", func() {
-			fileData, err := ioutil.ReadFile("fixtures/iso-segment-replicator.yml")
-			Expect(err).ShouldNot(HaveOccurred())
-			metadata, err := generator.NewMetadata(fileData)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(metadata.ProductVersion()).Should(BeEquivalentTo("2.2.4"))
-		})
-	})
+	table.DescribeTable("ProductVersion tile metadata fixture tests", func(fixtureFilepath string, expectedVersion string) {
+		fileData, err := ioutil.ReadFile(fixtureFilepath)
+		Expect(err).ShouldNot(HaveOccurred())
+		metadata, err := generator.NewMetadata(fileData)
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(metadata.ProductVersion()).Should(BeEquivalentTo(expectedVersion))
+	}, table.Entry("PAS", "fixtures/pas.yml", "2.1.3"),
+		table.Entry("healthwatch", "fixtures/p_healthwatch.yml", "1.2.1h"),
+		table.Entry("iso-segment", "fixtures/iso-segment.yml", "2.2.4"),
+		table.Entry("replicated iso-segment", "fixtures/iso-segment-replicator.yml", "2.2.4"),
+	)
 })

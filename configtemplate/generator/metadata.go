@@ -22,7 +22,6 @@ type Metadata struct {
 	FormTypes         []FormType         `yaml:"form_types"`
 	PropertyMetadata  []PropertyMetadata `yaml:"property_blueprints"`
 	JobTypes          []JobType          `yaml:"job_types"`
-	ProvidesVersions  []ProvidesVersion  `yaml:"provides_product_versions"`
 	PostDeployErrands []ErrandMetadata   `yaml:"post_deploy_errands"`
 	PreDeleteErrands  []ErrandMetadata   `yaml:"pre_delete_errands"`
 }
@@ -35,21 +34,12 @@ type ErrandMetadata struct {
 	Name string `yaml:"name"`
 }
 
-type ProvidesVersion struct {
-	Name    string `yaml:"name"`
-	Version string `yaml:"version"`
-}
-
 func (m *Metadata) ProductName() string {
 	return m.Name
 }
 
 func (m *Metadata) ProductVersion() string {
-	if len(m.ProvidesVersions) > 0 {
-		return m.ProvidesVersions[0].Version
-	} else {
-		return m.Version
-	}
+	return m.Version
 }
 
 func (m *Metadata) UsesServiceNetwork() bool {
