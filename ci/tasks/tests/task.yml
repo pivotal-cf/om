@@ -28,6 +28,5 @@ run:
         -succinct \
         -randomizeAllSpecs \
         -randomizeSuites \
-        -failOnPending \
         .
     popd > /dev/null
