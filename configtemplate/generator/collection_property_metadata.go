@@ -63,7 +63,7 @@ func DefaultsToArray(propertyName string, subProperties []PropertyMetadata) map[
 	return properties
 }
 
-func CollectionPropertyType(propertyName string,defaultValue interface{}, subProperties []PropertyMetadata) (PropertyValue, error) {
+func CollectionPropertyType(propertyName string, defaultValue interface{}, subProperties []PropertyMetadata) (PropertyValue, error) {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	var collectionProperties []map[string]SimpleType

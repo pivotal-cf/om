@@ -16,6 +16,7 @@ type ConfigTemplate struct {
 		PivnetApiToken    string `long:"pivnet-api-token" required:"true"`
 		PivnetProductSlug string `long:"pivnet-product-slug" required:"true"`
 		ProductVersion    string `long:"product-version" required:"true"`
+		ProductFileGlob   string `long:"product-file-glob" default:"*.pivotal"`
 	}
 }
 
@@ -32,7 +33,7 @@ var DefaultProvider = func(host string) func(c *ConfigTemplate) MetadataProvider
 			options.PivnetApiToken,
 			options.PivnetProductSlug,
 			options.ProductVersion,
-			"*.pivotal",
+			options.ProductFileGlob,
 		)
 	}
 }

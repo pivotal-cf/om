@@ -101,8 +101,6 @@ var _ = Describe("ConfigTemplate", func() {
 
 					productDir := filepath.Join(tempDir, "example-product", "1.1.1")
 
-					println(productDir)
-
 					Expect(filepath.Join(productDir, "errand-vars.yml")).To(BeAnExistingFile())
 					Expect(filepath.Join(productDir, "product.yml")).To(BeAnExistingFile())
 					Expect(filepath.Join(productDir, "product-default-vars.yml")).To(BeAnExistingFile())
