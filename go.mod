@@ -23,7 +23,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
-	github.com/onsi/ginkgo v1.7.0
+	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.4.2
 	github.com/pivotal-cf/go-pivnet v0.0.53
 	github.com/pivotal-cf/jhanda v0.0.0-20180509215011-1b5ae1681a45

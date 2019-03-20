@@ -20,7 +20,7 @@ var (
 
 var _ = SynchronizedBeforeSuite(func() []byte {
 	var err error
-	pathToMain, err = gexec.Build("github.com/pivotal-cf/om", "-ldflags", "-X main.applySleepDurationString=1ms -X main.pivnetHost=http://example.com")
+	omPath, err := gexec.Build("../main.go", "-ldflags", "-X main.applySleepDurationString=1ms -X main.pivnetHost=http://example.com")
 	Expect(err).NotTo(HaveOccurred())
 
 	minioPath, _ := exec.LookPath("minio")
@@ -40,7 +40,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		Eventually(minio.Out, "10s").Should(gbytes.Say("Endpoint:"))
 		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://127.0.0.1:9001", "minio", "password")
 	}
-	return []byte(pathToMain)
+	return []byte(omPath)
 }, func(data []byte) {
 	pathToMain = string(data)
 })
