@@ -3,8 +3,8 @@ package generator_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/tile-config-generator/generator"
-	"github.com/pivotalservices/tile-config-generator/generator/fakes"
+	"github.com/pivotal-cf/om/configtemplate/generator"
+	"github.com/pivotal-cf/om/configtemplate/generator/fakes"
 	"gopkg.in/yaml.v2"
 )
 

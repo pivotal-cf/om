@@ -97,8 +97,6 @@ github.com/pivotal-cf/pivnet-cli v0.0.56 h1:cws7R1kQAbsbYxs4MYBE8Fy129H9ZPsVjucO
 github.com/pivotal-cf/pivnet-cli v0.0.56/go.mod h1:7hHhYsGEpg7AqcEzBI7ASPjtnkgcVcaTyjw7JDLKoMM=
 github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd h1:naqv5wnPWCvb6o2nYbygTQZlhetOm3e6RTPueq4AFX4=
 github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd/go.mod h1:j8LyeJ7/0GbbwookzCmmFyCoRKp1WBwV/xxlebLz9UM=
-github.com/pivotalservices/tile-config-generator v0.0.14 h1:Vzg2eDAAplfQrMqKt+JyrUCtsQxGdF5WESd7z4b6n9M=
-github.com/pivotalservices/tile-config-generator v0.0.14/go.mod h1:zh+sJ4VmfFlILmgu3zaKqmryET0fKOxtnMQAS6nPsRU=
 github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

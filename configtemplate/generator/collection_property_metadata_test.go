@@ -1,7 +1,7 @@
 package generator_test
 
 import (
-	"github.com/pivotalservices/tile-config-generator/generator"
+	"github.com/pivotal-cf/om/configtemplate/generator"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

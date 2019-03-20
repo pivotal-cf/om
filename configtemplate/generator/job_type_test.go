@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotalservices/tile-config-generator/generator"
+	"github.com/pivotal-cf/om/configtemplate/generator"
 )
 
 var _ = Describe("JobType", func() {
