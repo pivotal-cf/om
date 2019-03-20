@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -64,10 +65,7 @@ func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			err = p.client.EULA.Accept(p.slug, release.ID)
-			if err != nil {
-				return nil, err
-			}
+
 			return p.downloadFiles(productFiles, release.ID)
 
 		}
@@ -93,7 +91,16 @@ func (p *PivnetProvider) downloadFiles(
 		return nil, fmt.Errorf("No file matched for slug %s, releaseID %d and glob %s", p.slug, releaseID, p.glob)
 	}
 	if len(filtered) > 1 {
-		return nil, fmt.Errorf("More than one file matched for slug %s, releaseID %d and glob %s", p.slug, releaseID, p.glob)
+		list := []string{}
+		for _, file := range filtered {
+			list = append(list, path.Base(file.AWSObjectKey))
+		}
+		return nil, fmt.Errorf("the glob '%s' matches multiple files. Write your glob to match exactly one of the following:\n  %s", p.glob, strings.Join(list, "\n  "))
+	}
+
+	err = p.client.EULA.Accept(p.slug, releaseID)
+	if err != nil {
+		return nil, err
 	}
 
 	pf := filtered[0]
