@@ -92,7 +92,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 				"simple": int64(0),
 			}
 			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, nil)
-			Expect(err).Should(MatchError("Value int64 is not known"))
+			Expect(err).Should(MatchError("value int64 is not known"))
 			Expect(len(collectionArray)).Should(Equal(0))
 		})
 	})

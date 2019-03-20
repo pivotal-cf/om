@@ -1,8 +1,9 @@
 package generator_test
 
 import (
-	"github.com/onsi/ginkgo/extensions/table"
 	"io/ioutil"
+
+	"github.com/onsi/ginkgo/extensions/table"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

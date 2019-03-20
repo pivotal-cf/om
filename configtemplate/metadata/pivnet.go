@@ -71,7 +71,7 @@ func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("No version matched for slug %s, version %s and glob %s", p.slug, p.version, p.glob)
+	return nil, fmt.Errorf("no version matched for slug %s, version %s and glob %s", p.slug, p.version, p.glob)
 }
 
 func (p *PivnetProvider) downloadFiles(
@@ -88,7 +88,7 @@ func (p *PivnetProvider) downloadFiles(
 	}
 
 	if len(filtered) == 0 {
-		return nil, fmt.Errorf("No file matched for slug %s, releaseID %d and glob %s", p.slug, releaseID, p.glob)
+		return nil, fmt.Errorf("no file matched for slug %s, releaseID %d and glob %s", p.slug, releaseID, p.glob)
 	}
 	if len(filtered) > 1 {
 		list := []string{}
@@ -139,7 +139,7 @@ func (p *PivnetProvider) downloadFiles(
 		}
 
 	}
-	return nil, fmt.Errorf("No metadata found")
+	return nil, fmt.Errorf("no metadata found")
 }
 
 func productFileKeysByGlobs(

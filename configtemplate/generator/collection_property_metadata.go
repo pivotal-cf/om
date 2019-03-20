@@ -31,7 +31,7 @@ func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{
 					arrayProperties[keyAsString] = SimpleInteger(value.(int))
 
 				default:
-					return nil, fmt.Errorf("Value %v is not known", reflect.TypeOf(value))
+					return nil, fmt.Errorf("value %v is not known", reflect.TypeOf(value))
 				}
 			}
 		}

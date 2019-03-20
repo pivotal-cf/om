@@ -1,12 +1,13 @@
 package metadata_test
 
 import (
+	"net/http"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/om/configtemplate/metadata"
-	"net/http"
 )
 
 var _ = Describe("Pivnet Client", func() {
@@ -97,7 +98,7 @@ var _ = Describe("Pivnet Client", func() {
 
 			_, err := provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("No version matched for slug example-product, version 1.1.1 and glob *.pivotal"))
+			Expect(err).To(MatchError("no version matched for slug example-product, version 1.1.1 and glob *.pivotal"))
 		})
 	})
 })

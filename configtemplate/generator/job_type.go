@@ -53,5 +53,5 @@ func (j *JobType) GetPropertyMetadata(propertyName string) (*PropertyMetadata, e
 			return &property, nil
 		}
 	}
-	return nil, fmt.Errorf("Property %s not found on job %s", propertyName, j.Name)
+	return nil, fmt.Errorf("property %s not found on job %s", propertyName, j.Name)
 }
