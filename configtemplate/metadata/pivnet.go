@@ -71,7 +71,7 @@ func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
 		}
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("No version matched for slug %s, version %s and glob %s", p.slug, p.version, p.glob)
 }
 
 func (p *PivnetProvider) downloadFiles(
