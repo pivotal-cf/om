@@ -68,6 +68,10 @@ var _ = Describe("Pivnet Client", func() {
 								ID:      1,
 								Version: "2.2.2",
 							},
+							{
+								ID:      1,
+								Version: "3.3.3",
+							},
 						},
 					}),
 				),
@@ -98,7 +102,7 @@ var _ = Describe("Pivnet Client", func() {
 
 			_, err := provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("no version matched for slug example-product, version 1.1.1 and glob *.pivotal"))
+			Expect(err).To(MatchError("no version matched for slug example-product, version 1.1.1 and glob *.pivotal.\nVersions found:\n  2.2.2\n  3.3.3"))
 		})
 	})
 })

@@ -71,7 +71,12 @@ func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no version matched for slug %s, version %s and glob %s", p.slug, p.version, p.glob)
+	var list []string
+	for _, release := range releases {
+		list = append(list, release.Version)
+	}
+
+	return nil, fmt.Errorf("no version matched for slug %s, version %s and glob %s.\nVersions found:\n  %s", p.slug, p.version, p.glob, strings.Join(list, "\n  "))
 }
 
 func (p *PivnetProvider) downloadFiles(
