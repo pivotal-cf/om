@@ -49,14 +49,13 @@ func (p *PropertyMetadata) IsRequired() bool {
 	return !p.Optional
 }
 
-func (p *PropertyMetadata) OptionTemplate(selectorReference string) (*OptionTemplate, error) {
+func (p *PropertyMetadata) OptionTemplate(selectorReference string) *OptionTemplate {
 	for _, option := range p.OptionTemplates {
 		if strings.EqualFold(option.Name, selectorReference) {
-			return &option, nil
+			return &option
 		}
 	}
-	fmt.Println(fmt.Sprintf("Unable to find option template for %s", selectorReference))
-	return nil, nil
+	return nil
 }
 
 func (p *PropertyMetadata) PropertyType(propertyName string) PropertyValue {

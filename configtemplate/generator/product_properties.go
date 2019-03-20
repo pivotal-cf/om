@@ -38,10 +38,7 @@ func CreateProductProperties(metadata *Metadata) (map[string]PropertyValue, erro
 			defaultSelector := propertyMetadata.DefaultSelectorPath(property.Reference)
 			for _, selector := range property.Selectors {
 				if strings.EqualFold(defaultSelector, selector.Reference) {
-					selectorMetadata, err := SelectorMetadataBySelectValue(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.Default))
-					if err != nil {
-						return nil, err
-					}
+					selectorMetadata := SelectorMetadataBySelectValue(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.Default))
 					for _, metadata := range selectorMetadata {
 						if metadata.IsExplicityConfigurable() && metadata.IsRequired() && !metadata.IsDropdown() {
 							selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, metadata.Name)
@@ -84,10 +81,7 @@ func CreateProductPropertiesVars(metadata *Metadata) (map[string]interface{}, er
 			defaultSelector := propertyMetadata.DefaultSelectorPath(property.Reference)
 			for _, selector := range property.Selectors {
 				if strings.EqualFold(defaultSelector, selector.Reference) {
-					selectorMetadata, err := SelectorMetadata(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.DefaultSelector()))
-					if err != nil {
-						return nil, err
-					}
+					selectorMetadata := SelectorMetadata(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.DefaultSelector()))
 					for _, metadata := range selectorMetadata {
 						if metadata.IsConfigurable() {
 							selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, metadata.Name)
@@ -138,10 +132,7 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 		if propertyMetadata.IsConfigurable() {
 			if propertyMetadata.IsSelector() {
 				for _, selector := range property.Selectors {
-					selectorMetadata, err := SelectorMetadata(propertyMetadata.OptionTemplates, strings.Replace(selector.Reference, property.Reference+".", "", 1))
-					if err != nil {
-						return nil, err
-					}
+					selectorMetadata := SelectorMetadata(propertyMetadata.OptionTemplates, strings.Replace(selector.Reference, property.Reference+".", "", 1))
 					for _, metadata := range selectorMetadata {
 						if metadata.IsConfigurable() {
 							if !metadata.IsRequired() || metadata.IsDropdown() {
@@ -217,10 +208,7 @@ func CreateProductPropertiesFeaturesOpsFiles(metadata *Metadata) (map[string][]O
 					opsFileName = strings.Replace(opsFileName, "properties.", "", 1)
 					opsFileName = strings.Replace(opsFileName, ".", "-", -1)
 
-					optionTemplate, err := propertyMetadata.OptionTemplate(strings.Replace(selector.Reference, property.Reference+".", "", 1))
-					if err != nil {
-						return nil, err
-					}
+					optionTemplate := propertyMetadata.OptionTemplate(strings.Replace(selector.Reference, property.Reference+".", "", 1))
 					if optionTemplate != nil {
 						ops = append(ops,
 							Ops{
@@ -232,10 +220,7 @@ func CreateProductPropertiesFeaturesOpsFiles(metadata *Metadata) (map[string][]O
 					}
 
 					if propertyMetadata.Default != nil {
-						defaultSelectorMetadata, err := SelectorMetadataBySelectValue(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.Default))
-						if err != nil {
-							return nil, err
-						}
+						defaultSelectorMetadata := SelectorMetadataBySelectValue(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.Default))
 						for _, metadata := range defaultSelectorMetadata {
 							selectorProperty := fmt.Sprintf("%s.%s", defaultSelector, metadata.Name)
 							ops = append(ops,
@@ -247,10 +232,7 @@ func CreateProductPropertiesFeaturesOpsFiles(metadata *Metadata) (map[string][]O
 						}
 					}
 					selectorParts := strings.Split(selector.Reference, ".")
-					selectorMetadata, err := SelectorMetadata(propertyMetadata.OptionTemplates, selectorParts[len(selectorParts)-1])
-					if err != nil {
-						return nil, err
-					}
+					selectorMetadata := SelectorMetadata(propertyMetadata.OptionTemplates, selectorParts[len(selectorParts)-1])
 					for _, metadata := range selectorMetadata {
 						if metadata.IsMultiSelect() && len(metadata.Options) > 1 {
 							multiselectOpsFiles(selector.Reference+"."+metadata.Name, &metadata, opsFiles)
