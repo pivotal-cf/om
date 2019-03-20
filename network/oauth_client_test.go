@@ -3,6 +3,7 @@ package network_test
 import (
 	"bufio"
 	"bytes"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -57,6 +58,7 @@ var _ = Describe("OAuthClient", func() {
 				receivedCookies = req.Cookies()
 			}
 		}))
+		server.Config.ErrorLog = log.New(GinkgoWriter, "", log.LstdFlags)
 	})
 
 	Describe("Do", func() {
