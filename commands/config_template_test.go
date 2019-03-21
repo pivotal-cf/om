@@ -106,9 +106,6 @@ var _ = Describe("ConfigTemplate", func() {
 					Expect(filepath.Join(productDir, "product-default-vars.yml")).To(BeAnExistingFile())
 					Expect(filepath.Join(productDir, "resource-vars.yml")).To(BeAnExistingFile())
 				})
-
-				PIt("fills the product.yml file with the correct tile meta information", func() {
-				})
 			})
 		})
 	})
