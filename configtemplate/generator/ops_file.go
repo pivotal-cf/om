@@ -17,7 +17,8 @@ func (n *OpsNameValue) Parameters() []string {
 }
 
 type OpsValue struct {
-	Value string `yaml:"value"`
+	Value          string `yaml:"value"`
+	SelectedOption string `yaml:"selected_option"`
 }
 
 func (n *OpsValue) Parameters() []string {

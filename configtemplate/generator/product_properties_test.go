@@ -43,19 +43,47 @@ var _ = Describe("Product Properties", func() {
 	})
 
 	Context("CreateProductPropertiesFeaturesOpsFiles", func() {
-		It("Should return ops files map", func() {
-			fileData, err := ioutil.ReadFile("fixtures/cloudcache.yml")
-			Expect(err).ToNot(HaveOccurred())
-
-			metadata, err := generator.NewMetadata(fileData)
-			Expect(err).ToNot(HaveOccurred())
-			opsfiles, err := generator.CreateProductPropertiesFeaturesOpsFiles(metadata)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(opsfiles).ToNot(BeNil())
-			// yml, err := yaml.Marshal(productProperties)
-			// Expect(err).ToNot(HaveOccurred())
-			// Expect(yml).Should(MatchYAML(string(expected)))
+		When("there is a property that is a selector", func() {
+			It("returns the value and selected value", func() {
+				metadata := &generator.Metadata{
+					PropertyMetadata: []generator.PropertyMetadata{
+						{
+							Type: "selector",
+							Name: "some_selector",
+							OptionTemplates: []generator.OptionTemplate{
+								{
+									Name:        "gcp",
+									SelectValue: "GCP",
+								},
+							},
+						},
+					},
+					FormTypes: []generator.FormType{
+						{
+							Properties: []generator.Property{
+								{
+									Reference: ".properties.some_selector",
+									Selectors: []generator.SelectorProperty{
+										{
+											Reference: ".properties.some_selector.gcp",
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+				opsfiles, err := generator.CreateProductPropertiesFeaturesOpsFiles(metadata)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(opsfiles["some_selector-gcp"]).To(ContainElement(generator.Ops{
+					Type: "replace",
+					Path: "/product-properties/.properties.some_selector?",
+					Value: &generator.OpsValue{
+						Value:          "GCP",
+						SelectedOption: "gcp",
+					},
+				}))
+			})
 		})
-
 	})
 })

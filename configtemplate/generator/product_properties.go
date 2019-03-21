@@ -212,9 +212,12 @@ func CreateProductPropertiesFeaturesOpsFiles(metadata *Metadata) (map[string][]O
 					if optionTemplate != nil {
 						ops = append(ops,
 							Ops{
-								Type:  "replace",
-								Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
-								Value: &OpsValue{Value: optionTemplate.SelectValue},
+								Type: "replace",
+								Path: fmt.Sprintf("/product-properties/%s?", property.Reference),
+								Value: &OpsValue{
+									Value:          optionTemplate.SelectValue,
+									SelectedOption: optionTemplate.Name,
+								},
 							},
 						)
 					}
