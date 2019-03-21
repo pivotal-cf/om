@@ -43,11 +43,12 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 	}
 
 	contents, err = interpolate(interpolateOptions{
-		templateFile: configFile,
-		varsEnvs:     varsEnv,
-		varsFiles:    varsField,
-		environFunc:  envFunc,
-		opsFiles:     nil,
+		templateFile:  configFile,
+		varsEnvs:      varsEnv,
+		varsFiles:     varsField,
+		environFunc:   envFunc,
+		opsFiles:      nil,
+		expectAllKeys: true,
 	}, "")
 	if err != nil {
 		return fmt.Errorf("could not load the config file: %s", err)

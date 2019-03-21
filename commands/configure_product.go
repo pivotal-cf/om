@@ -284,11 +284,12 @@ func (cp *ConfigureProduct) configureErrands(cfg configureProduct, productGUID s
 
 func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configureProduct, error) {
 	configContents, err := interpolate(interpolateOptions{
-		templateFile: cp.Options.ConfigFile,
-		varsFiles:    cp.Options.VarsFile,
-		environFunc:  cp.environFunc,
-		varsEnvs:     cp.Options.VarsEnv,
-		opsFiles:     cp.Options.OpsFile,
+		templateFile:  cp.Options.ConfigFile,
+		varsFiles:     cp.Options.VarsFile,
+		environFunc:   cp.environFunc,
+		varsEnvs:      cp.Options.VarsEnv,
+		opsFiles:      cp.Options.OpsFile,
+		expectAllKeys: true,
 	}, "")
 	if err != nil {
 		return configureProduct{}, err

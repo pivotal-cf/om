@@ -62,10 +62,14 @@ var _ = Describe("Interpolate", func() {
 		})
 
 		AfterEach(func() {
-			os.Remove(inputFile)
-			os.Remove(varsFile)
-			os.Remove(varsFile2)
-			os.Remove(opsFile)
+			err := os.Remove(inputFile)
+			Expect(err).NotTo(HaveOccurred())
+			err = os.Remove(varsFile)
+			Expect(err).NotTo(HaveOccurred())
+			err = os.Remove(varsFile2)
+			Expect(err).NotTo(HaveOccurred())
+			err = os.Remove(opsFile)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		Context("no vars or ops file inputs", func() {
@@ -145,7 +149,7 @@ hello: world`))
 			})
 		})
 
-		Context("when path flag is set", func() {
+		When("path flag is set", func() {
 			It("returns a value from the interpolated file", func() {
 				err := ioutil.WriteFile(inputFile, []byte(`{"a": "((interpolated-value))", "c":"d" }`), 0755)
 				Expect(err).NotTo(HaveOccurred())
@@ -160,6 +164,23 @@ hello: world`))
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML(`b`))
+			})
+		})
+
+		When("the skip-missing flag is set", func() {
+			When("there are missing parameters", func() {
+				It("succeeds", func() {
+					err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
+					Expect(err).NotTo(HaveOccurred())
+					err = command.Execute([]string{
+						"--config", inputFile,
+						"--skip-missing",
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					content := logger.PrintlnArgsForCall(0)
+					Expect(content[0].(string)).To(MatchYAML(templateWithParameters))
+				})
 			})
 		})
 	})

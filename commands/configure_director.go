@@ -122,11 +122,12 @@ func (c ConfigureDirector) Execute(args []string) error {
 
 func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
 	configContents, err := interpolate(interpolateOptions{
-		templateFile: c.Options.ConfigFile,
-		varsFiles:    c.Options.VarsFile,
-		environFunc:  c.environFunc,
-		varsEnvs:     c.Options.VarsEnv,
-		opsFiles:     c.Options.OpsFile,
+		templateFile:  c.Options.ConfigFile,
+		varsFiles:     c.Options.VarsFile,
+		environFunc:   c.environFunc,
+		varsEnvs:      c.Options.VarsEnv,
+		opsFiles:      c.Options.OpsFile,
+		expectAllKeys: true,
 	}, "")
 	if err != nil {
 		return nil, err

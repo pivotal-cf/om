@@ -49,11 +49,12 @@ func (c CreateVMExtension) Execute(args []string) error {
 	if c.Options.ConfigFile != "" {
 		var cfg config.VMExtensionConfig
 		configContents, err := interpolate(interpolateOptions{
-			templateFile: c.Options.ConfigFile,
-			varsFiles:    c.Options.VarsFile,
-			environFunc:  c.environFunc,
-			varsEnvs:     c.Options.VarsEnv,
-			opsFiles:     c.Options.OpsFile,
+			templateFile:  c.Options.ConfigFile,
+			varsFiles:     c.Options.VarsFile,
+			environFunc:   c.environFunc,
+			varsEnvs:      c.Options.VarsEnv,
+			opsFiles:      c.Options.OpsFile,
+			expectAllKeys: true,
 		}, "")
 		if err != nil {
 			return err
