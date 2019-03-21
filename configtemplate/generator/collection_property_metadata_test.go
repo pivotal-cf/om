@@ -30,8 +30,8 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 				"other": "other-value",
 			}
 			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, nil)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(collectionArray).ShouldNot(BeNil())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(collectionArray).ToNot(BeNil())
 			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleString("simple-value")))
 			Expect(collectionArray[1]["other"]).Should(Equal(generator.SimpleString("other-value")))
 		})
@@ -46,8 +46,8 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			}
 
 			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, nil)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(collectionArray).ShouldNot(BeNil())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(collectionArray).ToNot(BeNil())
 			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleInteger(0)))
 			Expect(collectionArray[1]["other"]).Should(Equal(generator.SimpleInteger(1)))
 		})
@@ -61,8 +61,8 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 				"other": false,
 			}
 			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, nil)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(collectionArray).ShouldNot(BeNil())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(collectionArray).ToNot(BeNil())
 			Expect(len(collectionArray)).Should(Equal(2))
 
 			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleBoolean(true)))
@@ -80,7 +80,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 					Name: "other-name",
 				},
 			})
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(len(collectionArray)).Should(Equal(1))
 			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleString("simple-value")))
 			Expect(collectionArray[0]["other-name"]).Should(Equal(generator.SimpleString("((foo/other-name))")))

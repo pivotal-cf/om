@@ -34,7 +34,7 @@ var _ = Describe("Resource Config", func() {
 				},
 			}
 			resourceConfig := generator.CreateResourceConfig(metadata)
-			Expect(resourceConfig).ShouldNot(BeNil())
+			Expect(resourceConfig).ToNot(BeNil())
 			Expect(len(resourceConfig)).Should(Equal(2))
 			Expect(resourceConfig).Should(HaveKey("job1"))
 			Expect(resourceConfig).Should(HaveKey("job2"))
@@ -51,15 +51,15 @@ var _ = Describe("Resource Config", func() {
 			jobType.HasPersistentDiskReturns(true)
 			jobType.InstanceDefinitionConfigurableReturns(true)
 			resource := generator.CreateResource("my-job", jobType)
-			Expect(resource).ShouldNot(BeNil())
-			Expect(resource.PersistentDisk).ShouldNot(BeNil())
+			Expect(resource).ToNot(BeNil())
+			Expect(resource.PersistentDisk).ToNot(BeNil())
 		})
 
 		It("Should marshall to yaml without persistent disk", func() {
 			jobType.HasPersistentDiskReturns(false)
 			jobType.InstanceDefinitionConfigurableReturns(true)
 			resource := generator.CreateResource("my-job", jobType)
-			Expect(resource).ShouldNot(BeNil())
+			Expect(resource).ToNot(BeNil())
 			Expect(resource.PersistentDisk).Should(BeNil())
 		})
 
@@ -67,9 +67,9 @@ var _ = Describe("Resource Config", func() {
 			jobType.HasPersistentDiskReturns(true)
 			jobType.InstanceDefinitionConfigurableReturns(true)
 			resource := generator.CreateResource("myjob", jobType)
-			Expect(resource).ShouldNot(BeNil())
+			Expect(resource).ToNot(BeNil())
 			yml, err := yaml.Marshal(resource)
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(yml).Should(MatchYAML(withPersistentDisk))
 		})
 
@@ -77,9 +77,9 @@ var _ = Describe("Resource Config", func() {
 			jobType.HasPersistentDiskReturns(false)
 			jobType.InstanceDefinitionConfigurableReturns(true)
 			resource := generator.CreateResource("myjob", jobType)
-			Expect(resource).ShouldNot(BeNil())
+			Expect(resource).ToNot(BeNil())
 			yml, err := yaml.Marshal(resource)
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(yml).Should(MatchYAML(withoutPersistentDisk))
 		})
 

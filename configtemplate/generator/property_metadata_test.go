@@ -112,7 +112,7 @@ var _ = Describe("PropertyMetadata", func() {
 		})
 		It("finds matching option template", func() {
 			optionTemplate := propertyMetaData.OptionTemplate("bar-name")
-			Expect(optionTemplate).ShouldNot(BeNil())
+			Expect(optionTemplate).ToNot(BeNil())
 		})
 		It("doesn't find matching option template", func() {
 			optionTemplate := propertyMetaData.OptionTemplate("foo-name")
