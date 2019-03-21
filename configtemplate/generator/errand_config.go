@@ -12,15 +12,16 @@ func CreateErrandConfig(metadata *Metadata) map[string]Errand {
 	for _, errand := range metadata.PostDeployErrands {
 		errands[errand.Name] = Errand{
 			PostDeployState: fmt.Sprintf("((%s_post_deploy_state))", errand.Name),
-			PreDeleteState:  "",
 		}
 	}
 
 	for _, errand := range metadata.PreDeleteErrands {
-		errands[errand.Name] = Errand{
-			PostDeployState: "",
-			PreDeleteState:  fmt.Sprintf("((%s_pre_delete_state))", errand.Name),
+		v, ok := errands[errand.Name]
+		if !ok {
+			v = Errand{}
 		}
+		v.PreDeleteState = fmt.Sprintf("((%s_pre_delete_state))", errand.Name)
+		errands[errand.Name] = v
 	}
 
 	return errands

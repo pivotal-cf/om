@@ -20,6 +20,9 @@ var _ = Describe("Errand Config", func() {
 				},
 				PreDeleteErrands: []generator.ErrandMetadata{
 					generator.ErrandMetadata{
+						Name: "post-1",
+					},
+					generator.ErrandMetadata{
 						Name: "pre-1",
 					},
 					generator.ErrandMetadata{
@@ -32,7 +35,7 @@ var _ = Describe("Errand Config", func() {
 			Expect(errandConfig).To(Equal(map[string]generator.Errand{
 				"post-1": {
 					PostDeployState: "((post-1_post_deploy_state))",
-					PreDeleteState:  "",
+					PreDeleteState:  "((post-1_pre_delete_state))",
 				},
 				"post-2": {
 					PostDeployState: "((post-2_post_deploy_state))",
@@ -53,6 +56,7 @@ var _ = Describe("Errand Config", func() {
 				"pre-1_pre_delete_state":   "default",
 				"pre-2_pre_delete_state":   "default",
 				"post-1_post_deploy_state": "default",
+				"post-1_pre_delete_state":  "default",
 				"post-2_post_deploy_state": "default",
 			}))
 		})
