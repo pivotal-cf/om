@@ -16,12 +16,13 @@ participate more equitably:
 
 1. Search existing github issues that may already describe the idea you have.
    If you find one, consider adding a comment that adds additional context about
-   your use case, and/or your interest in helping to contribute to that effort.
+   your use case, the exact problem you need solved and why, and/or your interest 
+   in helping to contribute to that effort.
 2. If there is no existing issue that covers your idea, open a new issue to
    describe the change you would like to see in `om`. Please provide as much
-   context as you can about your use case and the reason why you would like to see
-   this change. If you are reporting a bug, please include steps to reproduce the
-   issue if possible.
+   context as you can about your use case, the exact problem you need solved and why,
+   and the reason why you would like to see this change. If you are reporting a bug, 
+   please include steps to reproduce the issue if possible.
 3. Any number of folks from the community may comment on your issue and ask
    additional questions. A maintainer will add the `pr welcome` label to the
    issue when it has been determined that the change will be welcome. Anyone
@@ -54,12 +55,14 @@ ginkgo -r -race -p .
 ```
 
 Several integration tests require [`minio`](https://minio.io/)) to be installed for s3 testing.
-For OSX, `brew install minio/stable/minio minio/stable/mc`.
+For OSX, `brew install minio/stable/minio minio/stable/mc`. These tests will be skipped if minio 
+is not installed, but to ensure that we will be able to pull in your PR, and that all tests will
+pass, it is recommended to install it for local development.
 
 ## Vendoring dependencies
 
-The project currently checks in all vendored dependencies. Our vendoring tool of choice
-at present is [go modules](https://github.com/golang/go/wiki/Modules) which is rapidly becoming the standard.
+Our vendoring tool of choice at present is [go modules](https://github.com/golang/go/wiki/Modules) 
+which is rapidly becoming the standard.
 
 Adding a dependency is relatively straightforward (first make sure you have the dep binary):
 
@@ -71,7 +74,7 @@ Check in both the manifest changes and the file additions in the vendor director
 
 ## Contibuting your changes
 
-1. When you have a set of changes to contribue back to `om`, create a pull
+1. When you have a set of changes to contribute back to `om`, create a pull
    request (PR) and reference the issue that the changes in the PR are
    addressing.
    **NOTE:** maintainers of `om` with commit access _may_ commit
@@ -99,9 +102,9 @@ the next release's release notes, you should also add a note to [CHANGELOG.md](.
 
 ## Design Goals
 
-- a [small sharp tool](https://brandur.org/small-sharp-tools) for fast, reliable interaction with the Operations Manager API via the command line
+- a [small sharp tool](https://brandur.org/small-sharp-tools) for fast, reliable interaction with the Operations Manager API via the command line, and specific external tasks for bettering the experience with interaction with the Operations Manager API
 - enable humans easily interact with Operations Manager via the command line
-- enable scripts and continuous integration systmes to programmatically interact with Operations Manager
+- enable scripts and continuous integration systems to programmatically interact with Operations Manager
 - single binary that can be run on multiple platforms without additional dependencies
 - a consistent, tested code base that welcomes contributions from the community
 - idempotency for all commands
