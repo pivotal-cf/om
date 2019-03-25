@@ -112,7 +112,7 @@ The interpolation support is inspired by similar features in BOSH. You can
 [refer to the BOSH documentation](https://bosh.io/docs/cli-int/) for details on how interpolation
 is performed.
 
-#### Configuring the `network-properties` on Azure
+#### Configuring the `network-properties` on Azure prior to Ops Manager 2.5
 
 The product network on Azure does not include Availability Zones, but the API will still expect them to be provided.
 To satisfy the API, you can submit "null" AZs for the API as is shown here:
@@ -125,4 +125,10 @@ network-properties:
   - name: "null"
   singleton_availability_zone:
     name: "null"
+```
+
+**Note:** you will need to remove this null
+for use with Ops Manager 2.5 and after, or you will see this error:
+```json
+{"errors":["Availability zones cannot find availability zone with name null"]}
 ```
