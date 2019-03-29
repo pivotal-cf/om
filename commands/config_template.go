@@ -82,7 +82,7 @@ func (c *ConfigTemplate) newMetadataSource() (metadataSource MetadataProvider) {
 func (c *ConfigTemplate) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This command generates a product configuration template from a .pivotal file on Pivnet",
-		ShortDescription: "generates a config template from a Pivnet product",
+		ShortDescription: "**EXPERIMENTAL** generates a config template from a Pivnet product",
 		Flags:            c.Options,
 	}
 }
