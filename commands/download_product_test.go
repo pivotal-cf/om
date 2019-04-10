@@ -515,7 +515,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 			})
 
-			When("no sha sum is provided", func() {
+			When("no sha sum is provided by Pivnet", func() {
 				It("does not re-download the product", func() {
 					createFilePath()
 					setupPivnetAPIForProduct("")
