@@ -21,11 +21,9 @@ import (
 var _ = Describe("DownloadProduct", func() {
 	var (
 		command              *commands.DownloadProduct
-		commandArgs          []string
 		logger               *loggerfakes.FakeLogger
 		fakePivnetDownloader *fakes.PivnetDownloader
 		environFunc          func() []string
-		tempDir              string
 		err                  error
 		file                 *os.File
 		fileContents         = "hello world"
@@ -61,41 +59,38 @@ var _ = Describe("DownloadProduct", func() {
 	})
 
 	Context("when the flags are set correctly", func() {
-		BeforeEach(func() {
-			fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
-				ID: 12345,
-			}, nil)
+		Context("when it can connect to Pivnet", func() {
+			BeforeEach(func() {
+				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
+					ID: 12345,
+				}, nil)
 
-			fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
-				{
-					ID:           54321,
-					AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
-					Name:         "Example Cloud Foundry",
-				},
-			}, nil)
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+					{
+						ID:           54321,
+						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
+						Name:         "Example Cloud Foundry",
+					},
+				}, nil)
+			})
 
-			tempDir, err = ioutil.TempDir("", "om-tests-")
-			Expect(err).NotTo(HaveOccurred())
+			It("downloads a product from Pivotal Network", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
 
-			commandArgs = []string{
-				"--pivnet-api-token", "token",
-				"--pivnet-file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--output-directory", tempDir,
-			}
-		})
+				commandArgs := []string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+				}
 
-		AfterEach(func() {
-			err = os.RemoveAll(tempDir)
-			Expect(err).NotTo(HaveOccurred())
-		})
+				err = command.Execute(commandArgs)
+				Expect(err).NotTo(HaveOccurred())
 
-		It("downloads a product from Pivotal Network", func() {
-			err = command.Execute(commandArgs)
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+				Expect(fakePivnetDownloader.ReleaseForVersionCallCount()).To(Equal(1))
+			})
 		})
 
 		Context("when a valid product-version-regex is provided", func() {
@@ -135,16 +130,20 @@ var _ = Describe("DownloadProduct", func() {
 					ID: 4,
 				}, nil)
 
-				commandArgs = []string{
+			})
+
+			It("downloads the highest version matching that regex", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
+				commandArgs := []string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version-regex", `2\..\..*`,
 					"--output-directory", tempDir,
 				}
-			})
 
-			It("downloads the highest version matching that regex", func() {
 				err = command.Execute(commandArgs)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -189,6 +188,17 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("ignores the version and prints a warning", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version-regex", `2\..\..*`,
+						"--output-directory", tempDir,
+					}
+
 					err = command.Execute(commandArgs)
 					Expect(err).NotTo(HaveOccurred())
 
@@ -208,6 +218,17 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("returns an error", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version-regex", `2\..\..*`,
+						"--output-directory", tempDir,
+					}
+
 					err = command.Execute(commandArgs)
 					Expect(err).To(MatchError("no valid versions found for product 'elastic-runtime' and product version regex '2\\..\\..*'\nexisting versions: 3.1.2"))
 				})
@@ -231,6 +252,17 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("returns an error", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
+				commandArgs := []string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+				}
+
 				err = command.Execute(commandArgs)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring(`the glob '*.pivotal' matches multiple files. Write your glob to match exactly one of the following:`))
@@ -239,14 +271,17 @@ var _ = Describe("DownloadProduct", func() {
 
 		Context("when the stemcell-iaas flag is set", func() {
 			BeforeEach(func() {
-				commandArgs = []string{
-					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--output-directory", tempDir,
-					"--stemcell-iaas", "google",
-				}
+				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
+					ID: 12345,
+				}, nil)
+
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+					{
+						ID:           54321,
+						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
+						Name:         "Example Cloud Foundry",
+					},
+				}, nil)
 				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(1, pivnet.Release{
 					ID: 9999,
 				}, nil)
@@ -309,6 +344,18 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("grabs the latest stemcell for the product that matches the glob", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
+				commandArgs := []string{
+					"--pivnet-api-token", "token",
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+					"--stemcell-iaas", "google",
+				}
+
 				err = command.Execute(commandArgs)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -370,6 +417,9 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("exits 0 and prints a warning when the product is not a tile", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
 						"--pivnet-file-glob", "*.tgz",
@@ -392,6 +442,13 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		Context("when the file is already downloaded", func() {
+			var tempDir string
+
+			BeforeEach(func() {
+				tempDir, err = ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+			})
+
 			setupPivnetAPIForProduct := func(shaSum string) {
 				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
 					ID: 54321,
@@ -556,6 +613,19 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		Context("when the --config flag is passed", func() {
+			BeforeEach(func() {
+				fakePivnetDownloader.ReleaseForVersionReturnsOnCall(0, pivnet.Release{
+					ID: 12345,
+				}, nil)
+
+				fakePivnetDownloader.ProductFilesForReleaseReturnsOnCall(0, []pivnet.ProductFile{
+					{
+						ID:           54321,
+						AWSObjectKey: "/some-account/some-bucket/cf-2.0-build.1.pivotal",
+						Name:         "Example Cloud Foundry",
+					},
+				}, nil)
+			})
 			var (
 				configFile *os.File
 				err        error
@@ -572,6 +642,9 @@ output-directory: %s
 
 				BeforeEach(func() {
 					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
 					Expect(err).NotTo(HaveOccurred())
 
 					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
@@ -650,19 +723,20 @@ output-directory: %s
 							Name:         "my-great-product.pivotal",
 						},
 					}, nil)
+				})
 
-					commandArgs = []string{
+				It("prefixes the filename with a bracketed slug and version", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
 						"--pivnet-file-glob", "*.pivotal",
 						"--pivnet-product-slug", "mayhem-crew",
 						"--product-version", `2.0.0`,
 						"--output-directory", tempDir,
 						"--s3-bucket", "there once was a man from a",
-					}
-				})
-
-				It("prefixes the filename with a bracketed slug and version", func() {
-					err = command.Execute(commandArgs)
+					})
 					Expect(err).NotTo(HaveOccurred())
 
 					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
@@ -670,7 +744,17 @@ output-directory: %s
 				})
 
 				It("writes the prefixed filename to the download-file.json", func() {
-					err = command.Execute(commandArgs)
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "mayhem-crew",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+						"--s3-bucket", "there once was a man from a",
+					})
 					Expect(err).NotTo(HaveOccurred())
 
 					downloadReportFileName := path.Join(tempDir, "download-file.json")
@@ -691,17 +775,18 @@ output-directory: %s
 							Name:         "my-great-product.pivotal",
 						},
 					}, nil)
+				})
+				It("doesn't prefix", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
 
-					commandArgs = []string{
+					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
 						"--pivnet-file-glob", "*.pivotal",
 						"--pivnet-product-slug", "mayhem-crew",
 						"--product-version", `2.0.0`,
 						"--output-directory", tempDir,
-					}
-				})
-				It("doesn't prefix", func() {
-					err = command.Execute(commandArgs)
+					})
 					Expect(err).NotTo(HaveOccurred())
 
 					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
@@ -709,7 +794,16 @@ output-directory: %s
 				})
 
 				It("writes the unprefixed filename to the download-file.json", func() {
-					err = command.Execute(commandArgs)
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "mayhem-crew",
+						"--product-version", `2.0.0`,
+						"--output-directory", tempDir,
+					})
 					Expect(err).NotTo(HaveOccurred())
 
 					downloadReportFileName := path.Join(tempDir, "download-file.json")
@@ -741,6 +835,9 @@ output-directory: %s
 
 		Context("when both product-version and product-version-regex are set", func() {
 			It("fails with an error saying that the user must pick one or the other", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
@@ -756,6 +853,9 @@ output-directory: %s
 
 		Context("when neither product-version nor product-version-regex are set", func() {
 			It("fails with an error saying that the user must provide one or the other", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
@@ -773,6 +873,9 @@ output-directory: %s
 			})
 
 			It("returns an error", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
