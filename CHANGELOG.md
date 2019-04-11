@@ -5,16 +5,20 @@ sometimes pushed post-release.
 
 ## 0.56.0 - Unreleased
 
-### Features
+### Breaking Changes
+* the `upload-stemcell` flag `--shasum` has been changed to `--sha256`. `upload-product`
+  used the `--sha256` flag, and this change adds parity between the two
 
+### Features
 * `download-product` now supports skipping ssl validation when specifying `--pivnet-disable-ssl`
 * `download-product` ensures sha sum checking when downloading the file from Pivotal Network
+* `upload-stemcell` now supports a `--config`(`-c`) flag to define all command line arguments
+   in a config file. This gives `upload-stemcell` feature parity with `upload-product`
  
 
 ## 0.55.0
 
 ### Features
-
 * configure-director now has the option to `ignore-verifier-warnings`.
   ([PR #338](https://github.com/pivotal-cf/om/pull/338) Thanks @Logiraptor!)
   This is an _advanced_ feature
