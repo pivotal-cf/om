@@ -14,6 +14,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 var _ = Describe("DownloadProduct", func() {
@@ -180,6 +181,68 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
+		When("a file is being donwloaded with a SHA sum value from the downloader", func() {
+			When("the shasum is valid for the downloaded file", func() {
+				BeforeEach(func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fa.SHA256Returns("d1b2a59fbea7e20077af9f91b27e95e865061b270be03ff539ab3b73587882e8")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
+					}
+				})
+
+				It("downloads a product from the downloader", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+					}
+
+					err = command.Execute(commandArgs)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(filepath.Join(tempDir, "cf-2.0-build.1.pivotal")).To(BeAnExistingFile())
+				})
+			})
+
+			When("the shasum is invalid for the downloaded file", func() {
+				BeforeEach(func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fa.SHA256Returns("asdfasdf")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
+					}
+				})
+
+				It("errors and removes the file from the file system", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+					}
+
+					err = command.Execute(commandArgs)
+					Expect(err).To(HaveOccurred())
+					Expect(filepath.Join(tempDir, "cf-2.0-build.1.pivotal")).ToNot(BeAnExistingFile())
+				})
+			})
+		})
+
 		Context("when the stemcell-iaas flag is set", func() {
 			BeforeEach(func() {
 				fa := &fakes.FileArtifacter{}
@@ -293,6 +356,10 @@ var _ = Describe("DownloadProduct", func() {
 				sa.SlugReturns("stemcells-ubuntu-xenial")
 				sa.VersionReturns("97.19")
 				fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+
+				fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
+				}
 			}
 
 			createFilePath := func() string {
@@ -363,7 +430,7 @@ var _ = Describe("DownloadProduct", func() {
 			When("the sha is invalid", func() {
 				It("downloads it, again", func() {
 					createFilePath()
-					setupForProductAPI("asdfasdfasdf")
+					setupForProductAPI("d1b2a59fbea7e20077af9f91b27e95e865061b270be03ff539ab3b73587882e8")
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",

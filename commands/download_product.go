@@ -296,26 +296,62 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 	c.stderr.Printf("attempting to download the file %s from source %s", fileArtifact.Name(), c.downloadClient.Name())
 
-	exist, err := checkFileExists(productFilePath, fileArtifact.SHA256())
+	// check for already downloaded file
+	exist, err := checkFileExists(productFilePath)
 	if err != nil {
 		return productFilePath, nil, err
 	}
 
 	if exist {
-		c.stderr.Printf("%s already exists, skip downloading", productFilePath)
-		return productFilePath, fileArtifact, nil
+		if ok, _ := shasumMatches(productFilePath, fileArtifact.SHA256()); ok {
+			c.stderr.Printf("%s already exists, skip downloading", productFilePath)
+			return productFilePath, fileArtifact, nil
+		}
 	}
 
+	// create a new file to download
 	productFile, err := os.Create(productFilePath)
 	if err != nil {
 		return "", nil, fmt.Errorf("could not create file %s: %s", productFilePath, err)
 	}
 	defer productFile.Close()
 
-	return productFilePath, fileArtifact, c.downloadClient.DownloadProductToFile(fileArtifact, productFile)
+	err = c.downloadClient.DownloadProductToFile(fileArtifact, productFile)
+	if err != nil {
+		return productFilePath, fileArtifact, err
+	}
+
+	// check for correct sha on newly downloaded file
+	if ok, calculatedSum := shasumMatches(productFilePath, fileArtifact.SHA256()); !ok {
+		e := fmt.Sprintf("the sha (%s) from %s does not match the calculated sha (%s) for the file %s",
+			fileArtifact.SHA256(),
+			c.downloadClient.Name(),
+			calculatedSum,
+			productFilePath,
+		)
+		c.stderr.Print(e)
+		os.Remove(productFilePath)
+		return productFilePath, fileArtifact, fmt.Errorf(e)
+	}
+
+	return productFilePath, fileArtifact, nil
 }
 
-func checkFileExists(path, expectedSum string) (bool, error) {
+func shasumMatches(path, exepectedSum string) (bool, string) {
+	if exepectedSum == "" {
+		return true, ""
+	}
+
+	validate := validator.NewSHA256Calculator()
+	calculatedSum, err := validate.Checksum(path)
+	if err != nil {
+		return false, ""
+	}
+
+	return calculatedSum == exepectedSum, calculatedSum
+}
+
+func checkFileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -325,17 +361,7 @@ func checkFileExists(path, expectedSum string) (bool, error) {
 		}
 	}
 
-	if expectedSum == "" {
-		return true, nil
-	}
-
-	validate := validator.NewSHA256Calculator()
-	sum, err := validate.Checksum(path)
-	if err != nil {
-		return false, fmt.Errorf("failed to calculate the checksum: %s", err)
-	}
-
-	return sum == expectedSum, nil
+	return true, nil
 }
 
 type ProductClientRegistration func(
