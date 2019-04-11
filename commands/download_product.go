@@ -3,92 +3,84 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pivotal-cf/om/download_clients"
 	"io"
+	"log"
 	"os"
 	"path"
 	"regexp"
 	"sort"
 	"strings"
 
-	"github.com/graymeta/stow"
-	"github.com/pivotal-cf/pivnet-cli/filter"
-
 	"github.com/hashicorp/go-version"
-	"github.com/pivotal-cf/go-pivnet"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/validator"
-	"github.com/pivotal-cf/pivnet-cli/gp"
 )
 
+//go:generate counterfeiter -o ./fakes/file_artifacter.go --fake-name FileArtifacter . FileArtifacter
+type FileArtifacter interface {
+	Name() string
+	SHA256() string
+}
+
+//go:generate counterfeiter -o ./fakes/stemcell_artifacter.go --fake-name StemcellArtifacter . StemcellArtifacter
+type StemcellArtifacter interface {
+	Slug() string
+	Version() string
+}
+
+//go:generate counterfeiter -o ./fakes/product_downloader_service.go --fake-name ProductDownloader . ProductDownloader
 type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
-	GetLatestProductFile(slug, version, glob string) (*download_clients.FileArtifact, error)
-	DownloadProductToFile(fa *download_clients.FileArtifact, file *os.File) error
-	GetLatestStemcellForProduct(fa *download_clients.FileArtifact, downloadedProductFileName string) (*download_clients.Stemcell, error)
+	GetLatestProductFile(slug, version, glob string) (FileArtifacter, error)
+	DownloadProductToFile(fa FileArtifacter, file *os.File) error
+	GetLatestStemcellForProduct(fa FileArtifacter, downloadedProductFileName string) (StemcellArtifacter, error)
 }
 
-func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) download_clients.PivnetDownloader {
-	return gp.NewClient(config, logger)
-}
-
-type DefaultStow struct{}
-
-func (d DefaultStow) Dial(kind string, config download_clients.Config) (stow.Location, error) {
-	location, err := stow.Dial(kind, config)
-	return location, err
-}
-func (d DefaultStow) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
-	return stow.Walk(container, prefix, pageSize, fn)
+type DownloadProductOptions struct {
+	Source              string   `long:"source"                short:"s"  description:"enables download from external sources when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
+	ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+	OutputDir           string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
+	PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p"  description:"path to product" required:"true"`
+	PivnetToken         string   `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." required:"true"`
+	ProductVersion      string   `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+	ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+	S3Bucket            string   `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
+	S3AccessKeyID       string   `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
+	S3AuthType          string   `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
+	S3SecretAccessKey   string   `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
+	S3RegionName        string   `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
+	S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
+	S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
+	S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
+	S3ProductPath       string   `long:"s3-product-path"                  description:"specify the lookup path where the s3 product artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+	S3StemcellPath      string   `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+	Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
+	StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+	VarsEnv             []string `long:"vars-env"                         description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+	VarsFile            []string `long:"vars-file"             short:"l"  description:"load variables from a YAML file"`
 }
 
 type DownloadProduct struct {
 	environFunc    func() []string
-	logger         pivnetlog.Logger
 	progressWriter io.Writer
-	pivnetFactory  download_clients.PivnetFactory
-	stower         download_clients.Stower
+	stderr         *log.Logger
+	stdout         *log.Logger
 	downloadClient ProductDownloader
-	Options        struct {
-		Source              string   `long:"source"                short:"s"  description:"enables download from external sources when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
-		ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-		OutputDir           string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-		PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
-		PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p"  description:"path to product" required:"true"`
-		PivnetToken         string   `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." required:"true"`
-		ProductVersion      string   `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
-		ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
-		S3Bucket            string   `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
-		S3AccessKeyID       string   `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
-		S3AuthType          string   `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
-		S3SecretAccessKey   string   `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
-		S3RegionName        string   `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
-		S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
-		S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
-		S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
-		S3ProductPath       string   `long:"s3-product-path"                  description:"specify the lookup path where the s3 product artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
-		S3StemcellPath      string   `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
-		Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
-		StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
-		VarsEnv             []string `long:"vars-env"                         description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile            []string `long:"vars-file"             short:"l"  description:"load variables from a YAML file"`
-	}
+	Options        DownloadProductOptions
 }
 
 func NewDownloadProduct(
 	environFunc func() []string,
-	logger pivnetlog.Logger,
+	stdout *log.Logger,
+	stderr *log.Logger,
 	progressWriter io.Writer,
-	factory download_clients.PivnetFactory,
-	stower download_clients.Stower,
 ) *DownloadProduct {
 	return &DownloadProduct{
 		environFunc:    environFunc,
-		logger:         logger,
+		stderr:         stderr,
+		stdout:         stdout,
 		progressWriter: progressWriter,
-		pivnetFactory:  factory,
-		stower:         stower,
 	}
 }
 
@@ -135,11 +127,11 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return c.writeDownloadProductOutput(productFileName, "", "")
 	}
 
-	c.logger.Info("Downloading stemcell")
+	c.stderr.Printf("Downloading stemcell")
 
 	nameParts := strings.Split(productFileName, ".")
 	if nameParts[len(nameParts)-1] != "pivotal" {
-		c.logger.Info("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell.")
+		c.stderr.Printf("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell.")
 		return nil
 	}
 
@@ -149,37 +141,21 @@ func (c *DownloadProduct) Execute(args []string) error {
 	}
 
 	stemcellFileName, _, err := c.downloadProductFile(
-		stemcell.Slug,
-		stemcell.Version,
+		stemcell.Slug(),
+		stemcell.Version(),
 		fmt.Sprintf("*%s*", c.Options.StemcellIaas),
-		fmt.Sprintf("[%s,%s]", stemcell.Slug, stemcell.Version),
+		fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcell.Version()),
 	)
 	if err != nil {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
-	err = c.writeDownloadProductOutput(productFileName, stemcellFileName, stemcell.Version)
+	err = c.writeDownloadProductOutput(productFileName, stemcellFileName, stemcell.Version())
 	if err != nil {
 		return err
 	}
 
-	return c.writeAssignStemcellInput(stemcell.Version)
-}
-
-func (c DownloadProduct) createS3Config() download_clients.S3Configuration {
-	config := download_clients.S3Configuration{
-		Bucket:          c.Options.S3Bucket,
-		AccessKeyID:     c.Options.S3AccessKeyID,
-		AuthType:        c.Options.S3AuthType,
-		SecretAccessKey: c.Options.S3SecretAccessKey,
-		RegionName:      c.Options.S3RegionName,
-		Endpoint:        c.Options.S3Endpoint,
-		DisableSSL:      c.Options.S3DisableSSL,
-		EnableV2Signing: c.Options.S3EnableV2Signing,
-		ProductPath:     c.Options.S3ProductPath,
-		StemcellPath:    c.Options.S3StemcellPath,
-	}
-	return config
+	return c.writeAssignStemcellInput(stemcell.Version())
 }
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
@@ -202,7 +178,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 
 			v, err := version.NewVersion(productVersion)
 			if err != nil {
-				c.logger.Info(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
+				c.stderr.Printf(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
 				continue
 			}
 			versions = append(versions, v)
@@ -224,18 +200,17 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 }
 
 func (c *DownloadProduct) createClient() error {
-	var err error
-	switch c.Options.Source {
-	case "s3":
-		config := c.createS3Config()
-		c.downloadClient, err = download_clients.NewS3Client(c.stower, config, c.progressWriter)
-		if err != nil {
-			return fmt.Errorf("could not create an s3 client: %s", err)
-		}
-	default:
-		pivnetFilter := filter.NewFilter(c.logger)
-		c.downloadClient = download_clients.NewPivnetClient(c.logger, c.progressWriter, c.pivnetFactory, c.Options.PivnetToken, pivnetFilter)
+	plugin, ok := plugins[c.Options.Source]
+	if !ok {
+		return fmt.Errorf("could not find valid plugin to match")
 	}
+
+	value, err := plugin(c.Options, c.progressWriter, c.stdout, c.stderr)
+	if err != nil {
+		return err
+	}
+
+	c.downloadClient = value
 	return nil
 }
 
@@ -252,7 +227,7 @@ func (c *DownloadProduct) validate() error {
 
 func (c DownloadProduct) writeDownloadProductOutput(productFileName string, stemcellFileName string, stemcellVersion string) error {
 	downloadProductFilename := "download-file.json"
-	c.logger.Info(fmt.Sprintf("Writing a list of downloaded artifact to %s", downloadProductFilename))
+	c.stderr.Printf("Writing a list of downloaded artifact to %s", downloadProductFilename)
 	downloadProductPayload := struct {
 		ProductPath     string `json:"product_path,omitempty"`
 		ProductSlug     string `json:"product_slug,omitempty"`
@@ -281,7 +256,7 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, stem
 
 func (c DownloadProduct) writeAssignStemcellInput(stemcellVersion string) error {
 	assignStemcellFileName := "assign-stemcell.yml"
-	c.logger.Info(fmt.Sprintf("Writing a assign stemcll artifact to %s", assignStemcellFileName))
+	c.stderr.Printf("Writing a assign stemcll artifact to %s", assignStemcellFileName)
 	assignStemcellPayload := struct {
 		Product  string `json:"product"`
 		Stemcell string `json:"stemcell"`
@@ -304,7 +279,7 @@ func (c DownloadProduct) writeAssignStemcellInput(stemcellVersion string) error 
 	return nil
 }
 
-func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string) (string, *download_clients.FileArtifact, error) {
+func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string) (string, FileArtifacter, error) {
 	fileArtifact, err := c.downloadClient.GetLatestProductFile(slug, version, glob)
 	if err != nil {
 		return "", nil, err
@@ -312,18 +287,18 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 	var productFilePath string
 	if c.Options.Source != "" || c.Options.S3Bucket == "" {
-		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name))
+		productFilePath = path.Join(c.Options.OutputDir, path.Base(fileArtifact.Name()))
 	} else {
-		productFilePath = path.Join(c.Options.OutputDir, prefixPath+path.Base(fileArtifact.Name))
+		productFilePath = path.Join(c.Options.OutputDir, prefixPath+path.Base(fileArtifact.Name()))
 	}
 
-	exist, err := checkFileExists(productFilePath, fileArtifact.SHA256)
+	exist, err := checkFileExists(productFilePath, fileArtifact.SHA256())
 	if err != nil {
 		return productFilePath, nil, err
 	}
 
 	if exist {
-		c.logger.Info(fmt.Sprintf("%s already exists, skip downloading", productFilePath))
+		c.stderr.Printf("%s already exists, skip downloading", productFilePath)
 		return productFilePath, fileArtifact, nil
 	}
 
@@ -357,4 +332,17 @@ func checkFileExists(path, expectedSum string) (bool, error) {
 	}
 
 	return sum == expectedSum, nil
+}
+
+type ProductClientRegistration func(
+	c DownloadProductOptions,
+	progressWriter io.Writer,
+	stdout *log.Logger,
+	stderr *log.Logger,
+) (ProductDownloader, error)
+
+var plugins = make(map[string]ProductClientRegistration)
+
+func RegisterProductClient(name string, f ProductClientRegistration) {
+	plugins[name] = f
 }

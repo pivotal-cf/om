@@ -4,8 +4,10 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"github.com/pivotal-cf/om/commands"
 	"gopkg.in/yaml.v2"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,14 +20,14 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-//go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . Config
-type Config interface {
+//go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . StowConfiger
+type StowConfiger interface {
 	Config(name string) (string, bool)
 	Set(name, value string)
 }
 
 type Stower interface {
-	Dial(kind string, config Config) (stow.Location, error)
+	Dial(kind string, config StowConfiger) (stow.Location, error)
 	Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error
 }
 
@@ -126,7 +128,7 @@ func (s3 S3Client) getAllProductVersionsFromPath(slug, path string) ([]string, e
 	return versions, nil
 }
 
-func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifact, error) {
+func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (commands.FileArtifacter, error) {
 	files, err := s3.listFiles()
 	if err != nil {
 		return nil, err
@@ -175,11 +177,11 @@ func (s3 S3Client) GetLatestProductFile(slug, version, glob string) (*FileArtifa
 		return nil, fmt.Errorf("the glob '%s' matches no file\navailable files: %s", glob, availableFiles)
 	}
 
-	return &FileArtifact{Name: globMatchedFilepaths[0]}, nil
+	return &s3FileArtifact{name: globMatchedFilepaths[0]}, nil
 }
 
-func (s3 S3Client) DownloadProductToFile(fa *FileArtifact, destinationFile *os.File) error {
-	blobReader, size, err := s3.initializeBlobReader(fa.Name)
+func (s3 S3Client) DownloadProductToFile(fa commands.FileArtifacter, destinationFile *os.File) error {
+	blobReader, size, err := s3.initializeBlobReader(fa.Name())
 	if err != nil {
 		return err
 	}
@@ -228,18 +230,18 @@ func (s3 S3Client) streamBufferToFile(destinationFile *os.File, wrappedBlobReade
 	return err
 }
 
-func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProductFileName string) (*Stemcell, error) {
+func (s3 S3Client) GetLatestStemcellForProduct(_ commands.FileArtifacter, downloadedProductFileName string) (commands.StemcellArtifacter, error) {
 	definedStemcell, err := stemcellFromProduct(downloadedProductFileName)
 	if err != nil {
 		return nil, err
 	}
 
-	definedMajor, definedPatch, err := stemcellVersionPartsFromString(definedStemcell.Version)
+	definedMajor, definedPatch, err := stemcellVersionPartsFromString(definedStemcell.Version())
 	if err != nil {
 		return nil, err
 	}
 
-	allStemcellVersions, err := s3.getAllProductVersionsFromPath(definedStemcell.Slug, s3.stemcellPath)
+	allStemcellVersions, err := s3.getAllProductVersionsFromPath(definedStemcell.Slug(), s3.stemcellPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not find stemcells on s3: %s", err)
 	}
@@ -254,7 +256,7 @@ func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProduc
 	}
 
 	if len(filteredVersions) == 0 {
-		return nil, fmt.Errorf("no versions could be found equal to or greater than %s", definedStemcell.Version)
+		return nil, fmt.Errorf("no versions could be found equal to or greater than %s", definedStemcell.Version())
 	}
 
 	latestVersion, err := getLatestStemcellVersion(filteredVersions)
@@ -262,9 +264,9 @@ func (s3 S3Client) GetLatestStemcellForProduct(_ *FileArtifact, downloadedProduc
 		return nil, err
 	}
 
-	return &Stemcell{
-		Version: latestVersion,
-		Slug:    definedStemcell.Slug,
+	return &stemcell{
+		version: latestVersion,
+		slug:    definedStemcell.Slug(),
 	}, nil
 }
 
@@ -341,7 +343,7 @@ type internalStemcellMetadata struct {
 	PatchSecurityUpdates string `yaml:"enable_patch_security_updates"`
 }
 
-func stemcellFromProduct(filename string) (*Stemcell, error) {
+func stemcellFromProduct(filename string) (*stemcell, error) {
 	// Open a zip archive for reading.
 	tileZipReader, err := zip.OpenReader(filename)
 	if err != nil {
@@ -381,11 +383,47 @@ func stemcellFromProduct(filename string) (*Stemcell, error) {
 				"windows2019":   "stemcells-windows-server",
 			}
 
-			return &Stemcell{
-				Slug:    stemcellNameToPivnetProductName[metadata.Metadata.Os],
-				Version: metadata.Metadata.Version,
+			return &stemcell{
+				slug:    stemcellNameToPivnetProductName[metadata.Metadata.Os],
+				version: metadata.Metadata.Version,
 			}, nil
 		}
 	}
 	return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile: %s", filename)
+}
+
+type defaultStow struct{}
+
+func (d defaultStow) Dial(kind string, config StowConfiger) (stow.Location, error) {
+	location, err := stow.Dial(kind, config)
+	return location, err
+}
+func (d defaultStow) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
+	return stow.Walk(container, prefix, pageSize, fn)
+}
+
+func init() {
+	initializer := func(
+		c commands.DownloadProductOptions,
+		progressWriter io.Writer,
+		_ *log.Logger,
+		_ *log.Logger,
+	) (commands.ProductDownloader, error) {
+		config := S3Configuration{
+			Bucket:          c.S3Bucket,
+			AccessKeyID:     c.S3AccessKeyID,
+			AuthType:        c.S3AuthType,
+			SecretAccessKey: c.S3SecretAccessKey,
+			RegionName:      c.S3RegionName,
+			Endpoint:        c.S3Endpoint,
+			DisableSSL:      c.S3DisableSSL,
+			EnableV2Signing: c.S3EnableV2Signing,
+			ProductPath:     c.S3ProductPath,
+			StemcellPath:    c.S3StemcellPath,
+		}
+
+		return NewS3Client(defaultStow{}, config, progressWriter)
+	}
+
+	commands.RegisterProductClient("s3", initializer)
 }

@@ -206,7 +206,7 @@ var _ = Describe("S3Client", func() {
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(fileArtifact.Name).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
+			Expect(fileArtifact.Name()).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
 		It("removes the prefix when globbing", func() {
@@ -229,7 +229,7 @@ var _ = Describe("S3Client", func() {
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "pcf-vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(fileArtifact.Name).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
+			Expect(fileArtifact.Name()).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
 		It("errors when two files match the same glob", func() {
@@ -303,7 +303,7 @@ var _ = Describe("S3Client", func() {
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(fileArtifact.Name).To(Equal("some-path/[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
+			Expect(fileArtifact.Name()).To(Equal("some-path/[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		},
 			Entry("with a leading and trailing slash", "/some-path/"),
 			Entry("with a leading and without a trailing slash", "/some-path"),
@@ -354,7 +354,7 @@ var _ = Describe("S3Client", func() {
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.DownloadProductToFile(&download_clients.FileArtifact{Name: "don't care"}, file)
+			err = client.DownloadProductToFile(createPivnetFileArtifact(), file)
 			Expect(err).ToNot(HaveOccurred())
 
 			contents, err := ioutil.ReadFile(file.Name())
@@ -383,7 +383,7 @@ var _ = Describe("S3Client", func() {
 			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.DownloadProductToFile(&download_clients.FileArtifact{Name: "don't care"}, file)
+			err = client.DownloadProductToFile(createPivnetFileArtifact(), file)
 			Expect(err.Error()).To(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType"))
 		})
 
@@ -407,7 +407,7 @@ var _ = Describe("S3Client", func() {
 			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.DownloadProductToFile(&download_clients.FileArtifact{Name: "don't care"}, file)
+			err = client.DownloadProductToFile(createPivnetFileArtifact(), file)
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -443,8 +443,8 @@ var _ = Describe("S3Client", func() {
 				stemcell, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(stemcell.Version).To(Equal("97.101"))
-				Expect(stemcell.Slug).To(Equal(stemcellProductName))
+				Expect(stemcell.Version()).To(Equal("97.101"))
+				Expect(stemcell.Slug()).To(Equal(stemcellProductName))
 			},
 				Entry("supporting xenial", "ubuntu-xenial", "stemcells-ubuntu-xenial"),
 				Entry("supporting trusty", "ubuntu-trusty", "stemcells"),
@@ -681,7 +681,7 @@ type mockStower struct {
 	location      mockLocation
 	dialCallCount int
 	dialError     error
-	config        download_clients.Config
+	config        download_clients.StowConfiger
 }
 
 func newMockStower(itemsList []mockItem) *mockStower {
@@ -690,7 +690,7 @@ func newMockStower(itemsList []mockItem) *mockStower {
 	}
 }
 
-func (s *mockStower) Dial(kind string, config download_clients.Config) (stow.Location, error) {
+func (s *mockStower) Dial(kind string, config download_clients.StowConfiger) (stow.Location, error) {
 	s.config = config
 	s.dialCallCount++
 	if s.dialError != nil {

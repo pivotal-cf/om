@@ -15,7 +15,6 @@ import (
 	"github.com/pivotal/uilive"
 	"gopkg.in/yaml.v2"
 
-	"github.com/pivotal-cf/go-pivnet/logshim"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -25,6 +24,8 @@ import (
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
 	"github.com/pivotal-cf/om/ui"
+
+	_ "github.com/pivotal-cf/om/download_clients"
 )
 
 var version = "unknown"
@@ -136,14 +137,10 @@ func main() {
 	})
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
-	pivnetLogWriter := logshim.NewLogShim(stderr, stderr, global.Trace)
 
 	form := formcontent.NewForm()
 
 	metadataExtractor := extractor.MetadataExtractor{}
-
-	pivnetFactory := commands.DefaultPivnetFactory
-	stower := commands.DefaultStow{}
 
 	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
 	envRendererFactory := renderers.NewFactory(renderers.NewEnvGetter())
@@ -174,7 +171,7 @@ func main() {
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
-	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, pivnetLogWriter, os.Stdout, pivnetFactory, stower)
+	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr)
 	commandSet["errands"] = commands.NewErrands(presenter, api)
 	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)
 	commandSet["generate-certificate"] = commands.NewGenerateCertificate(api, stdout)
