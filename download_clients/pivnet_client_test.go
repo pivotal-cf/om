@@ -329,7 +329,7 @@ func createProductFile(slug string) pivnet.ProductFile {
 }
 
 func createPivnetFileArtifact() commands.FileArtifacter {
-	return download_clients.PivnetFileArtifact{}
+	return &download_clients.PivnetFileArtifact{}
 }
 
 func createReleaseDependency(id int, version string, slug string) pivnet.ReleaseDependency {

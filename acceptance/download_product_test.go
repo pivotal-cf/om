@@ -2,16 +2,20 @@ package acceptance
 
 import (
 	"archive/zip"
+	"bytes"
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 var _ = Describe("download-product command", func() {
@@ -344,6 +348,120 @@ var _ = Describe("download-product command", func() {
 					"nothing": "to see here"
 				}`)))
 			})
+		})
+	})
+	When("downloading from Pivnet", func() {
+		var server *ghttp.Server
+
+		AfterEach(func() {
+			server.Close()
+		})
+
+		BeforeEach(func() {
+			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
+			contents, err := ioutil.ReadFile(pivotalFile)
+			Expect(err).NotTo(HaveOccurred())
+			modTime := time.Now()
+
+			var fakePivnetMetadataResponse []byte
+
+			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
+			defer fixtureMetadata.Close()
+
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
+			Expect(err).NotTo(HaveOccurred())
+
+			server = ghttp.NewServer()
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases"),
+					ghttp.RespondWith(http.StatusOK, `{
+  "releases": [
+    {
+      "id": 24,
+      "version": "1.10.1"
+    }
+  ]
+}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24"),
+					ghttp.RespondWith(http.StatusOK, `{"id":24}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files"),
+					ghttp.RespondWith(http.StatusOK, `{
+  "product_files": [
+  {
+    "id": 1,
+    "aws_object_key": "example-product.pivotal",
+    "_links": {
+      "download": {
+        "href": "http://example.com/api/v2/products/example-product/releases/32/product_files/21/download"
+      }
+    }
+  }
+]
+}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/file_groups"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files/1"),
+					ghttp.RespondWith(http.StatusOK, `{
+"product_file": {
+    "id": 1,
+	"_links": {
+		"download": {
+			"href":"http://example.com/api/v2/products/example-product/releases/24/product_files/1/download"
+		}
+	}
+}
+}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v2/products/example-product/releases/24/product_files/1/download"),
+					ghttp.RespondWith(http.StatusFound, "{}", http.Header{"Location": {"http://example.com/api/v2/products/example-product/releases/24/product_files/1/download"}}),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("HEAD", "/api/v2/products/example-product/releases/24/product_files/1/download"),
+					func(w http.ResponseWriter, r *http.Request) {
+						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					},
+				),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/product_files/1/download",
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files/1/download"),
+					func(w http.ResponseWriter, r *http.Request) {
+						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					},
+				),
+			)
+		})
+
+		It("downloads the product", func() {
+			tmpDir, err := ioutil.TempDir("", "")
+			Expect(err).ToNot(HaveOccurred())
+			command := exec.Command(pathToMain, "download-product",
+				"--pivnet-api-token", "token",
+				"--pivnet-file-glob", "example-product.pivotal",
+				"--pivnet-product-slug", "example-product",
+				"--product-version", "1.10.1",
+				"--output-directory", tmpDir,
+			)
+			command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(session, "10s").Should(gexec.Exit(0))
+			Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
+
+			Expect(filepath.Join(tmpDir, "example-product.pivotal")).To(BeAnExistingFile())
 		})
 	})
 })

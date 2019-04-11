@@ -34,6 +34,8 @@ type PivnetFilter interface {
 
 type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
+var pivnetHost = pivnet.DefaultHost
+
 func NewPivnetClient(
 	logger pivnetlog.Logger,
 	progressWriter io.Writer,
@@ -43,7 +45,7 @@ func NewPivnetClient(
 ) *pivnetClient {
 	downloader := factory(
 		pivnet.ClientConfig{
-			Host:              pivnet.DefaultHost,
+			Host:              pivnetHost,
 			Token:             token,
 			UserAgent:         fmt.Sprintf("om-download-product"),
 			SkipSSLValidation: false,
@@ -108,7 +110,7 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (command
 }
 
 func (p *pivnetClient) DownloadProductToFile(fa commands.FileArtifacter, file *os.File) error {
-	fileArtifact := fa.(PivnetFileArtifact)
+	fileArtifact := fa.(*PivnetFileArtifact)
 	fileInfo, err := download.NewFileInfo(file)
 	if err != nil {
 		return fmt.Errorf("could not create fileInfo for download product file %s: %s", fileArtifact.slug, err.Error())
@@ -121,7 +123,7 @@ func (p *pivnetClient) DownloadProductToFile(fa commands.FileArtifacter, file *o
 }
 
 func (p *pivnetClient) GetLatestStemcellForProduct(fa commands.FileArtifacter, _ string) (commands.StemcellArtifacter, error) {
-	fileArtifact := fa.(PivnetFileArtifact)
+	fileArtifact := fa.(*PivnetFileArtifact)
 	dependencies, err := p.downloader.ReleaseDependencies(fileArtifact.slug, fileArtifact.releaseID)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch stemcell dependency for %s: %s", fileArtifact.slug, err)

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/configtemplate/generator"
 	"github.com/pivotal-cf/om/configtemplate/metadata"
@@ -25,11 +26,12 @@ type MetadataProvider interface {
 	MetadataBytes() ([]byte, error)
 }
 
-var DefaultProvider = func(host string) func(c *ConfigTemplate) MetadataProvider {
+var pivnetHost = pivnet.DefaultHost
+var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 	return func(c *ConfigTemplate) MetadataProvider {
 		options := c.Options
 		return metadata.NewPivnetProvider(
-			host,
+			pivnetHost,
 			options.PivnetApiToken,
 			options.PivnetProductSlug,
 			options.ProductVersion,
