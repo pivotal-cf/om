@@ -21,10 +21,11 @@ type UploadStemcell struct {
 	logger    logger
 	service   uploadStemcellService
 	Options   struct {
-		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
-		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
-		Floating bool   `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
-		Sha256   string `long:"sha256"                             description:"sha256 of the provided product file to be used for validation"`
+		ConfigFile string `long:"config"   short:"c"                 description:"path to yml file for configuration (keys must match the following command line flags)"`
+		Stemcell   string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
+		Force      bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
+		Floating   bool   `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
+		Sha256     string `long:"sha256"                             description:"sha256 of the provided product file to be used for validation"`
 	}
 }
 
@@ -59,7 +60,8 @@ func (us UploadStemcell) Usage() jhanda.Usage {
 }
 
 func (us UploadStemcell) Execute(args []string) error {
-	if _, err := jhanda.Parse(&us.Options, args); err != nil {
+	err := loadConfigFile(args, &us.Options, nil)
+	if err != nil {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
 	}
 
@@ -99,7 +101,6 @@ func (us UploadStemcell) Execute(args []string) error {
 		}
 	}
 
-	var err error
 	prefixRegex := regexp.MustCompile(`^\[.*?,.*?\](.+)$`)
 	if prefixRegex.MatchString(filepath.Base(stemcellFilename)) {
 		matches := prefixRegex.FindStringSubmatch(filepath.Base(stemcellFilename))

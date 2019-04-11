@@ -347,6 +347,61 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
+	Context("when config file is provided", func() {
+		var (
+			configFile *os.File
+			file       *os.File
+		)
+
+		BeforeEach(func() {
+			var err error
+			configContent := `
+sha256: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
+`
+			configFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configContent)
+			Expect(err).NotTo(HaveOccurred())
+
+			file, err = ioutil.TempFile("", "test-file.tgz")
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = file.WriteString("testing-shasum")
+			Expect(err).ToNot(HaveOccurred())
+			err = file.Close()
+			Expect(err).ToNot(HaveOccurred())
+
+			submission := formcontent.ContentSubmission{
+				ContentLength: 10,
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+			}
+			multipart.FinalizeReturns(submission)
+
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
+		})
+
+		AfterEach(func() {
+			err := os.Remove(configFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			err = os.Remove(file.Name())
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("reads configuration from config file", func() {
+			command := commands.NewUploadStemcell(multipart, fakeService, logger)
+			err := command.Execute([]string{
+				"--stemcell", file.Name(),
+				"--config", configFile.Name(),
+			})
+			Expect(err).NotTo(HaveOccurred())
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches stemcell shasum."))
+		})
+	})
+
 	Context("failure cases", func() {
 		Context("when an unknown flag is provided", func() {
 			It("returns an error", func() {
