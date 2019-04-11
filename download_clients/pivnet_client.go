@@ -42,13 +42,14 @@ func NewPivnetClient(
 	factory PivnetFactory,
 	token string,
 	filter PivnetFilter,
+	skipSSL bool,
 ) *pivnetClient {
 	downloader := factory(
 		pivnet.ClientConfig{
 			Host:              pivnetHost,
 			Token:             token,
 			UserAgent:         fmt.Sprintf("om-download-product"),
-			SkipSSLValidation: false,
+			SkipSSLValidation: skipSSL,
 		},
 		logger)
 
@@ -249,6 +250,7 @@ func init() {
 			DefaultPivnetFactory,
 			c.PivnetToken,
 			pivnetFilter,
+			c.PivnetDisableSSL,
 		), nil
 	}
 

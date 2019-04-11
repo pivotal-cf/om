@@ -352,6 +352,7 @@ var _ = Describe("download-product command", func() {
 	})
 	When("downloading from Pivnet", func() {
 		var server *ghttp.Server
+		var pathToHTTPSPivnet string
 
 		AfterEach(func() {
 			server.Close()
@@ -373,7 +374,11 @@ var _ = Describe("download-product command", func() {
 			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
 			Expect(err).NotTo(HaveOccurred())
 
-			server = ghttp.NewServer()
+			server = ghttp.NewTLSServer()
+			pathToHTTPSPivnet, err = gexec.Build("github.com/pivotal-cf/om",
+				"--ldflags", fmt.Sprintf("-X github.com/pivotal-cf/om/download_clients.pivnetHost=%s", server.URL()))
+			Expect(err).NotTo(HaveOccurred())
+
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases"),
@@ -392,19 +397,19 @@ var _ = Describe("download-product command", func() {
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files"),
-					ghttp.RespondWith(http.StatusOK, `{
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
   "product_files": [
   {
     "id": 1,
     "aws_object_key": "example-product.pivotal",
     "_links": {
       "download": {
-        "href": "http://example.com/api/v2/products/example-product/releases/32/product_files/21/download"
+        "href": "%s/api/v2/products/example-product/releases/32/product_files/21/download"
       }
     }
   }
 ]
-}`),
+}`, server.URL())),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/file_groups"),
@@ -412,20 +417,20 @@ var _ = Describe("download-product command", func() {
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files/1"),
-					ghttp.RespondWith(http.StatusOK, `{
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
 "product_file": {
     "id": 1,
 	"_links": {
 		"download": {
-			"href":"http://example.com/api/v2/products/example-product/releases/24/product_files/1/download"
+			"href":"%s/api/v2/products/example-product/releases/24/product_files/1/download"
 		}
 	}
 }
-}`),
+}`, server.URL())),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/v2/products/example-product/releases/24/product_files/1/download"),
-					ghttp.RespondWith(http.StatusFound, "{}", http.Header{"Location": {"http://example.com/api/v2/products/example-product/releases/24/product_files/1/download"}}),
+					ghttp.RespondWith(http.StatusFound, "{}", http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/example-product/releases/24/product_files/1/download", server.URL())}}),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("HEAD", "/api/v2/products/example-product/releases/24/product_files/1/download"),
@@ -447,15 +452,14 @@ var _ = Describe("download-product command", func() {
 		It("downloads the product", func() {
 			tmpDir, err := ioutil.TempDir("", "")
 			Expect(err).ToNot(HaveOccurred())
-			command := exec.Command(pathToMain, "download-product",
+			command := exec.Command(pathToHTTPSPivnet, "download-product",
 				"--pivnet-api-token", "token",
 				"--pivnet-file-glob", "example-product.pivotal",
 				"--pivnet-product-slug", "example-product",
+				"--pivnet-disable-ssl",
 				"--product-version", "1.10.1",
 				"--output-directory", tmpDir,
 			)
-			command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
-
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(session, "10s").Should(gexec.Exit(0))
