@@ -246,7 +246,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
-	Context("when the --shasum flag is defined", func() {
+	Context("when the --sha256 flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
 			file, err := ioutil.TempFile("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
@@ -269,13 +269,12 @@ var _ = Describe("UploadStemcell", func() {
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err = command.Execute([]string{
 				"--stemcell", file.Name(),
-				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
+				"--sha256", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches stemcell shasum."))
 		})
-
 		It("returns an error when the sha sums don't match", func() {
 			file, err := ioutil.TempFile("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
@@ -289,7 +288,7 @@ var _ = Describe("UploadStemcell", func() {
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err = command.Execute([]string{
 				"--stemcell", file.Name(),
-				"--shasum", "not-the-correct-shasum",
+				"--sha256", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44"))
@@ -298,7 +297,7 @@ var _ = Describe("UploadStemcell", func() {
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err := command.Execute([]string{
 				"--stemcell", "/path/to/testing.tgz",
-				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
+				"--sha256", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("open /path/to/testing.tgz: no such file or directory"))

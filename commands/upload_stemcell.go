@@ -24,7 +24,7 @@ type UploadStemcell struct {
 		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
 		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
 		Floating bool   `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
-		Shasum   string `long:"shasum" short:"sha" description:"shasum of the provided stemcell file to be used for validation"`
+		Sha256   string `long:"sha256"                             description:"sha256 of the provided product file to be used for validation"`
 	}
 }
 
@@ -64,7 +64,7 @@ func (us UploadStemcell) Execute(args []string) error {
 	}
 
 	stemcellFilename := us.Options.Stemcell
-	if us.Options.Shasum != "" {
+	if us.Options.Sha256 != "" {
 		shaValidator := validator.NewSHA256Calculator()
 		shasum, err := shaValidator.Checksum(stemcellFilename)
 
@@ -72,8 +72,8 @@ func (us UploadStemcell) Execute(args []string) error {
 			return err
 		}
 
-		if shasum != us.Options.Shasum {
-			return fmt.Errorf("expected shasum %s does not match file shasum %s", us.Options.Shasum, shasum)
+		if shasum != us.Options.Sha256 {
+			return fmt.Errorf("expected shasum %s does not match file shasum %s", us.Options.Sha256, shasum)
 		}
 
 		us.logger.Printf("expected shasum matches stemcell shasum.")
