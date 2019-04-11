@@ -3,6 +3,14 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
+## 0.56.0 - Unreleased
+
+### Features
+
+* `download-product` now supports skipping ssl validation when specifying `--pivnet-disable-ssl`
+* `download-product` ensures sha sum checking when downloading the file from Pivotal Network
+ 
+
 ## 0.55.0
 
 ### Features
