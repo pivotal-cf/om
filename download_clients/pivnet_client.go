@@ -79,6 +79,10 @@ func (p *pivnetClient) GetAllProductVersions(slug string) ([]string, error) {
 	return versions, nil
 }
 
+func (p *pivnetClient) Name() string {
+	return "pivnet"
+}
+
 func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (commands.FileArtifacter, error) {
 	// 1. Check the release for given version / slug
 	release, err := p.downloader.ReleaseForVersion(slug, version)

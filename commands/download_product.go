@@ -30,6 +30,7 @@ type StemcellArtifacter interface {
 
 //go:generate counterfeiter -o ./fakes/product_downloader_service.go --fake-name ProductDownloader . ProductDownloader
 type ProductDownloader interface {
+	Name() string
 	GetAllProductVersions(slug string) ([]string, error)
 	GetLatestProductFile(slug, version, glob string) (FileArtifacter, error)
 	DownloadProductToFile(fa FileArtifacter, file *os.File) error
@@ -292,6 +293,8 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	} else {
 		productFilePath = path.Join(c.Options.OutputDir, prefixPath+path.Base(fileArtifact.Name()))
 	}
+
+	c.stderr.Printf("attempting to download the file %s from source %s", fileArtifact.Name(), c.downloadClient.Name())
 
 	exist, err := checkFileExists(productFilePath, fileArtifact.SHA256())
 	if err != nil {

@@ -91,6 +91,10 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 	}, nil
 }
 
+func (s3 S3Client) Name() string {
+	return "s3"
+}
+
 func (s3 S3Client) GetAllProductVersions(slug string) ([]string, error) {
 	return s3.getAllProductVersionsFromPath(slug, s3.productPath)
 }
