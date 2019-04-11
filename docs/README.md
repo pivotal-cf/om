@@ -20,7 +20,7 @@ on a vSphere Ops Manager.
 | [configure-product](configure-product/README.md) |  configures a staged product
 | [configure-saml-authentication](configure-saml-authentication/README.md) |  configures Ops Manager with SAML authentication
 | create-certificate-authority |  creates a certificate authority on the Ops Manager
-| create-vm-extension(create-vm-extension/README.md) |  creates a VM extension
+| [create-vm-extension](create-vm-extension/README.md) |  creates a VM extension
 | credential-references |  list credential references for a deployed product
 | credentials |  fetch credentials for a deployed product
 | [curl](curl/README.md) |  issues an authenticated API request
