@@ -3,7 +3,7 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
-## 0.56.0 - Unreleased
+## 0.56.0
 
 ### Breaking Changes
 * the `upload-product` flag `--sha256` has been changed to `--shasum`. `upload-stemcell`
