@@ -303,9 +303,11 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 
 	if exist {
-		if ok, _ := shasumMatches(productFilePath, fileArtifact.SHA256()); ok {
+		if ok, _ := c.shasumMatches(productFilePath, fileArtifact.SHA256()); ok {
 			c.stderr.Printf("%s already exists, skip downloading", productFilePath)
 			return productFilePath, fileArtifact, nil
+		} else {
+			c.stderr.Printf("%s already exists, sha sum does not match, re-downloading", productFilePath)
 		}
 	}
 
@@ -322,7 +324,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 
 	// check for correct sha on newly downloaded file
-	if ok, calculatedSum := shasumMatches(productFilePath, fileArtifact.SHA256()); !ok {
+	if ok, calculatedSum := c.shasumMatches(productFilePath, fileArtifact.SHA256()); !ok {
 		e := fmt.Sprintf("the sha (%s) from %s does not match the calculated sha (%s) for the file %s",
 			fileArtifact.SHA256(),
 			c.downloadClient.Name(),
@@ -337,11 +339,12 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	return productFilePath, fileArtifact, nil
 }
 
-func shasumMatches(path, exepectedSum string) (bool, string) {
+func (c *DownloadProduct) shasumMatches(path, exepectedSum string) (bool, string) {
 	if exepectedSum == "" {
 		return true, ""
 	}
 
+	c.stderr.Printf("calculating sha sum for %s", path)
 	validate := validator.NewSHA256Calculator()
 	calculatedSum, err := validate.Checksum(path)
 	if err != nil {
