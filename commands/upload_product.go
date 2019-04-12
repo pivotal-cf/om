@@ -20,7 +20,7 @@ type UploadProduct struct {
 		ConfigFile      string `long:"config"           short:"c"   description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Product         string `long:"product"          short:"p"   description:"path to product" required:"true"`
 		PollingInterval int    `long:"polling-interval" short:"pi"  description:"interval (in seconds) at which to print status" default:"1"`
-		Sha256          string `long:"sha256"                       description:"sha256 of the provided product file to be used for validation"`
+		Shasum          string `long:"shasum"                       description:"shasum of the provided product file to be used for validation"`
 		Version         string `long:"product-version"              description:"version of the provided product file to be used for validation"`
 	}
 	metadataExtractor metadataExtractor
@@ -60,7 +60,7 @@ func (up UploadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
 	}
 
-	if up.Options.Sha256 != "" {
+	if up.Options.Shasum != "" {
 		shaValidator := validator.NewSHA256Calculator()
 		shasum, err := shaValidator.Checksum(up.Options.Product)
 
@@ -68,8 +68,8 @@ func (up UploadProduct) Execute(args []string) error {
 			return err
 		}
 
-		if shasum != up.Options.Sha256 {
-			return fmt.Errorf("expected shasum %s does not match file shasum %s", up.Options.Sha256, shasum)
+		if shasum != up.Options.Shasum {
+			return fmt.Errorf("expected shasum %s does not match file shasum %s", up.Options.Shasum, shasum)
 		}
 
 		up.logger.Printf("expected shasum matches product shasum.")

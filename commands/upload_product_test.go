@@ -109,7 +109,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the --sha256 flag is defined", func() {
+	Context("when the --shasum flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
@@ -134,7 +134,7 @@ var _ = Describe("UploadProduct", func() {
 
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--sha256", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
+				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
@@ -157,7 +157,7 @@ var _ = Describe("UploadProduct", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err = command.Execute([]string{
 				"--product", file.Name(),
-				"--sha256", "not-the-correct-shasum",
+				"--shasum", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("expected shasum not-the-correct-shasum does not match file shasum 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44"))
@@ -167,7 +167,7 @@ var _ = Describe("UploadProduct", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err := command.Execute([]string{
 				"--product", "/path/to/testing.tgz",
-				"--sha256", "not-the-correct-shasum",
+				"--shasum", "not-the-correct-shasum",
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("open /path/to/testing.tgz: no such file or directory"))

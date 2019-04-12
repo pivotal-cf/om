@@ -6,8 +6,10 @@ sometimes pushed post-release.
 ## 0.56.0 - Unreleased
 
 ### Breaking Changes
-* the `upload-stemcell` flag `--shasum` has been changed to `--sha256`. `upload-product`
-  used the `--sha256` flag, and this change adds parity between the two
+* the `upload-product` flag `--sha256` has been changed to `--shasum`. `upload-stemcell`
+  used the `--shasum` flag, and this change adds parity between the two. Using 
+  `--shasum` instead of `--sha256` also future-proofs the flag when sha256 is no longer the
+  de facto way of defining shasums.
 
 ### Features
 * `download-product` now supports skipping ssl validation when specifying `--pivnet-disable-ssl`
