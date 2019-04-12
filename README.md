@@ -18,7 +18,7 @@ See [here](docs/README.md) for useful examples and documentation.
 When working with `om`,
 it can sometimes be useful to reference the Ops Manager API docs.
 You can find them at
-`https://pcf.your-ops-manager.example.com/docs`.
+[https://pcf.your-ops-manager.example.com/docs](https://pcf.your-ops-manager.example.com/docs).
 
 ## Installation
 
