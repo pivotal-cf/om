@@ -16,6 +16,8 @@ sometimes pushed post-release.
 * `download-product` ensures sha sum checking when downloading the file from Pivotal Network
 * `upload-stemcell` now supports a `--config`(`-c`) flag to define all command line arguments
    in a config file. This gives `upload-stemcell` feature parity with `upload-product`
+* Improved info messaging for `download-product` to explicitly state whether downloading
+  from pivnet or S3
  
 
 ## 0.55.0
