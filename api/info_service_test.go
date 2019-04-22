@@ -28,10 +28,31 @@ var _ = Describe("Info Service", func() {
 				{"2.1.0-build2", false},
 				{"2.2.2-build2", true},
 				{"2.5.0-build33", true},
+				{"2.5.0", true},
 			}
 			for _, test := range tests {
 				Expect(api.Info{Version: test.ver}.VersionAtLeast(2, 2)).To(Equal(test.result))
 			}
+		})
+
+		Context("error cases", func() {
+			It("returns an error when no version defined", func() {
+				ok, err := api.Info{Version: ""}.VersionAtLeast(2, 2)
+				Expect(ok).To(Equal(false))
+				Expect(err.Error()).To(ContainSubstring("invalid version: ''"))
+			})
+
+			It("returns an error when major version is not a number", func() {
+				ok, err := api.Info{Version: "xxx.1.0"}.VersionAtLeast(2, 2)
+				Expect(ok).To(Equal(false))
+				Expect(err.Error()).To(ContainSubstring("invalid version: 'xxx.1.0'"))
+			})
+
+			It("returns an error when minor version is not a number", func() {
+				ok, err := api.Info{Version: "1.xxx.0"}.VersionAtLeast(2, 2)
+				Expect(ok).To(Equal(false))
+				Expect(err.Error()).To(ContainSubstring("invalid version: '1.xxx.0'"))
+			})
 		})
 	})
 

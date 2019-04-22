@@ -34,6 +34,7 @@ var _ = Describe("UploadStemcell", func() {
 
 	Context("uploads the stemcell", func() {
 		It("to all compatible products", func() {
+			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			submission := formcontent.ContentSubmission{
 				Content:       ioutil.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
@@ -77,6 +78,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 
 		It("disables floating", func() {
+			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			submission := formcontent.ContentSubmission{
 				ContentLength: 10,
 				Content:       ioutil.NopCloser(strings.NewReader("")),
@@ -122,6 +124,7 @@ var _ = Describe("UploadStemcell", func() {
 
 		Context("when the product fails to upload the first time with a retryable error", func() {
 			It("tries again", func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					Content:       ioutil.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
@@ -151,6 +154,7 @@ var _ = Describe("UploadStemcell", func() {
 
 		Context("when the product fails to upload three times", func() {
 			It("returns an error", func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					Content:       ioutil.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
@@ -182,6 +186,7 @@ var _ = Describe("UploadStemcell", func() {
 	Context("when the stemcell already exists", func() {
 		Context("and force is not specified", func() {
 			It("exits successfully without uploading", func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					ContentLength: 10,
 					Content:       ioutil.NopCloser(strings.NewReader("")),
@@ -203,10 +208,44 @@ var _ = Describe("UploadStemcell", func() {
 				format, v := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
 			})
+
+			When("the OpsMan 2.6+", func() {
+				It("exits successfully without uploading", func() {
+					fakeService.InfoReturns(api.Info{Version: "2.6.1"}, nil)
+
+					submission := formcontent.ContentSubmission{
+						ContentLength: 10,
+						Content:       ioutil.NopCloser(strings.NewReader("")),
+						ContentType:   "some content-type",
+					}
+					multipart.FinalizeReturns(submission)
+
+					fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
+						AvailableStemcells: []api.AvailableStemcell{
+							{
+								Filename: "stemcell.tgz",
+								OS:       "ubuntu-trusty",
+								Version:  "3215",
+							},
+						},
+					}, nil)
+
+					command := commands.NewUploadStemcell(multipart, fakeService, logger)
+
+					err := command.Execute([]string{
+						"--stemcell", "/path/to/stemcell.tgz",
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					format, v := logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
+				})
+			})
 		})
 
 		Context("and force is specified", func() {
 			It("uploads the stemcell", func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					Content:       ioutil.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
@@ -248,6 +287,7 @@ var _ = Describe("UploadStemcell", func() {
 
 	Context("when the --shasum flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
+			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			file, err := ioutil.TempFile("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
@@ -306,6 +346,7 @@ var _ = Describe("UploadStemcell", func() {
 
 	Context("when the diagnostic report is unavailable", func() {
 		It("uploads the stemcell", func() {
+			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			submission := formcontent.ContentSubmission{
 				ContentLength: 10,
 				Content:       ioutil.NopCloser(strings.NewReader("")),
@@ -391,6 +432,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 		})
 
 		It("reads configuration from config file", func() {
+			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			err := command.Execute([]string{
 				"--stemcell", file.Name(),
@@ -421,6 +463,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 
 		Context("when the file cannot be opened", func() {
 			It("returns an error", func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
@@ -431,6 +474,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 
 		Context("when the stemcell cannot be uploaded", func() {
 			It("returns an error", func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, errors.New("some stemcell error"))
 

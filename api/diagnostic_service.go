@@ -18,6 +18,13 @@ type DiagnosticReport struct {
 	Stemcells          []string
 	StagedProducts     []DiagnosticProduct
 	DeployedProducts   []DiagnosticProduct
+	AvailableStemcells []AvailableStemcell
+}
+
+type AvailableStemcell struct {
+	Filename string
+	OS       string
+	Version  string
 }
 
 type DiagnosticReportUnavailable struct{}

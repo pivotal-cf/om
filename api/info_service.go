@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -13,16 +14,24 @@ type Info struct {
 	Version string `json:"version"`
 }
 
-func (i Info) VersionAtLeast(major, minor int) bool {
+func (i Info) VersionAtLeast(major, minor int) (bool, error) {
 	// Given: X.Y-build.Z or X.Y.Z-build.A
 	// Extract X and Y
 	idx := strings.Index(i.Version, ".")
-	majv := i.Version[:idx]                                        // take substring up to '.'
-	legacyMinv := i.Version[idx+1 : strings.Index(i.Version, "-")] // take substring between '.' and '-'
+	if idx == -1 {
+		return false, fmt.Errorf("invalid version: '%s'", i.Version)
+	}
+
+	majv := i.Version[:idx] // take substring up to '.'
+	toDash := strings.Index(i.Version, "-")
+	if toDash == -1 {
+		toDash = len(i.Version) - 1
+	}
+	legacyMinv := i.Version[idx+1 : toDash] // take substring between '.' and '-' if dash is there
 
 	maj, err := strconv.Atoi(majv)
 	if err != nil {
-		panic("invalid version: " + i.Version)
+		return false, fmt.Errorf("invalid version: '%s'", i.Version)
 	}
 
 	min, err := strconv.Atoi(legacyMinv)
@@ -30,14 +39,14 @@ func (i Info) VersionAtLeast(major, minor int) bool {
 		semverMinv := legacyMinv[:strings.Index(legacyMinv, ".")] // take substring up to '.'
 		min, err = strconv.Atoi(semverMinv)
 		if err != nil {
-			panic("invalid version: " + i.Version)
+			return false, fmt.Errorf("invalid version: '%s'", i.Version)
 		}
 	}
 
 	if maj < major || (maj == major && min < minor) {
-		return false
+		return false, nil
 	}
-	return true
+	return true, nil
 }
 
 // Info gets information about Ops Manager.

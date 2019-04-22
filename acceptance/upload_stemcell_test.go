@@ -51,6 +51,12 @@ func (t *UploadStemcellTestServer) ServeHTTP(w http.ResponseWriter, req *http.Re
 
 		t.UploadHandler.ServeHTTP(w, req)
 		return
+	case "/api/v0/info":
+		responseString = `{
+			"info": {
+				"version": "2.1-build.79"
+			}
+		}`
 	default:
 		out, err := httputil.DumpRequest(req, true)
 		Expect(err).NotTo(HaveOccurred())
@@ -163,6 +169,14 @@ var _ = Describe("upload-stemcell command", func() {
 					}
 
 					_, err := w.Write(diagnosticReport)
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/info":
+					_, err := w.Write([]byte(`{
+						"info": {
+							"version": "2.1-build.79"
+						}
+					}`))
+
 					Expect(err).ToNot(HaveOccurred())
 				default:
 					out, err := httputil.DumpRequest(req, true)

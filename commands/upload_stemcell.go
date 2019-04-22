@@ -41,6 +41,7 @@ type multipart interface {
 type uploadStemcellService interface {
 	UploadStemcell(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
 	GetDiagnosticReport() (api.DiagnosticReport, error)
+	Info() (api.Info, error)
 }
 
 func NewUploadStemcell(multipart multipart, service uploadStemcellService, logger logger) UploadStemcell {
@@ -90,6 +91,25 @@ func (us UploadStemcell) Execute(args []string) error {
 				us.logger.Printf("%s", err)
 			default:
 				return fmt.Errorf("failed to get diagnostic report: %s", err)
+			}
+		}
+
+		info, err := us.service.Info()
+		if err != nil {
+			return fmt.Errorf("cannot retrieve version of Ops Manager")
+		}
+
+		validVersion, err := info.VersionAtLeast(2, 6)
+		if err != nil {
+			return fmt.Errorf("could not determine version was 2.6+ compatible: %s", err)
+		}
+
+		if validVersion {
+			for _, stemcell := range report.AvailableStemcells {
+				if stemcell.Filename == filepath.Base(stemcellFilename) {
+					us.logger.Printf("stemcell has already been uploaded")
+					return nil
+				}
 			}
 		}
 

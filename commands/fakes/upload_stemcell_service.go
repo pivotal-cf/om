@@ -20,6 +20,18 @@ type UploadStemcellService struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
+	InfoStub        func() (api.Info, error)
+	infoMutex       sync.RWMutex
+	infoArgsForCall []struct {
+	}
+	infoReturns struct {
+		result1 api.Info
+		result2 error
+	}
+	infoReturnsOnCall map[int]struct {
+		result1 api.Info
+		result2 error
+	}
 	UploadStemcellStub        func(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
 	uploadStemcellMutex       sync.RWMutex
 	uploadStemcellArgsForCall []struct {
@@ -92,6 +104,61 @@ func (fake *UploadStemcellService) GetDiagnosticReportReturnsOnCall(i int, resul
 	}{result1, result2}
 }
 
+func (fake *UploadStemcellService) Info() (api.Info, error) {
+	fake.infoMutex.Lock()
+	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
+	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Info", []interface{}{})
+	fake.infoMutex.Unlock()
+	if fake.InfoStub != nil {
+		return fake.InfoStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.infoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *UploadStemcellService) InfoCallCount() int {
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
+	return len(fake.infoArgsForCall)
+}
+
+func (fake *UploadStemcellService) InfoCalls(stub func() (api.Info, error)) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = stub
+}
+
+func (fake *UploadStemcellService) InfoReturns(result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	fake.infoReturns = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *UploadStemcellService) InfoReturnsOnCall(i int, result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	if fake.infoReturnsOnCall == nil {
+		fake.infoReturnsOnCall = make(map[int]struct {
+			result1 api.Info
+			result2 error
+		})
+	}
+	fake.infoReturnsOnCall[i] = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *UploadStemcellService) UploadStemcell(arg1 api.StemcellUploadInput) (api.StemcellUploadOutput, error) {
 	fake.uploadStemcellMutex.Lock()
 	ret, specificReturn := fake.uploadStemcellReturnsOnCall[len(fake.uploadStemcellArgsForCall)]
@@ -160,6 +227,8 @@ func (fake *UploadStemcellService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.getDiagnosticReportMutex.RLock()
 	defer fake.getDiagnosticReportMutex.RUnlock()
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
 	fake.uploadStemcellMutex.RLock()
 	defer fake.uploadStemcellMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

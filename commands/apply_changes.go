@@ -84,7 +84,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if err != nil {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
-		if !info.VersionAtLeast(2, 2) {
+		if ok, _ := info.VersionAtLeast(2, 2); !ok {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 		changedProducts = append(changedProducts, ac.Options.ProductNames...)
@@ -99,7 +99,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if err != nil {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
-		if !info.VersionAtLeast(2, 2) {
+		if ok, _ := info.VersionAtLeast(2, 2); !ok {
 			return fmt.Errorf("skip-unchanged-products is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 		for _, p := range s.ChangeList {
