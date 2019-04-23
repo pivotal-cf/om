@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -33,7 +34,7 @@ func (a Api) ListStemcells() (ProductStemcells, error) {
 	var productStemcells ProductStemcells
 	err = json.NewDecoder(resp.Body).Decode(&productStemcells)
 	if err != nil {
-		return ProductStemcells{}, nil
+		return ProductStemcells{}, fmt.Errorf("invalid JSON: %s", err)
 	}
 
 	return productStemcells, nil

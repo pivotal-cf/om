@@ -34,28 +34,37 @@ var _ = Describe("StemcellService", func() {
                   "products": [
                     {
                       "guid": "some-guid",
-                      "staged_stemcell_version": "1234.5",
+                      "staged_stemcells": [
+						{"os": "ubuntu-trusty", "version": "1234.5"}
+                      ],
                       "identifier": "some-product",
-                      "available_stemcell_versions": [
-                        "1234.5", "1234.6"
-                      ]
+                      "available_stemcells": [
+                        {"os": "ubuntu-trusty", "version": "1234.5"},
+                        {"os": "ubuntu-trusty", "version": "1234.6"}
+                      ],
+                      "required_stemcells": [ {"os": "ubuntu-xenial", "version": "1234.5"} ]
                     }
                   ]
                 }`)),
 			}, nil)
 
-			output, err := service.ListStemcells()
+			output, err := service.ListMultiStemcells()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(output).To(Equal(api.ProductStemcells{
-				Products: []api.ProductStemcell{
+			Expect(output).To(Equal(api.ProductMultiStemcells{
+				Products: []api.ProductMultiStemcell{
 					{
-						GUID:                  "some-guid",
-						StagedForDeletion:     false,
-						StagedStemcellVersion: "1234.5",
-						ProductName:           "some-product",
-						AvailableVersions: []string{
-							"1234.5",
-							"1234.6",
+						GUID:              "some-guid",
+						StagedForDeletion: false,
+						StagedStemcells: []api.StemcellObject{
+							{OS: "ubuntu-trusty", Version: "1234.5"},
+						},
+						ProductName: "some-product",
+						AvailableVersions: []api.StemcellObject{
+							{OS: "ubuntu-trusty", Version: "1234.5"},
+							{OS: "ubuntu-trusty", Version: "1234.6"},
+						},
+						RequiredStemcells: []api.StemcellObject{
+							{OS: "ubuntu-xenial", Version: "1234.5"},
 						},
 					},
 				},
@@ -63,7 +72,7 @@ var _ = Describe("StemcellService", func() {
 
 			request := fakeClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))
-			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_assignments"))
+			Expect(request.URL.Path).To(Equal("/api/v0/stemcells_assignments"))
 		})
 
 		Context("when an error occurs", func() {
@@ -74,7 +83,7 @@ var _ = Describe("StemcellService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{invalidJSON}")),
 					}, nil)
 
-					_, err := service.ListStemcells()
+					_, err := service.ListMultiStemcells()
 					Expect(err).To(MatchError(ContainSubstring("invalid JSON: invalid character 'i' looking for beginning of object key string")))
 				})
 			})
@@ -82,8 +91,8 @@ var _ = Describe("StemcellService", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
-					_, err := service.ListStemcells()
-					Expect(err).To(MatchError("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcell_assignments: some client error"))
+					_, err := service.ListMultiStemcells()
+					Expect(err).To(MatchError("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcells_assignments: some client error"))
 				})
 			})
 
@@ -94,18 +103,18 @@ var _ = Describe("StemcellService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 
-					_, err := service.ListStemcells()
+					_, err := service.ListMultiStemcells()
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 		})
 	})
 
-	Describe("AssignStemcells", func() {
+	Describe("AssignMultiStemcells", func() {
 		var (
 			fakeClient *fakes.HttpClient
 			service    api.Api
-			input      api.ProductStemcells
+			input      api.ProductMultiStemcells
 		)
 
 		BeforeEach(func() {
@@ -114,34 +123,40 @@ var _ = Describe("StemcellService", func() {
 				Client: fakeClient,
 			})
 
-			input = api.ProductStemcells{
-				Products: []api.ProductStemcell{
+			input = api.ProductMultiStemcells{
+				Products: []api.ProductMultiStemcell{
 					{
-						GUID:                  "some-guid",
-						StagedStemcellVersion: "1234.6",
+						GUID: "some-guid",
+						StagedStemcells: []api.StemcellObject{
+							{OS: "ubuntu-trusty", Version: "1234.5"},
+							{OS: "ubuntu-trusty", Version: "1234.6"},
+						},
 					},
 				},
 			}
 		})
 
-		It("makes a request to assign the stemcells", func() {
+		It("makes a request to assign multiple stemcells", func() {
 			fakeClient.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
-			err := service.AssignStemcell(input)
+			err := service.AssignMultiStemcell(input)
 			Expect(err).NotTo(HaveOccurred())
 
 			request := fakeClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("PATCH"))
-			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_assignments"))
+			Expect(request.URL.Path).To(Equal("/api/v0/stemcells_assignments"))
 			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(body).To(MatchJSON(`{
               "products": [
                 {
                   "guid": "some-guid",
-                  "staged_stemcell_version": "1234.6"
+                  "staged_stemcells": [
+					 {"os": "ubuntu-trusty", "version": "1234.5"},
+					 {"os": "ubuntu-trusty", "version": "1234.6"}
+                   ]
                 }
               ]
             }`))
@@ -152,8 +167,8 @@ var _ = Describe("StemcellService", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
-					err := service.AssignStemcell(input)
-					Expect(err).To(MatchError("could not send api request to PATCH /api/v0/stemcell_assignments: some client error"))
+					err := service.AssignMultiStemcell(input)
+					Expect(err).To(MatchError("could not send api request to PATCH /api/v0/stemcells_assignments: some client error"))
 				})
 			})
 
@@ -164,7 +179,7 @@ var _ = Describe("StemcellService", func() {
 						Body:       ioutil.NopCloser(strings.NewReader("{}")),
 					}, nil)
 
-					err := service.AssignStemcell(input)
+					err := service.AssignMultiStemcell(input)
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})

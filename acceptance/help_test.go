@@ -30,6 +30,7 @@ Usage: om [options] <command> [<args>]
 Commands:
   activate-certificate-authority  activates a certificate authority on the Ops Manager
   apply-changes                   triggers an install on the Ops Manager targeted
+  assign-multi-stemcell           assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+
   assign-stemcell                 assigns an uploaded stemcell to a product in the targeted Ops Manager
   available-products              list available products
   bosh-env                        prints bosh environment variables

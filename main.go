@@ -147,6 +147,7 @@ func main() {
 	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)
 	commandSet["apply-changes"] = commands.NewApplyChanges(api, api, logWriter, stdout, applySleepDuration)
 	commandSet["assign-stemcell"] = commands.NewAssignStemcell(api, stdout)
+	commandSet["assign-multi-stemcell"] = commands.NewAssignMultiStemcell(api, stdout)
 	commandSet["available-products"] = commands.NewAvailableProducts(api, presenter, stdout)
 	commandSet["bosh-env"] = commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
