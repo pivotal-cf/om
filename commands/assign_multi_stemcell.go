@@ -13,7 +13,7 @@ type AssignMultiStemcell struct {
 	Options struct {
 		ConfigFile  string   `long:"config"   short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		ProductName string   `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
-		Stemcells   []string `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile (ie 'ubuntu-trusty=123.4')" required:"true"`
+		Stemcells   []string `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile (ie 'ubuntu-trusty:123.4')" required:"true"`
 	}
 }
 
@@ -95,7 +95,7 @@ func (as AssignMultiStemcell) Execute(args []string) error {
 
 func (as AssignMultiStemcell) validateArgs() error {
 	for _, option := range as.Options.Stemcells {
-		parts := strings.Split(option, "=")
+		parts := strings.Split(option, ":")
 		if len(parts) < 2 {
 			return fmt.Errorf(`expected "--stemcell" format value as "operating-system=version"`)
 		}
@@ -134,7 +134,7 @@ func (as *AssignMultiStemcell) validateStemcellVersion(productStemcell api.Produ
 
 	stemcellGroup := []api.StemcellObject{}
 	for index, option := range as.Options.Stemcells {
-		parts := strings.Split(option, "=")
+		parts := strings.Split(option, ":")
 		os, version := parts[0], parts[1]
 
 		if version == "latest" {

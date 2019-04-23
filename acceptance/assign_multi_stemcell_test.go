@@ -91,7 +91,7 @@ var _ = Describe("assign-multi-stemcell command", func() {
 			"--skip-ssl-validation",
 			"assign-multi-stemcell",
 			"--product", "cf",
-			"--stemcell", "ubuntu-trusty=latest",
+			"--stemcell", "ubuntu-trusty:latest",
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

@@ -3,6 +3,15 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
+## 0.57.0 - Unreleased
+
+### Features
+* new command `assign-multi-stemcell` supports the OpsMan 2.6+.
+  This allows multiple stemcells to be assgined to a single product.
+  For example, for product `foo`,
+  you could assign Ubuntu Trusty 3586.96 and Windows 2019 2019.2,
+  using the command, `om assign-multi-stemcell --product foo --stemcell ubuntu-trusty:3586.96 --stemcell windows2019:2019.2`.
+
 ## 0.56.0
 
 ### Breaking Changes
