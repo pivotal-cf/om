@@ -159,7 +159,7 @@ func (as *AssignMultiStemcell) validateStemcellVersion(productStemcell api.Produ
 			listOfStemcells := strings.Join(getStemcellsForOS(availableVersions, os), ", ")
 			if listOfStemcells == "" {
 				return nil, fmt.Errorf(`stemcell version %s for %s not found in Ops Manager.
-there are no available stemcells to for "%s" choose from
+there are no available stemcells to for "%s"
 upload-stemcell, and try again`, version, os, as.Options.ProductName)
 			}
 			return nil, fmt.Errorf(`stemcell version %s for %s not found in Ops Manager.

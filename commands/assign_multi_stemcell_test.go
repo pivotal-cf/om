@@ -315,7 +315,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-xenial:1234.5"})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`stemcell version 1234.5 for ubuntu-xenial not found in Ops Manager.`))
-			Expect(err.Error()).To(ContainSubstring(`there are no available stemcells to for "cf" choose from`))
+			Expect(err.Error()).To(ContainSubstring(`there are no available stemcells to for "cf"`))
 			Expect(err.Error()).To(ContainSubstring("upload-stemcell, and try again"))
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
