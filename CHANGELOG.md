@@ -12,6 +12,9 @@ sometimes pushed post-release.
   you could assign Ubuntu Trusty 3586.96 and Windows 2019 2019.2,
   using the command, `om assign-multi-stemcell --product foo --stemcell ubuntu-trusty:3586.96 --stemcell windows2019:2019.2`.
 
+## NOTES
+* https://github.com/graymeta/stow/issues/197 has been merged! This should make `om` `go get`-able again.
+
 ## 0.56.0
 
 ### Breaking Changes
