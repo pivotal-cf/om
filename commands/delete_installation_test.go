@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -24,12 +25,14 @@ var _ = Describe("DeleteInstallation", func() {
 		logsErrors    []error
 		statusCount   int
 		logsCount     int
+		stdin         *bytes.Buffer
 	)
 
 	BeforeEach(func() {
 		fakeService = &fakes.DeleteInstallationService{}
 		logger = &fakes.Logger{}
 		writer = &fakes.LogWriter{}
+		stdin = bytes.NewBuffer([]byte{})
 
 		statusCount = 0
 		logsCount = 0
@@ -73,12 +76,18 @@ var _ = Describe("DeleteInstallation", func() {
 
 			logsErrors = []error{nil, nil, nil}
 
-			command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := command.Execute([]string{})
+			_, err := stdin.WriteString("y\n")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("please press y to confirm deletion: "))
+
+			format, content = logger.PrintfArgsForCall(1)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to delete the installation on the targeted Ops Manager"))
 
 			Expect(fakeService.DeleteInstallationAssetCollectionCallCount()).To(Equal(1))
@@ -112,9 +121,9 @@ var _ = Describe("DeleteInstallation", func() {
 
 			logsErrors = []error{nil}
 
-			command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := command.Execute([]string{})
+			err := command.Execute([]string{"--force"})
 			Expect(err).To(MatchError("deleting the installation was unsuccessful"))
 		})
 
@@ -124,9 +133,9 @@ var _ = Describe("DeleteInstallation", func() {
 				return output, nil
 			}
 
-			command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := command.Execute([]string{})
+			err := command.Execute([]string{"--force"})
 			Expect(err).NotTo(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -155,9 +164,9 @@ var _ = Describe("DeleteInstallation", func() {
 
 				logsErrors = []error{nil, nil, nil}
 
-				command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-				err := command.Execute([]string{})
+				err := command.Execute([]string{"--force"})
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(fakeService.DeleteInstallationAssetCollectionCallCount()).To(Equal(0))
@@ -175,9 +184,9 @@ var _ = Describe("DeleteInstallation", func() {
 				It("returns an error", func() {
 					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{})
+					err := command.Execute([]string{"--force"})
 					Expect(err).To(MatchError("failed to delete installation: some error"))
 				})
 			})
@@ -190,9 +199,9 @@ var _ = Describe("DeleteInstallation", func() {
 
 					statusErrors = []error{errors.New("another error")}
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{})
+					err := command.Execute([]string{"--force"})
 					Expect(err).To(MatchError("installation failed to get status: another error"))
 				})
 			})
@@ -211,9 +220,9 @@ var _ = Describe("DeleteInstallation", func() {
 
 					logsErrors = []error{errors.New("no")}
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{})
+					err := command.Execute([]string{"--force"})
 					Expect(err).To(MatchError("installation failed to get logs: no"))
 				})
 			})
@@ -232,12 +241,12 @@ var _ = Describe("DeleteInstallation", func() {
 
 					logsErrors = []error{nil}
 
-					writer.FlushReturns(errors.New("yes"))
+					writer.FlushReturns(errors.New("failed flush"))
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, 1)
+					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("installation failed to flush logs: yes"))
+					err := command.Execute([]string{"--force"})
+					Expect(err).To(MatchError("installation failed to flush logs: failed flush"))
 				})
 			})
 		})
@@ -245,10 +254,11 @@ var _ = Describe("DeleteInstallation", func() {
 
 	Describe("Usage", func() {
 		It("returns usage information for the command", func() {
-			command := commands.NewDeleteInstallation(nil, nil, nil, 1)
+			command := commands.NewDeleteInstallation(nil, nil, nil, nil, 1)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
 				Description:      "This authenticated command deletes all the products installed on the targeted Ops Manager.",
 				ShortDescription: "deletes all the products on the Ops Manager targeted",
+				Flags:            command.Options,
 			}))
 		})
 	})
