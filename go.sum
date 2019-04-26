@@ -42,6 +42,10 @@ github.com/gosuri/uilive v0.0.0-20170323041506-ac356e6e42cd h1:1e+0Z+T4t1mKL5xxv
 github.com/gosuri/uilive v0.0.0-20170323041506-ac356e6e42cd/go.mod h1:qkLSc0A5EXSP6B04TrN4oQoxqFI7A8XvoXSlJi8cwk8=
 github.com/graymeta/stow v0.0.0-20181228161447-b469cfb112f8 h1:001hwtjnF3FyrQnh+hLqmKE5rUfskA0SYeJagoIRyjo=
 github.com/graymeta/stow v0.0.0-20181228161447-b469cfb112f8/go.mod h1:B24dekNjtWVeREK+dyMHtI22d85VzCT+sX5bVWDtjoA=
+github.com/graymeta/stow v0.0.0-20190417153120-00c3b5928f2a h1:Rqnf9gbbPr8QfwwXcp2EG33cXUjKYUXljyOJmltnBOI=
+github.com/graymeta/stow v0.0.0-20190417153120-00c3b5928f2a/go.mod h1:B24dekNjtWVeREK+dyMHtI22d85VzCT+sX5bVWDtjoA=
+github.com/graymeta/stow v0.1.0 h1:pWKNKoXoMHbGP2BNFVNf3SWKXWwopGOQevyHl3UlbyA=
+github.com/graymeta/stow v0.1.0/go.mod h1:B24dekNjtWVeREK+dyMHtI22d85VzCT+sX5bVWDtjoA=
 github.com/hashicorp/go-version v1.1.0 h1:bPIoEKD27tNdebFGGxxYwcL4nepeY4j1QP23PFRGzg0=
 github.com/hashicorp/go-version v1.1.0/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=

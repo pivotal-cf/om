@@ -17,7 +17,7 @@ require (
 	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
 	github.com/gosuri/uilive v0.0.0-20170323041506-ac356e6e42cd // indirect
-	github.com/graymeta/stow v0.0.0-20181228161447-b469cfb112f8
+	github.com/graymeta/stow v0.0.0-20190417153120-00c3b5928f2a
 	github.com/hashicorp/go-version v1.1.0
 	github.com/leodido/go-urn v1.1.0 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
@@ -42,5 +42,3 @@ require (
 	gopkg.in/yaml.v2 v2.2.1
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
-
-replace github.com/graymeta/stow => github.com/jtarchie/stow v0.0.0-20190209005554-0bff39424d5b
