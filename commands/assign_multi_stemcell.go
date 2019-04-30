@@ -73,7 +73,7 @@ func (as AssignMultiStemcell) Execute(args []string) error {
 	}
 
 	as.logger.Printf(
-		"assigning stemcell: \"%s\" to product \"%s\"...\n",
+		"assigning stemcells: \"%s\" to product \"%s\"...\n",
 		strings.Join(getAllStemcells(stemcells), ", "),
 		as.Options.ProductName,
 	)
@@ -89,7 +89,7 @@ func (as AssignMultiStemcell) Execute(args []string) error {
 		return err
 	}
 
-	as.logger.Println("assigned stemcell successfully")
+	as.logger.Println("assigned stemcells successfully")
 	return nil
 }
 

@@ -98,7 +98,7 @@ var _ = Describe("assign-multi-stemcell command", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
-		Eventually(session.Out).Should(gbytes.Say(`assigning stemcell: "ubuntu-trusty 1234.57" to product "cf"`))
-		Eventually(session.Out).Should(gbytes.Say("assigned stemcell successfully"))
+		Eventually(session.Out).Should(gbytes.Say(`assigning stemcells: "ubuntu-trusty 1234.57" to product "cf"`))
+		Eventually(session.Out).Should(gbytes.Say("assigned stemcells successfully"))
 	})
 })
