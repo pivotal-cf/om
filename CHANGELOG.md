@@ -3,7 +3,7 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
-## 0.57.0 - Unreleased
+## 0.57.0
 
 ### Features
 * new command `assign-multi-stemcell` supports the OpsMan 2.6+.
