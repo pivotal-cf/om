@@ -8,20 +8,20 @@ import (
 )
 
 type DiagnosticProduct struct {
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Stemcell string `json:"stemcell,omitempty"`
+	Name      string     `json:"name"`
+	Version   string     `json:"version"`
+	Stemcell  string     `json:"stemcell,omitempty"`
+	Stemcells []Stemcell `json:"stemcells,omitempty"`
 }
-
 type DiagnosticReport struct {
-	InfrastructureType string `json:"infrastructure_type"`
-	Stemcells          []string
+	InfrastructureType string   `json:"infrastructure_type"`
+	Stemcells          []string `json:"stemcells,omitempty"`
 	StagedProducts     []DiagnosticProduct
 	DeployedProducts   []DiagnosticProduct
-	AvailableStemcells []AvailableStemcell
+	AvailableStemcells []Stemcell `json:"available_stemcells,omitempty"`
 }
 
-type AvailableStemcell struct {
+type Stemcell struct {
 	Filename string
 	OS       string
 	Version  string
@@ -64,5 +64,6 @@ func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 		Stemcells:          apiResponse.Stemcells,
 		StagedProducts:     apiResponse.AddedProducts.StagedProducts,
 		DeployedProducts:   apiResponse.AddedProducts.DeployedProducts,
+		AvailableStemcells: apiResponse.AvailableStemcells,
 	}, nil
 }

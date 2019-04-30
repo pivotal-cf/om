@@ -60,7 +60,6 @@ type ConfigurationRequest struct {
 	Configuration string
 }
 
-// TODO: extract to helper package?
 func (a Api) Stage(input StageProductInput, deployedGUID string) error {
 	stagedGUID, err := a.checkStagedProducts(input.ProductName)
 	if err != nil {

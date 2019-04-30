@@ -221,7 +221,7 @@ var _ = Describe("UploadStemcell", func() {
 					multipart.FinalizeReturns(submission)
 
 					fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
-						AvailableStemcells: []api.AvailableStemcell{
+						AvailableStemcells: []api.Stemcell{
 							{
 								Filename: "stemcell.tgz",
 								OS:       "ubuntu-trusty",
