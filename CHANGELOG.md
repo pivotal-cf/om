@@ -11,6 +11,9 @@ sometimes pushed post-release.
   For example, for product `foo`,
   you could assign Ubuntu Trusty 3586.96 and Windows 2019 2019.2,
   using the command, `om assign-multi-stemcell --product foo --stemcell ubuntu-trusty:3586.96 --stemcell windows2019:2019.2`.
+* `upload-stemcell` will not upload the same stemcell (unless using `--force`) for OpsMan 2.6+.
+  The API has changed that list the stemcells associated with a product.
+  This command is still backwards compatible with OpsMan 2.1+, just has logic specific for 2.6+.
 
 ## NOTES
 * https://github.com/graymeta/stow/issues/197 has been merged! This should make `om` `go get`-able again.
