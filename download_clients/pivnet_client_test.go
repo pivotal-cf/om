@@ -126,7 +126,7 @@ var _ = Describe("PivnetClient", func() {
 			client := download_clients.NewPivnetClient(logger, nil, fakePivnetFactory, "", fakePivnetFilter, true)
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("the glob '*.zip' matches no file"))
+			Expect(err.Error()).To(ContainSubstring("for product version 1.0.0: the glob '*.zip' matches no file"))
 		})
 
 		It("returns an error if the glob matches multiple files", func() {

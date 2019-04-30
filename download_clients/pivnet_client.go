@@ -102,7 +102,7 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (command
 	}
 
 	if err := p.checkForSingleProductFile(glob, productFiles); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("for product version %s: %s", version, err)
 	}
 
 	return &PivnetFileArtifact{
