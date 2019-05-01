@@ -188,3 +188,8 @@ func sortCredentialMap(cm map[string]string) ([]string, []string) {
 
 	return header, credential
 }
+
+func (t TablePresenter) PresentDiagnosticReport(api.DiagnosticReport) {
+
+}
+

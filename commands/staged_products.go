@@ -4,24 +4,18 @@ import (
 	"fmt"
 
 	"github.com/pivotal-cf/jhanda"
-	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
 
 type StagedProducts struct {
 	presenter presenters.FormattedPresenter
-	service   stagedProductsService
+	service   diagnosticReportService
 	Options   struct {
 		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/staged_products_service.go --fake-name StagedProductsService . stagedProductsService
-type stagedProductsService interface {
-	GetDiagnosticReport() (api.DiagnosticReport, error)
-}
-
-func NewStagedProducts(presenter presenters.FormattedPresenter, service stagedProductsService) StagedProducts {
+func NewStagedProducts(presenter presenters.FormattedPresenter, service diagnosticReportService) StagedProducts {
 	return StagedProducts{
 		presenter: presenter,
 		service:   service,

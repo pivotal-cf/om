@@ -19,6 +19,7 @@ type Presenter interface {
 	PresentInstallations([]models.Installation)
 	PresentPendingChanges([]api.ProductChange)
 	PresentStagedProducts([]api.DiagnosticProduct)
+	PresentDiagnosticReport(api.DiagnosticReport)
 }
 
 //go:generate counterfeiter -o fakes/formatted_presenter.go --fake-name FormattedPresenter . FormattedPresenter
@@ -142,4 +143,8 @@ func (p *MultiPresenter) PresentStagedProducts(products []api.DiagnosticProduct)
 	default:
 		p.tablePresenter.PresentStagedProducts(products)
 	}
+}
+
+func (p *MultiPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
+
 }
