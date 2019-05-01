@@ -47,7 +47,7 @@ var _ = Describe("assign-multi-stemcell command", func() {
 				"expires_in": 3600
 			}`
 
-			case "/api/v0/stemcells_assignments":
+			case "/api/v0/stemcell_associations":
 				if req.Method == "GET" {
 					responseString = `{"products": 
 					[

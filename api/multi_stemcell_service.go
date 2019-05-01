@@ -26,7 +26,7 @@ type ProductMultiStemcell struct {
 }
 
 func (a Api) ListMultiStemcells() (ProductMultiStemcells, error) {
-	resp, err := a.sendAPIRequest("GET", "/api/v0/stemcells_assignments", nil)
+	resp, err := a.sendAPIRequest("GET", "/api/v0/stemcell_associations", nil)
 	if err != nil {
 		return ProductMultiStemcells{}, errors.Wrap(err, "could not make api request to list stemcells")
 	}
@@ -51,7 +51,7 @@ func (a Api) AssignMultiStemcell(input ProductMultiStemcells) error {
 		return errors.Wrap(err, "could not marshal json")
 	}
 
-	resp, err := a.sendAPIRequest("PATCH", "/api/v0/stemcells_assignments", jsonData)
+	resp, err := a.sendAPIRequest("PATCH", "/api/v0/stemcell_associations", jsonData)
 	if err != nil {
 		return err
 	}

@@ -72,7 +72,7 @@ var _ = Describe("StemcellService", func() {
 
 			request := fakeClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))
-			Expect(request.URL.Path).To(Equal("/api/v0/stemcells_assignments"))
+			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_associations"))
 		})
 
 		Context("when an error occurs", func() {
@@ -92,7 +92,7 @@ var _ = Describe("StemcellService", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
 					_, err := service.ListMultiStemcells()
-					Expect(err).To(MatchError("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcells_assignments: some client error"))
+					Expect(err).To(MatchError("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcell_associations: some client error"))
 				})
 			})
 
@@ -146,7 +146,7 @@ var _ = Describe("StemcellService", func() {
 
 			request := fakeClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("PATCH"))
-			Expect(request.URL.Path).To(Equal("/api/v0/stemcells_assignments"))
+			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_associations"))
 			body, err := ioutil.ReadAll(request.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(body).To(MatchJSON(`{
@@ -168,7 +168,7 @@ var _ = Describe("StemcellService", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
 					err := service.AssignMultiStemcell(input)
-					Expect(err).To(MatchError("could not send api request to PATCH /api/v0/stemcells_assignments: some client error"))
+					Expect(err).To(MatchError("could not send api request to PATCH /api/v0/stemcell_associations: some client error"))
 				})
 			})
 
