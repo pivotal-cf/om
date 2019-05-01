@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	boshtpl "github.com/cloudfoundry/bosh-cli/director/template"
@@ -16,12 +17,12 @@ type Interpolate struct {
 	environFunc func() []string
 	logger      logger
 	Options     struct {
-		ConfigFile        string   `long:"config"       short:"c" required:"true" description:"path for file to be interpolated"`
-		Path              string   `long:"path"                                   description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
-		VarsEnv           []string `long:"vars-env"                               description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile          []string `long:"vars-file"    short:"l"                 description:"Load variables from a YAML file"`
-		OpsFile           []string `long:"ops-file"     short:"o"                 description:"YAML operations files"`
-		SkipMissingParams bool     `long:"skip-missing" short:"s"                 description:"Allow skipping missing params"`
+		ConfigFile        string   `long:"config"       short:"c" description:"path for file to be interpolated"`
+		Path              string   `long:"path"                   description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
+		VarsEnv           []string `long:"vars-env"               description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile          []string `long:"vars-file"    short:"l" description:"Load variables from a YAML file"`
+		OpsFile           []string `long:"ops-file"     short:"o" description:"YAML operations files"`
+		SkipMissingParams bool     `long:"skip-missing" short:"s" description:"Allow skipping missing params"`
 	}
 }
 
@@ -44,6 +45,35 @@ func NewInterpolate(environFunc func() []string, logger logger) Interpolate {
 func (c Interpolate) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse interpolate flags: %s", err)
+	}
+
+	input := os.Stdin
+	file, err := input.Stat()
+	if err != nil {
+		return fmt.Errorf("error in stdin: %s", err)
+	}
+
+	if size := file.Size(); size > 0 {
+		contents, err := ioutil.ReadAll(input)
+		if err != nil {
+			return fmt.Errorf("error reading stdin: %s", err)
+		}
+
+		tempFile, err := ioutil.TempFile("", "yml")
+		if err != nil {
+			return fmt.Errorf("error generating temp file for stdin: %s", err)
+		}
+
+		_, err = tempFile.Write(contents)
+		if err != nil {
+			return fmt.Errorf("error writing temp file for stdin: %s", err)
+		}
+
+		c.Options.ConfigFile = tempFile.Name()
+
+
+	} else if len(c.Options.ConfigFile) == 0 {
+		return fmt.Errorf("no file or STDIN input provided. Please provide a --config file or pipe STDIN")
 	}
 
 	expectAllKeys := true

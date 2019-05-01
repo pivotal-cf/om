@@ -9,7 +9,6 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
-
 )
 
 var _ = Describe("DiagnosticReport", func() {
@@ -29,8 +28,7 @@ var _ = Describe("DiagnosticReport", func() {
 		var diagnosticReport []api.DiagnosticReport
 
 		BeforeEach(func() {
-			diagnosticReport = []api.DiagnosticReport{
-			}
+			diagnosticReport = []api.DiagnosticReport{}
 		})
 
 		It("displays the diagnostic report", func() {
@@ -40,44 +38,8 @@ var _ = Describe("DiagnosticReport", func() {
 			Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
 			_ = diagnosticReport
 
-			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
+			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
 			Expect(presenter.PresentDiagnosticReportCallCount()).To(Equal(1))
-		})
-
-		Context("when the format flag is provided", func() {
-			It("sets the format on the presenter", func() {
-				err := command.Execute([]string{"--format", "json"})
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(presenter.SetFormatCallCount()).To(Equal(1))
-				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
-			})
-		})
-
-		Context("when the --path flag is provided", func() {
-			It("sets the format to json on the presenter", func() {
-				err := command.Execute([]string{"--path", "infrastructure_type"})
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(presenter.SetFormatCallCount()).To(Equal(1))
-				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
-			})
-
-			It("sets the format to json on the presenter if --format table is provided", func() {
-				err := command.Execute([]string{"--path", "infrastructure_type", "--format", "table"})
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(presenter.SetFormatCallCount()).To(Equal(1))
-				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
-			})
-
-			It("sets the format to json on the presenter if --format json is provided", func() {
-				err := command.Execute([]string{"--path", "infrastructure_type", "--format", "table"})
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(presenter.SetFormatCallCount()).To(Equal(1))
-				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
-			})
 		})
 	})
 

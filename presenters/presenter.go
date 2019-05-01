@@ -146,5 +146,10 @@ func (p *MultiPresenter) PresentStagedProducts(products []api.DiagnosticProduct)
 }
 
 func (p *MultiPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
-
+	switch p.format {
+	case "json":
+		p.jsonPresenter.PresentDiagnosticReport(report)
+	default:
+		p.tablePresenter.PresentDiagnosticReport(report)
+	}
 }

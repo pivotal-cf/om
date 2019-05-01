@@ -192,4 +192,3 @@ func sortCredentialMap(cm map[string]string) ([]string, []string) {
 func (t TablePresenter) PresentDiagnosticReport(api.DiagnosticReport) {
 
 }
-

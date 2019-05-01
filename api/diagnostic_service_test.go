@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ =  Describe("Diagnostic Report", func() {
+var _ = Describe("Diagnostic Report", func() {
 	var (
 		client  *fakes.HttpClient
 		service api.Api
@@ -249,6 +249,24 @@ var _ =  Describe("Diagnostic Report", func() {
 					})
 				})
 			})
+		})
+	})
+
+	Describe("Full Diagnostic Report", func() {
+		It("returns the full report", func() {
+			client.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(strings.NewReader(post2_6Report)),
+			}, nil)
+
+			report, err := service.GetDiagnosticReport()
+			Expect(err).NotTo(HaveOccurred())
+
+			request := client.DoArgsForCall(0)
+			Expect(request.Method).To(Equal("GET"))
+			Expect(request.URL.Path).To(Equal("/api/v0/diagnostic_report"))
+
+			Expect(report.FullReport).To(Equal(post2_6Report))
 		})
 	})
 })

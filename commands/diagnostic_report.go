@@ -10,9 +10,7 @@ import (
 type DiagnosticReport struct {
 	presenter presenters.FormattedPresenter
 	service   diagnosticReportService
-	Options struct {
-		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
-		Path string `long:"path" short:"p" description:"Path in json report to return"`
+	Options   struct {
 	}
 }
 
@@ -29,8 +27,6 @@ func NewDiagnosticReport(presenter presenters.FormattedPresenter, service diagno
 }
 
 func (dr DiagnosticReport) Execute(args []string) error {
-	jhanda.Parse(&dr.Options, args)
-
 	if _, err := jhanda.Parse(&dr.Options, args); err != nil {
 		return fmt.Errorf("could not parse diagnostic-report flags: %s", err)
 	}
@@ -40,14 +36,9 @@ func (dr DiagnosticReport) Execute(args []string) error {
 		return fmt.Errorf("failed to retrieve diagnostic-report %s", err)
 	}
 
+	dr.presenter.SetFormat("json")
 	dr.presenter.PresentDiagnosticReport(diagnosticReport)
 
-	if len(dr.Options.Path) > 0 {
-		dr.presenter.SetFormat("json")
-		return nil
-	}
-
-	dr.presenter.SetFormat(dr.Options.Format)
 	return nil
 }
 

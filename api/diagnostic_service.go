@@ -1,7 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -19,6 +22,7 @@ type DiagnosticReport struct {
 	StagedProducts     []DiagnosticProduct
 	DeployedProducts   []DiagnosticProduct
 	AvailableStemcells []Stemcell `json:"available_stemcells,omitempty"`
+	FullReport         string
 }
 
 type Stemcell struct {
@@ -55,6 +59,13 @@ func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 			DeployedProducts []DiagnosticProduct `json:"deployed"`
 		} `json:"added_products"`
 	}
+
+	reportBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(reportBytes))
 	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
 		return DiagnosticReport{}, errors.Wrap(err, "invalid json received from server")
 	}
@@ -65,5 +76,6 @@ func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 		StagedProducts:     apiResponse.AddedProducts.StagedProducts,
 		DeployedProducts:   apiResponse.AddedProducts.DeployedProducts,
 		AvailableStemcells: apiResponse.AvailableStemcells,
+		FullReport:         string(reportBytes),
 	}, nil
 }

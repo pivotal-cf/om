@@ -183,6 +183,14 @@ hello: world`))
 				})
 			})
 		})
+
+		When("no flags are set and no stdin provided", func() {
+			It("errors", func() {
+				err := command.Execute([]string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("no file or STDIN input provided."))
+			})
+		})
 	})
 
 	Describe("Usage", func() {

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -87,7 +88,6 @@ name: bob
 		})
 
 		Context("with vars defined in the environment", func() {
-
 			It("successfully replaces the vars", func() {
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))\nhas_pet: ((has_pet1))")
 				defer yamlFile.Close()
@@ -239,6 +239,23 @@ hash:
 				Eventually(session.Err, 5).Should(gbytes.Say("Expected to find variables: age1"))
 			})
 		})
+	})
 
+	Context("when given standard input", func() {
+		It("parses the stdin and returns the value", func() {
+			command := exec.Command(pathToMain,
+				"interpolate",
+			)
+			command.Stdin = strings.NewReader("---\nname: bob\nage: 100")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session, 5).Should(gexec.Exit(0))
+			Expect(session.Out.Contents()).To(MatchYAML(`
+age: 100
+name: bob
+`))
+		})
 	})
 })

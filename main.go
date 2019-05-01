@@ -170,6 +170,7 @@ func main() {
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
 	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
+	commandSet["diagnostic-report"] = commands.NewDiagnosticReport(presenter, api)
 	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr)
 	commandSet["errands"] = commands.NewErrands(presenter, api)
 	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)
