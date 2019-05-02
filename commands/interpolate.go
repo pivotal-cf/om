@@ -48,32 +48,35 @@ func (c Interpolate) Execute(args []string) error {
 	}
 
 	input := os.Stdin
-	file, err := input.Stat()
+	info, err := input.Stat()
 	if err != nil {
-		return fmt.Errorf("error in stdin: %s", err)
+		return fmt.Errorf("error in STDIN: %s", err)
 	}
 
-	if size := file.Size(); size > 0 {
+	// Bitwise AND uses stdin's file mode mask against the unix character device to
+	// determine if it's pointing to stdin's pipe
+	if info.Mode()&os.ModeCharDevice == 0 {
 		contents, err := ioutil.ReadAll(input)
 		if err != nil {
-			return fmt.Errorf("error reading stdin: %s", err)
+			return fmt.Errorf("error reading STDIN: %s", err)
 		}
 
 		tempFile, err := ioutil.TempFile("", "yml")
 		if err != nil {
-			return fmt.Errorf("error generating temp file for stdin: %s", err)
+			return fmt.Errorf("error generating temp file for STDIN: %s", err)
 		}
+
+		defer os.Remove(tempFile.Name())
 
 		_, err = tempFile.Write(contents)
 		if err != nil {
-			return fmt.Errorf("error writing temp file for stdin: %s", err)
+			return fmt.Errorf("error writing temp file for STDIN: %s", err)
 		}
 
 		c.Options.ConfigFile = tempFile.Name()
 
-
 	} else if len(c.Options.ConfigFile) == 0 {
-		return fmt.Errorf("no file or STDIN input provided. Please provide a --config file or pipe STDIN")
+		return fmt.Errorf("no file or STDIN input provided. Please provide a valid --config file or use a pipe to get STDIN")
 	}
 
 	expectAllKeys := true

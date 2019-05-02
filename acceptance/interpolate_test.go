@@ -257,5 +257,23 @@ age: 100
 name: bob
 `))
 		})
+
+		When("the path flag is used", func() {
+			It("returns the designated value", func() {
+				command := exec.Command(pathToMain,
+					"interpolate",
+					"--path", "/name",
+				)
+				command.Stdin = strings.NewReader("---\nname: bob\nage: 100")
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(0))
+				Expect(session.Out.Contents()).To(MatchYAML(`
+bob
+`))
+			})
+		})
 	})
 })
