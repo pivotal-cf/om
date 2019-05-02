@@ -24,7 +24,6 @@ var _ = Describe("StagedDirectorConfig", func() {
 	})
 
 	Describe("Execute", func() {
-
 		BeforeEach(func() {
 			expectedDirectorAZs := api.AvailabilityZonesOutput{
 				AvailabilityZones: []api.AvailabilityZoneOutput{
@@ -116,6 +115,8 @@ var _ = Describe("StagedDirectorConfig", func() {
 				},
 			}
 			fakeService.ListStagedVMExtensionsReturns(expectedVMExtensions, nil)
+
+			fakeService.GetStagedDirectorIaasConfigurationsReturns(nil, nil)
 		})
 
 		It("Writes a complete config file with filtered sensitive fields to stdout", func() {

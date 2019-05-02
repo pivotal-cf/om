@@ -23,6 +23,7 @@ type StagedDirectorConfig struct {
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
 type stagedDirectorConfigService interface {
 	GetStagedDirectorProperties(bool) (map[string]map[string]interface{}, error)
+	GetStagedDirectorIaasConfigurations(bool) (map[string][]map[string]interface{}, error)
 	GetStagedDirectorAvailabilityZones() (api.AvailabilityZonesOutput, error)
 	GetStagedDirectorNetworks() (api.NetworksConfigurationOutput, error)
 

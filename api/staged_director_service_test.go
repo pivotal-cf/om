@@ -231,6 +231,220 @@ var _ = Describe("StagedProducts", func() {
 		})
 	})
 
+	Describe("GetStagedDirectorIaasConfigurations", func() {
+		BeforeEach(func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				redact = req.URL.Query().Get("redact")
+
+				var resp *http.Response
+				switch req.URL.Path {
+				case "/api/v0/staged/director/iaas_configurations":
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+"iaas_configurations": [
+  {
+    "vcenter_host": "10.10.10.0",                                             
+	"datacenter": "my-data-center",                                           
+	"ephemeral_datastores_string": "e-datastore-name",                        
+	"persistent_datastores_string": "p-datastore-name",                       
+	"vcenter_username": "my-user-name",                                       
+	"bosh_vm_folder": "bosh-folder",                                          
+	"bosh_template_folder": "my-bosh-template-folder",                        
+	"bosh_disk_path": "my-disk-location",                                     
+	"ssl_verification_enabled": false,                                        
+	"nsx_networking_enabled": true,                                           
+	"nsx_mode": "nsx-v",                                                      
+	"nsx_address": "10.10.10.10",                                             
+	"nsx_username": "mysterious-gremlin",                                     
+	"nsx_ca_certificate": "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARugmeow..."
+  }, {
+    "guid": "some-guid",
+    "name": "default",
+    "project": "my-google-project",
+    "associated_service_account": "my-google-service-account",
+    "auth_json": "****"
+  }
+]}`,
+						)),
+					}
+				}
+				return resp, nil
+			}
+		})
+
+		It("returns all the special properties for the Director", func() {
+			config, err := service.GetStagedDirectorIaasConfigurations(true)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(redact).To(Equal("true"))
+
+			Expect(config["iaas_configurations"]).Should(Equal([]map[string]interface{}{
+				{
+					"vcenter_host":                 "10.10.10.0",
+					"datacenter":                   "my-data-center",
+					"ephemeral_datastores_string":  "e-datastore-name",
+					"persistent_datastores_string": "p-datastore-name",
+					"vcenter_username":             "my-user-name",
+					"bosh_vm_folder":               "bosh-folder",
+					"bosh_template_folder":         "my-bosh-template-folder",
+					"bosh_disk_path":               "my-disk-location",
+					"ssl_verification_enabled":     false,
+					"nsx_networking_enabled":       true,
+					"nsx_mode":                     "nsx-v",
+					"nsx_address":                  "10.10.10.10",
+					"nsx_username":                 "mysterious-gremlin",
+					"nsx_ca_certificate":           "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARugmeow...",
+				},
+				{
+					"guid":                       "some-guid",
+					"name":                       "default",
+					"project":                    "my-google-project",
+					"associated_service_account": "my-google-service-account",
+					"auth_json":                  "****",
+				},
+			}))
+		})
+
+		It("disables redaction", func() {
+			_, err := service.GetStagedDirectorIaasConfigurations(false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(redact).To(Equal("false"))
+		})
+
+		Context("with nested json objects in response", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+					switch req.URL.Path {
+					case "/api/v0/staged/director/iaas_configurations":
+						return &http.Response{
+							StatusCode: 200,
+							Body: ioutil.NopCloser(bytes.NewBufferString(`{
+  "iaas_configurations": [{
+    "guid": "some-guid",
+    "name": "default",
+    "subscription_id": "my-subscription",
+    "tenant_id": "my-tenant",
+    "client_id": "my-client",
+    "resource_group_name": "my-resource-group",
+    "cloud_storage_type": "managed_disks",
+    "bosh_storage_account_name": "storage-account-bosh",
+    "storage_account_type": "Standard_LRS",
+    "deployments_storage_account_name": null,
+    "default_security_group": "my-security-group",
+    "ssh_public_key": "ssh-rsa ...",
+    "environment": "AzureStack",
+    "azure_stack": {
+      "resource": "https://management.somedomain.onmicrosoft.com/some-guid",
+      "domain": "subdomain.somedomain.onmicrosoft.com",
+      "authentication": "AzureAD",
+      "endpoint_prefix": "management",
+      "ca_cert": "-----BEGIN CERTIFICATE-----\nMIIJKgIBAAKCAgE..."
+    }
+  }]
+}`)),
+						}, nil
+					}
+					return resp, nil
+				}
+			})
+
+			It("returns the fields", func() {
+				config, err := service.GetStagedDirectorIaasConfigurations(true)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(config["iaas_configurations"]).Should(Equal([]map[string]interface{}{
+					{
+						"guid":                             "some-guid",
+						"name":                             "default",
+						"subscription_id":                  "my-subscription",
+						"tenant_id":                        "my-tenant",
+						"client_id":                        "my-client",
+						"resource_group_name":              "my-resource-group",
+						"cloud_storage_type":               "managed_disks",
+						"bosh_storage_account_name":        "storage-account-bosh",
+						"storage_account_type":             "Standard_LRS",
+						"deployments_storage_account_name": nil,
+						"default_security_group":           "my-security-group",
+						"ssh_public_key":                   "ssh-rsa ...",
+						"environment":                      "AzureStack",
+						"azure_stack": map[interface{}]interface{}{
+							"resource":        "https://management.somedomain.onmicrosoft.com/some-guid",
+							"domain":          "subdomain.somedomain.onmicrosoft.com",
+							"authentication":  "AzureAD",
+							"endpoint_prefix": "management",
+							"ca_cert":         "-----BEGIN CERTIFICATE-----\nMIIJKgIBAAKCAgE...",
+						},
+					},
+				}))
+			})
+		})
+
+		Context("not found", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var resp *http.Response
+					switch req.URL.Path {
+					case "/api/v0/staged/director/iaas_configurations":
+						return &http.Response{
+							StatusCode: 404,
+							Body:       ioutil.NopCloser(bytes.NewBufferString(`{not-found}`)),
+						}, nil
+					}
+					return resp, nil
+				}
+			})
+			It("returns an empty response", func() {
+				resp, err := service.GetStagedDirectorIaasConfigurations(false)
+				Expect(resp).To(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Context("failure cases", func() {
+			Context("when the properties request returns a non 200 error code", func() {
+				BeforeEach(func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						var resp *http.Response
+						switch req.URL.Path {
+						case "/api/v0/staged/director/iaas_configurations":
+							return &http.Response{
+								StatusCode: http.StatusTeapot,
+								Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+							}, nil
+						}
+						return resp, nil
+					}
+				})
+				It("returns an error", func() {
+					_, err := service.GetStagedDirectorIaasConfigurations(false)
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+			Context("when the server returns invalid json", func() {
+				BeforeEach(func() {
+					client.DoStub = func(req *http.Request) (*http.Response, error) {
+						var resp *http.Response
+						switch req.URL.Path {
+						case "/api/v0/staged/director/iaas_configurations":
+							resp = &http.Response{
+								StatusCode: http.StatusOK,
+								Body:       ioutil.NopCloser(bytes.NewBufferString(`{{{`)),
+							}
+						}
+						return resp, nil
+					}
+				})
+
+				It("returns an error", func() {
+					_, err := service.GetStagedDirectorIaasConfigurations(false)
+					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
+				})
+			})
+		})
+	})
+
 	Describe("GetStagedDirectorAvailabilityZones", func() {
 		It("returns all the configured availability zones", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {

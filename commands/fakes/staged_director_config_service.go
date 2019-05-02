@@ -20,6 +20,19 @@ type StagedDirectorConfigService struct {
 		result1 api.AvailabilityZonesOutput
 		result2 error
 	}
+	GetStagedDirectorIaasConfigurationsStub        func(bool) (map[string][]map[string]interface{}, error)
+	getStagedDirectorIaasConfigurationsMutex       sync.RWMutex
+	getStagedDirectorIaasConfigurationsArgsForCall []struct {
+		arg1 bool
+	}
+	getStagedDirectorIaasConfigurationsReturns struct {
+		result1 map[string][]map[string]interface{}
+		result2 error
+	}
+	getStagedDirectorIaasConfigurationsReturnsOnCall map[int]struct {
+		result1 map[string][]map[string]interface{}
+		result2 error
+	}
 	GetStagedDirectorNetworksStub        func() (api.NetworksConfigurationOutput, error)
 	getStagedDirectorNetworksMutex       sync.RWMutex
 	getStagedDirectorNetworksArgsForCall []struct {
@@ -165,6 +178,69 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorAvailabilityZonesRetur
 	}
 	fake.getStagedDirectorAvailabilityZonesReturnsOnCall[i] = struct {
 		result1 api.AvailabilityZonesOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorIaasConfigurations(arg1 bool) (map[string][]map[string]interface{}, error) {
+	fake.getStagedDirectorIaasConfigurationsMutex.Lock()
+	ret, specificReturn := fake.getStagedDirectorIaasConfigurationsReturnsOnCall[len(fake.getStagedDirectorIaasConfigurationsArgsForCall)]
+	fake.getStagedDirectorIaasConfigurationsArgsForCall = append(fake.getStagedDirectorIaasConfigurationsArgsForCall, struct {
+		arg1 bool
+	}{arg1})
+	fake.recordInvocation("GetStagedDirectorIaasConfigurations", []interface{}{arg1})
+	fake.getStagedDirectorIaasConfigurationsMutex.Unlock()
+	if fake.GetStagedDirectorIaasConfigurationsStub != nil {
+		return fake.GetStagedDirectorIaasConfigurationsStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getStagedDirectorIaasConfigurationsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorIaasConfigurationsCallCount() int {
+	fake.getStagedDirectorIaasConfigurationsMutex.RLock()
+	defer fake.getStagedDirectorIaasConfigurationsMutex.RUnlock()
+	return len(fake.getStagedDirectorIaasConfigurationsArgsForCall)
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorIaasConfigurationsCalls(stub func(bool) (map[string][]map[string]interface{}, error)) {
+	fake.getStagedDirectorIaasConfigurationsMutex.Lock()
+	defer fake.getStagedDirectorIaasConfigurationsMutex.Unlock()
+	fake.GetStagedDirectorIaasConfigurationsStub = stub
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorIaasConfigurationsArgsForCall(i int) bool {
+	fake.getStagedDirectorIaasConfigurationsMutex.RLock()
+	defer fake.getStagedDirectorIaasConfigurationsMutex.RUnlock()
+	argsForCall := fake.getStagedDirectorIaasConfigurationsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorIaasConfigurationsReturns(result1 map[string][]map[string]interface{}, result2 error) {
+	fake.getStagedDirectorIaasConfigurationsMutex.Lock()
+	defer fake.getStagedDirectorIaasConfigurationsMutex.Unlock()
+	fake.GetStagedDirectorIaasConfigurationsStub = nil
+	fake.getStagedDirectorIaasConfigurationsReturns = struct {
+		result1 map[string][]map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) GetStagedDirectorIaasConfigurationsReturnsOnCall(i int, result1 map[string][]map[string]interface{}, result2 error) {
+	fake.getStagedDirectorIaasConfigurationsMutex.Lock()
+	defer fake.getStagedDirectorIaasConfigurationsMutex.Unlock()
+	fake.GetStagedDirectorIaasConfigurationsStub = nil
+	if fake.getStagedDirectorIaasConfigurationsReturnsOnCall == nil {
+		fake.getStagedDirectorIaasConfigurationsReturnsOnCall = make(map[int]struct {
+			result1 map[string][]map[string]interface{}
+			result2 error
+		})
+	}
+	fake.getStagedDirectorIaasConfigurationsReturnsOnCall[i] = struct {
+		result1 map[string][]map[string]interface{}
 		result2 error
 	}{result1, result2}
 }
@@ -600,6 +676,8 @@ func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{
 	defer fake.invocationsMutex.RUnlock()
 	fake.getStagedDirectorAvailabilityZonesMutex.RLock()
 	defer fake.getStagedDirectorAvailabilityZonesMutex.RUnlock()
+	fake.getStagedDirectorIaasConfigurationsMutex.RLock()
+	defer fake.getStagedDirectorIaasConfigurationsMutex.RUnlock()
 	fake.getStagedDirectorNetworksMutex.RLock()
 	defer fake.getStagedDirectorNetworksMutex.RUnlock()
 	fake.getStagedDirectorPropertiesMutex.RLock()
