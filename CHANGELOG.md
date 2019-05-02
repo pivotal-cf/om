@@ -3,6 +3,31 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
+## [PENDING] 0.58.0
+
+### Features
+* new command `diagnostic-report`
+  returns the full OpsMan diagnostic report
+  which holds general information about the
+  targeted OpsMan's state.
+  Documentation on the report's payload
+  can be found [here.](https://docs.pivotal.io/pivotalcf/2-2/opsman-api/#diagnostic-report)
+* `om interpolate` now can take input from stdin.
+  This can be used in conjunction with the new
+  `diagnostic-report` command to extract
+  a specific section or value
+  from the report, simply by using the pipe operator. For example,
+  ```bash
+  om -e env.yml diagnostic-report | om interpolate --path /versions
+  ```
+  This will return the `versions` block of the json payload:
+  ```yaml
+  installation_schema_version: "2.6"
+  javascript_migrations_version: v1
+  metadata_version: "2.6"
+  release_version: 2.6.0-build.77
+  ```
+
 ## 0.57.0
 
 ### Features
