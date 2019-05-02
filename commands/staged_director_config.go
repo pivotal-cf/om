@@ -22,7 +22,7 @@ type StagedDirectorConfig struct {
 
 //go:generate counterfeiter -o ./fakes/staged_director_config_service.go --fake-name StagedDirectorConfigService . stagedDirectorConfigService
 type stagedDirectorConfigService interface {
-	GetStagedDirectorProperties(bool) (map[string]map[string]interface{}, error)
+	GetStagedDirectorProperties(bool) (map[string]interface{}, error)
 	GetStagedDirectorIaasConfigurations(bool) (map[string][]map[string]interface{}, error)
 	GetStagedDirectorAvailabilityZones() (api.AvailabilityZonesOutput, error)
 	GetStagedDirectorNetworks() (api.NetworksConfigurationOutput, error)
@@ -73,6 +73,18 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
+	multiIaasConfigs, err := ec.service.GetStagedDirectorIaasConfigurations(!ec.Options.NoRedact)
+	if err != nil {
+		return err
+	}
+
+	if multiIaasConfigs != nil {
+		properties["iaas_configurations"] = multiIaasConfigs["iaas_configurations"]
+		if _, ok := properties["iaas_configuration"]; ok {
+			delete(properties, "iaas_configuration")
+		}
+	}
+
 	networks, err := ec.service.GetStagedDirectorNetworks()
 	if err != nil {
 		return err
@@ -113,7 +125,13 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	config["resource-configuration"] = resourceConfigs
 
 	if !ec.Options.IncludeCredentials && !ec.Options.IncludePlaceholders {
-		delete(config["properties-configuration"].(map[string]map[string]interface{}), "iaas_configuration")
+		if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configuration"]; ok {
+			delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
+		}
+
+		if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configurations"]; ok {
+			delete(config["properties-configuration"].(map[string]interface{}), "iaas_configurations")
+		}
 	}
 
 	for key, value := range config {

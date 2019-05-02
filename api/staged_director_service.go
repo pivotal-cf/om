@@ -42,7 +42,7 @@ type ClusterOutput struct {
 	ResourcePool string `yaml:"resource_pool"`
 }
 
-func (a Api) GetStagedDirectorProperties(redact bool) (map[string]map[string]interface{}, error) {
+func (a Api) GetStagedDirectorProperties(redact bool) (map[string]interface{}, error) {
 	var queryString string
 
 	if redact {
@@ -61,7 +61,7 @@ func (a Api) GetStagedDirectorProperties(redact bool) (map[string]map[string]int
 		return nil, err
 	}
 
-	var properties map[string]map[string]interface{}
+	var properties map[string]interface{}
 	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
 		return nil, errors.Wrap(err, "could not parse json")
 	}

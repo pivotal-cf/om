@@ -45,17 +45,17 @@ type StagedDirectorConfigService struct {
 		result1 api.NetworksConfigurationOutput
 		result2 error
 	}
-	GetStagedDirectorPropertiesStub        func(bool) (map[string]map[string]interface{}, error)
+	GetStagedDirectorPropertiesStub        func(bool) (map[string]interface{}, error)
 	getStagedDirectorPropertiesMutex       sync.RWMutex
 	getStagedDirectorPropertiesArgsForCall []struct {
 		arg1 bool
 	}
 	getStagedDirectorPropertiesReturns struct {
-		result1 map[string]map[string]interface{}
+		result1 map[string]interface{}
 		result2 error
 	}
 	getStagedDirectorPropertiesReturnsOnCall map[int]struct {
-		result1 map[string]map[string]interface{}
+		result1 map[string]interface{}
 		result2 error
 	}
 	GetStagedProductByNameStub        func(string) (api.StagedProductsFindOutput, error)
@@ -300,7 +300,7 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorNetworksReturnsOnCall(
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorProperties(arg1 bool) (map[string]map[string]interface{}, error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorProperties(arg1 bool) (map[string]interface{}, error) {
 	fake.getStagedDirectorPropertiesMutex.Lock()
 	ret, specificReturn := fake.getStagedDirectorPropertiesReturnsOnCall[len(fake.getStagedDirectorPropertiesArgsForCall)]
 	fake.getStagedDirectorPropertiesArgsForCall = append(fake.getStagedDirectorPropertiesArgsForCall, struct {
@@ -324,7 +324,7 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCallCount() 
 	return len(fake.getStagedDirectorPropertiesArgsForCall)
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCalls(stub func(bool) (map[string]map[string]interface{}, error)) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesCalls(stub func(bool) (map[string]interface{}, error)) {
 	fake.getStagedDirectorPropertiesMutex.Lock()
 	defer fake.getStagedDirectorPropertiesMutex.Unlock()
 	fake.GetStagedDirectorPropertiesStub = stub
@@ -337,28 +337,28 @@ func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesArgsForCall(
 	return argsForCall.arg1
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturns(result1 map[string]map[string]interface{}, result2 error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturns(result1 map[string]interface{}, result2 error) {
 	fake.getStagedDirectorPropertiesMutex.Lock()
 	defer fake.getStagedDirectorPropertiesMutex.Unlock()
 	fake.GetStagedDirectorPropertiesStub = nil
 	fake.getStagedDirectorPropertiesReturns = struct {
-		result1 map[string]map[string]interface{}
+		result1 map[string]interface{}
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturnsOnCall(i int, result1 map[string]map[string]interface{}, result2 error) {
+func (fake *StagedDirectorConfigService) GetStagedDirectorPropertiesReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
 	fake.getStagedDirectorPropertiesMutex.Lock()
 	defer fake.getStagedDirectorPropertiesMutex.Unlock()
 	fake.GetStagedDirectorPropertiesStub = nil
 	if fake.getStagedDirectorPropertiesReturnsOnCall == nil {
 		fake.getStagedDirectorPropertiesReturnsOnCall = make(map[int]struct {
-			result1 map[string]map[string]interface{}
+			result1 map[string]interface{}
 			result2 error
 		})
 	}
 	fake.getStagedDirectorPropertiesReturnsOnCall[i] = struct {
-		result1 map[string]map[string]interface{}
+		result1 map[string]interface{}
 		result2 error
 	}{result1, result2}
 }

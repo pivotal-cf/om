@@ -38,8 +38,8 @@ var _ = Describe("StagedDirectorConfig", func() {
 			}
 			fakeService.GetStagedDirectorAvailabilityZonesReturns(expectedDirectorAZs, nil)
 
-			expectedDirectorProperties := map[string]map[string]interface{}{
-				"director_configuration": {
+			expectedDirectorProperties := map[string]interface{}{
+				"director_configuration": map[string]interface{}{
 					"filtered_key": "filtered_key",
 					"max_threads":  5,
 					"encryption": map[string]interface{}{
@@ -51,14 +51,14 @@ var _ = Describe("StagedDirectorConfig", func() {
 						},
 					},
 				},
-				"iaas_configuration": {
+				"iaas_configuration": map[string]interface{}{
 					"project": "project-id",
 					"key":     "some-key",
 				},
-				"syslog_configuration": {
+				"syslog_configuration": map[string]interface{}{
 					"syslogconfig": "awesome",
 				},
-				"security_configuration": {
+				"security_configuration": map[string]interface{}{
 					"trusted_certificates": "some-certificate",
 				},
 			}
@@ -271,6 +271,75 @@ properties-configuration:
     project: project-id  
 `)))
 			})
+
+			It("fetches iaas_configurations from /iaas_configurations endpoint if multi-iaas is supported", func() {
+				fakeService.GetStagedDirectorIaasConfigurationsReturns(map[string][]map[string]interface{}{
+					"iaas_configurations": {
+						{
+							"guid":                       "some-guid",
+							"name":                       "default",
+							"project":                    "my-google-project",
+							"associated_service_account": "my-google-service-account",
+							"auth_json":                  "****",
+						},
+					},
+				}, nil)
+
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-credentials",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: filtered_key
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        partition_password: some_password
+        client_key: user_provided_key
+        client_user: user
+  iaas_configurations:
+    - guid: some-guid
+      name: default
+      project: my-google-project
+      associated_service_account: my-google-service-account
+      auth_json: "****"
+`)))
+			})
 		})
 
 		Describe("with --include-placeholders", func() {
@@ -282,8 +351,7 @@ properties-configuration:
 				Expect(err).NotTo(HaveOccurred())
 
 				output := logger.PrintlnArgsForCall(0)
-				Expect(output).To(ContainElement(MatchYAML(`
-az-configuration:
+				Expect(output).To(ContainElement(MatchYAML(`az-configuration:
 - name: some-az
   iaas_configuration_guid: some-iaas-guid
 - name: some-other-az
