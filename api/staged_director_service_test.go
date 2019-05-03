@@ -102,7 +102,7 @@ var _ = Describe("StagedProducts", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(redact).To(Equal("true"))
 
-			Expect(config["iaas_configuration"]).To(Equal(map[string]interface{}{
+			Expect(config["iaas_configuration"]).To(Equal(map[interface{}]interface{}{
 				"vcenter_host":                 "10.10.10.0",
 				"datacenter":                   "my-data-center",
 				"ephemeral_datastores_string":  "e-datastore-name",
@@ -118,7 +118,7 @@ var _ = Describe("StagedProducts", func() {
 				"nsx_username":                 "mysterious-gremlin",
 				"nsx_ca_certificate":           "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARugmeow...",
 			}))
-			Expect(config["director_configuration"]).To(Equal(map[string]interface{}{
+			Expect(config["director_configuration"]).To(Equal(map[interface{}]interface{}{
 				"ntp_servers_string":           "us.pool.ntp.org, time.google.com",
 				"metrics_ip":                   nil,
 				"resurrector_enabled":          false,
@@ -147,12 +147,12 @@ var _ = Describe("StagedProducts", func() {
 				"excluded_recursors": []interface{}{"8.8.8.8"},
 			},
 			))
-			Expect(config["security_configuration"]).To(Equal(map[string]interface{}{
+			Expect(config["security_configuration"]).To(Equal(map[interface{}]interface{}{
 				"trusted_certificates":  nil,
 				"generate_vm_passwords": true,
 			},
 			))
-			Expect(config["syslog_configuration"]).To(Equal(map[string]interface{}{
+			Expect(config["syslog_configuration"]).To(Equal(map[interface{}]interface{}{
 				"enabled":            true,
 				"address":            "1.2.3.4",
 				"port":               "514",
