@@ -164,7 +164,7 @@ func main() {
 	commandSet["credentials"] = commands.NewCredentials(api, presenter, stdout)
 	commandSet["curl"] = commands.NewCurl(api, stdout, stderr)
 	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(api, stdout)
-	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, applySleepDuration)
+	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, os.Stdin, applySleepDuration)
 	commandSet["delete-ssl-certificate"] = commands.NewDeleteSSLCertificate(api, stdout)
 	commandSet["delete-product"] = commands.NewDeleteProduct(api)
 	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)

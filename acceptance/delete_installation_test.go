@@ -82,7 +82,8 @@ var _ = Describe("delete-installation command", func() {
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
-			"delete-installation")
+			"delete-installation",
+			"--force")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
