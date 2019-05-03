@@ -78,17 +78,23 @@ var _ = Describe("DeleteInstallation", func() {
 
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			_, err := stdin.WriteString("y\n")
+			_, err := stdin.WriteString("yes\n")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = stdin.WriteString("yes\n")
 			Expect(err).NotTo(HaveOccurred())
 
 			err = command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("please press y to confirm deletion: "))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("Do you really want to delete the installation? [yes/no]: "))
 
 			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to delete the installation on the targeted Ops Manager"))
+			Expect(fmt.Sprintf(format, content...)).To(Equal("Ok. Are you sure? [yes/no]: "))
+
+			format, content = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("Ok, deleting installation."))
 
 			Expect(fakeService.DeleteInstallationAssetCollectionCallCount()).To(Equal(1))
 			Expect(fakeService.GetInstallationArgsForCall(0)).To(Equal(311))
