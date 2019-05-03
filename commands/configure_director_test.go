@@ -28,7 +28,7 @@ var _ = Describe("ConfigureDirector", func() {
 	BeforeEach(func() {
 		service = &fakes.ConfigureDirectorService{}
 		logger = &fakes.Logger{}
-		service.InfoReturns(api.Info{Version: "2.6-build243"}, nil)
+		service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 		service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{
 				GUID: "p-bosh-guid",
@@ -699,12 +699,12 @@ iaas-configurations:
 
 				When("iaas-configurations is used with a version of ops manager below 2.6", func() {
 					It("returns an error", func() {
-						versions := []string{"2.5-build.326", "1.12-build99"}
+						versions := []string{"2.1-build.326", "1.12-build99"}
 						for _, version := range versions {
 							service.InfoReturns(api.Info{Version: version}, nil)
 
 							err := command.Execute([]string{"--config", configFile.Name()})
-							Expect(err).To(MatchError(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.6 or later: you are running %s", version)))
+							Expect(err).To(MatchError(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s", version)))
 						}
 					})
 				})
