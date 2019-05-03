@@ -3,6 +3,7 @@ package api_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -753,6 +754,73 @@ var _ = Describe("Director", func() {
                     "guid": "some-guid",
                     "vsphere": "something"
 				}}`))
+			})
+		})
+
+		Context("failure cases", func() {
+			It("returns error if GET to iaas_configurations fails", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return nil, fmt.Errorf("error")
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("error"))
+			})
+
+			It("returns error if POST to iaas_configurations fails", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "POST" {
+						return nil, fmt.Errorf("error")
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("error"))
+			})
+
+			It("returns error if PUT to iaas_configurations fails", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "PUT" {
+						return nil, fmt.Errorf("error")
+					} else if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(strings.NewReader(
+								`{"iaas_configurations": [
+									{"guid": "some-guid",
+									 "name": "existing"}]}`,
+							))}, nil
+					}
+					return nil, nil
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("error"))
+			})
+
+			It("returns an error if the response body is not JSON", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(strings.NewReader(`bad payload`))}, nil
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("failed to unmarshal JSON response from Ops Manager"))
 			})
 		})
 	})

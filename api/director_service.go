@@ -253,7 +253,7 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 	var existingIAASes IAASConfigurationAPIPayload
 	err = yaml.Unmarshal(existingIAASJSON, &existingIAASes)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal JSON response from Ops Manager: %s", err)
 	}
 
 	for _, config := range iaasConfigurations {
