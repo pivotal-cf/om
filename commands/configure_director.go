@@ -29,6 +29,7 @@ type directorConfig struct {
 	AZConfiguration         interface{}            `yaml:"az-configuration"`
 	NetworksConfiguration   interface{}            `yaml:"networks-configuration"`
 	PropertiesConfiguration interface{}            `yaml:"properties-configuration"`
+	IAASConfigurations      interface{}            `yaml:"iaas-configurations"`
 	ResourceConfiguration   map[string]interface{} `yaml:"resource-configuration"`
 	VMExtensions            interface{}            `yaml:"vmextensions-configuration"`
 	Field                   map[string]interface{} `yaml:",inline"`
@@ -41,9 +42,11 @@ type configureDirectorService interface {
 	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
 	GetStagedProductJobResourceConfig(string, string) (api.JobProperties, error)
 	GetStagedProductManifest(guid string) (manifest string, err error)
+	Info() (api.Info, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	ListStagedProductJobs(string) (map[string]string, error)
 	ListStagedVMExtensions() ([]api.VMExtension, error)
+	UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput) error
 	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput, bool) error
 	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
 	UpdateStagedDirectorNetworks(api.NetworkInput) error
@@ -83,6 +86,11 @@ func (c ConfigureDirector) Execute(args []string) error {
 	}
 
 	err = c.validateConfig(config)
+	if err != nil {
+		return err
+	}
+
+	err = c.updateIAASConfigurations(config)
 	if err != nil {
 		return err
 	}
@@ -142,6 +150,19 @@ func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
 }
 
 func (c ConfigureDirector) validateConfig(config *directorConfig) error {
+	err := c.checkForDeprecatedKeys(config)
+	if err != nil {
+		return err
+	}
+
+	err = c.checkIAASConfigurationIsOnlySetOnce(config)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c ConfigureDirector) checkForDeprecatedKeys(config *directorConfig) error {
 	if len(config.Field) > 0 {
 		var unrecognizedKeys []string
 		for key := range config.Field {
@@ -190,6 +211,50 @@ vmextensions-configuration: {}
 		}
 
 		return fmt.Errorf("the config file contains unrecognized keys: \"%s\"", strings.Join(unrecognizedKeys, "\", \""))
+	}
+	return nil
+}
+
+func (c ConfigureDirector) checkIAASConfigurationIsOnlySetOnce(config *directorConfig) error {
+	iaasConfigurations := config.IAASConfigurations
+	properties, ok := config.PropertiesConfiguration.(map[interface{}]interface{})
+	if !ok {
+		return nil
+	}
+
+	iaasProperties := properties["iaas-configuration"]
+
+	if iaasConfigurations != nil && iaasProperties != nil {
+		return fmt.Errorf("iaas-configurations cannot be used with properties-configuration.iaas-configurations\n" +
+			"Please only use one implementation.")
+	}
+	return nil
+}
+
+func (c ConfigureDirector) updateIAASConfigurations(config *directorConfig) error {
+	if config.IAASConfigurations != nil {
+		c.logger.Printf("started setting iaas configurations for bosh tile")
+
+		info, err := c.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if ok, _ := info.VersionAtLeast(2, 6); !ok {
+			return fmt.Errorf("\"iaas-configurations\" is only available with Ops Manager 2.6 or later: you are running %s", info.Version)
+		}
+
+		configurations, err := getJSONProperties(config.IAASConfigurations)
+		if err != nil {
+			return err
+		}
+
+		err = c.service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(configurations))
+
+		if err != nil {
+			return fmt.Errorf("iaas configurations could not be completed: %s", err)
+		}
+
+		c.logger.Printf("finished setting iaas configurations for bosh tile")
 	}
 	return nil
 }

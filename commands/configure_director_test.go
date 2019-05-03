@@ -3,6 +3,7 @@ package commands_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 
 	"io/ioutil"
@@ -27,6 +28,7 @@ var _ = Describe("ConfigureDirector", func() {
 	BeforeEach(func() {
 		service = &fakes.ConfigureDirectorService{}
 		logger = &fakes.Logger{}
+		service.InfoReturns(api.Info{Version: "2.6-build243"}, nil)
 		service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{
 				GUID: "p-bosh-guid",
@@ -218,7 +220,7 @@ properties-configuration:
 			ExpectDirectorToBeConfiguredCorrectly()
 		})
 
-		Context("when the --config flag is set", func() {
+		When("the --config flag is set", func() {
 			Context("with an invalid config", func() {
 				It("does not configure the director", func() {
 					configYAML := `invalidYAML`
@@ -347,7 +349,7 @@ properties-configuration:
 					ExpectDirectorToBeConfiguredCorrectly()
 				})
 
-				Context("when the config file(s) contain variables", func() {
+				When("the config file(s) contain variables", func() {
 
 					Context("not provided", func() {
 						It("returns an error", func() {
@@ -435,7 +437,7 @@ properties-configuration:
 			})
 		})
 
-		Context("when no vm_extension configuration is provided", func() {
+		When("no vm_extension configuration is provided", func() {
 			It("does not list, create or delete vm extensions", func() {
 				configurationMAP := map[string]interface{}{}
 
@@ -457,7 +459,7 @@ properties-configuration:
 			})
 		})
 
-		Context("when empty vm_extension configuration is provided", func() {
+		When("empty vm_extension configuration is provided", func() {
 			It("should delete existing vm extensions", func() {
 				configFile, err := ioutil.TempFile("", "config.yaml")
 				Expect(err).ToNot(HaveOccurred())
@@ -474,7 +476,7 @@ properties-configuration:
 			})
 		})
 
-		Context("when only some of the configure-director top-level keys are provided", func() {
+		When("only some of the configure-director top-level keys are provided", func() {
 			BeforeEach(func() {
 				config = `{"networks-configuration":{"network":"network-1"},"properties-configuration":{"some-director-assignment":"director"}}`
 			})
@@ -497,7 +499,7 @@ properties-configuration:
 			})
 		})
 
-		Context("when there is a running installation", func() {
+		When("there is a running installation", func() {
 			BeforeEach(func() {
 				service.ListInstallationsReturns([]api.InstallationsServiceOutput{
 					{
@@ -519,8 +521,8 @@ properties-configuration:
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when no director configuration flags are provided", func() {
+		When("an error occurs", func() {
+			When("no director configuration flags are provided", func() {
 				It("returns an error ", func() {
 					err := command.Execute([]string{})
 					Expect(err).To(HaveOccurred())
@@ -528,14 +530,14 @@ properties-configuration:
 				})
 			})
 
-			Context("when flag parser fails", func() {
+			When("flag parser fails", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--foo", "bar"})
 					Expect(err).To(MatchError("could not parse configure-director flags: flag provided but not defined: -foo"))
 				})
 			})
 
-			Context("when configuring availability_zones fails", func() {
+			When("configuring availability_zones fails", func() {
 				BeforeEach(func() {
 					config = `{"az-configuration": {}}`
 				})
@@ -547,7 +549,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when configuring networks fails", func() {
+			When("configuring networks fails", func() {
 				BeforeEach(func() {
 					config = `{"networks-configuration": {}}`
 				})
@@ -559,7 +561,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when configuring networks fails", func() {
+			When("configuring networks fails", func() {
 				BeforeEach(func() {
 					config = `{"network-assignment": {}}`
 				})
@@ -571,7 +573,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when configuring properties fails", func() {
+			When("configuring properties fails", func() {
 				BeforeEach(func() {
 					config = `{"properties-configuration": {"director_configuration": {}}}`
 				})
@@ -583,7 +585,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when retrieving staged products fails", func() {
+			When("retrieving staged products fails", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {}}`
 				})
@@ -595,7 +597,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when user-provided top-level resource config is not valid JSON", func() {
+			When("user-provided top-level resource config is not valid JSON", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {{{{}`
 				})
@@ -606,7 +608,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when retrieving jobs for product fails", func() {
+			When("retrieving jobs for product fails", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {}}`
 				})
@@ -618,7 +620,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when user-provided job does not exist", func() {
+			When("user-provided job does not exist", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {"invalid-resource": {}}}`
 				})
@@ -629,7 +631,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when retrieving existing job config fails", func() {
+			When("retrieving existing job config fails", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {"resource": {}}}`
 				})
@@ -641,7 +643,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when user-provided nested resource config is not valid JSON", func() {
+			When("user-provided nested resource config is not valid JSON", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {"resource": "%%%"}}`
 				})
@@ -652,7 +654,7 @@ properties-configuration:
 				})
 			})
 
-			Context("when configuring the job fails", func() {
+			When("configuring the job fails", func() {
 				BeforeEach(func() {
 					config = `{"resource-configuration": {"resource": {}}}`
 				})
@@ -661,6 +663,61 @@ properties-configuration:
 					service.UpdateStagedProductJobResourceConfigReturns(errors.New("some-error"))
 					err := command.Execute([]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
+				})
+			})
+		})
+
+		When("iaas-configurations is set", func() {
+			BeforeEach(func() {
+				config = `
+iaas-configurations:
+- {
+	  guid: some-guid,
+	  name: default,
+  }
+`
+			})
+
+			It("configures the director", func() {
+				err := command.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.UpdateStagedDirectorIAASConfigurationsCallCount()).To(Equal(1))
+				Expect(string(service.UpdateStagedDirectorIAASConfigurationsArgsForCall(0))).To(MatchYAML(`[{guid: some-guid, name: default}]`))
+			})
+
+			Context("failure cases", func() {
+				When("setting iaas configurations fails", func() {
+					It("returns an error", func() {
+						service.UpdateStagedDirectorIAASConfigurationsReturns(errors.New("iaas failed"))
+						err := command.Execute([]string{"--config", configFile.Name()})
+						Expect(err).To(MatchError("iaas configurations could not be completed: iaas failed"))
+					})
+				})
+
+				When("iaas-configurations is used with a version of ops manager below 2.6", func() {
+					It("returns an error", func() {
+						versions := []string{"2.5-build.326", "1.12-build99"}
+						for _, version := range versions {
+							service.InfoReturns(api.Info{Version: version}, nil)
+
+							err := command.Execute([]string{"--config", configFile.Name()})
+							Expect(err).To(MatchError(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.6 or later: you are running %s", version)))
+						}
+					})
+				})
+			})
+
+			When("iaas-configurations and properties-configuration.iaas-configuration are both set", func() {
+				BeforeEach(func() {
+					config = `{"iaas-configurations": [], "properties-configuration": {"iaas-configuration": {}}}`
+				})
+
+				It("returns an error", func() {
+					err := command.Execute([]string{"--config", configFile.Name()})
+					Expect(err).To(MatchError("iaas-configurations cannot be used with properties-configuration.iaas-configurations\nPlease only use one implementation."))
 				})
 			})
 		})
