@@ -279,15 +279,21 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 		}
 
 		if config.GUID == "" {
-			_, err = a.sendAPIRequest("POST", "/api/v0/staged/director/iaas_configurations", jsonData)
+			resp, err := a.sendAPIRequest("POST", "/api/v0/staged/director/iaas_configurations", jsonData)
 			if err != nil {
+				return err
+			}
+			if err = validateStatusOK(resp); err != nil {
 				return err
 			}
 			continue
 		}
 
-		_, err = a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/iaas_configurations/%s", config.GUID), jsonData)
+		resp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/iaas_configurations/%s", config.GUID), jsonData)
 		if err != nil {
+			return err
+		}
+		if err = validateStatusOK(resp); err != nil {
 			return err
 		}
 	}

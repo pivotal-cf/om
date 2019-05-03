@@ -757,6 +757,58 @@ var _ = Describe("Director", func() {
 			})
 		})
 
+		When("given a mixed list of existing and new iaas_configurations", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(strings.NewReader(
+								`{"iaas_configurations": [
+									{
+                                      "guid": "some-guid",
+									  "name": "existing"
+                                    },
+                                    {
+									  "name": "new"
+                                    }]}`,
+							))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+			})
+
+			It("creates and updates iaas configurations", func() {
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"},{"name":"new"}]`))
+				Expect(err).NotTo(HaveOccurred())
+
+				req := client.DoArgsForCall(0)
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				req = client.DoArgsForCall(1)
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations/some-guid"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				req = client.DoArgsForCall(2)
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				jsonBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(jsonBody).To(MatchJSON(`{
+				"iaas_configuration": {
+					"name": "new"
+				}}`))
+			})
+		})
+
 		Context("failure cases", func() {
 			It("returns error if GET to iaas_configurations fails", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
@@ -821,6 +873,50 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("failed to unmarshal JSON response from Ops Manager"))
+			})
+
+			It("returns network errors if a status is not OK on PUT", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "PUT" {
+						return &http.Response{
+							StatusCode: http.StatusUnprocessableEntity,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					} else if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(strings.NewReader(
+								`{"iaas_configurations": [
+									{"guid": "some-guid",
+									 "name": "existing"}]}`,
+							))}, nil
+					}
+					return nil, nil
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("request failed"))
+			})
+
+			It("returns network errors if a status is not OK on POST", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "POST" {
+						return &http.Response{
+							StatusCode: http.StatusUnprocessableEntity,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					} else if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(strings.NewReader(
+								`{}`,
+							))}, nil
+					}
+					return nil, nil
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "invalid-new"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("request failed"))
 			})
 		})
 	})
