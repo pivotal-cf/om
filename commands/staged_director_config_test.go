@@ -217,11 +217,11 @@ properties-configuration:
 			})
 		})
 
-		Describe("with --include-credentials", func() {
+		Describe("with --no-redact", func() {
 			It("Includes the filtered fields when printing to stdout", func() {
 				command := commands.NewStagedDirectorConfig(fakeService, logger)
 				err := command.Execute([]string{
-					"--include-credentials",
+					"--no-redact",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -287,7 +287,7 @@ properties-configuration:
 
 				command := commands.NewStagedDirectorConfig(fakeService, logger)
 				err := command.Execute([]string{
-					"--include-credentials",
+					"--no-redact",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -395,9 +395,91 @@ properties-configuration:
     key: ((properties-configuration_iaas_configuration_key))  
 `)))
 			})
-		})
 
+			It("with multiple iaas's configured, includes placeholders", func() {
+				fakeService.GetStagedDirectorIaasConfigurationsReturns(map[string][]map[string]interface{}{
+					"iaas_configurations": {
+						{
+							"guid":                       "some-guid",
+							"name":                       "default",
+							"project":                    "my-google-project",
+							"associated_service_account": "my-google-service-account",
+							"auth_json":                  "****",
+						}, {
+							"guid":                       "another-guid",
+							"name":                       "meow",
+							"project":                    "my-other-google-project",
+							"associated_service_account": "my-other-google-service-account",
+							"auth_json":                  "****",
+						},
+					},
+				}, nil)
+
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-placeholders",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: ((properties-configuration_director_configuration_filtered_key))
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        client_key: ((properties-configuration_director_configuration_encryption_providers_client_key))
+        client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
+        partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
+    max_threads: 5
+iaas-configurations:
+  - guid: ((iaas-configurations_0_guid))
+    name: ((iaas-configurations_0_name))
+    project: ((iaas-configurations_0_project))
+    associated_service_account: ((iaas-configurations_0_associated_service_account))
+    auth_json: ((iaas-configurations_0_auth_json))
+  - guid: ((iaas-configurations_1_guid))
+    name: ((iaas-configurations_1_name))
+    project: ((iaas-configurations_1_project))
+    associated_service_account: ((iaas-configurations_1_associated_service_account))
+    auth_json: ((iaas-configurations_1_auth_json))
+`)))
+			})
+
+		})
 	})
+
+
 
 	Describe("failure cases", func() {
 		Context("when an unknown flag is provided", func() {

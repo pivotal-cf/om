@@ -14,7 +14,6 @@ type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
 	Options struct {
-		IncludeCredentials  bool `long:"include-credentials" short:"c" description:"include credentials. note: requires product to have been deployed"`
 		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"replace obscured credentials to interpolatable placeholders"`
 		NoRedact            bool `long:"no-redact" description:"Redact IaaS values from director configuration"`
 	}
@@ -126,7 +125,7 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 	config["resource-configuration"] = resourceConfigs
 
-	if !ec.Options.IncludeCredentials && !ec.Options.IncludePlaceholders {
+	if !ec.Options.NoRedact && !ec.Options.IncludePlaceholders {
 		if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configuration"]; ok {
 			delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
 		}
@@ -162,7 +161,8 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 		return ec.handleMap(prefix, typedValue)
 	case map[string]map[string]interface{}:
 		return ec.handleMapOfMaps(prefix, typedValue)
-
+	case []map[string]interface{}:
+		return ec.handleSliceOfMaps(prefix, typedValue)
 	case []interface{}:
 		return ec.handleSlice(prefix, typedValue)
 
@@ -173,12 +173,18 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 			}
 		}
 
+		if strings.Contains(prefix, "iaas-configurations") {
+			if ec.Options.IncludePlaceholders {
+				return "((" + prefix + "))", nil
+			}
+		}
+
 		for _, filter := range filters {
 			if strings.Contains(keyName, filter) {
 				if ec.Options.IncludePlaceholders {
 					return "((" + prefix + "))", nil
 				}
-				if ec.Options.IncludeCredentials {
+				if ec.Options.NoRedact {
 					return value, nil
 				}
 				return nil, nil
@@ -227,6 +233,20 @@ func (ec StagedDirectorConfig) handleSlice(prefix string, value []interface{}) (
 		}
 		if returnedVal != nil {
 			newValue = append(newValue, returnedVal)
+		}
+	}
+	return newValue, nil
+}
+
+func (ec StagedDirectorConfig) handleSliceOfMaps(prefix string, value []map[string]interface{}) (interface{}, error) {
+	var newValue []map[string]interface{}
+	for innerIndex, innerVal := range value {
+		returnedVal, err := ec.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
+		if err != nil {
+			return nil, err
+		}
+		if returnedVal != nil {
+			newValue = append(newValue, returnedVal.(map[string]interface{}))
 		}
 	}
 	return newValue, nil
