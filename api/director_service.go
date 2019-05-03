@@ -220,6 +220,81 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 	return networks, nil
 }
 
+type IAASConfigurationsInput json.RawMessage
+
+type IAASConfigurationAPIPayload struct {
+	Fields            map[string]interface{} `yaml:",inline"`
+	IAASConfiguration []*IAASConfiguration   `yaml:"iaas_configurations"`
+}
+
+type IAASConfiguration struct {
+	GUID   string                 `yaml:"guid,omitempty"`
+	Name   string                 `yaml:"name"`
+	Fields map[string]interface{} `yaml:",inline"`
+}
+
+func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfigurationsInput) error {
+	iaasConfigurations := []*IAASConfiguration{}
+	err := yaml.Unmarshal(iaasConfig, &iaasConfigurations)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal iaas_configurations object: %v", err)
+	}
+
+	response, err := a.sendAPIRequest("GET", "/api/v0/staged/director/iaas_configurations", nil)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	existingIAASJSON, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	var existingIAASes IAASConfigurationAPIPayload
+	err = yaml.Unmarshal(existingIAASJSON, &existingIAASes)
+	if err != nil {
+		return err
+	}
+
+	for _, config := range iaasConfigurations {
+		for _, existingIAAS := range existingIAASes.IAASConfiguration {
+			if config.Name == existingIAAS.Name {
+				config.GUID = existingIAAS.GUID
+				break
+			}
+		}
+	}
+
+	for _, config := range iaasConfigurations {
+		decoratedConfig, err := yaml.Marshal(map[string]interface{}{
+			"iaas_configuration": config,
+		})
+		if err != nil {
+			return errors.Wrap(err, "problem marshalling request") // un-tested
+		}
+
+		jsonData, err := yamlConverter.YAMLToJSON(decoratedConfig)
+		if err != nil {
+			return errors.Wrap(err, "problem converting request to JSON") // un-tested
+		}
+
+		if config.GUID == "" {
+			_, err = a.sendAPIRequest("POST", "/api/v0/staged/director/iaas_configurations", jsonData)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		_, err = a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/iaas_configurations/%s", config.GUID), jsonData)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, error) {
 	existingAzsResponse, err := a.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	if err != nil {

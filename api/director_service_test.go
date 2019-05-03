@@ -684,4 +684,76 @@ var _ = Describe("Director", func() {
 			})
 		})
 	})
+
+	Describe("IAASConfigurations", func() {
+		When("given a list of IAAS Configurations", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(strings.NewReader(
+								`{"iaas_configurations": [
+									{"guid": "some-guid",
+									 "name": "existing"}]}`,
+							))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+			})
+
+			It("creates each iaas configuration if they are new", func() {
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "one"}]`))
+				Expect(err).NotTo(HaveOccurred())
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				req = client.DoArgsForCall(1)
+
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				jsonBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(jsonBody).To(MatchJSON(`{
+				"iaas_configuration": {
+					"name": "one"
+				}}`))
+			})
+
+			It("updates existing iaas configuration if the name already exists", func() {
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				Expect(err).NotTo(HaveOccurred())
+
+				req := client.DoArgsForCall(0)
+
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				req = client.DoArgsForCall(1)
+
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations/some-guid"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+				jsonBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(jsonBody).To(MatchJSON(`{
+				"iaas_configuration": {
+					"name": "existing",
+                    "guid": "some-guid",
+                    "vsphere": "something"
+				}}`))
+			})
+		})
+	})
 })
