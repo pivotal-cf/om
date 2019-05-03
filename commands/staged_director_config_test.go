@@ -318,6 +318,12 @@ vmextensions-configuration:
   - name: vm_ext2
     cloud_properties:
       key_name: operations_keypair
+iaas-configurations:
+  - guid: some-guid
+    name: default
+    project: my-google-project
+    associated_service_account: my-google-service-account
+    auth_json: "****"
 properties-configuration:
   security_configuration:
     trusted_certificates: some-certificate
@@ -332,12 +338,6 @@ properties-configuration:
         partition_password: some_password
         client_key: user_provided_key
         client_user: user
-  iaas_configurations:
-    - guid: some-guid
-      name: default
-      project: my-google-project
-      associated_service_account: my-google-service-account
-      auth_json: "****"
 `)))
 			})
 		})

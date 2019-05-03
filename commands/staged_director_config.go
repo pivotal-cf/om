@@ -78,13 +78,6 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
-	if multiIaasConfigs != nil {
-		properties["iaas_configurations"] = multiIaasConfigs["iaas_configurations"]
-		if _, ok := properties["iaas_configuration"]; ok {
-			delete(properties, "iaas_configuration")
-		}
-	}
-
 	networks, err := ec.service.GetStagedDirectorNetworks()
 	if err != nil {
 		return err
@@ -109,10 +102,19 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	if azs.AvailabilityZones != nil {
 		config["az-configuration"] = azs.AvailabilityZones
 	}
+
+	if multiIaasConfigs != nil {
+		config["iaas-configurations"] = multiIaasConfigs["iaas_configurations"]
+		if _, ok := properties["iaas_configuration"]; ok {
+			delete(properties, "iaas_configuration")
+		}
+	}
+
 	config["properties-configuration"] = properties
 	config["network-assignment"] = assignedNetworkAZ
 	config["networks-configuration"] = networks
 	config["vmextensions-configuration"] = vmExtensions
+
 
 	resourceConfigs := map[string]api.JobProperties{}
 	for name, jobGUID := range jobs {
@@ -129,8 +131,8 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 			delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
 		}
 
-		if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configurations"]; ok {
-			delete(config["properties-configuration"].(map[string]interface{}), "iaas_configurations")
+		if _, ok := config["iaas-configurations"]; ok {
+			delete(config, "iaas-configurations")
 		}
 	}
 
