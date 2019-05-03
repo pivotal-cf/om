@@ -65,7 +65,7 @@ var _ = Describe("Director", func() {
 			message := stderr.PrintlnArgsForCall(0)
 			Expect(message[0]).To(Equal("successfully fetched AZs, continuing"))
 
-			Expect(client.DoCallCount()).To(Equal(2))
+			Expect(client.DoCallCount()).To(Equal(3))
 
 			getReq := client.DoArgsForCall(0)
 			Expect(getReq.Method).To(Equal("GET"))
@@ -75,17 +75,29 @@ var _ = Describe("Director", func() {
 			putReq := client.DoArgsForCall(1)
 
 			Expect(putReq.Method).To(Equal("PUT"))
-			Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones/existing-az-guid"))
 			Expect(putReq.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			jsonBody, err := ioutil.ReadAll(putReq.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jsonBody).To(MatchJSON(`{
-        		"availability_zones": [
+        		"availability_zone": 
         		 {"a_field":"some_val","guid": "existing-az-guid","name":"existing-az",
-        		     "clusters":[{"cluster":"pizza","guid":"pepperoni","res_pool":"abcd"}]},
+        		     "clusters":[{"cluster":"pizza","guid":"pepperoni","res_pool":"abcd"}]}
+        		}`))
+
+			postReq := client.DoArgsForCall(2)
+
+			Expect(postReq.Method).To(Equal("POST"))
+			Expect(postReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
+			Expect(postReq.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			jsonBody, err = ioutil.ReadAll(postReq.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jsonBody).To(MatchJSON(`{
+        		"availability_zone": 
         		 {"name": "new-az"}
-        		]}`))
+        		}`))
 		})
 
 		It("preserves all provided fields", func() {
@@ -107,19 +119,18 @@ var _ = Describe("Director", func() {
 
 			putReq := client.DoArgsForCall(1)
 
-			Expect(putReq.Method).To(Equal("PUT"))
+			Expect(putReq.Method).To(Equal("POST"))
 			Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
 			Expect(putReq.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			jsonBody, err := ioutil.ReadAll(putReq.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(jsonBody).To(MatchJSON(`{
-        "availability_zones": [
+        "availability_zone": 
           {
             "name": "some-az"
           }
-        ]
-			}`))
+        }`))
 		})
 
 		Context("when the Ops Manager does not support retrieving existing availability zones", func() {
@@ -148,7 +159,7 @@ var _ = Describe("Director", func() {
 
 				putReq := client.DoArgsForCall(1)
 
-				Expect(putReq.Method).To(Equal("PUT"))
+				Expect(putReq.Method).To(Equal("POST"))
 				Expect(putReq.URL.Path).To(Equal("/api/v0/staged/director/availability_zones"))
 			})
 
@@ -235,19 +246,26 @@ var _ = Describe("Director", func() {
 				Expect(err).To(BeNil())
 			})
 
-			It("returns an error when the PUT http status is 207 and ignoreVerifierWarnings is false", func() {
+			It("returns an error when the PUT and POST http status is 207 and ignoreVerifierWarnings is false", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					if req.Method == "GET" {
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(`{"availability_zones": []}`))}, nil
+							Body:       ioutil.NopCloser(strings.NewReader(`{"availability_zones": [{"name": "existing", "guid":"123"}]}`))}, nil
 					} else {
 						return &http.Response{
 							StatusCode: http.StatusMultiStatus,
 							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
 					}
 				}
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`),
+				}, false)
+				Expect(err).To(MatchError(ContainSubstring("Multi-Status")))
+
+				err = service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "existing"}]`),
+				}, false)
 				Expect(err).To(MatchError(ContainSubstring("Multi-Status")))
 			})
 
@@ -263,7 +281,8 @@ var _ = Describe("Director", func() {
 							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
 					}
 				}
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`)}, false)
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
@@ -280,9 +299,10 @@ var _ = Describe("Director", func() {
 					}
 				}
 
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`)}, false)
 
-				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/availability_zones: api endpoint failed"))
+				Expect(err).To(MatchError("could not send api request to POST /api/v0/staged/director/availability_zones: api endpoint failed"))
 			})
 		})
 	})

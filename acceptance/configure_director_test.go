@@ -17,8 +17,11 @@ import (
 var _ = Describe("configure-director command", func() {
 	var (
 		azPutCallCount               int
+		azPostCallCount              int
+		azPostConfigurationBody      []byte
 		azPutConfigurationBody       []byte
-		azConfigurationMethod        string
+		azPostConfigurationMethod    string
+		azPutConfigurationMethod     string
 		directorPropertiesBody       []byte
 		directorPropertiesCallCount  int
 		directorPropertiesMethod     string
@@ -66,6 +69,18 @@ var _ = Describe("configure-director command", func() {
 					}`))
 					Expect(err).ToNot(HaveOccurred())
 				}
+			case "/api/v0/staged/director/availability_zones/existing-az-guid":
+				var err error
+				azPostCallCount++
+				if verifierErrorOccured {
+					w.WriteHeader(207)
+				}
+				azPutConfigurationMethod = req.Method
+				azPutConfigurationBody, err = ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/director/availability_zones":
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" && auth != "Bearer some-running-install-opsman-token" {
@@ -73,14 +88,14 @@ var _ = Describe("configure-director command", func() {
 					return
 				}
 
-				azConfigurationMethod = req.Method
+				azPostConfigurationMethod = req.Method
 
 				if req.Method == "GET" {
 					_, err := w.Write([]byte(`"availability_zones": [{"guid": "existing-az-guid", "name": "some-existing-az"}]`))
 					Expect(err).ToNot(HaveOccurred())
-				} else if req.Method == "PUT" {
+				} else if req.Method == "POST" {
 					var err error
-					azPutConfigurationBody, err = ioutil.ReadAll(req.Body)
+					azPostConfigurationBody, err = ioutil.ReadAll(req.Body)
 					Expect(err).NotTo(HaveOccurred())
 
 					azPutCallCount++
@@ -326,7 +341,7 @@ var _ = Describe("configure-director command", func() {
 					"syslogconfig": "awesome"
 				},
 			},
-            "az-configuration": [ {"name": "some-az-1"}, {"name": "some-existing-az"} ],
+            "az-configuration": [ {"name": "some-az-1"}],
             "networks-configuration": {
 				"networks": [{"name": "network-1"}],
 				"top-level": "the-top"
@@ -361,9 +376,9 @@ var _ = Describe("configure-director command", func() {
 			Eventually(session, "40s").Should(gexec.Exit(0))
 
 			Expect(azPutCallCount).To(Equal(1))
-			Expect(azConfigurationMethod).To(Equal("PUT"))
-			Expect(azPutConfigurationBody).To(MatchJSON(`{
-				"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
+			Expect(azPostConfigurationMethod).To(Equal("POST"))
+			Expect(azPostConfigurationBody).To(MatchJSON(`{
+				"availability_zone": {"name": "some-az-1"}
 			}`))
 
 			Expect(networksPutCallCount).To(Equal(1))
@@ -429,7 +444,6 @@ var _ = Describe("configure-director command", func() {
 ---
 az-configuration:
 - name: some-az-1
-- name: some-existing-az
 networks-configuration:
   networks:
   - name: network-1
@@ -487,9 +501,9 @@ properties-configuration:
 			Eventually(session, "40s").Should(gexec.Exit(0))
 
 			Expect(azPutCallCount).To(Equal(1))
-			Expect(azConfigurationMethod).To(Equal("PUT"))
-			Expect(azPutConfigurationBody).To(MatchJSON(`{
-			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
+			Expect(azPostConfigurationMethod).To(Equal("POST"))
+			Expect(azPostConfigurationBody).To(MatchJSON(`{
+			"availability_zone": {"name": "some-az-1"}
 		}`))
 
 			Expect(networksPutCallCount).To(Equal(1))
@@ -581,11 +595,17 @@ az-configuration:
 
 				Eventually(session, "40s").Should(gexec.Exit(0))
 
+				Expect(azPostCallCount).To(Equal(1))
+				Expect(azPostConfigurationMethod).To(Equal("POST"))
+				Expect(azPostConfigurationBody).To(MatchJSON(`{
+					"availability_zone": {"name": "some-az-1"}
+				}`))
+
 				Expect(azPutCallCount).To(Equal(1))
-				Expect(azConfigurationMethod).To(Equal("PUT"))
+				Expect(azPutConfigurationMethod).To(Equal("PUT"))
 				Expect(azPutConfigurationBody).To(MatchJSON(`{
-			"availability_zones": [{"name": "some-az-1"}, {"guid": "existing-az-guid", "name": "some-existing-az"}]
-		}`))
+					"availability_zone": {"guid": "existing-az-guid", "name": "some-existing-az"}
+				}`))
 			})
 		})
 	})
