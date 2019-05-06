@@ -5,6 +5,20 @@ sometimes pushed post-release.
 
 ## [PENDING] 0.58.0
 
+### Breaking Changes
+* `delete-installation` now has a force flag. 
+   The flag is required to run this command quietly, as it was working before.
+   The reason behind this is
+   it was easy to delete your installation without any confirmation. 
+* `staged-director-config` no longer supports `--include-credentials`
+  this functionality has been replaced by `--no-redact`.
+  This can be paired with `--include-placeholders`
+  to return a interpolate-able config
+  with all the available secrets from a running OpsMan.
+  This closes issue #356. 
+  The OpsMan API changed so that IAAS Configurations
+  were redacted at the API level. 
+
 ### Features
 * new command `diagnostic-report`
   returns the full OpsMan diagnostic report
@@ -27,6 +41,8 @@ sometimes pushed post-release.
   metadata_version: "2.6"
   release_version: 2.6.0-build.77
   ```
+* `staged-director-config` now checks
+  `int`s and `bool`s when filtering secrets
 * `configure-director` and `staged-director` now support `iaas-configurations`.
   This allows OpsManager 2.2+ to have multiple IAASes configured.
   Please see the API documentation for your version of OpsMan for what IAASes are supported.

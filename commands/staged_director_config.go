@@ -14,7 +14,7 @@ type StagedDirectorConfig struct {
 	logger  logger
 	service stagedDirectorConfigService
 	Options struct {
-		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"replace obscured credentials to interpolatable placeholders"`
+		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"Replace obscured credentials to interpolatable placeholders.\n\t\t\t\t    To include credentials hidden by OpsMan, use with \"--no-redact\""`
 		NoRedact            bool `long:"no-redact" description:"Redact IaaS values from director configuration"`
 	}
 }
@@ -114,7 +114,6 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	config["networks-configuration"] = networks
 	config["vmextensions-configuration"] = vmExtensions
 
-
 	resourceConfigs := map[string]api.JobProperties{}
 	for name, jobGUID := range jobs {
 		resourceConfig, err := ec.service.GetStagedProductJobResourceConfig(directorGUID, jobGUID)
@@ -158,15 +157,16 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 	filters := []string{"password", "user", "key"}
 	switch typedValue := value.(type) {
 	case map[string]interface{}:
-		return ec.handleMap(prefix, typedValue)
+		return ec.handleTypedMap(prefix, typedValue)
+	case map[interface{}]interface{}:
+		return ec.handleUntypedMap(prefix, typedValue)
 	case map[string]map[string]interface{}:
 		return ec.handleMapOfMaps(prefix, typedValue)
 	case []map[string]interface{}:
 		return ec.handleSliceOfMaps(prefix, typedValue)
 	case []interface{}:
 		return ec.handleSlice(prefix, typedValue)
-
-	case string, nil:
+	case string, int, bool, nil:
 		if strings.Contains(prefix, "iaas_configuration") {
 			if ec.Options.IncludePlaceholders {
 				return "((" + prefix + "))", nil
@@ -191,10 +191,11 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 			}
 		}
 	}
+
 	return value, nil
 }
 
-func (ec StagedDirectorConfig) handleMap(prefix string, value map[string]interface{}) (interface{}, error) {
+func (ec StagedDirectorConfig) handleTypedMap(prefix string, value map[string]interface{}) (interface{}, error) {
 	newValue := map[string]interface{}{}
 	for innerKey, innerVal := range value {
 		returnedVal, err := ec.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
@@ -204,6 +205,45 @@ func (ec StagedDirectorConfig) handleMap(prefix string, value map[string]interfa
 		}
 		if returnedVal != nil {
 			newValue[innerKey] = returnedVal
+		}
+	}
+	return newValue, nil
+}
+
+func (ec StagedDirectorConfig) handleUntypedMap(prefix string, value map[interface{}]interface{}) (interface{}, error) {
+	newValue := map[interface{}]interface{}{}
+
+	for innerKey, innerVal := range value {
+		switch typedValue := innerVal.(type) {
+		case map[interface{}]interface{}:
+			returnedVal, err := ec.handleUntypedMap(prefix+"_"+innerKey.(string), typedValue)
+
+			if err != nil {
+				return nil, err
+			}
+			if returnedVal != nil {
+				newValue[innerKey] = returnedVal
+			}
+		case map[string]interface{}:
+			returnedVal, err := ec.handleTypedMap(prefix+"_"+innerKey.(string), typedValue)
+
+			if err != nil {
+				return nil, err
+			}
+			if returnedVal != nil {
+				newValue[innerKey] = returnedVal
+			}
+		case string, bool, int, nil:
+			returnedVal, err := ec.filterSecrets(prefix+"_"+innerKey.(string), innerKey.(string), innerVal)
+
+			if err != nil {
+				return nil, err
+			}
+			if returnedVal != nil {
+				newValue[innerKey] = returnedVal
+			}
+		case []interface{}:
+			return ec.handleSlice(prefix, typedValue)
 		}
 	}
 	return newValue, nil

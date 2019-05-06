@@ -51,7 +51,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 						},
 					},
 				},
-				"iaas_configuration": map[string]interface{}{
+				"iaas_configuration": map[interface{}]interface{}{
 					"project": "project-id",
 					"key":     "some-key",
 				},
@@ -173,7 +173,7 @@ properties-configuration:
 			Expect(invocations[0]).To(Equal([]interface{}{false}))
 		})
 
-		Describe("when getting availability_zones returns an empty array", func() {
+		When("getting availability_zones returns an empty array", func() {
 			It("doesn't return the az in the config", func() {
 				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, nil)
 				command := commands.NewStagedDirectorConfig(fakeService, logger)
@@ -476,117 +476,352 @@ iaas-configurations:
 `)))
 			})
 
-		})
-	})
-
-
-
-	Describe("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{"--badflag"})
-				Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
-			})
-		})
-
-		Context("when looking up the director GUID fails", func() {
-			BeforeEach(func() {
-				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Context("when looking up the director properties fails", func() {
-			BeforeEach(func() {
-				fakeService.GetStagedDirectorPropertiesReturns(nil, errors.New("some-error"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Context("when looking up the director azs fails", func() {
-			BeforeEach(func() {
-				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, errors.New("some-error"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Context("when looking up the director networks fails", func() {
-			BeforeEach(func() {
-				fakeService.GetStagedDirectorNetworksReturns(api.NetworksConfigurationOutput{}, errors.New("some-error"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Context("when looking up the director network assignment fails", func() {
-			BeforeEach(func() {
-				fakeService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Context("when looking up the director jobs fails", func() {
-			BeforeEach(func() {
-				fakeService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Context("when looking up the director job resource config fails", func() {
-			BeforeEach(func() {
-				fakeService.ListStagedProductJobsReturns(map[string]string{
-					"some-job": "some-job-guid",
+			It("is able to handle a bool", func() {
+				fakeService.GetStagedDirectorIaasConfigurationsReturns(map[string][]map[string]interface{}{
+					"iaas_configurations": {
+						{
+							"bosh-truthy": true,
+						},
+					},
 				}, nil)
-				fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
+
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-placeholders",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: ((properties-configuration_director_configuration_filtered_key))
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        client_key: ((properties-configuration_director_configuration_encryption_providers_client_key))
+        client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
+        partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
+    max_threads: 5
+iaas-configurations:
+  - bosh-truthy: ((iaas-configurations_0_bosh-truthy))
+`)))
 			})
 
-			It("returns an error", func() {
+			It("is able to handle an int", func() {
+				fakeService.GetStagedDirectorIaasConfigurationsReturns(map[string][]map[string]interface{}{
+					"iaas_configurations": {
+						{
+							"iaas-int": 1,
+						},
+					},
+				}, nil)
+
 				command := commands.NewStagedDirectorConfig(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("some-error"))
+				err := command.Execute([]string{
+					"--include-placeholders",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: ((properties-configuration_director_configuration_filtered_key))
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        client_key: ((properties-configuration_director_configuration_encryption_providers_client_key))
+        client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
+        partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
+    max_threads: 5
+iaas-configurations:
+  - iaas-int: ((iaas-configurations_0_iaas-int))
+`)))
+			})
+
+			It("is able to handle an nested map[interface{}]interface{}", func() {
+				expectedDirectorProperties := map[string]interface{}{
+					"director_configuration": map[string]interface{}{
+						"filtered_key": "filtered_key",
+						"max_threads":  5,
+						"encryption": map[interface{}]interface{}{
+							"providers": map[interface{}]interface{}{
+								"partition_password": "some_password",
+								"client_certificate": "user_provided_cert",
+								"client_key":         "user_provided_key",
+								"client_user":        "user",
+							},
+						},
+					},
+				}
+				fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
+
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-placeholders",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  director_configuration:
+    filtered_key: ((properties-configuration_director_configuration_filtered_key))
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        client_key: ((properties-configuration_director_configuration_encryption_providers_client_key))
+        client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
+        partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
+    max_threads: 5
+`)))
+			})
+
+			It("is able to handle []interface{}", func() {
+				expectedDirectorProperties := map[string]interface{}{
+					"iaas_configuration": map[string]interface{}{
+						"filtered_key": "filtered_key",
+						"encryption": map[string]interface{}{
+							"providers": []interface{}{"some_key"},
+						},
+					},
+				}
+				fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
+
+				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				err := command.Execute([]string{
+					"--include-placeholders",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				output := logger.PrintlnArgsForCall(0)
+				Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  iaas_configuration:
+    filtered_key: ((properties-configuration_iaas_configuration_filtered_key))
+    encryption:
+      providers:
+      - ((properties-configuration_iaas_configuration_encryption_providers_0))
+`)))
 			})
 		})
-	})
 
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewStagedDirectorConfig(nil, nil)
+		Describe("failure cases", func() {
+			When("an unknown flag is provided", func() {
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{"--badflag"})
+					Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
+				})
+			})
 
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
-				ShortDescription: "**EXPERIMENTAL** generates a config from a staged director",
-				Flags:            command.Options,
-			}))
+			When("looking up the director GUID fails", func() {
+				BeforeEach(func() {
+					fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
+			When("looking up the director properties fails", func() {
+				BeforeEach(func() {
+					fakeService.GetStagedDirectorPropertiesReturns(nil, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
+			When("looking up the director azs fails", func() {
+				BeforeEach(func() {
+					fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
+			When("looking up the director networks fails", func() {
+				BeforeEach(func() {
+					fakeService.GetStagedDirectorNetworksReturns(api.NetworksConfigurationOutput{}, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
+			When("looking up the director network assignment fails", func() {
+				BeforeEach(func() {
+					fakeService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
+			When("looking up the director jobs fails", func() {
+				BeforeEach(func() {
+					fakeService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
+			When("looking up the director job resource config fails", func() {
+				BeforeEach(func() {
+					fakeService.ListStagedProductJobsReturns(map[string]string{
+						"some-job": "some-job-guid",
+					}, nil)
+					fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					err := command.Execute([]string{})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+		})
+
+		Describe("Usage", func() {
+			It("returns usage information for the command", func() {
+				command := commands.NewStagedDirectorConfig(nil, nil)
+
+				Expect(command.Usage()).To(Equal(jhanda.Usage{
+					Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
+					ShortDescription: "**EXPERIMENTAL** generates a config from a staged director",
+					Flags:            command.Options,
+				}))
+			})
 		})
 	})
 })
