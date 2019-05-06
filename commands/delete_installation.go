@@ -61,9 +61,6 @@ func (ac DeleteInstallation) Execute(args []string) error {
 					ac.logger.Printf("Ok, deleting installation.")
 					break
 				}
-
-				ac.logger.Printf("Ok, nothing was deleted.")
-				return nil
 			}
 
 			ac.logger.Printf("Ok, nothing was deleted.")
