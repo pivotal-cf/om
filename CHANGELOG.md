@@ -7,9 +7,9 @@ sometimes pushed post-release.
 
 ### Breaking Changes
 * `delete-installation` now has a force flag. 
-   The flag is required to run this command quietly, as it was working before.
-   The reason behind this is
-   it was easy to delete your installation without any confirmation. 
+  The flag is required to run this command quietly, as it was working before.
+  The reason behind this is
+  it was easy to delete your installation without any confirmation. 
 * `staged-director-config` no longer supports `--include-credentials`
   this functionality has been replaced by `--no-redact`.
   This can be paired with `--include-placeholders`

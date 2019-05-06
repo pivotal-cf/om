@@ -107,12 +107,29 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		if _, ok := properties["iaas_configuration"]; ok {
 			delete(properties, "iaas_configuration")
 		}
+
+		for _, config := range config["iaas-configurations"].([]map[string]interface{}) {
+			if _, ok := config["guid"]; ok {
+				delete(config, "guid")
+			}
+		}
 	}
 
 	config["properties-configuration"] = properties
 	config["network-assignment"] = assignedNetworkAZ
 	config["networks-configuration"] = networks
 	config["vmextensions-configuration"] = vmExtensions
+
+	if propertiesConfig, ok := config["properties-configuration"].(map[string]interface{}); ok {
+		if iaasConfig, ok := propertiesConfig["iaas_configuration"]; ok {
+			switch iaasConfig.(type) {
+			case map[string]interface{}:
+				delete(iaasConfig.(map[string]interface{}), "guid")
+			case map[interface{}]interface{}:
+				delete(iaasConfig.(map[interface{}]interface{}), "guid")
+			}
+		}
+	}
 
 	resourceConfigs := map[string]api.JobProperties{}
 	for name, jobGUID := range jobs {

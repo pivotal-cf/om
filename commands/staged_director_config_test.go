@@ -119,7 +119,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 			fakeService.GetStagedDirectorIaasConfigurationsReturns(nil, nil)
 		})
 
-		It("Writes a complete config file with filtered sensitive fields to stdout", func() {
+		It("writes a complete config file with filtered sensitive fields to stdout", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, logger)
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
@@ -215,6 +215,152 @@ properties-configuration:
         client_certificate: user_provided_cert
 `)))
 			})
+		})
+
+		It("does not include guid in iaas-configurations", func() {
+			fakeService.GetStagedDirectorIaasConfigurationsReturns(map[string][]map[string]interface{}{
+				"iaas_configurations": {
+					{
+						"guid": "some-guid",
+						"name": "default",
+					},
+					{
+						"guid": "some-other-guid",
+						"name": "configTwo",
+					},
+				},
+			}, nil)
+
+			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			err := command.Execute([]string{
+				"--no-redact",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+iaas-configurations:
+  - name: default
+  - name: configTwo
+properties-configuration:
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: filtered_key
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        partition_password: some_password
+        client_key: user_provided_key
+        client_user: user
+`)))
+		})
+
+		It("does not include guid in properties-configuration.iaas_configuration", func() {
+			expectedDirectorProperties := map[string]interface{}{
+				"director_configuration": map[string]interface{}{
+					"filtered_key": "filtered_key",
+					"max_threads":  5,
+					"encryption": map[string]interface{}{
+						"providers": map[string]interface{}{
+							"partition_password": "some_password",
+							"client_certificate": "user_provided_cert",
+							"client_key":         "user_provided_key",
+							"client_user":        "user",
+						},
+					},
+				},
+				"iaas_configuration": map[interface{}]interface{}{
+					"guid": "some-guid",
+					"key":  "some-key",
+				},
+				"syslog_configuration": map[string]interface{}{
+					"syslogconfig": "awesome",
+				},
+				"security_configuration": map[string]interface{}{
+					"trusted_certificates": "some-certificate",
+				},
+			}
+			fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
+
+			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			err := command.Execute([]string{
+				"--no-redact",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  iaas_configuration:
+    key: some-key
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
+  director_configuration:
+    filtered_key: filtered_key
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+        partition_password: some_password
+        client_key: user_provided_key
+        client_user: user
+`)))
 		})
 
 		Describe("with --no-redact", func() {
@@ -319,8 +465,7 @@ vmextensions-configuration:
     cloud_properties:
       key_name: operations_keypair
 iaas-configurations:
-  - guid: some-guid
-    name: default
+  - name: default
     project: my-google-project
     associated_service_account: my-google-service-account
     auth_json: "****"
@@ -463,13 +608,11 @@ properties-configuration:
         partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
     max_threads: 5
 iaas-configurations:
-  - guid: ((iaas-configurations_0_guid))
-    name: ((iaas-configurations_0_name))
+  - name: ((iaas-configurations_0_name))
     project: ((iaas-configurations_0_project))
     associated_service_account: ((iaas-configurations_0_associated_service_account))
     auth_json: ((iaas-configurations_0_auth_json))
-  - guid: ((iaas-configurations_1_guid))
-    name: ((iaas-configurations_1_name))
+  - name: ((iaas-configurations_1_name))
     project: ((iaas-configurations_1_project))
     associated_service_account: ((iaas-configurations_1_associated_service_account))
     auth_json: ((iaas-configurations_1_auth_json))
