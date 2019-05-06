@@ -49,24 +49,25 @@ func (ac DeleteInstallation) Execute(args []string) error {
 		for {
 			scanner := bufio.NewScanner(ac.stdin)
 			ac.logger.Printf("Do you really want to delete the installation? [yes/no]: ")
+
 			scanner.Scan()
 			text := scanner.Text()
+
 			if text == "yes" {
 				ac.logger.Printf("Ok. Are you sure? [yes/no]: ")
-				scanner.Scan()
-				text := scanner.Text()
+				text = scanner.Text()
 
 				if text == "yes" {
 					ac.logger.Printf("Ok, deleting installation.")
 					break
-				} else {
-					ac.logger.Printf("Ok, nothing was deleted.")
-					return nil
 				}
-			} else {
+
 				ac.logger.Printf("Ok, nothing was deleted.")
 				return nil
 			}
+
+			ac.logger.Printf("Ok, nothing was deleted.")
+			return nil
 		}
 	}
 
