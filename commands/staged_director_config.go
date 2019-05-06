@@ -42,57 +42,57 @@ func NewStagedDirectorConfig(service stagedDirectorConfigService, logger logger)
 	}
 }
 
-func (ec StagedDirectorConfig) Usage() jhanda.Usage {
+func (sdc StagedDirectorConfig) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
 		ShortDescription: "**EXPERIMENTAL** generates a config from a staged director",
-		Flags:            ec.Options,
+		Flags:            sdc.Options,
 	}
 }
 
-func (ec StagedDirectorConfig) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ec.Options, args); err != nil {
+func (sdc StagedDirectorConfig) Execute(args []string) error {
+	if _, err := jhanda.Parse(&sdc.Options, args); err != nil {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
 	}
 
-	stagedDirector, err := ec.service.GetStagedProductByName("p-bosh")
+	stagedDirector, err := sdc.service.GetStagedProductByName("p-bosh")
 	if err != nil {
 		return err
 	}
 
 	directorGUID := stagedDirector.Product.GUID
 
-	azs, err := ec.service.GetStagedDirectorAvailabilityZones()
+	azs, err := sdc.service.GetStagedDirectorAvailabilityZones()
 	if err != nil {
 		return err
 	}
 
-	properties, err := ec.service.GetStagedDirectorProperties(!ec.Options.NoRedact)
+	properties, err := sdc.service.GetStagedDirectorProperties(!sdc.Options.NoRedact)
 	if err != nil {
 		return err
 	}
 
-	multiIaasConfigs, err := ec.service.GetStagedDirectorIaasConfigurations(!ec.Options.NoRedact)
+	multiIaasConfigs, err := sdc.service.GetStagedDirectorIaasConfigurations(!sdc.Options.NoRedact)
 	if err != nil {
 		return err
 	}
 
-	networks, err := ec.service.GetStagedDirectorNetworks()
+	networks, err := sdc.service.GetStagedDirectorNetworks()
 	if err != nil {
 		return err
 	}
 
-	assignedNetworkAZ, err := ec.service.GetStagedProductNetworksAndAZs(directorGUID)
+	assignedNetworkAZ, err := sdc.service.GetStagedProductNetworksAndAZs(directorGUID)
 	if err != nil {
 		return err
 	}
 
-	jobs, err := ec.service.ListStagedProductJobs(directorGUID)
+	jobs, err := sdc.service.ListStagedProductJobs(directorGUID)
 	if err != nil {
 		return err
 	}
 
-	vmExtensions, err := ec.service.ListStagedVMExtensions()
+	vmExtensions, err := sdc.service.ListStagedVMExtensions()
 	if err != nil {
 		return err
 	}
@@ -103,16 +103,9 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	}
 
 	if multiIaasConfigs != nil {
-		config["iaas-configurations"] = multiIaasConfigs["iaas_configurations"]
-		if _, ok := properties["iaas_configuration"]; ok {
-			delete(properties, "iaas_configuration")
-		}
+		sdc.removePropertiesIAASConfig(config, multiIaasConfigs, properties)
 
-		for _, config := range config["iaas-configurations"].([]map[string]interface{}) {
-			if _, ok := config["guid"]; ok {
-				delete(config, "guid")
-			}
-		}
+		sdc.removeIAASConfigurationsGUID(config)
 	}
 
 	config["properties-configuration"] = properties
@@ -120,39 +113,20 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 	config["networks-configuration"] = networks
 	config["vmextensions-configuration"] = vmExtensions
 
-	if propertiesConfig, ok := config["properties-configuration"].(map[string]interface{}); ok {
-		if iaasConfig, ok := propertiesConfig["iaas_configuration"]; ok {
-			switch iaasConfig.(type) {
-			case map[string]interface{}:
-				delete(iaasConfig.(map[string]interface{}), "guid")
-			case map[interface{}]interface{}:
-				delete(iaasConfig.(map[interface{}]interface{}), "guid")
-			}
-		}
-	}
+	sdc.removePropertiesIAASConfigGUID(config)
 
-	resourceConfigs := map[string]api.JobProperties{}
-	for name, jobGUID := range jobs {
-		resourceConfig, err := ec.service.GetStagedProductJobResourceConfig(directorGUID, jobGUID)
-		if err != nil {
-			return err
-		}
-		resourceConfigs[name] = resourceConfig
+	resourceConfigs, err := sdc.getResourceConfigs(jobs, directorGUID)
+	if err != nil {
+		return err
 	}
 	config["resource-configuration"] = resourceConfigs
 
-	if !ec.Options.NoRedact && !ec.Options.IncludePlaceholders {
-		if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configuration"]; ok {
-			delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
-		}
-
-		if _, ok := config["iaas-configurations"]; ok {
-			delete(config, "iaas-configurations")
-		}
+	if !sdc.Options.NoRedact && !sdc.Options.IncludePlaceholders {
+		sdc.removeAllIAASConfiguration(config)
 	}
 
 	for key, value := range config {
-		returnedVal, err := ec.filterSecrets(key, key, value)
+		returnedVal, err := sdc.filterSecrets(key, key, value)
 		if err != nil {
 			return err
 		}
@@ -166,42 +140,94 @@ func (ec StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
-	ec.logger.Println(string(configYaml))
+	sdc.logger.Println(string(configYaml))
 	return nil
 }
 
-func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, value interface{}) (interface{}, error) {
+func (sdc StagedDirectorConfig) removePropertiesIAASConfig(config map[string]interface{}, multiIaasConfigs map[string][]map[string]interface{}, properties map[string]interface{}) {
+	config["iaas-configurations"] = multiIaasConfigs["iaas_configurations"]
+	if _, ok := properties["iaas_configuration"]; ok {
+		delete(properties, "iaas_configuration")
+	}
+}
+
+func (sdc StagedDirectorConfig) removeIAASConfigurationsGUID(config map[string]interface{}) {
+	for _, config := range config["iaas-configurations"].([]map[string]interface{}) {
+		if _, ok := config["guid"]; ok {
+			delete(config, "guid")
+		}
+	}
+}
+
+func (sdc StagedDirectorConfig) removePropertiesIAASConfigGUID(config map[string]interface{}) {
+	if propertiesConfig, ok := config["properties-configuration"].(map[string]interface{}); ok {
+		if iaasConfig, ok := propertiesConfig["iaas_configuration"]; ok {
+			switch iaasConfig.(type) {
+			case map[string]interface{}:
+				delete(iaasConfig.(map[string]interface{}), "guid")
+			case map[interface{}]interface{}:
+				delete(iaasConfig.(map[interface{}]interface{}), "guid")
+			}
+		}
+	}
+}
+
+func (sdc StagedDirectorConfig) getResourceConfigs(jobs map[string]string, directorGUID string) (map[string]api.JobProperties, error){
+	resourceConfigs := map[string]api.JobProperties{}
+
+	for name, jobGUID := range jobs {
+		resourceConfig, err := sdc.service.GetStagedProductJobResourceConfig(directorGUID, jobGUID)
+		if err != nil {
+			return nil, err
+		}
+		resourceConfigs[name] = resourceConfig
+	}
+
+	return resourceConfigs, nil
+}
+
+func (sdc StagedDirectorConfig) removeAllIAASConfiguration(config map[string]interface{}) {
+	if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configuration"]; ok {
+		delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
+	}
+
+	if _, ok := config["iaas-configurations"]; ok {
+		delete(config, "iaas-configurations")
+	}
+}
+
+func (sdc StagedDirectorConfig) filterSecrets(prefix string, keyName string, value interface{}) (interface{}, error) {
 	filters := []string{"password", "user", "key"}
 	switch typedValue := value.(type) {
 	case map[string]interface{}:
-		return ec.handleTypedMap(prefix, typedValue)
+		return sdc.handleTypedMap(prefix, typedValue)
 	case map[interface{}]interface{}:
-		return ec.handleUntypedMap(prefix, typedValue)
+		return sdc.handleUntypedMap(prefix, typedValue)
 	case map[string]map[string]interface{}:
-		return ec.handleMapOfMaps(prefix, typedValue)
+		return sdc.handleMapOfMaps(prefix, typedValue)
 	case []map[string]interface{}:
-		return ec.handleSliceOfMaps(prefix, typedValue)
+		return sdc.handleSliceOfMaps(prefix, typedValue)
 	case []interface{}:
-		return ec.handleSlice(prefix, typedValue)
+		return sdc.handleSlice(prefix, typedValue)
 	case string, int, bool, nil:
 		if strings.Contains(prefix, "iaas_configuration") {
-			if ec.Options.IncludePlaceholders {
+			if sdc.Options.IncludePlaceholders {
 				return "((" + prefix + "))", nil
 			}
 		}
 
 		if strings.Contains(prefix, "iaas-configurations") {
-			if ec.Options.IncludePlaceholders {
+			if sdc.Options.IncludePlaceholders {
 				return "((" + prefix + "))", nil
 			}
 		}
 
 		for _, filter := range filters {
 			if strings.Contains(keyName, filter) {
-				if ec.Options.IncludePlaceholders {
+				if sdc.Options.IncludePlaceholders {
 					return "((" + prefix + "))", nil
 				}
-				if ec.Options.NoRedact {
+				if sdc.Options.NoRedact {
 					return value, nil
 				}
 				return nil, nil
@@ -212,10 +238,10 @@ func (ec StagedDirectorConfig) filterSecrets(prefix string, keyName string, valu
 	return value, nil
 }
 
-func (ec StagedDirectorConfig) handleTypedMap(prefix string, value map[string]interface{}) (interface{}, error) {
+func (sdc StagedDirectorConfig) handleTypedMap(prefix string, value map[string]interface{}) (interface{}, error) {
 	newValue := map[string]interface{}{}
 	for innerKey, innerVal := range value {
-		returnedVal, err := ec.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
+		returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
 
 		if err != nil {
 			return nil, err
@@ -227,13 +253,13 @@ func (ec StagedDirectorConfig) handleTypedMap(prefix string, value map[string]in
 	return newValue, nil
 }
 
-func (ec StagedDirectorConfig) handleUntypedMap(prefix string, value map[interface{}]interface{}) (interface{}, error) {
+func (sdc StagedDirectorConfig) handleUntypedMap(prefix string, value map[interface{}]interface{}) (interface{}, error) {
 	newValue := map[interface{}]interface{}{}
 
 	for innerKey, innerVal := range value {
 		switch typedValue := innerVal.(type) {
 		case map[interface{}]interface{}:
-			returnedVal, err := ec.handleUntypedMap(prefix+"_"+innerKey.(string), typedValue)
+			returnedVal, err := sdc.handleUntypedMap(prefix+"_"+innerKey.(string), typedValue)
 
 			if err != nil {
 				return nil, err
@@ -242,7 +268,7 @@ func (ec StagedDirectorConfig) handleUntypedMap(prefix string, value map[interfa
 				newValue[innerKey] = returnedVal
 			}
 		case map[string]interface{}:
-			returnedVal, err := ec.handleTypedMap(prefix+"_"+innerKey.(string), typedValue)
+			returnedVal, err := sdc.handleTypedMap(prefix+"_"+innerKey.(string), typedValue)
 
 			if err != nil {
 				return nil, err
@@ -251,7 +277,7 @@ func (ec StagedDirectorConfig) handleUntypedMap(prefix string, value map[interfa
 				newValue[innerKey] = returnedVal
 			}
 		case string, bool, int, nil:
-			returnedVal, err := ec.filterSecrets(prefix+"_"+innerKey.(string), innerKey.(string), innerVal)
+			returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey.(string), innerKey.(string), innerVal)
 
 			if err != nil {
 				return nil, err
@@ -260,16 +286,16 @@ func (ec StagedDirectorConfig) handleUntypedMap(prefix string, value map[interfa
 				newValue[innerKey] = returnedVal
 			}
 		case []interface{}:
-			return ec.handleSlice(prefix, typedValue)
+			return sdc.handleSlice(prefix, typedValue)
 		}
 	}
 	return newValue, nil
 }
 
-func (ec StagedDirectorConfig) handleMapOfMaps(prefix string, value map[string]map[string]interface{}) (interface{}, error) {
+func (sdc StagedDirectorConfig) handleMapOfMaps(prefix string, value map[string]map[string]interface{}) (interface{}, error) {
 	newValue := map[string]interface{}{}
 	for innerKey, innerVal := range value {
-		returnedVal, err := ec.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
+		returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
 
 		if err != nil {
 			return nil, err
@@ -281,10 +307,10 @@ func (ec StagedDirectorConfig) handleMapOfMaps(prefix string, value map[string]m
 	return newValue, nil
 }
 
-func (ec StagedDirectorConfig) handleSlice(prefix string, value []interface{}) (interface{}, error) {
+func (sdc StagedDirectorConfig) handleSlice(prefix string, value []interface{}) (interface{}, error) {
 	var newValue []interface{}
 	for innerIndex, innerVal := range value {
-		returnedVal, err := ec.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
+		returnedVal, err := sdc.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
 		if err != nil {
 			return nil, err
 		}
@@ -295,10 +321,10 @@ func (ec StagedDirectorConfig) handleSlice(prefix string, value []interface{}) (
 	return newValue, nil
 }
 
-func (ec StagedDirectorConfig) handleSliceOfMaps(prefix string, value []map[string]interface{}) (interface{}, error) {
+func (sdc StagedDirectorConfig) handleSliceOfMaps(prefix string, value []map[string]interface{}) (interface{}, error) {
 	var newValue []map[string]interface{}
 	for innerIndex, innerVal := range value {
-		returnedVal, err := ec.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
+		returnedVal, err := sdc.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
 		if err != nil {
 			return nil, err
 		}
