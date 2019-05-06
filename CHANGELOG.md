@@ -27,6 +27,12 @@ sometimes pushed post-release.
   metadata_version: "2.6"
   release_version: 2.6.0-build.77
   ```
+* `configure-director` and `staged-director` now support `iaas-configurations`.
+  This allows OpsManager 2.2+ to have multiple IAASes configured.
+  Please see the API documentation for your version of OpsMan for what IAASes are supported.
+  
+  If you are using `iaas_configuration` in your `properties-configuration` and use `iaas-configurations`
+  you'll receive an error message that only one method of configuration can be used. 
 
 ## 0.57.0
 
