@@ -55,10 +55,10 @@ type FormattedPresenter struct {
 	presentInstallationsArgsForCall []struct {
 		arg1 []models.Installation
 	}
-	PresentPendingChangesStub        func([]api.ProductChange)
+	PresentPendingChangesStub        func(api.PendingChangesOutput)
 	presentPendingChangesMutex       sync.RWMutex
 	presentPendingChangesArgsForCall []struct {
-		arg1 []api.ProductChange
+		arg1 api.PendingChangesOutput
 	}
 	PresentSSLCertificateStub        func(api.SSLCertificate)
 	presentSSLCertificateMutex       sync.RWMutex
@@ -388,17 +388,12 @@ func (fake *FormattedPresenter) PresentInstallationsArgsForCall(i int) []models.
 	return argsForCall.arg1
 }
 
-func (fake *FormattedPresenter) PresentPendingChanges(arg1 []api.ProductChange) {
-	var arg1Copy []api.ProductChange
-	if arg1 != nil {
-		arg1Copy = make([]api.ProductChange, len(arg1))
-		copy(arg1Copy, arg1)
-	}
+func (fake *FormattedPresenter) PresentPendingChanges(arg1 api.PendingChangesOutput) {
 	fake.presentPendingChangesMutex.Lock()
 	fake.presentPendingChangesArgsForCall = append(fake.presentPendingChangesArgsForCall, struct {
-		arg1 []api.ProductChange
-	}{arg1Copy})
-	fake.recordInvocation("PresentPendingChanges", []interface{}{arg1Copy})
+		arg1 api.PendingChangesOutput
+	}{arg1})
+	fake.recordInvocation("PresentPendingChanges", []interface{}{arg1})
 	fake.presentPendingChangesMutex.Unlock()
 	if fake.PresentPendingChangesStub != nil {
 		fake.PresentPendingChangesStub(arg1)
@@ -411,13 +406,13 @@ func (fake *FormattedPresenter) PresentPendingChangesCallCount() int {
 	return len(fake.presentPendingChangesArgsForCall)
 }
 
-func (fake *FormattedPresenter) PresentPendingChangesCalls(stub func([]api.ProductChange)) {
+func (fake *FormattedPresenter) PresentPendingChangesCalls(stub func(api.PendingChangesOutput)) {
 	fake.presentPendingChangesMutex.Lock()
 	defer fake.presentPendingChangesMutex.Unlock()
 	fake.PresentPendingChangesStub = stub
 }
 
-func (fake *FormattedPresenter) PresentPendingChangesArgsForCall(i int) []api.ProductChange {
+func (fake *FormattedPresenter) PresentPendingChangesArgsForCall(i int) api.PendingChangesOutput {
 	fake.presentPendingChangesMutex.RLock()
 	defer fake.presentPendingChangesMutex.RUnlock()
 	argsForCall := fake.presentPendingChangesArgsForCall[i]

@@ -35,7 +35,8 @@ var _ = Describe("pending_changes command", func() {
 				{"post_deploy": "true", "pre_delete": true, "name": "smoke-tests"},
 				{"post_deploy": "false", "pre_delete": false, "name": "deploy-autoscaling"}
 			],
-			"action": "update"
+			"action": "update",
+			"an-extra-filed": "is preserved"
 		},
 		{
 			"guid": "some-product-2",
@@ -73,7 +74,8 @@ var _ = Describe("pending_changes command", func() {
 							{"post_deploy": "true", "pre_delete": true, "name": "smoke-tests"},
 							{"post_deploy": "false", "pre_delete": false, "name": "deploy-autoscaling"}
 						],
-						"action": "update"
+						"action": "update",
+						"an-extra-filed": "is preserved"
 					},
 					{
 						"guid": "some-product-2",

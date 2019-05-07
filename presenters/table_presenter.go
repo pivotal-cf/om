@@ -140,7 +140,9 @@ func (t TablePresenter) PresentInstallations(installations []models.Installation
 	t.tableWriter.Render()
 }
 
-func (t TablePresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
+func (t TablePresenter) PresentPendingChanges(output api.PendingChangesOutput) {
+	pendingChanges := output.ChangeList
+
 	t.tableWriter.SetHeader([]string{"PRODUCT", "ACTION", "ERRANDS"})
 
 	for _, change := range pendingChanges {

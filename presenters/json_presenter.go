@@ -54,12 +54,16 @@ func (j JSONPresenter) PresentInstallations(installations []models.Installation)
 	j.encodeJSON(installations)
 }
 
-func (j JSONPresenter) PresentPendingChanges(pendingChanges []api.ProductChange) {
-	j.encodeJSON(pendingChanges)
-}
-
 func (j JSONPresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
 	j.encodeJSON(stagedProducts)
+}
+
+func (j JSONPresenter) PresentPendingChanges(pendingChangesOutput api.PendingChangesOutput) {
+	_, _ = j.stdout.Write([]byte(pendingChangesOutput.FullReport))
+}
+
+func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
+	_, _ = j.stdout.Write([]byte(report.FullReport))
 }
 
 func (j JSONPresenter) encodeJSON(v interface{}) {
@@ -67,8 +71,4 @@ func (j JSONPresenter) encodeJSON(v interface{}) {
 
 	_, _ = j.stdout.Write(b)
 	_, _ = j.stdout.Write([]byte("\n"))
-}
-
-func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
-	_, _ = j.stdout.Write([]byte(report.FullReport))
 }

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -65,8 +64,7 @@ func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 		log.Fatal(err)
 	}
 
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(reportBytes))
-	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
+	if err := json.Unmarshal(reportBytes, &apiResponse); err != nil {
 		return DiagnosticReport{}, errors.Wrap(err, "invalid json received from server")
 	}
 

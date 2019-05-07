@@ -40,7 +40,7 @@ func (pc PendingChanges) Execute(args []string) error {
 	}
 
 	pc.presenter.SetFormat(pc.Options.Format)
-	pc.presenter.PresentPendingChanges(output.ChangeList)
+	pc.presenter.PresentPendingChanges(output)
 
 	if pc.Options.Check {
 		for _, ProductChange := range output.ChangeList {

@@ -225,29 +225,31 @@ var _ = Describe("TablePresenter", func() {
 	})
 
 	Describe("PresentPendingChanges", func() {
-		var pendingChanges []api.ProductChange
+		var pendingChanges api.PendingChangesOutput
 		BeforeEach(func() {
-			pendingChanges = []api.ProductChange{
-				{
-					GUID:   "some-product",
-					Action: "update",
-					Errands: []api.Errand{
-						{
-							Name:       "some-errand",
-							PostDeploy: "on",
-							PreDelete:  "false",
-						},
-						{
-							Name:       "some-errand-2",
-							PostDeploy: "when-change",
-							PreDelete:  "false",
+			pendingChanges = api.PendingChangesOutput{
+				ChangeList: []api.ProductChange{
+					{
+						GUID:   "some-product",
+						Action: "update",
+						Errands: []api.Errand{
+							{
+								Name:       "some-errand",
+								PostDeploy: "on",
+								PreDelete:  "false",
+							},
+							{
+								Name:       "some-errand-2",
+								PostDeploy: "when-change",
+								PreDelete:  "false",
+							},
 						},
 					},
-				},
-				{
-					GUID:    "some-product-without-errand",
-					Action:  "install",
-					Errands: []api.Errand{},
+					{
+						GUID:    "some-product-without-errand",
+						Action:  "install",
+						Errands: []api.Errand{},
+					},
 				},
 			}
 		})

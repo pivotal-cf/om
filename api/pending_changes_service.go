@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
 
 	"github.com/pkg/errors"
 )
@@ -10,6 +12,7 @@ const pendingChangesEndpoint = "/api/v0/staged/pending_changes"
 
 type PendingChangesOutput struct {
 	ChangeList []ProductChange `json:"product_changes"`
+	FullReport string
 }
 
 type CompletenessChecks struct {
@@ -36,10 +39,23 @@ func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
 		return PendingChangesOutput{}, err
 	}
 
+	reportBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var pendingChanges PendingChangesOutput
-	if err := json.NewDecoder(resp.Body).Decode(&pendingChanges); err != nil {
+	if err := json.Unmarshal(reportBytes, &pendingChanges); err != nil {
 		return PendingChangesOutput{}, errors.Wrap(err, "could not unmarshal pending_changes response")
 	}
 
+	var pendingChangesFull *struct {
+		PendingChanges json.RawMessage `json:"product_changes"`
+	}
+	if err := json.Unmarshal(reportBytes, &pendingChangesFull); err != nil {
+		return PendingChangesOutput{}, errors.Wrap(err, "could not unmarshal pending_changes response")
+	}
+
+	pendingChanges.FullReport = string(pendingChangesFull.PendingChanges)
 	return pendingChanges, nil
 }

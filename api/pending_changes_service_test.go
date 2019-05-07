@@ -40,7 +40,8 @@ var _ = Describe("PendingChangesService", func() {
 							"errands":[
 								{ "name":"errand-1", "post_deploy":"true" }
 							],
-							"action":"install"
+							"action":"install",
+                            "extra_field": "needs to be preserved"
 						},
 						{
 							"guid":"product-234",
@@ -81,6 +82,23 @@ var _ = Describe("PendingChangesService", func() {
 			))
 
 			Expect(path).To(Equal("/api/v0/staged/pending_changes"))
+
+			Expect(output.FullReport).To(MatchJSON(`[{
+							"guid":"product-123",
+							"errands":[
+								{ "name":"errand-1", "post_deploy":"true" }
+							],
+							"action":"install",
+                            "extra_field": "needs to be preserved"
+						},
+						{
+							"guid":"product-234",
+							"errands":[
+								{ "name":"errand-3", "post_deploy":"true" }
+							],
+							"action":"update",
+                            "completeness_checks": {"configuration_complete": true, "stemcell_present": false, "configurable_properties_valid": true}
+						}]`))
 		})
 
 		Describe("errors", func() {

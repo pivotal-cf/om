@@ -17,7 +17,7 @@ type Presenter interface {
 	PresentDeployedProducts([]api.DiagnosticProduct)
 	PresentErrands([]models.Errand)
 	PresentInstallations([]models.Installation)
-	PresentPendingChanges([]api.ProductChange)
+	PresentPendingChanges(api.PendingChangesOutput)
 	PresentStagedProducts([]api.DiagnosticProduct)
 	PresentDiagnosticReport(api.DiagnosticReport)
 }
@@ -127,7 +127,7 @@ func (p *MultiPresenter) PresentInstallations(i []models.Installation) {
 		p.tablePresenter.PresentInstallations(i)
 	}
 }
-func (p *MultiPresenter) PresentPendingChanges(c []api.ProductChange) {
+func (p *MultiPresenter) PresentPendingChanges(c api.PendingChangesOutput) {
 	switch p.format {
 	case "json":
 		p.jsonPresenter.PresentPendingChanges(c)
