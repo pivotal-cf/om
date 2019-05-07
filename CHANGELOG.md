@@ -3,9 +3,13 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
-## [PENDING] 0.58.0
+## 1.0.0
 
 ### Breaking Changes
+* `om` will now follow conventional Semantic Versioning,
+  with breaking changes in major bumps,
+  non-breaking changes for minor bumps,
+  and bug fixes for patches.
 * `delete-installation` now has a force flag. 
   The flag is required to run this command quietly, as it was working before.
   The reason behind this is
