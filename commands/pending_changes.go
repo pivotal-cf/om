@@ -13,8 +13,8 @@ type PendingChanges struct {
 	service   pendingChangesService
 	presenter presenters.FormattedPresenter
 	Options   struct {
-		ValidateOpsmanClean bool   `long:"validate-opsman-clean" description:"Exit 1 if there are any pending changes. Useful for validating that Ops Manager is in a clean state."`
-		Format              string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
+		Check  bool   `long:"check" description:"Exit 1 if there are any pending changes. Useful for validating that Ops Manager is in a clean state."`
+		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
@@ -64,7 +64,7 @@ func (pc PendingChanges) Execute(args []string) error {
 		return fmt.Errorf("%s\nPlease validate your Ops Manager installation in the UI", strings.Join(errs, ",\n"))
 	}
 
-	if pc.Options.ValidateOpsmanClean {
+	if pc.Options.Check {
 		for _, ProductChange := range output.ChangeList {
 			if ProductChange.Action != "unchanged" {
 				return fmt.Errorf("there are pending changes.\nGo into the Ops Manager UI, unstage changes, and try again")

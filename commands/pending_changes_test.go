@@ -62,11 +62,11 @@ var _ = Describe("PendingChanges", func() {
 			Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 		})
 
-		When("the validate-opsman-clean flag is provided", func() {
+		Context("when the check flag is provided", func() {
 			var options []string
 
 			BeforeEach(func() {
-				options = []string{"--validate-opsman-clean"}
+				options = []string{"--check"}
 			})
 			When("there are pending changes", func() {
 				BeforeEach(func() {
