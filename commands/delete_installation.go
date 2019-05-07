@@ -55,6 +55,7 @@ func (ac DeleteInstallation) Execute(args []string) error {
 
 			if text == "yes" {
 				ac.logger.Printf("Ok. Are you sure? [yes/no]: ")
+				scanner.Scan()
 				text = scanner.Text()
 
 				if text == "yes" {
