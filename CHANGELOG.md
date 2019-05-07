@@ -3,6 +3,16 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
+## [PENDING] 2.0.0
+
+### Breaking Changes
+* `pending-changes` `--check` flag 
+  has been replaced with the `--validate-opsman-clean` flag.
+  This has been added to mitigate confusion
+  around the actual completeness check
+  the command will be running to validate
+  there are no errors, missing properties, or missing stemcells.
+
 ## 1.0.0
 
 ### Breaking Changes
