@@ -66,7 +66,7 @@ var _ = Describe("PendingChanges", func() {
 			var options []string
 
 			BeforeEach(func() {
-				options = []string{"--check"}
+				options = []string{"--validate-opsman-clean"}
 			})
 			When("there are pending changes", func() {
 				BeforeEach(func() {
