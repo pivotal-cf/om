@@ -62,7 +62,7 @@ var _ = Describe("PendingChanges", func() {
 			Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 		})
 
-		Context("when the validate-opsman-clean flag is provided", func() {
+		When("the validate-opsman-clean flag is provided", func() {
 			var options []string
 
 			BeforeEach(func() {
@@ -144,7 +144,7 @@ var _ = Describe("PendingChanges", func() {
 			})
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
 				Expect(err).NotTo(HaveOccurred())
@@ -154,14 +154,14 @@ var _ = Describe("PendingChanges", func() {
 		})
 
 		Describe("failure cases", func() {
-			Context("when an unknown flag is passed", func() {
+			When("an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
 					Expect(err).To(MatchError("could not parse pending-changes flags: flag provided but not defined: -unknown-flag"))
 				})
 			})
 
-			Context("when fetching the pending changes fails", func() {
+			When("fetching the pending changes fails", func() {
 				It("returns an error", func() {
 					command := commands.NewPendingChanges(presenter, pcService)
 
@@ -170,6 +170,148 @@ var _ = Describe("PendingChanges", func() {
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("failed to retrieve pending changes beep boop"))
 				})
+			})
+
+			Describe("Ops Man 2.5 and earlier", func() {
+				When("completeness_check returns any false values", func() {
+					It("returns an error for configuration_complete: false", func() {
+						pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+							ChangeList: []api.ProductChange{
+								{
+									GUID:   "some-product-without-errands",
+									Action: "unchanged",
+									CompletenessChecks: &api.CompletenessChecks{
+										ConfigurationComplete:       false,
+										StemcellPresent:             true,
+										ConfigurablePropertiesValid: true,
+									},
+								},
+							},
+						}, nil)
+
+						err := command.Execute([]string{})
+						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid some-product-without-errands"))
+						Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+					})
+
+					It("returns an error for stemcell_present: false", func() {
+						pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+							ChangeList: []api.ProductChange{
+								{
+									GUID:   "some-product-without-errands",
+									Action: "unchanged",
+									CompletenessChecks: &api.CompletenessChecks{
+										ConfigurationComplete:       true,
+										StemcellPresent:             false,
+										ConfigurablePropertiesValid: true,
+									},
+								},
+							},
+						}, nil)
+
+						err := command.Execute([]string{})
+						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands"))
+						Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+					})
+
+					It("returns an error for configurable_properties_valid: false", func() {
+						pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+							ChangeList: []api.ProductChange{
+								{
+
+									GUID:   "some-product-without-errands",
+									Action: "unchanged",
+									CompletenessChecks: &api.CompletenessChecks{
+										ConfigurationComplete:       true,
+										StemcellPresent:             true,
+										ConfigurablePropertiesValid: false,
+									},
+								},
+							},
+						}, nil)
+
+						err := command.Execute([]string{})
+						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid some-product-without-errands"))
+						Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+					})
+
+					When("multiple products fail completeness_checks", func() {
+						It("concatenates errors for multiple products", func() {
+							pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+								ChangeList: []api.ProductChange{
+									{
+
+										GUID:   "some-product-without-errands",
+										Action: "unchanged",
+										CompletenessChecks: &api.CompletenessChecks{
+											ConfigurationComplete:       false,
+											StemcellPresent:             false,
+											ConfigurablePropertiesValid: false,
+										},
+									},
+									{
+
+										GUID:   "second-product-without-errands",
+										Action: "unchanged",
+										CompletenessChecks: &api.CompletenessChecks{
+											ConfigurationComplete:       false,
+											StemcellPresent:             false,
+											ConfigurablePropertiesValid: false,
+										},
+									},
+								},
+							}, nil)
+
+							err := command.Execute([]string{})
+							Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+							Expect(err).To(HaveOccurred())
+							Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid some-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid some-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid second-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid second-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid second-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+						})
+					})
+
+					When("multiple completeness_checks fail for a single product", func() {
+						It("concatenates errors into the same error string", func() {
+							pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
+								ChangeList: []api.ProductChange{
+									{
+
+										GUID:   "some-product-without-errands",
+										Action: "unchanged",
+										CompletenessChecks: &api.CompletenessChecks{
+											ConfigurationComplete:       false,
+											StemcellPresent:             false,
+											ConfigurablePropertiesValid: false,
+										},
+									},
+								},
+							}, nil)
+
+							err := command.Execute([]string{})
+							Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+							Expect(err).To(HaveOccurred())
+							Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid some-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid some-product-without-errands"))
+							Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+						})
+					})
+				})
+			})
+
+			Describe("Ops Man 2.6 and later", func() {
+
 			})
 		})
 	})

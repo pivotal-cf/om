@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -42,10 +43,31 @@ func (pc PendingChanges) Execute(args []string) error {
 	pc.presenter.SetFormat(pc.Options.Format)
 	pc.presenter.PresentPendingChanges(output)
 
+	var errs []string
+	for _, change := range output.ChangeList {
+		if change.CompletenessChecks != nil {
+			if !change.CompletenessChecks.ConfigurationComplete {
+				errs = append(errs, fmt.Sprintf("configuration is incomplete for guid %s", change.GUID))
+			}
+
+			if !change.CompletenessChecks.StemcellPresent {
+				errs = append(errs, fmt.Sprintf("stemcell is missing for one or more products for guid %s", change.GUID))
+			}
+
+			if !change.CompletenessChecks.ConfigurablePropertiesValid {
+				errs = append(errs, fmt.Sprintf("one or more properties are invalid for guid %s", change.GUID))
+			}
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("%s\nPlease validate your Ops Manager installation in the UI", strings.Join(errs, ",\n"))
+	}
+
 	if pc.Options.ValidateOpsmanClean {
 		for _, ProductChange := range output.ChangeList {
 			if ProductChange.Action != "unchanged" {
-				return fmt.Errorf("there are pending changes")
+				return fmt.Errorf("there are pending changes.\nGo into the Ops Manager UI, unstage changes, and try again")
 			}
 		}
 	}
