@@ -182,6 +182,7 @@ func main() {
 	commandSet["installations"] = commands.NewInstallations(api, presenter)
 	commandSet["interpolate"] = commands.NewInterpolate(os.Environ, stdout)
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
+	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)

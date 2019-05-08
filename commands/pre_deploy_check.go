@@ -5,6 +5,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
+	"strings"
 )
 
 type PreDeployCheck struct {
@@ -19,6 +20,7 @@ type PreDeployCheck struct {
 //go:generate counterfeiter -o ./fakes/pre_deploy_check_service.go --fake-name PreDeployCheckService . preDeployCheckService
 type preDeployCheckService interface {
 	ListPendingDirectorChanges() (api.PendingDirectorChangesOutput, error)
+	ListAllPendingProductChanges() ([]api.PendingProductChangesOutput, error)
 }
 
 func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeployCheckService) PreDeployCheck {
@@ -35,8 +37,20 @@ func (pc PreDeployCheck) Execute(args []string) error {
 
 	pendingDirectorChanges, err := pc.service.ListPendingDirectorChanges()
 	_ = err
+	var errs []string
 	if !pendingDirectorChanges.EndpointResults.Complete {
-		return fmt.Errorf("director configuration incomplete")
+		errs = append(errs, "director configuration incomplete")
+	}
+
+	pendingProductChanges, err := pc.service.ListAllPendingProductChanges()
+	_ = err
+	for _, change := range pendingProductChanges {
+		if !change.EndpointResults.Complete {
+			errs = append(errs, fmt.Sprintf("product configuration incomplete for product with guid '%s'", change.EndpointResults.Identifier))
+		}
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("%s\nPlease validate your Ops Manager installation in the UI", strings.Join(errs, ",\n"))
 	}
 
 	return nil

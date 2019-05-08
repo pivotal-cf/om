@@ -8,6 +8,18 @@ import (
 )
 
 type PreDeployCheckService struct {
+	ListAllPendingProductChangesStub        func() ([]api.PendingProductChangesOutput, error)
+	listAllPendingProductChangesMutex       sync.RWMutex
+	listAllPendingProductChangesArgsForCall []struct {
+	}
+	listAllPendingProductChangesReturns struct {
+		result1 []api.PendingProductChangesOutput
+		result2 error
+	}
+	listAllPendingProductChangesReturnsOnCall map[int]struct {
+		result1 []api.PendingProductChangesOutput
+		result2 error
+	}
 	ListPendingDirectorChangesStub        func() (api.PendingDirectorChangesOutput, error)
 	listPendingDirectorChangesMutex       sync.RWMutex
 	listPendingDirectorChangesArgsForCall []struct {
@@ -22,6 +34,61 @@ type PreDeployCheckService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *PreDeployCheckService) ListAllPendingProductChanges() ([]api.PendingProductChangesOutput, error) {
+	fake.listAllPendingProductChangesMutex.Lock()
+	ret, specificReturn := fake.listAllPendingProductChangesReturnsOnCall[len(fake.listAllPendingProductChangesArgsForCall)]
+	fake.listAllPendingProductChangesArgsForCall = append(fake.listAllPendingProductChangesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListAllPendingProductChanges", []interface{}{})
+	fake.listAllPendingProductChangesMutex.Unlock()
+	if fake.ListAllPendingProductChangesStub != nil {
+		return fake.ListAllPendingProductChangesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listAllPendingProductChangesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *PreDeployCheckService) ListAllPendingProductChangesCallCount() int {
+	fake.listAllPendingProductChangesMutex.RLock()
+	defer fake.listAllPendingProductChangesMutex.RUnlock()
+	return len(fake.listAllPendingProductChangesArgsForCall)
+}
+
+func (fake *PreDeployCheckService) ListAllPendingProductChangesCalls(stub func() ([]api.PendingProductChangesOutput, error)) {
+	fake.listAllPendingProductChangesMutex.Lock()
+	defer fake.listAllPendingProductChangesMutex.Unlock()
+	fake.ListAllPendingProductChangesStub = stub
+}
+
+func (fake *PreDeployCheckService) ListAllPendingProductChangesReturns(result1 []api.PendingProductChangesOutput, result2 error) {
+	fake.listAllPendingProductChangesMutex.Lock()
+	defer fake.listAllPendingProductChangesMutex.Unlock()
+	fake.ListAllPendingProductChangesStub = nil
+	fake.listAllPendingProductChangesReturns = struct {
+		result1 []api.PendingProductChangesOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *PreDeployCheckService) ListAllPendingProductChangesReturnsOnCall(i int, result1 []api.PendingProductChangesOutput, result2 error) {
+	fake.listAllPendingProductChangesMutex.Lock()
+	defer fake.listAllPendingProductChangesMutex.Unlock()
+	fake.ListAllPendingProductChangesStub = nil
+	if fake.listAllPendingProductChangesReturnsOnCall == nil {
+		fake.listAllPendingProductChangesReturnsOnCall = make(map[int]struct {
+			result1 []api.PendingProductChangesOutput
+			result2 error
+		})
+	}
+	fake.listAllPendingProductChangesReturnsOnCall[i] = struct {
+		result1 []api.PendingProductChangesOutput
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *PreDeployCheckService) ListPendingDirectorChanges() (api.PendingDirectorChangesOutput, error) {
@@ -82,6 +149,8 @@ func (fake *PreDeployCheckService) ListPendingDirectorChangesReturnsOnCall(i int
 func (fake *PreDeployCheckService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.listAllPendingProductChangesMutex.RLock()
+	defer fake.listAllPendingProductChangesMutex.RUnlock()
 	fake.listPendingDirectorChangesMutex.RLock()
 	defer fake.listPendingDirectorChangesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
