@@ -117,6 +117,7 @@ Commands:
   installations                   list recent installation events
   interpolate                     Interpolates variables into a manifest
   pending-changes                 lists pending changes
+  pre-deploy-check                lists pending changes
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           reverts staged changes on the Ops Manager targeted
   ssl-certificate                 gets certificate applied to Ops Manager
