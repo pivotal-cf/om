@@ -11,6 +11,7 @@ import (
 type PreDeployCheck struct {
 	service   preDeployCheckService
 	presenter presenters.FormattedPresenter
+	logger    logger
 	Options   struct {
 		Check  bool   `long:"check" description:"Exit 1 if there are any pending changes. Useful for validating that Ops Manager is in a clean state."`
 		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
@@ -23,10 +24,11 @@ type preDeployCheckService interface {
 	ListAllPendingProductChanges() ([]api.PendingProductChangesOutput, error)
 }
 
-func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeployCheckService) PreDeployCheck {
+func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeployCheckService, logger logger) PreDeployCheck {
 	return PreDeployCheck{
 		service:   service,
 		presenter: presenter,
+		logger:    logger,
 	}
 }
 
@@ -36,17 +38,27 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	}
 
 	pendingDirectorChanges, err := pc.service.ListPendingDirectorChanges()
-	_ = err
+	if err != nil {
+		return fmt.Errorf("while getting director: %s", err)
+	}
+
 	var errs []string
 	if !pendingDirectorChanges.EndpointResults.Complete {
 		errs = append(errs, "director configuration incomplete")
+	} else {
+		pc.logger.Println("the director is configured correctly")
 	}
 
 	pendingProductChanges, err := pc.service.ListAllPendingProductChanges()
-	_ = err
+	if err != nil {
+		return fmt.Errorf("while getting products: %s", err)
+	}
+
 	for _, change := range pendingProductChanges {
 		if !change.EndpointResults.Complete {
 			errs = append(errs, fmt.Sprintf("product configuration incomplete for product with guid '%s'", change.EndpointResults.Identifier))
+		} else {
+			pc.logger.Printf("the product with guid '%s' is configured correctly", change.EndpointResults.Identifier)
 		}
 	}
 	if len(errs) > 0 {
