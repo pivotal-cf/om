@@ -154,29 +154,6 @@ var _ = Describe("pre_deploy_check command", func() {
 
 		Eventually(session).Should(gexec.Exit(1))
 
-		Expect(string(session.Err.Contents())).To(ContainSubstring("director configuration incomplete"))
-		Expect(string(session.Err.Contents())).To(ContainSubstring("product configuration incomplete for product with guid 'p-guid'"))
-		Expect(string(session.Err.Contents())).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+		Expect(string(session.Out.Contents())).To(ContainSubstring("The director is not configured correctly."))
 	})
-
-	//TODO: Will we be using any JSON or just errors and exit code?
-	//Context("when JSON format is requested", func() {
-	//	It("lists the pending changes in JSON format", func() {
-	//		command := exec.Command(pathToMain,
-	//			"--target", server.URL,
-	//			"--username", "some-username",
-	//			"--password", "some-password",
-	//			"--skip-ssl-validation",
-	//			"pending-changes",
-	//			"--format", "json")
-	//
-	//		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-	//		Expect(err).NotTo(HaveOccurred())
-	//
-	//		Eventually(session).Should(gexec.Exit(0))
-	//
-	//		Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
-	//	})
-	//})
-
 })

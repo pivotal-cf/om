@@ -2,10 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
-	"strings"
 )
 
 type PreDeployCheck struct {
@@ -33,6 +33,7 @@ func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeplo
 }
 
 func (pc PreDeployCheck) Execute(args []string) error {
+	failedCompleteness := fmt.Errorf("OpsManager is not fully configured")
 	if _, err := jhanda.Parse(&pc.Options, args); err != nil {
 		return fmt.Errorf("could not parse pending-changes flags: %s", err)
 	}
@@ -42,11 +43,10 @@ func (pc PreDeployCheck) Execute(args []string) error {
 		return fmt.Errorf("while getting director: %s", err)
 	}
 
-	var errs []string
-	if !pendingDirectorChanges.EndpointResults.Complete {
-		errs = append(errs, "director configuration incomplete")
-	} else {
-		pc.logger.Println("the director is configured correctly")
+	directorOk := pendingDirectorChanges.EndpointResults.Complete
+	if !directorOk {
+		pc.logger.Println("The director is not configured correctly.")
+		return failedCompleteness
 	}
 
 	pendingProductChanges, err := pc.service.ListAllPendingProductChanges()
@@ -54,16 +54,22 @@ func (pc PreDeployCheck) Execute(args []string) error {
 		return fmt.Errorf("while getting products: %s", err)
 	}
 
+	var productsIncomplete []string
 	for _, change := range pendingProductChanges {
 		if !change.EndpointResults.Complete {
-			errs = append(errs, fmt.Sprintf("product configuration incomplete for product with guid '%s'", change.EndpointResults.Identifier))
-		} else {
-			pc.logger.Printf("the product with guid '%s' is configured correctly", change.EndpointResults.Identifier)
+			productsIncomplete = append(productsIncomplete, change.EndpointResults.Identifier)
 		}
 	}
-	if len(errs) > 0 {
-		return fmt.Errorf("%s\nPlease validate your Ops Manager installation in the UI", strings.Join(errs, ",\n"))
+
+	if len(productsIncomplete) > 0 {
+		pc.logger.Println("The director is configured correctly, but the following product(s) are not.")
+		for _, incomplete := range productsIncomplete {
+			pc.logger.Printf(color.RedString("[X] %s", incomplete))
+		}
+		return failedCompleteness
 	}
+
+	pc.logger.Println("The director and products are configured correctly.")
 
 	return nil
 }

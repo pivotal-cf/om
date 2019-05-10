@@ -11,6 +11,7 @@ require (
 	github.com/cloudfoundry/bosh-utils v0.0.0-20180515235324-fad7a5ad622c // indirect
 	github.com/cppforlife/go-patch v0.1.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-playground/locales v0.12.1 // indirect

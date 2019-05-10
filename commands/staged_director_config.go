@@ -172,7 +172,7 @@ func (sdc StagedDirectorConfig) removePropertiesIAASConfigGUID(config map[string
 	}
 }
 
-func (sdc StagedDirectorConfig) getResourceConfigs(jobs map[string]string, directorGUID string) (map[string]api.JobProperties, error){
+func (sdc StagedDirectorConfig) getResourceConfigs(jobs map[string]string, directorGUID string) (map[string]api.JobProperties, error) {
 	resourceConfigs := map[string]api.JobProperties{}
 
 	for name, jobGUID := range jobs {

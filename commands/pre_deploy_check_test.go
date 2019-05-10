@@ -76,35 +76,6 @@ var _ = Describe("PreDeployCheck", func() {
 		}, nil)
 	})
 
-	When("director is complete", func() {
-		//TODO: get command STDOUT
-		It("returns a 'the director is configured correctly' message", func() {
-			// Default case should be success
-			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
-
-			Expect(err).NotTo(HaveOccurred())
-			Expect(stdout).To(gbytes.Say("the director is configured correctly"))
-		})
-	})
-
-	When("director is incomplete", func() {
-		It("returns an error", func() {
-			service.ListPendingDirectorChangesReturns(api.PendingDirectorChangesOutput{
-				EndpointResults: api.PreDeployCheck{
-					Complete: false,
-				},
-			}, nil)
-
-			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
-
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("director configuration incomplete"))
-			Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
-		})
-	})
-
 	When("getting information about the director fails", func() {
 		It("displays the error", func() {
 			service.ListPendingDirectorChangesReturns(api.PendingDirectorChangesOutput{}, errors.New("something bad happened with the director"))
@@ -128,20 +99,34 @@ var _ = Describe("PreDeployCheck", func() {
 		})
 	})
 
-	When("product is complete", func() {
-		//TODO: get command STDOUT
-		It("returns a 'the product with guid 'p-guid' is configured correctly' message", func() {
-			// Default case should be success
+	When("the director and product are complete", func() {
+		It("displays a helpful message", func() {
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-
 			Expect(err).NotTo(HaveOccurred())
-			Expect(stdout).To(gbytes.Say("the product with guid 'p-guid' is configured correctly"))
+
+			Expect(stdout).To(gbytes.Say("The director and products are configured correctly."))
 		})
 	})
 
-	When("products are incomplete", func() {
-		It("returns an error", func() {
+	When("the director is incomplete", func() {
+		It("displays a message and returns an error", func() {
+			service.ListPendingDirectorChangesReturns(api.PendingDirectorChangesOutput{
+				EndpointResults: api.PreDeployCheck{
+					Identifier: "p-guid",
+					Complete:   false,
+				},
+			}, nil)
+			command := commands.NewPreDeployCheck(presenter, service, logger)
+			err := command.Execute([]string{})
+			Expect(err).To(HaveOccurred())
+
+			Expect(string(stdout.Contents())).To(Equal("The director is not configured correctly.\n"))
+		})
+	})
+
+	When("the director is complete, but a product is incomplete", func() {
+		It("displays a message and returns an error", func() {
 			service.ListAllPendingProductChangesReturns([]api.PendingProductChangesOutput{
 				{
 					EndpointResults: api.PreDeployCheck{
@@ -156,14 +141,13 @@ var _ = Describe("PreDeployCheck", func() {
 					},
 				},
 			}, nil)
-
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("product configuration incomplete for product with guid 'p-guid'"))
-			Expect(err.Error()).To(ContainSubstring("product configuration incomplete for product with guid 'another-p-guid'"))
-			Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+
+			Expect(stdout).To(gbytes.Say(`The director is configured correctly, but the following product\(s\) are not.`))
+			Expect(stdout).To(gbytes.Say(`\[X\] p-guid`))
+			Expect(stdout).To(gbytes.Say(`\[X\] another-p-guid`))
 		})
 	})
 })
