@@ -20,6 +20,7 @@ type PreDeployCheck struct {
 
 //go:generate counterfeiter -o ./fakes/pre_deploy_check_service.go --fake-name PreDeployCheckService . preDeployCheckService
 type preDeployCheckService interface {
+	Info() (api.Info, error)
 	ListPendingDirectorChanges() (api.PendingDirectorChangesOutput, error)
 	ListAllPendingProductChanges() ([]api.PendingProductChangesOutput, error)
 }
@@ -36,6 +37,14 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	failedCompleteness := fmt.Errorf("OpsManager is not fully configured")
 	if _, err := jhanda.Parse(&pc.Options, args); err != nil {
 		return fmt.Errorf("could not parse pending-changes flags: %s", err)
+	}
+
+	info, err := pc.service.Info()
+	if err != nil {
+		return err
+	}
+	if ok, _ := info.VersionAtLeast(2, 6); !ok {
+		return fmt.Errorf("pre deploy checks are only supported in OpsManager 2.6")
 	}
 
 	pendingDirectorChanges, err := pc.service.ListPendingDirectorChanges()

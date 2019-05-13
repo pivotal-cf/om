@@ -30,6 +30,14 @@ var _ = Describe("pre_deploy_check command", func() {
 					"expires_in": 3600
 				}`))
 				Expect(err).ToNot(HaveOccurred())
+			case "/api/v0/info":
+				_, err := w.Write([]byte(`{
+						"info": {
+							"version": "2.6.0"
+						}
+					}`))
+
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/director/pre_deploy_check":
 				_, err := w.Write([]byte(`{
 				  "pre_deploy_check": {

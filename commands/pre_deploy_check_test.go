@@ -74,6 +74,8 @@ var _ = Describe("PreDeployCheck", func() {
 				},
 			},
 		}, nil)
+
+		service.InfoReturns(api.Info{Version: "2.6.0"}, nil)
 	})
 
 	When("getting information about the director fails", func() {
@@ -149,5 +151,20 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(stdout).To(gbytes.Say(`\[X\] p-guid`))
 			Expect(stdout).To(gbytes.Say(`\[X\] another-p-guid`))
 		})
+	})
+
+	It("only works for version 2.6+", func() {
+		for _, validVersion := range []string{"2.6.0", "2.7.0", "2.8.0"} {
+			service.InfoReturns(api.Info{Version: validVersion}, nil)
+			command := commands.NewPreDeployCheck(presenter, service, logger)
+			err := command.Execute([]string{})
+			Expect(err).ToNot(HaveOccurred())
+		}
+		for _, invalidVersion := range []string{"2.3.0", "2.4.0", "2.5.0"} {
+			service.InfoReturns(api.Info{Version: invalidVersion}, nil)
+			command := commands.NewPreDeployCheck(presenter, service, logger)
+			err := command.Execute([]string{})
+			Expect(err).To(HaveOccurred())
+		}
 	})
 })
