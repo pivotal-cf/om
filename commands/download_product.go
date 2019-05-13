@@ -157,7 +157,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return err
 	}
 
-	return c.writeAssignStemcellInput(stemcell.Version())
+	return c.writeAssignStemcellInput(productFileName, stemcell.Version())
 }
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
@@ -256,14 +256,19 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, stem
 	return nil
 }
 
-func (c DownloadProduct) writeAssignStemcellInput(stemcellVersion string) error {
+func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemcellVersion string) error {
 	assignStemcellFileName := "assign-stemcell.yml"
 	c.stderr.Printf("Writing a assign stemcll artifact to %s", assignStemcellFileName)
+	metadata, err := getTileMetadata(productFileName)
+	if err != nil {
+		return fmt.Errorf("cannot parse product metadata: %s", err)
+	}
+
 	assignStemcellPayload := struct {
 		Product  string `json:"product"`
 		Stemcell string `json:"stemcell"`
 	}{
-		Product:  c.Options.PivnetProductSlug,
+		Product:  metadata.ProductName,
 		Stemcell: stemcellVersion,
 	}
 

@@ -34,47 +34,20 @@ func (t TileMetadata) Execute(args []string) error {
 		return errors.New("you must specify product-name and/or product-version")
 	}
 
-	file, err := zip.OpenReader(t.Options.ProductPath)
+	metadata, err := getTileMetadata(t.Options.ProductPath)
 	if err != nil {
-		return fmt.Errorf("failed to open product file: %s", err)
-	}
-	defer file.Close()
-
-	for _, f := range file.File {
-		matched, err := regexp.MatchString(`metadata/.+\.yml`, f.Name)
-		if err != nil {
-			return fmt.Errorf("failed to match file name regex: %s", err)
-		}
-
-		if matched {
-			meta, err := f.Open()
-			if err != nil {
-				return fmt.Errorf("failed to open metadata file: %s", err)
-			}
-
-			type DecodedFile struct {
-				ProductName    string `yaml:"name"`
-				ProductVersion string `yaml:"product_version"`
-			}
-			var v DecodedFile
-			err = yaml.NewDecoder(meta).Decode(&v)
-			if err != nil {
-				return fmt.Errorf("failed to decode metadata file: %s", err)
-			}
-
-			if t.Options.ProductName {
-				t.stdout.Println(v.ProductName)
-			}
-
-			if t.Options.ProductVersion {
-				t.stdout.Println(v.ProductVersion)
-			}
-
-			return nil
-		}
+		return fmt.Errorf("failed to getting metadata: %s", err)
 	}
 
-	return errors.New("failed to find metadata file")
+	if t.Options.ProductName {
+		t.stdout.Println(metadata.ProductName)
+	}
+
+	if t.Options.ProductVersion {
+		t.stdout.Println(metadata.ProductVersion)
+	}
+
+	return nil
 }
 
 func (t TileMetadata) Usage() jhanda.Usage {
@@ -83,4 +56,41 @@ func (t TileMetadata) Usage() jhanda.Usage {
 		ShortDescription: "prints tile metadata",
 		Flags:            t.Options,
 	}
+}
+
+type metadataPayload struct {
+	ProductName    string `yaml:"name"`
+	ProductVersion string `yaml:"product_version"`
+}
+
+func getTileMetadata(filename string) (*metadataPayload, error) {
+	file, err := zip.OpenReader(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open product file '%s': %s", filename, err)
+	}
+	defer file.Close()
+
+	for _, f := range file.File {
+		matched, err := regexp.MatchString(`metadata/.+\.yml`, f.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to match file name regex: %s", err)
+		}
+
+		if matched {
+			meta, err := f.Open()
+			if err != nil {
+				return nil, fmt.Errorf("failed to open metadata file: %s", err)
+			}
+
+			var v metadataPayload
+			err = yaml.NewDecoder(meta).Decode(&v)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode metadata file: %s", err)
+			}
+
+			return &v, nil
+		}
+	}
+
+	return nil, errors.New("failed to find metadata file")
 }

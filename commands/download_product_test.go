@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"archive/zip"
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,25 +20,15 @@ import (
 
 var _ = Describe("DownloadProduct", func() {
 	var (
-		command               *commands.DownloadProduct
-		environFunc           func() []string
-		err                   error
-		file                  *os.File
-		fileContents          = "hello world"
+		command     *commands.DownloadProduct
+		environFunc func() []string
+		err         error
+		//file                  *os.File
 		fakeProductDownloader *fakes.ProductDownloader
 		buffer                *gbytes.Buffer
 	)
 
 	BeforeEach(func() {
-		var err error
-		file, err = ioutil.TempFile("", "[product-slug,1.0.0-beta.1]product*.pivotal")
-		Expect(err).ToNot(HaveOccurred())
-		defer file.Close()
-
-		_, err = file.WriteString(fileContents)
-		Expect(err).NotTo(HaveOccurred())
-
-		Expect(file.Close()).ToNot(HaveOccurred())
 
 		fakeProductDownloader = &fakes.ProductDownloader{}
 		environFunc = func() []string { return nil }
@@ -57,8 +48,8 @@ var _ = Describe("DownloadProduct", func() {
 	})
 
 	AfterEach(func() {
-		err := os.Remove(file.Name())
-		Expect(err).ToNot(HaveOccurred())
+		//err := os.Remove(file.Name())
+		//Expect(err).ToNot(HaveOccurred())
 	})
 
 	Context("when the flags are set correctly", func() {
@@ -263,6 +254,11 @@ var _ = Describe("DownloadProduct", func() {
 				tempDir, err := ioutil.TempDir("", "om-tests-")
 				Expect(err).NotTo(HaveOccurred())
 
+				fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					createTempZipFile(file)
+					return nil
+				}
+
 				commandArgs := []string{
 					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
@@ -303,7 +299,7 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(fileName).To(BeAnExistingFile())
 				Expect(string(fileContent)).To(MatchJSON(`
 							{
-								"product": "elastic-runtime",
+								"product": "fake-tile",
 								"stemcell": "97.190"
 							}`))
 			})
@@ -358,18 +354,16 @@ var _ = Describe("DownloadProduct", func() {
 				fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
 				fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
-					return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
+					createTempZipFile(file)
+					return nil
 				}
 			}
 
 			createFilePath := func() string {
 				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
 				file, err := os.Create(filePath)
-				Expect(err).NotTo(HaveOccurred())
-				_, err = file.WriteString("something-not-important")
-				Expect(err).NotTo(HaveOccurred())
-				err = file.Close()
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
+				createTempZipFile(file)
 				return filePath
 			}
 
@@ -430,7 +424,7 @@ var _ = Describe("DownloadProduct", func() {
 			When("the sha is invalid", func() {
 				It("downloads it, again", func() {
 					createFilePath()
-					setupForProductAPI("d1b2a59fbea7e20077af9f91b27e95e865061b270be03ff539ab3b73587882e8")
+					setupForProductAPI("20a9668171397bf4ea9487835e28e9ca090f3b04d1d0461f8d3b752a3e0daf30")
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
@@ -715,3 +709,24 @@ output-directory: %s
 		})
 	})
 })
+
+func createTempZipFile(file *os.File) {
+	var err error
+	defer file.Close()
+
+	z := zip.NewWriter(file)
+
+	// https://github.com/pivotal-cf/om/issues/239
+	// writing a "directory" as well, because some tiles seem to
+	// have this as a separate file in the zip, which influences the regexp
+	// needed to capture the metadata file
+	_, err = z.Create("metadata/")
+	Expect(err).NotTo(HaveOccurred())
+
+	f, err := z.Create("metadata/fake-tile.yml")
+	Expect(err).NotTo(HaveOccurred())
+
+	_, err = f.Write([]byte(`{name: fake-tile, product_version: 1.2.3}`))
+	Expect(err).NotTo(HaveOccurred())
+	Expect(z.Close()).To(Succeed())
+}
