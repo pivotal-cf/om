@@ -85,8 +85,8 @@ func (pc PreDeployCheck) Execute(args []string) error {
 
 func (pc PreDeployCheck) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command lists all pending changes.",
-		ShortDescription: "lists pending changes",
+		Description:      "**EXPERIMENTAL** This authenticated command lists all pending changes.",
+		ShortDescription: "**EXPERIMENTAL** lists pending changes",
 		Flags:            pc.Options,
 	}
 }
