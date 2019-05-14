@@ -13,7 +13,6 @@ type PreDeployCheck struct {
 	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
-		Check  bool   `long:"check" description:"Exit 1 if there are any pending changes. Useful for validating that Ops Manager is in a clean state."`
 		Format string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
