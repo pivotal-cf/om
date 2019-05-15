@@ -33,10 +33,13 @@ func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeplo
 }
 
 func (pc PreDeployCheck) Execute(args []string) error {
-	failedCompleteness := fmt.Errorf("OpsManager is not fully configured")
+	var isError = false
+
 	if _, err := jhanda.Parse(&pc.Options, args); err != nil {
 		return fmt.Errorf("could not parse pending-changes flags: %s", err)
 	}
+
+	pc.logger.Println("Scanning OpsManager now ...")
 
 	info, err := pc.service.Info()
 	if err != nil {
@@ -53,8 +56,10 @@ func (pc PreDeployCheck) Execute(args []string) error {
 
 	directorOk := pendingDirectorChanges.EndpointResults.Complete
 	if !directorOk {
-		pc.logger.Println("The director is not configured correctly.")
-		return failedCompleteness
+		pc.logger.Printf(color.RedString("[X] %s (bosh director)", pendingDirectorChanges.EndpointResults.Identifier))
+		isError = true
+	} else {
+		pc.logger.Printf(color.GreenString("[✓] %s (bosh director)", pendingDirectorChanges.EndpointResults.Identifier))
 	}
 
 	pendingProductChanges, err := pc.service.ListAllPendingProductChanges()
@@ -62,23 +67,20 @@ func (pc PreDeployCheck) Execute(args []string) error {
 		return fmt.Errorf("while getting products: %s", err)
 	}
 
-	var productsIncomplete []string
 	for _, change := range pendingProductChanges {
 		if !change.EndpointResults.Complete {
-			productsIncomplete = append(productsIncomplete, change.EndpointResults.Identifier)
+			pc.logger.Printf(color.RedString("[X] %s", change.EndpointResults.Identifier))
+			isError = true
+		} else {
+			pc.logger.Printf(color.GreenString("[✓] %s", change.EndpointResults.Identifier))
 		}
 	}
 
-	if len(productsIncomplete) > 0 {
-		pc.logger.Println("The director is configured correctly, but the following product(s) are not.")
-		for _, incomplete := range productsIncomplete {
-			pc.logger.Printf(color.RedString("[X] %s", incomplete))
-		}
-		return failedCompleteness
+	if isError {
+		return fmt.Errorf("OpsManager is not fully configured")
 	}
 
 	pc.logger.Println("The director and products are configured correctly.")
-
 	return nil
 }
 

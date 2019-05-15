@@ -162,6 +162,6 @@ var _ = Describe("pre_deploy_check command", func() {
 
 		Eventually(session).Should(gexec.Exit(1))
 
-		Expect(string(session.Out.Contents())).To(ContainSubstring("The director is not configured correctly."))
+		Expect(string(session.Out.Contents())).To(ContainSubstring("[X] p-bosh-guid (bosh director)"))
 	})
 })
