@@ -220,7 +220,7 @@ func setEnvFileProperties(global *options) error {
 		return fmt.Errorf("cannot read env file: %s", err)
 	}
 
-	err = yaml.Unmarshal(contents, &opts)
+	err = yaml.UnmarshalStrict(contents, &opts)
 	if err != nil {
 		return fmt.Errorf("could not parse env file: %s", err)
 	}
