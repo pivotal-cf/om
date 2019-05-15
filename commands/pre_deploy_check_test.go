@@ -109,8 +109,8 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("Scanning OpsManager now ..."))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] p-bosh-guid (bosh director)"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] p-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: p-guid"))
 		})
 	})
 
@@ -135,8 +135,39 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
 
-			Expect(string(stdout.Contents())).To(ContainSubstring("[X] p-bosh-guid (bosh director)"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] another-p-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: another-p-guid"))
+		})
+
+		It("does not display bosh director as a product", func() {
+			service.ListPendingDirectorChangesReturns(api.PendingDirectorChangesOutput{
+				EndpointResults: api.PreDeployCheck{
+					Identifier: "p-bosh-guid",
+					Complete:   false,
+				},
+			}, nil)
+			service.ListAllPendingProductChangesReturns([]api.PendingProductChangesOutput{
+				{
+					EndpointResults: api.PreDeployCheck{
+						Identifier: "p-bosh-guid",
+						Complete:   false,
+					},
+				},
+				{
+					EndpointResults: api.PreDeployCheck{
+						Identifier: "another-p-guid",
+						Complete:   true,
+					},
+				},
+			}, nil)
+			command := commands.NewPreDeployCheck(presenter, service, logger)
+			err := command.Execute([]string{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+
+			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: another-p-guid"))
+			Expect(string(stdout.Contents())).ToNot(ContainSubstring("[X] product: p-bosh-guid"))
 		})
 	})
 
@@ -161,8 +192,8 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
 
-			Expect(string(stdout.Contents())).To(ContainSubstring("[X] p-bosh-guid (bosh director)"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[X] another-p-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: another-p-guid"))
 		})
 	})
 
@@ -187,9 +218,9 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
 
-			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] p-bosh-guid (bosh director)"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[X] p-guid"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[X] another-p-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: p-guid"))
+			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: another-p-guid"))
 		})
 	})
 

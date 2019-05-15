@@ -56,10 +56,10 @@ func (pc PreDeployCheck) Execute(args []string) error {
 
 	directorOk := pendingDirectorChanges.EndpointResults.Complete
 	if !directorOk {
-		pc.logger.Printf(color.RedString("[X] %s (bosh director)", pendingDirectorChanges.EndpointResults.Identifier))
+		pc.logger.Printf(color.RedString("[X] director: %s", pendingDirectorChanges.EndpointResults.Identifier))
 		isError = true
 	} else {
-		pc.logger.Printf(color.GreenString("[✓] %s (bosh director)", pendingDirectorChanges.EndpointResults.Identifier))
+		pc.logger.Printf(color.GreenString("[✓] director: %s", pendingDirectorChanges.EndpointResults.Identifier))
 	}
 
 	pendingProductChanges, err := pc.service.ListAllPendingProductChanges()
@@ -68,11 +68,15 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	}
 
 	for _, change := range pendingProductChanges {
+		if change.EndpointResults.Identifier == pendingDirectorChanges.EndpointResults.Identifier {
+			continue
+		}
+
 		if !change.EndpointResults.Complete {
-			pc.logger.Printf(color.RedString("[X] %s", change.EndpointResults.Identifier))
+			pc.logger.Printf(color.RedString("[X] product: %s", change.EndpointResults.Identifier))
 			isError = true
 		} else {
-			pc.logger.Printf(color.GreenString("[✓] %s", change.EndpointResults.Identifier))
+			pc.logger.Printf(color.GreenString("[✓] product: %s", change.EndpointResults.Identifier))
 		}
 	}
 
