@@ -169,6 +169,87 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: another-p-guid"))
 			Expect(string(stdout.Contents())).ToNot(ContainSubstring("[X] product: p-bosh-guid"))
 		})
+
+		When("the summary has errors", func() {
+			It("prints a list of all errors", func() {
+				service.ListPendingDirectorChangesReturns(api.PendingDirectorChangesOutput{
+					EndpointResults: api.PreDeployCheck{
+						Identifier: "p-bosh-guid",
+						Complete:   false,
+						Network: api.PreDeployNetwork{
+							Assigned: false,
+						},
+						AvailabilityZone: api.PreDeployAvailabilityZone{
+							Assigned: false,
+						},
+						Stemcells: []api.PreDeployStemcells{
+							{
+								Assigned:                false,
+								RequiredStemcellOS:      "ubuntu-trusty",
+								RequiredStemcellVersion: "93.17",
+							},
+						},
+						Properties: []api.PreDeployProperty{
+							{
+								Name:   "some-property",
+								Type:   "string",
+								Errors: []string{"can't be blank", "must be more than 0 characters"},
+							},
+						},
+						Resources: api.PreDeployResources{
+							Jobs: []api.PreDeployJob{
+								{
+									Identifier: "some-job",
+									GUID:       "some-guid",
+									Errors:     []string{"can't be blank", "must be greater than 0"},
+								},
+								{
+									Identifier: "some-other-job",
+									GUID:       "some-other-guid",
+									Errors:     []string{"some-error"},
+								},
+							},
+						},
+						Verifiers: []api.PreDeployVerifier{
+							{
+								Type:      "WildcardDomainVerifier",
+								Errors:    []string{"domain failed to resolve", "dns is bad"},
+								Ignorable: false,
+							},
+							{
+								Type:      "AZVerifier",
+								Errors:    []string{"az is wrong"},
+								Ignorable: false,
+							},
+						},
+					},
+				}, nil)
+				command := commands.NewPreDeployCheck(presenter, service, logger)
+				err := command.Execute([]string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("[X] p-bosh-guid"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Network is not assigned"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Availability Zone is not assigned"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Availability Zone is not assigned"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: missing stemcell"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: Required stemcell OS - ubuntu-trusty version 93.17"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Fix: Download ubuntu-trusty version 93.17 from Pivnet and upload to OpsManager"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: property - some-property"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: can't be blank"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: must be more than 0 characters"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: resource - some-job"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: can't be blank"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: must be greater than 0"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: resource - some-other-job"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: some-error"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: verifier - WildcardDomainVerifier"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: domain failed to resolve"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: dns is bad"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: verifier - AZVerifier"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: az is wrong"))
+			})
+		})
 	})
 
 	When("the director is incomplete, and a product is incomplete", func() {
@@ -221,6 +302,89 @@ var _ = Describe("PreDeployCheck", func() {
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: p-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: another-p-guid"))
+		})
+
+		When("the summary has errors", func() {
+			It("prints a list of all errors", func() {
+				service.ListAllPendingProductChangesReturns([]api.PendingProductChangesOutput{
+					{
+						EndpointResults: api.PreDeployCheck{
+							Identifier: "p-guid",
+							Complete:   false,
+							Network: api.PreDeployNetwork{
+								Assigned: false,
+							},
+							AvailabilityZone: api.PreDeployAvailabilityZone{
+								Assigned: false,
+							},
+							Stemcells: []api.PreDeployStemcells{
+								{
+									Assigned:                false,
+									RequiredStemcellOS:      "ubuntu-trusty",
+									RequiredStemcellVersion: "93.17",
+								},
+							},
+							Properties: []api.PreDeployProperty{
+								{
+									Name:   "some-property",
+									Type:   "string",
+									Errors: []string{"can't be blank", "must be more than 0 characters"},
+								},
+							},
+							Resources: api.PreDeployResources{
+								Jobs: []api.PreDeployJob{
+									{
+										Identifier: "some-job",
+										GUID:       "some-guid",
+										Errors:     []string{"can't be blank", "must be greater than 0"},
+									},
+									{
+										Identifier: "some-other-job",
+										GUID:       "some-other-guid",
+										Errors:     []string{"some-error"},
+									},
+								},
+							},
+							Verifiers: []api.PreDeployVerifier{
+								{
+									Type:      "WildcardDomainVerifier",
+									Errors:    []string{"domain failed to resolve", "dns is bad"},
+									Ignorable: false,
+								},
+								{
+									Type:      "AZVerifier",
+									Errors:    []string{"az is wrong"},
+									Ignorable: false,
+								},
+							},
+						},
+					},
+				}, nil)
+				command := commands.NewPreDeployCheck(presenter, service, logger)
+				err := command.Execute([]string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("[X] p-guid"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Network is not assigned"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Availability Zone is not assigned"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Availability Zone is not assigned"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: missing stemcell"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: Required stemcell OS - ubuntu-trusty version 93.17"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Fix: Download ubuntu-trusty version 93.17 from Pivnet and upload to OpsManager"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: property - some-property"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: can't be blank"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: must be more than 0 characters"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: resource - some-job"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: can't be blank"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: must be greater than 0"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: resource - some-other-job"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: some-error"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: verifier - WildcardDomainVerifier"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: domain failed to resolve"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: dns is bad"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: verifier - AZVerifier"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("    Why: az is wrong"))
+			})
 		})
 	})
 

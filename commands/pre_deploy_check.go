@@ -33,7 +33,7 @@ func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeplo
 }
 
 func (pc PreDeployCheck) Execute(args []string) error {
-	var isError = false
+	var errorBuffer []string
 
 	if _, err := jhanda.Parse(&pc.Options, args); err != nil {
 		return fmt.Errorf("could not parse pending-changes flags: %s", err)
@@ -57,7 +57,9 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	directorOk := pendingDirectorChanges.EndpointResults.Complete
 	if !directorOk {
 		pc.logger.Printf(color.RedString("[X] director: %s", pendingDirectorChanges.EndpointResults.Identifier))
-		isError = true
+
+		errs := pc.determineDirectorErrors(pendingDirectorChanges)
+		errorBuffer = append(errorBuffer, errs...)
 	} else {
 		pc.logger.Printf(color.GreenString("[✓] director: %s", pendingDirectorChanges.EndpointResults.Identifier))
 	}
@@ -74,18 +76,111 @@ func (pc PreDeployCheck) Execute(args []string) error {
 
 		if !change.EndpointResults.Complete {
 			pc.logger.Printf(color.RedString("[X] product: %s", change.EndpointResults.Identifier))
-			isError = true
+			errs := pc.determineProductErrors(change)
+			errorBuffer = append(errorBuffer, errs...)
 		} else {
 			pc.logger.Printf(color.GreenString("[✓] product: %s", change.EndpointResults.Identifier))
 		}
 	}
 
-	if isError {
+	if len(errorBuffer) > 0 {
+		for _, err := range errorBuffer {
+			pc.logger.Printf("%s\n", err)
+		}
+
 		return fmt.Errorf("OpsManager is not fully configured")
 	}
 
 	pc.logger.Println("The director and products are configured correctly.")
 	return nil
+}
+
+func (pc PreDeployCheck) determineDirectorErrors(directorOutput api.PendingDirectorChangesOutput) []string {
+	var errBuffer []string
+
+	errBuffer = append(errBuffer, fmt.Sprintf(color.RedString("[X] %s"), directorOutput.EndpointResults.Identifier))
+	if !directorOutput.EndpointResults.Network.Assigned {
+		errBuffer = append(errBuffer, "    Error: Network is not assigned")
+	}
+
+	if !directorOutput.EndpointResults.AvailabilityZone.Assigned {
+		errBuffer = append(errBuffer, "    Error: Availability Zone is not assigned")
+	}
+
+	for _, stemcell := range directorOutput.EndpointResults.Stemcells {
+		if !stemcell.Assigned {
+			errBuffer = append(errBuffer, "    Error: missing stemcell")
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: Required stemcell OS - %s version %s", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Fix: Download %s version %s from Pivnet and upload to OpsManager", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
+		}
+	}
+
+	for _, property := range directorOutput.EndpointResults.Properties {
+		errBuffer = append(errBuffer, fmt.Sprintf("    Error: property - %s", property.Name))
+		for _, err := range property.Errors {
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+		}
+	}
+
+	for _, job := range directorOutput.EndpointResults.Resources.Jobs {
+		errBuffer = append(errBuffer, fmt.Sprintf("    Error: resource - %s", job.Identifier))
+		for _, err := range job.Errors {
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+		}
+	}
+
+	for _, verifier := range directorOutput.EndpointResults.Verifiers {
+		errBuffer = append(errBuffer, fmt.Sprintf("    Error: verifier - %s", verifier.Type))
+		for _, err := range verifier.Errors {
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+		}
+	}
+
+	return errBuffer
+}
+
+func (pc PreDeployCheck) determineProductErrors(productOutput api.PendingProductChangesOutput) []string {
+	var errBuffer []string
+
+	errBuffer = append(errBuffer, fmt.Sprintf(color.RedString("[X] %s"), productOutput.EndpointResults.Identifier))
+	if !productOutput.EndpointResults.Network.Assigned {
+		errBuffer = append(errBuffer, "    Error: Network is not assigned")
+	}
+
+	if !productOutput.EndpointResults.AvailabilityZone.Assigned {
+		errBuffer = append(errBuffer, "    Error: Availability Zone is not assigned")
+	}
+
+	for _, stemcell := range productOutput.EndpointResults.Stemcells {
+		if !stemcell.Assigned {
+			errBuffer = append(errBuffer, "    Error: missing stemcell")
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: Required stemcell OS - %s version %s", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Fix: Download %s version %s from Pivnet and upload to OpsManager", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
+		}
+	}
+
+	for _, property := range productOutput.EndpointResults.Properties {
+		errBuffer = append(errBuffer, fmt.Sprintf("    Error: property - %s", property.Name))
+		for _, err := range property.Errors {
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+		}
+	}
+
+	for _, job := range productOutput.EndpointResults.Resources.Jobs {
+		errBuffer = append(errBuffer, fmt.Sprintf("    Error: resource - %s", job.Identifier))
+		for _, err := range job.Errors {
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+		}
+	}
+
+	for _, verifier := range productOutput.EndpointResults.Verifiers {
+		errBuffer = append(errBuffer, fmt.Sprintf("    Error: verifier - %s", verifier.Type))
+		for _, err := range verifier.Errors {
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+		}
+	}
+
+	return errBuffer
 }
 
 func (pc PreDeployCheck) Usage() jhanda.Usage {
