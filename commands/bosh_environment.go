@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/pivotal-cf/jhanda"
@@ -44,9 +45,15 @@ func NewBoshEnvironment(service boshEnvironmentService, logger logger, opsmanHos
 func (be BoshEnvironment) Target() string {
 	if strings.Contains(be.opsmanHost, protocolPrefix) {
 		parts := strings.SplitAfter(be.opsmanHost, protocolPrefix)
-		return parts[1]
+		return be.stripTrailingSlash(parts[1])
 	}
-	return be.opsmanHost
+
+	return be.stripTrailingSlash(be.opsmanHost)
+}
+
+func (be BoshEnvironment) stripTrailingSlash(host string) string {
+	slashRegex := regexp.MustCompile(`/$`)
+	return slashRegex.ReplaceAllString(host, "")
 }
 
 func (be BoshEnvironment) Execute(args []string) error {

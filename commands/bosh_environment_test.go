@@ -40,6 +40,16 @@ var _ = Describe("bosh-env", func() {
 			command := commands.NewBoshEnvironment(fakeService, stdout, "http://opsman.pivotal.io", fakeRendererFactory)
 			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
 		})
+
+		It("should remove trailing slash", func() {
+			command := commands.NewBoshEnvironment(fakeService, stdout, "opsman.pivotal.io/", fakeRendererFactory)
+			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
+		})
+
+		It("should remove trailing slash and protocol", func() {
+			command := commands.NewBoshEnvironment(fakeService, stdout, "https://opsman.pivotal.io/", fakeRendererFactory)
+			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
+		})
 	})
 	Context("calling the api", func() {
 		var (
