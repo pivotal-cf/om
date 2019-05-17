@@ -111,6 +111,27 @@ has_pet: true
 `))
 			})
 
+			It("does not wrap number env string in additional quotes if quote literals are provided", func() {
+				yamlFile := createFile("---\nage: ((age1))\nname: ((name1))")
+				defer yamlFile.Close()
+				command := exec.Command(pathToMain,
+					"interpolate",
+					"--config", yamlFile.Name(),
+					"--vars-env", "OM_VAR",
+				)
+				command.Env = append(command.Env, "OM_VAR_age1=\"500\"")
+				command.Env = append(command.Env, "OM_VAR_name1=\"moe\"")
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(0))
+				Expect(session.Out.Contents()).To(MatchYAML(`
+age: "500"
+name: '"moe"'
+`))
+			})
+
 			It("replaces the vars based on the order precedence of the vars environment variable", func() {
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				defer yamlFile.Close()

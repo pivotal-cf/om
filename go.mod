@@ -7,7 +7,7 @@ require (
 	github.com/bmatcuk/doublestar v1.1.1 // indirect
 	github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 // indirect
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
-	github.com/cloudfoundry/bosh-cli v3.0.1+incompatible
+	github.com/cloudfoundry/bosh-cli v5.5.0+incompatible
 	github.com/cloudfoundry/bosh-utils v0.0.0-20180515235324-fad7a5ad622c // indirect
 	github.com/cppforlife/go-patch v0.1.0
 	github.com/davecgh/go-spew v1.1.1 // indirect

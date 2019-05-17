@@ -1,10 +1,12 @@
 package commands
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 
 	boshtpl "github.com/cloudfoundry/bosh-cli/director/template"
@@ -142,6 +144,15 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 			// type "string" we call yaml.Marshal to ensure characters are escaped properly.
 			if fmt.Sprintf("%T", val) == "string" {
 				b, _ := yaml.Marshal(v) // err should never occur
+
+				// Don't double quote in the case of an integer that's being used as a string
+				// For example, without this regex, a literal string number \"500\"
+				// will get unmarshalled as '"500"'
+				re := regexp.MustCompile(`^'"\d+"'`)
+				if re.Match(b) {
+					b = bytes.ReplaceAll(b, []byte(`'`), []byte(""))
+				}
+
 				err = yaml.Unmarshal(b, &val)
 				if err != nil {
 					return []byte{}, fmt.Errorf("Could not deserialize string from environment variable %q", pieces[0])
