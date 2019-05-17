@@ -39,7 +39,7 @@ func (pc PreDeployCheck) Execute(args []string) error {
 		return fmt.Errorf("could not parse pending-changes flags: %s", err)
 	}
 
-	pc.logger.Println("Scanning OpsManager now ...")
+	pc.logger.Println("Scanning OpsManager now ...\n")
 
 	info, err := pc.service.Info()
 	if err != nil {
@@ -83,6 +83,8 @@ func (pc PreDeployCheck) Execute(args []string) error {
 		}
 	}
 
+	pc.logger.Println()
+
 	if len(errorBuffer) > 0 {
 		for _, err := range errorBuffer {
 			pc.logger.Printf("%s\n", err)
@@ -100,39 +102,39 @@ func (pc PreDeployCheck) determineDirectorErrors(directorOutput api.PendingDirec
 
 	errBuffer = append(errBuffer, fmt.Sprintf(color.RedString("[X] %s"), directorOutput.EndpointResults.Identifier))
 	if !directorOutput.EndpointResults.Network.Assigned {
-		errBuffer = append(errBuffer, "    Error: Network is not assigned")
+		errBuffer = append(errBuffer, "    Error: Network is not assigned\n")
 	}
 
 	if !directorOutput.EndpointResults.AvailabilityZone.Assigned {
-		errBuffer = append(errBuffer, "    Error: Availability Zone is not assigned")
+		errBuffer = append(errBuffer, "    Error: Availability Zone is not assigned\n")
 	}
 
 	for _, stemcell := range directorOutput.EndpointResults.Stemcells {
 		if !stemcell.Assigned {
 			errBuffer = append(errBuffer, "    Error: missing stemcell")
 			errBuffer = append(errBuffer, fmt.Sprintf("    Why: Required stemcell OS - %s version %s", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
-			errBuffer = append(errBuffer, fmt.Sprintf("    Fix: Download %s version %s from Pivnet and upload to OpsManager", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Fix: Download %s version %s from Pivnet and upload to OpsManager\n", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
 		}
 	}
 
 	for _, property := range directorOutput.EndpointResults.Properties {
 		errBuffer = append(errBuffer, fmt.Sprintf("    Error: property - %s", property.Name))
 		for _, err := range property.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
 	}
 
 	for _, job := range directorOutput.EndpointResults.Resources.Jobs {
 		errBuffer = append(errBuffer, fmt.Sprintf("    Error: resource - %s", job.Identifier))
 		for _, err := range job.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
 	}
 
 	for _, verifier := range directorOutput.EndpointResults.Verifiers {
 		errBuffer = append(errBuffer, fmt.Sprintf("    Error: verifier - %s", verifier.Type))
 		for _, err := range verifier.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
 	}
 
@@ -144,39 +146,39 @@ func (pc PreDeployCheck) determineProductErrors(productOutput api.PendingProduct
 
 	errBuffer = append(errBuffer, fmt.Sprintf(color.RedString("[X] %s"), productOutput.EndpointResults.Identifier))
 	if !productOutput.EndpointResults.Network.Assigned {
-		errBuffer = append(errBuffer, "    Error: Network is not assigned")
+		errBuffer = append(errBuffer, "    Error: Network is not assigned\n")
 	}
 
 	if !productOutput.EndpointResults.AvailabilityZone.Assigned {
-		errBuffer = append(errBuffer, "    Error: Availability Zone is not assigned")
+		errBuffer = append(errBuffer, "    Error: Availability Zone is not assigned\n")
 	}
 
 	for _, stemcell := range productOutput.EndpointResults.Stemcells {
 		if !stemcell.Assigned {
 			errBuffer = append(errBuffer, "    Error: missing stemcell")
 			errBuffer = append(errBuffer, fmt.Sprintf("    Why: Required stemcell OS - %s version %s", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
-			errBuffer = append(errBuffer, fmt.Sprintf("    Fix: Download %s version %s from Pivnet and upload to OpsManager", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Fix: Download %s version %s from Pivnet and upload to OpsManager\n", stemcell.RequiredStemcellOS, stemcell.RequiredStemcellVersion))
 		}
 	}
 
 	for _, property := range productOutput.EndpointResults.Properties {
 		errBuffer = append(errBuffer, fmt.Sprintf("    Error: property - %s", property.Name))
 		for _, err := range property.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
 	}
 
 	for _, job := range productOutput.EndpointResults.Resources.Jobs {
 		errBuffer = append(errBuffer, fmt.Sprintf("    Error: resource - %s", job.Identifier))
 		for _, err := range job.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
 	}
 
 	for _, verifier := range productOutput.EndpointResults.Verifiers {
 		errBuffer = append(errBuffer, fmt.Sprintf("    Error: verifier - %s", verifier.Type))
 		for _, err := range verifier.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
 	}
 

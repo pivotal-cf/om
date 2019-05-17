@@ -162,6 +162,43 @@ var _ = Describe("pre_deploy_check command", func() {
 
 		Eventually(session).Should(gexec.Exit(1))
 
-		Expect(string(session.Out.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
+		Expect(string(session.Out.Contents())).To(Equal(`Scanning OpsManager now ...
+
+[X] director: p-bosh-guid
+[X] product: p-guid
+
+[X] p-bosh-guid
+    Error: Availability Zone is not assigned
+
+    Error: missing stemcell
+    Why: Required stemcell OS - ubuntu-xenial version 250.2
+    Fix: Download ubuntu-xenial version 250.2 from Pivnet and upload to OpsManager
+
+    Error: property - .properties.iaas_configuration.project
+    Why: can't be blank
+
+    Error: resource - job-identifier
+    Why: Instance : Value must be a positive integer
+
+    Error: verifier - NetworksPingableVerifier
+    Why: NetworksPingableVerifier error
+
+[X] p-guid
+    Error: Availability Zone is not assigned
+
+    Error: missing stemcell
+    Why: Required stemcell OS - ubuntu-xenial version 250.2
+    Fix: Download ubuntu-xenial version 250.2 from Pivnet and upload to OpsManager
+
+    Error: property - .properties.iaas_configuration.project
+    Why: can't be blank
+
+    Error: resource - job-identifier
+    Why: Instance : Value must be a positive integer
+
+    Error: verifier - NetworksPingableVerifier
+    Why: NetworksPingableVerifier error
+
+`))
 	})
 })

@@ -228,7 +228,7 @@ var _ = Describe("PreDeployCheck", func() {
 				err := command.Execute([]string{})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
-				Expect(string(stdout.Contents())).To(ContainSubstring("[X] p-bosh-guid"))
+				Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
 				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Network is not assigned"))
 				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Availability Zone is not assigned"))
 				Expect(string(stdout.Contents())).To(ContainSubstring("    Error: Availability Zone is not assigned"))
