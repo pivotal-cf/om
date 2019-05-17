@@ -228,6 +228,37 @@ var _ = Describe("UploadProduct", func() {
 	})
 
 	Context("when the product fails to upload the first time with a retryable error", func() {
+		Context("when the product is now present", func() {
+			It("does nothing and exits gracefully", func() {
+				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
+
+				fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
+				fakeService.UploadAvailableProductReturnsOnCall(1, api.UploadAvailableProductOutput{}, nil)
+				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
+					Name:    "cf",
+					Version: "1.5.0",
+				}, nil)
+				fakeService.CheckProductAvailabilityReturnsOnCall(0, false, nil)
+				fakeService.CheckProductAvailabilityReturnsOnCall(1, true, nil)
+
+				err := command.Execute([]string{
+					"--product", "/path/to/some-product.tgz",
+				})
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
+				Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(1))
+
+				loggerPrintfCalls := logger.PrintfCallCount()
+
+				format, v := logger.PrintfArgsForCall(loggerPrintfCalls - 2)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("retrying product upload after error: some upload error: EOF\n"))
+
+				format, v = logger.PrintfArgsForCall(loggerPrintfCalls - 1)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done."))
+			})
+		})
+
 		It("tries again", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
@@ -249,15 +280,17 @@ var _ = Describe("UploadProduct", func() {
 		It("returns an error", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
+			fakeService.CheckProductAvailabilityReturns(false, nil)
 			fakeService.UploadAvailableProductReturns(api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
 
 			err := command.Execute([]string{"--product", "/some/path"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("EOF"))
 
 			Expect(multipart.AddFileCallCount()).To(Equal(3))
 			Expect(multipart.FinalizeCallCount()).To(Equal(3))
 			Expect(multipart.ResetCallCount()).To(Equal(2))
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("EOF"))
 
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(3))
 		})
