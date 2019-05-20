@@ -28,13 +28,13 @@ type Interpolate struct {
 	}
 }
 
-type interpolateOptions struct {
-	templateFile  string
-	varsEnvs      []string
-	varsFiles     []string
-	opsFiles      []string
-	environFunc   func() []string
-	expectAllKeys bool
+type InterpolateOptions struct {
+	TemplateFile  string
+	VarsEnvs      []string
+	VarsFiles     []string
+	OpsFiles      []string
+	EnvironFunc   func() []string
+	ExpectAllKeys bool
 }
 
 func NewInterpolate(environFunc func() []string, logger logger) Interpolate {
@@ -86,13 +86,13 @@ func (c Interpolate) Execute(args []string) error {
 		expectAllKeys = false
 	}
 
-	bytes, err := interpolate(interpolateOptions{
-		templateFile:  c.Options.ConfigFile,
-		varsFiles:     c.Options.VarsFile,
-		environFunc:   c.environFunc,
-		varsEnvs:      c.Options.VarsEnv,
-		opsFiles:      c.Options.OpsFile,
-		expectAllKeys: expectAllKeys,
+	bytes, err := InterpolateCore(InterpolateOptions{
+		TemplateFile:  c.Options.ConfigFile,
+		VarsFiles:     c.Options.VarsFile,
+		EnvironFunc:   c.environFunc,
+		VarsEnvs:      c.Options.VarsEnv,
+		OpsFiles:      c.Options.OpsFile,
+		ExpectAllKeys: expectAllKeys,
 	}, c.Options.Path)
 	if err != nil {
 		return err
@@ -111,8 +111,8 @@ func (c Interpolate) Usage() jhanda.Usage {
 	}
 }
 
-func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
-	contents, err := ioutil.ReadFile(o.templateFile)
+func InterpolateCore(o InterpolateOptions, pathStr string) ([]byte, error) {
+	contents, err := ioutil.ReadFile(o.TemplateFile)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +121,8 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 	staticVars := boshtpl.StaticVariables{}
 	ops := patch.Ops{}
 
-	for _, varsEnv := range o.varsEnvs {
-		for _, envVar := range o.environFunc() {
+	for _, varsEnv := range o.VarsEnvs {
+		for _, envVar := range o.EnvironFunc() {
 			pieces := strings.SplitN(envVar, "=", 2)
 			if len(pieces) != 2 {
 				return []byte{}, errors.New("Expected environment variable to be key-value pair")
@@ -163,7 +163,7 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 		}
 	}
 
-	for _, path := range o.varsFiles {
+	for _, path := range o.VarsFiles {
 		var fileVars boshtpl.StaticVariables
 		err = readYAMLFile(path, &fileVars)
 		if err != nil {
@@ -174,7 +174,7 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 		}
 	}
 
-	for _, path := range o.opsFiles {
+	for _, path := range o.OpsFiles {
 		var opDefs []patch.OpDefinition
 		err = readYAMLFile(path, &opDefs)
 		if err != nil {
@@ -189,7 +189,7 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 
 	evalOpts := boshtpl.EvaluateOpts{
 		UnescapedMultiline: true,
-		ExpectAllKeys:      o.expectAllKeys,
+		ExpectAllKeys:      o.ExpectAllKeys,
 	}
 
 	path, err := patch.NewPointerFromString(pathStr)

@@ -129,13 +129,13 @@ func (c ConfigureDirector) Execute(args []string) error {
 }
 
 func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
-	configContents, err := interpolate(interpolateOptions{
-		templateFile:  c.Options.ConfigFile,
-		varsFiles:     c.Options.VarsFile,
-		environFunc:   c.environFunc,
-		varsEnvs:      c.Options.VarsEnv,
-		opsFiles:      c.Options.OpsFile,
-		expectAllKeys: true,
+	configContents, err := InterpolateCore(InterpolateOptions{
+		TemplateFile:  c.Options.ConfigFile,
+		VarsFiles:     c.Options.VarsFile,
+		EnvironFunc:   c.environFunc,
+		VarsEnvs:      c.Options.VarsEnv,
+		OpsFiles:      c.Options.OpsFile,
+		ExpectAllKeys: true,
 	}, "")
 	if err != nil {
 		return nil, err
