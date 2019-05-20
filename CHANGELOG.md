@@ -19,16 +19,16 @@ sometimes pushed post-release.
 ### Bug Fixes
 * Extra values passed in the env file 
   will now fail if they are not recognized properties.
-  This closes issue #258
+  This closes issue [#258](https://github.com/pivotal-cf/om/issues/258)
 * `om` will now allow non-string entities
   to be passed as strings to Ops Manager.
-  This closes issue #352
+  This closes issue [#352](https://github.com/pivotal-cf/om/issues/352)
 * the file outputted by `download-product`
   will now use the `product-name` as defined 
   in the downloaded-product, 
   _not_ from the Pivnet slug.
   This fixes a mismatch between the two
-  as documented in issue #351
+  as documented in issue [#351](https://github.com/pivotal-cf/om/issues/351)
 
 ## 1.0.0
 
