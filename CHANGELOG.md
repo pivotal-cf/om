@@ -5,13 +5,24 @@ sometimes pushed post-release.
 
 ## 1.0.1 (unreleased)
 
+### Features
+* (**EXPERIMENTAL**) `pre-deploy-check` has been added as a new command.
+  This command can be run at any time. 
+  It will scan the director and any staged tiles
+  in an Ops Manager environment for invalid or missing properties.
+  It displays these errors in a list format 
+  for the user to manually (or automatedly) update the configuration.
+  This command will also return an `exit status 1`;
+  this command can be a gatekeeper in CI 
+  before running an `apply-changes`
+
 ### Bug Fixes
-* extra values passed in the env file 
+* Extra values passed in the env file 
   will now fail if they are not recognized properties.
-  this closes issue #258
+  This closes issue #258
 * `om` will now allow non-string entities
   to be passed as strings to Ops Manager.
-  this closes issue #352
+  This closes issue #352
 
 ## 1.0.0
 
