@@ -3,6 +3,13 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
+## 1.0.1 (unreleased)
+
+### Bug Fixes
+* extra values passed in the env file 
+  will now fail if they are not recognized properties.
+  this closes issue #258
+
 ## 1.0.0
 
 ### Breaking Changes
