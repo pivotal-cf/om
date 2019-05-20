@@ -18,28 +18,29 @@ var _ = Describe("pre_deploy_check command", func() {
 		server *httptest.Server
 	)
 
-	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
+	Describe("When there are products that are mis-configured", func() {
+		BeforeEach(func() {
+			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
 
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
+				switch req.URL.Path {
+				case "/uaa/oauth/token":
+					_, err := w.Write([]byte(`{
 					"access_token": "some-opsman-token",
 					"token_type": "bearer",
 					"expires_in": 3600
 				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/info":
-				_, err := w.Write([]byte(`{
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/info":
+					_, err := w.Write([]byte(`{
 						"info": {
 							"version": "2.6.0"
 						}
 					}`))
 
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/director/pre_deploy_check":
-				_, err := w.Write([]byte(`{
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/staged/director/pre_deploy_check":
+					_, err := w.Write([]byte(`{
 				  "pre_deploy_check": {
 					"identifier": "p-bosh-guid",
 					"complete": false,
@@ -85,12 +86,12 @@ var _ = Describe("pre_deploy_check command", func() {
 					]
 				  }
 				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products":
-				_, err := w.Write([]byte(`[{"guid":"p-guid"}]`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/p-guid/pre_deploy_check":
-				_, err := w.Write([]byte(`{
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/staged/products":
+					_, err := w.Write([]byte(`[{"guid":"p-guid"}]`))
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/staged/products/p-guid/pre_deploy_check":
+					_, err := w.Write([]byte(`{
 				  "pre_deploy_check": {
 					"identifier": "p-guid",
 					"complete": false,
@@ -136,69 +137,178 @@ var _ = Describe("pre_deploy_check command", func() {
 					]
 				  }
 				}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
-	})
+					Expect(err).ToNot(HaveOccurred())
+				default:
+					out, err := httputil.DumpRequest(req, true)
+					Expect(err).NotTo(HaveOccurred())
+					Fail(fmt.Sprintf("unexpected request: %s", out))
+				}
+			}))
+		})
 
-	AfterEach(func() {
-		server.Close()
-	})
+		AfterEach(func() {
+			server.Close()
+		})
 
-	It("exits with an error if director or products are not completely configured", func() {
-		command := exec.Command(pathToMain,
-			"--target", server.URL,
-			"--username", "some-username",
-			"--password", "some-password",
-			"--skip-ssl-validation",
-			"pre-deploy-check")
+		It("exits with an error if director or products are not completely configured", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"pre-deploy-check")
 
-		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(1))
+			Eventually(session).Should(gexec.Exit(1))
 
-		Expect(string(session.Out.Contents())).To(Equal(`Scanning OpsManager now ...
+			Expect(string(session.Out.Contents())).To(Equal(`Scanning OpsManager now ...
 
 [X] director: p-bosh-guid
-[X] product: p-guid
-
-[X] p-bosh-guid
     Error: Availability Zone is not assigned
 
     Error: missing stemcell
-    Why: Required stemcell OS - ubuntu-xenial version 250.2
+    Why: Required stemcell OS: ubuntu-xenial version 250.2
     Fix: Download ubuntu-xenial version 250.2 from Pivnet and upload to OpsManager
 
-    Error: property - .properties.iaas_configuration.project
+    Error: property: .properties.iaas_configuration.project
     Why: can't be blank
 
-    Error: resource - job-identifier
+    Error: resource: job-identifier
     Why: Instance : Value must be a positive integer
 
-    Error: verifier - NetworksPingableVerifier
+    Error: verifier: NetworksPingableVerifier
     Why: NetworksPingableVerifier error
 
-[X] p-guid
+[X] product: p-guid
     Error: Availability Zone is not assigned
 
     Error: missing stemcell
-    Why: Required stemcell OS - ubuntu-xenial version 250.2
+    Why: Required stemcell OS: ubuntu-xenial version 250.2
     Fix: Download ubuntu-xenial version 250.2 from Pivnet and upload to OpsManager
 
-    Error: property - .properties.iaas_configuration.project
+    Error: property: .properties.iaas_configuration.project
     Why: can't be blank
 
-    Error: resource - job-identifier
+    Error: resource: job-identifier
     Why: Instance : Value must be a positive integer
 
-    Error: verifier - NetworksPingableVerifier
+    Error: verifier: NetworksPingableVerifier
     Why: NetworksPingableVerifier error
 
 `))
+		})
+	})
+
+	Describe("all products are good", func() {
+		BeforeEach(func() {
+			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+
+				switch req.URL.Path {
+				case "/uaa/oauth/token":
+					_, err := w.Write([]byte(`{
+					"access_token": "some-opsman-token",
+					"token_type": "bearer",
+					"expires_in": 3600
+				}`))
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/info":
+					_, err := w.Write([]byte(`{
+						"info": {
+							"version": "2.6.0"
+						}
+					}`))
+
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/staged/director/pre_deploy_check":
+					_, err := w.Write([]byte(`{
+				  "pre_deploy_check": {
+					"identifier": "p-bosh-guid",
+					"complete": true,
+					"network": {
+					  "assigned": true
+					},
+					"availability_zone": {
+					  "assigned": true
+					},
+					"stemcells": [
+					  {
+						"assigned": true,
+						"required_stemcell_version": "250.2",
+						"required_stemcell_os": "ubuntu-xenial"
+					  }
+					],
+					"properties": [],
+					"resources": {
+					  "jobs": []
+					},
+					"verifiers": []
+				  }
+				}`))
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/staged/products":
+					_, err := w.Write([]byte(`[{"guid":"p-guid"}]`))
+					Expect(err).ToNot(HaveOccurred())
+				case "/api/v0/staged/products/p-guid/pre_deploy_check":
+					_, err := w.Write([]byte(`{
+				  "pre_deploy_check": {
+					"identifier": "p-guid",
+					"complete": true,
+					"network": {
+					  "assigned": true
+					},
+					"availability_zone": {
+					  "assigned": true
+					},
+					"stemcells": [
+					  {
+						"assigned": true,
+						"required_stemcell_version": "250.2",
+						"required_stemcell_os": "ubuntu-xenial"
+					  }
+					],
+					"properties": [],
+					"resources": {
+					  "jobs": []
+					},
+					"verifiers": []
+				  }
+				}`))
+					Expect(err).ToNot(HaveOccurred())
+				default:
+					out, err := httputil.DumpRequest(req, true)
+					Expect(err).NotTo(HaveOccurred())
+					Fail(fmt.Sprintf("unexpected request: %s", out))
+				}
+			}))
+		})
+
+		AfterEach(func() {
+			server.Close()
+		})
+
+		It("exits with an error if director or products are not completely configured", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL,
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"pre-deploy-check")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(Equal(`Scanning OpsManager now ...
+
+[✓] director: p-bosh-guid
+[✓] product: p-guid
+
+The director and products are configured correctly.
+`))
+		})
 	})
 })
