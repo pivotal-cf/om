@@ -9,6 +9,9 @@ sometimes pushed post-release.
 * extra values passed in the env file 
   will now fail if they are not recognized properties.
   this closes issue #258
+* `om` will now allow non-string entities
+  to be passed as strings to Ops Manager.
+  this closes issue #352
 
 ## 1.0.0
 
