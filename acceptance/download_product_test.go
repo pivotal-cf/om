@@ -278,7 +278,8 @@ var _ = Describe("download-product command", func() {
 
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",
-					"product_path": "%s/[example-product,1.10.1]product.yml"
+					"product_path": "%s/[example-product,1.10.1]product.yml",
+					"product_version": "1.10.1"
 				}`, tmpDir)))
 				Expect(fileContents(tmpDir, "[example-product,1.10.1]product.yml")).To(MatchYAML(fmt.Sprintf(`{
 					"nothing": "to see here"
@@ -344,7 +345,8 @@ var _ = Describe("download-product command", func() {
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",
-					"product_path": "%s/[example-product,1.10.2]product-456.yml"
+					"product_path": "%s/[example-product,1.10.2]product-456.yml",
+					"product_version": "1.10.2"
 				}`, tmpDir)))
 				Expect(fileContents(tmpDir, "[example-product,1.10.2]product-456.yml")).To(MatchYAML(fmt.Sprintf(`{
 					"nothing": "to see here"
