@@ -44,9 +44,15 @@ ready to safely start exploring or adding new features.
 git clone https://github.com/pivotal-cf/om
 ```
 
+`om` should _**NOT**_ be cloned to your `GOPATH`. 
+
 ### Run the tests
 
-`om` uses the [ginkgo](https://onsi.github.io/ginkgo/) test framework.
+We recommend running using a minimum of [Go 1.12](https://golang.org/dl). 
+The tests may run fine, but you may experience issues when using `go run` or `go build`
+
+`om` uses the [ginkgo](https://onsi.github.io/ginkgo/) test framework. 
+If you have used ginkgo before, make sure it is rebuilt so as to have proper `go mod` support.
 
 No special `bin` or `scripts` dir here, we run the tests with this one-liner:
 
