@@ -136,6 +136,26 @@ some-password: some-env-provided-password
 				Expect(string(session.Err.Contents())).To(ContainSubstring("env file does not exist: "))
 			})
 		})
+
+		When("a parameter is missing", func() {
+			It("", func() {
+				server := testServer(true)
+
+				createConfigFile(server.URL)
+
+				command := exec.Command(pathToMain,
+					"--env", configFile.Name(),
+					"curl",
+					"-p", "/api/v0/available_products",
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session).Should(gexec.Exit(1))
+				Expect(string(session.Err.Contents())).To(ContainSubstring(`Expected to find variables: some-password`))
+			})
+		})
 	})
 
 	When("provided config file with interpolatable variables and ENV variables", func() {
@@ -206,6 +226,7 @@ connect-timeout: 10
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
+			Expect(string(session.Err.Contents())).To(ContainSubstring(`Expected to find variables: some-password`))
 		})
 	})
 

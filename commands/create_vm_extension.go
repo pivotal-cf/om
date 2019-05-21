@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/config"
+	"github.com/pivotal-cf/om/interpolation"
 	"gopkg.in/yaml.v2"
 )
 
@@ -48,7 +49,7 @@ func (c CreateVMExtension) Execute(args []string) error {
 	)
 	if c.Options.ConfigFile != "" {
 		var cfg config.VMExtensionConfig
-		configContents, err := InterpolateCore(InterpolateOptions{
+		configContents, err := interpolation.Execute(interpolation.Options{
 			TemplateFile:  c.Options.ConfigFile,
 			VarsFiles:     c.Options.VarsFile,
 			EnvironFunc:   c.environFunc,

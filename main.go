@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/pivotal-cf/om/interpolation"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -227,20 +228,22 @@ func setEnvFileProperties(global *options) error {
 		return fmt.Errorf("could not parse env file: %s", err)
 	}
 
-	if len(global.VarsFiles) != 0 || len(global.VarsEnvs) != 0 {
-		bytes, err := commands.InterpolateCore(commands.InterpolateOptions{
-			TemplateFile:  global.Env,
-			VarsEnvs:      global.VarsEnvs,
-			VarsFiles:     global.VarsFiles,
-			OpsFiles:      nil,
-			EnvironFunc:   os.Environ,
-			ExpectAllKeys: true,
-		}, "")
+	bytes, err := interpolation.Execute(interpolation.Options{
+		TemplateFile:  global.Env,
+		VarsEnvs:      global.VarsEnvs,
+		VarsFiles:     global.VarsFiles,
+		OpsFiles:      nil,
+		EnvironFunc:   os.Environ,
+		ExpectAllKeys: true,
+	}, "")
 
-		err = yaml.UnmarshalStrict(bytes, &opts)
-		if err != nil {
-			return fmt.Errorf("could not parse interpolated env file: %s", err)
-		}
+	if err != nil {
+		return fmt.Errorf("could not interpolate env file: %s", err)
+	}
+
+	err = yaml.UnmarshalStrict(bytes, &opts)
+	if err != nil {
+		return fmt.Errorf("could not parse interpolated env file: %s", err)
 	}
 
 	if global.ClientID == "" {

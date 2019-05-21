@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/interpolation"
 	"gopkg.in/yaml.v2"
 	"reflect"
 )
@@ -42,7 +43,7 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 		}
 	}
 
-	contents, err = InterpolateCore(InterpolateOptions{
+	contents, err = interpolation.Execute(interpolation.Options{
 		TemplateFile:  configFile,
 		VarsEnvs:      varsEnv,
 		VarsFiles:     varsField,

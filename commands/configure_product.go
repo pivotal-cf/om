@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pivotal-cf/om/interpolation"
 	"sort"
 	"strings"
 
@@ -283,7 +284,7 @@ func (cp *ConfigureProduct) configureErrands(cfg configureProduct, productGUID s
 }
 
 func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configureProduct, error) {
-	configContents, err := InterpolateCore(InterpolateOptions{
+	configContents, err := interpolation.Execute(interpolation.Options{
 		TemplateFile:  cp.Options.ConfigFile,
 		VarsFiles:     cp.Options.VarsFile,
 		EnvironFunc:   cp.environFunc,
