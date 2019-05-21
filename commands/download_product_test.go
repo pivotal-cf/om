@@ -289,6 +289,7 @@ var _ = Describe("DownloadProduct", func() {
 							{
 								"product_path": "%s",
 								"product_slug": "elastic-runtime",
+								"product_version": "2.0.0",
 								"stemcell_path": "%s",
 								"stemcell_version": "97.190"
 							}`, downloadedFilePath, pf.Name())))
@@ -576,7 +577,7 @@ output-directory: %s
 					Expect(err).NotTo(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, prefixedFileName)))
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, prefixedFileName)))
 				})
 			})
 
@@ -621,7 +622,7 @@ output-directory: %s
 					Expect(err).NotTo(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
-					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew" }`, unPrefixedFileName)))
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, unPrefixedFileName)))
 				})
 			})
 
