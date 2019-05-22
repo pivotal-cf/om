@@ -80,9 +80,11 @@ Check in both the manifest changes and the file additions in the vendor director
 
 ## Counterfeiter
 
-If you need to generate a new fake, you will need to 
+If you need to generate a new fake for a PR, you will need to 
 `go get github.com/maxbrunsfeld/counterfeiter`.
 Counterfeiter needs to be pinned to commit `f7bde7cbdb1288611466a0d715b1bbc956519eb1`
+
+To generate fakes for all files in a directory, run `go generate ./...`
 
 ## Contibuting your changes
 
