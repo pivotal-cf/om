@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	renderers "github.com/pivotal-cf/om/renderers"
+	"github.com/pivotal-cf/om/renderers"
 )
 
 type RendererFactory struct {

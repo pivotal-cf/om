@@ -2,7 +2,7 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 )
 
 type TableWriter struct {

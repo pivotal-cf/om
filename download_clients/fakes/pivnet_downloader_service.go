@@ -2,12 +2,12 @@
 package fakes
 
 import (
-	io "io"
-	sync "sync"
+	"io"
+	"sync"
 
 	pivnet "github.com/pivotal-cf/go-pivnet"
-	download "github.com/pivotal-cf/go-pivnet/download"
-	download_clients "github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/go-pivnet/download"
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 type PivnetDownloader struct {

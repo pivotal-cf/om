@@ -2,11 +2,11 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	api "github.com/pivotal-cf/om/api"
-	models "github.com/pivotal-cf/om/models"
-	presenters "github.com/pivotal-cf/om/presenters"
+	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/models"
+	"github.com/pivotal-cf/om/presenters"
 )
 
 type Presenter struct {

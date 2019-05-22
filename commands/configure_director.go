@@ -37,6 +37,7 @@ type directorConfig struct {
 
 //go:generate counterfeiter -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
 type configureDirectorService interface {
+	CreateCustomVMTypes(api.CreateVMTypes) error
 	CreateStagedVMExtension(api.CreateVMExtension) error
 	DeleteVMExtension(name string) error
 	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
@@ -46,6 +47,7 @@ type configureDirectorService interface {
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	ListStagedProductJobs(string) (map[string]string, error)
 	ListStagedVMExtensions() ([]api.VMExtension, error)
+	ListVMTypes() ([]api.VMType, error)
 	UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput) error
 	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput, bool) error
 	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error

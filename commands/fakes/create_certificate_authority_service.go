@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	api "github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/api"
 )
 
 type CreateCertificateAuthorityService struct {

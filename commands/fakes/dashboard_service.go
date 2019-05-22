@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	ui "github.com/pivotal-cf/om/ui"
+	"github.com/pivotal-cf/om/ui"
 )
 
 type DashboardService struct {

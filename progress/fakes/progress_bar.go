@@ -2,8 +2,8 @@
 package fakes
 
 import (
-	io "io"
-	sync "sync"
+	"io"
+	"sync"
 )
 
 type ProgressBar struct {
