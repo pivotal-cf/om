@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	commands "github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/commands"
 )
 
 type MetadataProvider struct {

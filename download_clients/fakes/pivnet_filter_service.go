@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
 	pivnet "github.com/pivotal-cf/go-pivnet"
-	download_clients "github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 type PivnetFilter struct {

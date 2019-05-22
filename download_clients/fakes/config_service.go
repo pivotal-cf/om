@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	download_clients "github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 type Config struct {
