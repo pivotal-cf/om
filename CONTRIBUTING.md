@@ -78,6 +78,12 @@ Adding a dependency is relatively straightforward (first make sure you have the 
 
 Check in both the manifest changes and the file additions in the vendor directory.
 
+## Counterfeiter
+
+If you need to generate a new fake, you will need to 
+`go get github.com/maxbrunsfeld/counterfeiter`.
+Counterfeiter needs to be pinned to commit `f7bde7cbdb1288611466a0d715b1bbc956519eb1`
+
 ## Contibuting your changes
 
 1. When you have a set of changes to contribute back to `om`, create a pull
