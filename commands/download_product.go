@@ -126,7 +126,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 	}
 
 	if c.Options.StemcellIaas == "" {
-		return c.writeDownloadProductOutput(productFileName, "", "")
+		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
 
 	c.stderr.Printf("Downloading stemcell")
@@ -152,7 +152,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not download stemcell: %s", err)
 	}
 
-	err = c.writeDownloadProductOutput(productFileName, stemcellFileName, stemcell.Version())
+	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
 	if err != nil {
 		return err
 	}
@@ -227,18 +227,20 @@ func (c *DownloadProduct) validate() error {
 	return nil
 }
 
-func (c DownloadProduct) writeDownloadProductOutput(productFileName string, stemcellFileName string, stemcellVersion string) error {
+func (c DownloadProduct) writeDownloadProductOutput(productFileName string, productVersion string, stemcellFileName string, stemcellVersion string) error {
 	downloadProductFilename := "download-file.json"
 	c.stderr.Printf("Writing a list of downloaded artifact to %s", downloadProductFilename)
 	downloadProductPayload := struct {
 		ProductPath     string `json:"product_path,omitempty"`
 		ProductSlug     string `json:"product_slug,omitempty"`
+		ProductVersion  string `json:"product_version,omitempty"`
 		StemcellPath    string `json:"stemcell_path,omitempty"`
 		StemcellVersion string `json:"stemcell_version,omitempty"`
 	}{
 		ProductPath:     productFileName,
 		StemcellPath:    stemcellFileName,
 		ProductSlug:     c.Options.PivnetProductSlug,
+		ProductVersion:  productVersion,
 		StemcellVersion: stemcellVersion,
 	}
 
