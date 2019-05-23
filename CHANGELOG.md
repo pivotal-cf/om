@@ -3,7 +3,11 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
-## 1.0.1 (unreleased)
+## 1.1.1 (unreleased)
+
+(( Placeholder ))
+
+## 1.1.0
 
 ### Features
 * (**EXPERIMENTAL**) `pre-deploy-check` has been added as a new command.
