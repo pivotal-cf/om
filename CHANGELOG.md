@@ -35,6 +35,9 @@ sometimes pushed post-release.
   _not_ from the Pivnet slug.
   This fixes a mismatch between the two
   as documented in issue [#351](https://github.com/pivotal-cf/om/issues/351)
+* `bosh-env` will now set `BOSH_ALL_PROXY` without a trailing slash
+  if one is provided.
+  This closes issue [#350](https://github.com/pivotal-cf/om/issues/350) 
 
 ## 1.0.0
 
