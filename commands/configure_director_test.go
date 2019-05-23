@@ -111,6 +111,17 @@ properties-configuration:
     some-iaas-assignment: iaas
   director_configuration:
     some-director-assignment: director
+vmtypes-configuration:
+  custom_only: true
+  vm_types:
+  - name: vmtype3
+    cpu: 1
+    ram: 2048
+    ephemeral_disk: 10240
+  - name: vmtype4
+    cpu: 2
+    ram: 4096
+    ephemeral_disk: 20480
 `
 		})
 
@@ -173,7 +184,7 @@ properties-configuration:
 			Expect(deletedExtensions).To(ContainElement("some_other_vm_extension"))
 			Expect(deletedExtensions).To(ContainElement("some_vm_extension"))
 
-			Expect(logger.PrintfCallCount()).To(Equal(21))
+			Expect(logger.PrintfCallCount()).To(BeNumerically(">=", 21))
 			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
@@ -218,6 +229,117 @@ properties-configuration:
 			Expect(err).NotTo(HaveOccurred())
 
 			ExpectDirectorToBeConfiguredCorrectly()
+		})
+
+		When("configuring vm types", func() {
+			Context("with custom vm types only", func() {
+				It("configures the vm types specifically", func() {
+					err := command.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(logger.PrintfCallCount()).To(Equal(22))
+					Expect(logger.PrintfArgsForCall(21)).To(Equal("creating custom vm types"))
+					Expect(service.ListVMTypesCallCount()).To(Equal(0))
+					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(0))
+					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
+					Expect(service.CreateCustomVMTypesArgsForCall(0).VMTypes).To(HaveLen(2))
+				})
+
+				It("errors if there are no vm types specified", func() {
+					simpleConfig := `---
+vmtypes-configuration:
+  custom_only: true
+`
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					Expect(err).NotTo(HaveOccurred())
+					defer newConfigFile.Close()
+
+					_, err = newConfigFile.WriteString(simpleConfig)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", newConfigFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("if custom_types = true, vm_types must not be empty"))
+				})
+			})
+
+			Context("with custom and builtin VM types", func() {
+				BeforeEach(func() {
+					service.ListVMTypesReturns([]api.VMType{
+						{CreateVMType: api.CreateVMType{Name: "vmtype1", CPU: 2, RAM: 4096}, BuiltIn: true},
+						{CreateVMType: api.CreateVMType{Name: "vmtype2", CPU: 2, RAM: 8192}, BuiltIn: true},
+					}, nil)
+				})
+
+				It("adds custom vm types to existing types", func() {
+					simpleConfig := `vmtypes-configuration:
+  vm_types:
+  - name: vmtype3
+    cpu: 1
+    ram: 2048
+    ephemeral_disk: 10240
+  - name: vmtype4
+    cpu: 2
+    ram: 4096
+    ephemeral_disk: 20480
+`
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					Expect(err).NotTo(HaveOccurred())
+					defer newConfigFile.Close()
+
+					_, err = newConfigFile.WriteString(simpleConfig)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", newConfigFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(logger.PrintfCallCount()).To(Equal(1))
+					Expect(logger.PrintfArgsForCall(0)).To(Equal("creating custom vm types"))
+					Expect(service.ListVMTypesCallCount()).To(Equal(1))
+					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(1))
+					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
+					Expect(service.CreateCustomVMTypesArgsForCall(0).VMTypes).To(HaveLen(4))
+				})
+
+				It("overwrites existing vm types", func() {
+					simpleConfig := `vmtypes-configuration:
+  vm_types:
+  - name: vmtype2
+    cpu: 1
+    ram: 2048
+    ephemeral_disk: 10240
+  - name: vmtype3
+    cpu: 2
+    ram: 4096
+    ephemeral_disk: 20480
+`
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					Expect(err).NotTo(HaveOccurred())
+					defer newConfigFile.Close()
+
+					_, err = newConfigFile.WriteString(simpleConfig)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", newConfigFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(logger.PrintfCallCount()).To(Equal(1))
+					Expect(logger.PrintfArgsForCall(0)).To(Equal("creating custom vm types"))
+					Expect(service.ListVMTypesCallCount()).To(Equal(1))
+					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(1))
+					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
+					Expect(service.CreateCustomVMTypesArgsForCall(0).VMTypes).To(HaveLen(3))
+					Expect(service.CreateCustomVMTypesArgsForCall(0).VMTypes[1].CPU).To(BeEquivalentTo(1))
+				})
+			})
 		})
 
 		When("the --config flag is set", func() {
