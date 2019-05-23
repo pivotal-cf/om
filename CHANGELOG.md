@@ -15,6 +15,8 @@ sometimes pushed post-release.
   This command will also return an `exit status 1`;
   this command can be a gatekeeper in CI 
   before running an `apply-changes`
+* `download-product` will now include the `product-version` in `download-file.json`
+  Thanks to @vchrisb for the PR on issue [#360](https://github.com/pivotal-cf/om/issues/360)
 
 ### Bug Fixes
 * Extra values passed in the env file 
