@@ -123,6 +123,18 @@ type StagedDirectorConfigService struct {
 		result1 []api.VMExtension
 		result2 error
 	}
+	ListVMTypesStub        func() ([]api.VMType, error)
+	listVMTypesMutex       sync.RWMutex
+	listVMTypesArgsForCall []struct {
+	}
+	listVMTypesReturns struct {
+		result1 []api.VMType
+		result2 error
+	}
+	listVMTypesReturnsOnCall map[int]struct {
+		result1 []api.VMType
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -671,6 +683,61 @@ func (fake *StagedDirectorConfigService) ListStagedVMExtensionsReturnsOnCall(i i
 	}{result1, result2}
 }
 
+func (fake *StagedDirectorConfigService) ListVMTypes() ([]api.VMType, error) {
+	fake.listVMTypesMutex.Lock()
+	ret, specificReturn := fake.listVMTypesReturnsOnCall[len(fake.listVMTypesArgsForCall)]
+	fake.listVMTypesArgsForCall = append(fake.listVMTypesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListVMTypes", []interface{}{})
+	fake.listVMTypesMutex.Unlock()
+	if fake.ListVMTypesStub != nil {
+		return fake.ListVMTypesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listVMTypesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StagedDirectorConfigService) ListVMTypesCallCount() int {
+	fake.listVMTypesMutex.RLock()
+	defer fake.listVMTypesMutex.RUnlock()
+	return len(fake.listVMTypesArgsForCall)
+}
+
+func (fake *StagedDirectorConfigService) ListVMTypesCalls(stub func() ([]api.VMType, error)) {
+	fake.listVMTypesMutex.Lock()
+	defer fake.listVMTypesMutex.Unlock()
+	fake.ListVMTypesStub = stub
+}
+
+func (fake *StagedDirectorConfigService) ListVMTypesReturns(result1 []api.VMType, result2 error) {
+	fake.listVMTypesMutex.Lock()
+	defer fake.listVMTypesMutex.Unlock()
+	fake.ListVMTypesStub = nil
+	fake.listVMTypesReturns = struct {
+		result1 []api.VMType
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedDirectorConfigService) ListVMTypesReturnsOnCall(i int, result1 []api.VMType, result2 error) {
+	fake.listVMTypesMutex.Lock()
+	defer fake.listVMTypesMutex.Unlock()
+	fake.ListVMTypesStub = nil
+	if fake.listVMTypesReturnsOnCall == nil {
+		fake.listVMTypesReturnsOnCall = make(map[int]struct {
+			result1 []api.VMType
+			result2 error
+		})
+	}
+	fake.listVMTypesReturnsOnCall[i] = struct {
+		result1 []api.VMType
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -692,6 +759,8 @@ func (fake *StagedDirectorConfigService) Invocations() map[string][][]interface{
 	defer fake.listStagedProductJobsMutex.RUnlock()
 	fake.listStagedVMExtensionsMutex.RLock()
 	defer fake.listStagedVMExtensionsMutex.RUnlock()
+	fake.listVMTypesMutex.RLock()
+	defer fake.listVMTypesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

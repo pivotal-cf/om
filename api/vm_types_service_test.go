@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -198,6 +199,18 @@ var _ = Describe("VMTypes", func() {
 			})
 
 			Expect(err).To(MatchError("could not send api request to PUT /api/v0/vm_types: api endpoint failed"))
+		})
+	})
+
+	Context("JSON marshalling", func() {
+		It("does not include the builtin key in the ExtraPropeties map of a CreateVMType", func() {
+			typeJson := `{"name": "type1", "ram": 2048, "cpu": 2, "ephemeral_disk": 10240, "raw_instance_storage": true, "builtin": true}`
+
+			var vmType api.VMType
+			err := json.Unmarshal([]byte(typeJson), &vmType)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(vmType.BuiltIn).To(BeTrue())
+			Expect(vmType.CreateVMType.ExtraProperties).NotTo(HaveKey("builtin"))
 		})
 	})
 })

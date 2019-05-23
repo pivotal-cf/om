@@ -65,7 +65,30 @@ func (c *CreateVMType) UnmarshalJSON(b []byte) error {
 
 			c.EphemeralDisk = uint(u)
 		default:
-			c.ExtraProperties[key] = value
+			if key != "builtin" {
+				c.ExtraProperties[key] = value
+			}
+		}
+	}
+
+	return nil
+}
+
+func (v *VMType) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+
+	c := CreateVMType{}
+	c.UnmarshalJSON(b)
+
+	v.CreateVMType = c
+
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+
+	if builtin, ok := raw["builtin"]; ok {
+		if _, assertOk := builtin.(bool); assertOk {
+			v.BuiltIn = builtin.(bool)
 		}
 	}
 

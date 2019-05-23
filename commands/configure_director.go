@@ -25,8 +25,8 @@ type ConfigureDirector struct {
 }
 
 type VMTypesConfiguration struct {
-	CustomTypesOnly bool               `yaml:"custom_only" json:"custom_only"`
-	VMTypes         []api.CreateVMType `yaml:"vm_types" json:"vm_types"`
+	CustomTypesOnly bool               `yaml:"custom_only,omitempty" json:"custom_only,omitempty"`
+	VMTypes         []api.CreateVMType `yaml:"vm_types,omitempty" json:"vm_types,omitempty"`
 }
 
 type directorConfig struct {
