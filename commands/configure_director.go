@@ -20,6 +20,7 @@ type ConfigureDirector struct {
 		ConfigFile             string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
 		VarsFile               []string `long:"vars-file" description:"Load variables from a YAML file"`
 		VarsEnv                []string `long:"vars-env" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		Vars                   []string `long:"var" short:"v" description:"Load variable from the command line. Format: VAR=VAL"`
 		OpsFile                []string `long:"ops-file" description:"YAML operations file"`
 	}
 }
@@ -133,6 +134,7 @@ func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
 		templateFile:  c.Options.ConfigFile,
 		varsFiles:     c.Options.VarsFile,
 		environFunc:   c.environFunc,
+		vars:          c.Options.Vars,
 		varsEnvs:      c.Options.VarsEnv,
 		opsFiles:      c.Options.OpsFile,
 		expectAllKeys: true,

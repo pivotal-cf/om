@@ -380,6 +380,24 @@ var _ = Describe("ConfigureProduct", func() {
 					})
 				})
 
+				Context("given vars", func() {
+					It("can interpolate variables into the configuration", func() {
+						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+						configFile, err = ioutil.TempFile("", "")
+						Expect(err).NotTo(HaveOccurred())
+
+						_, err = configFile.WriteString(productPropertiesWithVariables)
+						Expect(err).NotTo(HaveOccurred())
+
+						err = client.Execute([]string{
+							"--config", configFile.Name(),
+							"--var", "password=something-secure",
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
+
 				Context("passed as environment variables", func() {
 					It("can interpolate variables into the configuration", func() {
 						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)

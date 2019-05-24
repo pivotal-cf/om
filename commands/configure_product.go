@@ -22,6 +22,7 @@ type ConfigureProduct struct {
 	Options     struct {
 		ConfigFile string   `long:"config"    short:"c" description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
 		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
+		Vars       []string `long:"var" short:"v"       description:"Load variable from the command line. Format: VAR=VAL"`
 		VarsEnv    []string `long:"vars-env"            description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
 		OpsFile    []string `long:"ops-file"  short:"o" description:"YAML operations file"`
 	}
@@ -286,6 +287,7 @@ func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configurePr
 	configContents, err := interpolate(interpolateOptions{
 		templateFile:  cp.Options.ConfigFile,
 		varsFiles:     cp.Options.VarsFile,
+		vars:          cp.Options.Vars,
 		environFunc:   cp.environFunc,
 		varsEnvs:      cp.Options.VarsEnv,
 		opsFiles:      cp.Options.OpsFile,

@@ -74,9 +74,7 @@ var _ = Describe("CreateVMExtension", func() {
 		})
 
 		Context("when using a config file", func() {
-
 			Context("with a vars file", func() {
-
 				It("makes a request to the OpsMan to create a VM extension", func() {
 					configFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
@@ -108,8 +106,36 @@ var _ = Describe("CreateVMExtension", func() {
 
 			})
 
-			Context("with environment variables", func() {
+			Context("with a var defined", func() {
+				It("makes a request to the OpsMan to create a VM extension", func() {
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
 
+					varsFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(ymlVMExtensionFile)
+					Expect(err).NotTo(HaveOccurred())
+
+					err := command.Execute([]string{
+						"--config", configFile.Name(),
+						"--var", "vm_extension_name=some-vm-extension",
+					})
+
+					Expect(err).NotTo(HaveOccurred())
+					Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+						Name:            "some-vm-extension",
+						CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
+					}))
+
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					format, content := fakeLogger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
+				})
+
+			})
+
+			Context("with environment variables", func() {
 				It("makes a request to the OpsMan to create a VM extension", func() {
 					command = commands.NewCreateVMExtension(
 						func() []string { return []string{"OM_VAR_vm_extension_name=some-vm-extension"} },

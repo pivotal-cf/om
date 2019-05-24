@@ -514,6 +514,16 @@ output-directory: %s
 					})
 				})
 
+				Context("given vars", func() {
+					It("can interpolate variables into the configuration", func() {
+						err = command.Execute([]string{
+							"--config", configFile.Name(),
+							"--var", "product-slug=elastic-runtime",
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
+
 				Context("passed as environment variables", func() {
 					BeforeEach(func() {
 						environFunc = func() []string {
