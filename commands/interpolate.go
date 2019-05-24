@@ -178,23 +178,7 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 		}
 	}
 
-	for _, singleVar := range o.vars {
-		splitVar := strings.Split(singleVar, "=")
-
-		valInt, err := strconv.Atoi(splitVar[1])
-		if err == nil {
-			staticVars[splitVar[0]] = valInt
-			continue
-		}
-
-		valBool, err := strconv.ParseBool(splitVar[1])
-		if err == nil {
-			staticVars[splitVar[0]] = valBool
-			continue
-		}
-
-		staticVars[splitVar[0]] = splitVar[1]
-	}
+	ReadCommandLineVars(o.vars, staticVars)
 
 	for _, path := range o.opsFiles {
 		var opDefs []patch.OpDefinition
@@ -242,4 +226,24 @@ func readYAMLFile(path string, dataType interface{}) error {
 	}
 
 	return nil
+}
+
+func ReadCommandLineVars(vars []string, staticVars boshtpl.StaticVariables) {
+	for _, singleVar := range vars {
+		splitVar := strings.Split(singleVar, "=")
+
+		valInt, err := strconv.Atoi(splitVar[1])
+		if err == nil {
+			staticVars[splitVar[0]] = valInt
+			continue
+		}
+
+		valBool, err := strconv.ParseBool(splitVar[1])
+		if err == nil {
+			staticVars[splitVar[0]] = valBool
+			continue
+		}
+
+		staticVars[splitVar[0]] = splitVar[1]
+	}
 }
