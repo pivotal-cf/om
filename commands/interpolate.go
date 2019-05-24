@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	boshtpl "github.com/cloudfoundry/bosh-cli/director/template"
@@ -23,6 +24,7 @@ type Interpolate struct {
 		Path              string   `long:"path"                   description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
 		VarsEnv           []string `long:"vars-env"               description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
 		VarsFile          []string `long:"vars-file"    short:"l" description:"Load variables from a YAML file"`
+		Vars              []string `long:"var"          short:"v" description:"Load variable from the command line. Format: VAR=VAL"`
 		OpsFile           []string `long:"ops-file"     short:"o" description:"YAML operations files"`
 		SkipMissingParams bool     `long:"skip-missing" short:"s" description:"Allow skipping missing params"`
 	}
@@ -32,6 +34,7 @@ type interpolateOptions struct {
 	templateFile  string
 	varsEnvs      []string
 	varsFiles     []string
+	vars          []string
 	opsFiles      []string
 	environFunc   func() []string
 	expectAllKeys bool
@@ -89,6 +92,7 @@ func (c Interpolate) Execute(args []string) error {
 	bytes, err := interpolate(interpolateOptions{
 		templateFile:  c.Options.ConfigFile,
 		varsFiles:     c.Options.VarsFile,
+		vars:          c.Options.Vars,
 		environFunc:   c.environFunc,
 		varsEnvs:      c.Options.VarsEnv,
 		opsFiles:      c.Options.OpsFile,
@@ -172,6 +176,24 @@ func interpolate(o interpolateOptions, pathStr string) ([]byte, error) {
 		for k, v := range fileVars {
 			staticVars[k] = v
 		}
+	}
+
+	for _, singleVar := range o.vars {
+		splitVar := strings.Split(singleVar, "=")
+
+		valInt, err := strconv.Atoi(splitVar[1])
+		if err == nil {
+			staticVars[splitVar[0]] = valInt
+			continue
+		}
+
+		valBool, err := strconv.ParseBool(splitVar[1])
+		if err == nil {
+			staticVars[splitVar[0]] = valBool
+			continue
+		}
+
+		staticVars[splitVar[0]] = splitVar[1]
 	}
 
 	for _, path := range o.opsFiles {
