@@ -142,3 +142,12 @@ team and Pivotal's Platform Automation team. But we're open to new ideas here!
 # Prior Art
 
 `om` was intially developed to be a less flakey / faster replacement of [opsmgr](https://github.com/pivotal-cf/opsmgr)
+
+# Prior to a PR
+
+Please summarize your changes in CHANGELOG.yml. 
+Explain the problem you solved, 
+what command(s) were affected, and 
+what issue the PR is addressing. 
+
+**Thank you for being an `om` contributor!**
