@@ -36,7 +36,8 @@ Any changes to `om` commands will be released according to the semver versioning
 The exceptions to this rule are any commands marked as "**EXPERIMENTAL**"
 - "**EXPERIMENTAL**" commands work, and pull information from the API
   same as any other. The format in which the information is returned, however,
-  is subject to change. 
+  is subject to change without announcing a breaking change
+  by creating a major or minor bump of the semver version. 
   When the `om` team is comfortable enough with the command output,
   the "**EXPERIMENTAL**" mark will be removed.
   
