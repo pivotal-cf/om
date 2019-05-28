@@ -3,6 +3,36 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
+### Versioning
+
+`om` went 1.0.0 on May 7, 2019
+
+As of that release, `om` is [semantically versioned](https://semver.org/).
+When consuming `om` in your CI system, 
+it is now safe to pin to a particular minor version line (major.minor.patch)
+without fear of breaking changes.
+
+#### API Declaration for Semver
+
+Any changes to the `om` commands are considered a part of the `om` API.
+Any changes to `om` commands will be released according to the semver versioning scheme defined above.
+The exceptions to this rule are any commands marked as "**EXPERIMENTAL**"
+- "**EXPERIMENTAL**" commands work, and pull information from the API
+  same as any other. The format in which the information is returned, however,
+  is subject to change. 
+  When the `om` team is comfortable enough with the command output,
+  the "**EXPERIMENTAL**" mark will be removed.
+  
+Changes internal to `om` will _**NOT**_ be included as a part of the om API.
+The `om` team reserves the right to change any internal structs or structures
+as long as the outputs and behavior of the commands remain the same.
+
+**NOTE**: Additional documentation for om commands 
+leveraged by Pivotal Platform Automation 
+can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation.)
+`om` is versioned independently from platform-automation. 
+
+
 ## 1.1.1 (unreleased)
 
 (( Placeholder ))

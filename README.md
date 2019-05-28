@@ -20,6 +20,35 @@ it can sometimes be useful to reference the Ops Manager API docs.
 You can find them at
 `https://pcf.your-ops-manager.example.com/docs`.
 
+## Versioning
+
+`om` went 1.0.0 on May 7, 2019
+
+As of that release, `om` is [semantically versioned](https://semver.org/).
+When consuming `om` in your CI system, 
+it is now safe to pin to a particular minor version line (major.minor.patch)
+without fear of breaking changes.
+
+### API Declaration for Semver
+
+Any changes to the `om` commands are considered a part of the `om` API.
+Any changes to `om` commands will be released according to the semver versioning scheme defined above.
+The exceptions to this rule are any commands marked as "**EXPERIMENTAL**"
+- "**EXPERIMENTAL**" commands work, and pull information from the API
+  same as any other. The format in which the information is returned, however,
+  is subject to change. 
+  When the `om` team is comfortable enough with the command output,
+  the "**EXPERIMENTAL**" mark will be removed.
+  
+Changes internal to `om` will _**NOT**_ be included as a part of the om API.
+The `om` team reserves the right to change any internal structs or structures
+as long as the outputs and behavior of the commands remain the same.
+
+**NOTE**: Additional documentation for om commands 
+leveraged by Pivotal Platform Automation 
+can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation.)
+`om` is versioned independently from platform-automation. 
+
 ## Installation
 
 To download `om` go to [Releases](https://github.com/pivotal-cf/om/releases).
@@ -42,18 +71,18 @@ brew install om
 You can also build from source.
 
 ### Building from Source
-You'll need at least Go 1.11, as
+You'll need at least Go 1.12, as
 `om` uses Go Modules to manage dependencies.
 
 To build from source, after you've cloned the repo, run these commands from the top level of the repo:
 
 ```bash
-GO111MODULE=on go mod download
-GO111MODULE=on go build
+GO112MODULE=on go mod download
+GO112MODULE=on go build
 ```
 
 Go 1.11 uses some heuristics to determine if Go Modules should be used.
-The process above overrides those herusitics
+The process above overrides those heuristics
 to ensure that Go Modules are _always_ used.
 If you have cloned this repo outside of your GOPATH,
 `GO111MODULE=on` can be excluded from the above steps.
@@ -132,5 +161,4 @@ Commands:
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted
   version                         prints the om release version
-
 ```
