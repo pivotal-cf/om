@@ -47,7 +47,8 @@ as long as the outputs and behavior of the commands remain the same.
 
 **NOTE**: Additional documentation for om commands 
 leveraged by Pivotal Platform Automation 
-can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation.)
+can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
+
 `om` is versioned independently from platform-automation. 
 
 ## Installation
