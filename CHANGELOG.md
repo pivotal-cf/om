@@ -37,7 +37,16 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ## 1.1.1 (unreleased)
 
-(( Placeholder ))
+### Tips
+* Use environment variables
+  to set what Ops Manager `om` is targeting.
+  For example:
+  ```bash
+  $  export OM_PASSWORD=example-password om -e env.yml deployed-products
+  ```
+  Note the additional space before the `export` command.
+  This ensures that commands are not kept in `bash` history.
+  The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
 ## 1.1.0
 
