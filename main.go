@@ -227,11 +227,6 @@ func setEnvFileProperties(global *options) error {
 		return fmt.Errorf("could not parse env file: %s", err)
 	}
 
-	err = checkForVars(opts)
-	if err != nil {
-		return fmt.Errorf("found problem in --env file: %s", err)
-	}
-
 	if global.ClientID == "" {
 		global.ClientID = opts.ClientID
 	}
@@ -263,10 +258,15 @@ func setEnvFileProperties(global *options) error {
 		global.DecryptionPassphrase = opts.DecryptionPassphrase
 	}
 
+	err = checkForVars(global)
+	if err != nil {
+		return fmt.Errorf("found problem in --env file: %s", err)
+	}
+
 	return nil
 }
 
-func checkForVars(opts options) error {
+func checkForVars(opts *options) error {
 	var errBuffer []string
 
 	interpolateRegex := regexp.MustCompile(`\(\(.*\)\)`)
