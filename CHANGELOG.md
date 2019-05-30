@@ -34,9 +34,6 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 `om` is versioned independently from platform-automation. 
 
-
-## 1.1.1 (unreleased)
-
 ### Tips
 * Use environment variables
   to set what Ops Manager `om` is targeting.
@@ -48,6 +45,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
+## 1.1.1 (unreleased)
+* `om interpolate` now allows for the `-v` flag
+  to allow variables to be passed via command line. 
+  Command line args > file args > env vars.
+  If a user passes a var multiple times via command line,
+  the right-most version of that var will
+  be the one that takes priority,
+  and will be interpolated.
 ## 1.1.0
 
 ### Features
