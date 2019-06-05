@@ -13,6 +13,10 @@ import (
 
 var templateNoParameters = `hello: world`
 var templateWithParameters = `hello: ((hello))`
+var templateWithMultipleParameters = `
+hello: ((hello))
+world: ((world))
+`
 var varsFileParameter = `hello: world`
 var varsFileParameter2 = `hello: new world`
 var opsFileParameter = `- type: replace
@@ -128,6 +132,50 @@ var _ = Describe("Interpolate", func() {
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: new world"))
+			})
+		})
+
+		Context("with vars input", func() {
+			It("succeeds", func() {
+				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
+				Expect(err).NotTo(HaveOccurred())
+				err = command.Execute([]string{
+					"--config", inputFile,
+					"--var", "hello=world",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: world"))
+			})
+
+			It("succeeds with multiple vars inputs", func() {
+				err := ioutil.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
+				Expect(err).NotTo(HaveOccurred())
+				err = command.Execute([]string{
+					"--config", inputFile,
+					"--var", "hello=world",
+					"--var", "world=hello",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: world\nworld: hello"))
+			})
+
+			It("takes the last value if there are duplicate vars", func() {
+				err := ioutil.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
+				Expect(err).NotTo(HaveOccurred())
+				err = command.Execute([]string{
+					"--config", inputFile,
+					"--var", "hello=world",
+					"--var", "world=hello",
+					"--var", "hello=otherWorld",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: otherWorld\nworld: hello"))
 			})
 		})
 

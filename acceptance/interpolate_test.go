@@ -132,7 +132,7 @@ name: '"moe"'
 `))
 			})
 
-			It("replaces the vars based on the order precedence of the vars environment variable", func() {
+			It("replaces the vars based on the order of the vars-env flag (last is highest precedence)", func() {
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				defer yamlFile.Close()
 
@@ -179,6 +179,29 @@ name: bob
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
 age: 1000
+name: moe
+`))
+			})
+
+			It("vars variables take precedence over vars-file variables", func() {
+				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
+				defer yamlFile.Close()
+				varsFile := createFile("---\nage1: 1000\nname1: moe")
+				defer varsFile.Close()
+
+				command := exec.Command(pathToMain,
+					"interpolate",
+					"--config", yamlFile.Name(),
+					"--var", "age1=10",
+					"--vars-file", varsFile.Name(),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(0))
+				Expect(session.Out.Contents()).To(MatchYAML(`
+age: 10
 name: moe
 `))
 			})

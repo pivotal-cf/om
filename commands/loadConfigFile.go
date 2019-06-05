@@ -21,10 +21,12 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 
 	varsFileField := commandValue.FieldByName("VarsFile")
 	varsEnvField := commandValue.FieldByName("VarsEnv")
+	cmdVarsField := commandValue.FieldByName("Vars")
 
 	var (
 		varsField []string
 		varsEnv   []string
+		cmdVars   []string
 		ok        bool
 		options   map[string]interface{}
 		contents  []byte
@@ -33,6 +35,12 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 	if varsFileField.IsValid() {
 		if varsField, ok = varsFileField.Interface().([]string); !ok {
 			return fmt.Errorf("expect VarsFile field to be a `[]string`, found %s", varsEnvField.Type())
+		}
+	}
+
+	if cmdVarsField.IsValid() {
+		if cmdVars, ok = cmdVarsField.Interface().([]string); !ok {
+			return fmt.Errorf("expect Vars field to be a `[]string`, found %s", cmdVarsField.Type())
 		}
 	}
 
@@ -46,6 +54,7 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 		templateFile:  configFile,
 		varsEnvs:      varsEnv,
 		varsFiles:     varsField,
+		vars:          cmdVars,
 		environFunc:   envFunc,
 		opsFiles:      nil,
 		expectAllKeys: true,

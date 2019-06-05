@@ -3,7 +3,57 @@
 Nominally kept up-to-date as we work,
 sometimes pushed post-release.
 
-## 1.0.1 (unreleased)
+### Versioning
+
+`om` went 1.0.0 on May 7, 2019
+
+As of that release, `om` is [semantically versioned](https://semver.org/).
+When consuming `om` in your CI system, 
+it is now safe to pin to a particular minor version line (major.minor.patch)
+without fear of breaking changes.
+
+#### API Declaration for Semver
+
+Any changes to the `om` commands are considered a part of the `om` API.
+Any changes to `om` commands will be released according to the semver versioning scheme defined above.
+The exceptions to this rule are any commands marked as "**EXPERIMENTAL**"
+- "**EXPERIMENTAL**" commands work, and pull information from the API
+  same as any other. The format in which the information is returned, however,
+  is subject to change without announcing a breaking change
+  by creating a major or minor bump of the semver version. 
+  When the `om` team is comfortable enough with the command output,
+  the "**EXPERIMENTAL**" mark will be removed.
+  
+Changes internal to `om` will _**NOT**_ be included as a part of the om API.
+The `om` team reserves the right to change any internal structs or structures
+as long as the outputs and behavior of the commands remain the same.
+
+**NOTE**: Additional documentation for om commands 
+leveraged by Pivotal Platform Automation 
+can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
+
+`om` is versioned independently from platform-automation. 
+
+### Tips
+* Use environment variables
+  to set what Ops Manager `om` is targeting.
+  For example:
+  ```bash
+  $  export OM_PASSWORD=example-password om -e env.yml deployed-products
+  ```
+  Note the additional space before the `export` command.
+  This ensures that commands are not kept in `bash` history.
+  The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
+
+## 1.1.1 (unreleased)
+* `om interpolate` now allows for the `-v` flag
+  to allow variables to be passed via command line. 
+  Command line args > file args > env vars.
+  If a user passes a var multiple times via command line,
+  the right-most version of that var will
+  be the one that takes priority,
+  and will be interpolated.
+## 1.1.0
 
 ### Features
 * (**EXPERIMENTAL**) `pre-deploy-check` has been added as a new command.
@@ -15,6 +65,8 @@ sometimes pushed post-release.
   This command will also return an `exit status 1`;
   this command can be a gatekeeper in CI 
   before running an `apply-changes`
+* `download-product` will now include the `product-version` in `download-file.json`
+  Thanks to @vchrisb for the PR on issue [#360](https://github.com/pivotal-cf/om/issues/360)
 
 ### Bug Fixes
 * Extra values passed in the env file 
@@ -29,6 +81,9 @@ sometimes pushed post-release.
   _not_ from the Pivnet slug.
   This fixes a mismatch between the two
   as documented in issue [#351](https://github.com/pivotal-cf/om/issues/351)
+* `bosh-env` will now set `BOSH_ALL_PROXY` without a trailing slash
+  if one is provided.
+  This closes issue [#350](https://github.com/pivotal-cf/om/issues/350) 
 
 ## 1.0.0
 

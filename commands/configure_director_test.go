@@ -513,6 +513,24 @@ vmtypes-configuration:
 						})
 					})
 
+					Context("passed in a var (--var)", func() {
+						It("interpolates variables into the configuration", func() {
+							configFile, err := ioutil.TempFile("", "config.yaml")
+							Expect(err).ToNot(HaveOccurred())
+							_, err = configFile.Write(templateConfigurationJSON)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(configFile.Close()).ToNot(HaveOccurred())
+
+							err = command.Execute([]string{
+								"--config", configFile.Name(),
+								"--var", "network_name=network",
+							})
+							Expect(err).NotTo(HaveOccurred())
+
+							ExpectDirectorToBeConfiguredCorrectly()
+						})
+					})
+
 					Context("passed as environment variables (--vars-env)", func() {
 						It("interpolates variables into the configuration", func() {
 

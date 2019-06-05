@@ -11,6 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
 
@@ -107,6 +108,85 @@ connect-timeout: 10
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(session).Should(gexec.Exit(1))
+	})
+
+	When("variable is in env.yml file but no environment variable", func() {
+		It("returns an error message for specific variable", func() {
+			var err error
+			var configFile *os.File
+			configContent := `
+---
+decryption-passphrase: ((decryption-passphrase))
+client-id: ((client-id))
+client-secret: ((client-secret))
+password: ((password))
+target: ((target))
+username: ((username))
+`
+
+			configFile, err = ioutil.TempFile("", "config.yml")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configContent)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = configFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+
+			command := exec.Command(pathToMain,
+				"--env", configFile.Name(),
+				"curl",
+				"-p", "/api/v0/available_products",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session).Should(gexec.Exit(1))
+			Expect(session.Err).To(gbytes.Say("env file contains YAML placeholder"))
+			Expect(session.Err).To(gbytes.Say("use OM_DECRYPTION_PASSPHRASE environment variable for the decryption-passphrase value"))
+			Expect(session.Err).To(gbytes.Say("use OM_CLIENT_ID environment variable for the client-id value"))
+			Expect(session.Err).To(gbytes.Say("use OM_CLIENT_SECRET environment variable for the client-secret value"))
+			Expect(session.Err).To(gbytes.Say("use OM_PASSWORD environment variable for the password value"))
+			Expect(session.Err).To(gbytes.Say("use OM_TARGET environment variable for the target value"))
+			Expect(session.Err).To(gbytes.Say("use OM_USERNAME environment variable for the username value"))
+		})
+
+		It("won't error when providing value on command line", func() {
+			var err error
+			var configFile *os.File
+			configContent := `
+---
+password: ((my-secret-password))
+username: some-env-provided-username
+target: %s
+skip-ssl-validation: true
+connect-timeout: 10
+`
+
+			server := testServer(true)
+
+			configFile, err = ioutil.TempFile("", "config.yml")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))
+			Expect(err).NotTo(HaveOccurred())
+
+			err = configFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+
+			command := exec.Command(pathToMain,
+				"--env", configFile.Name(),
+				"--password", "some-env-provided-password",
+				"curl",
+				"-p", "/api/v0/available_products",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
+		})
 	})
 })
 
