@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -33,6 +34,8 @@ type stagedDirectorConfigService interface {
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 
 	ListStagedVMExtensions() ([]api.VMExtension, error)
+
+	ListVMTypes() ([]api.VMType, error)
 }
 
 func NewStagedDirectorConfig(service stagedDirectorConfigService, logger logger) StagedDirectorConfig {
@@ -97,6 +100,28 @@ func (sdc StagedDirectorConfig) Execute(args []string) error {
 		return err
 	}
 
+	vmTypes, err := sdc.service.ListVMTypes()
+	if err != nil {
+		return err
+	}
+
+	if len(vmTypes) > 0 && vmTypes[0].BuiltIn {
+		vmTypes = []api.VMType{}
+	}
+
+	vmTypesConfig := VMTypesConfiguration{}
+
+	if len(vmTypes) > 0 {
+		outputVMTypes := make([]api.CreateVMType, len(vmTypes), len(vmTypes))
+
+		for i := range vmTypes {
+			outputVMTypes[i] = vmTypes[i].CreateVMType
+		}
+
+		vmTypesConfig.CustomTypesOnly = true
+		vmTypesConfig.VMTypes = outputVMTypes
+	}
+
 	config := map[string]interface{}{}
 	if azs.AvailabilityZones != nil {
 		config["az-configuration"] = azs.AvailabilityZones
@@ -112,6 +137,7 @@ func (sdc StagedDirectorConfig) Execute(args []string) error {
 	config["network-assignment"] = assignedNetworkAZ
 	config["networks-configuration"] = networks
 	config["vmextensions-configuration"] = vmExtensions
+	config["vmtypes-configuration"] = vmTypesConfig
 
 	sdc.removePropertiesIAASConfigGUID(config)
 
@@ -137,6 +163,7 @@ func (sdc StagedDirectorConfig) Execute(args []string) error {
 
 	configYaml, err := yaml.Marshal(config)
 	if err != nil {
+		log.Println("hi")
 		return err
 	}
 

@@ -117,6 +117,11 @@ var _ = Describe("StagedDirectorConfig", func() {
 			fakeService.ListStagedVMExtensionsReturns(expectedVMExtensions, nil)
 
 			fakeService.GetStagedDirectorIaasConfigurationsReturns(nil, nil)
+
+			fakeService.ListVMTypesReturns([]api.VMType{
+				{CreateVMType: api.CreateVMType{Name: "vm-type1", CPU: 1, RAM: 2048, EphemeralDisk: 10240}, BuiltIn: true},
+				{CreateVMType: api.CreateVMType{Name: "vm-type2", CPU: 2, RAM: 2048, EphemeralDisk: 10240}, BuiltIn: true},
+			}, nil)
 		})
 
 		It("writes a complete config file with filtered sensitive fields to stdout", func() {
@@ -161,6 +166,68 @@ properties-configuration:
     encryption:
       providers:
         client_certificate: user_provided_cert
+vmtypes-configuration: {}
+`)))
+		})
+
+		It("includes custom vm types when present", func() {
+			fakeService.ListVMTypesReturns([]api.VMType{
+				{CreateVMType: api.CreateVMType{Name: "vm-type1", CPU: 1, RAM: 2048, EphemeralDisk: 10240}, BuiltIn: false},
+				{CreateVMType: api.CreateVMType{Name: "vm-type2", CPU: 2, RAM: 2048, EphemeralDisk: 10240}, BuiltIn: false},
+			}, nil)
+
+			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			err := command.Execute([]string{})
+			Expect(err).NotTo(HaveOccurred())
+
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`
+az-configuration:
+- name: some-az
+  iaas_configuration_guid: some-iaas-guid
+- name: some-other-az
+network-assignment:
+  network:
+    name: network-1
+  singleton_availability_zone:
+    name: some-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: network-1
+resource-configuration:
+  some-job:
+    instances: 1
+    instance_type:
+      id: automatic
+vmextensions-configuration:
+  - name: vm_ext1
+    cloud_properties: 
+      source_dest_check: false
+  - name: vm_ext2
+    cloud_properties:
+      key_name: operations_keypair
+properties-configuration:
+  syslog_configuration:
+    syslogconfig: awesome
+  security_configuration:
+    trusted_certificates: some-certificate
+  director_configuration:
+    max_threads: 5
+    encryption:
+      providers:
+        client_certificate: user_provided_cert
+vmtypes-configuration:
+  custom_only: true
+  vm_types:
+  - name: vm-type1
+    cpu: 1
+    ram: 2048
+    ephemeral_disk: 10240
+  - name: vm-type2
+    cpu: 2
+    ram: 2048
+    ephemeral_disk: 10240
 `)))
 		})
 
@@ -213,6 +280,7 @@ properties-configuration:
     encryption:
       providers:
         client_certificate: user_provided_cert
+vmtypes-configuration: {}
 `)))
 			})
 		})
@@ -281,6 +349,7 @@ properties-configuration:
         partition_password: some_password
         client_key: user_provided_key
         client_user: user
+vmtypes-configuration: {}
 `)))
 		})
 
@@ -360,6 +429,7 @@ properties-configuration:
         partition_password: some_password
         client_key: user_provided_key
         client_user: user
+vmtypes-configuration: {}
 `)))
 		})
 
@@ -415,6 +485,7 @@ properties-configuration:
   iaas_configuration:
     key: some-key
     project: project-id  
+vmtypes-configuration: {}
 `)))
 			})
 
@@ -483,6 +554,7 @@ properties-configuration:
         partition_password: some_password
         client_key: user_provided_key
         client_user: user
+vmtypes-configuration: {}
 `)))
 			})
 		})
@@ -538,6 +610,7 @@ properties-configuration:
   iaas_configuration:
     project: ((properties-configuration_iaas_configuration_project))
     key: ((properties-configuration_iaas_configuration_key))  
+vmtypes-configuration: {}
 `)))
 			})
 
@@ -616,6 +689,7 @@ iaas-configurations:
     project: ((iaas-configurations_1_project))
     associated_service_account: ((iaas-configurations_1_associated_service_account))
     auth_json: ((iaas-configurations_1_auth_json))
+vmtypes-configuration: {}
 `)))
 			})
 
@@ -677,6 +751,7 @@ properties-configuration:
     max_threads: 5
 iaas-configurations:
   - bosh-truthy: ((iaas-configurations_0_bosh-truthy))
+vmtypes-configuration: {}
 `)))
 			})
 
@@ -738,6 +813,7 @@ properties-configuration:
     max_threads: 5
 iaas-configurations:
   - iaas-int: ((iaas-configurations_0_iaas-int))
+vmtypes-configuration: {}
 `)))
 			})
 
@@ -801,6 +877,7 @@ properties-configuration:
         client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
         partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
     max_threads: 5
+vmtypes-configuration: {}
 `)))
 			})
 
@@ -854,6 +931,7 @@ properties-configuration:
     encryption:
       providers:
       - ((properties-configuration_iaas_configuration_encryption_providers_0))
+vmtypes-configuration: {}
 `)))
 			})
 		})

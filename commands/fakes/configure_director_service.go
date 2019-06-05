@@ -8,6 +8,17 @@ import (
 )
 
 type ConfigureDirectorService struct {
+	CreateCustomVMTypesStub        func(api.CreateVMTypes) error
+	createCustomVMTypesMutex       sync.RWMutex
+	createCustomVMTypesArgsForCall []struct {
+		arg1 api.CreateVMTypes
+	}
+	createCustomVMTypesReturns struct {
+		result1 error
+	}
+	createCustomVMTypesReturnsOnCall map[int]struct {
+		result1 error
+	}
 	CreateStagedVMExtensionStub        func(api.CreateVMExtension) error
 	createStagedVMExtensionMutex       sync.RWMutex
 	createStagedVMExtensionArgsForCall []struct {
@@ -17,6 +28,16 @@ type ConfigureDirectorService struct {
 		result1 error
 	}
 	createStagedVMExtensionReturnsOnCall map[int]struct {
+		result1 error
+	}
+	DeleteCustomVMTypesStub        func() error
+	deleteCustomVMTypesMutex       sync.RWMutex
+	deleteCustomVMTypesArgsForCall []struct {
+	}
+	deleteCustomVMTypesReturns struct {
+		result1 error
+	}
+	deleteCustomVMTypesReturnsOnCall map[int]struct {
 		result1 error
 	}
 	DeleteVMExtensionStub        func(string) error
@@ -119,6 +140,18 @@ type ConfigureDirectorService struct {
 		result1 []api.VMExtension
 		result2 error
 	}
+	ListVMTypesStub        func() ([]api.VMType, error)
+	listVMTypesMutex       sync.RWMutex
+	listVMTypesArgsForCall []struct {
+	}
+	listVMTypesReturns struct {
+		result1 []api.VMType
+		result2 error
+	}
+	listVMTypesReturnsOnCall map[int]struct {
+		result1 []api.VMType
+		result2 error
+	}
 	UpdateStagedDirectorAvailabilityZonesStub        func(api.AvailabilityZoneInput, bool) error
 	updateStagedDirectorAvailabilityZonesMutex       sync.RWMutex
 	updateStagedDirectorAvailabilityZonesArgsForCall []struct {
@@ -192,6 +225,66 @@ type ConfigureDirectorService struct {
 	invocationsMutex sync.RWMutex
 }
 
+func (fake *ConfigureDirectorService) CreateCustomVMTypes(arg1 api.CreateVMTypes) error {
+	fake.createCustomVMTypesMutex.Lock()
+	ret, specificReturn := fake.createCustomVMTypesReturnsOnCall[len(fake.createCustomVMTypesArgsForCall)]
+	fake.createCustomVMTypesArgsForCall = append(fake.createCustomVMTypesArgsForCall, struct {
+		arg1 api.CreateVMTypes
+	}{arg1})
+	fake.recordInvocation("CreateCustomVMTypes", []interface{}{arg1})
+	fake.createCustomVMTypesMutex.Unlock()
+	if fake.CreateCustomVMTypesStub != nil {
+		return fake.CreateCustomVMTypesStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.createCustomVMTypesReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureDirectorService) CreateCustomVMTypesCallCount() int {
+	fake.createCustomVMTypesMutex.RLock()
+	defer fake.createCustomVMTypesMutex.RUnlock()
+	return len(fake.createCustomVMTypesArgsForCall)
+}
+
+func (fake *ConfigureDirectorService) CreateCustomVMTypesCalls(stub func(api.CreateVMTypes) error) {
+	fake.createCustomVMTypesMutex.Lock()
+	defer fake.createCustomVMTypesMutex.Unlock()
+	fake.CreateCustomVMTypesStub = stub
+}
+
+func (fake *ConfigureDirectorService) CreateCustomVMTypesArgsForCall(i int) api.CreateVMTypes {
+	fake.createCustomVMTypesMutex.RLock()
+	defer fake.createCustomVMTypesMutex.RUnlock()
+	argsForCall := fake.createCustomVMTypesArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureDirectorService) CreateCustomVMTypesReturns(result1 error) {
+	fake.createCustomVMTypesMutex.Lock()
+	defer fake.createCustomVMTypesMutex.Unlock()
+	fake.CreateCustomVMTypesStub = nil
+	fake.createCustomVMTypesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureDirectorService) CreateCustomVMTypesReturnsOnCall(i int, result1 error) {
+	fake.createCustomVMTypesMutex.Lock()
+	defer fake.createCustomVMTypesMutex.Unlock()
+	fake.CreateCustomVMTypesStub = nil
+	if fake.createCustomVMTypesReturnsOnCall == nil {
+		fake.createCustomVMTypesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.createCustomVMTypesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ConfigureDirectorService) CreateStagedVMExtension(arg1 api.CreateVMExtension) error {
 	fake.createStagedVMExtensionMutex.Lock()
 	ret, specificReturn := fake.createStagedVMExtensionReturnsOnCall[len(fake.createStagedVMExtensionArgsForCall)]
@@ -248,6 +341,58 @@ func (fake *ConfigureDirectorService) CreateStagedVMExtensionReturnsOnCall(i int
 		})
 	}
 	fake.createStagedVMExtensionReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureDirectorService) DeleteCustomVMTypes() error {
+	fake.deleteCustomVMTypesMutex.Lock()
+	ret, specificReturn := fake.deleteCustomVMTypesReturnsOnCall[len(fake.deleteCustomVMTypesArgsForCall)]
+	fake.deleteCustomVMTypesArgsForCall = append(fake.deleteCustomVMTypesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("DeleteCustomVMTypes", []interface{}{})
+	fake.deleteCustomVMTypesMutex.Unlock()
+	if fake.DeleteCustomVMTypesStub != nil {
+		return fake.DeleteCustomVMTypesStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deleteCustomVMTypesReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureDirectorService) DeleteCustomVMTypesCallCount() int {
+	fake.deleteCustomVMTypesMutex.RLock()
+	defer fake.deleteCustomVMTypesMutex.RUnlock()
+	return len(fake.deleteCustomVMTypesArgsForCall)
+}
+
+func (fake *ConfigureDirectorService) DeleteCustomVMTypesCalls(stub func() error) {
+	fake.deleteCustomVMTypesMutex.Lock()
+	defer fake.deleteCustomVMTypesMutex.Unlock()
+	fake.DeleteCustomVMTypesStub = stub
+}
+
+func (fake *ConfigureDirectorService) DeleteCustomVMTypesReturns(result1 error) {
+	fake.deleteCustomVMTypesMutex.Lock()
+	defer fake.deleteCustomVMTypesMutex.Unlock()
+	fake.DeleteCustomVMTypesStub = nil
+	fake.deleteCustomVMTypesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureDirectorService) DeleteCustomVMTypesReturnsOnCall(i int, result1 error) {
+	fake.deleteCustomVMTypesMutex.Lock()
+	defer fake.deleteCustomVMTypesMutex.Unlock()
+	fake.DeleteCustomVMTypesStub = nil
+	if fake.deleteCustomVMTypesReturnsOnCall == nil {
+		fake.deleteCustomVMTypesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteCustomVMTypesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -730,6 +875,61 @@ func (fake *ConfigureDirectorService) ListStagedVMExtensionsReturnsOnCall(i int,
 	}{result1, result2}
 }
 
+func (fake *ConfigureDirectorService) ListVMTypes() ([]api.VMType, error) {
+	fake.listVMTypesMutex.Lock()
+	ret, specificReturn := fake.listVMTypesReturnsOnCall[len(fake.listVMTypesArgsForCall)]
+	fake.listVMTypesArgsForCall = append(fake.listVMTypesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListVMTypes", []interface{}{})
+	fake.listVMTypesMutex.Unlock()
+	if fake.ListVMTypesStub != nil {
+		return fake.ListVMTypesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listVMTypesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *ConfigureDirectorService) ListVMTypesCallCount() int {
+	fake.listVMTypesMutex.RLock()
+	defer fake.listVMTypesMutex.RUnlock()
+	return len(fake.listVMTypesArgsForCall)
+}
+
+func (fake *ConfigureDirectorService) ListVMTypesCalls(stub func() ([]api.VMType, error)) {
+	fake.listVMTypesMutex.Lock()
+	defer fake.listVMTypesMutex.Unlock()
+	fake.ListVMTypesStub = stub
+}
+
+func (fake *ConfigureDirectorService) ListVMTypesReturns(result1 []api.VMType, result2 error) {
+	fake.listVMTypesMutex.Lock()
+	defer fake.listVMTypesMutex.Unlock()
+	fake.ListVMTypesStub = nil
+	fake.listVMTypesReturns = struct {
+		result1 []api.VMType
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *ConfigureDirectorService) ListVMTypesReturnsOnCall(i int, result1 []api.VMType, result2 error) {
+	fake.listVMTypesMutex.Lock()
+	defer fake.listVMTypesMutex.Unlock()
+	fake.ListVMTypesStub = nil
+	if fake.listVMTypesReturnsOnCall == nil {
+		fake.listVMTypesReturnsOnCall = make(map[int]struct {
+			result1 []api.VMType
+			result2 error
+		})
+	}
+	fake.listVMTypesReturnsOnCall[i] = struct {
+		result1 []api.VMType
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZones(arg1 api.AvailabilityZoneInput, arg2 bool) error {
 	fake.updateStagedDirectorAvailabilityZonesMutex.Lock()
 	ret, specificReturn := fake.updateStagedDirectorAvailabilityZonesReturnsOnCall[len(fake.updateStagedDirectorAvailabilityZonesArgsForCall)]
@@ -1096,8 +1296,12 @@ func (fake *ConfigureDirectorService) UpdateStagedProductJobResourceConfigReturn
 func (fake *ConfigureDirectorService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.createCustomVMTypesMutex.RLock()
+	defer fake.createCustomVMTypesMutex.RUnlock()
 	fake.createStagedVMExtensionMutex.RLock()
 	defer fake.createStagedVMExtensionMutex.RUnlock()
+	fake.deleteCustomVMTypesMutex.RLock()
+	defer fake.deleteCustomVMTypesMutex.RUnlock()
 	fake.deleteVMExtensionMutex.RLock()
 	defer fake.deleteVMExtensionMutex.RUnlock()
 	fake.getStagedProductByNameMutex.RLock()
@@ -1114,6 +1318,8 @@ func (fake *ConfigureDirectorService) Invocations() map[string][][]interface{} {
 	defer fake.listStagedProductJobsMutex.RUnlock()
 	fake.listStagedVMExtensionsMutex.RLock()
 	defer fake.listStagedVMExtensionsMutex.RUnlock()
+	fake.listVMTypesMutex.RLock()
+	defer fake.listVMTypesMutex.RUnlock()
 	fake.updateStagedDirectorAvailabilityZonesMutex.RLock()
 	defer fake.updateStagedDirectorAvailabilityZonesMutex.RUnlock()
 	fake.updateStagedDirectorIAASConfigurationsMutex.RLock()

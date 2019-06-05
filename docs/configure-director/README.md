@@ -75,6 +75,44 @@ vmextensions-configuration:
 - name: another_vm_extension
   cloud_properties:
     foo: bar
+vmtypes-configuration:
+  custom_only: false
+  vm_types:
+  - name: a1.large
+    cpu: 4
+    ram: 8192
+    ephemeral_disk: 10240
+  - name: t2.small
+    cpu: 1
+    ram: 512
+    ephemeral_disk: 1024
+```
+
+#### vmtypes-configuration:
+
+Will set or update custom VM types on the director. If `custom_only` is `true`, 
+the VM types specified in your configuration will be the **entire** list of
+available VM types in the Ops Manager. If `false` or omitted, it will add the 
+listed VM types to the list of default VM types for your IaaS. If a specified
+VM type is named the same as a predefined VM type, it will overwrite the predefined
+type. If multiple specified VM types have the same name, the one specified last
+will be created. In either case, existing custom VM types do not persist across
+`configure-director` calls, and it should be expected that the entire list of custom
+VM types is specified in the director configuration.
+
+##### Minimal example
+```yaml
+vmtypes-configuration:
+  custom_only: false
+  vm_types:
+  - name: x1.large
+    cpu: 8
+    ram: 8192
+    ephemeral_disk: 10240
+  - name: mycustomvmtype
+    cpu: 4
+    ram: 16384
+    ephemeral_disk: 4096
 ```
 
 #### Variables
