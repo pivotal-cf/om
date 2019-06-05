@@ -53,6 +53,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   the right-most version of that var will
   be the one that takes priority,
   and will be interpolated.
+* `om configure-director` now supports custom VM types.
+  Thanks for the PR @jghiloni!
+  Refer to the [VM Types Bosh documentation](https://bosh.io/docs/cloud-config/#vm-types) for IaaS specific use cases.
+  For further info: [`configure-director` readme](https://github.com/pivotal-cf/om/tree/master/docs/configure-director#vmtypes-configuration). 
+  Please note this is an advanced feature, and should be used at your own discretion.
+  
 ## 1.1.0
 
 ### Features
