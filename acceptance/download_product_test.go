@@ -52,7 +52,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "example-product.pivotal",
 					"--pivnet-product-slug", "pivnet-example-slug",
 					"--product-version", "1.10.1",
@@ -85,7 +84,6 @@ var _ = Describe("download-product command", func() {
 
 				By("running the command again, it uses the cache")
 				command = exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "pivnet-example-slug",
 					"--product-version", "1.10.1",
@@ -118,7 +116,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -145,7 +142,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -170,7 +166,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -196,7 +191,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -228,7 +222,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -258,7 +251,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -297,7 +289,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version", "1.10.1",
@@ -327,7 +318,6 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.yml",
 					"--pivnet-product-slug", "example-product",
 					"--product-version-regex", "1.*",

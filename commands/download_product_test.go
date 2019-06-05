@@ -666,6 +666,21 @@ output-directory: %s
 			})
 		})
 
+		Context("when pivnet-api-token is missing while no source is set", func() {
+			It("returns an error", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = command.Execute([]string{
+					"--pivnet-file-glob", "*.pivotal",
+					"--pivnet-product-slug", "mayhem-crew",
+					"--product-version", `2.0.0`,
+					"--output-directory", tempDir,
+				})
+				Expect(err).To(MatchError(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`))
+			})
+		})
+
 		Context("when both product-version and product-version-regex are set", func() {
 			It("fails with an error saying that the user must pick one or the other", func() {
 				tempDir, err := ioutil.TempDir("", "om-tests-")
