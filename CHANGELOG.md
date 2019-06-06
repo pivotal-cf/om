@@ -46,6 +46,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
 ## 1.1.1 (unreleased)
+
+### Features 
 * `om interpolate` now allows for the `-v` flag
   to allow variables to be passed via command line. 
   Command line args > file args > env vars.
@@ -58,6 +60,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Refer to the [VM Types Bosh documentation](https://bosh.io/docs/cloud-config/#vm-types) for IaaS specific use cases.
   For further info: [`configure-director` readme](https://github.com/pivotal-cf/om/tree/master/docs/configure-director#vmtypes-configuration). 
   Please note this is an advanced feature, and should be used at your own discretion.
+* `download-product` will now return a `download-file.json` 
+  if `stemcell-iaas` is defined but the product has no stemcell.
+  Previously, this would exit gracefully, but not return a file.
   
 ## 1.1.0
 
