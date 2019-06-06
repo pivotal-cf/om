@@ -16,13 +16,13 @@ run:
     export GOPATH="$(pwd)/go"
 
     pushd "om" > /dev/null
-      sed '/## Current Commands/q' README.md > /tmp/readme
+      sed '/## Commands/q' README.md > /tmp/readme
       mv /tmp/readme README.md
       echo '```' >> README.md
       go run main.go --help >> README.md
       echo '```' >> README.md
-      git config user.email "witchcraft@example.com"
-      git config user.name "bot"
+      git config user.email "om-ci-bot@github.com.om"
+      git config user.name "om-ci-bot"
       git add .
       git commit -m"Automatically updated README.md" || true
     popd > /dev/null
