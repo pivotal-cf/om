@@ -135,7 +135,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 	nameParts := strings.Split(productFileName, ".")
 	if nameParts[len(nameParts)-1] != "pivotal" {
 		c.stderr.Printf("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell.")
-		return nil
+		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
 
 	stemcell, err := c.downloadClient.GetLatestStemcellForProduct(productFileArtifact, productFileName)

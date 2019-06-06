@@ -312,7 +312,7 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 				})
 
-				It("exits 0 and prints a warning when the product is not a tile", func() {
+				It("prints a warning and returns available file artifacts", func() {
 					tempDir, err := ioutil.TempDir("", "om-tests-")
 					Expect(err).NotTo(HaveOccurred())
 
@@ -326,6 +326,18 @@ var _ = Describe("DownloadProduct", func() {
 					})
 
 					Expect(err).NotTo(HaveOccurred())
+
+					downloadReportFileName := path.Join(tempDir, "download-file.json")
+					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(downloadReportFileName).To(BeAnExistingFile())
+					downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.tgz")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
+							{
+								"product_path": "%s",
+								"product_slug": "elastic-runtime",
+								"product_version": "2.0.0"
+							}`, downloadedFilePath)))
 					Expect(buffer).Should(gbytes.Say("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
 				})
 			})
