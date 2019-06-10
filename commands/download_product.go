@@ -17,18 +17,21 @@ import (
 )
 
 //go:generate counterfeiter -o ./fakes/file_artifacter.go --fake-name FileArtifacter . FileArtifacter
+
 type FileArtifacter interface {
 	Name() string
 	SHA256() string
 }
 
 //go:generate counterfeiter -o ./fakes/stemcell_artifacter.go --fake-name StemcellArtifacter . StemcellArtifacter
+
 type StemcellArtifacter interface {
 	Slug() string
 	Version() string
 }
 
 //go:generate counterfeiter -o ./fakes/product_downloader_service.go --fake-name ProductDownloader . ProductDownloader
+
 type ProductDownloader interface {
 	Name() string
 	GetAllProductVersions(slug string) ([]string, error)
