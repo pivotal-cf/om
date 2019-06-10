@@ -175,12 +175,12 @@ func (ec StagedConfig) Execute(args []string) error {
 
 func (ec StagedConfig) chooseCredentialHandler(productGUID string) configparser.CredentialHandler {
 	if ec.Options.IncludePlaceholders {
-		return configparser.PlaceholderHandler()
+		return configparser.NewPlaceholderHandler()
 	}
 
 	if ec.Options.IncludeCredentials {
-		return configparser.GetCredentialHandler(productGUID, ec.service)
+		return configparser.NewGetCredentialHandler(productGUID, ec.service)
 	}
 
-	return configparser.NilHandler()
+	return configparser.NewNilHandler()
 }

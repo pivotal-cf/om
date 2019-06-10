@@ -108,13 +108,13 @@ func (p *configParser) handleCollection(name PropertyName, property api.Response
 	return nil, nil
 }
 
-func NilHandler() CredentialHandler {
+func NewNilHandler() CredentialHandler {
 	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
 		return nil, nil
 	}
 }
 
-func PlaceholderHandler() CredentialHandler {
+func NewPlaceholderHandler() CredentialHandler {
 	var output map[string]interface{}
 
 	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
@@ -160,7 +160,7 @@ func PlaceholderHandler() CredentialHandler {
 	}
 }
 
-func GetCredentialHandler(productGUID string, apiService getCredential) CredentialHandler {
+func NewGetCredentialHandler(productGUID string, apiService getCredential) CredentialHandler {
 	var output map[string]interface{}
 
 	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
