@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -225,18 +226,37 @@ func (sdc StagedDirectorConfig) removeAllIAASConfiguration(config map[string]int
 
 func (sdc StagedDirectorConfig) filterSecrets(prefix string, keyName string, value interface{}) (interface{}, error) {
 	filters := []string{"password", "user", "key"}
-	switch typedValue := value.(type) {
-	case map[string]interface{}:
-		return sdc.handleTypedMap(prefix, typedValue)
-	case map[interface{}]interface{}:
-		return sdc.handleUntypedMap(prefix, typedValue)
-	case map[string]map[string]interface{}:
-		return sdc.handleMapOfMaps(prefix, typedValue)
-	case []map[string]interface{}:
-		return sdc.handleSliceOfMaps(prefix, typedValue)
-	case []interface{}:
-		return sdc.handleSlice(prefix, typedValue)
-	case string, int, bool, nil:
+
+	switch v := reflect.ValueOf(value); v.Kind() {
+	case reflect.Map:
+		elements := map[string]interface{}{}
+		iter := v.MapRange()
+		for iter.Next() {
+			innerKey := fmt.Sprintf("%s", iter.Key())
+			innerValue := iter.Value()
+			returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey, innerKey, innerValue.Interface())
+
+			if err != nil {
+				return nil, err
+			}
+			if returnedVal != nil {
+				elements[innerKey] = returnedVal
+			}
+		}
+		return elements, nil
+	case reflect.Slice:
+		elements := []interface{}{}
+		for i := 0; i < v.Len(); i++ {
+			returnedVal, err := sdc.filterSecrets(prefix+"_"+strconv.Itoa(i), "", v.Index(i).Interface())
+			if err != nil {
+				return nil, err
+			}
+			if returnedVal != nil {
+				elements = append(elements, returnedVal)
+			}
+		}
+		return elements, nil
+	case reflect.String, reflect.Int, reflect.Bool:
 		if strings.Contains(prefix, "iaas_configuration") {
 			if sdc.Options.IncludePlaceholders {
 				return "((" + prefix + "))", nil
@@ -263,101 +283,4 @@ func (sdc StagedDirectorConfig) filterSecrets(prefix string, keyName string, val
 	}
 
 	return value, nil
-}
-
-func (sdc StagedDirectorConfig) handleTypedMap(prefix string, value map[string]interface{}) (interface{}, error) {
-	newValue := map[string]interface{}{}
-	for innerKey, innerVal := range value {
-		returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
-
-		if err != nil {
-			return nil, err
-		}
-		if returnedVal != nil {
-			newValue[innerKey] = returnedVal
-		}
-	}
-	return newValue, nil
-}
-
-func (sdc StagedDirectorConfig) handleUntypedMap(prefix string, value map[interface{}]interface{}) (interface{}, error) {
-	newValue := map[interface{}]interface{}{}
-
-	for innerKey, innerVal := range value {
-		switch typedValue := innerVal.(type) {
-		case map[interface{}]interface{}:
-			returnedVal, err := sdc.handleUntypedMap(prefix+"_"+innerKey.(string), typedValue)
-
-			if err != nil {
-				return nil, err
-			}
-			if returnedVal != nil {
-				newValue[innerKey] = returnedVal
-			}
-		case map[string]interface{}:
-			returnedVal, err := sdc.handleTypedMap(prefix+"_"+innerKey.(string), typedValue)
-
-			if err != nil {
-				return nil, err
-			}
-			if returnedVal != nil {
-				newValue[innerKey] = returnedVal
-			}
-		case string, bool, int, nil:
-			returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey.(string), innerKey.(string), innerVal)
-
-			if err != nil {
-				return nil, err
-			}
-			if returnedVal != nil {
-				newValue[innerKey] = returnedVal
-			}
-		case []interface{}:
-			return sdc.handleSlice(prefix, typedValue)
-		}
-	}
-	return newValue, nil
-}
-
-func (sdc StagedDirectorConfig) handleMapOfMaps(prefix string, value map[string]map[string]interface{}) (interface{}, error) {
-	newValue := map[string]interface{}{}
-	for innerKey, innerVal := range value {
-		returnedVal, err := sdc.filterSecrets(prefix+"_"+innerKey, innerKey, innerVal)
-
-		if err != nil {
-			return nil, err
-		}
-		if returnedVal != nil {
-			newValue[innerKey] = returnedVal
-		}
-	}
-	return newValue, nil
-}
-
-func (sdc StagedDirectorConfig) handleSlice(prefix string, value []interface{}) (interface{}, error) {
-	var newValue []interface{}
-	for innerIndex, innerVal := range value {
-		returnedVal, err := sdc.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
-		if err != nil {
-			return nil, err
-		}
-		if returnedVal != nil {
-			newValue = append(newValue, returnedVal)
-		}
-	}
-	return newValue, nil
-}
-
-func (sdc StagedDirectorConfig) handleSliceOfMaps(prefix string, value []map[string]interface{}) (interface{}, error) {
-	var newValue []map[string]interface{}
-	for innerIndex, innerVal := range value {
-		returnedVal, err := sdc.filterSecrets(prefix+"_"+strconv.Itoa(innerIndex), "", innerVal)
-		if err != nil {
-			return nil, err
-		}
-		if returnedVal != nil {
-			newValue = append(newValue, returnedVal.(map[string]interface{}))
-		}
-	}
-	return newValue, nil
 }
