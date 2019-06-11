@@ -54,6 +54,7 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				"--group-search-filter", "member={0}",
 				"--ldap-rbac-admin-group-name", "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com",
 				"--ldap-referrals", "follow",
+				"--create-bosh-admin-client",
 			}
 
 			expectedPayload = api.SetupInput{
@@ -61,6 +62,7 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
 				EULAAccepted:                     "true",
+				CreateBoshAdminClient:            "true",
 				LDAPSettings: &api.LDAPSettings{
 					EmailAttribute:     "mail",
 					GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",
@@ -130,6 +132,7 @@ group-search-filter: "member={0}"
 ldap-rbac-admin-group-name: "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com"
 email-attribute: "mail"
 ldap-referrals: "follow"
+create-bosh-admin-client: true
 `
 				configFile, err = ioutil.TempFile("", "")
 				Expect(err).NotTo(HaveOccurred())

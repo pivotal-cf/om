@@ -82,6 +82,7 @@ var _ = Describe("configure-ldap-authentication command", func() {
 			DecryptionPassphrase:             "some-passphrase",
 			DecryptionPassphraseConfirmation: "some-passphrase",
 			EULAAccepted:                     "true",
+			CreateBoshAdminClient:            "false",
 			LDAPSettings: &api.LDAPSettings{
 				EmailAttribute:     "mail",
 				GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",

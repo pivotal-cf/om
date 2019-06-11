@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -12,22 +13,23 @@ type ConfigureLDAPAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
-		ConfigFile           string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-		DecryptionPassphrase string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL         string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL        string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
-		NoProxy              string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
-		EmailAttribute       string `long:"email-attribute"                  required:"true" description:"name of the LDAP attribute that contains the users email address"`
-		GroupSearchBase      string `long:"group-search-base"                required:"true" description:"start point for a user group membership search, and sequential nested searches"`
-		GroupSearchFilter    string `long:"group-search-filter"              required:"true" description:"search filter to find the groups to which a user belongs, e.g. 'member={0}'"`
-		LDAPPassword         string `long:"ldap-password"                    required:"true" description:"password for ldap-username DN"`
-		LDAPRBACAdminGroup   string `long:"ldap-rbac-admin-group-name"       required:"true" description:"the name of LDAP group whose members should be considered admins of OpsManager"`
-		LDAPReferral         string `long:"ldap-referrals"                   required:"true" description:"configure the UAA LDAP referral behavior"`
-		LDAPUsername         string `long:"ldap-username"                    required:"true" description:"DN for the LDAP credentials used to search the directory"`
-		ServerSSLCert        string `long:"server-ssl-cert"                                  description:"the server certificate when using ldaps://"`
-		ServerURL            string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
-		UserSearchBase       string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
-		UserSearchFilter     string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
+		ConfigFile            string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		DecryptionPassphrase  string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL          string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL         string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
+		NoProxy               string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
+		EmailAttribute        string `long:"email-attribute"                  required:"true" description:"name of the LDAP attribute that contains the users email address"`
+		GroupSearchBase       string `long:"group-search-base"                required:"true" description:"start point for a user group membership search, and sequential nested searches"`
+		GroupSearchFilter     string `long:"group-search-filter"              required:"true" description:"search filter to find the groups to which a user belongs, e.g. 'member={0}'"`
+		LDAPPassword          string `long:"ldap-password"                    required:"true" description:"password for ldap-username DN"`
+		LDAPRBACAdminGroup    string `long:"ldap-rbac-admin-group-name"       required:"true" description:"the name of LDAP group whose members should be considered admins of OpsManager"`
+		LDAPReferral          string `long:"ldap-referrals"                   required:"true" description:"configure the UAA LDAP referral behavior"`
+		LDAPUsername          string `long:"ldap-username"                    required:"true" description:"DN for the LDAP credentials used to search the directory"`
+		ServerSSLCert         string `long:"server-ssl-cert"                                  description:"the server certificate when using ldaps://"`
+		ServerURL             string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
+		UserSearchBase        string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
+		UserSearchFilter      string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
+		CreateBoshAdminClient bool   `long:"create-bosh-admin-client"         yaml:"create-bosh-admin-client,omitempty"  description:"create a UAA client, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
 	}
 }
 
@@ -68,6 +70,7 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 		HTTPProxyURL:                     ca.Options.HTTPProxyURL,
 		HTTPSProxyURL:                    ca.Options.HTTPSProxyURL,
 		NoProxy:                          ca.Options.NoProxy,
+		CreateBoshAdminClient:            strconv.FormatBool(ca.Options.CreateBoshAdminClient),
 		LDAPSettings: &api.LDAPSettings{
 			EmailAttribute:     ca.Options.EmailAttribute,
 			GroupSearchBase:    ca.Options.GroupSearchBase,

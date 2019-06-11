@@ -5,6 +5,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"gopkg.in/yaml.v2"
 	"reflect"
+	"strconv"
 )
 
 // Load the config file, (optionally) load the vars file, vars env as well
@@ -75,6 +76,8 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 			for _, v := range convertedValue {
 				fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, v))
 			}
+		case bool:
+			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, strconv.FormatBool(convertedValue)))
 		default:
 			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, value))
 		}
