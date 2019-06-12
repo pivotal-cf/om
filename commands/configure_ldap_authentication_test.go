@@ -95,6 +95,26 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
 		})
 
+		When("create 2-4 bosh admin client flag set", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--create-2-4-bosh-admin-client")
+				expectedPayload.CreateBoshAdminClient = "true"
+			})
+
+			Context("and OpsMan is < 2.4", func() {
+				BeforeEach(func() {
+					service.InfoReturns(api.Info{
+						Version: "2.3-build.1",
+					}, nil)
+				})
+				It("returns an error", func() {
+					fmt.Printf("%v\n", commandLineArgs)
+					err := command.Execute(commandLineArgs)
+					Expect(err).To(MatchError("create-2-4-bosh-client is not supported in OpsMan versions other than 2.4"))
+				})
+			})
+		})
+
 		Context("when the authentication setup has already been configured", func() {
 			BeforeEach(func() {
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
@@ -244,19 +264,6 @@ ldap-referrals: "follow"
 				})
 			})
 
-			When("create-2-4-bosh-client flag is provided but OpsMan is < 2.4", func() {
-				BeforeEach(func() {
-					commandLineArgs = append(commandLineArgs, "--create-2-4-bosh-admin-client")
-					service.InfoReturns(api.Info{
-						Version: "2.3-build.1",
-					}, nil)
-				})
-				It("returns an error", func() {
-					fmt.Printf("%v\n", commandLineArgs)
-					err := command.Execute(commandLineArgs)
-					Expect(err).To(MatchError("create-2-4-bosh-client is not supported in OpsMan versions other than 2.4"))
-				})
-			})
 		})
 	})
 
