@@ -236,7 +236,7 @@ ldap-referrals: "follow"
 				})
 			})
 
-			Context("when missing required fields", func() {
+			When("missing required fields", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureLDAPAuthentication(nil, nil)
 					err := command.Execute(nil)
