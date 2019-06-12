@@ -12,6 +12,7 @@ import (
 type configureAuthenticationService interface {
 	Setup(api.SetupInput) (api.SetupOutput, error)
 	EnsureAvailability(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)
+	Info() (api.Info, error)
 }
 
 type ConfigureAuthentication struct {

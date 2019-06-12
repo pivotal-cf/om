@@ -54,7 +54,6 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				"--group-search-filter", "member={0}",
 				"--ldap-rbac-admin-group-name", "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com",
 				"--ldap-referrals", "follow",
-				"--create-bosh-admin-client",
 			}
 
 			expectedPayload = api.SetupInput{
@@ -62,7 +61,7 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
 				EULAAccepted:                     "true",
-				CreateBoshAdminClient:            "true",
+				CreateBoshAdminClient:            "false",
 				LDAPSettings: &api.LDAPSettings{
 					EmailAttribute:     "mail",
 					GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",
@@ -132,7 +131,6 @@ group-search-filter: "member={0}"
 ldap-rbac-admin-group-name: "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com"
 email-attribute: "mail"
 ldap-referrals: "follow"
-create-bosh-admin-client: true
 `
 				configFile, err = ioutil.TempFile("", "")
 				Expect(err).NotTo(HaveOccurred())
@@ -243,6 +241,20 @@ create-bosh-admin-client: true
 					command := commands.NewConfigureLDAPAuthentication(nil, nil)
 					err := command.Execute(nil)
 					Expect(err).To(MatchError("could not parse configure-ldap-authentication flags: missing required flag \"--decryption-passphrase\""))
+				})
+			})
+
+			When("create-2-4-bosh-client flag is provided but OpsMan is < 2.4", func() {
+				BeforeEach(func() {
+					commandLineArgs = append(commandLineArgs, "--create-2-4-bosh-admin-client")
+					service.InfoReturns(api.Info{
+						Version: "2.3-build.1",
+					}, nil)
+				})
+				It("returns an error", func() {
+					fmt.Printf("%v\n", commandLineArgs)
+					err := command.Execute(commandLineArgs)
+					Expect(err).To(MatchError("create-2-4-bosh-client is not supported in OpsMan versions other than 2.4"))
 				})
 			})
 		})
