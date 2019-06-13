@@ -119,7 +119,9 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 	if ca.Options.CreateBoshAdminClient {
 		ca.logger.Printf(`
 BOSH admin client created.
-The new clients secret can be found by going to OpsMan -> director tile -> Credentials tab -> click on 'Link to Credential' under 'Agent Credentials'
+The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+Client ID should be 'bosh_admin_client'.
 `)
 	}
 
