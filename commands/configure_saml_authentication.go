@@ -12,16 +12,16 @@ type ConfigureSAMLAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
-		ConfigFile            string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-		DecryptionPassphrase  string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL          string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL         string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
-		NoProxy               string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
-		IDPMetadata           string `long:"saml-idp-metadata"                required:"true" description:"XML, or URL to XML, for the IDP that Ops Manager should use"`
-		BoshIDPMetadata       string `long:"saml-bosh-idp-metadata"           required:"true" description:"XML, or URL to XML, for the IDP that BOSH should use"`
-		RBACAdminGroup        string `long:"saml-rbac-admin-group"            required:"true" description:"If SAML is specified, please provide the admin group for your SAML"`
-		RBACGroupsAttribute   string `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
-		CreateBoshAdminClient bool   `long:"create-bosh-admin-client"                         description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
+		ConfigFile                string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		DecryptionPassphrase      string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL              string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL             string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
+		NoProxy                   string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
+		IDPMetadata               string `long:"saml-idp-metadata"                required:"true" description:"XML, or URL to XML, for the IDP that Ops Manager should use"`
+		BoshIDPMetadata           string `long:"saml-bosh-idp-metadata"           required:"true" description:"XML, or URL to XML, for the IDP that BOSH should use"`
+		RBACAdminGroup            string `long:"saml-rbac-admin-group"            required:"true" description:"If SAML is specified, please provide the admin group for your SAML"`
+		RBACGroupsAttribute       string `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
+		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"                         description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
 	}
 }
 
@@ -52,25 +52,9 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 		return nil
 	}
 
-	if ca.Options.CreateBoshAdminClient == true {
-		info, err := ca.service.Info()
-		if err != nil {
-			return err
-		}
-
-		versionAtLeast24, err := info.VersionAtLeast(2, 4)
-		if err != nil {
-			return err
-		}
-
-		if !versionAtLeast24 {
-			return fmt.Errorf("create-bosh-client is not supported in OpsMan versions before 2.4")
-		}
-	}
-
 	ca.logger.Printf("configuring SAML authentication...")
 
-	_, err = ca.service.Setup(api.SetupInput{
+	input := api.SetupInput{
 		IdentityProvider:                 "saml",
 		DecryptionPassphrase:             ca.Options.DecryptionPassphrase,
 		DecryptionPassphraseConfirmation: ca.Options.DecryptionPassphrase,
@@ -82,8 +66,23 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 		BoshIDPMetadata:                  ca.Options.BoshIDPMetadata,
 		RBACAdminGroup:                   ca.Options.RBACAdminGroup,
 		RBACGroupsAttribute:              ca.Options.RBACGroupsAttribute,
-		CreateBoshAdminClient:            boolStringFromType(ca.Options.CreateBoshAdminClient),
-	})
+	}
+
+	info, err := ca.service.Info()
+	if err != nil {
+		return err
+	}
+
+	versionAtLeast24, err := info.VersionAtLeast(2, 4)
+	if err != nil {
+		return err
+	}
+
+	if versionAtLeast24 {
+		input.CreateBoshAdminClient = boolStringFromType(!ca.Options.SkipCreateBoshAdminClient)
+	}
+
+	_, err = ca.service.Setup(input)
 	if err != nil {
 		return fmt.Errorf("could not configure authentication: %s", err)
 	}
@@ -98,12 +97,22 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 
 	ca.logger.Printf("configuration complete")
 
-	if ca.Options.CreateBoshAdminClient {
+	if !versionAtLeast24 {
+		ca.logger.Printf(`
+WARNING: BOSH admin client NOT automatically created.
+This is only supported in OpsManager 2.4 and up.
+`)
+	} else if !ca.Options.SkipCreateBoshAdminClient {
 		ca.logger.Printf(`
 BOSH admin client created.
 The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
 Note both the client ID and secret.
 Client ID should be 'bosh_admin_client'.
+`)
+	} else {
+		ca.logger.Printf(`
+Note: BOSH admin client NOT automatically created.
+This was skipped due to the 'skip-create-bosh-admin-client'.
 `)
 	}
 
