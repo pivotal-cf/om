@@ -26,10 +26,10 @@ type ConfigureLDAPAuthentication struct {
 		LDAPReferral            string `long:"ldap-referrals"                   required:"true" description:"configure the UAA LDAP referral behavior"`
 		LDAPUsername            string `long:"ldap-username"                    required:"true" description:"DN for the LDAP credentials used to search the directory"`
 		ServerSSLCert           string `long:"server-ssl-cert"                                  description:"the server certificate when using ldaps://"`
-		ServerURL               string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
-		UserSearchBase          string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
-		UserSearchFilter        string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
-		Create24BoshAdminClient bool   `long:"create-2-4-bosh-admin-client"         yaml:"create-bosh-admin-client,omitempty"  description:"create a UAA client, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
+		ServerURL              string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
+		UserSearchBase         string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
+		UserSearchFilter       string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
+		CreateBoshAdminClient  bool   `long:"create-bosh-admin-client"         yaml:"create-bosh-admin-client,omitempty"  description:"create a UAA client, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
 	}
 }
 
@@ -60,7 +60,7 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 		return nil
 	}
 
-	if ca.Options.Create24BoshAdminClient == true {
+	if ca.Options.CreateBoshAdminClient == true {
 		info, err := ca.service.Info()
 		if err != nil {
 			return err
@@ -72,7 +72,7 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 		}
 
 		if !versionAtLeast24 {
-			return fmt.Errorf("create-2-4-bosh-client is not supported in OpsMan versions other than 2.4")
+			return fmt.Errorf("create-bosh-client is not supported in OpsMan versions before 2.4")
 		}
 	}
 
@@ -86,7 +86,7 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 		HTTPProxyURL:                     ca.Options.HTTPProxyURL,
 		HTTPSProxyURL:                    ca.Options.HTTPSProxyURL,
 		NoProxy:                          ca.Options.NoProxy,
-		CreateBoshAdminClient:            strconv.FormatBool(ca.Options.Create24BoshAdminClient),
+		CreateBoshAdminClient:            strconv.FormatBool(ca.Options.CreateBoshAdminClient),
 		LDAPSettings: &api.LDAPSettings{
 			EmailAttribute:     ca.Options.EmailAttribute,
 			GroupSearchBase:    ca.Options.GroupSearchBase,
@@ -115,6 +115,13 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 	}
 
 	ca.logger.Printf("configuration complete")
+
+	if ca.Options.CreateBoshAdminClient {
+		ca.logger.Printf(`
+BOSH admin client created.
+The new clients secret can be found by going to OpsMan -> director tile -> Credentials tab -> click on 'Link to Credential' under 'Agent Credentials'
+`)
+	}
 
 	return nil
 }

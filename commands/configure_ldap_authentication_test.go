@@ -95,10 +95,41 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
 		})
 
-		When("create 2-4 bosh admin client flag set", func() {
+		When("creating bosh admin client flag set", func() {
 			BeforeEach(func() {
-				commandLineArgs = append(commandLineArgs, "--create-2-4-bosh-admin-client")
+				commandLineArgs = append(commandLineArgs, "--create-bosh-admin-client")
 				expectedPayload.CreateBoshAdminClient = "true"
+			})
+
+			Context("and Opsman is >=2.4", func() {
+				BeforeEach(func() {
+					service.InfoReturns(api.Info{
+						Version: "2.4-build.1",
+					}, nil)
+				})
+				It("configures LDAP auth to create a bosh admin client", func() {
+					err := command.Execute(commandLineArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+					Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring LDAP authentication..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal(`
+BOSH admin client created.
+The new clients secret can be found by going to OpsMan -> director tile -> Credentials tab -> click on 'Link to Credential' under 'Agent Credentials'
+`))
+				})
 			})
 
 			Context("and OpsMan is < 2.4", func() {
@@ -108,9 +139,8 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 					}, nil)
 				})
 				It("returns an error", func() {
-					fmt.Printf("%v\n", commandLineArgs)
 					err := command.Execute(commandLineArgs)
-					Expect(err).To(MatchError("create-2-4-bosh-client is not supported in OpsMan versions other than 2.4"))
+					Expect(err).To(MatchError("create-bosh-client is not supported in OpsMan versions before 2.4"))
 				})
 			})
 		})
