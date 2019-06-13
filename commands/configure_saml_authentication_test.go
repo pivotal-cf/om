@@ -126,7 +126,7 @@ This is only supported in OpsManager 2.4 and up.
 			})
 		})
 
-		When("skip creating bosh admin client flag set", func() {
+		When("the skip-create-bosh-admin-client flag set", func() {
 			BeforeEach(func() {
 				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 				expectedPayload.CreateBoshAdminClient = "false"
@@ -164,7 +164,7 @@ This was skipped due to the 'skip-create-bosh-admin-client'.
 					commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 					expectedPayload.CreateBoshAdminClient = ""
 				})
-				It("configures SAML but dose not create the client by default", func() {
+				It("configures SAML but does not create the client by default", func() {
 					err := command.Execute(commandLineArgs)
 					Expect(err).NotTo(HaveOccurred())
 

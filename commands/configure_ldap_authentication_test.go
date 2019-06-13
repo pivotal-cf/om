@@ -42,6 +42,10 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 
 			command = commands.NewConfigureLDAPAuthentication(service, logger)
 
+			service.InfoReturns(api.Info{
+				Version: "2.4-build.1",
+			}, nil)
+
 			commandLineArgs = []string{
 				"--decryption-passphrase", "some-passphrase",
 				"--email-attribute", "mail",
@@ -61,7 +65,7 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
 				EULAAccepted:                     "true",
-				CreateBoshAdminClient:            "false",
+				CreateBoshAdminClient:            "true",
 				LDAPSettings: &api.LDAPSettings{
 					EmailAttribute:     "mail",
 					GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",
@@ -93,21 +97,88 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 
 			format, content = logger.PrintfArgsForCall(2)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+			format, content = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, content...)).To(Equal(`
+BOSH admin client created.
+The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+Client ID should be 'bosh_admin_client'.
+`))
 		})
 
-		When("creating bosh admin client flag set", func() {
+		Context("will not create bosh admin client when OpsMan is < 2.4", func() {
 			BeforeEach(func() {
-				commandLineArgs = append(commandLineArgs, "--create-bosh-admin-client")
-				expectedPayload.CreateBoshAdminClient = "true"
+				service.InfoReturns(api.Info{
+					Version: "2.3-build.1",
+				}, nil)
+
+				expectedPayload.CreateBoshAdminClient = ""
+			})
+			It("configure LDAP with bosh admin client warning", func() {
+				err := command.Execute(commandLineArgs)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring LDAP authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+				format, content = logger.PrintfArgsForCall(3)
+				Expect(fmt.Sprintf(format, content...)).To(Equal(`
+WARNING: BOSH admin client NOT automatically created.
+This is only supported in OpsManager 2.4 and up.
+`))
+			})
+		})
+
+		When("the skip-create-bosh-admin-client flag set", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
+				expectedPayload.CreateBoshAdminClient = "false"
 			})
 
-			Context("and Opsman is >=2.4", func() {
+			It("configures LDAP auth and does not create a bosh admin client", func() {
+				err := command.Execute(commandLineArgs)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring LDAP authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+				format, content = logger.PrintfArgsForCall(3)
+				Expect(fmt.Sprintf(format, content...)).To(Equal(`
+Note: BOSH admin client NOT automatically created.
+This was skipped due to the 'skip-create-bosh-admin-client'.
+`))
+			})
+
+			Context("and OpsMan is < 2.4", func() {
 				BeforeEach(func() {
 					service.InfoReturns(api.Info{
-						Version: "2.4-build.1",
+						Version: "2.3-build.1",
 					}, nil)
+					commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
+					expectedPayload.CreateBoshAdminClient = ""
 				})
-				It("configures LDAP auth to create a bosh admin client", func() {
+				It("configures LDAP but does not create the client by default", func() {
 					err := command.Execute(commandLineArgs)
 					Expect(err).NotTo(HaveOccurred())
 
@@ -126,69 +197,9 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 
 					format, content = logger.PrintfArgsForCall(3)
 					Expect(fmt.Sprintf(format, content...)).To(Equal(`
-BOSH admin client created.
-The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
-Note both the client ID and secret.
-Client ID should be 'bosh_admin_client'.
+WARNING: BOSH admin client NOT automatically created.
+This is only supported in OpsManager 2.4 and up.
 `))
-				})
-			})
-
-			Context("and OpsMan is < 2.4", func() {
-				BeforeEach(func() {
-					service.InfoReturns(api.Info{
-						Version: "2.3-build.1",
-					}, nil)
-				})
-				It("returns an error", func() {
-					err := command.Execute(commandLineArgs)
-					Expect(err).To(MatchError("create-bosh-client is not supported in OpsMan versions before 2.4"))
-				})
-			})
-		})
-
-		XWhen("creating the precreated client secret flag set", func() {
-			BeforeEach(func() {
-				commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-secret")
-				expectedPayload.PrecreatedClientSecret = "test-secret"
-			})
-			Context("and OpsMan is < 2.5", func() {
-				BeforeEach(func() {
-					service.InfoReturns(api.Info{
-						Version: "2.4-build.1",
-					}, nil)
-				})
-				It("returns an error", func() {
-					err := command.Execute(commandLineArgs)
-					Expect(err).To(MatchError("precreated-client-secret is not supported in OpsMan versions less than 2.5"))
-				})
-			})
-
-			Context("and OpsMan is > 2.4", func() {
-				BeforeEach(func() {
-					service.InfoReturns(api.Info{
-						Version: "2.5-build.1",
-					}, nil)
-				})
-				It("configures LDAP auth to create a bosh admin client with provided secret", func() {
-					err := command.Execute(commandLineArgs)
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
-
-					Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
-
-					format, content := logger.PrintfArgsForCall(0)
-					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring LDAP authentication..."))
-
-					format, content = logger.PrintfArgsForCall(1)
-					Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-					format, content = logger.PrintfArgsForCall(2)
-					Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
-
-					format, content = logger.PrintfArgsForCall(3)
-					Expect(fmt.Sprintf(format, content...)).To(Equal("BOSH admin client created using provided secret"))
 				})
 			})
 		})

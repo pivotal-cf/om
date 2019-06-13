@@ -24,7 +24,24 @@ var _ = Describe("configure-saml-authentication command", func() {
 		var ensureAvailabilityCallCount int
 
 		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
 			switch req.URL.Path {
+			case "/uaa/oauth/token":
+				_, err := w.Write([]byte(`{
+					"access_token": "some-opsman-token",
+					"token_type": "bearer",
+					"expires_in": 3600
+				}`))
+				Expect(err).NotTo(HaveOccurred())
+			case "/api/v0/info":
+				_, err := w.Write([]byte(`{
+						"info": {
+							"version": "2.6.0"
+						}
+					}`))
+
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/setup":
 				err := json.NewDecoder(req.Body).Decode(&auth)
 				Expect(err).NotTo(HaveOccurred())
@@ -91,5 +108,11 @@ var _ = Describe("configure-saml-authentication command", func() {
 		Expect(session.Out).To(gbytes.Say("configuring SAML authentication..."))
 		Expect(session.Out).To(gbytes.Say("waiting for configuration to complete..."))
 		Expect(session.Out).To(gbytes.Say("configuration complete"))
+		Expect(session.Out).To(gbytes.Say(`
+BOSH admin client created.
+The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+Client ID should be 'bosh_admin_client'.
+`))
 	})
 })
