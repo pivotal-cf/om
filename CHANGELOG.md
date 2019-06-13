@@ -48,6 +48,23 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 1.1.1 (unreleased)
 
 ### Features 
+* Both `om configure-ldap-authentication` 
+  and `om configure-saml-authentication`
+  will now automatically
+  create a BOSH UAA admin client as documented [here](https://docs.pivotal.io/pivotalcf/2-5/customizing/opsmanager-create-bosh-client.html#saml).
+  This is only supported in OpsManager 2.4 and greater.
+  You may specify the flag `skip-create-bosh-admin-client`
+  to skip creating this client.
+  If the command is run for an OpsManager less than 2.4,
+  the client will not be created and a warning will be printed.
+  However, it is recommended that you create this client.
+  For example, your SAML or LDAP may become unavailable,
+  you may need to sideload patches to the BOSH director, etc.
+  Further, in order to perform automated operations on the BOSH director,
+  you will need this BOSH UAA client.
+  After the client has been created,
+  you can find the client ID and secret
+  by following [steps three and four found here](https://docs.pivotal.io/pivotalcf/2-5/customizing/opsmanager-create-bosh-client.html#-provision-admin-client).
 * `om interpolate` now allows for the `-v` flag
   to allow variables to be passed via command line. 
   Command line args > file args > env vars.
