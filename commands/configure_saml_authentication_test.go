@@ -17,8 +17,18 @@ import (
 
 var _ = Describe("ConfigureSAMLAuthentication", func() {
 	Describe("Execute", func() {
-		It("configures SAML authentication", func() {
-			service := &fakes.ConfigureAuthenticationService{}
+		var (
+			service         *fakes.ConfigureAuthenticationService
+			logger          *fakes.Logger
+			command         commands.ConfigureSAMLAuthentication
+			commandLineArgs []string
+			expectedPayload api.SetupInput
+		)
+
+		BeforeEach(func() {
+			service = &fakes.ConfigureAuthenticationService{}
+			logger = &fakes.Logger{}
+
 			eaOutputs := []api.EnsureAvailabilityOutput{
 				{Status: api.EnsureAvailabilityStatusUnstarted},
 				{Status: api.EnsureAvailabilityStatusPending},
@@ -30,19 +40,17 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			logger := &fakes.Logger{}
+			command = commands.NewConfigureSAMLAuthentication(service, logger)
 
-			command := commands.NewConfigureSAMLAuthentication(service, logger)
-			err := command.Execute([]string{
+			commandLineArgs = []string{
 				"--decryption-passphrase", "some-passphrase",
 				"--saml-idp-metadata", "https://saml.example.com:8080",
 				"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
 				"--saml-rbac-admin-group", "opsman.full_control",
 				"--saml-rbac-groups-attribute", "myenterprise",
-			})
-			Expect(err).NotTo(HaveOccurred())
+			}
 
-			Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+			expectedPayload = api.SetupInput{
 				IdentityProvider:                 "saml",
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
@@ -51,7 +59,15 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
 				RBACAdminGroup:                   "opsman.full_control",
 				RBACGroupsAttribute:              "myenterprise",
-			}))
+				CreateBoshAdminClient:            "false",
+			}
+		})
+
+		It("configures SAML authentication", func() {
+			err := command.Execute(commandLineArgs)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
 			Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
 
@@ -65,23 +81,64 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
 		})
 
+		When("creating bosh admin client flag set", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--create-bosh-admin-client")
+				expectedPayload.CreateBoshAdminClient = "true"
+			})
+
+			Context("and Opsman is >=2.4", func() {
+				BeforeEach(func() {
+					service.InfoReturns(api.Info{
+						Version: "2.4-build.1",
+					}, nil)
+				})
+				It("configures SAML auth to create a bosh admin client", func() {
+					err := command.Execute(commandLineArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+					Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal(`
+BOSH admin client created.
+The new clients secret can be found by going to OpsMan -> director tile -> Credentials tab -> click on 'Link to Credential' under 'Agent Credentials'
+`))
+				})
+			})
+
+			Context("and OpsMan is < 2.4", func() {
+				BeforeEach(func() {
+					service.InfoReturns(api.Info{
+						Version: "2.3-build.1",
+					}, nil)
+				})
+				It("returns an error", func() {
+					err := command.Execute(commandLineArgs)
+					Expect(err).To(MatchError("create-bosh-client is not supported in OpsMan versions before 2.4"))
+				})
+			})
+		})
+
 		Context("when the authentication setup has already been configured", func() {
 			It("returns without configuring the authentication system", func() {
-				service := &fakes.ConfigureAuthenticationService{}
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
 				}, nil)
 
-				logger := &fakes.Logger{}
-
 				command := commands.NewConfigureSAMLAuthentication(service, logger)
-				err := command.Execute([]string{
-					"--decryption-passphrase", "some-passphrase",
-					"--saml-idp-metadata", "https://saml.example.com:8080",
-					"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
-					"--saml-rbac-admin-group", "opsman.full_control",
-					"--saml-rbac-groups-attribute", "myenterprise",
-				})
+				err := command.Execute(commandLineArgs)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(service.EnsureAvailabilityCallCount()).To(Equal(1))
@@ -112,36 +169,12 @@ decryption-passphrase: some-passphrase
 			})
 
 			It("reads configuration from config file", func() {
-				service := &fakes.ConfigureAuthenticationService{}
-				eaOutputs := []api.EnsureAvailabilityOutput{
-					{Status: api.EnsureAvailabilityStatusUnstarted},
-					{Status: api.EnsureAvailabilityStatusPending},
-					{Status: api.EnsureAvailabilityStatusPending},
-					{Status: api.EnsureAvailabilityStatusComplete},
-				}
-
-				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
-					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
-				}
-
-				logger := &fakes.Logger{}
-
-				command := commands.NewConfigureSAMLAuthentication(service, logger)
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
-					IdentityProvider:                 "saml",
-					DecryptionPassphrase:             "some-passphrase",
-					DecryptionPassphraseConfirmation: "some-passphrase",
-					EULAAccepted:                     "true",
-					IDPMetadata:                      "https://saml.example.com:8080",
-					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
-					RBACAdminGroup:                   "opsman.full_control",
-					RBACGroupsAttribute:              "myenterprise",
-				}))
+				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
 				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
 
@@ -156,21 +189,6 @@ decryption-passphrase: some-passphrase
 			})
 
 			It("is overridden by commandline flags", func() {
-				service := &fakes.ConfigureAuthenticationService{}
-				eaOutputs := []api.EnsureAvailabilityOutput{
-					{Status: api.EnsureAvailabilityStatusUnstarted},
-					{Status: api.EnsureAvailabilityStatusPending},
-					{Status: api.EnsureAvailabilityStatusPending},
-					{Status: api.EnsureAvailabilityStatusComplete},
-				}
-
-				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
-					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
-				}
-
-				logger := &fakes.Logger{}
-
-				command := commands.NewConfigureSAMLAuthentication(service, logger)
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
 					"--saml-idp-metadata", "https://super.example.com:6543",
@@ -186,6 +204,7 @@ decryption-passphrase: some-passphrase
 					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
 					RBACAdminGroup:                   "opsman.full_control",
 					RBACGroupsAttribute:              "myenterprise",
+					CreateBoshAdminClient: "false",
 				}))
 
 				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
@@ -204,7 +223,6 @@ decryption-passphrase: some-passphrase
 		Context("failure cases", func() {
 			Context("when an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: flag provided but not defined: -banana"))
 				})
@@ -212,7 +230,6 @@ decryption-passphrase: some-passphrase
 
 			Context("when config file cannot be opened", func() {
 				It("returns an error", func() {
-					command := commands.NewConfigureSAMLAuthentication(&fakes.ConfigureAuthenticationService{}, &fakes.Logger{})
 					err := command.Execute([]string{"--config", "something"})
 					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: could not load the config file: open something: no such file or directory"))
 
@@ -221,43 +238,28 @@ decryption-passphrase: some-passphrase
 
 			Context("when the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
 					command := commands.NewConfigureSAMLAuthentication(service, &fakes.Logger{})
-					err := command.Execute([]string{
-						"--decryption-passphrase", "some-passphrase",
-						"--saml-idp-metadata", "https://saml.example.com:8080",
-						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
-						"--saml-rbac-admin-group", "opsman.full_control",
-						"--saml-rbac-groups-attribute", "myenterprise",
-					})
+					err := command.Execute(commandLineArgs)
 					Expect(err).To(MatchError("could not determine initial configuration status: failed to fetch status"))
 				})
 			})
 
 			Context("when the initial configuration status is unknown", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnknown,
 					}, nil)
 
 					command := commands.NewConfigureSAMLAuthentication(service, &fakes.Logger{})
-					err := command.Execute([]string{
-						"--decryption-passphrase", "some-passphrase",
-						"--saml-idp-metadata", "https://saml.example.com:8080",
-						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
-						"--saml-rbac-admin-group", "opsman.full_control",
-						"--saml-rbac-groups-attribute", "myenterprise",
-					})
+					err := command.Execute(commandLineArgs)
 					Expect(err).To(MatchError("could not determine initial configuration status: received unexpected status"))
 				})
 			})
 
 			Context("when the setup service encounters an error", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnstarted,
 					}, nil)
@@ -265,21 +267,13 @@ decryption-passphrase: some-passphrase
 					service.SetupReturns(api.SetupOutput{}, errors.New("could not setup"))
 
 					command := commands.NewConfigureSAMLAuthentication(service, &fakes.Logger{})
-					err := command.Execute([]string{
-						"--decryption-passphrase", "some-passphrase",
-						"--saml-idp-metadata", "https://saml.example.com:8080",
-						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
-						"--saml-rbac-admin-group", "opsman.full_control",
-						"--saml-rbac-groups-attribute", "myenterprise",
-					})
+					err := command.Execute(commandLineArgs)
 					Expect(err).To(MatchError("could not configure authentication: could not setup"))
 				})
 			})
 
 			Context("when the final configuration status cannot be determined", func() {
 				It("returns an error", func() {
-					service := &fakes.ConfigureAuthenticationService{}
-
 					eaOutputs := []api.EnsureAvailabilityOutput{
 						{Status: api.EnsureAvailabilityStatusUnstarted},
 						{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -294,13 +288,7 @@ decryption-passphrase: some-passphrase
 					}
 
 					command := commands.NewConfigureSAMLAuthentication(service, &fakes.Logger{})
-					err := command.Execute([]string{
-						"--decryption-passphrase", "some-passphrase",
-						"--saml-idp-metadata", "https://saml.example.com:8080",
-						"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
-						"--saml-rbac-admin-group", "opsman.full_control",
-						"--saml-rbac-groups-attribute", "myenterprise",
-					})
+					err := command.Execute(commandLineArgs)
 					Expect(err).To(MatchError("could not determine final configuration status: failed to fetch status"))
 				})
 			})

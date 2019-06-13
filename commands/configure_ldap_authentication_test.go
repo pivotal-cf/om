@@ -145,6 +145,52 @@ The new clients secret can be found by going to OpsMan -> director tile -> Crede
 			})
 		})
 
+		XWhen("creating the precreated client secret flag set", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-secret")
+				expectedPayload.PrecreatedClientSecret = "test-secret"
+			})
+			Context("and OpsMan is < 2.5", func() {
+				BeforeEach(func() {
+					service.InfoReturns(api.Info{
+						Version: "2.4-build.1",
+					}, nil)
+				})
+				It("returns an error", func() {
+					err := command.Execute(commandLineArgs)
+					Expect(err).To(MatchError("precreated-client-secret is not supported in OpsMan versions less than 2.5"))
+				})
+			})
+
+			Context("and OpsMan is > 2.4", func() {
+				BeforeEach(func() {
+					service.InfoReturns(api.Info{
+						Version: "2.5-build.1",
+					}, nil)
+				})
+				It("configures LDAP auth to create a bosh admin client with provided secret", func() {
+					err := command.Execute(commandLineArgs)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+					Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring LDAP authentication..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("BOSH admin client created using provided secret"))
+				})
+			})
+		})
+
 		Context("when the authentication setup has already been configured", func() {
 			BeforeEach(func() {
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
