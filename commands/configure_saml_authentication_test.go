@@ -86,14 +86,14 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 
 			format, content = logger.PrintfArgsForCall(3)
 			Expect(fmt.Sprintf(format, content...)).To(Equal(`
-BOSH admin client created.
-The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+BOSH admin client will be created when the director is deployed.
+The client secret can then be found in the Ops Manager UI:
+director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
 Note both the client ID and secret.
-Client ID should be 'bosh_admin_client'.
 `))
 		})
 
-		Context("will not create bosh admin client when OpsMan is < 2.4", func() {
+		When("OpsMan is < 2.4", func() {
 			BeforeEach(func() {
 				service.InfoReturns(api.Info{
 					Version: "2.3-build.1",
@@ -101,38 +101,8 @@ Client ID should be 'bosh_admin_client'.
 
 				expectedPayload.CreateBoshAdminClient = ""
 			})
-			It("configure SAML with bosh admin client warning", func() {
-				err := command.Execute(commandLineArgs)
-				Expect(err).NotTo(HaveOccurred())
 
-				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
-
-				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
-
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
-
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
-
-				format, content = logger.PrintfArgsForCall(3)
-				Expect(fmt.Sprintf(format, content...)).To(Equal(`
-WARNING: BOSH admin client NOT automatically created.
-This is only supported in OpsManager 2.4 and up.
-`))
-			})
-		})
-
-		When("the skip-create-bosh-admin-client flag set", func() {
-			BeforeEach(func() {
-				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
-				expectedPayload.CreateBoshAdminClient = "false"
-			})
-
-			It("configures SAML auth and does not create a bosh admin client", func() {
+			It("configures SAML with bosh admin client warning", func() {
 				err := command.Execute(commandLineArgs)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -152,7 +122,38 @@ This is only supported in OpsManager 2.4 and up.
 				format, content = logger.PrintfArgsForCall(3)
 				Expect(fmt.Sprintf(format, content...)).To(Equal(`
 Note: BOSH admin client NOT automatically created.
-This was skipped due to the 'skip-create-bosh-admin-client'.
+This is only supported in OpsManager 2.4 and up.
+`))
+			})
+		})
+
+		When("the skip-create-bosh-admin-client flag is set", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
+				expectedPayload.CreateBoshAdminClient = "false"
+			})
+
+			It("configures SAML auth and notifies the user that it skipped client creation", func() {
+				err := command.Execute(commandLineArgs)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+				format, content = logger.PrintfArgsForCall(3)
+				Expect(fmt.Sprintf(format, content...)).To(Equal(`
+Note: BOSH admin client NOT automatically created.
+This was skipped due to the 'skip-create-bosh-admin-client' flag.
 `))
 			})
 
@@ -164,7 +165,7 @@ This was skipped due to the 'skip-create-bosh-admin-client'.
 					commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 					expectedPayload.CreateBoshAdminClient = ""
 				})
-				It("configures SAML but does not create the client by default", func() {
+				It("configures SAML and notifies the user that it skipped client creation", func() {
 					err := command.Execute(commandLineArgs)
 					Expect(err).NotTo(HaveOccurred())
 
@@ -183,8 +184,8 @@ This was skipped due to the 'skip-create-bosh-admin-client'.
 
 					format, content = logger.PrintfArgsForCall(3)
 					Expect(fmt.Sprintf(format, content...)).To(Equal(`
-WARNING: BOSH admin client NOT automatically created.
-This is only supported in OpsManager 2.4 and up.
+Note: BOSH admin client NOT automatically created.
+This was skipped due to the 'skip-create-bosh-admin-client' flag.
 `))
 				})
 			})

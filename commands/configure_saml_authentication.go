@@ -97,24 +97,28 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 
 	ca.logger.Printf("configuration complete")
 
-	if !versionAtLeast24 {
-		ca.logger.Printf(`
-WARNING: BOSH admin client NOT automatically created.
-This is only supported in OpsManager 2.4 and up.
-`)
-	} else if !ca.Options.SkipCreateBoshAdminClient {
-		ca.logger.Printf(`
-BOSH admin client created.
-The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
-Note both the client ID and secret.
-Client ID should be 'bosh_admin_client'.
-`)
-	} else {
+	if ca.Options.SkipCreateBoshAdminClient {
 		ca.logger.Printf(`
 Note: BOSH admin client NOT automatically created.
-This was skipped due to the 'skip-create-bosh-admin-client'.
+This was skipped due to the 'skip-create-bosh-admin-client' flag.
 `)
+		return nil
 	}
+
+	if !versionAtLeast24 {
+		ca.logger.Printf(`
+Note: BOSH admin client NOT automatically created.
+This is only supported in OpsManager 2.4 and up.
+`)
+		return nil
+	}
+
+	ca.logger.Printf(`
+BOSH admin client will be created when the director is deployed.
+The client secret can then be found in the Ops Manager UI:
+director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+`)
 
 	return nil
 }

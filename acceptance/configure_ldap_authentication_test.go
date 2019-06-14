@@ -120,10 +120,10 @@ var _ = Describe("configure-ldap-authentication command", func() {
 		Expect(session.Out).To(gbytes.Say("waiting for configuration to complete..."))
 		Expect(session.Out).To(gbytes.Say("configuration complete"))
 		Expect(session.Out).To(gbytes.Say(`
-BOSH admin client created.
-The new clients secret can be found by going to the OpsMan UI -> director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+BOSH admin client will be created when the director is deployed.
+The client secret can then be found in the Ops Manager UI:
+director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
 Note both the client ID and secret.
-Client ID should be 'bosh_admin_client'.
 `))
 	})
 })
