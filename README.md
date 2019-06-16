@@ -20,7 +20,7 @@ You can find them at
 
 **NOTE**: Additional documentation for om commands
 used in Pivotal Platform Automation
-can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
+can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automation).
 
 ## Versioning
 
