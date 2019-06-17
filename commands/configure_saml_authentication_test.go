@@ -41,7 +41,7 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 			}
 
 			service.InfoReturns(api.Info{
-				Version: "2.4-build.1",
+				Version: "2.5-build.1",
 			}, nil)
 
 			command = commands.NewConfigureSAMLAuthentication(service, logger)
@@ -52,6 +52,7 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
 				"--saml-rbac-admin-group", "opsman.full_control",
 				"--saml-rbac-groups-attribute", "myenterprise",
+				"--precreated-client-secret", "test-client-secret",
 			}
 
 			expectedPayload = api.SetupInput{
@@ -64,6 +65,7 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				RBACAdminGroup:                   "opsman.full_control",
 				RBACGroupsAttribute:              "myenterprise",
 				CreateBoshAdminClient:            "true",
+				PrecreatedClientSecret:           "test-client-secret",
 			}
 		})
 
@@ -91,6 +93,12 @@ The client secret can then be found in the Ops Manager UI:
 director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
 Note both the client ID and secret.
 `))
+
+			format, content = logger.PrintfArgsForCall(4)
+			Expect(fmt.Sprintf(format, content...)).To(Equal(`
+Ops Manager UAA client will be created when authentication system starts.
+It will have the username 'precreated-client' and the client secret you provided.
+`))
 		})
 
 		When("OpsMan is < 2.4", func() {
@@ -100,6 +108,7 @@ Note both the client ID and secret.
 				}, nil)
 
 				expectedPayload.CreateBoshAdminClient = ""
+				expectedPayload.PrecreatedClientSecret = ""
 			})
 
 			It("configures SAML with bosh admin client warning", func() {
@@ -123,6 +132,48 @@ Note both the client ID and secret.
 				Expect(fmt.Sprintf(format, content...)).To(Equal(`
 Note: BOSH admin client NOT automatically created.
 This is only supported in OpsManager 2.4 and up.
+`))
+			})
+		})
+
+		When("OpsMan is < 2.5", func() {
+			BeforeEach(func() {
+				service.InfoReturns(api.Info{
+					Version: "2.4-build.1",
+				}, nil)
+
+				expectedPayload.PrecreatedClientSecret = ""
+			})
+
+			It("configures SAML with OpsMan UAA client warning", func() {
+				err := command.Execute(commandLineArgs)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+				format, content = logger.PrintfArgsForCall(3)
+				Expect(fmt.Sprintf(format, content...)).To(Equal(`
+BOSH admin client will be created when the director is deployed.
+The client secret can then be found in the Ops Manager UI:
+director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+`))
+
+				format, content = logger.PrintfArgsForCall(4)
+				Expect(fmt.Sprintf(format, content...)).To(Equal(`
+Note: Ops Manager UAA client NOT automatically created.
+This is only supported in OpsManager 2.5 and up.
 `))
 			})
 		})
@@ -164,6 +215,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 					}, nil)
 					commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 					expectedPayload.CreateBoshAdminClient = ""
+					expectedPayload.PrecreatedClientSecret = ""
 				})
 				It("configures SAML and notifies the user that it skipped client creation", func() {
 					err := command.Execute(commandLineArgs)
@@ -220,6 +272,7 @@ saml-bosh-idp-metadata: https://bosh-saml.example.com:8080
 saml-rbac-admin-group: opsman.full_control
 saml-rbac-groups-attribute: myenterprise
 decryption-passphrase: some-passphrase
+precreated-client-secret: test-client-secret
 `
 				configFile, err = ioutil.TempFile("", "")
 				Expect(err).NotTo(HaveOccurred())
@@ -265,6 +318,7 @@ decryption-passphrase: some-passphrase
 					RBACAdminGroup:                   "opsman.full_control",
 					RBACGroupsAttribute:              "myenterprise",
 					CreateBoshAdminClient:            "true",
+					PrecreatedClientSecret:           "test-client-secret",
 				}))
 
 				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))

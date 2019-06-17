@@ -84,6 +84,7 @@ var _ = Describe("configure-saml-authentication command", func() {
 			"--http-proxy-url", "http://http-proxy.com",
 			"--https-proxy-url", "http://https-proxy.com",
 			"--no-proxy", "10.10.10.10,11.11.11.11",
+			"--precreated-client-secret", "test-client-secret",
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -102,6 +103,7 @@ var _ = Describe("configure-saml-authentication command", func() {
 		Expect(auth.Setup.BoshIDPMetadata).To(Equal("https://bosh-saml.example.com:8080"))
 		Expect(auth.Setup.RBACAdminGroup).To(Equal("opsman.full_control"))
 		Expect(auth.Setup.RBACGroupsAttribute).To(Equal("myenterprise"))
+		Expect(auth.Setup.PrecreatedClientSecret).To(Equal("test-client-secret"))
 
 		Expect(ensureAvailabilityCallCount).To(Equal(3))
 
@@ -113,6 +115,10 @@ BOSH admin client will be created when the director is deployed.
 The client secret can then be found in the Ops Manager UI:
 director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
 Note both the client ID and secret.
+`))
+		Expect(session.Out).To(gbytes.Say(`
+Ops Manager UAA client will be created when authentication system starts.
+It will have the username 'precreated-client' and the client secret you provided.
 `))
 	})
 })

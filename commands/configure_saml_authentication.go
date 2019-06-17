@@ -21,7 +21,8 @@ type ConfigureSAMLAuthentication struct {
 		BoshIDPMetadata           string `long:"saml-bosh-idp-metadata"           required:"true" description:"XML, or URL to XML, for the IDP that BOSH should use"`
 		RBACAdminGroup            string `long:"saml-rbac-admin-group"            required:"true" description:"If SAML is specified, please provide the admin group for your SAML"`
 		RBACGroupsAttribute       string `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
-		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"                         description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
+		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"                    description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
+		PrecreatedClientSecret    string `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option"`
 	}
 }
 
@@ -33,6 +34,11 @@ func NewConfigureSAMLAuthentication(service configureAuthenticationService, logg
 }
 
 func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
+	var (
+		boshAdminClientMsg string
+		opsManUaaClientMsg string
+	)
+
 	err := loadConfigFile(args, &ca.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-saml-authentication flags: %s", err)
@@ -78,8 +84,46 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 		return err
 	}
 
+	versionAtLeast25, err := info.VersionAtLeast(2, 5)
+	if err != nil {
+		return err
+	}
+
 	if versionAtLeast24 {
 		input.CreateBoshAdminClient = boolStringFromType(!ca.Options.SkipCreateBoshAdminClient)
+		boshAdminClientMsg = `
+BOSH admin client will be created when the director is deployed.
+The client secret can then be found in the Ops Manager UI:
+director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+`
+	} else {
+		boshAdminClientMsg = `
+Note: BOSH admin client NOT automatically created.
+This is only supported in OpsManager 2.4 and up.
+`
+	}
+
+	if ca.Options.SkipCreateBoshAdminClient {
+		boshAdminClientMsg = `
+Note: BOSH admin client NOT automatically created.
+This was skipped due to the 'skip-create-bosh-admin-client' flag.
+`
+	}
+
+	if len(ca.Options.PrecreatedClientSecret) > 0 {
+		if versionAtLeast25 {
+			input.PrecreatedClientSecret = ca.Options.PrecreatedClientSecret
+			opsManUaaClientMsg = `
+Ops Manager UAA client will be created when authentication system starts.
+It will have the username 'precreated-client' and the client secret you provided.
+`
+		} else {
+			opsManUaaClientMsg = `
+Note: Ops Manager UAA client NOT automatically created.
+This is only supported in OpsManager 2.5 and up.
+`
+		}
 	}
 
 	_, err = ca.service.Setup(input)
@@ -96,29 +140,8 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 	}
 
 	ca.logger.Printf("configuration complete")
-
-	if ca.Options.SkipCreateBoshAdminClient {
-		ca.logger.Printf(`
-Note: BOSH admin client NOT automatically created.
-This was skipped due to the 'skip-create-bosh-admin-client' flag.
-`)
-		return nil
-	}
-
-	if !versionAtLeast24 {
-		ca.logger.Printf(`
-Note: BOSH admin client NOT automatically created.
-This is only supported in OpsManager 2.4 and up.
-`)
-		return nil
-	}
-
-	ca.logger.Printf(`
-BOSH admin client will be created when the director is deployed.
-The client secret can then be found in the Ops Manager UI:
-director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
-Note both the client ID and secret.
-`)
+	ca.logger.Printf(boshAdminClientMsg)
+	ca.logger.Printf(opsManUaaClientMsg)
 
 	return nil
 }
