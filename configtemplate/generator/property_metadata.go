@@ -24,6 +24,9 @@ type OptionTemplate struct {
 }
 
 func (p *PropertyMetadata) IsConfigurable() bool {
+	if p.IsUUID() {
+		return false
+	}
 	return !strings.EqualFold(p.Configurable, "false")
 }
 
@@ -141,6 +144,19 @@ func (p *PropertyMetadata) IsInt() bool {
 	} else {
 		return p.Type == "port" || p.Type == "integer"
 	}
+}
+
+func (p *PropertyMetadata) GetPropertyMetadata(propertyName string) *PropertyMetadata {
+	for _, m := range p.PropertyMetadata {
+		if m.Name == propertyName {
+			return &m
+		}
+	}
+	return nil
+}
+
+func (p *PropertyMetadata) IsUUID() bool {
+	return p.Type == "uuid"
 }
 
 func (p *PropertyMetadata) IsBool() bool {

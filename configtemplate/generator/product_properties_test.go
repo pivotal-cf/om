@@ -42,6 +42,19 @@ var _ = Describe("Product Properties", func() {
 		})
 	})
 
+	Context("ConfigurableCollectionProperties", func() {
+		It("Should have not configurable guid property", func() {
+			metadataBytes, err := getFileBytes("fixtures/p-appdynamics.yml")
+			Expect(err).ShouldNot(HaveOccurred())
+			metadata, err := generator.NewMetadata(metadataBytes)
+			Expect(err).ShouldNot(HaveOccurred())
+			propertyMetadata, err := metadata.GetPropertyMetadata(".properties.appd_plans")
+			Expect(err).ShouldNot(HaveOccurred())
+			p := propertyMetadata.GetPropertyMetadata("guid")
+			Expect(p.IsConfigurable()).Should(BeFalse())
+		})
+	})
+
 	Context("CreateProductPropertiesFeaturesOpsFiles", func() {
 		When("there is a property that is a selector", func() {
 			It("returns the value and selected value", func() {
