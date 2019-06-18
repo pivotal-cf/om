@@ -27,7 +27,8 @@ type ConfigureLDAPAuthentication struct {
 		ServerURL                 string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
 		UserSearchBase            string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
 		UserSearchFilter          string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
-		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"         description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
+		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"                    description:"by default, this command creates a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. This flag skips that."`
+		PrecreatedClientSecret    string `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
 	}
 }
 
@@ -39,6 +40,11 @@ func NewConfigureLDAPAuthentication(service configureAuthenticationService, logg
 }
 
 func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
+	var (
+		boshAdminClientMsg string
+		opsManUaaClientMsg string
+	)
+
 	err := loadConfigFile(args, &ca.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-ldap-authentication flags: %s", err)
@@ -93,8 +99,46 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 		return err
 	}
 
+	versionAtLeast25, err := info.VersionAtLeast(2, 5)
+	if err != nil {
+		return err
+	}
+
 	if versionAtLeast24 {
 		input.CreateBoshAdminClient = boolStringFromType(!ca.Options.SkipCreateBoshAdminClient)
+		boshAdminClientMsg = `
+BOSH admin client will be created when the director is deployed.
+The client secret can then be found in the Ops Manager UI:
+director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
+Note both the client ID and secret.
+`
+	} else {
+		boshAdminClientMsg = `
+Note: BOSH admin client NOT automatically created.
+This is only supported in OpsManager 2.4 and up.
+`
+	}
+
+	if ca.Options.SkipCreateBoshAdminClient {
+		boshAdminClientMsg = `
+Note: BOSH admin client NOT automatically created.
+This was skipped due to the 'skip-create-bosh-admin-client' flag.
+`
+	}
+
+	if len(ca.Options.PrecreatedClientSecret) > 0 {
+		if versionAtLeast25 {
+			input.PrecreatedClientSecret = ca.Options.PrecreatedClientSecret
+			opsManUaaClientMsg = `
+Ops Manager UAA client will be created when authentication system starts.
+It will have the username 'precreated-client' and the client secret you provided.
+`
+		} else {
+			opsManUaaClientMsg = `
+Note: Ops Manager UAA client NOT automatically created.
+This is only supported in OpsManager 2.5 and up.
+`
+		}
 	}
 
 	_, err = ca.service.Setup(input)
@@ -111,29 +155,8 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 	}
 
 	ca.logger.Printf("configuration complete")
-
-	if ca.Options.SkipCreateBoshAdminClient {
-		ca.logger.Printf(`
-Note: BOSH admin client NOT automatically created.
-This was skipped due to the 'skip-create-bosh-admin-client' flag.
-`)
-		return nil
-	}
-
-	if !versionAtLeast24 {
-		ca.logger.Printf(`
-Note: BOSH admin client NOT automatically created.
-This is only supported in OpsManager 2.4 and up.
-`)
-		return nil
-	}
-
-	ca.logger.Printf(`
-BOSH admin client will be created when the director is deployed.
-The client secret can then be found in the Ops Manager UI:
-director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
-Note both the client ID and secret.
-`)
+	ca.logger.Printf(boshAdminClientMsg)
+	ca.logger.Printf(opsManUaaClientMsg)
 
 	return nil
 }

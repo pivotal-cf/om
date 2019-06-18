@@ -217,6 +217,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 					expectedPayload.CreateBoshAdminClient = ""
 					expectedPayload.PrecreatedClientSecret = ""
 				})
+
 				It("configures SAML and notifies the user that it skipped client creation", func() {
 					err := command.Execute(commandLineArgs)
 					Expect(err).NotTo(HaveOccurred())
