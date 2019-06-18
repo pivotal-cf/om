@@ -193,24 +193,27 @@ vmtypes-configuration:
 			Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring network assignment options for bosh tile"))
 			Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring network assignment options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(8)).To(Equal("started configuring resource options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(9)).To(Equal("applying resource configuration for the following jobs:"))
-			formatStr, formatArg := logger.PrintfArgsForCall(10)
+
+			offset := logger.PrintfCallCount() - 21 // handle the situation where vmtypes may not be configured
+
+			Expect(logger.PrintfArgsForCall(offset + 8)).To(Equal("started configuring resource options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(offset + 9)).To(Equal("applying resource configuration for the following jobs:"))
+			formatStr, formatArg := logger.PrintfArgsForCall(offset + 10)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
-			Expect(logger.PrintfArgsForCall(11)).To(Equal("finished configuring resource options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(12)).To(Equal("started configuring vm extensions"))
-			Expect(logger.PrintfArgsForCall(13)).To(Equal("applying vmextensions configuration for the following:"))
-			formatStr, formatArg = logger.PrintfArgsForCall(14)
+			Expect(logger.PrintfArgsForCall(offset + 11)).To(Equal("finished configuring resource options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(offset + 12)).To(Equal("started configuring vm extensions"))
+			Expect(logger.PrintfArgsForCall(offset + 13)).To(Equal("applying vmextensions configuration for the following:"))
+			formatStr, formatArg = logger.PrintfArgsForCall(offset + 14)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"a_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(15)
+			formatStr, formatArg = logger.PrintfArgsForCall(offset + 15)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"another_vm_extension"}}))
 
 			expectedLogs := make(map[interface{}][]string)
-			formatStr1, _ := logger.PrintfArgsForCall(16)
-			formatStr2, formatArg := logger.PrintfArgsForCall(17)
+			formatStr1, _ := logger.PrintfArgsForCall(offset + 16)
+			formatStr2, formatArg := logger.PrintfArgsForCall(offset + 17)
 			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
-			formatStr1, _ = logger.PrintfArgsForCall(18)
-			formatStr2, formatArg = logger.PrintfArgsForCall(19)
+			formatStr1, _ = logger.PrintfArgsForCall(offset + 18)
+			formatStr2, formatArg = logger.PrintfArgsForCall(offset + 19)
 			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
 			Expect(expectedLogs).To(HaveKey("some_other_vm_extension"))
 			Expect(expectedLogs).To(HaveKey("some_vm_extension"))
@@ -219,7 +222,7 @@ vmtypes-configuration:
 			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("deleting vm extension %s"))
 			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
 
-			Expect(logger.PrintfArgsForCall(20)).To(Equal("finished configuring vm extensions"))
+			Expect(logger.PrintfArgsForCall(offset + 20)).To(Equal("finished configuring vm extensions"))
 		}
 
 		It("configures the director", func() {
@@ -240,7 +243,7 @@ vmtypes-configuration:
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(logger.PrintfCallCount()).To(Equal(22))
-					Expect(logger.PrintfArgsForCall(21)).To(Equal("creating custom vm types"))
+					Expect(logger.PrintfArgsForCall(8)).To(Equal("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(0))
 					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(0))
 					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
@@ -264,6 +267,90 @@ vmtypes-configuration:
 					})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("if custom_types = true, vm_types must not be empty"))
+				})
+			})
+
+			Context("setting resource configuration with custom VM types", func() {
+				var types []api.VMType
+				BeforeEach(func() {
+					service.CreateCustomVMTypesStub = func(t api.CreateVMTypes) error {
+						types = make([]api.VMType, len(t.VMTypes), len(t.VMTypes))
+						for i := range t.VMTypes {
+							types[i] = api.VMType{CreateVMType: t.VMTypes[i], BuiltIn: false}
+						}
+
+						return nil
+					}
+					service.ListVMTypesReturns(types, nil)
+					service.UpdateStagedProductJobResourceConfigStub = func(x string, y string, p api.JobProperties) error {
+						for i := range types {
+							if types[i].Name == p.InstanceType.ID {
+								return nil
+							}
+						}
+
+						return errors.New(`{"errors":{"instance_type_id":["must be in catalog or \"automatic\""]}}`)
+					}
+				})
+
+				It("doesn't throw an error if the type exists", func() {
+					simpleConfig := `
+resource-configuration:
+  resource:
+    instance_type:
+      id: vmtype3
+vmtypes-configuration:
+  vm_types:
+  - name: vmtype3
+    cpu: 1
+    ram: 2048
+    ephemeral_disk: 10240
+  - name: vmtype4
+    cpu: 2
+    ram: 4096
+    ephemeral_disk: 20480
+`
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					Expect(err).NotTo(HaveOccurred())
+					defer newConfigFile.Close()
+
+					_, err = newConfigFile.WriteString(simpleConfig)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", newConfigFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				It("does throw an error if the type doesn't exist", func() {
+					simpleConfig := `
+resource-configuration:
+  compilation:
+    instance_type:
+      id: vmtype5
+vmtypes-configuration:
+  vm_types:
+  - name: vmtype3
+    cpu: 1
+    ram: 2048
+    ephemeral_disk: 10240
+  - name: vmtype4
+    cpu: 2
+    ram: 4096
+    ephemeral_disk: 20480
+`
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					Expect(err).NotTo(HaveOccurred())
+					defer newConfigFile.Close()
+
+					_, err = newConfigFile.WriteString(simpleConfig)
+					Expect(err).NotTo(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--config", newConfigFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
 				})
 			})
 
