@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -98,7 +100,7 @@ func (be BoshEnvironment) Execute(args []string) error {
 	variables["CREDHUB_CA_CERT"] = boshCACerts
 
 	if be.Options.SSHPrivateKey != "" {
-		variables["BOSH_ALL_PROXY"] = fmt.Sprintf("ssh+socks5://ubuntu@%s:22?private-key=%s", be.Target(), be.Options.SSHPrivateKey)
+		variables["BOSH_ALL_PROXY"] = fmt.Sprintf("ssh+socks5://ubuntu@%s:22?private-key=%s", be.Target(), getKeyFilePath(be.Options.SSHPrivateKey))
 		variables["CREDHUB_PROXY"] = variables["BOSH_ALL_PROXY"]
 	}
 	be.renderVariables(renderer, variables)
@@ -118,4 +120,20 @@ func (be BoshEnvironment) renderVariables(renderer renderers.Renderer, variables
 	for k, v := range variables {
 		be.logger.Println(renderer.RenderEnvironmentVariable(k, v))
 	}
+}
+
+// Get the absolute path of a key file. Because we currently do no checking to see if the private key exists, if it doesn't, emulate existing behavior.
+func getKeyFilePath(s string) string {
+	f, err := os.Open(s)
+	if err != nil {
+		return s
+	}
+	defer f.Close()
+
+	p, err := filepath.Abs(f.Name())
+	if err != nil {
+		return s
+	}
+
+	return p
 }
