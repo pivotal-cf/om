@@ -3,6 +3,7 @@ package network_test
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -128,6 +129,21 @@ var _ = Describe("OAuthClient", func() {
 			Expect(req.Form).To(Equal(url.Values{
 				"grant_type": []string{"client_credentials"},
 			}))
+		})
+
+		It("enforces minimum TLS version 1.2", func(){
+			nonTLS12Server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {}))
+			nonTLS12Server.TLS.MaxVersion = tls.VersionTLS11
+			defer nonTLS12Server.Close()
+
+			client, err := network.NewOAuthClient(nonTLS12Server.URL, "", "", "client_id", "client_secret", true, false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+			Expect(err).NotTo(HaveOccurred())
+
+			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = client.Do(req)
+			Expect(err).To(MatchError(ContainSubstring("protocol version not supported")))
 		})
 
 		Context("when passing a url with no scheme", func() {
