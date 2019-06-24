@@ -26,9 +26,10 @@ require (
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.4.2
-	github.com/pivotal-cf/go-pivnet v0.0.53
+	github.com/pivotal-cf/go-pivnet v1.0.3
 	github.com/pivotal-cf/jhanda v0.0.0-20180509215011-1b5ae1681a45
-	github.com/pivotal-cf/pivnet-cli v0.0.56
+	github.com/pivotal-cf/kiln v0.0.0-20180329191310-9c0f5ac8553d
+	github.com/pivotal-cf/pivnet-cli v0.0.59
 	github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
