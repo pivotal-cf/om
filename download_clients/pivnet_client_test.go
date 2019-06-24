@@ -3,6 +3,8 @@ package download_clients_test
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/go-pivnet"
@@ -11,7 +13,6 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
-	"io/ioutil"
 )
 
 var _ = Describe("PivnetClient", func() {
@@ -32,7 +33,7 @@ var _ = Describe("PivnetClient", func() {
 				createRelease("2.0.0"),
 			}, nil)
 
-			fakePivnetFactory := func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
+			fakePivnetFactory := func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
 				return fakePivnetDownloader
 			}
 
@@ -51,13 +52,13 @@ var _ = Describe("PivnetClient", func() {
 			fakePivnetDownloader *fakes.PivnetDownloader
 			fakePivnetFilter     *fakes.PivnetFilter
 			logger               = &loggerfakes.FakeLogger{}
-			fakePivnetFactory    func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader
+			fakePivnetFactory    func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader
 		)
 
 		BeforeEach(func() {
 			fakePivnetDownloader = &fakes.PivnetDownloader{}
 			fakePivnetFilter = &fakes.PivnetFilter{}
-			fakePivnetFactory = func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
+			fakePivnetFactory = func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
 				return fakePivnetDownloader
 			}
 		})
@@ -152,13 +153,13 @@ var _ = Describe("PivnetClient", func() {
 			fakePivnetDownloader *fakes.PivnetDownloader
 			fakePivnetFilter     *fakes.PivnetFilter
 			logger               = &loggerfakes.FakeLogger{}
-			fakePivnetFactory    func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader
+			fakePivnetFactory    func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader
 		)
 
 		BeforeEach(func() {
 			fakePivnetDownloader = &fakes.PivnetDownloader{}
 			fakePivnetFilter = &fakes.PivnetFilter{}
-			fakePivnetFactory = func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
+			fakePivnetFactory = func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
 				return fakePivnetDownloader
 			}
 		})
@@ -191,14 +192,14 @@ var _ = Describe("PivnetClient", func() {
 			fakePivnetDownloader     *fakes.PivnetDownloader
 			fakePivnetFilter         *fakes.PivnetFilter
 			logger                   = &loggerfakes.FakeLogger{}
-			fakePivnetFactory        func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader
+			fakePivnetFactory        func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader
 			errorTemplateForStemcell = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
 		)
 
 		BeforeEach(func() {
 			fakePivnetDownloader = &fakes.PivnetDownloader{}
 			fakePivnetFilter = &fakes.PivnetFilter{}
-			fakePivnetFactory = func(config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
+			fakePivnetFactory = func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger log.Logger) download_clients.PivnetDownloader {
 				return fakePivnetDownloader
 			}
 		})

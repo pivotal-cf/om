@@ -2,6 +2,13 @@ package download_clients
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/go-pivnet/download"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
@@ -9,12 +16,6 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/pivnet-cli/filter"
 	"github.com/pivotal-cf/pivnet-cli/gp"
-	"io"
-	"log"
-	"os"
-	"path"
-	"strconv"
-	"strings"
 )
 
 //go:generate counterfeiter -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
@@ -32,7 +33,7 @@ type PivnetFilter interface {
 	ProductFileKeysByGlobs(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error)
 }
 
-type PivnetFactory func(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
+type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
 var pivnetHost = pivnet.DefaultHost
 
@@ -45,10 +46,11 @@ func NewPivnetClient(
 	skipSSL bool,
 ) *pivnetClient {
 	downloader := factory(
+		pivnet.NewAccessTokenOrLegacyToken(
+			token, pivnetHost, userAgent),
 		pivnet.ClientConfig{
 			Host:              pivnetHost,
-			Token:             token,
-			UserAgent:         fmt.Sprintf("om-download-product"),
+			UserAgent:         userAgent,
 			SkipSSLValidation: skipSSL,
 		},
 		logger)
@@ -180,7 +182,10 @@ func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency
 	return stemcellSlug, stemcellVersion, nil
 }
 
-const errorForVersion = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
+const (
+	errorForVersion = "versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: %s"
+	userAgent       = "om-download-product"
+)
 
 func getLatestStemcellVersion(versions []string) (string, error) {
 	var (
@@ -230,8 +235,8 @@ func stemcellVersionPartsFromString(version string) (int, int, error) {
 	return major, minor, nil
 }
 
-func DefaultPivnetFactory(config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
-	return gp.NewClient(config, logger)
+func DefaultPivnetFactory(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
+	return gp.NewClient(ts, config, logger)
 }
 
 func init() {

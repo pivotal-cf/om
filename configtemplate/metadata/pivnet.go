@@ -25,11 +25,11 @@ func NewPivnetProvider(host, token, slug, version, glob string) Provider {
 	logger := log.New(logWriter, "", log.LstdFlags)
 	config := pivnetapi.ClientConfig{
 		Host:      host,
-		Token:     token,
 		UserAgent: "tile-config-generator",
 	}
+	ts := pivnetapi.NewAccessTokenOrLegacyToken(token, config.Host, config.UserAgent)
 	ls := logshim.NewLogShim(logger, logger, false)
-	client := pivnetapi.NewClient(config, ls)
+	client := pivnetapi.NewClient(ts, config, ls)
 	pivnetAuthClient := AuthenticatedPivnetClient{ClientConfig: config, HTTPClient: client.HTTP}
 	return &PivnetProvider{
 		client:           client,
@@ -177,28 +177,24 @@ func productFileKeysByGlobs(
 
 type AuthenticatedPivnetClient struct {
 	ClientConfig pivnetapi.ClientConfig
+	TokenService pivnetapi.AccessTokenService
 	HTTPClient   *http.Client
 }
 
 func (a AuthenticatedPivnetClient) Do(req *http.Request) (*http.Response, error) {
-	const legacyAPITokenLength = 20
-	if len(a.ClientConfig.Token) > legacyAPITokenLength {
-		baseURL := fmt.Sprintf("%s%s", a.ClientConfig.Host, "/api/v2")
-		tokenFetcher := pivnetapi.NewTokenFetcher(baseURL, a.ClientConfig.Token)
-		var err error
-		accessToken, err := tokenFetcher.GetToken()
-
-		if err != nil {
-			log.Fatalf("Exiting with error: %s", err)
-		}
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	} else {
-		req.Header.Add("Authorization", fmt.Sprintf("Token %s", a.ClientConfig.Token))
+	token, err := a.TokenService.AccessToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %v", err)
 	}
+	header, err := pivnetapi.AuthorizationHeader(token)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get authorization header: %v", err)
+	}
+	req.Header.Add("Authorization", header)
 	req.Header.Add("User-Agent", a.ClientConfig.UserAgent)
 	resp, err := a.HTTPClient.Do(req)
 	if err != nil {
-		log.Fatal(err.Error())
+		return nil, fmt.Errorf("failed to perform http request: %v", err)
 	}
 	resp.Header.Add("Content-Type", "application/multipart")
 	return resp, err
