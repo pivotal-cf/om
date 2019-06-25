@@ -30,7 +30,11 @@ func NewPivnetProvider(host, token, slug, version, glob string) Provider {
 	ts := pivnetapi.NewAccessTokenOrLegacyToken(token, config.Host, config.UserAgent)
 	ls := logshim.NewLogShim(logger, logger, false)
 	client := pivnetapi.NewClient(ts, config, ls)
-	pivnetAuthClient := AuthenticatedPivnetClient{ClientConfig: config, HTTPClient: client.HTTP}
+	pivnetAuthClient := AuthenticatedPivnetClient{
+		TokenService: ts,
+		ClientConfig: config,
+		HTTPClient:   client.HTTP,
+	}
 	return &PivnetProvider{
 		client:           client,
 		pivnetAuthClient: pivnetAuthClient,
