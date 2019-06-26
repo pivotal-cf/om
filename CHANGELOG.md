@@ -45,6 +45,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
+## 1.3.0 - Not released
+
+### Bug Fixes
+- The order of vm types and resources was being applied in the correct order.
+  Now vm types will be applied then resources, so that resource can use the vm type.
+
 ## 1.2.0
 
 ### Features 
