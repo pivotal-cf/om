@@ -58,7 +58,6 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				"--group-search-filter", "member={0}",
 				"--ldap-rbac-admin-group-name", "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com",
 				"--ldap-referrals", "follow",
-				"--precreated-client-secret", "test-client-secret",
 			}
 
 			expectedPayload = api.SetupInput{
@@ -67,7 +66,6 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				DecryptionPassphraseConfirmation: "some-passphrase",
 				EULAAccepted:                     "true",
 				CreateBoshAdminClient:            "true",
-				PrecreatedClientSecret:           "test-client-secret",
 				LDAPSettings: &api.LDAPSettings{
 					EmailAttribute:     "mail",
 					GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",
@@ -84,6 +82,9 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 		})
 
 		It("configures LDAP authentication", func() {
+			commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
+			expectedPayload.PrecreatedClientSecret = "test-client-secret"
+
 			err := command.Execute(commandLineArgs)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -156,37 +157,14 @@ This is only supported in OpsManager 2.4 and up.
 					Version: "2.4-build.1",
 				}, nil)
 
-				expectedPayload.PrecreatedClientSecret = ""
+				commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
 			})
 
-			It("configures LDAP with OpsMan UAA client warning", func() {
+			It("errors out if you try to provide a client secret", func() {
 				err := command.Execute(commandLineArgs)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
-
-				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
-
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring LDAP authentication..."))
-
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
-
-				format, content = logger.PrintfArgsForCall(3)
-				Expect(fmt.Sprintf(format, content...)).To(Equal(`
-BOSH admin client will be created when the director is deployed.
-The client secret can then be found in the Ops Manager UI:
-director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
-Note both the client ID and secret.
-`))
-
-				format, content = logger.PrintfArgsForCall(4)
-				Expect(fmt.Sprintf(format, content...)).To(Equal(`
-Note: Ops Manager UAA client NOT automatically created.
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(`
+Cannot use the "--precreated-client-secret" argument.
 This is only supported in OpsManager 2.5 and up.
 `))
 			})
@@ -302,6 +280,7 @@ precreated-client-secret: test-client-secret
 
 				_, err = configFile.WriteString(configContent)
 				Expect(err).NotTo(HaveOccurred())
+				expectedPayload.PrecreatedClientSecret = "test-client-secret"
 			})
 
 			It("reads configuration from config file", func() {

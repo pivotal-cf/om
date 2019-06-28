@@ -119,10 +119,10 @@ Ops Manager UAA client will be created when authentication system starts.
 It will have the username 'precreated-client' and the client secret you provided.
 `
 		} else {
-			opsManUaaClientMsg = `
-Note: Ops Manager UAA client NOT automatically created.
+			return errors.New(`
+Cannot use the "--precreated-client-secret" argument.
 This is only supported in OpsManager 2.5 and up.
-`
+`)
 		}
 	}
 

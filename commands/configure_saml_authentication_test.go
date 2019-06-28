@@ -52,7 +52,6 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				"--saml-bosh-idp-metadata", "https://bosh-saml.example.com:8080",
 				"--saml-rbac-admin-group", "opsman.full_control",
 				"--saml-rbac-groups-attribute", "myenterprise",
-				"--precreated-client-secret", "test-client-secret",
 			}
 
 			expectedPayload = api.SetupInput{
@@ -65,12 +64,14 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				RBACAdminGroup:                   "opsman.full_control",
 				RBACGroupsAttribute:              "myenterprise",
 				CreateBoshAdminClient:            "true",
-				PrecreatedClientSecret:           "test-client-secret",
 			}
 		})
 
 		It("configures SAML authentication", func() {
-			err := command.Execute(commandLineArgs)
+			commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
+			expectedPayload.PrecreatedClientSecret = "test-client-secret"
+
+				err := command.Execute(commandLineArgs)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
@@ -108,7 +109,6 @@ It will have the username 'precreated-client' and the client secret you provided
 				}, nil)
 
 				expectedPayload.CreateBoshAdminClient = ""
-				expectedPayload.PrecreatedClientSecret = ""
 			})
 
 			It("configures SAML with bosh admin client warning", func() {
@@ -142,37 +142,14 @@ This is only supported in OpsManager 2.4 and up.
 					Version: "2.4-build.1",
 				}, nil)
 
-				expectedPayload.PrecreatedClientSecret = ""
+				commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
 			})
 
-			It("configures SAML with OpsMan UAA client warning", func() {
+			It("errors out if you try to provide a client secret", func() {
 				err := command.Execute(commandLineArgs)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
-
-				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
-
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring SAML authentication..."))
-
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
-
-				format, content = logger.PrintfArgsForCall(3)
-				Expect(fmt.Sprintf(format, content...)).To(Equal(`
-BOSH admin client will be created when the director is deployed.
-The client secret can then be found in the Ops Manager UI:
-director tile -> Credentials tab -> click on 'Link to Credential' for 'Uaa Bosh Client Credentials'
-Note both the client ID and secret.
-`))
-
-				format, content = logger.PrintfArgsForCall(4)
-				Expect(fmt.Sprintf(format, content...)).To(Equal(`
-Note: Ops Manager UAA client NOT automatically created.
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(`
+Cannot use the "--precreated-client-secret" argument.
 This is only supported in OpsManager 2.5 and up.
 `))
 			})
@@ -180,11 +157,14 @@ This is only supported in OpsManager 2.5 and up.
 
 		When("the skip-create-bosh-admin-client flag is set", func() {
 			BeforeEach(func() {
-				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 				expectedPayload.CreateBoshAdminClient = "false"
+				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 			})
 
 			It("configures SAML auth and notifies the user that it skipped client creation", func() {
+				expectedPayload.PrecreatedClientSecret = "test-client-secret"
+				commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
+
 				err := command.Execute(commandLineArgs)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -213,9 +193,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 					service.InfoReturns(api.Info{
 						Version: "2.3-build.1",
 					}, nil)
-					commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 					expectedPayload.CreateBoshAdminClient = ""
-					expectedPayload.PrecreatedClientSecret = ""
 				})
 
 				It("configures SAML and notifies the user that it skipped client creation", func() {
@@ -280,6 +258,8 @@ precreated-client-secret: test-client-secret
 
 				_, err = configFile.WriteString(configContent)
 				Expect(err).NotTo(HaveOccurred())
+
+				expectedPayload.PrecreatedClientSecret = "test-client-secret"
 			})
 
 			It("reads configuration from config file", func() {
