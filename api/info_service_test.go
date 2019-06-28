@@ -65,7 +65,7 @@ var _ = Describe("Info Service", func() {
 		BeforeEach(func() {
 			client = &fakes.HttpClient{}
 			service = api.New(api.ApiInput{
-				Client: client,
+				UnauthedClient: client,
 			})
 		})
 

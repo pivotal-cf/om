@@ -100,13 +100,14 @@ func main() {
 	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout)
 	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, false, requestTimeout, connectTimeout)
 
+	if err != nil {
+		stderr.Fatal(err)
+	}
+
 	if global.DecryptionPassphrase != "" {
 		authedClient = network.NewDecryptClient(authedClient, unauthenticatedClient, global.DecryptionPassphrase, os.Stderr)
 	}
 
-	if err != nil {
-		stderr.Fatal(err)
-	}
 	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, true, requestTimeout, connectTimeout)
 	if err != nil {
 		stderr.Fatal(err)

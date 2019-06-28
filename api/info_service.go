@@ -45,7 +45,7 @@ func (a Api) Info() (Info, error) {
 		Info Info `json:"info"`
 	}
 
-	resp, err := a.sendAPIRequest("GET", "/api/v0/info", nil)
+	resp, err := a.sendUnauthedAPIRequest("GET", "/api/v0/info", nil)
 	if err != nil {
 		return r.Info, errors.Wrap(err, "could not make request to info endpoint")
 	}
