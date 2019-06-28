@@ -17,30 +17,20 @@ type Info struct {
 func (i Info) VersionAtLeast(major, minor int) (bool, error) {
 	// Given: X.Y-build.Z or X.Y.Z-build.A
 	// Extract X and Y
-	idx := strings.Index(i.Version, ".")
-	if idx == -1 {
+	parts := strings.Split(i.Version, ".")
+	if len(parts) < 2 {
 		return false, fmt.Errorf("invalid version: '%s'", i.Version)
 	}
-
-	majv := i.Version[:idx] // take substring up to '.'
-	toDash := strings.Index(i.Version, "-")
-	if toDash == -1 {
-		toDash = len(i.Version) - 1
-	}
-	legacyMinv := i.Version[idx+1 : toDash] // take substring between '.' and '-' if dash is there
-
-	maj, err := strconv.Atoi(majv)
+	maj, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return false, fmt.Errorf("invalid version: '%s'", i.Version)
 	}
 
-	min, err := strconv.Atoi(legacyMinv)
+	//remove "-build.A" information
+	minParts := strings.Split(parts[1],"-")
+	min, err := strconv.Atoi(minParts[0])
 	if err != nil {
-		semverMinv := legacyMinv[:strings.Index(legacyMinv, ".")] // take substring up to '.'
-		min, err = strconv.Atoi(semverMinv)
-		if err != nil {
-			return false, fmt.Errorf("invalid version: '%s'", i.Version)
-		}
+		return false, fmt.Errorf("invalid version: '%s'", i.Version)
 	}
 
 	if maj < major || (maj == major && min < minor) {
