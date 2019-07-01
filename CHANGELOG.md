@@ -47,6 +47,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ## 1.3.0 - Not released
 
+### Features
+- `configure-ldap-authentication` and `configure-saml-authentication` will create a bosh admin client by default.
+  This can be disabled by adding `--skip-create-bosh-admin-client`.
+  This is supported in OpsManager 2.4+.
+- `configure-ldap-authentication` and `configure-saml-authentication` can create a UAA client on the Ops Manager vm.
+  The client_secret will be the value provided to this option `precreated-client-secret`.
+  This is supported in OpsManager 2.5+.
+  
 ### Bug Fixes
 - The order of vm types and resources was being applied in the correct order.
   Now vm types will be applied then resources, so that resource can use the vm type.
