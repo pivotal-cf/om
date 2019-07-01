@@ -1,5 +1,6 @@
 .idea/
 .vscode/
+vendor/
 
 # Created by https://www.gitignore.io/api/go
 ### Go ###
