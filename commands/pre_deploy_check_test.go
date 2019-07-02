@@ -2,6 +2,9 @@ package commands_test
 
 import (
 	"errors"
+	"log"
+	"regexp"
+
 	"github.com/fatih/color"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,7 +14,6 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
-	"log"
 )
 
 var _ = Describe("PreDeployCheck", func() {
@@ -109,9 +111,9 @@ var _ = Describe("PreDeployCheck", func() {
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(stdout.Contents())).To(ContainSubstring("Scanning OpsManager now ..."))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: p-guid"))
+			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Scanning OpsManager now ...")))
+			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] director: p-bosh-guid")))
+			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] product: p-guid")))
 		})
 	})
 

@@ -71,7 +71,7 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 			commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
 			expectedPayload.PrecreatedClientSecret = "test-client-secret"
 
-				err := command.Execute(commandLineArgs)
+			err := command.Execute(commandLineArgs)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
