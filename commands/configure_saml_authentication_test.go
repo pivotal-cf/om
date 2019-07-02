@@ -63,7 +63,7 @@ var _ = Describe("ConfigureSAMLAuthentication", func() {
 				BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
 				RBACAdminGroup:                   "opsman.full_control",
 				RBACGroupsAttribute:              "myenterprise",
-				CreateBoshAdminClient:            "true",
+				CreateBoshAdminClient:            true,
 			}
 		})
 
@@ -108,7 +108,7 @@ It will have the username 'precreated-client' and the client secret you provided
 					Version: "2.3-build.1",
 				}, nil)
 
-				expectedPayload.CreateBoshAdminClient = ""
+				expectedPayload.CreateBoshAdminClient = false
 			})
 
 			It("configures SAML with bosh admin client warning", func() {
@@ -157,7 +157,7 @@ This is only supported in OpsManager 2.5 and up.
 
 		When("the skip-create-bosh-admin-client flag is set", func() {
 			BeforeEach(func() {
-				expectedPayload.CreateBoshAdminClient = "false"
+				expectedPayload.CreateBoshAdminClient = false
 				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
 			})
 
@@ -193,7 +193,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 					service.InfoReturns(api.Info{
 						Version: "2.3-build.1",
 					}, nil)
-					expectedPayload.CreateBoshAdminClient = ""
+					expectedPayload.CreateBoshAdminClient = false
 				})
 
 				It("configures SAML and notifies the user that it skipped client creation", func() {
@@ -298,7 +298,7 @@ precreated-client-secret: test-client-secret
 					BoshIDPMetadata:                  "https://bosh-saml.example.com:8080",
 					RBACAdminGroup:                   "opsman.full_control",
 					RBACGroupsAttribute:              "myenterprise",
-					CreateBoshAdminClient:            "true",
+					CreateBoshAdminClient:            true,
 					PrecreatedClientSecret:           "test-client-secret",
 				}))
 

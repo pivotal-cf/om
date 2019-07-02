@@ -90,7 +90,7 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 	}
 
 	if versionAtLeast24 {
-		input.CreateBoshAdminClient = boolStringFromType(!ca.Options.SkipCreateBoshAdminClient)
+		input.CreateBoshAdminClient = !ca.Options.SkipCreateBoshAdminClient
 		boshAdminClientMsg = `
 BOSH admin client will be created when the director is deployed.
 The client secret can then be found in the Ops Manager UI:

@@ -65,7 +65,7 @@ var _ = Describe("ConfigureLDAPAuthentication", func() {
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
 				EULAAccepted:                     "true",
-				CreateBoshAdminClient:            "true",
+				CreateBoshAdminClient:            true,
 				LDAPSettings: &api.LDAPSettings{
 					EmailAttribute:     "mail",
 					GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",
@@ -122,7 +122,7 @@ It will have the username 'precreated-client' and the client secret you provided
 					Version: "2.3-build.1",
 				}, nil)
 
-				expectedPayload.CreateBoshAdminClient = ""
+				expectedPayload.CreateBoshAdminClient = false
 				expectedPayload.PrecreatedClientSecret = ""
 			})
 
@@ -173,7 +173,7 @@ This is only supported in OpsManager 2.5 and up.
 		When("the skip-create-bosh-admin-client flag is set", func() {
 			BeforeEach(func() {
 				commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
-				expectedPayload.CreateBoshAdminClient = "false"
+				expectedPayload.CreateBoshAdminClient = false
 			})
 
 			It("configures LDAP auth and notifies the user that it skipped client creation", func() {
@@ -206,7 +206,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 						Version: "2.3-build.1",
 					}, nil)
 					commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")
-					expectedPayload.CreateBoshAdminClient = ""
+					expectedPayload.CreateBoshAdminClient = false
 					expectedPayload.PrecreatedClientSecret = ""
 				})
 

@@ -41,7 +41,7 @@ type SetupInput struct {
 	RBACAdminGroup                   string        `json:"rbac_saml_admin_group,omitempty"`
 	RBACGroupsAttribute              string        `json:"rbac_saml_groups_attribute,omitempty"`
 	LDAPSettings                     *LDAPSettings `json:"ldap_settings,omitempty"`
-	CreateBoshAdminClient            string        `json:"create_bosh_admin_client,omitempty"`
+	CreateBoshAdminClient            bool          `json:"create_bosh_admin_client,omitempty"`
 	PrecreatedClientSecret           string        `json:"precreated_client_secret,omitempty"`
 }
 
