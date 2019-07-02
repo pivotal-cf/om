@@ -87,18 +87,18 @@ func (up UploadProduct) Execute(args []string) error {
 		up.logger.Printf("expected version matches product version.")
 	}
 
+	var prodAvailable bool
+	prodAvailable, err = up.service.CheckProductAvailability(metadata.Name, metadata.Version)
+	if err != nil {
+		return fmt.Errorf("failed to check product availability: %s", err)
+	}
+
+	if prodAvailable {
+		up.logger.Printf("product %s %s is already uploaded, nothing to be done", metadata.Name, metadata.Version)
+		return nil
+	}
+
 	for i := 0; i <= maxProductUploadRetries; i++ {
-		var prodAvailable bool
-		prodAvailable, err = up.service.CheckProductAvailability(metadata.Name, metadata.Version)
-		if err != nil {
-			return fmt.Errorf("failed to check product availability: %s", err)
-		}
-
-		if prodAvailable {
-			up.logger.Printf("product %s %s is already uploaded, nothing to be done.", metadata.Name, metadata.Version)
-			return nil
-		}
-
 		up.logger.Printf("processing product")
 
 		err = up.multipart.AddFile("product[file]", up.Options.Product)
@@ -119,6 +119,15 @@ func (up UploadProduct) Execute(args []string) error {
 		if network.CanRetry(err) && i < maxProductUploadRetries {
 			up.logger.Printf("retrying product upload after error: %s\n", err)
 			up.multipart.Reset()
+
+			prodAvailable, err = up.service.CheckProductAvailability(metadata.Name, metadata.Version)
+			if err != nil {
+				return fmt.Errorf("failed to check product availability: %s", err)
+			}
+			if prodAvailable {
+				up.logger.Printf("product %s %s has been successfully uploaded", metadata.Name, metadata.Version)
+				return nil
+			}
 		} else {
 			break
 		}

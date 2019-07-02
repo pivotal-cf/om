@@ -2,9 +2,12 @@ package commands_test
 
 import (
 	"fmt"
+	"github.com/onsi/gomega/gbytes"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/pivotal-cf/jhanda"
@@ -105,7 +108,7 @@ var _ = Describe("UploadProduct", func() {
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
 
 			format, v := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done."))
+			Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done"))
 		})
 	})
 
@@ -229,7 +232,10 @@ var _ = Describe("UploadProduct", func() {
 
 	Context("when the product fails to upload the first time with a retryable error", func() {
 		Context("when the product is now present", func() {
-			It("does nothing and exits gracefully", func() {
+			It("succeeds", func() {
+				stdout := gbytes.NewBuffer()
+				logger := log.New(stdout, "", 0)
+
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
 				fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
@@ -249,13 +255,8 @@ var _ = Describe("UploadProduct", func() {
 				Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
 				Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(1))
 
-				loggerPrintfCalls := logger.PrintfCallCount()
-
-				format, v := logger.PrintfArgsForCall(loggerPrintfCalls - 2)
-				Expect(fmt.Sprintf(format, v...)).To(Equal("retrying product upload after error: some upload error: EOF\n"))
-
-				format, v = logger.PrintfArgsForCall(loggerPrintfCalls - 1)
-				Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done."))
+				Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("retrying product upload after error: some upload error: EOF")))
+				Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("product cf 1.5.0 has been successfully uploaded")))
 			})
 		})
 
