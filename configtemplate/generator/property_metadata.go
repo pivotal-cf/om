@@ -24,10 +24,6 @@ type OptionTemplate struct {
 }
 
 func (p *PropertyMetadata) IsConfigurable() bool {
-	return !strings.EqualFold(p.Configurable, "false")
-}
-
-func (p *PropertyMetadata) IsExplicityConfigurable() bool {
 	return strings.EqualFold(p.Configurable, "true")
 }
 

@@ -40,7 +40,7 @@ func CreateProductProperties(metadata *Metadata) (map[string]PropertyValue, erro
 				if strings.EqualFold(defaultSelector, selector.Reference) {
 					selectorMetadata := SelectorMetadataBySelectValue(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.Default))
 					for _, metadata := range selectorMetadata {
-						if metadata.IsExplicityConfigurable() && metadata.IsRequired() && !metadata.IsDropdown() {
+						if metadata.IsConfigurable() && metadata.IsRequired() && !metadata.IsDropdown() {
 							selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, metadata.Name)
 							propertyType := metadata.PropertyType(strings.Replace(selectorProperty, ".", "", 1))
 							if propertyType != nil {

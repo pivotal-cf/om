@@ -9,7 +9,9 @@ import (
 var _ = Describe("PropertyMetadata", func() {
 	Context("IsConfigurable", func() {
 		It("is true", func() {
-			propertyMetaData := &generator.PropertyMetadata{}
+			propertyMetaData := &generator.PropertyMetadata{
+				Configurable: "true",
+			}
 			Expect(propertyMetaData.IsConfigurable()).To(BeTrue())
 		})
 		It("is false", func() {
@@ -17,21 +19,11 @@ var _ = Describe("PropertyMetadata", func() {
 				Configurable: "false",
 			}
 			Expect(propertyMetaData.IsConfigurable()).To(BeFalse())
-		})
-	})
 
-	Context("IsExplicityConfigurable", func() {
-		It("is true", func() {
-			propertyMetaData := &generator.PropertyMetadata{
-				Configurable: "true",
+			propertyMetaData = &generator.PropertyMetadata{
+				Configurable: "",
 			}
-			Expect(propertyMetaData.IsExplicityConfigurable()).To(BeTrue())
-		})
-		It("is false", func() {
-			propertyMetaData := &generator.PropertyMetadata{
-				Configurable: "false",
-			}
-			Expect(propertyMetaData.IsExplicityConfigurable()).To(BeFalse())
+			Expect(propertyMetaData.IsConfigurable()).To(BeFalse())
 		})
 	})
 
