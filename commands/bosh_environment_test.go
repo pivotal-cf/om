@@ -87,14 +87,8 @@ var _ = Describe("bosh-env", func() {
 			It("executes the API call", func() {
 				err := command.Execute([]string{"-i", "somepath.pem"})
 
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(stdout.PrintlnCallCount()).To(Equal(10))
-				for i := 0; i < 10; i++ {
-					value := fmt.Sprintf("%v", stdout.PrintlnArgsForCall(i))
-					if strings.Contains(value, "BOSH_ALL_PROXY") {
-						Expect(value).To(Equal("[export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=somepath.pem]"))
-					}
-				}
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("ssh key file 'somepath.pem' does not exist"))
 			})
 		})
 
