@@ -24,6 +24,8 @@ The exceptions to this rule are any commands marked as "**EXPERIMENTAL**"
   When the `om` team is comfortable enough with the command output,
   the "**EXPERIMENTAL**" mark will be removed.
   
+Any changes to the `om` filename as presented in the Github Release page.
+  
 Changes internal to `om` will _**NOT**_ be included as a part of the om API.
 The `om` team reserves the right to change any internal structs or structures
 as long as the outputs and behavior of the commands remain the same.
@@ -45,7 +47,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
-## 1.3.0 - Not released
+## 2.0.0
 
 ### Features
 - `configure-ldap-authentication` and `configure-saml-authentication` will create a bosh admin client by default.
@@ -54,10 +56,26 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `configure-ldap-authentication` and `configure-saml-authentication` can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
   This is supported in OpsManager 2.5+.
+- A homebrew formula has been added!
+  It should support both linux and mac brew.
+  Since, we don't have our own `tap`, we've used a simpler method:
+  ```bash
+  brew install https://raw.githubusercontent.com/pivotal-cf/om/master/om.rb
+  ```
   
 ### Bug Fixes
 - The order of vm types and resources was being applied in the correct order.
   Now vm types will be applied then resources, so that resource can use the vm type.
+- When using `bosh-env`, a check is done to ensure the SSH private key exists.
+  If does not the command will exit 1.
+- `config-template` will enforce the default value for a property to always be `configurable: false`.
+  This is inline with the OpsManager behaviour.
+  
+### Breaking Change
+- The artifacts on the Github Release include `.tar.gz` (for mac and linux) and `.zip` (windows) for compression.
+  It also allows support for using `goreleaser` (in CI) to create other package manager artifacts -- `brew`.
+  This will break globs that were permissive. For example `*linux*`, will download the binary and the `.tar.gz`.
+  Our semver API declaration has been updated to reflect this.
 
 ## 1.2.0
 
