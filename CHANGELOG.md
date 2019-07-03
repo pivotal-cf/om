@@ -47,6 +47,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
+## 2.0.1
+
+Was a release to make sure that `brew upgrade` works.
+
 ## 2.0.0
 
 ### Features
@@ -60,7 +64,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   It should support both linux and mac brew.
   Since, we don't have our own `tap`, we've used a simpler method:
   ```bash
-  brew install https://raw.githubusercontent.com/pivotal-cf/om/master/om.rb
+  brew tap pivotal-cf/om https://github.com/pivotal-cf/om
+  brew install om
   ```
   
 ### Bug Fixes
