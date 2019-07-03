@@ -3,7 +3,6 @@
 before:
   hooks:
     - go mod download
-    - go generate ./...
 release:
   github:
     owner: pivotal-cf
