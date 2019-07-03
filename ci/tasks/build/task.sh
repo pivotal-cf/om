@@ -5,10 +5,9 @@ if [ -z "$GITHUB_TOKEN" ]; then
     exit 1
 fi
 
-export GOPATH="$PWD/go"
 export OM_VERSION="$(cat om-version/version)"
 
-cd go/src/github.com/pivotal-cf/om
+cd om
 go version
 goreleaser release
 
