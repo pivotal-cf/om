@@ -1,33 +1,14 @@
 #!/bin/bash -eu
 
-function main() {
-  local cwd
-  cwd="${1}"
+if [ -z "$GITHUB_TOKEN" ]; then
+    echo "GITHUB_TOKEN is required"
+    exit 1
+fi
 
-  local version
-  version="$(cat om-version/version)"
+export GOPATH="$PWD/go"
+export OM_VERSION="$(cat om-version/version)"
 
-  export GOPATH="${cwd}/go"
-  pushd "om" > /dev/null
-    for OS in darwin linux windows; do
-      local name
-      name="om-${OS}"
+cd go/src/github.com/pivotal-cf/om
+go version
+goreleaser release
 
-      echo "building $OS"
-
-      if [[ "${OS}" == "windows" ]]; then
-        name="${name}.exe"
-      fi
-
-      CGO_ENABLED=0 \
-      GOOS=${OS} \
-      GOARCH=amd64 \
-        go build \
-          -ldflags "-X main.version=${version}" \
-          -o "${cwd}/binaries/${name}" \
-          main.go
-    done
-  popd > /dev/null
-}
-
-main "${PWD}"

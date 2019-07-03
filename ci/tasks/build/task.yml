@@ -4,10 +4,11 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: golang
+    repository: goreleaser/goreleaser
 
 inputs:
 - name: om
+  path: go/src/github.com/pivotal/om
 - name: om-version
 
 outputs:
@@ -15,3 +16,6 @@ outputs:
 
 run:
   path: om/ci/tasks/build/task.sh
+
+params:
+  GITHUB_TOKEN:
