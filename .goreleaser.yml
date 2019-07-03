@@ -7,7 +7,6 @@ release:
   github:
     owner: pivotal-cf
     name: om
-  draft: true
 builds:
 - env:
   - CGO_ENABLED=0
