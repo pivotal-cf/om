@@ -18,14 +18,25 @@ builds:
   goarch:
   - amd64
   ldflags:
-  - -s -w -X "main.version={{.Env.OM_VERSION}}"
+  - -s -w -X "main.version={{.Version}}"
 archives:
-- format: binary
+- id: github
+  format: binary
   name_template: "om-{{ .Os }}"
+- id: homebrew
+  format: "tar.gz"
+  name_template: "om-{{ .Os }}"
+  format_overrides:
+  - goos: windows
+    format: zip
 brews:
 - github:
     owner: pivotal-cf
     name: om
+  ids:
+  - homebrew
+  test: |
+    system "#{bin}/om --version"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
