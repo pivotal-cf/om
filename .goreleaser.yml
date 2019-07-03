@@ -21,10 +21,10 @@ builds:
 archives:
 - id: github
   format: binary
-  name_template: "om-{{ .Os }}"
+  name_template: "om-{{ .Os }}-{{ .Version }}"
 - id: homebrew
   format: "tar.gz"
-  name_template: "om-{{ .Os }}"
+  name_template: "om-{{ .Os }}-{{ .Version }}"
   format_overrides:
   - goos: windows
     format: zip
