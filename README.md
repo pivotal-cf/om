@@ -39,6 +39,7 @@ The `om` API consists of:
 1. All global `om` flags
 1. The format for any inputs to non-experimental `om` commands.
 1. The format for any outputs from non-experimental `om` commands.
+1. The file filename of the Github relases.
 
 "**EXPERIMENTAL**" commands are still in development.
 We may rename them, alter their flags or behavior, or remove them entirely.
@@ -60,8 +61,8 @@ which is also semantically versioned.
 
 To download `om` go to [Releases](https://github.com/pivotal-cf/om/releases).
 
-Alternatively, you can install `om` via `apt-get` or `homebrew`
-package manager distributions maintained by [Stark and Wayne](https://www.starkandwayne.com/):
+Alternatively, you can install `om` via `apt-get`
+via [Stark and Wayne](https://www.starkandwayne.com/):
 
 ```sh
 # apt-get:
@@ -70,9 +71,13 @@ echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.
 apt-get update
 
 apt-get install om
+```
 
-# homebrew:
-brew tap starkandwayne/cf
+
+Or by the Linux and Mac `brew`
+
+```
+brew tap pivotal-cf/om https://github.com/pivotal-cf/om
 brew install om
 ```
 
