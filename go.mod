@@ -4,7 +4,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.20.13 // indirect
-	github.com/bmatcuk/doublestar v1.1.2 // indirect
+	github.com/bmatcuk/doublestar v1.1.3 // indirect
 	github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 // indirect
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
 	github.com/cloudfoundry/bosh-cli v5.5.1+incompatible
