@@ -56,6 +56,7 @@ Command Arguments:
   --https-proxy-url             string             proxy for outbound HTTPS network traffic
   --no-proxy                    string             comma-separated list of hosts that do not go through the proxy
   --password, -p, OM_PASSWORD   string (required)  admin password
+  --precreated-client-secret    string             create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option
   --username, -u, OM_USERNAME   string (required)  admin username
 `
 

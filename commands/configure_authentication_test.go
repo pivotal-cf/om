@@ -23,6 +23,9 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 	BeforeEach(func() {
 		service = &fakes.ConfigureAuthenticationService{}
+		service.InfoReturns(api.Info{
+			Version: "2.5-build.1",
+		}, nil)
 		logger = &fakes.Logger{}
 	})
 
@@ -44,6 +47,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--decryption-passphrase", "some-passphrase",
+				"--precreated-client-secret", "test-client-secret",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -55,6 +59,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 				DecryptionPassphrase:             "some-passphrase",
 				DecryptionPassphraseConfirmation: "some-passphrase",
 				EULAAccepted:                     "true",
+				PrecreatedClientSecret:           "test-client-secret",
 			}))
 
 			Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
@@ -67,6 +72,12 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			format, content = logger.PrintfArgsForCall(2)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+
+			format, content = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, content...)).To(Equal(`
+Ops Manager UAA client will be created when authentication system starts.
+It will have the username 'precreated-client' and the client secret you provided.
+`))
 		})
 
 		Context("when the authentication setup has already been configured", func() {
@@ -187,6 +198,38 @@ decryption-passphrase: some-passphrase
 
 				format, content = logger.PrintfArgsForCall(2)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+			})
+		})
+
+		When("OpsMan is < 2.5", func() {
+			It("errors out if you try to provide a client secret", func() {
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+
+				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+				}
+
+				service.InfoReturns(api.Info{
+					Version: "2.4-build.1",
+				}, nil)
+
+				command := commands.NewConfigureAuthentication(service, logger)
+				err := command.Execute([]string{
+					"--username", "some-username",
+					"--password", "some-password",
+					"--decryption-passphrase", "some-passphrase",
+					"--precreated-client-secret", "test-client-secret",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(`
+Cannot use the "--precreated-client-secret" argument.
+This is only supported in OpsManager 2.5 and up.
+`))
 			})
 		})
 

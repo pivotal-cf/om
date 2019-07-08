@@ -25,6 +25,14 @@ var _ = Describe("configure-authentication command", func() {
 
 		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			switch req.URL.Path {
+			case "/api/v0/info":
+				_, err := w.Write([]byte(`{
+						"info": {
+							"version": "2.6.0"
+						}
+					}`))
+
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/setup":
 				err := json.NewDecoder(req.Body).Decode(&auth)
 				Expect(err).NotTo(HaveOccurred())
