@@ -79,7 +79,7 @@ Was a release to make sure that `brew upgrade` works.
 ### Breaking Change
 - The artifacts on the Github Release include `.tar.gz` (for mac and linux) and `.zip` (windows) for compression.
   It also allows support for using `goreleaser` (in CI) to create other package manager artifacts -- `brew`.
-  This will break globs that were permissive. For example `*linux*`, will download the binary and the `.tar.gz`.
+  This will break globs that were permissive. For example `*linux*`, will download the binary and the `.tar.gz`, use `*linux*[^.gz]` to just download the binary.
   Our semver API declaration has been updated to reflect this.
 
 ## 1.2.0
