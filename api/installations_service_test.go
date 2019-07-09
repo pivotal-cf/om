@@ -193,6 +193,20 @@ var _ = Describe("InstallationsService", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":["guid2"]}`))
 			})
+
+			It("errors when the product does not exist", func() {
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"} ]`)),
+				}, nil)
+				client.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"} ]`)),
+				}, nil)
+
+				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
+				Expect(err).To(HaveOccurred())
+			})
 		})
 
 		Context("when given the errands", func() {
