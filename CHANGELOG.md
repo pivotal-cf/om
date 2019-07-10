@@ -146,8 +146,21 @@ Was a release to make sure that `brew upgrade` works.
 * Extra values passed in the env file 
   will now fail if they are not recognized properties.
   This closes issue [#258](https://github.com/pivotal-cf/om/issues/258)
-* `om` will now allow non-string entities
-  to be passed as strings to Ops Manager.
+* Non-string environment variables can now be read and passed as strings to Ops Manager.
+  For example, if your environment variable (`OM_NAME`) is set to `"123"` (with quotes escaped),
+  it will be evaluated in your config file with the quotes.
+  
+    Given `config.yml`
+    ```yaml
+    value: ((NAME))
+    ```
+    
+    `om interpolate -c config.yml --vars-env OM`
+    
+    Will evaluate to:
+    ```yaml
+      value: "123"
+    ```
   This closes issue [#352](https://github.com/pivotal-cf/om/issues/352)
 * the file outputted by `download-product`
   will now use the `product-name` as defined 
