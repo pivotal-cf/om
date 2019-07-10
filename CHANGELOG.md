@@ -47,6 +47,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
+## 2.1.0 (Unreleased)
+
+### Features
+
+- `pivnet-api-token` is now optional in `download-product`
+  if a source is defined. Thanks to @vchrisb for the PR!
+
 ## 2.0.1
 
 Was a release to make sure that `brew upgrade` works.
