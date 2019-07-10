@@ -66,9 +66,6 @@ Was a release to make sure that `brew upgrade` works.
 ## 2.0.0
 
 ### Features
-- `configure-ldap-authentication` and `configure-saml-authentication` will create a bosh admin client by default.
-  This can be disabled by adding `--skip-create-bosh-admin-client`.
-  This is supported in OpsManager 2.4+.
 - `configure-ldap-authentication` and `configure-saml-authentication` can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
   This is supported in OpsManager 2.5+.
