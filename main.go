@@ -293,7 +293,10 @@ func checkForVars(opts *options) error {
 	}
 
 	if len(errBuffer) > 0 {
-		errBuffer = append([]string{"env file contains YAML placeholders. Pleases provide them via an interpolation or environment variables."}, errBuffer...)
+		errBuffer = append([]string{"env file contains YAML placeholders. Pleases provide them via interpolation or environment variables."}, errBuffer...)
+		errBuffer = append(errBuffer, "Or, to enable interpolation of env.yml with variables from env-vars,")
+		errBuffer = append(errBuffer, "set the OM_VARS_ENV env var and put export the needed vars.")
+
 		return fmt.Errorf(strings.Join(errBuffer, "\n"))
 	}
 

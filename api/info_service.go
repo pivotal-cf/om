@@ -27,7 +27,7 @@ func (i Info) VersionAtLeast(major, minor int) (bool, error) {
 	}
 
 	//remove "-build.A" information
-	minParts := strings.Split(parts[1],"-")
+	minParts := strings.Split(parts[1], "-")
 	min, err := strconv.Atoi(minParts[0])
 	if err != nil {
 		return false, fmt.Errorf("invalid version: '%s'", i.Version)

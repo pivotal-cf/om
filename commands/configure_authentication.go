@@ -74,7 +74,6 @@ func (ca ConfigureAuthentication) Execute(args []string) error {
 		EULAAccepted:                     "true",
 	}
 
-
 	info, err := ca.service.Info()
 	if err != nil {
 		return err

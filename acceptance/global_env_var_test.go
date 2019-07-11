@@ -15,7 +15,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("env var creds", func() {
+var _ = Describe("using env vars for Ops Man target information", func() {
 	It("authenticates with OM_TARGET env var", func() {
 		server := testServer(true)
 
