@@ -47,7 +47,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
 
-## 2.1.0 (Unreleased)
+## 3.0.0 (Unreleased)
 
 ### Features
 
@@ -66,8 +66,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   We are working on scoping a selective deploy feature that makes sense for users.
   We would love to have feedback from users about this.
   
-- remove revert-staged-changes
-  unstage-product functionally does the same thing,
+- remove `revert-staged-changes`
+  `unstage-product` functionally does the same thing,
   but uses the API. This resolves issue [#399](https://github.com/pivotal-cf/om/issues/399)
   
 ### Bug Fix
