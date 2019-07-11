@@ -56,7 +56,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `configure-authentication` can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
   
-### Breaking Change
+### Breaking Changes
 
 - remove `--skip-unchanged-products` from `apply-changes`
   This option has had issues with consistent successful behaviour.
@@ -65,6 +65,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   
   We are working on scoping a selective deploy feature that makes sense for users.
   We would love to have feedback from users about this.
+  
+- remove revert-staged-changes
+  unstage-product functionally does the same thing,
+  but uses the API. This resolves issue [#399](https://github.com/pivotal-cf/om/issues/399)
   
 ### Bug Fix
 - `apply-changes` will error with _product not found_ if that product has not been staged.
