@@ -173,6 +173,7 @@ om \
   --user my-user \
   --password my-password \
     configure-product \
+      --product-name some-product \
       --config product.yml
 ```
 
