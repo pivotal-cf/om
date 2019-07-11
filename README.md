@@ -163,7 +163,6 @@ Commands:
   pending-changes                 lists pending changes
   pre-deploy-check                **EXPERIMENTAL** lists pending changes
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
-  revert-staged-changes           reverts staged changes on the Ops Manager targeted
   ssl-certificate                 gets certificate applied to Ops Manager
   stage-product                   stages a given product in the Ops Manager targeted
   staged-config                   **EXPERIMENTAL** generates a config from a staged product
