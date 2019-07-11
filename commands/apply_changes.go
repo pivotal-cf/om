@@ -21,7 +21,6 @@ type ApplyChanges struct {
 		Config                string   `short:"c"   long:"config"               description:"path to yml file containing errand configuration (see docs/apply-changes/README.md for format)"`
 		IgnoreWarnings        bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
 		SkipDeployProducts    bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
-		SkipUnchangedProducts bool     `short:"sup" long:"skip-unchanged-products"         description:"skip deploying unchanged products - just run changed or new products --skip-unchanged-products (OM 2.2+)"`
 		ProductNames          []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
 }
@@ -77,9 +76,6 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if ac.Options.SkipDeployProducts {
 			return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
 		}
-		if ac.Options.SkipUnchangedProducts {
-			return fmt.Errorf("product-name flag can not be passed with the skip-unchanged-products flag")
-		}
 		info, err := ac.service.Info()
 		if err != nil {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
@@ -88,30 +84,6 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
 		changedProducts = append(changedProducts, ac.Options.ProductNames...)
-	}
-
-	if ac.Options.SkipUnchangedProducts {
-		s, err := ac.pendingService.ListStagedPendingChanges()
-		if err != nil {
-			return fmt.Errorf("could not check for any pending changes installation: %s", err)
-		}
-		info, err := ac.service.Info()
-		if err != nil {
-			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
-		}
-		if ok, _ := info.VersionAtLeast(2, 2); !ok {
-			return fmt.Errorf("skip-unchanged-products is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
-		}
-		for _, p := range s.ChangeList {
-			ac.logger.Printf("Found product: %s with action of: %s", p.GUID, p.Action)
-			if p.Action != "unchanged" {
-				changedProducts = append(changedProducts, p.GUID)
-				ac.logger.Printf("Adding %s to ProductNames", p.GUID)
-			}
-		}
-		if len(changedProducts) <= 0 {
-			deployProducts = false
-		}
 	}
 
 	installation, err := ac.service.RunningInstallation()
