@@ -24,7 +24,6 @@ import (
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/progress"
-	"github.com/pivotal-cf/om/ui"
 
 	_ "github.com/pivotal-cf/om/download_clients"
 )
@@ -133,9 +132,7 @@ func main() {
 		UnauthedProgressClient: unauthenticatedProgressClient,
 		Logger:                 stderr,
 	})
-	ui := ui.New(ui.UiInput{
-		Client: authedCookieClient,
-	})
+
 	logWriter := commands.NewLogWriter(os.Stdout)
 	tableWriter := tablewriter.NewWriter(os.Stdout)
 
@@ -187,7 +184,6 @@ func main() {
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
 	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api, stdout)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
-	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(ui, stdout)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["ssl-certificate"] = commands.NewSSLCertificate(api, presenter)
 	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
