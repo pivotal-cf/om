@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"github.com/pivotal-cf/om/interpolate"
 	"log"
 	"net/http"
 	"os"
@@ -50,6 +50,7 @@ type options struct {
 	Username             string `yaml:"username"              short:"u"  long:"username"              env:"OM_USERNAME"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
 	Env                  string `                             short:"e"  long:"env"                                                              description:"env file with login credentials"`
 	Version              bool   `                             short:"v"  long:"version"                                          default:"false" description:"prints the om release version"`
+	VarsEnv              string `                                                                     env:"OM_VARS_ENV"      experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
 }
 
 func main() {
@@ -209,14 +210,19 @@ func setEnvFileProperties(global *options) error {
 	}
 
 	var opts options
-	file, err := os.Open(global.Env)
+	_, err := os.Open(global.Env)
 	if err != nil {
 		return fmt.Errorf("env file does not exist: %s", err)
 	}
 
-	contents, err := ioutil.ReadAll(file)
+	contents, err := interpolate.Execute(interpolate.Options{
+		TemplateFile:  global.Env,
+		EnvironFunc:   os.Environ,
+		VarsEnvs:      []string{global.VarsEnv},
+		ExpectAllKeys: false,
+	}, "")
 	if err != nil {
-		return fmt.Errorf("cannot read env file: %s", err)
+		return err
 	}
 
 	err = yaml.UnmarshalStrict(contents, &opts)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"io/ioutil"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"regexp"
@@ -17,10 +18,24 @@ import (
 var _ = Describe("global env file", func() {
 	When("provided --env flag", func() {
 		var (
-			configContent    string
-			configFile       *os.File
-			createConfigFile func(string)
+			configContent string
+			configFile    *os.File
+			command       *exec.Cmd
+			server        *httptest.Server
 		)
+
+		createConfigFile := func(target string) {
+			var err error
+
+			configFile, err = ioutil.TempFile("", "config.yml")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(fmt.Sprintf(configContent, target))
+			Expect(err).NotTo(HaveOccurred())
+
+			err = configFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+		}
 
 		BeforeEach(func() {
 			configContent = `
@@ -31,26 +46,11 @@ target: %s
 skip-ssl-validation: true
 connect-timeout: 10
 `
-
-			createConfigFile = func(target string) {
-				var err error
-
-				configFile, err = ioutil.TempFile("", "config.yml")
-				Expect(err).NotTo(HaveOccurred())
-
-				_, err = configFile.WriteString(fmt.Sprintf(configContent, target))
-				Expect(err).NotTo(HaveOccurred())
-
-				err = configFile.Close()
-				Expect(err).NotTo(HaveOccurred())
-			}
+			server = testServer(true)
+			createConfigFile(server.URL)
 		})
 
 		It("authenticates with creds in config file", func() {
-			server := testServer(true)
-
-			createConfigFile(server.URL)
-
 			command := exec.Command(pathToMain,
 				"--env", configFile.Name(),
 				"curl",
@@ -65,8 +65,6 @@ connect-timeout: 10
 		})
 
 		It("errors if given an unexpected key", func() {
-			server := testServer(true)
-
 			configContent = `
 ---
 password: some-env-provided-password
@@ -103,38 +101,47 @@ bad-key: bad-value
 		When("the env file contains variables", func() {
 			BeforeEach(func() {
 				createConfigFile("((target_url))")
+
+				command = exec.Command(pathToMain,
+					"--env", configFile.Name(),
+					"curl",
+					"-p", "/api/v0/available_products",
+				)
 			})
 
-			PWhen("the OM_VARS_ENV environment variable IS set", func() {
+			When("the OM_VARS_ENV environment variable IS set", func() {
 				BeforeEach(func() {
-
+					command.Env = append(command.Env, "OM_VARS_ENV=OM_VAR")
 				})
-
 				It("uses variables with the specified prefix in the env file", func() {
+					command.Env = append(command.Env, fmt.Sprintf("OM_VAR_target_url=%s", server.URL))
+					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Expect(err).NotTo(HaveOccurred())
+
+					Eventually(session).Should(gexec.Exit(0))
+
+					Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 
 				})
 				When("the env file contains variables not found in the environment", func() {
-					BeforeEach(func() {
-
-					})
-
 					It("exits 1 and lists the missing variables", func() {
+						session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+						Expect(err).NotTo(HaveOccurred())
 
+						Eventually(session).Should(gexec.Exit(1))
+
+						Expect(session.Err).To(gbytes.Say(regexp.QuoteMeta("found problem in --env file:")))
+						Expect(session.Err).To(gbytes.Say(regexp.QuoteMeta("env file contains YAML placeholders.")))
+						Expect(session.Err).To(gbytes.Say(regexp.QuoteMeta("Pleases provide them via interpolation or environment variables.")))
+						Expect(session.Err).To(gbytes.Say(regexp.QuoteMeta("* use OM_TARGET environment variable for the target value")))
+						Expect(session.Err).To(gbytes.Say(regexp.QuoteMeta("Or, to enable interpolation of env.yml with variables from env-vars,")))
+						Expect(session.Err).To(gbytes.Say(regexp.QuoteMeta("set the OM_VARS_ENV env var and put export the needed vars.")))
 					})
 				})
 			})
+
 			Context("and the OM_VARS_ENV environment variable IS NOT set", func() {
-				BeforeEach(func() {
-
-				})
-
 				It("exits 1, lists the needed vars, and notes the experimental OM_VARS_ENV feature", func() {
-					command := exec.Command(pathToMain,
-						"--env", configFile.Name(),
-						"curl",
-						"-p", "/api/v0/available_products",
-					)
-
 					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 					Expect(err).NotTo(HaveOccurred())
 
@@ -151,7 +158,7 @@ bad-key: bad-value
 		})
 
 		When("given an invalid env file", func() {
-			It("returns an error", func() {
+			BeforeEach(func() {
 				var err error
 
 				configFile, err = ioutil.TempFile("", "config.yml")
@@ -163,12 +170,13 @@ bad-key: bad-value
 				err = configFile.Close()
 				Expect(err).NotTo(HaveOccurred())
 
-				command := exec.Command(pathToMain,
+				command = exec.Command(pathToMain,
 					"--env", configFile.Name(),
 					"curl",
 					"-p", "/api/v0/available_products",
 				)
-
+			})
+			It("returns an error", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -178,13 +186,14 @@ bad-key: bad-value
 		})
 
 		When("given an env file that does not exist", func() {
-			It("returns an error", func() {
-				command := exec.Command(pathToMain,
+			BeforeEach(func() {
+				command = exec.Command(pathToMain,
 					"--env", "does-not-exist.yml",
 					"curl",
 					"-p", "/api/v0/available_products",
 				)
-
+			})
+			It("returns an error", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 
