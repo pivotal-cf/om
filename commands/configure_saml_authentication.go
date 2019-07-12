@@ -12,18 +12,18 @@ type ConfigureSAMLAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
 	Options struct {
-		ConfigFile                string `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-		DecryptionPassphrase      string `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
-		HTTPProxyURL              string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL             string `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
-		NoProxy                   string `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
-		IDPMetadata               string `long:"saml-idp-metadata"                required:"true" description:"XML, or URL to XML, for the IDP that Ops Manager should use"`
-		BoshIDPMetadata           string `long:"saml-bosh-idp-metadata"           required:"true" description:"XML, or URL to XML, for the IDP that BOSH should use"`
-		RBACAdminGroup            string `long:"saml-rbac-admin-group"            required:"true" description:"If SAML is specified, please provide the admin group for your SAML"`
-		RBACGroupsAttribute       string `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
-		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"                    description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
-		PrecreatedClientSecret    string `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option"`
-		VarsEnv                   string `env:"OM_VARS_ENV" experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		ConfigFile                string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		DecryptionPassphrase      string   `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
+		HTTPProxyURL              string   `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL             string   `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
+		NoProxy                   string   `long:"no-proxy"                                         description:"comma-separated list of hosts that do not go through the proxy"`
+		IDPMetadata               string   `long:"saml-idp-metadata"                required:"true" description:"XML, or URL to XML, for the IDP that Ops Manager should use"`
+		BoshIDPMetadata           string   `long:"saml-bosh-idp-metadata"           required:"true" description:"XML, or URL to XML, for the IDP that BOSH should use"`
+		RBACAdminGroup            string   `long:"saml-rbac-admin-group"            required:"true" description:"If SAML is specified, please provide the admin group for your SAML"`
+		RBACGroupsAttribute       string   `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
+		SkipCreateBoshAdminClient bool     `long:"skip-create-bosh-admin-client"                    description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
+		PrecreatedClientSecret    string   `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option"`
+		VarsEnv                   []string `env:"OM_VARS_ENV" experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
 	}
 }
 
