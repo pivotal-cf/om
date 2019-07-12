@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pivotal-cf/om/interpolate"
 	"sort"
 	"strings"
 
@@ -144,14 +145,14 @@ func (c ConfigureDirector) Execute(args []string) error {
 }
 
 func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
-	configContents, err := interpolate(interpolateOptions{
-		templateFile:  c.Options.ConfigFile,
-		varsFiles:     c.Options.VarsFile,
-		environFunc:   c.environFunc,
-		vars:          c.Options.Vars,
-		varsEnvs:      c.Options.VarsEnv,
-		opsFiles:      c.Options.OpsFile,
-		expectAllKeys: true,
+	configContents, err := interpolate.Execute(interpolate.Options{
+		TemplateFile:  c.Options.ConfigFile,
+		VarsFiles:     c.Options.VarsFile,
+		EnvironFunc:   c.environFunc,
+		Vars:          c.Options.Vars,
+		VarsEnvs:      c.Options.VarsEnv,
+		OpsFiles:      c.Options.OpsFile,
+		ExpectAllKeys: true,
 	}, "")
 	if err != nil {
 		return nil, err
