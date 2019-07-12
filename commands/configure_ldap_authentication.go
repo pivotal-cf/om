@@ -29,6 +29,7 @@ type ConfigureLDAPAuthentication struct {
 		UserSearchFilter          string `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
 		SkipCreateBoshAdminClient bool   `long:"skip-create-bosh-admin-client"                    description:"by default, this command creates a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. This flag skips that."`
 		PrecreatedClientSecret    string `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
+		VarsEnv                   string `env:"OM_VARS_ENV" experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
 	}
 }
 

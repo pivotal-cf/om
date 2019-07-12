@@ -62,8 +62,8 @@ type DownloadProductOptions struct {
 	S3StemcellPath      string   `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
 	Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
 	StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
-	VarsEnv             []string `long:"vars-env"                         description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-	VarsFile            []string `long:"vars-file"             short:"l"  description:"load variables from a YAML file"`
+	VarsEnv             []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+	VarsFile            []string `long:"vars-file" short:"l"  description:"load variables from a YAML file"`
 	Vars                []string `long:"var"                              description:"Load variable from the command line. Format: VAR=VAL"`
 }
 
