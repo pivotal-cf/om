@@ -146,10 +146,11 @@ var _ = Describe("JobsService", func() {
 		})
 
 		Context("with nsx", func() {
-			It("fetches the resource config for a given job including nsx properties", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{
+			Context("with versions of Ops Manager earlier than 2.7", func() {
+				It("includes nsx properties in the resource config as prefixed 'nsx_' keys", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(strings.NewReader(`{
 						"instances": 1,
 						"instance_type": { "id": "number-1" },
 						"persistent_disk": { "size_mb": "290" },
@@ -161,48 +162,206 @@ var _ = Describe("JobsService", func() {
 								"edge_name": "edge-1",
 								"pool_name": "pool-1",
 								"security_group": "sg-1",
-								"port": "5000"
+								"port": 5000
 							},
 							{
 								"edge_name": "edge-2",
 								"pool_name": "pool-2",
 								"security_group": "sg-2",
-								"port": "5000"
+								"port": 5000
 							}
 						]
 					}`)),
-				}, nil)
+					}, nil)
 
-				job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
+					job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
-				Expect(err).NotTo(HaveOccurred())
-				Expect(client.DoCallCount()).To(Equal(1))
-				jobProperties := api.JobProperties{
-					Instances:         float64(1),
-					PersistentDisk:    &api.Disk{Size: "290"},
-					InstanceType:      api.InstanceType{ID: "number-1"},
-					InternetConnected: new(bool),
-					LBNames:           []string{"something"},
-					NSXSecurityGroups: []string{"sg1", "sg2"},
-					NSXLBS: []api.NSXLB{
-						api.NSXLB{
-							EdgeName:      "edge-1",
-							PoolName:      "pool-1",
-							SecurityGroup: "sg-1",
-							Port:          "5000",
+					Expect(err).NotTo(HaveOccurred())
+					Expect(client.DoCallCount()).To(Equal(1))
+					jobProperties := api.JobProperties{
+						Instances:              float64(1),
+						PersistentDisk:         &api.Disk{Size: "290"},
+						InstanceType:           api.InstanceType{ID: "number-1"},
+						InternetConnected:      new(bool),
+						LBNames:                []string{"something"},
+						Pre27NSXSecurityGroups: []string{"sg1", "sg2"},
+						Pre27NSXLBS: []api.Pre27NSXLB{
+							api.Pre27NSXLB{
+								EdgeName:      "edge-1",
+								PoolName:      "pool-1",
+								SecurityGroup: "sg-1",
+								Port:          5000,
+							},
+							api.Pre27NSXLB{
+								EdgeName:      "edge-2",
+								PoolName:      "pool-2",
+								SecurityGroup: "sg-2",
+								Port:          5000,
+							},
 						},
-						api.NSXLB{
-							EdgeName:      "edge-2",
-							PoolName:      "pool-2",
-							SecurityGroup: "sg-2",
-							Port:          "5000",
+					}
+					*jobProperties.InternetConnected = true
+					Expect(job).To(Equal(jobProperties))
+					request := client.DoArgsForCall(0)
+					Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+				})
+			})
+
+			Context("with versions of Ops Manager greater than 2.7", func() {
+				It("includes nsx properties in the resource config as nested nsx keys", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(strings.NewReader(`{
+						"instances": 1,
+						"instance_type": { "id": "number-1" },
+						"persistent_disk": { "size_mb": "290" },
+						"internet_connected": true,
+						"elb_names": ["something"],
+						"nsx": {
+							"security_groups": [
+								"group1",
+								"group2"
+							],
+							"lbs": [
+								{
+									"edge_name": "my-edge",
+									"pool_name": "my-pool",
+									"security_group": "group1",
+									"port": 8899
+								}
+							]
 						},
-					},
-				}
-				*jobProperties.InternetConnected = true
-				Expect(job).To(Equal(jobProperties))
-				request := client.DoArgsForCall(0)
-				Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+						"nsxt": {
+							"ns_groups": [],
+							"vif_type": null,
+							"lb": {
+								"server_pools": [
+									{
+										"name": "test-pool",
+										"port": 1011
+									}
+								]
+							}
+						}
+					}`)),
+					}, nil)
+
+					job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
+
+					Expect(err).NotTo(HaveOccurred())
+					Expect(client.DoCallCount()).To(Equal(1))
+					jobProperties := api.JobProperties{
+						Instances:         float64(1),
+						PersistentDisk:    &api.Disk{Size: "290"},
+						InstanceType:      api.InstanceType{ID: "number-1"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"something"},
+						NSX: &api.NSX{
+							SecurityGroups: []string{"group1", "group2"},
+							LBS: []api.Pre27NSXLB{
+								api.Pre27NSXLB{
+									EdgeName:      "my-edge",
+									PoolName:      "my-pool",
+									SecurityGroup: "group1",
+									Port:          8899,
+								},
+							},
+						},
+						NSXT: &api.NSXT{
+							NSGroups: []string{},
+							VIFType:  nil,
+							LB: api.NSXTLB{
+								ServerPools: []api.ServerPool{
+									{
+										Name: "test-pool",
+										Port: 1011,
+									},
+								},
+							},
+						},
+					}
+					*jobProperties.InternetConnected = true
+					Expect(job).To(Equal(jobProperties))
+					request := client.DoArgsForCall(0)
+					Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+				})
+				It("sets vif_type to null if not provided", func() {
+					client.DoReturns(&http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(strings.NewReader(`{
+						"instances": 1,
+						"instance_type": { "id": "number-1" },
+						"persistent_disk": { "size_mb": "290" },
+						"internet_connected": true,
+						"elb_names": ["something"],
+						"nsx": {
+							"security_groups": [
+								"group1",
+								"group2"
+							],
+							"lbs": [
+								{
+									"edge_name": "my-edge",
+									"pool_name": "my-pool",
+									"security_group": "group1",
+									"port": 8899
+								}
+							]
+						},
+						"nsxt": {
+							"ns_groups": [],
+							"vif_type": null,
+							"lb": {
+								"server_pools": [
+									{
+										"name": "test-pool",
+										"port": 1011
+									}
+								]
+							}
+						}
+					}`)),
+					}, nil)
+
+					job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
+
+					Expect(err).NotTo(HaveOccurred())
+					Expect(client.DoCallCount()).To(Equal(1))
+					jobProperties := api.JobProperties{
+						Instances:         float64(1),
+						PersistentDisk:    &api.Disk{Size: "290"},
+						InstanceType:      api.InstanceType{ID: "number-1"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"something"},
+						NSX: &api.NSX{
+							SecurityGroups: []string{"group1", "group2"},
+							LBS: []api.Pre27NSXLB{
+								api.Pre27NSXLB{
+									EdgeName:      "my-edge",
+									PoolName:      "my-pool",
+									SecurityGroup: "group1",
+									Port:          8899,
+								},
+							},
+						},
+						NSXT: &api.NSXT{
+							NSGroups: []string{},
+							VIFType:  nil,
+							LB: api.NSXTLB{
+								ServerPools: []api.ServerPool{
+									{
+										Name: "test-pool",
+										Port: 1011,
+									},
+								},
+							},
+						},
+					}
+					*jobProperties.InternetConnected = true
+					Expect(job).To(Equal(jobProperties))
+					request := client.DoArgsForCall(0)
+					Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
+				})
 			})
 		})
 
