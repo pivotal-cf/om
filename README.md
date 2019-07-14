@@ -66,11 +66,10 @@ via [Stark and Wayne](https://www.starkandwayne.com/):
 
 ```sh
 # apt-get:
-wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
-echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
-apt-get update
-
-apt-get install om
+sudo wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | sudo  apt-key add -
+sudo echo "deb http://apt.starkandwayne.com stable main" | sudo  tee /etc/apt/sources.list.d/starkandwayne.list
+sudo apt-get update
+sudo apt-get install om -y
 ```
 
 
