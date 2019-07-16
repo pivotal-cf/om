@@ -293,13 +293,13 @@ var _ = Describe("configure-product command", func() {
 					"edge_name": "edge-1",
 					"pool_name": "pool-1",
 					"security_group": "sg-1",
-					"port": "5000"
+					"port": 5000
 				},
 				{
 					"edge_name": "edge-2",
 					"pool_name": "pool-2",
 					"security_group": "sg-2",
-					"port": "5000"
+					"port": 5000
 				}
 			]
 		}`))
@@ -330,13 +330,13 @@ const nsxResourceConfigJSON = `
       "edge_name": "edge-1",
       "pool_name": "pool-1",
       "security_group": "sg-1",
-      "port": "5000"
+      "port": 5000
     },
     {
       "edge_name": "edge-2",
       "pool_name": "pool-2",
       "security_group": "sg-2",
-      "port": "5000"
+      "port": 5000
     }]
   }
 }`
