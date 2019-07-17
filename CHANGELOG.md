@@ -53,8 +53,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 - `pivnet-api-token` is now optional in `download-product`
   if a source is defined. Thanks to @vchrisb for the PR!
-- `configure-authentication` can create a UAA client on the Ops Manager vm.
+- `configure-authentication`, `configure-ldap-authentication`, and `configure-saml-authentication`
+  can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
+- add support for NSX and NSXT in Ops Manager 2.7+
   
 ### Breaking Changes
 
@@ -72,6 +74,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   
 ### Bug Fix
 - `apply-changes` will error with _product not found_ if that product has not been staged.
+- `upload-stemcell` now accepts `--floating false` in addition to `floating=false`.
+  This was done to offer consistency between all of the flags on the command.
 
 ## 2.0.1
 
