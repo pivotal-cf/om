@@ -414,6 +414,24 @@ var _ = Describe("ConfigureProduct", func() {
 						})
 						Expect(err).NotTo(HaveOccurred())
 					})
+
+					It("supports the experimental feature of OM_VARS_ENV", func() {
+						os.Setenv("OM_VARS_ENV", "OM_VAR")
+						defer os.Unsetenv("OM_VARS_ENV")
+
+						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)
+
+						configFile, err = ioutil.TempFile("", "")
+						Expect(err).NotTo(HaveOccurred())
+
+						_, err = configFile.WriteString(productPropertiesWithVariables)
+						Expect(err).NotTo(HaveOccurred())
+
+						err = client.Execute([]string{
+							"--config", configFile.Name(),
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
 				})
 
 				It("returns an error if missing variables", func() {

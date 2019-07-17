@@ -640,6 +640,29 @@ vmtypes-configuration:
 
 							ExpectDirectorToBeConfiguredCorrectly()
 						})
+
+						It("supports the experimental feature of OM_VARS_ENV", func() {
+							os.Setenv("OM_VARS_ENV", "OM_VAR")
+							defer os.Unsetenv("OM_VARS_ENV")
+
+							command = commands.NewConfigureDirector(
+								func() []string { return []string{"OM_VAR_network_name=network"} },
+								service,
+								logger)
+
+							configFile, err := ioutil.TempFile("", "config.yaml")
+							Expect(err).ToNot(HaveOccurred())
+							_, err = configFile.Write(templateConfigurationJSON)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(configFile.Close()).ToNot(HaveOccurred())
+
+							err = command.Execute([]string{
+								"--config", configFile.Name(),
+							})
+							Expect(err).NotTo(HaveOccurred())
+
+							ExpectDirectorToBeConfiguredCorrectly()
+						})
 					})
 
 				})
