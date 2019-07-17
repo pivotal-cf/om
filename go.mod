@@ -1,6 +1,7 @@
 module github.com/pivotal-cf/om
 
 require (
+	cloud.google.com/go v0.38.0
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.20.13 // indirect
@@ -17,6 +18,7 @@ require (
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/google/go-querystring v1.0.0
+	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/gosuri/uilive v0.0.3 // indirect
 	github.com/graymeta/stow v0.0.0-20190417153120-00c3b5928f2a
 	github.com/hashicorp/go-version v1.2.0
@@ -37,7 +39,10 @@ require (
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
+	google.golang.org/api v0.7.0 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
+	google.golang.org/genproto v0.0.0-20190716160619-c506a9f90610 // indirect
+	google.golang.org/grpc v1.22.0 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.29.0

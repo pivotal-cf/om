@@ -496,7 +496,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 				multipart.AddFileReturns(errors.New("bad file"))
 
 				err := command.Execute([]string{"--stemcell", "/some/path"})
-				Expect(err).To(MatchError("failed to load stemcell: bad file"))
+				Expect(err).To(MatchError("failed to upload stemcell: bad file"))
 			})
 		})
 

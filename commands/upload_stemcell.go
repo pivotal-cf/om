@@ -65,62 +65,20 @@ func (us UploadStemcell) Execute(args []string) error {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
 	}
 
-	if us.Options.Floating != "true" && us.Options.Floating != "false" {
-		return errors.New("--floating must be \"true\" or \"false\". Default: true")
+	err = us.validate()
+	if err != nil {
+		return err
 	}
 
 	stemcellFilename := us.Options.Stemcell
-	if us.Options.Shasum != "" {
-		shaValidator := validator.NewSHA256Calculator()
-		shasum, err := shaValidator.Checksum(stemcellFilename)
-
+	if !us.Options.Force {
+		exists, err := us.checkStemcellUploaded()
 		if err != nil {
 			return err
 		}
 
-		if shasum != us.Options.Shasum {
-			return fmt.Errorf("expected shasum %s does not match file shasum %s", us.Options.Shasum, shasum)
-		}
-
-		us.logger.Printf("expected shasum matches stemcell shasum.")
-	}
-
-	if !us.Options.Force {
-		us.logger.Printf("processing stemcell")
-		report, err := us.service.GetDiagnosticReport()
-		if err != nil {
-			switch err.(type) {
-			case api.DiagnosticReportUnavailable:
-				us.logger.Printf("%s", err)
-			default:
-				return fmt.Errorf("failed to get diagnostic report: %s", err)
-			}
-		}
-
-		info, err := us.service.Info()
-		if err != nil {
-			return fmt.Errorf("cannot retrieve version of Ops Manager")
-		}
-
-		validVersion, err := info.VersionAtLeast(2, 6)
-		if err != nil {
-			return fmt.Errorf("could not determine version was 2.6+ compatible: %s", err)
-		}
-
-		if validVersion {
-			for _, stemcell := range report.AvailableStemcells {
-				if stemcell.Filename == filepath.Base(stemcellFilename) {
-					us.logger.Printf("stemcell has already been uploaded")
-					return nil
-				}
-			}
-		}
-
-		for _, stemcell := range report.Stemcells {
-			if stemcell == filepath.Base(stemcellFilename) {
-				us.logger.Printf("stemcell has already been uploaded")
-				return nil
-			}
+		if exists {
+			return nil
 		}
 	}
 
@@ -128,25 +86,36 @@ func (us UploadStemcell) Execute(args []string) error {
 	if prefixRegex.MatchString(filepath.Base(stemcellFilename)) {
 		matches := prefixRegex.FindStringSubmatch(filepath.Base(stemcellFilename))
 
-		newStemcellFilename := filepath.Join(filepath.Dir(stemcellFilename), matches[1])
-		err = os.Symlink(stemcellFilename, newStemcellFilename)
+		symlinkedStemcell := filepath.Join(filepath.Dir(stemcellFilename), matches[1])
+		err = os.Symlink(stemcellFilename, symlinkedStemcell)
 		if err != nil {
 			return err
 		}
-		stemcellFilename = newStemcellFilename
+		stemcellFilename = symlinkedStemcell
 
-		defer os.Remove(newStemcellFilename)
+		defer os.Remove(symlinkedStemcell)
 	}
 
+	err = us.uploadStemcell(stemcellFilename)
+	if err != nil {
+		return fmt.Errorf("failed to upload stemcell: %s", err)
+	}
+
+	us.logger.Printf("finished upload")
+
+	return nil
+}
+
+func (us UploadStemcell) uploadStemcell(stemcellFilename string) (err error) {
 	for i := 0; i <= maxStemcellUploadRetries; i++ {
 		err = us.multipart.AddFile("stemcell[file]", stemcellFilename)
 		if err != nil {
-			return fmt.Errorf("failed to load stemcell: %s", err)
+			return err
 		}
 
 		err = us.multipart.AddField("stemcell[floating]", us.Options.Floating)
 		if err != nil {
-			return fmt.Errorf("failed to load stemcell: %s", err)
+			return err
 		}
 
 		submission := us.multipart.Finalize()
@@ -168,11 +137,74 @@ func (us UploadStemcell) Execute(args []string) error {
 			break
 		}
 	}
-	if err != nil {
-		return fmt.Errorf("failed to upload stemcell: %s", err)
+
+	return err
+}
+
+func (us UploadStemcell) validate() error {
+	if us.Options.Floating != "true" && us.Options.Floating != "false" {
+		return errors.New("--floating must be \"true\" or \"false\". Default: true")
 	}
 
-	us.logger.Printf("finished upload")
+	if us.Options.Shasum != "" {
+		shaValidator := validator.NewSHA256Calculator()
+		shasum, err := shaValidator.Checksum(us.Options.Stemcell)
+
+		if err != nil {
+			return err
+		}
+
+		if shasum != us.Options.Shasum {
+			return fmt.Errorf("expected shasum %s does not match file shasum %s", us.Options.Shasum, shasum)
+		}
+
+		us.logger.Printf("expected shasum matches stemcell shasum.")
+	}
 
 	return nil
+}
+
+func (us UploadStemcell) checkStemcellUploaded() (exists bool, err error) {
+	us.logger.Printf("processing stemcell")
+
+	stemcellFilename := us.Options.Stemcell
+	exists = true
+
+	report, err := us.service.GetDiagnosticReport()
+	if err != nil {
+		switch err.(type) {
+		case api.DiagnosticReportUnavailable:
+			us.logger.Printf("%s", err)
+		default:
+			return !exists, fmt.Errorf("failed to get diagnostic report: %s", err)
+		}
+	}
+
+	info, err := us.service.Info()
+	if err != nil {
+		return !exists, fmt.Errorf("cannot retrieve version of Ops Manager")
+	}
+
+	validVersion, err := info.VersionAtLeast(2, 6)
+	if err != nil {
+		return !exists, fmt.Errorf("could not determine version was 2.6+ compatible: %s", err)
+	}
+
+	if validVersion {
+		for _, stemcell := range report.AvailableStemcells {
+			if stemcell.Filename == filepath.Base(stemcellFilename) {
+				us.logger.Printf("stemcell has already been uploaded")
+				return exists, nil
+			}
+		}
+	}
+
+	for _, stemcell := range report.Stemcells {
+		if stemcell == filepath.Base(stemcellFilename) {
+			us.logger.Printf("stemcell has already been uploaded")
+			return exists, nil
+		}
+	}
+
+	return !exists, nil
 }
