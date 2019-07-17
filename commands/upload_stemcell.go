@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -10,8 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-
-	"strconv"
 )
 
 const maxStemcellUploadRetries = 2
@@ -24,7 +23,7 @@ type UploadStemcell struct {
 		ConfigFile string `long:"config"   short:"c"                 description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Stemcell   string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
 		Force      bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
-		Floating   bool   `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
+		Floating   string `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
 		Shasum     string `long:"shasum"                             description:"shasum of the provided product file to be used for validation"`
 	}
 }
@@ -64,6 +63,10 @@ func (us UploadStemcell) Execute(args []string) error {
 	err := loadConfigFile(args, &us.Options, nil)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
+	}
+
+	if us.Options.Floating != "true" && us.Options.Floating != "false" {
+		return errors.New("--floating must be \"true\" or \"false\". Default: true")
 	}
 
 	stemcellFilename := us.Options.Stemcell
@@ -141,7 +144,7 @@ func (us UploadStemcell) Execute(args []string) error {
 			return fmt.Errorf("failed to load stemcell: %s", err)
 		}
 
-		err = us.multipart.AddField("stemcell[floating]", strconv.FormatBool(us.Options.Floating))
+		err = us.multipart.AddField("stemcell[floating]", us.Options.Floating)
 		if err != nil {
 			return fmt.Errorf("failed to load stemcell: %s", err)
 		}

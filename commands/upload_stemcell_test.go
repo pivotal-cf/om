@@ -77,50 +77,78 @@ var _ = Describe("UploadStemcell", func() {
 			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
 		})
 
-		It("disables floating", func() {
-			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
-			submission := formcontent.ContentSubmission{
-				ContentLength: 10,
-				Content:       ioutil.NopCloser(strings.NewReader("")),
-				ContentType:   "some content-type",
-			}
-			multipart.FinalizeReturns(submission)
+		Context("floating", func() {
+			var command commands.UploadStemcell
+			BeforeEach(func() {
+				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
+				submission := formcontent.ContentSubmission{
+					ContentLength: 10,
+					Content:       ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
+				}
+				multipart.FinalizeReturns(submission)
 
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
+				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
-			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-
-			err := command.Execute([]string{
-				"--stemcell", "/path/to/stemcell.tgz",
-				"--floating=false",
+				command = commands.NewUploadStemcell(multipart, fakeService, logger)
 			})
-			Expect(err).NotTo(HaveOccurred())
 
-			key, file := multipart.AddFileArgsForCall(0)
-			Expect(key).To(Equal("stemcell[file]"))
-			Expect(file).To(Equal("/path/to/stemcell.tgz"))
+			It("disables floating", func() {
+				err := command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+					"--floating", "false",
+				})
+				Expect(err).NotTo(HaveOccurred())
 
-			key, value := multipart.AddFieldArgsForCall(0)
-			Expect(key).To(Equal("stemcell[floating]"))
-			Expect(value).To(Equal("false"))
+				key, file := multipart.AddFileArgsForCall(0)
+				Expect(key).To(Equal("stemcell[file]"))
+				Expect(file).To(Equal("/path/to/stemcell.tgz"))
 
-			Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
-				ContentLength: 10,
-				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
-				ContentType:   "some content-type",
-			}))
+				key, value := multipart.AddFieldArgsForCall(0)
+				Expect(key).To(Equal("stemcell[floating]"))
+				Expect(value).To(Equal("false"))
 
-			Expect(multipart.FinalizeCallCount()).To(Equal(1))
+				Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
+					ContentLength: 10,
+					Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+					ContentType:   "some content-type",
+				}))
 
-			format, v := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
+				Expect(multipart.FinalizeCallCount()).To(Equal(1))
 
-			format, v = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+				format, v := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
 
-			format, v = logger.PrintfArgsForCall(2)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+				format, v = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
+
+				format, v = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
+			})
+
+			It("only accepts true and false", func() {
+				err := command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+					"--floating", "flalsee",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("--floating must be \"true\" or \"false\". Default: true"))
+
+				err = command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+					"--floating", "trurure",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("--floating must be \"true\" or \"false\". Default: true"))
+
+				err = command.Execute([]string{
+					"--stemcell", "/path/to/stemcell.tgz",
+					"--floating", "true",
+				})
+				Expect(err).ToNot(HaveOccurred())
+			})
 		})
+
 
 		Context("when the product fails to upload the first time with a retryable error", func() {
 			It("tries again", func() {
