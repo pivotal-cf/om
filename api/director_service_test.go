@@ -829,6 +829,95 @@ var _ = Describe("Director", func() {
 			})
 		})
 
+		When("IAASConfigurations endpoint is not implemented", func() {
+			BeforeEach(func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.URL.String() == "/api/v0/staged/director/iaas_configurations" && req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusNotImplemented,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+			})
+
+			It("sets new IAASConfiguration using UpdateStagedDirectorProperties", func() {
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "new"}]`))
+				Expect(err).NotTo(HaveOccurred())
+
+				req := client.DoArgsForCall(0)
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+
+				req = client.DoArgsForCall(1)
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
+
+				req = client.DoArgsForCall(2)
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
+
+				jsonBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(jsonBody).To(MatchJSON(`{
+				"iaas_configuration": {"name": "new"}
+			}`))
+			})
+
+			It("fails if there are multiple configurations defined", func() {
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "config1"}, {"name": "config2"}]`))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("multiple iaas_configurations are not allowed for your IAAS."))
+				Expect(err.Error()).To(ContainSubstring("Supported IAASes include: vsphere, azure."))
+			})
+
+			It("updates IAASConfiguration using UpdateStagedDirectorProperties", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					if req.URL.String() == "/api/v0/staged/director/iaas_configurations" && req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusNotImplemented,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					} else if req.URL.String() == "/api/v0/staged/director/properties" && req.Method == "GET" {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body: ioutil.NopCloser(strings.NewReader(`{"iaas_configuration":
+									{
+                                      "guid": "some-guid",
+									  "name": "existing"
+                                    }}`))}, nil
+					} else {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+					}
+				}
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"}]`))
+				Expect(err).NotTo(HaveOccurred())
+
+				req := client.DoArgsForCall(0)
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+
+				req = client.DoArgsForCall(1)
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
+
+				req = client.DoArgsForCall(2)
+				Expect(req.Method).To(Equal("PUT"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
+
+				jsonBody, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(jsonBody).To(MatchJSON(`{
+				"iaas_configuration": {"name": "existing", "guid": "some-guid"}
+			}`))
+			})
+		})
+
 		Context("failure cases", func() {
 			It("returns error if GET to iaas_configurations fails", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {

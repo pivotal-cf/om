@@ -239,15 +239,20 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 
 type IAASConfigurationsInput json.RawMessage
 
-type IAASConfigurationAPIPayload struct {
-	Fields            map[string]interface{} `yaml:",inline"`
-	IAASConfiguration []*IAASConfiguration   `yaml:"iaas_configurations"`
+type IAASConfigurationsAPIPayload struct {
+	Fields            map[string]interface{} `json:",inline,omitempty" yaml:",inline,omitempty"`
+	IAASConfiguration []*IAASConfiguration   `json:"iaas_configurations" yaml:"iaas_configurations"`
+}
+
+type IAASConfigurationDirectorPropertiesPayload struct {
+	Fields            map[string]interface{} `json:",inline,omitempty" yaml:",inline,omitempty"`
+	IAASConfiguration *IAASConfiguration     `json:"iaas_configuration" yaml:"iaas_configuration"`
 }
 
 type IAASConfiguration struct {
-	GUID   string                 `yaml:"guid,omitempty"`
-	Name   string                 `yaml:"name"`
-	Fields map[string]interface{} `yaml:",inline"`
+	GUID   string                 `json:"guid,omitempty" yaml:"guid,omitempty"`
+	Name   string                 `json:"name" yaml:"name"`
+	Fields map[string]interface{} `json:",inline,omitempty" yaml:",inline,omitempty"`
 }
 
 func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfigurationsInput) error {
@@ -263,11 +268,15 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode == http.StatusNotImplemented {
+		return a.updateIAASConfigurationInDirectorProperties(iaasConfigurations)
+	}
+
 	existingIAASJSON, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
-	var existingIAASes IAASConfigurationAPIPayload
+	var existingIAASes IAASConfigurationsAPIPayload
 	err = yaml.Unmarshal(existingIAASJSON, &existingIAASes)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response from Ops Manager: %s", err)
@@ -313,6 +322,43 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 		if err = validateStatusOK(resp); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*IAASConfiguration) error {
+	if len(iaasConfigurations) > 1 {
+		return errors.New("multiple iaas_configurations are not allowed for your IAAS.\nSupported IAASes include: vsphere, azure.")
+	}
+
+	resp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/properties", nil)
+	existingIAASJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("could not get IAAS configuration from the director: %s", err)
+	}
+
+	var existingIAAS IAASConfigurationDirectorPropertiesPayload
+	err = json.Unmarshal(existingIAASJSON, &existingIAAS)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal JSON response from Ops Manager: %s", err)
+	}
+	if existingIAAS.IAASConfiguration != nil {
+		for _, config := range iaasConfigurations {
+			if config.Name == existingIAAS.IAASConfiguration.Name {
+				config.GUID = existingIAAS.IAASConfiguration.GUID
+				break
+			}
+		}
+	}
+
+	iaasConfig := IAASConfigurationDirectorPropertiesPayload {
+		IAASConfiguration: iaasConfigurations[0],
+	}
+	configBytes, err := json.Marshal(iaasConfig)
+	err = a.UpdateStagedDirectorProperties(configBytes)
+	if err != nil {
+		return fmt.Errorf("failed to update IAAS configuration in the director properties: %s", err)
 	}
 
 	return nil
