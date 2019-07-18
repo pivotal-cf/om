@@ -268,10 +268,6 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode == http.StatusNotImplemented {
-		return a.updateIAASConfigurationInDirectorProperties(iaasConfigurations)
-	}
-
 	existingIAASJSON, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
@@ -309,6 +305,9 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 			if err != nil {
 				return err
 			}
+			if resp.StatusCode == http.StatusNotImplemented {
+				return a.updateIAASConfigurationInDirectorProperties(iaasConfigurations)
+			}
 			if err = validateStatusOK(resp); err != nil {
 				return err
 			}
@@ -329,7 +328,7 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 
 func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*IAASConfiguration) error {
 	if len(iaasConfigurations) > 1 {
-		return errors.New("multiple iaas_configurations are not allowed for your IAAS.\nSupported IAASes include: vsphere, azure.")
+		return errors.New("multiple iaas_configurations are not allowed for your IAAS.\nSupported IAASes include: vsphere and openstack.")
 	}
 
 	resp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/properties", nil)

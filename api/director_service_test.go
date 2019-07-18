@@ -829,10 +829,10 @@ var _ = Describe("Director", func() {
 			})
 		})
 
-		When("IAASConfigurations endpoint is not implemented", func() {
+		When("IAASConfigurations POST endpoint is not implemented", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					if req.URL.String() == "/api/v0/staged/director/iaas_configurations" && req.Method == "GET" {
+					if req.URL.String() == "/api/v0/staged/director/iaas_configurations" && req.Method == "POST" {
 						return &http.Response{
 							StatusCode: http.StatusNotImplemented,
 							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
@@ -853,10 +853,14 @@ var _ = Describe("Director", func() {
 				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
 
 				req = client.DoArgsForCall(1)
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+
+				req = client.DoArgsForCall(2)
 				Expect(req.Method).To(Equal("GET"))
 				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
 
-				req = client.DoArgsForCall(2)
+				req = client.DoArgsForCall(3)
 				Expect(req.Method).To(Equal("PUT"))
 				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
 
@@ -871,12 +875,12 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "config1"}, {"name": "config2"}]`))
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("multiple iaas_configurations are not allowed for your IAAS."))
-				Expect(err.Error()).To(ContainSubstring("Supported IAASes include: vsphere, azure."))
+				Expect(err.Error()).To(ContainSubstring("Supported IAASes include: vsphere and openstack."))
 			})
 
 			It("updates IAASConfiguration using UpdateStagedDirectorProperties", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					if req.URL.String() == "/api/v0/staged/director/iaas_configurations" && req.Method == "GET" {
+					if req.URL.String() == "/api/v0/staged/director/iaas_configurations" && req.Method == "POST" {
 						return &http.Response{
 							StatusCode: http.StatusNotImplemented,
 							Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
@@ -903,10 +907,14 @@ var _ = Describe("Director", func() {
 				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
 
 				req = client.DoArgsForCall(1)
+				Expect(req.Method).To(Equal("POST"))
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/iaas_configurations"))
+
+				req = client.DoArgsForCall(2)
 				Expect(req.Method).To(Equal("GET"))
 				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
 
-				req = client.DoArgsForCall(2)
+				req = client.DoArgsForCall(3)
 				Expect(req.Method).To(Equal("PUT"))
 				Expect(req.URL.Path).To(Equal("/api/v0/staged/director/properties"))
 
