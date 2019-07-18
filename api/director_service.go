@@ -354,8 +354,16 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 	iaasConfig := IAASConfigurationDirectorPropertiesPayload {
 		IAASConfiguration: iaasConfigurations[0],
 	}
-	configBytes, err := json.Marshal(iaasConfig)
-	err = a.UpdateStagedDirectorProperties(configBytes)
+	contents, err := yaml.Marshal(iaasConfig)
+	if err != nil {
+		return errors.Wrap(err, "problem marshalling request") // un-tested
+	}
+
+	jsonData, err := yamlConverter.YAMLToJSON(contents)
+	if err != nil {
+		return errors.Wrap(err, "problem converting request to JSON") // un-tested
+	}
+	err = a.UpdateStagedDirectorProperties(jsonData)
 	if err != nil {
 		return fmt.Errorf("failed to update IAAS configuration in the director properties: %s", err)
 	}

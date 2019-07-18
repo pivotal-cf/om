@@ -899,7 +899,7 @@ var _ = Describe("Director", func() {
 					}
 				}
 
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing","other-field": "value"}]`))
 				Expect(err).NotTo(HaveOccurred())
 
 				req := client.DoArgsForCall(0)
@@ -921,7 +921,7 @@ var _ = Describe("Director", func() {
 				jsonBody, err := ioutil.ReadAll(req.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(jsonBody).To(MatchJSON(`{
-				"iaas_configuration": {"name": "existing", "guid": "some-guid"}
+				"iaas_configuration": {"name": "existing", "guid": "some-guid","other-field": "value"}
 			}`))
 			})
 		})
