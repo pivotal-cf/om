@@ -251,7 +251,7 @@ type IAASConfigurationDirectorPropertiesPayload struct {
 
 type IAASConfiguration struct {
 	GUID   string                 `json:"guid,omitempty" yaml:"guid,omitempty"`
-	Name   string                 `json:"name" yaml:"name"`
+	Name   string                 `json:"name,omitempty" yaml:"name,omitempty"`
 	Fields map[string]interface{} `json:",inline,omitempty" yaml:",inline,omitempty"`
 }
 
