@@ -2,14 +2,14 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "2.0.1"
+  version "3.0.0"
 
   if OS.mac?
-    url "https://github.com/pivotal-cf/om/releases/download/2.0.1/om-darwin-2.0.1.tar.gz"
-    sha256 "578235fed7ce64a16d2883f98bc91dbc63aafde1c1bf59664c6fb5edc3814b47"
+    url "https://github.com/pivotal-cf/om/releases/download/3.0.0/om-darwin-3.0.0.tar.gz"
+    sha256 "3bf49af91460c503270ee2ee20bc3dd99d1ae0102f74f4ad145b772b81f93b5c"
   elsif OS.linux?
-    url "https://github.com/pivotal-cf/om/releases/download/2.0.1/om-linux-2.0.1.tar.gz"
-    sha256 "c8ef55ce07e97ff9eadbd8e3e1c7909407378733c19ff39348b4b1e1bc3a65e5"
+    url "https://github.com/pivotal-cf/om/releases/download/3.0.0/om-linux-3.0.0.tar.gz"
+    sha256 "1497703e7120d637d2fb18c0f01b91650bad6351b8be170550fa1ea580b5e13a"
   end
 
   def install
