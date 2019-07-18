@@ -76,6 +76,15 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `apply-changes` will error with _product not found_ if that product has not been staged.
 - `upload-stemcell` now accepts `--floating false` in addition to `floating=false`.
   This was done to offer consistency between all of the flags on the command.
+- `configure-director` had a bug in which `iaas_configurations` could not be set
+  on AWS/GCP/Azure because "POST" was unsupported for these IAASes
+  (Multiple IAAS Configurations only work for vSphere and Openstack).
+  `configure-director` will now check if the endpoint is supported.
+  If it is not supported, it will construct a payload, and selectively configure
+  iaas_configuration as if it were nested under `properties-configuration`. 
+  _The behavior of this command remains the same._ 
+  IAAS Configuration may still be set via `iaas_configurations` OR `properties.iaas_configuration`  
+  
 
 ## 2.0.1
 
