@@ -68,11 +68,11 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 		if propertyMetadata.IsConfigurable() && propertyMetadata.IsRequired() {
 			if propertyMetadata.IsCollection() {
 				if propertyMetadata.IsRequiredCollection() {
-					CollectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyMetadata.PropertyBlueprints, vars)
+					collectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyMetadata.PropertyBlueprints, true, vars)
 				}
 			} else {
 				if !propertyMetadata.IsSelector() {
-					addPropertyToVars(property.Reference, propertyMetadata, vars)
+					addPropertyToVars(property.Reference, propertyMetadata, true, vars)
 				}
 			}
 		}
@@ -85,7 +85,7 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 					for _, metadata := range selectorMetadata {
 						if metadata.IsConfigurable() {
 							selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, metadata.Name)
-							addPropertyToVars(selectorProperty, &metadata, vars)
+							addPropertyToVars(selectorProperty, &metadata, true, vars)
 						}
 					}
 				}
@@ -95,21 +95,50 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 	return vars, nil
 }
 
-func addPropertyToVars(propertyName string, propertyMetadata *PropertyBlueprint, vars map[string]interface{}) {
+func GetRequiredPropertyVars(metadata *Metadata) (map[string]interface{}, error) {
+	vars := make(map[string]interface{})
+	for _, property := range metadata.PropertyInputs() {
+		propertyBlueprint, _ := metadata.GetPropertyBlueprint(property.Reference)
+		if propertyBlueprint.IsMultiSelect() {
+			continue
+		}
+		if propertyBlueprint.IsConfigurable() && propertyBlueprint.IsRequired() {
+			if propertyBlueprint.IsCollection() {
+				collectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyBlueprint.PropertyBlueprints, false, vars)
+			} else {
+				addPropertyToVars(property.Reference, propertyBlueprint, false, vars)
+			}
+		}
+	}
+	return vars, nil
+}
+
+func addPropertyToVars(propertyName string, propertyMetadata *PropertyBlueprint, includePropertiesWithDefaults bool, vars map[string]interface{}) {
 	if !propertyMetadata.IsSecret() {
 		newPropertyName := strings.Replace(propertyName, ".", "", 1)
 		newPropertyName = strings.Replace(newPropertyName, "properties.", "", 1)
 		newPropertyName = strings.Replace(newPropertyName, ".", "/", -1)
-		if propertyMetadata.Default != nil {
-			if propertyMetadata.IsMultiSelect() {
-				if _, ok := propertyMetadata.Default.([]interface{}); ok {
-					vars[newPropertyName] = propertyMetadata.Default
+		if includePropertiesWithDefaults {
+			if propertyMetadata.Default != nil {
+				if propertyMetadata.IsMultiSelect() {
+					if _, ok := propertyMetadata.Default.([]interface{}); ok {
+						vars[newPropertyName] = propertyMetadata.Default
+						return
+					}
 				}
-			} else {
+
 				vars[newPropertyName] = propertyMetadata.Default
+				return
+			} else if propertyMetadata.IsBool() {
+				vars[newPropertyName] = false
+				return
 			}
-		} else if propertyMetadata.IsBool() {
-			vars[newPropertyName] = false
+
+			return
+		}
+
+		if propertyMetadata.Default == nil {
+			vars[newPropertyName] = ""
 		}
 	}
 }

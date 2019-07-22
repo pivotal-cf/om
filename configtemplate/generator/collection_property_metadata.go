@@ -82,15 +82,23 @@ func CollectionPropertyType(propertyName string, defaultValue interface{}, subPr
 	}, nil
 }
 
-func CollectionPropertyVars(propertyName string, subProperties []PropertyBlueprint, vars map[string]interface{}) {
+func collectionPropertyVars(propertyName string, subProperties []PropertyBlueprint, includePropertiesWithDefaults bool, vars map[string]interface{}) {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	for _, subProperty := range subProperties {
 		if subProperty.IsConfigurable() {
 			if !subProperty.IsSecret() && !subProperty.IsSimpleCredentials() && !subProperty.IsCertificate() {
 				subPropertyName := fmt.Sprintf("%s/%s", propertyName, subProperty.Name)
-				if subProperty.Default != nil {
-					vars[subPropertyName] = subProperty.Default
+				if includePropertiesWithDefaults {
+					if subProperty.Default != nil {
+						vars[subPropertyName] = subProperty.Default
+					}
+
+					return
+				}
+
+				if subProperty.Default == nil {
+					vars[subPropertyName] = ""
 				}
 			}
 		}

@@ -57,4 +57,22 @@ var _ = Describe("Product PropertyInputs", func() {
 			Expect(yml).Should(MatchYAML(string(expected)))
 		})
 	})
+
+	XContext("GetRequiredVars", func() {
+		//TODO implement
+		It("Should return required variables for properties that do not have defaults set", func() {
+			fileData, err := ioutil.ReadFile("../fixtures/p_healthwatch.yml")
+			Expect(err).ToNot(HaveOccurred())
+			expected, err := ioutil.ReadFile("../fixtures/healthwatch-required-vars.yml")
+			Expect(err).ToNot(HaveOccurred())
+			metadata, err := generator.NewMetadata(fileData)
+			Expect(err).ToNot(HaveOccurred())
+			requiredVars, err := generator.GetRequiredPropertyVars(metadata)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(requiredVars).ToNot(BeNil())
+			yml, err := yaml.Marshal(requiredVars)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(yml).Should(MatchYAML(string(expected)))
+		})
+	})
 })

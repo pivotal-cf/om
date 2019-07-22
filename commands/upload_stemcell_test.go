@@ -149,7 +149,6 @@ var _ = Describe("UploadStemcell", func() {
 			})
 		})
 
-
 		Context("when the product fails to upload the first time with a retryable error", func() {
 			It("tries again", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)

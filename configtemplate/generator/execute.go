@@ -147,6 +147,20 @@ func (e *Executor) Generate() error {
 		}
 	}
 
+	requiredVars, err := GetDefaultPropertyVars(metadata)
+	if err != nil {
+		return err
+	}
+	if len(requiredVars) > 0 {
+		if err = e.writeYamlFile(path.Join(targetDirectory, "required-vars.yml"), requiredVars); err != nil {
+			return err
+		}
+	} else {
+		if err = e.writeYamlFile(path.Join(targetDirectory, "required-vars.yml"), nil); err != nil {
+			return err
+		}
+	}
+
 	productPropertyOpsFiles, err := CreateProductPropertiesFeaturesOpsFiles(metadata)
 	if err != nil {
 		return err

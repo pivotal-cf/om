@@ -21,6 +21,7 @@ type PropertyInput struct {
 	Placeholder            string                  `yaml:"placeholder"`
 	Reference              string                  `yaml:"reference"`
 	SelectorPropertyInputs []SelectorPropertyInput `yaml:"selector_property_inputs"`
+	PropertyInputs         []PropertyInput         `yaml:"property_inputs"`
 }
 
 type SelectorPropertyInput struct {
