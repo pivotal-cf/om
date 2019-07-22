@@ -75,7 +75,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 				"simple": "simple-value",
 			}
 
-			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, []generator.PropertyMetadata{
+			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, []generator.PropertyBlueprint{
 				{
 					Name: "other-name",
 				},
@@ -100,7 +100,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 	Context("DefaultsToArray", func() {
 		It("contains simple string", func() {
 
-			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyMetadata{
+			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyBlueprint{
 				{
 					Configurable: "true",
 					Name:         "simple-value",
@@ -111,7 +111,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			Expect(propertyArray["simple-value"]).To(Equal(generator.SimpleString("((foo/simple-value))")))
 		})
 		It("contains secret type", func() {
-			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyMetadata{
+			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyBlueprint{
 				{
 					Configurable: "true",
 					Name:         "secret-value",
@@ -125,7 +125,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 		})
 
 		It("contains credential type", func() {
-			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyMetadata{
+			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyBlueprint{
 				{
 					Configurable: "true",
 					Name:         "certificate-value",

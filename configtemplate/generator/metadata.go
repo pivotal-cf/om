@@ -17,13 +17,13 @@ func NewMetadata(fileBytes []byte) (*Metadata, error) {
 }
 
 type Metadata struct {
-	Name              string             `yaml:"name"`
-	Version           string             `yaml:"product_version"`
-	FormTypes         []FormType         `yaml:"form_types"`
-	PropertyMetadata  []PropertyMetadata `yaml:"property_blueprints"`
-	JobTypes          []JobType          `yaml:"job_types"`
-	PostDeployErrands []ErrandMetadata   `yaml:"post_deploy_errands"`
-	PreDeleteErrands  []ErrandMetadata   `yaml:"pre_delete_errands"`
+	Name               string              `yaml:"name"`
+	Version            string              `yaml:"product_version"`
+	FormTypes          []FormType          `yaml:"form_types"`
+	PropertyBlueprints []PropertyBlueprint `yaml:"property_blueprints"`
+	JobTypes           []JobType           `yaml:"job_types"`
+	PostDeployErrands  []ErrandMetadata    `yaml:"post_deploy_errands"`
+	PreDeleteErrands   []ErrandMetadata    `yaml:"pre_delete_errands"`
 }
 
 func (m *Metadata) Errands() []ErrandMetadata {
@@ -52,24 +52,24 @@ func matchesType(t string) bool {
 
 func (m *Metadata) UsesServiceNetwork() bool {
 	for _, job := range m.JobTypes {
-		for _, propertyMetadata := range job.PropertyMetadata {
+		for _, propertyMetadata := range job.PropertyBlueprint {
 			if matchesType(propertyMetadata.Type) {
 				return true
 			}
 		}
 	}
 
-	for _, propertyMetadata := range m.PropertyMetadata {
+	for _, propertyMetadata := range m.PropertyBlueprints {
 		if matchesType(propertyMetadata.Type) {
 			return true
 		}
-		for _, subPropertyMetadata := range propertyMetadata.PropertyMetadata {
+		for _, subPropertyMetadata := range propertyMetadata.PropertyBlueprints {
 			if matchesType(subPropertyMetadata.Type) {
 				return true
 			}
 		}
 		for _, optionTemplates := range propertyMetadata.OptionTemplates {
-			for _, subPropertyMetadata := range optionTemplates.PropertyMetadata {
+			for _, subPropertyMetadata := range optionTemplates.PropertyBlueprints {
 				if matchesType(subPropertyMetadata.Type) {
 					return true
 				}
@@ -88,29 +88,29 @@ func (m *Metadata) GetJob(jobName string) (*JobType, error) {
 	return nil, fmt.Errorf("job %s not found", jobName)
 }
 
-func (m *Metadata) GetPropertyMetadata(propertyName string) (*PropertyMetadata, error) {
-	propertyParts := strings.Split(propertyName, ".")
+func (m *Metadata) GetPropertyBlueprint(propertyReference string) (*PropertyBlueprint, error) {
+	propertyParts := strings.Split(propertyReference, ".")
 	jobName := propertyParts[1]
 	simplePropertyName := propertyParts[len(propertyParts)-1]
 
 	job, err := m.GetJob(jobName)
 	if err == nil {
-		return job.GetPropertyMetadata(propertyName)
+		return job.GetPropertyBlueprint(propertyReference)
 	}
 
-	for _, property := range m.PropertyMetadata {
+	for _, property := range m.PropertyBlueprints {
 		if property.Name == simplePropertyName {
 			return &property, nil
 		}
 	}
 
-	return nil, fmt.Errorf("property %s not found", propertyName)
+	return nil, fmt.Errorf("property %s not found", propertyReference)
 }
 
-func (m *Metadata) Properties() []Property {
-	var properties []Property
+func (m *Metadata) PropertyInputs() []PropertyInput {
+	var propertyInputs []PropertyInput
 	for _, form := range m.FormTypes {
-		properties = append(properties, form.Properties...)
+		propertyInputs = append(propertyInputs, form.PropertyInputs...)
 	}
-	return properties
+	return propertyInputs
 }

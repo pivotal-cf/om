@@ -625,7 +625,7 @@ var _ = Describe("Director", func() {
 		})
 	})
 
-	Describe("Properties", func() {
+	Describe("PropertyInputs", func() {
 		BeforeEach(func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,

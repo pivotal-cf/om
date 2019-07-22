@@ -9,24 +9,24 @@ type Template struct {
 }
 
 type FormType struct {
-	Description string     `yaml:"description"`
-	Label       string     `yaml:"label"`
-	Name        string     `yaml:"name"`
-	Properties  []Property `yaml:"property_inputs"`
+	Description    string          `yaml:"description"`
+	Label          string          `yaml:"label"`
+	Name           string          `yaml:"name"`
+	PropertyInputs []PropertyInput `yaml:"property_inputs"`
 }
 
-type Property struct {
-	Description string             `yaml:"description"`
-	Label       string             `yaml:"label"`
-	Placeholder string             `yaml:"placeholder"`
-	Reference   string             `yaml:"reference"`
-	Selectors   []SelectorProperty `yaml:"selector_property_inputs"`
+type PropertyInput struct {
+	Description            string                  `yaml:"description"`
+	Label                  string                  `yaml:"label"`
+	Placeholder            string                  `yaml:"placeholder"`
+	Reference              string                  `yaml:"reference"`
+	SelectorPropertyInputs []SelectorPropertyInput `yaml:"selector_property_inputs"`
 }
 
-type SelectorProperty struct {
-	Label      string     `yaml:"label"`
-	Reference  string     `yaml:"reference"`
-	Properties []Property `yaml:"property_inputs"`
+type SelectorPropertyInput struct {
+	Label          string          `yaml:"label"`
+	Reference      string          `yaml:"reference"`
+	PropertyInputs []PropertyInput `yaml:"property_inputs"`
 }
 
 type Option struct {

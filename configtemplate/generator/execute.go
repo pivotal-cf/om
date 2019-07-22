@@ -132,7 +132,7 @@ func (e *Executor) Generate() error {
 		}
 	}
 
-	productPropertyVars, err := CreateProductPropertiesVars(metadata)
+	productPropertyVars, err := GetDefaultPropertyVars(metadata)
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (e *Executor) CreateTemplate(metadata *Metadata) (*Template, error) {
 		template.NetworkProperties = CreateNetworkProperties(metadata)
 		template.ResourceConfig = CreateResourceConfig(metadata)
 	}
-	productProperties, err := CreateProductProperties(metadata)
+	productProperties, err := GetAllProductProperties(metadata)
 	if err != nil {
 		return nil, err
 	}

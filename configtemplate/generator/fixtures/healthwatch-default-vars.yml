@@ -1,0 +1,8 @@
+healthwatch-forwarder/boshhealth_instance_count: 1
+healthwatch-forwarder/boshtasks_instance_count: 2
+healthwatch-forwarder/canary_instance_count: 2
+healthwatch-forwarder/cli_instance_count: 2
+healthwatch-forwarder/ingestor_instance_count: 4
+healthwatch-forwarder/opsman_instance_count: 2
+healthwatch-forwarder/publish_to_eva: true
+healthwatch-forwarder/worker_instance_count: 4

@@ -6,32 +6,32 @@ import (
 	"strings"
 )
 
-type PropertyMetadata struct {
-	Configurable     string             `yaml:"configurable"`
-	Default          interface{}        `yaml:"default"`
-	Optional         bool               `yaml:"optional"`
-	Name             string             `yaml:"name"`
-	Type             string             `yaml:"type"`
-	Options          []Option           `yaml:"options"`
-	OptionTemplates  []OptionTemplate   `yaml:"option_templates"`
-	PropertyMetadata []PropertyMetadata `yaml:"property_blueprints"`
+type PropertyBlueprint struct {
+	Configurable       string              `yaml:"configurable"`
+	Default            interface{}         `yaml:"default"`
+	Optional           bool                `yaml:"optional"`
+	Name               string              `yaml:"name"`
+	Type               string              `yaml:"type"`
+	Options            []Option            `yaml:"options"`
+	OptionTemplates    []OptionTemplate    `yaml:"option_templates"`
+	PropertyBlueprints []PropertyBlueprint `yaml:"property_blueprints"`
 }
 
 type OptionTemplate struct {
-	Name             string             `yaml:"name"`
-	SelectValue      string             `yaml:"select_value"`
-	PropertyMetadata []PropertyMetadata `yaml:"property_blueprints"`
+	Name               string              `yaml:"name"`
+	SelectValue        string              `yaml:"select_value"`
+	PropertyBlueprints []PropertyBlueprint `yaml:"property_blueprints"`
 }
 
-func (p *PropertyMetadata) IsConfigurable() bool {
+func (p *PropertyBlueprint) IsConfigurable() bool {
 	return strings.EqualFold(p.Configurable, "true")
 }
 
-func (p *PropertyMetadata) DefaultSelectorPath(property string) string {
+func (p *PropertyBlueprint) DefaultSelectorPath(property string) string {
 	return fmt.Sprintf("%s.%s", property, p.DefaultSelector())
 }
 
-func (p *PropertyMetadata) DefaultSelector() string {
+func (p *PropertyBlueprint) DefaultSelector() string {
 	defaultAsString := fmt.Sprintf("%v", p.Default)
 	for _, optiontemplate := range p.OptionTemplates {
 		if strings.EqualFold(optiontemplate.SelectValue, defaultAsString) {
@@ -41,11 +41,11 @@ func (p *PropertyMetadata) DefaultSelector() string {
 	return defaultAsString
 }
 
-func (p *PropertyMetadata) IsRequired() bool {
+func (p *PropertyBlueprint) IsRequired() bool {
 	return !p.Optional
 }
 
-func (p *PropertyMetadata) OptionTemplate(selectorReference string) *OptionTemplate {
+func (p *PropertyBlueprint) OptionTemplate(selectorReference string) *OptionTemplate {
 	for _, option := range p.OptionTemplates {
 		if strings.EqualFold(option.Name, selectorReference) {
 			return &option
@@ -54,7 +54,7 @@ func (p *PropertyMetadata) OptionTemplate(selectorReference string) *OptionTempl
 	return nil
 }
 
-func (p *PropertyMetadata) PropertyType(propertyName string) PropertyValue {
+func (p *PropertyBlueprint) PropertyType(propertyName string) PropertyValue {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = strings.Replace(propertyName, ".", "/", -1)
 	if p.IsSelector() {
@@ -118,7 +118,7 @@ func (p *PropertyMetadata) PropertyType(propertyName string) PropertyValue {
 	}
 }
 
-func (p *PropertyMetadata) IsString() bool {
+func (p *PropertyBlueprint) IsString() bool {
 	if p.Type == "dropdown_select" {
 		_, ok := p.Options[0].Name.(string)
 		return ok
@@ -130,7 +130,7 @@ func (p *PropertyMetadata) IsString() bool {
 			p.Type == "ldap_url" || p.Type == "service_network_az_single_select" || p.Type == "vm_type_dropdown" || p.Type == "disk_type_dropdown"
 	}
 }
-func (p *PropertyMetadata) IsInt() bool {
+func (p *PropertyBlueprint) IsInt() bool {
 	if p.Type == "dropdown_select" {
 		_, ok := p.Options[0].Name.(int)
 		return ok
@@ -139,46 +139,46 @@ func (p *PropertyMetadata) IsInt() bool {
 	}
 }
 
-func (p *PropertyMetadata) IsBool() bool {
+func (p *PropertyBlueprint) IsBool() bool {
 	return p.Type == "boolean"
 }
 
-func (p *PropertyMetadata) IsSecret() bool {
+func (p *PropertyBlueprint) IsSecret() bool {
 	return p.Type == "secret"
 }
-func (p *PropertyMetadata) IsSimpleCredentials() bool {
+func (p *PropertyBlueprint) IsSimpleCredentials() bool {
 	return p.Type == "simple_credentials"
 }
 
-func (p *PropertyMetadata) IsCollection() bool {
+func (p *PropertyBlueprint) IsCollection() bool {
 	return p.Type == "collection"
 }
 
-func (p *PropertyMetadata) IsRequiredCollection() bool {
+func (p *PropertyBlueprint) IsRequiredCollection() bool {
 	return p.IsRequired()
 }
 
-func (p *PropertyMetadata) IsSelector() bool {
+func (p *PropertyBlueprint) IsSelector() bool {
 	return p.Type == "selector"
 }
 
-func (p *PropertyMetadata) IsMultiSelect() bool {
+func (p *PropertyBlueprint) IsMultiSelect() bool {
 	return p.Type == "multi_select_options"
 }
 
-func (p *PropertyMetadata) IsCertificate() bool {
+func (p *PropertyBlueprint) IsCertificate() bool {
 	return p.Type == "rsa_cert_credentials"
 }
 
-func (p *PropertyMetadata) IsDropdown() bool {
+func (p *PropertyBlueprint) IsDropdown() bool {
 	return p.Type == "vm_type_dropdown" || p.Type == "disk_type_dropdown"
 }
 
-func (p *PropertyMetadata) IsAZList() bool {
+func (p *PropertyBlueprint) IsAZList() bool {
 	return p.Type == "service_network_az_multi_select"
 }
 
-func (p *PropertyMetadata) DataType() string {
+func (p *PropertyBlueprint) DataType() string {
 	if p.IsString() {
 		return "string"
 	} else if p.IsInt() {

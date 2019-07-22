@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func SelectorMetadata(optionTemplates []OptionTemplate, selector string) []PropertyMetadata {
+func SelectorOptionsBlueprints(optionTemplates []OptionTemplate, selector string) []PropertyBlueprint {
 	return selectorMetadataByFunc(
 		optionTemplates,
 		selector,
@@ -13,8 +13,8 @@ func SelectorMetadata(optionTemplates []OptionTemplate, selector string) []Prope
 		})
 }
 
-// SelectorMetadataBySelectValue - uses the option template SelectValue properties of each OptionTemplate to perform the property medata selection
-func SelectorMetadataBySelectValue(optionTemplates []OptionTemplate, selector string) []PropertyMetadata {
+// SelectorBlueprintsBySelectValue - uses the option template SelectValue properties of each OptionTemplate to perform the property medata selection
+func SelectorBlueprintsBySelectValue(optionTemplates []OptionTemplate, selector string) []PropertyBlueprint {
 	return selectorMetadataByFunc(
 		optionTemplates,
 		selector,
@@ -23,14 +23,14 @@ func SelectorMetadataBySelectValue(optionTemplates []OptionTemplate, selector st
 		})
 }
 
-func selectorMetadataByFunc(optionTemplates []OptionTemplate, selector string, matchFunc func(optionTemplate OptionTemplate) string) []PropertyMetadata {
+func selectorMetadataByFunc(optionTemplates []OptionTemplate, selector string, matchFunc func(optionTemplate OptionTemplate) string) []PropertyBlueprint {
 	var options []string
 	for _, optionTemplate := range optionTemplates {
 		match := matchFunc(optionTemplate)
 		options = append(options, match)
 
 		if strings.EqualFold(selector, match) {
-			return optionTemplate.PropertyMetadata
+			return optionTemplate.PropertyBlueprints
 		}
 	}
 	return nil

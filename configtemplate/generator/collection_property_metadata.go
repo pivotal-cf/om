@@ -14,7 +14,7 @@ func IsDefaultAnArray(defaultValue interface{}) bool {
 	return ok
 }
 
-func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{}, subProperties []PropertyMetadata) ([]map[string]SimpleType, error) {
+func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{}, subProperties []PropertyBlueprint) ([]map[string]SimpleType, error) {
 	var collectionProperties []map[string]SimpleType
 	for _, defaultValues := range defaultValue.([]interface{}) {
 		arrayProperties := make(map[string]SimpleType)
@@ -45,7 +45,7 @@ func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{
 	return collectionProperties, nil
 }
 
-func DefaultsToArray(propertyName string, subProperties []PropertyMetadata) map[string]SimpleType {
+func DefaultsToArray(propertyName string, subProperties []PropertyBlueprint) map[string]SimpleType {
 	properties := make(map[string]SimpleType)
 	for _, subProperty := range subProperties {
 		if subProperty.IsConfigurable() {
@@ -63,7 +63,7 @@ func DefaultsToArray(propertyName string, subProperties []PropertyMetadata) map[
 	return properties
 }
 
-func CollectionPropertyType(propertyName string, defaultValue interface{}, subProperties []PropertyMetadata) (PropertyValue, error) {
+func CollectionPropertyType(propertyName string, defaultValue interface{}, subProperties []PropertyBlueprint) (PropertyValue, error) {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	var collectionProperties []map[string]SimpleType
@@ -82,7 +82,7 @@ func CollectionPropertyType(propertyName string, defaultValue interface{}, subPr
 	}, nil
 }
 
-func CollectionPropertyVars(propertyName string, subProperties []PropertyMetadata, vars map[string]interface{}) {
+func CollectionPropertyVars(propertyName string, subProperties []PropertyBlueprint, vars map[string]interface{}) {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	for _, subProperty := range subProperties {
@@ -97,7 +97,7 @@ func CollectionPropertyVars(propertyName string, subProperties []PropertyMetadat
 	}
 }
 
-func CollectionOpsFile(numOfElements int, propertyName string, subProperties []PropertyMetadata) OpsValueType {
+func CollectionOpsFile(numOfElements int, propertyName string, subProperties []PropertyBlueprint) OpsValueType {
 	var collectionProperties []map[string]SimpleType
 	for i := 1; i <= numOfElements; i++ {
 		newPropertyName := strings.Replace(propertyName, "properties.", "", 1)

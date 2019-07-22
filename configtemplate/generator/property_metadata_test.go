@@ -6,21 +6,21 @@ import (
 	"github.com/pivotal-cf/om/configtemplate/generator"
 )
 
-var _ = Describe("PropertyMetadata", func() {
+var _ = Describe("PropertyBlueprints", func() {
 	Context("IsConfigurable", func() {
 		It("is true", func() {
-			propertyMetaData := &generator.PropertyMetadata{
+			propertyMetaData := &generator.PropertyBlueprint{
 				Configurable: "true",
 			}
 			Expect(propertyMetaData.IsConfigurable()).To(BeTrue())
 		})
 		It("is false", func() {
-			propertyMetaData := &generator.PropertyMetadata{
+			propertyMetaData := &generator.PropertyBlueprint{
 				Configurable: "false",
 			}
 			Expect(propertyMetaData.IsConfigurable()).To(BeFalse())
 
-			propertyMetaData = &generator.PropertyMetadata{
+			propertyMetaData = &generator.PropertyBlueprint{
 				Configurable: "",
 			}
 			Expect(propertyMetaData.IsConfigurable()).To(BeFalse())
@@ -29,13 +29,13 @@ var _ = Describe("PropertyMetadata", func() {
 
 	Context("DefaultSelector with no matching option template", func() {
 		It("selector path equals", func() {
-			propertyMetaData := &generator.PropertyMetadata{
+			propertyMetaData := &generator.PropertyBlueprint{
 				Default: "bar",
 			}
 			Expect(propertyMetaData.DefaultSelectorPath("foo")).To(Equal("foo.bar"))
 		})
 		It("default selector", func() {
-			propertyMetaData := &generator.PropertyMetadata{
+			propertyMetaData := &generator.PropertyBlueprint{
 				Default: "bar",
 			}
 			Expect(propertyMetaData.DefaultSelector()).To(Equal("bar"))
@@ -43,10 +43,10 @@ var _ = Describe("PropertyMetadata", func() {
 	})
 	Context("DefaultSelector with no matching option template", func() {
 		var (
-			propertyMetaData *generator.PropertyMetadata
+			propertyMetaData *generator.PropertyBlueprint
 		)
 		BeforeEach(func() {
-			propertyMetaData = &generator.PropertyMetadata{
+			propertyMetaData = &generator.PropertyBlueprint{
 				OptionTemplates: []generator.OptionTemplate{
 					{
 						Name:        "bar-name",
@@ -70,13 +70,13 @@ var _ = Describe("PropertyMetadata", func() {
 
 	Context("IsRequired", func() {
 		It("is true", func() {
-			propertyMetaData := &generator.PropertyMetadata{
+			propertyMetaData := &generator.PropertyBlueprint{
 				Optional: false,
 			}
 			Expect(propertyMetaData.IsRequired()).To(BeTrue())
 		})
 		It("is false", func() {
-			propertyMetaData := &generator.PropertyMetadata{
+			propertyMetaData := &generator.PropertyBlueprint{
 				Optional: true,
 			}
 			Expect(propertyMetaData.IsRequired()).To(BeFalse())
@@ -85,10 +85,10 @@ var _ = Describe("PropertyMetadata", func() {
 
 	Context("OptionTemplate", func() {
 		var (
-			propertyMetaData *generator.PropertyMetadata
+			propertyMetaData *generator.PropertyBlueprint
 		)
 		BeforeEach(func() {
-			propertyMetaData = &generator.PropertyMetadata{
+			propertyMetaData = &generator.PropertyBlueprint{
 				OptionTemplates: []generator.OptionTemplate{
 					{
 						Name:        "bar-name",

@@ -7,7 +7,7 @@ import (
 
 type JobType struct {
 	Name                string               `yaml:"name"`
-	PropertyMetadata    []PropertyMetadata   `yaml:"property_blueprints"`
+	PropertyBlueprint   []PropertyBlueprint  `yaml:"property_blueprints"`
 	ResourceDefinitions []ResourceDefinition `yaml:"resource_definitions"`
 	InstanceDefinition  InstanceDefinition   `yaml:"instance_definition"`
 }
@@ -44,11 +44,11 @@ func (j *JobType) HasPersistentDisk() bool {
 	return false
 }
 
-func (j *JobType) GetPropertyMetadata(propertyName string) (*PropertyMetadata, error) {
+func (j *JobType) GetPropertyBlueprint(propertyName string) (*PropertyBlueprint, error) {
 	propertyParts := strings.Split(propertyName, ".")
 	simplePropertyName := propertyParts[len(propertyParts)-1]
 
-	for _, property := range j.PropertyMetadata {
+	for _, property := range j.PropertyBlueprint {
 		if property.Name == simplePropertyName {
 			return &property, nil
 		}

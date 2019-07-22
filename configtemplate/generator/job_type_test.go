@@ -30,13 +30,13 @@ var _ = Describe("JobType", func() {
 		})
 	})
 
-	Context("GetPropertyMetadata", func() {
+	Context("GetPropertyBlueprint", func() {
 		It("returns a configurable property", func() {
 			fileData, err := ioutil.ReadFile("fixtures/p_healthwatch.yml")
 			Expect(err).ToNot(HaveOccurred())
 			metadata, err := generator.NewMetadata(fileData)
 			Expect(err).ToNot(HaveOccurred())
-			property, err := metadata.GetPropertyMetadata(".healthwatch-forwarder.foundation_name")
+			property, err := metadata.GetPropertyBlueprint(".healthwatch-forwarder.foundation_name")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(property.Name).Should(Equal("foundation_name"))
 		})
