@@ -147,7 +147,7 @@ func (e *Executor) Generate() error {
 		}
 	}
 
-	requiredVars, err := GetDefaultPropertyVars(metadata)
+	requiredVars, err := GetRequiredPropertyVars(metadata)
 	if err != nil {
 		return err
 	}

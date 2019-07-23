@@ -67,9 +67,7 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 		}
 		if propertyMetadata.IsConfigurable() && propertyMetadata.IsRequired() {
 			if propertyMetadata.IsCollection() {
-				if propertyMetadata.IsRequiredCollection() {
-					collectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyMetadata.PropertyBlueprints, true, vars)
-				}
+				collectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyMetadata.PropertyBlueprints, true, vars)
 			} else {
 				if !propertyMetadata.IsSelector() {
 					addPropertyToVars(property.Reference, propertyMetadata, true, vars)
@@ -98,38 +96,60 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 func GetRequiredPropertyVars(metadata *Metadata) (map[string]interface{}, error) {
 	vars := make(map[string]interface{})
 	for _, property := range metadata.PropertyInputs() {
-		propertyBlueprint, _ := metadata.GetPropertyBlueprint(property.Reference)
-		if propertyBlueprint.IsMultiSelect() {
+		propertyBlueprint, err := metadata.GetPropertyBlueprint(property.Reference)
+		if err != nil {
+			return nil, fmt.Errorf("could not create required-vars file: %s", err.Error())
+		}
+
+		if propertyBlueprint.IsMultiSelect() || !propertyBlueprint.IsConfigurable() || !propertyBlueprint.IsRequired() || propertyBlueprint.IsDropdown() {
 			continue
 		}
-		if propertyBlueprint.IsConfigurable() && propertyBlueprint.IsRequired() {
-			if propertyBlueprint.IsCollection() {
-				collectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyBlueprint.PropertyBlueprints, false, vars)
-			} else {
-				addPropertyToVars(property.Reference, propertyBlueprint, false, vars)
-			}
+
+		if propertyBlueprint.IsCollection() {
+			collectionPropertyVars(strings.Replace(property.Reference, ".", "", 1), propertyBlueprint.PropertyBlueprints, false, vars)
+			continue
 		}
+
+		if propertyBlueprint.IsSelector() && propertyBlueprint.HasDefault() {
+			defaultSelector := propertyBlueprint.DefaultSelectorPath(property.Reference)
+			for _, selector := range property.SelectorPropertyInputs {
+				if !strings.EqualFold(defaultSelector, selector.Reference) {
+					continue
+				}
+
+				selectorOptionBlueprints := SelectorOptionsBlueprints(propertyBlueprint.OptionTemplates, fmt.Sprintf("%s", propertyBlueprint.DefaultSelector()))
+				for _, selectorOptionBlueprint := range selectorOptionBlueprints {
+					if selectorOptionBlueprint.IsConfigurable() && selectorOptionBlueprint.IsRequired() && !selectorOptionBlueprint.IsMultiSelect() {
+						selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, selectorOptionBlueprint.Name)
+						addPropertyToVars(selectorProperty, &selectorOptionBlueprint, false, vars)
+					}
+				}
+			}
+			continue
+		}
+
+		addPropertyToVars(property.Reference, propertyBlueprint, false, vars)
 	}
 	return vars, nil
 }
 
-func addPropertyToVars(propertyName string, propertyMetadata *PropertyBlueprint, includePropertiesWithDefaults bool, vars map[string]interface{}) {
-	if !propertyMetadata.IsSecret() {
+func addPropertyToVars(propertyName string, propertyBlueprint *PropertyBlueprint, includePropertiesWithDefaults bool, vars map[string]interface{}) {
+	if !propertyBlueprint.IsSecret() {
 		newPropertyName := strings.Replace(propertyName, ".", "", 1)
 		newPropertyName = strings.Replace(newPropertyName, "properties.", "", 1)
 		newPropertyName = strings.Replace(newPropertyName, ".", "/", -1)
 		if includePropertiesWithDefaults {
-			if propertyMetadata.Default != nil {
-				if propertyMetadata.IsMultiSelect() {
-					if _, ok := propertyMetadata.Default.([]interface{}); ok {
-						vars[newPropertyName] = propertyMetadata.Default
+			if propertyBlueprint.HasDefault() {
+				if propertyBlueprint.IsMultiSelect() {
+					if _, ok := propertyBlueprint.Default.([]interface{}); ok {
+						vars[newPropertyName] = propertyBlueprint.Default
 						return
 					}
 				}
 
-				vars[newPropertyName] = propertyMetadata.Default
+				vars[newPropertyName] = propertyBlueprint.Default
 				return
-			} else if propertyMetadata.IsBool() {
+			} else if propertyBlueprint.IsBool() {
 				vars[newPropertyName] = false
 				return
 			}
@@ -137,7 +157,7 @@ func addPropertyToVars(propertyName string, propertyMetadata *PropertyBlueprint,
 			return
 		}
 
-		if propertyMetadata.Default == nil {
+		if !propertyBlueprint.HasDefault() {
 			vars[newPropertyName] = ""
 		}
 	}
@@ -251,7 +271,7 @@ func CreateProductPropertiesFeaturesOpsFiles(tileMetadata *Metadata) (map[string
 						)
 					}
 
-					if propertyBlueprint.Default != nil {
+					if propertyBlueprint.HasDefault() {
 						defaultSelectorBlueprints := SelectorBlueprintsBySelectValue(propertyBlueprint.OptionTemplates, fmt.Sprintf("%s", propertyBlueprint.Default))
 						for _, selectorBlueprint := range defaultSelectorBlueprints {
 							selectorProperty := fmt.Sprintf("%s.%s", defaultSelector, selectorBlueprint.Name)

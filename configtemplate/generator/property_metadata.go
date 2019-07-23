@@ -41,6 +41,10 @@ func (p *PropertyBlueprint) DefaultSelector() string {
 	return defaultAsString
 }
 
+func (p *PropertyBlueprint) HasDefault() bool {
+	return p.Default != nil
+}
+
 func (p *PropertyBlueprint) IsRequired() bool {
 	return !p.Optional
 }

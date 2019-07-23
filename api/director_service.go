@@ -351,7 +351,7 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 		}
 	}
 
-	iaasConfig := IAASConfigurationDirectorPropertiesPayload {
+	iaasConfig := IAASConfigurationDirectorPropertiesPayload{
 		IAASConfiguration: iaasConfigurations[0],
 	}
 	contents, err := yaml.Marshal(iaasConfig)
