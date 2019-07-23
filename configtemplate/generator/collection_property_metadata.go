@@ -63,7 +63,7 @@ func DefaultsToArray(propertyName string, subProperties []PropertyBlueprint) map
 	return properties
 }
 
-func CollectionPropertyType(propertyName string, defaultValue interface{}, subProperties []PropertyBlueprint) (PropertyValue, error) {
+func collectionPropertyType(propertyName string, defaultValue interface{}, subProperties []PropertyBlueprint) (PropertyValue, error) {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	var collectionProperties []map[string]SimpleType
@@ -87,25 +87,36 @@ func collectionPropertyVars(propertyName string, subProperties []PropertyBluepri
 	propertyName = fmt.Sprintf("%s_0", strings.Replace(propertyName, ".", "/", -1))
 	for _, subProperty := range subProperties {
 		if subProperty.IsConfigurable() {
+			subPropertyName := fmt.Sprintf("%s/%s", propertyName, subProperty.Name)
 			if !subProperty.IsSecret() && !subProperty.IsSimpleCredentials() && !subProperty.IsCertificate() {
-				subPropertyName := fmt.Sprintf("%s/%s", propertyName, subProperty.Name)
 				if includePropertiesWithDefaults {
 					if subProperty.Default != nil {
 						vars[subPropertyName] = subProperty.Default
 					}
 
-					return
+					continue // need test to validate multiple subproperties get included
 				}
 
 				if subProperty.Default == nil {
 					vars[subPropertyName] = ""
 				}
+				continue
+			}
+
+			if !includePropertiesWithDefaults && !subProperty.HasDefault() {
+				if subProperty.IsCertificate() {
+					vars[fmt.Sprintf("%s/%s", propertyName, "certificate")] = ""
+					vars[fmt.Sprintf("%s/%s", propertyName, "privatekey")] = ""
+
+					continue
+				}
+				vars[subPropertyName] = ""
 			}
 		}
 	}
 }
 
-func CollectionOpsFile(numOfElements int, propertyName string, subProperties []PropertyBlueprint) OpsValueType {
+func collectionOpsFile(numOfElements int, propertyName string, subProperties []PropertyBlueprint) OpsValueType {
 	var collectionProperties []map[string]SimpleType
 	for i := 1; i <= numOfElements; i++ {
 		newPropertyName := strings.Replace(propertyName, "properties.", "", 1)

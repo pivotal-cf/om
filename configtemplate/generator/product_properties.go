@@ -18,7 +18,7 @@ func GetAllProductProperties(metadata *Metadata) (map[string]PropertyValue, erro
 			}
 			if propertyMetadata.IsCollection() {
 				if propertyMetadata.IsRequiredCollection() {
-					propertyType, err := CollectionPropertyType(strings.Replace(property.Reference, ".", "", 1), propertyMetadata.Default, propertyMetadata.PropertyBlueprints)
+					propertyType, err := collectionPropertyType(strings.Replace(property.Reference, ".", "", 1), propertyMetadata.Default, propertyMetadata.PropertyBlueprints)
 					if err != nil {
 						return nil, err
 					}
@@ -134,10 +134,10 @@ func GetRequiredPropertyVars(metadata *Metadata) (map[string]interface{}, error)
 }
 
 func addPropertyToVars(propertyName string, propertyBlueprint *PropertyBlueprint, includePropertiesWithDefaults bool, vars map[string]interface{}) {
-	if !propertyBlueprint.IsSecret() {
-		newPropertyName := strings.Replace(propertyName, ".", "", 1)
-		newPropertyName = strings.Replace(newPropertyName, "properties.", "", 1)
-		newPropertyName = strings.Replace(newPropertyName, ".", "/", -1)
+	newPropertyName := strings.Replace(propertyName, ".", "", 1)
+	newPropertyName = strings.Replace(newPropertyName, "properties.", "", 1)
+	newPropertyName = strings.Replace(newPropertyName, ".", "/", -1)
+	if !propertyBlueprint.IsSecret() && !propertyBlueprint.IsSimpleCredentials() && !propertyBlueprint.IsCertificate() {
 		if includePropertiesWithDefaults {
 			if propertyBlueprint.HasDefault() {
 				if propertyBlueprint.IsMultiSelect() {
@@ -157,9 +157,22 @@ func addPropertyToVars(propertyName string, propertyBlueprint *PropertyBlueprint
 			return
 		}
 
-		if !propertyBlueprint.HasDefault() {
+		if !propertyBlueprint.HasDefault() && !propertyBlueprint.IsBool() {
 			vars[newPropertyName] = ""
 		}
+
+		return
+	}
+
+	if !includePropertiesWithDefaults && !propertyBlueprint.HasDefault() {
+		if propertyBlueprint.IsCertificate() {
+			vars[fmt.Sprintf("%s/%s", newPropertyName, "certificate")] = ""
+			vars[fmt.Sprintf("%s/%s", newPropertyName, "privatekey")] = ""
+
+			return
+		}
+
+		vars[newPropertyName] = ""
 	}
 }
 
@@ -216,7 +229,7 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 							{
 								Type:  "replace",
 								Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
-								Value: CollectionOpsFile(i, propertyKey, propertyMetadata.PropertyBlueprints),
+								Value: collectionOpsFile(i, propertyKey, propertyMetadata.PropertyBlueprints),
 							},
 						}
 					}

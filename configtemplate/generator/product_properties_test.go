@@ -176,6 +176,12 @@ var _ = Describe("Product Properties", func() {
 									Configurable: "true",
 									Type:         "string",
 								},
+								{
+									Name:         "another_object",
+									Optional:     false,
+									Configurable: "true",
+									Type:         "string",
+								},
 							},
 						},
 					},
@@ -188,6 +194,9 @@ var _ = Describe("Product Properties", func() {
 										{
 											Reference: "collection_object",
 										},
+										{
+											Reference: "another_object",
+										},
 									},
 								},
 							},
@@ -196,9 +205,11 @@ var _ = Describe("Product Properties", func() {
 				}
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
-				Expect(requiredVars).To(HaveLen(1))
+				Expect(requiredVars).To(HaveLen(2))
 				Expect(requiredVars).To(HaveKey("some_property_0/collection_object"))
 				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/collection_object", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0/another_object"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/another_object", ""))
 			})
 
 			DescribeTable("does not add properties", func(
@@ -243,10 +254,74 @@ var _ = Describe("Product Properties", func() {
 				Expect(requiredVars).To(HaveLen(0))
 				Expect(requiredVars).ToNot(HaveKey("some_property_0/collection_object"))
 			},
-				Entry("optional with no defaults", true, nil),
-				Entry("optional with defaults", true, "some-default"),
-				Entry("required with defaults", false, "some-default"),
+				Entry("when optional with no defaults", true, nil),
+				Entry("when optional with defaults", true, "some-default"),
+				Entry("when required with defaults", false, "some-default"),
 			)
+
+			It("adds secret properties", func() {
+				metadata := &generator.Metadata{
+					PropertyBlueprints: []generator.PropertyBlueprint{
+						{
+							Configurable: "true",
+							Optional:     false,
+							Name:         "some_property",
+							Type:         "collection",
+							PropertyBlueprints: []generator.PropertyBlueprint{
+								{
+									Name:         "secret_object_1",
+									Optional:     false,
+									Configurable: "true",
+									Type:         "secret",
+								},
+								{
+									Name:         "secret_object_2",
+									Optional:     false,
+									Configurable: "true",
+									Type:         "simple_credentials",
+								},
+								{
+									Name:         "secret_object_3",
+									Optional:     false,
+									Configurable: "true",
+									Type:         "rsa_cert_credentials",
+								},
+							},
+						},
+					},
+					FormTypes: []generator.FormType{
+						{
+							PropertyInputs: []generator.PropertyInput{
+								{
+									Reference: ".properties.some_property",
+									PropertyInputs: []generator.PropertyInput{
+										{
+											Reference: "secret_object_1",
+										},
+										{
+											Reference: "secret_object_2",
+										},
+										{
+											Reference: "secret_object_3",
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(requiredVars).To(HaveLen(4))
+				Expect(requiredVars).To(HaveKey("some_property_0/secret_object_1"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/secret_object_1", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0/secret_object_2"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/secret_object_2", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0/certificate"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/certificate", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0/privatekey"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/privatekey", ""))
+			})
 		})
 
 		When("there is a dropdown property", func() {
@@ -532,6 +607,87 @@ var _ = Describe("Product Properties", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(0))
 				Expect(requiredVars).ToNot(HaveKey("some_selector/some_dropdown"))
+			})
+		})
+
+		When("there is a secret property", func() {
+			It("adds secret properties", func() {
+				metadata := &generator.Metadata{
+					PropertyBlueprints: []generator.PropertyBlueprint{
+						{
+							Configurable: "true",
+							Optional:     false,
+							Name:         "secret_1",
+							Type:         "secret",
+						},
+						{
+							Configurable: "true",
+							Optional:     false,
+							Name:         "secret_2",
+							Type:         "simple_credentials",
+						},
+						{
+							Configurable: "true",
+							Optional:     false,
+							Name:         "secret_3",
+							Type:         "rsa_cert_credentials",
+						},
+					},
+					FormTypes: []generator.FormType{
+						{
+							PropertyInputs: []generator.PropertyInput{
+								{
+									Reference: ".properties.secret_1",
+								},
+								{
+									Reference: ".properties.secret_2",
+								},
+								{
+									Reference: ".properties.secret_3",
+								},
+							},
+						},
+					},
+				}
+				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(requiredVars).To(HaveLen(4))
+				Expect(requiredVars).To(HaveKey("secret_1"))
+				Expect(requiredVars).To(HaveKeyWithValue("secret_1", ""))
+				Expect(requiredVars).To(HaveKey("secret_2"))
+				Expect(requiredVars).To(HaveKeyWithValue("secret_2", ""))
+				Expect(requiredVars).To(HaveKey("secret_3/certificate"))
+				Expect(requiredVars).To(HaveKeyWithValue("secret_3/certificate", ""))
+				Expect(requiredVars).To(HaveKey("secret_3/privatekey"))
+				Expect(requiredVars).To(HaveKeyWithValue("secret_3/privatekey", ""))
+			})
+		})
+
+		When("there is a bool property without a default", func() {
+			It("does not add it", func() {
+				metadata := &generator.Metadata{
+					PropertyBlueprints: []generator.PropertyBlueprint{
+						{
+							Configurable: "true",
+							Optional:     false,
+							Name:         "bool_property",
+							Type:         "boolean",
+						},
+					},
+					FormTypes: []generator.FormType{
+						{
+							PropertyInputs: []generator.PropertyInput{
+								{
+									Reference: ".properties.bool_property",
+								},
+							},
+						},
+					},
+				}
+				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(requiredVars).To(HaveLen(0))
+				Expect(requiredVars).ToNot(HaveKey("bool_property"))
 			})
 		})
 	})
