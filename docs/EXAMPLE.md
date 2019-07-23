@@ -37,7 +37,7 @@ More documentation for the `configure-director` command along with IAAS-specific
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     configure-director \
       --config director.yml
