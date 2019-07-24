@@ -122,7 +122,7 @@ var _ = Describe("ConfigTemplate", func() {
 
 		It("returns usage information for the command", func() {
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command generates a product configuration template from a .pivotal file on Pivnet",
+				Description:      "**EXPERIMENTAL** this command generates a product configuration template from a .pivotal file on Pivnet",
 				ShortDescription: "**EXPERIMENTAL** generates a config template from a Pivnet product",
 				Flags:            command.Options,
 			}))
