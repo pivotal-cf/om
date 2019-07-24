@@ -138,11 +138,11 @@ func (e *Executor) Generate() error {
 	}
 
 	if len(productPropertyVars) > 0 {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "product-default-vars.yml"), productPropertyVars); err != nil {
+		if err = e.writeYamlFile(path.Join(targetDirectory, "default-vars.yml"), productPropertyVars); err != nil {
 			return err
 		}
 	} else {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "product-default-vars.yml"), nil); err != nil {
+		if err = e.writeYamlFile(path.Join(targetDirectory, "default-vars.yml"), nil); err != nil {
 			return err
 		}
 	}

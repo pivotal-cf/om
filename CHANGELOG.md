@@ -51,12 +51,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ### Features
 
+- TLS v1.2 is the minimum version supported when connecting to an Ops Manager
 - `config-template` now will provide required-vars in addition to default-vars.
 - `config-template` will define vars with an `_` instead of a `/`.
   This is an aesthetically motivated change.
   Ops files are denoted with `/`,
   so changing the vars separators to `_` makes this easier to differentiate.
-- TLS v1.2 is the minimum version supported when connecting to an Ops Manager
+- `config-template` output `product-default-vars.yml` has been changed to `default-vars.yml`
 
 ## 3.0.0
 
