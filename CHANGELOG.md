@@ -46,8 +46,18 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Note the additional space before the `export` command.
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
+  
+## 3.1.0 (Unreleased)
 
-## 3.0.0 (Unreleased)
+### Features
+
+- `config-template` now will provide required-vars in addition to default-vars.
+- `config-template` will define vars with an `_` instead of a `/`.
+  This is an aesthetically motivated change.
+  Ops files are denoted with `/`,
+  so changing the vars separators to `_` makes this easier to differentiate.
+
+## 3.0.0
 
 ### Features
 
