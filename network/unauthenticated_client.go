@@ -26,6 +26,7 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTim
 				Proxy: http.ProxyFromEnvironment,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: insecureSkipVerify,
+					MinVersion:         tls.VersionTLS12,
 				},
 				Dial: (&net.Dialer{
 					Timeout:   connectTimeout,
@@ -39,7 +40,6 @@ func NewUnauthenticatedClient(target string, insecureSkipVerify bool, requestTim
 }
 
 func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error) {
-
 	candidateURL := c.target
 	if !strings.Contains(candidateURL, "//") {
 		candidateURL = fmt.Sprintf("//%s", candidateURL)

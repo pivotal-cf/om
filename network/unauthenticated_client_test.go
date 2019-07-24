@@ -3,7 +3,9 @@ package network_test
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -31,6 +33,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				_, err = w.Write([]byte("response"))
 				Expect(err).ToNot(HaveOccurred())
 			}))
+			server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 
 			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 
@@ -65,6 +68,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 					_, err := w.Write([]byte("response"))
 					Expect(err).ToNot(HaveOccurred())
 				}))
+				server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 
 				noScheme, err := url.Parse(server.URL)
 				Expect(err).NotTo(HaveOccurred())
@@ -84,6 +88,22 @@ var _ = Describe("UnauthenticatedClient", func() {
 				Expect(response).NotTo(BeNil())
 				Expect(response.StatusCode).To(Equal(http.StatusTeapot))
 			})
+		})
+
+		It("enforces minimum TLS version 1.2", func() {
+			nonTLS12Server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {}))
+			nonTLS12Server.TLS.MaxVersion = tls.VersionTLS11
+			nonTLS12Server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
+			defer nonTLS12Server.Close()
+
+
+			client := network.NewUnauthenticatedClient(nonTLS12Server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+
+			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = client.Do(req)
+			Expect(err).To(MatchError(ContainSubstring("protocol version not supported")))
 		})
 
 		Context("failure cases", func() {

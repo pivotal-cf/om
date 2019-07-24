@@ -47,7 +47,7 @@ func NewOAuthClient(target, username, password string, clientID, clientSecret st
 			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: insecureSkipVerify,
-				MinVersion: tls.VersionTLS12,
+				MinVersion:         tls.VersionTLS12,
 			},
 			Dial: (&net.Dialer{
 				Timeout:   connectTimeout,

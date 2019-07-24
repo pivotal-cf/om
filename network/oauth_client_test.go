@@ -59,7 +59,7 @@ var _ = Describe("OAuthClient", func() {
 				receivedCookies = req.Cookies()
 			}
 		}))
-		server.Config.ErrorLog = log.New(GinkgoWriter, "", log.LstdFlags)
+		server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 	})
 
 	Describe("Do", func() {
@@ -131,9 +131,10 @@ var _ = Describe("OAuthClient", func() {
 			}))
 		})
 
-		It("enforces minimum TLS version 1.2", func(){
+		It("enforces minimum TLS version 1.2", func() {
 			nonTLS12Server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {}))
 			nonTLS12Server.TLS.MaxVersion = tls.VersionTLS11
+			nonTLS12Server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 			defer nonTLS12Server.Close()
 
 			client, err := network.NewOAuthClient(nonTLS12Server.URL, "", "", "client_id", "client_secret", true, false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
@@ -248,6 +249,7 @@ var _ = Describe("OAuthClient", func() {
 					badServer = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 						w.WriteHeader(http.StatusInternalServerError)
 					}))
+					badServer.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 				})
 
 				It("returns an error", func() {
