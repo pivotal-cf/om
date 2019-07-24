@@ -56,6 +56,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This is an aesthetically motivated change.
   Ops files are denoted with `/`,
   so changing the vars separators to `_` makes this easier to differentiate.
+- TLS v1.2 is the minimum version supported when connecting to an Ops Manager
 
 ## 3.0.0
 
