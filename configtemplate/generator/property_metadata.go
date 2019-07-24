@@ -60,7 +60,7 @@ func (p *PropertyBlueprint) OptionTemplate(selectorReference string) *OptionTemp
 
 func (p *PropertyBlueprint) PropertyType(propertyName string) PropertyValue {
 	propertyName = strings.Replace(propertyName, "properties.", "", 1)
-	propertyName = strings.Replace(propertyName, ".", "/", -1)
+	propertyName = strings.Replace(propertyName, ".", "_", -1)
 	if p.IsSelector() {
 		if p.Default != nil {
 			return &SelectorValue{

@@ -206,10 +206,10 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(2))
-				Expect(requiredVars).To(HaveKey("some_property_0/collection_object"))
-				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/collection_object", ""))
-				Expect(requiredVars).To(HaveKey("some_property_0/another_object"))
-				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/another_object", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0_collection_object"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0_collection_object", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0_another_object"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0_another_object", ""))
 			})
 
 			DescribeTable("does not add properties", func(
@@ -252,7 +252,7 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(0))
-				Expect(requiredVars).ToNot(HaveKey("some_property_0/collection_object"))
+				Expect(requiredVars).ToNot(HaveKey("some_property_0_collection_object"))
 			},
 				Entry("when optional with no defaults", true, nil),
 				Entry("when optional with defaults", true, "some-default"),
@@ -313,14 +313,14 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(4))
-				Expect(requiredVars).To(HaveKey("some_property_0/secret_object_1"))
-				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/secret_object_1", ""))
-				Expect(requiredVars).To(HaveKey("some_property_0/secret_object_2"))
-				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/secret_object_2", ""))
-				Expect(requiredVars).To(HaveKey("some_property_0/certificate"))
-				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/certificate", ""))
-				Expect(requiredVars).To(HaveKey("some_property_0/privatekey"))
-				Expect(requiredVars).To(HaveKeyWithValue("some_property_0/privatekey", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0_secret_object_1"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0_secret_object_1", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0_secret_object_2"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0_secret_object_2", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0_certificate"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0_certificate", ""))
+				Expect(requiredVars).To(HaveKey("some_property_0_privatekey"))
+				Expect(requiredVars).To(HaveKeyWithValue("some_property_0_privatekey", ""))
 			})
 		})
 
@@ -455,9 +455,9 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(1))
-				Expect(requiredVars).To(HaveKey("some_selector/default_option/first_property"))
-				Expect(requiredVars).ToNot(HaveKey("some_selector/default_option/second_property"))
-				Expect(requiredVars).ToNot(HaveKey("some_selector/default_option/third_property"))
+				Expect(requiredVars).To(HaveKey("some_selector_default_option_first_property"))
+				Expect(requiredVars).ToNot(HaveKey("some_selector_default_option_second_property"))
+				Expect(requiredVars).ToNot(HaveKey("some_selector_default_option_third_property"))
 			})
 
 			It("does not add nested 'required' multi-select's properties", func() {
@@ -513,8 +513,8 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(0))
-				Expect(requiredVars).ToNot(HaveKey("some_selector/default_option/multi_selector"))
-				Expect(requiredVars).ToNot(HaveKey("some_selector/default_option/multi_selector/some_multi_select_property"))
+				Expect(requiredVars).ToNot(HaveKey("some_selector_default_option_multi_selector"))
+				Expect(requiredVars).ToNot(HaveKey("some_selector_default_option_multi_selector_some_multi_select_property"))
 			})
 
 			It("does not output the nested 'required' vm_type_dropdown property", func() {
@@ -560,7 +560,7 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(0))
-				Expect(requiredVars).ToNot(HaveKey("some_selector/some_dropdown"))
+				Expect(requiredVars).ToNot(HaveKey("some_selector_some_dropdown"))
 			})
 
 			It("does not output the nested 'optional' vm_type_dropdown property", func() {
@@ -606,7 +606,7 @@ var _ = Describe("Product Properties", func() {
 				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(requiredVars).To(HaveLen(0))
-				Expect(requiredVars).ToNot(HaveKey("some_selector/some_dropdown"))
+				Expect(requiredVars).ToNot(HaveKey("some_selector_some_dropdown"))
 			})
 		})
 
@@ -656,10 +656,10 @@ var _ = Describe("Product Properties", func() {
 				Expect(requiredVars).To(HaveKeyWithValue("secret_1", ""))
 				Expect(requiredVars).To(HaveKey("secret_2"))
 				Expect(requiredVars).To(HaveKeyWithValue("secret_2", ""))
-				Expect(requiredVars).To(HaveKey("secret_3/certificate"))
-				Expect(requiredVars).To(HaveKeyWithValue("secret_3/certificate", ""))
-				Expect(requiredVars).To(HaveKey("secret_3/privatekey"))
-				Expect(requiredVars).To(HaveKeyWithValue("secret_3/privatekey", ""))
+				Expect(requiredVars).To(HaveKey("secret_3_certificate"))
+				Expect(requiredVars).To(HaveKeyWithValue("secret_3_certificate", ""))
+				Expect(requiredVars).To(HaveKey("secret_3_privatekey"))
+				Expect(requiredVars).To(HaveKeyWithValue("secret_3_privatekey", ""))
 			})
 		})
 
@@ -1042,7 +1042,7 @@ var _ = Describe("Product Properties", func() {
 					Type: "replace",
 					Path: "/product-properties/.properties.some_selector.replace_option.some_property?",
 					Value: &generator.SimpleValue{
-						Value: "((some_selector/replace_option/some_property))",
+						Value: "((some_selector_replace_option_some_property))",
 					},
 				}))
 			})

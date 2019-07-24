@@ -83,7 +83,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(collectionArray)).Should(Equal(1))
 			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleString("simple-value")))
-			Expect(collectionArray[0]["other-name"]).Should(Equal(generator.SimpleString("((foo/other-name))")))
+			Expect(collectionArray[0]["other-name"]).Should(Equal(generator.SimpleString("((foo_other-name))")))
 		})
 
 		It("contains unknown type", func() {
@@ -108,7 +108,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			},
 			)
 			Expect(len(propertyArray)).Should(Equal(1))
-			Expect(propertyArray["simple-value"]).To(Equal(generator.SimpleString("((foo/simple-value))")))
+			Expect(propertyArray["simple-value"]).To(Equal(generator.SimpleString("((foo_simple-value))")))
 		})
 		It("contains secret type", func() {
 			propertyArray := generator.DefaultsToArray("foo", []generator.PropertyBlueprint{
@@ -120,7 +120,7 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			})
 			Expect(len(propertyArray)).Should(Equal(1))
 			Expect(propertyArray["secret-value"]).To(Equal(&generator.SecretValue{
-				Value: "((foo/secret-value))",
+				Value: "((foo_secret-value))",
 			}))
 		})
 

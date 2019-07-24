@@ -1,53 +1,53 @@
 .cloud_controller.allow_app_ssh_access:
-  value: ((cloud_controller/allow_app_ssh_access))
+  value: ((cloud_controller_allow_app_ssh_access))
 .cloud_controller.apps_domain:
-  value: ((cloud_controller/apps_domain))
+  value: ((cloud_controller_apps_domain))
 .cloud_controller.default_app_memory:
-  value: ((cloud_controller/default_app_memory))
+  value: ((cloud_controller_default_app_memory))
 .cloud_controller.default_app_ssh_access:
-  value: ((cloud_controller/default_app_ssh_access))
+  value: ((cloud_controller_default_app_ssh_access))
 .cloud_controller.default_disk_quota_app:
-  value: ((cloud_controller/default_disk_quota_app))
+  value: ((cloud_controller_default_disk_quota_app))
 .cloud_controller.default_quota_max_number_services:
-  value: ((cloud_controller/default_quota_max_number_services))
+  value: ((cloud_controller_default_quota_max_number_services))
 .cloud_controller.default_quota_memory_limit_mb:
-  value: ((cloud_controller/default_quota_memory_limit_mb))
+  value: ((cloud_controller_default_quota_memory_limit_mb))
 .cloud_controller.enable_custom_buildpacks:
-  value: ((cloud_controller/enable_custom_buildpacks))
+  value: ((cloud_controller_enable_custom_buildpacks))
 .cloud_controller.max_disk_quota_app:
-  value: ((cloud_controller/max_disk_quota_app))
+  value: ((cloud_controller_max_disk_quota_app))
 .cloud_controller.max_file_size:
-  value: ((cloud_controller/max_file_size))
+  value: ((cloud_controller_max_file_size))
 .cloud_controller.security_event_logging_enabled:
-  value: ((cloud_controller/security_event_logging_enabled))
+  value: ((cloud_controller_security_event_logging_enabled))
 .cloud_controller.staging_timeout_in_seconds:
-  value: ((cloud_controller/staging_timeout_in_seconds))
+  value: ((cloud_controller_staging_timeout_in_seconds))
 .cloud_controller.system_domain:
-  value: ((cloud_controller/system_domain))
+  value: ((cloud_controller_system_domain))
 .diego_brain.starting_container_count_maximum:
-  value: ((diego_brain/starting_container_count_maximum))
+  value: ((diego_brain_starting_container_count_maximum))
 .doppler.message_drain_buffer_size:
-  value: ((doppler/message_drain_buffer_size))
+  value: ((doppler_message_drain_buffer_size))
 .ha_proxy.skip_cert_verify:
-  value: ((ha_proxy/skip_cert_verify))
+  value: ((ha_proxy_skip_cert_verify))
 .mysql.cli_history:
-  value: ((mysql/cli_history))
+  value: ((mysql_cli_history))
 .mysql.prevent_node_auto_rejoin:
-  value: ((mysql/prevent_node_auto_rejoin))
+  value: ((mysql_prevent_node_auto_rejoin))
 .mysql.remote_admin_access:
-  value: ((mysql/remote_admin_access))
+  value: ((mysql_remote_admin_access))
 .mysql_monitor.poll_frequency:
-  value: ((mysql_monitor/poll_frequency))
+  value: ((mysql_monitor_poll_frequency))
 .mysql_monitor.recipient_email:
-  value: ((mysql_monitor/recipient_email))
+  value: ((mysql_monitor_recipient_email))
 .mysql_monitor.write_read_delay:
-  value: ((mysql_monitor/write_read_delay))
+  value: ((mysql_monitor_write_read_delay))
 .mysql_proxy.shutdown_delay:
-  value: ((mysql_proxy/shutdown_delay))
+  value: ((mysql_proxy_shutdown_delay))
 .mysql_proxy.startup_delay:
-  value: ((mysql_proxy/startup_delay))
+  value: ((mysql_proxy_startup_delay))
 .nfs_server.blobstore_internal_access_rules:
-  value: ((nfs_server/blobstore_internal_access_rules))
+  value: ((nfs_server_blobstore_internal_access_rules))
 .properties.autoscale_api_instance_count:
   value: ((autoscale_api_instance_count))
 .properties.autoscale_instance_count:
@@ -63,24 +63,24 @@
 .properties.container_networking_interface_plugin:
   value: silk
 .properties.container_networking_interface_plugin.silk.enable_log_traffic:
-  value: ((container_networking_interface_plugin/silk/enable_log_traffic))
+  value: ((container_networking_interface_plugin_silk_enable_log_traffic))
 .properties.container_networking_interface_plugin.silk.iptables_accepted_udp_logs_per_sec:
-  value: ((container_networking_interface_plugin/silk/iptables_accepted_udp_logs_per_sec))
+  value: ((container_networking_interface_plugin_silk_iptables_accepted_udp_logs_per_sec))
 .properties.container_networking_interface_plugin.silk.iptables_denied_logs_per_sec:
-  value: ((container_networking_interface_plugin/silk/iptables_denied_logs_per_sec))
+  value: ((container_networking_interface_plugin_silk_iptables_denied_logs_per_sec))
 .properties.container_networking_interface_plugin.silk.network_mtu:
-  value: ((container_networking_interface_plugin/silk/network_mtu))
+  value: ((container_networking_interface_plugin_silk_network_mtu))
 .properties.container_networking_interface_plugin.silk.vtep_port:
-  value: ((container_networking_interface_plugin/silk/vtep_port))
+  value: ((container_networking_interface_plugin_silk_vtep_port))
 .properties.credhub_database:
   value: internal_mysql
 .properties.credhub_key_encryption_passwords:
   value:
   - key:
-      secret: ((credhub_key_encryption_passwords_0/key))
-    name: ((credhub_key_encryption_passwords_0/name))
-    primary: ((credhub_key_encryption_passwords_0/primary))
-    provider: ((credhub_key_encryption_passwords_0/provider))
+      secret: ((credhub_key_encryption_passwords_0_key))
+    name: ((credhub_key_encryption_passwords_0_name))
+    primary: ((credhub_key_encryption_passwords_0_primary))
+    provider: ((credhub_key_encryption_passwords_0_provider))
 .properties.enable_grootfs:
   value: ((enable_grootfs))
 .properties.enable_service_discovery_for_apps:
@@ -92,7 +92,7 @@
 .properties.haproxy_forward_tls:
   value: enable
 .properties.haproxy_forward_tls.enable.backend_ca:
-  value: ((haproxy_forward_tls/enable/backend_ca))
+  value: ((haproxy_forward_tls_enable_backend_ca))
 .properties.haproxy_hsts_support:
   value: disable
 .properties.haproxy_max_buffer_size:
@@ -102,13 +102,13 @@
 .properties.mysql_activity_logging:
   value: enable
 .properties.mysql_activity_logging.enable.audit_logging_events:
-  value: ((mysql_activity_logging/enable/audit_logging_events))
+  value: ((mysql_activity_logging_enable_audit_logging_events))
 .properties.networking_poe_ssl_certs:
   value:
   - certificate:
-      cert_pem: ((networking_poe_ssl_certs_0/certificate))
-      private_key_pem: ((networking_poe_ssl_certs_0/privatekey))
-    name: ((networking_poe_ssl_certs_0/name))
+      cert_pem: ((networking_poe_ssl_certs_0_certificate))
+      private_key_pem: ((networking_poe_ssl_certs_0_privatekey))
+    name: ((networking_poe_ssl_certs_0_name))
 .properties.nfs_volume_driver:
   value: enable
 .properties.push_apps_manager_currency_lookup:
@@ -130,7 +130,7 @@
 .properties.route_services:
   value: enable
 .properties.route_services.enable.ignore_ssl_cert_verification:
-  value: ((route_services/enable/ignore_ssl_cert_verification))
+  value: ((route_services_enable_ignore_ssl_cert_verification))
 .properties.router_backend_max_conn:
   value: ((router_backend_max_conn))
 .properties.router_client_cert_validation:
@@ -172,19 +172,19 @@
 .properties.uaa:
   value: internal
 .properties.uaa.internal.password_expires_after_months:
-  value: ((uaa/internal/password_expires_after_months))
+  value: ((uaa_internal_password_expires_after_months))
 .properties.uaa.internal.password_max_retry:
-  value: ((uaa/internal/password_max_retry))
+  value: ((uaa_internal_password_max_retry))
 .properties.uaa.internal.password_min_length:
-  value: ((uaa/internal/password_min_length))
+  value: ((uaa_internal_password_min_length))
 .properties.uaa.internal.password_min_lowercase:
-  value: ((uaa/internal/password_min_lowercase))
+  value: ((uaa_internal_password_min_lowercase))
 .properties.uaa.internal.password_min_numeric:
-  value: ((uaa/internal/password_min_numeric))
+  value: ((uaa_internal_password_min_numeric))
 .properties.uaa.internal.password_min_special:
-  value: ((uaa/internal/password_min_special))
+  value: ((uaa_internal_password_min_special))
 .properties.uaa.internal.password_min_uppercase:
-  value: ((uaa/internal/password_min_uppercase))
+  value: ((uaa_internal_password_min_uppercase))
 .properties.uaa_database:
   value: internal_mysql
 .properties.uaa_session_cookie_max_age:
@@ -192,36 +192,36 @@
 .properties.uaa_session_idle_timeout:
   value: ((uaa_session_idle_timeout))
 .router.disable_insecure_cookies:
-  value: ((router/disable_insecure_cookies))
+  value: ((router_disable_insecure_cookies))
 .router.drain_wait:
-  value: ((router/drain_wait))
+  value: ((router_drain_wait))
 .router.enable_isolated_routing:
-  value: ((router/enable_isolated_routing))
+  value: ((router_enable_isolated_routing))
 .router.enable_write_access_logs:
-  value: ((router/enable_write_access_logs))
+  value: ((router_enable_write_access_logs))
 .router.enable_zipkin:
-  value: ((router/enable_zipkin))
+  value: ((router_enable_zipkin))
 .router.frontend_idle_timeout:
-  value: ((router/frontend_idle_timeout))
+  value: ((router_frontend_idle_timeout))
 .router.lb_healthy_threshold:
-  value: ((router/lb_healthy_threshold))
+  value: ((router_lb_healthy_threshold))
 .router.request_timeout_in_seconds:
-  value: ((router/request_timeout_in_seconds))
+  value: ((router_request_timeout_in_seconds))
 .uaa.apps_manager_access_token_lifetime:
-  value: ((uaa/apps_manager_access_token_lifetime))
+  value: ((uaa_apps_manager_access_token_lifetime))
 .uaa.apps_manager_refresh_token_lifetime:
-  value: ((uaa/apps_manager_refresh_token_lifetime))
+  value: ((uaa_apps_manager_refresh_token_lifetime))
 .uaa.cf_cli_access_token_lifetime:
-  value: ((uaa/cf_cli_access_token_lifetime))
+  value: ((uaa_cf_cli_access_token_lifetime))
 .uaa.cf_cli_refresh_token_lifetime:
-  value: ((uaa/cf_cli_refresh_token_lifetime))
+  value: ((uaa_cf_cli_refresh_token_lifetime))
 .uaa.customize_password_label:
-  value: ((uaa/customize_password_label))
+  value: ((uaa_customize_password_label))
 .uaa.customize_username_label:
-  value: ((uaa/customize_username_label))
+  value: ((uaa_customize_username_label))
 .uaa.proxy_ips_regex:
-  value: ((uaa/proxy_ips_regex))
+  value: ((uaa_proxy_ips_regex))
 .uaa.service_provider_key_credentials:
   value:
-    cert_pem: ((uaa/service_provider_key_credentials/certificate))
-    private_key_pem: ((uaa/service_provider_key_credentials/privatekey))
+    cert_pem: ((uaa_service_provider_key_credentials_certificate))
+    private_key_pem: ((uaa_service_provider_key_credentials_privatekey))

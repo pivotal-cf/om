@@ -137,8 +137,8 @@ type CertificateValue struct {
 
 func NewCertificateValue(propertyName string) *CertificateValue {
 	return &CertificateValue{
-		CertPem:        fmt.Sprintf("((%s/%s))", propertyName, "certificate"),
-		CertPrivateKey: fmt.Sprintf("((%s/%s))", propertyName, "privatekey"),
+		CertPem:        fmt.Sprintf("((%s_%s))", propertyName, "certificate"),
+		CertPrivateKey: fmt.Sprintf("((%s_%s))", propertyName, "privatekey"),
 	}
 }
 

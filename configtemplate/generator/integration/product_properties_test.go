@@ -10,7 +10,7 @@ import (
 
 var _ = Describe("Product PropertyInputs", func() {
 	Context("GetAllProductProperties", func() {
-		It("Should return new required product properties", func() {
+		It("Should return new required product properties for healthwatch", func() {
 			fileData, err := ioutil.ReadFile("../fixtures/p_healthwatch.yml")
 			Expect(err).ToNot(HaveOccurred())
 			expected, err := ioutil.ReadFile("../fixtures/healthwatch-product.yml")
@@ -25,7 +25,7 @@ var _ = Describe("Product PropertyInputs", func() {
 			Expect(yml).Should(MatchYAML(string(expected)))
 		})
 
-		It("Should return new required product properties", func() {
+		It("Should return new required product properties for pas", func() {
 			fileData, err := ioutil.ReadFile("../fixtures/pas.yml")
 			Expect(err).ToNot(HaveOccurred())
 			expected, err := ioutil.ReadFile("../fixtures/pas-required.yml")
@@ -61,8 +61,8 @@ var _ = Describe("Product PropertyInputs", func() {
 	Context("GetRequiredVars", func() {
 		It("Should return required variables for properties that do not have defaults set", func() {
 			expected := map[string]interface{}{
-				"healthwatch-forwarder/health_check_az": "",
-				"opsman/enable/url":                     "",
+				"healthwatch-forwarder_health_check_az": "",
+				"opsman_enable_url":                     "",
 			}
 
 			fileData, err := ioutil.ReadFile("../fixtures/p_healthwatch.yml")

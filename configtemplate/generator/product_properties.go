@@ -136,7 +136,7 @@ func GetRequiredPropertyVars(metadata *Metadata) (map[string]interface{}, error)
 func addPropertyToVars(propertyName string, propertyBlueprint *PropertyBlueprint, includePropertiesWithDefaults bool, vars map[string]interface{}) {
 	newPropertyName := strings.Replace(propertyName, ".", "", 1)
 	newPropertyName = strings.Replace(newPropertyName, "properties.", "", 1)
-	newPropertyName = strings.Replace(newPropertyName, ".", "/", -1)
+	newPropertyName = strings.Replace(newPropertyName, ".", "_", -1)
 	if !propertyBlueprint.IsSecret() && !propertyBlueprint.IsSimpleCredentials() && !propertyBlueprint.IsCertificate() {
 		if includePropertiesWithDefaults {
 			if propertyBlueprint.HasDefault() {
@@ -166,8 +166,8 @@ func addPropertyToVars(propertyName string, propertyBlueprint *PropertyBlueprint
 
 	if !includePropertiesWithDefaults && !propertyBlueprint.HasDefault() {
 		if propertyBlueprint.IsCertificate() {
-			vars[fmt.Sprintf("%s/%s", newPropertyName, "certificate")] = ""
-			vars[fmt.Sprintf("%s/%s", newPropertyName, "privatekey")] = ""
+			vars[fmt.Sprintf("%s_%s", newPropertyName, "certificate")] = ""
+			vars[fmt.Sprintf("%s_%s", newPropertyName, "privatekey")] = ""
 
 			return
 		}
