@@ -266,6 +266,8 @@ var _ = Describe("ConfigureProduct", func() {
 
 				*jobProperties.InternetConnected = true
 
+				Expect(argProperties).To(Equal(jobProperties))
+
 				argProductGUID, argJobGUID, argProperties = service.UpdateStagedProductJobResourceConfigArgsForCall(1)
 				Expect(argProductGUID).To(Equal("some-product-guid"))
 				Expect(argJobGUID).To(Equal("a-different-guid"))

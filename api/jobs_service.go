@@ -9,11 +9,11 @@ import (
 
 // TODO: add omitempty everywhere
 type JobProperties struct {
-	Instances              interface{}  `json:"instances" yaml:"instances"`
+	Instances              interface{}  `json:"instances,omitempty" yaml:"instances,omitempty"`
 	PersistentDisk         *Disk        `json:"persistent_disk,omitempty" yaml:"persistent_disk,omitempty"`
-	InstanceType           InstanceType `json:"instance_type" yaml:"instance_type"`
+	InstanceType           InstanceType `json:"instance_type,omitempty" yaml:"instance_type,omitempty"`
 	InternetConnected      *bool        `json:"internet_connected,omitempty" yaml:"internet_connected,omitempty"`
-	LBNames                []string     `json:"elb_names" yaml:"elb_names,omitempty"`
+	LBNames                []string     `json:"elb_names,omitempty" yaml:"elb_names,omitempty"`
 	NSX                    *NSX         `json:"nsx,omitempty" yaml:"nsx,omitempty"`
 	NSXT                   *NSXT        `json:"nsxt,omitempty" yaml:"nsxt,omitempty"`
 	Pre27NSXSecurityGroups []string     `json:"nsx_security_groups,omitempty" yaml:"nsx_security_groups,omitempty"`

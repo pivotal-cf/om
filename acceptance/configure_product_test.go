@@ -167,7 +167,6 @@ var _ = Describe("configure-product command", func() {
         "instance_type": {
           "id": "m1.medium"
         },
-        "elb_names": null,
         "additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
       }`))
 
@@ -179,8 +178,7 @@ var _ = Describe("configure-product command", func() {
         },
         "instance_type": {
           "id": "m1.medium"
-        },
-        "elb_names": null
+        }
       }`))
 	})
 
@@ -233,7 +231,6 @@ var _ = Describe("configure-product command", func() {
         "instance_type": {
           "id": "m1.medium"
         },
-        "elb_names": null,
         "additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
       }`))
 
@@ -245,8 +242,7 @@ var _ = Describe("configure-product command", func() {
         },
         "instance_type": {
           "id": "m1.medium"
-        },
-        "elb_names": null
+        }
       }`))
 		})
 	})
@@ -286,7 +282,6 @@ var _ = Describe("configure-product command", func() {
 			"instance_type": {
 				"id": "m1.medium"
 			},
-			"elb_names": null,
 			"nsx_security_groups":["sg1", "sg2"],
 			"nsx_lbs": [
 				{

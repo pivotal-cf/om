@@ -131,14 +131,14 @@ func (ec StagedConfig) Execute(args []string) error {
 		return err
 	}
 
-	resourceConfig := map[string]interface{}{}
+	resourceConfig := map[string]config.ResourceConfig{}
 
 	for name, jobGUID := range jobs {
 		jobProperties, err := ec.service.GetStagedProductJobResourceConfig(productGUID, jobGUID)
 		if err != nil {
 			return err
 		}
-		resourceConfig[name] = jobProperties
+		resourceConfig[name] = config.ResourceConfig{JobProperties: jobProperties}
 	}
 
 	errandsListOutput, err := ec.service.ListStagedProductErrands(productGUID)
