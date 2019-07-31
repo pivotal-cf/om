@@ -41,6 +41,7 @@ type configureProductService interface {
 	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
 	UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput) error
 	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
+	UpdateStagedProductJobMaxInFlight(map[string]interface{}) error
 }
 
 type configureProduct struct {
@@ -98,6 +99,11 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	}
 
 	err = cp.configureResources(cfg, productGUID)
+	if err != nil {
+		return err
+	}
+
+	err = cp.configureMaxInFlight(cfg, productGUID)
 	if err != nil {
 		return err
 	}
@@ -188,6 +194,31 @@ func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID
 		}
 	}
 	return nil
+}
+
+func (cp *ConfigureProduct) configureMaxInFlight(cfg configureProduct, productGUID string) error {
+	if cfg.ResourceConfigProperties == nil {
+		cp.logger.Println("max in flight properties are not provided, nothing to do here")
+		return nil
+	}
+
+	cp.logger.Printf("applying max in flight for the following jobs:")
+
+	jobsToGUIDs, err := cp.service.ListStagedProductJobs(productGUID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch jobs: %s", err)
+	}
+
+	jobsToMaxInFlight := map[string]interface{}{}
+
+	for name, guid := range jobsToGUIDs {
+		if value, ok := cfg.ResourceConfigProperties[name]; ok && value.MaxInFlight != nil {
+			cp.logger.Printf("\t%s", name)
+			jobsToMaxInFlight[guid] = value.MaxInFlight
+		}
+	}
+
+	return cp.service.UpdateStagedProductJobMaxInFlight(jobsToMaxInFlight)
 }
 
 func (cp *ConfigureProduct) configureProperties(cfg configureProduct, productGUID string) error {

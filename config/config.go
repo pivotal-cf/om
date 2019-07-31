@@ -24,5 +24,5 @@ type VMExtensionConfig struct {
 
 type ResourceConfig struct {
 	JobProperties api.JobProperties `yaml:",inline"`
-	MaxInFlight   int               `yaml:"max_in_flight,omitempty"`
+	MaxInFlight   interface{}       `yaml:"max_in_flight,omitempty"`
 }

@@ -413,3 +413,7 @@ func (a Api) checkStagedProducts(productName string) (string, error) {
 
 	return "", nil
 }
+
+func (a Api) UpdateStagedProductJobMaxInFlight(map[string]interface{}) error {
+	return nil
+}

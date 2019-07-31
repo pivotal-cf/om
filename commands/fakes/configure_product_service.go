@@ -85,6 +85,17 @@ type ConfigureProductService struct {
 	updateStagedProductErrandsReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateStagedProductJobMaxInFlightStub        func(map[string]interface{}) error
+	updateStagedProductJobMaxInFlightMutex       sync.RWMutex
+	updateStagedProductJobMaxInFlightArgsForCall []struct {
+		arg1 map[string]interface{}
+	}
+	updateStagedProductJobMaxInFlightReturns struct {
+		result1 error
+	}
+	updateStagedProductJobMaxInFlightReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdateStagedProductJobResourceConfigStub        func(string, string, api.JobProperties) error
 	updateStagedProductJobResourceConfigMutex       sync.RWMutex
 	updateStagedProductJobResourceConfigArgsForCall []struct {
@@ -479,6 +490,66 @@ func (fake *ConfigureProductService) UpdateStagedProductErrandsReturnsOnCall(i i
 	}{result1}
 }
 
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlight(arg1 map[string]interface{}) error {
+	fake.updateStagedProductJobMaxInFlightMutex.Lock()
+	ret, specificReturn := fake.updateStagedProductJobMaxInFlightReturnsOnCall[len(fake.updateStagedProductJobMaxInFlightArgsForCall)]
+	fake.updateStagedProductJobMaxInFlightArgsForCall = append(fake.updateStagedProductJobMaxInFlightArgsForCall, struct {
+		arg1 map[string]interface{}
+	}{arg1})
+	fake.recordInvocation("UpdateStagedProductJobMaxInFlight", []interface{}{arg1})
+	fake.updateStagedProductJobMaxInFlightMutex.Unlock()
+	if fake.UpdateStagedProductJobMaxInFlightStub != nil {
+		return fake.UpdateStagedProductJobMaxInFlightStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateStagedProductJobMaxInFlightReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightCallCount() int {
+	fake.updateStagedProductJobMaxInFlightMutex.RLock()
+	defer fake.updateStagedProductJobMaxInFlightMutex.RUnlock()
+	return len(fake.updateStagedProductJobMaxInFlightArgsForCall)
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightCalls(stub func(map[string]interface{}) error) {
+	fake.updateStagedProductJobMaxInFlightMutex.Lock()
+	defer fake.updateStagedProductJobMaxInFlightMutex.Unlock()
+	fake.UpdateStagedProductJobMaxInFlightStub = stub
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightArgsForCall(i int) map[string]interface{} {
+	fake.updateStagedProductJobMaxInFlightMutex.RLock()
+	defer fake.updateStagedProductJobMaxInFlightMutex.RUnlock()
+	argsForCall := fake.updateStagedProductJobMaxInFlightArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightReturns(result1 error) {
+	fake.updateStagedProductJobMaxInFlightMutex.Lock()
+	defer fake.updateStagedProductJobMaxInFlightMutex.Unlock()
+	fake.UpdateStagedProductJobMaxInFlightStub = nil
+	fake.updateStagedProductJobMaxInFlightReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightReturnsOnCall(i int, result1 error) {
+	fake.updateStagedProductJobMaxInFlightMutex.Lock()
+	defer fake.updateStagedProductJobMaxInFlightMutex.Unlock()
+	fake.UpdateStagedProductJobMaxInFlightStub = nil
+	if fake.updateStagedProductJobMaxInFlightReturnsOnCall == nil {
+		fake.updateStagedProductJobMaxInFlightReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateStagedProductJobMaxInFlightReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ConfigureProductService) UpdateStagedProductJobResourceConfig(arg1 string, arg2 string, arg3 api.JobProperties) error {
 	fake.updateStagedProductJobResourceConfigMutex.Lock()
 	ret, specificReturn := fake.updateStagedProductJobResourceConfigReturnsOnCall[len(fake.updateStagedProductJobResourceConfigArgsForCall)]
@@ -676,6 +747,8 @@ func (fake *ConfigureProductService) Invocations() map[string][][]interface{} {
 	defer fake.listStagedProductsMutex.RUnlock()
 	fake.updateStagedProductErrandsMutex.RLock()
 	defer fake.updateStagedProductErrandsMutex.RUnlock()
+	fake.updateStagedProductJobMaxInFlightMutex.RLock()
+	defer fake.updateStagedProductJobMaxInFlightMutex.RUnlock()
 	fake.updateStagedProductJobResourceConfigMutex.RLock()
 	defer fake.updateStagedProductJobResourceConfigMutex.RUnlock()
 	fake.updateStagedProductNetworksAndAZsMutex.RLock()

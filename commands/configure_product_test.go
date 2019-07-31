@@ -295,9 +295,43 @@ var _ = Describe("ConfigureProduct", func() {
 
 				format, content = logger.PrintfArgsForCall(3)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
+			})
 
-				format, content = logger.PrintfArgsForCall(4)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+			It("sets the max in flight for all jobs", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+				service.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+
+				service.ListStagedProductJobsReturns(map[string]string{
+					"some-job":       "a-guid",
+					"some-other-job": "a-different-guid",
+					"bad":            "do-not-use",
+				}, nil)
+
+				err := client.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.UpdateStagedProductJobMaxInFlightCallCount()).To(Equal(1))
+				args := service.UpdateStagedProductJobMaxInFlightArgsForCall(0)
+				Expect(args).To(Equal(map[string]interface{}{
+					"a-guid":           "20%",
+					"a-different-guid": 1,
+				}))
+
+				format, content := logger.PrintfArgsForCall(4)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("applying max in flight for the following jobs:"))
+
+				format, content = logger.PrintfArgsForCall(5)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
+
+				format, content = logger.PrintfArgsForCall(6)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
 			})
 		})
 
@@ -602,7 +636,7 @@ var _ = Describe("ConfigureProduct", func() {
 				}, nil)
 			})
 
-			It("logs and then does nothing if network is empty", func() {
+			It("logs and then does nothing if they are empty", func() {
 				command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 				err := command.Execute([]string{
@@ -619,6 +653,8 @@ var _ = Describe("ConfigureProduct", func() {
 				msg = logger.PrintlnArgsForCall(2)[0]
 				Expect(msg).To(Equal("resource config properties are not provided, nothing to do here"))
 				msg = logger.PrintlnArgsForCall(3)[0]
+				Expect(msg).To(Equal("max in flight properties are not provided, nothing to do here"))
+				msg = logger.PrintlnArgsForCall(4)[0]
 				Expect(msg).To(Equal("errands are not provided, nothing to do here"))
 				format, content := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(ContainSubstring("finished configuring product"))
@@ -648,8 +684,6 @@ var _ = Describe("ConfigureProduct", func() {
 				Expect(service.ListInstallationsCallCount()).To(Equal(1))
 			})
 		})
-
-
 
 		When("an error occurs", func() {
 			BeforeEach(func() {
@@ -928,11 +962,13 @@ const resourceConfig = `{
     "persistent_disk": { "size_mb": "20480" },
     "instance_type": { "id": "m1.medium" },
     "internet_connected": true,
-    "elb_names": ["some-lb"]
+    "elb_names": ["some-lb"],
+	"max_in_flight": "20%"
   },
   "some-other-job": {
     "persistent_disk": { "size_mb": "20480" },
-    "instance_type": { "id": "m1.medium" }
+    "instance_type": { "id": "m1.medium" },
+    "max_in_flight": 1
   }
 }`
 
