@@ -39,7 +39,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		Context("when product properties are provided", func() {
+		When("product properties are provided", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "product-properties": %s}`, productProperties)
 			})
@@ -152,7 +152,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when product network is provided", func() {
+		When("product network is provided", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "network-properties": %s}`, networkProperties)
 			})
@@ -191,7 +191,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when product resources are provided", func() {
+		When("product resources are provided", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
 			})
@@ -301,7 +301,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when interpolating", func() {
+		When("interpolating", func() {
 			var (
 				configFile *os.File
 				err        error
@@ -357,7 +357,7 @@ var _ = Describe("ConfigureProduct", func() {
 				os.RemoveAll(configFile.Name())
 			})
 
-			Context("when the config file contains variables", func() {
+			When("the config file contains variables", func() {
 				Context("passed in a vars-file", func() {
 					It("can interpolate variables into the configuration", func() {
 						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
@@ -453,7 +453,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when an ops-file is provided", func() {
+			When("an ops-file is provided", func() {
 				It("can interpolate ops-files into the configuration", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
@@ -506,7 +506,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when the instance count is not an int", func() {
+		When("the instance count is not an int", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, automaticResourceConfig)
 			})
@@ -564,7 +564,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when GetStagedProductJobResourceConfig returns an error", func() {
+		When("GetStagedProductJobResourceConfig returns an error", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
 			})
@@ -592,7 +592,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when certain fields are not provided in the config", func() {
+		When("certain fields are not provided in the config", func() {
 			BeforeEach(func() {
 				config = `{"product-name": "cf"}`
 				service.ListStagedProductsReturns(api.StagedProductsOutput{
@@ -625,7 +625,7 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when there is a running installation", func() {
+		When("there is a running installation", func() {
 			BeforeEach(func() {
 				service.ListInstallationsReturns([]api.InstallationsServiceOutput{
 					{
@@ -649,12 +649,14 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
+
+
+		When("an error occurs", func() {
 			BeforeEach(func() {
 				config = `{"product-name": "cf"}`
 			})
 
-			Context("when the product does not exist", func() {
+			When("the product does not exist", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
@@ -671,7 +673,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the product resources cannot be decoded", func() {
+			When("the product resources cannot be decoded", func() {
 				BeforeEach(func() {
 					config = `{"product-name": "cf", "resource-config": "%%%%%"}`
 				})
@@ -689,7 +691,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the jobs cannot be fetched", func() {
+			When("the jobs cannot be fetched", func() {
 				BeforeEach(func() {
 					config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
 				})
@@ -712,7 +714,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when resources fail to configure", func() {
+			When("resources fail to configure", func() {
 				BeforeEach(func() {
 					config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
 				})
@@ -737,7 +739,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 					err := command.Execute([]string{"--badflag"})
@@ -745,7 +747,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the product-name is missing from config", func() {
+			When("the product-name is missing from config", func() {
 				BeforeEach(func() {
 					config = `{}`
 				})
@@ -757,8 +759,8 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the --config flag is passed", func() {
-				Context("when the provided config path does not exist", func() {
+			When("the --config flag is passed", func() {
+				When("the provided config path does not exist", func() {
 					It("returns an error", func() {
 						command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 						service.ListStagedProductsReturns(api.StagedProductsOutput{
@@ -771,7 +773,7 @@ var _ = Describe("ConfigureProduct", func() {
 					})
 				})
 
-				Context("when the provided config file is not valid yaml", func() {
+				When("the provided config file is not valid yaml", func() {
 					var (
 						configFile *os.File
 						err        error
@@ -804,7 +806,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the properties cannot be configured", func() {
+			When("the properties cannot be configured", func() {
 				BeforeEach(func() {
 					config = `{"product-name": "some-product", "product-properties": {}, "network-properties": {}}`
 				})
@@ -824,7 +826,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when the networks cannot be configured", func() {
+			When("the networks cannot be configured", func() {
 				BeforeEach(func() {
 					config = `{"product-name": "some-product", "product-properties": {}, "network-properties": {}}`
 				})
@@ -844,7 +846,7 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
-			Context("when errand config errors", func() {
+			When("errand config errors", func() {
 				var (
 					configFile *os.File
 					err        error
