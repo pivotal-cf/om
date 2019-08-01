@@ -280,7 +280,7 @@ hash:
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(1))
-				Eventually(session.Err, 5).Should(gbytes.Say("Expected to find variables: age1"))
+				Eventually(session.Err, 5).Should(gbytes.Say("Expected to find variables:\nage1"))
 			})
 		})
 	})

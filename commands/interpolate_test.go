@@ -1,14 +1,14 @@
 package commands_test
 
 import (
-	"io/ioutil"
-	"os"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 var templateNoParameters = `hello: world`
@@ -96,7 +96,8 @@ var _ = Describe("Interpolate", func() {
 					"--config", inputFile,
 				})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).Should(ContainSubstring("Expected to find variables: hello"))
+				splitErr := strings.Split(err.Error(), "\n")
+				Expect(splitErr).To(ConsistOf("Expected to find variables:", "hello"))
 			})
 		})
 

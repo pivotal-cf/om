@@ -6,6 +6,7 @@ import (
 	"github.com/pivotal-cf/om/interpolate"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type Interpolate struct {
@@ -81,7 +82,8 @@ func (c Interpolate) Execute(args []string) error {
 		ExpectAllKeys: expectAllKeys,
 	}, c.Options.Path)
 	if err != nil {
-		return err
+		splitErr := strings.Split(err.Error(), ": ")
+		return fmt.Errorf("%s:\n%s", splitErr[0], splitErr[1])
 	}
 
 	c.logger.Println(string(bytes))
