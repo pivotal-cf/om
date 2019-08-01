@@ -103,6 +103,15 @@ var _ = Describe("configure-product command", func() {
 
 				_, err = w.Write([]byte(`{}`))
 				Expect(err).ToNot(HaveOccurred())
+			case "/api/v0/staged/products/some-product-guid/max_in_flight":
+				resourceConfigMethod = append(resourceConfigMethod, req.Method)
+				body, err := ioutil.ReadAll(req.Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				resourceConfigBody = append(resourceConfigBody, body)
+
+				_, err = w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				auth := req.Header.Get("Authorization")
 				if auth != "Bearer some-opsman-token" {

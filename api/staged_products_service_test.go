@@ -253,6 +253,49 @@ var _ = Describe("StagedProducts", func() {
 		})
 	})
 
+	Describe("UpdateStagedProductJobMaxInFlight", func() {
+		It("makes a requests to set max in flight for all jobs", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				return &http.Response{StatusCode: http.StatusOK}, nil
+			}
+			err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
+				"some-job-guid":   "20%",
+				"some-other-guid": 1,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			request := client.DoArgsForCall(0)
+			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/product-type1-guid/max_in_flight"))
+		})
+
+		When("does not return a 200 OK", func() {
+			It("returns an error", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					return &http.Response{StatusCode: http.StatusExpectationFailed}, nil
+				}
+				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
+					"some-job-guid":   "20%",
+					"some-other-guid": 1,
+				})
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		When("creating the request fails", func() {
+			It("returns an error", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					return nil, fmt.Errorf("some error")
+				}
+				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
+					"some-job-guid":   "20%",
+					"some-other-guid": 1,
+				})
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("DeleteStagedProduct", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {

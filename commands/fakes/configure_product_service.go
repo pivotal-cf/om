@@ -85,10 +85,11 @@ type ConfigureProductService struct {
 	updateStagedProductErrandsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpdateStagedProductJobMaxInFlightStub        func(map[string]interface{}) error
+	UpdateStagedProductJobMaxInFlightStub        func(string, map[string]interface{}) error
 	updateStagedProductJobMaxInFlightMutex       sync.RWMutex
 	updateStagedProductJobMaxInFlightArgsForCall []struct {
-		arg1 map[string]interface{}
+		arg1 string
+		arg2 map[string]interface{}
 	}
 	updateStagedProductJobMaxInFlightReturns struct {
 		result1 error
@@ -490,16 +491,17 @@ func (fake *ConfigureProductService) UpdateStagedProductErrandsReturnsOnCall(i i
 	}{result1}
 }
 
-func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlight(arg1 map[string]interface{}) error {
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlight(arg1 string, arg2 map[string]interface{}) error {
 	fake.updateStagedProductJobMaxInFlightMutex.Lock()
 	ret, specificReturn := fake.updateStagedProductJobMaxInFlightReturnsOnCall[len(fake.updateStagedProductJobMaxInFlightArgsForCall)]
 	fake.updateStagedProductJobMaxInFlightArgsForCall = append(fake.updateStagedProductJobMaxInFlightArgsForCall, struct {
-		arg1 map[string]interface{}
-	}{arg1})
-	fake.recordInvocation("UpdateStagedProductJobMaxInFlight", []interface{}{arg1})
+		arg1 string
+		arg2 map[string]interface{}
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateStagedProductJobMaxInFlight", []interface{}{arg1, arg2})
 	fake.updateStagedProductJobMaxInFlightMutex.Unlock()
 	if fake.UpdateStagedProductJobMaxInFlightStub != nil {
-		return fake.UpdateStagedProductJobMaxInFlightStub(arg1)
+		return fake.UpdateStagedProductJobMaxInFlightStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -514,17 +516,17 @@ func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightCallCount(
 	return len(fake.updateStagedProductJobMaxInFlightArgsForCall)
 }
 
-func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightCalls(stub func(map[string]interface{}) error) {
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightCalls(stub func(string, map[string]interface{}) error) {
 	fake.updateStagedProductJobMaxInFlightMutex.Lock()
 	defer fake.updateStagedProductJobMaxInFlightMutex.Unlock()
 	fake.UpdateStagedProductJobMaxInFlightStub = stub
 }
 
-func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightArgsForCall(i int) map[string]interface{} {
+func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightArgsForCall(i int) (string, map[string]interface{}) {
 	fake.updateStagedProductJobMaxInFlightMutex.RLock()
 	defer fake.updateStagedProductJobMaxInFlightMutex.RUnlock()
 	argsForCall := fake.updateStagedProductJobMaxInFlightArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *ConfigureProductService) UpdateStagedProductJobMaxInFlightReturns(result1 error) {

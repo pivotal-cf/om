@@ -414,6 +414,23 @@ func (a Api) checkStagedProducts(productName string) (string, error) {
 	return "", nil
 }
 
-func (a Api) UpdateStagedProductJobMaxInFlight(map[string]interface{}) error {
+func (a Api) UpdateStagedProductJobMaxInFlight(productGUID string, jobsToMaxInFlight map[string]interface{}) error {
+	payload, err := json.Marshal(jobsToMaxInFlight)
+	if err != nil {
+		return err
+	}
+
+	resp, err := a.sendAPIRequest("PUT",
+		fmt.Sprintf("/api/v0/staged/products/%s/max_in_flight", productGUID),
+		[]byte(fmt.Sprintf(`{"max_in_flight": %s}`, payload)),
+	)
+	if err != nil {
+		return errors.Wrap(err, "could not make api request to staged product networks_and_azs endpoint")
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
 	return nil
 }

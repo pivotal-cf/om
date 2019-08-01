@@ -41,7 +41,7 @@ type configureProductService interface {
 	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
 	UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput) error
 	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
-	UpdateStagedProductJobMaxInFlight(map[string]interface{}) error
+	UpdateStagedProductJobMaxInFlight(string, map[string]interface{}) error
 }
 
 type configureProduct struct {
@@ -218,7 +218,7 @@ func (cp *ConfigureProduct) configureMaxInFlight(cfg configureProduct, productGU
 		}
 	}
 
-	return cp.service.UpdateStagedProductJobMaxInFlight(jobsToMaxInFlight)
+	return cp.service.UpdateStagedProductJobMaxInFlight(productGUID, jobsToMaxInFlight)
 }
 
 func (cp *ConfigureProduct) configureProperties(cfg configureProduct, productGUID string) error {

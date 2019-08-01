@@ -318,20 +318,15 @@ var _ = Describe("ConfigureProduct", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(service.UpdateStagedProductJobMaxInFlightCallCount()).To(Equal(1))
-				args := service.UpdateStagedProductJobMaxInFlightArgsForCall(0)
-				Expect(args).To(Equal(map[string]interface{}{
+				productGUID, payload := service.UpdateStagedProductJobMaxInFlightArgsForCall(0)
+				Expect(productGUID).To(Equal("some-product-guid"))
+				Expect(payload).To(Equal(map[string]interface{}{
 					"a-guid":           "20%",
 					"a-different-guid": 1,
 				}))
 
 				format, content := logger.PrintfArgsForCall(4)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("applying max in flight for the following jobs:"))
-
-				format, content = logger.PrintfArgsForCall(5)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
-
-				format, content = logger.PrintfArgsForCall(6)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
 			})
 		})
 
