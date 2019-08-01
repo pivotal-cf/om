@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -415,6 +417,18 @@ func (a Api) checkStagedProducts(productName string) (string, error) {
 }
 
 func (a Api) UpdateStagedProductJobMaxInFlight(productGUID string, jobsToMaxInFlight map[string]interface{}) error {
+	for job, maxInFlight := range jobsToMaxInFlight {
+		if v, ok := maxInFlight.(string); ok {
+			if !(strings.Contains(v, "%") || v == "default") {
+				value, err := strconv.Atoi(v)
+				if err != nil{
+					return fmt.Errorf("invalid max_in_flight value provided for job '%s': '%s'\nvalid options configurations include percentages ('50%%'), counts ('2'), and 'default'",job, v)
+				}
+				jobsToMaxInFlight[job] = value
+			}
+		}
+	}
+
 	payload, err := json.Marshal(jobsToMaxInFlight)
 	if err != nil {
 		return err
