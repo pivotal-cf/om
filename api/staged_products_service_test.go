@@ -73,7 +73,7 @@ var _ = Describe("StagedProducts", func() {
 			}`))
 		})
 
-		Context("when the same type of product is already deployed", func() {
+		When("the same type of product is already deployed", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					resp := &http.Response{
@@ -117,7 +117,7 @@ var _ = Describe("StagedProducts", func() {
 
 		})
 
-		Context("when the same type of product is already staged", func() {
+		When("the same type of product is already staged", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					resp := &http.Response{
@@ -172,8 +172,8 @@ var _ = Describe("StagedProducts", func() {
 
 		})
 
-		Context("when an error occurs", func() {
-			Context("when a GET to the staged products endpoint returns an error", func() {
+		When("an error occurs", func() {
+			When("a GET to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						resp := &http.Response{
@@ -196,7 +196,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when a POST/PUT to the staged products endpoint returns an error", func() {
+			When("a POST/PUT to the staged products endpoint returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -222,7 +222,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when a POST/PUT to the staged products endpoint returns a non-200 status code", func() {
+			When("a POST/PUT to the staged products endpoint returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -298,7 +298,7 @@ var _ = Describe("StagedProducts", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		Context("when the product is not staged", func() {
+		When("the product is not staged", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
@@ -320,7 +320,7 @@ var _ = Describe("StagedProducts", func() {
 			})
 		})
 
-		Context("when a GET to the staged products endpoint returns an error", func() {
+		When("a GET to the staged products endpoint returns an error", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					resp := &http.Response{
@@ -342,7 +342,7 @@ var _ = Describe("StagedProducts", func() {
 			})
 		})
 
-		Context("when a DELETE to the staged products endpoint returns an error", func() {
+		When("a DELETE to the staged products endpoint returns an error", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
@@ -423,7 +423,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the request fails", func() {
+			When("the request fails", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 				})
@@ -434,7 +434,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -448,7 +448,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns invalid JSON", func() {
+			When("the server returns invalid JSON", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -678,7 +678,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the request fails", func() {
+			When("the request fails", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 				})
@@ -692,7 +692,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -757,7 +757,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the request fails", func() {
+			When("the request fails", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 				})
@@ -771,7 +771,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -825,14 +825,14 @@ key-4: 2147483648
 		})
 
 		Context("failure cases", func() {
-			Context("when the request object is invalid", func() {
+			When("the request object is invalid", func() {
 				It("returns an error", func() {
 					_, err := service.GetStagedProductManifest("invalid-guid-%%%")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
 
-			Context("when the client request fails", func() {
+			When("the client request fails", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 
@@ -841,7 +841,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -853,7 +853,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the returned JSON is invalid", func() {
+			When("the returned JSON is invalid", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -944,7 +944,7 @@ key-4: 2147483648
 		})
 
 		Context("failure cases", func() {
-			Context("when the properties request returns an error", func() {
+			When("the properties request returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -961,7 +961,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the properties request returns a non 200 error code", func() {
+			When("the properties request returns a non 200 error code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -981,7 +981,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the server returns invalid json", func() {
+			When("the server returns invalid json", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -1049,7 +1049,7 @@ key-4: 2147483648
 			}))
 		})
 
-		Context("when there is no network + azs for the give product", func() {
+		When("there is no network + azs for the give product", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					var resp *http.Response
@@ -1073,7 +1073,7 @@ key-4: 2147483648
 		})
 
 		Context("failure cases", func() {
-			Context("when the networks_and_azs request returns an error", func() {
+			When("the networks_and_azs request returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -1091,7 +1091,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the server returns invalid json", func() {
+			When("the server returns invalid json", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
