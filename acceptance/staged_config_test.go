@@ -22,6 +22,11 @@ var _ = Describe("staged-config command", func() {
 			w.Header().Set("Content-Type", "application/json")
 
 			switch req.URL.Path {
+			case "/api/v0/staged/products/some-product-guid/max_in_flight":
+				_, err := w.Write([]byte(`{
+					"max_in_flight": {"some-guid": "20%"}
+				}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/uaa/oauth/token":
 				_, err := w.Write([]byte(`{
 				"access_token": "some-opsman-token",
@@ -183,6 +188,7 @@ resource-config:
     instance_type: { id: automatic }
     elb_names: ["my-elb"]
     internet_connected: true
+    max_in_flight: 20%
 errand-config:
   errand-1:
     post-deploy-state: false
@@ -231,6 +237,7 @@ resource-config:
     instance_type: { id: automatic }
     elb_names: ["my-elb"]
     internet_connected: true
+    max_in_flight: 20%
 errand-config:
   errand-1:
     post-deploy-state: false

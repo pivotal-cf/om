@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/api/fakes"
@@ -253,6 +254,66 @@ var _ = Describe("StagedProducts", func() {
 		})
 	})
 
+	Describe("GetStagedProductJobMaxInFlight", func() {
+		It("makes a requests to retrieve max in flight for all jobs", func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var responseBody = ioutil.NopCloser(strings.NewReader(`{
+				"max_in_flight": {
+					"some-third-guid": 1,
+					"some-other-guid": 1,
+					"some-job-guid": "20%",
+					"some-fourth-guid": "default"
+				}}`))
+
+				return &http.Response{StatusCode: http.StatusOK, Body: responseBody}, nil
+			}
+			jobsWithMaxInFlight, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jobsWithMaxInFlight).To(Equal(map[string]interface{}{
+				"some-job-guid":    "20%",
+				"some-other-guid":  1.00,
+				"some-third-guid":  1.00,
+				"some-fourth-guid": "default",
+			}))
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			request := client.DoArgsForCall(0)
+			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/product-type1-guid/max_in_flight"))
+		})
+
+		When("JSON response body is not valid JSON", func() {
+			It("returns an error", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					var responseBody = ioutil.NopCloser(strings.NewReader(`[invalidJSON}`))
+
+					return &http.Response{StatusCode: http.StatusOK, Body: responseBody}, nil
+				}
+				_, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		When("the response is not 200 OK", func() {
+			It("returns an error", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					return &http.Response{StatusCode: http.StatusNotFound}, nil
+				}
+				_, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		When("the request cannot be made", func() {
+			It("returns an error", func() {
+				client.DoStub = func(req *http.Request) (*http.Response, error) {
+					return nil, fmt.Errorf("some error")
+				}
+				_, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("UpdateStagedProductJobMaxInFlight", func() {
 		It("makes a requests to set max in flight for all jobs", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
@@ -260,9 +321,9 @@ var _ = Describe("StagedProducts", func() {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 			err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
-				"some-job-guid":   "20%",
-				"some-other-guid": 1,
-				"some-third-guid": "1",
+				"some-job-guid":    "20%",
+				"some-other-guid":  1,
+				"some-third-guid":  "1",
 				"some-fourth-guid": "default",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -282,21 +343,21 @@ var _ = Describe("StagedProducts", func() {
 			}}`))
 		})
 
-		When("an invalid value is provided for max_in_flight", func(){
-			It("prints an error indicating the valid formats", func(){
+		When("an invalid value is provided for max_in_flight", func() {
+			It("prints an error indicating the valid formats", func() {
 
-			err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
-				"some-job-guid":   "20%",
-				"some-other-guid": 1,
-				"some-third-guid": "1",
-				"some-fourth-guid": "default",
-				"the-guid-with-the-invalid-value": "maximum",
-			})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`invalid max_in_flight value provided for job 'the-guid-with-the-invalid-value': 'maximum'
+				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
+					"some-job-guid":                   "20%",
+					"some-other-guid":                 1,
+					"some-third-guid":                 "1",
+					"some-fourth-guid":                "default",
+					"the-guid-with-the-invalid-value": "maximum",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(`invalid max_in_flight value provided for job 'the-guid-with-the-invalid-value': 'maximum'
 valid options configurations include percentages ('50%'), counts ('2'), and 'default'`))
 
-			Expect(client.DoCallCount()).To(Equal(0))
+				Expect(client.DoCallCount()).To(Equal(0))
 			})
 		})
 

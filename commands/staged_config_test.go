@@ -78,6 +78,7 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+    max_in_flight: 2
 errand-config:
   first-errand:
     post-deploy-state: true
@@ -142,6 +143,7 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+    max_in_flight: 2
 errand-config:
   first-errand:
     post-deploy-state: true
@@ -255,6 +257,7 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+    max_in_flight: 2
 errand-config:
   first-errand:
     post-deploy-state: true
@@ -467,6 +470,7 @@ resource-config:
     instances: 1
     instance_type:
       id: automatic
+    max_in_flight: 2
 errand-config:
   first-errand:
     post-deploy-state: true
@@ -679,6 +683,9 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			ID: "automatic",
 		},
 		Instances: 1,
+	}, nil)
+	fakeService.GetStagedProductJobMaxInFlightReturns(map[string]interface{}{
+		"some-job-guid": 2,
 	}, nil)
 
 	return fakeService

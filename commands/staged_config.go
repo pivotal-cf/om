@@ -32,6 +32,7 @@ type stagedConfigService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
+	GetStagedProductJobMaxInFlight(productGUID string) (map[string]interface{}, error)
 }
 
 func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
@@ -131,6 +132,11 @@ func (ec StagedConfig) Execute(args []string) error {
 		return err
 	}
 
+	jobsToMaxInFlight, err := ec.service.GetStagedProductJobMaxInFlight(productGUID)
+	if err != nil {
+		return err
+	}
+
 	resourceConfig := map[string]config.ResourceConfig{}
 
 	for name, jobGUID := range jobs {
@@ -138,7 +144,13 @@ func (ec StagedConfig) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
-		resourceConfig[name] = config.ResourceConfig{JobProperties: jobProperties}
+		rc := config.ResourceConfig{
+			JobProperties: jobProperties,
+		}
+		if maxInFlight, ok := jobsToMaxInFlight[jobGUID]; ok {
+			rc.MaxInFlight = maxInFlight
+		}
+		resourceConfig[name] = rc
 	}
 
 	errandsListOutput, err := ec.service.ListStagedProductErrands(productGUID)
