@@ -58,6 +58,23 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Ops files are denoted with `/`,
   so changing the vars separators to `_` makes this easier to differentiate.
 - `config-template` output `product-default-vars.yml` has been changed to `default-vars.yml`
+- `staged-config` includes the property `max_in_flight` will be included
+  in the `resource-config` section of a job.
+- `configure-product` can set the property `max_in_flight`
+  in the `resource-config` section of a job.
+
+  The legal values are:
+  * an integer for the number of VMs (ie `2`)
+  * a percentage of 1-100 (ie `20%`)
+  * the default value specified in tile (`default`)
+  For example,
+
+  ```yaml
+  resource-config:
+    diego_cells:
+      instances: 10
+      max_in_flight: 10
+  ```
 
 ## 3.0.0
 
