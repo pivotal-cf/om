@@ -331,7 +331,7 @@ func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configurePr
 		VarsEnvs:      varsEnvs,
 		OpsFiles:      cp.Options.OpsFile,
 		ExpectAllKeys: true,
-	}, "")
+	})
 	if err != nil {
 		return configureProduct{}, err
 	}

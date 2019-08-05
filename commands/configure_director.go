@@ -160,7 +160,7 @@ func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
 		VarsEnvs:      varsEnvs,
 		OpsFiles:      c.Options.OpsFile,
 		ExpectAllKeys: true,
-	}, "")
+	})
 	if err != nil {
 		return nil, err
 	}

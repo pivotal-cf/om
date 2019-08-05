@@ -58,7 +58,7 @@ func (c CreateVMExtension) Execute(args []string) error {
 			Vars:          c.Options.Vars,
 			OpsFiles:      c.Options.OpsFile,
 			ExpectAllKeys: true,
-		}, "")
+		})
 		if err != nil {
 			return err
 		}

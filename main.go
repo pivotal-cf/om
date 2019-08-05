@@ -220,7 +220,7 @@ func setEnvFileProperties(global *options) error {
 		EnvironFunc:   os.Environ,
 		VarsEnvs:      []string{global.VarsEnv},
 		ExpectAllKeys: false,
-	}, "")
+	})
 	if err != nil {
 		return err
 	}

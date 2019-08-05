@@ -21,9 +21,10 @@ type Options struct {
 	OpsFiles      []string
 	EnvironFunc   func() []string
 	ExpectAllKeys bool
+	Path          string
 }
 
-func Execute(o Options, pathStr string) ([]byte, error) {
+func Execute(o Options) ([]byte, error) {
 	contents, err := ioutil.ReadFile(o.TemplateFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read file (%s): %s", o.TemplateFile, err.Error())
@@ -35,6 +36,7 @@ func Execute(o Options, pathStr string) ([]byte, error) {
 
 	for _, varsEnv := range o.VarsEnvs {
 		for _, envVar := range o.EnvironFunc() {
+
 			pieces := strings.SplitN(envVar, "=", 2)
 			if len(pieces) != 2 {
 				return []byte{}, errors.New("Expected environment variable to be key-value pair")
@@ -106,7 +108,7 @@ func Execute(o Options, pathStr string) ([]byte, error) {
 		ExpectAllKeys:      o.ExpectAllKeys,
 	}
 
-	path, err := patch.NewPointerFromString(pathStr)
+	path, err := patch.NewPointerFromString(o.Path)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse path: %s", err)
 	}

@@ -80,7 +80,8 @@ func (c Interpolate) Execute(args []string) error {
 		VarsEnvs:      c.Options.VarsEnv,
 		OpsFiles:      c.Options.OpsFile,
 		ExpectAllKeys: expectAllKeys,
-	}, c.Options.Path)
+		Path: c.Options.Path,
+	})
 	if err != nil {
 		splitErr := strings.Split(err.Error(), ": ")
 		return fmt.Errorf("%s:\n%s", splitErr[0], splitErr[1])
