@@ -246,7 +246,7 @@ This is only supported in OpsManager 2.5 and up.
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{"--config", "something"})
-					Expect(err).To(MatchError("could not parse configure-authentication flags: could not load the config file: open something: no such file or directory"))
+					Expect(err).To(MatchError("could not parse configure-authentication flags: could not load the config file: could not read file (something): open something: no such file or directory"))
 
 				})
 			})

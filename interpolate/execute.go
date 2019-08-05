@@ -26,7 +26,7 @@ type Options struct {
 func Execute(o Options, pathStr string) ([]byte, error) {
 	contents, err := ioutil.ReadFile(o.TemplateFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not read file (%s): %s", o.TemplateFile, err.Error())
 	}
 
 	tpl := template.NewTemplate(contents)
@@ -86,7 +86,7 @@ func Execute(o Options, pathStr string) ([]byte, error) {
 		}
 	}
 
-	ReadCommandLineVars(o.Vars, staticVars)
+	readCommandLineVars(o.Vars, staticVars)
 
 	for _, path := range o.OpsFiles {
 		var opDefs []patch.OpDefinition
@@ -123,7 +123,7 @@ func Execute(o Options, pathStr string) ([]byte, error) {
 	return bytes, nil
 }
 
-func ReadCommandLineVars(vars []string, staticVars template.StaticVariables) {
+func readCommandLineVars(vars []string, staticVars template.StaticVariables) {
 	for _, singleVar := range vars {
 		splitVar := strings.Split(singleVar, "=")
 

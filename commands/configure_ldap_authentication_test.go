@@ -322,7 +322,7 @@ precreated-client-secret: test-client-secret
 			Context("when config file cannot be opened", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--config", "something"})
-					Expect(err).To(MatchError("could not parse configure-ldap-authentication flags: could not load the config file: open something: no such file or directory"))
+					Expect(err).To(MatchError("could not parse configure-ldap-authentication flags: could not load the config file: could not read file (something): open something: no such file or directory"))
 
 				})
 			})

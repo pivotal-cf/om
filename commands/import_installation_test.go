@@ -318,7 +318,7 @@ var _ = Describe("ImportInstallation", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--config", "something"})
-				Expect(err).To(MatchError("could not parse import-installation flags: could not load the config file: open something: no such file or directory"))
+				Expect(err).To(MatchError("could not parse import-installation flags: could not load the config file: could not read file (something): open something: no such file or directory"))
 
 			})
 		})
