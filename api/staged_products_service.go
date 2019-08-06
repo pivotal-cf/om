@@ -444,6 +444,10 @@ func (a Api) GetStagedProductJobMaxInFlight(productGUID string) (ProductJobMaxIn
 }
 
 func (a Api) UpdateStagedProductJobMaxInFlight(productGUID string, jobsToMaxInFlight map[string]interface{}) error {
+	if len(jobsToMaxInFlight) == 0 {
+		return nil
+	}
+
 	for job, maxInFlight := range jobsToMaxInFlight {
 		if v, ok := maxInFlight.(string); ok {
 			if !(strings.Contains(v, "%") || v == "default") {

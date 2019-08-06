@@ -343,6 +343,15 @@ var _ = Describe("StagedProducts", func() {
 			}}`))
 		})
 
+		When("no jobs are passed", func() {
+			It("does nothing", func() {
+				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(client.DoCallCount()).To(Equal(0))
+			})
+		})
+
 		When("an invalid value is provided for max_in_flight", func() {
 			It("prints an error indicating the valid formats", func() {
 
