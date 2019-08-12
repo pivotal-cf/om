@@ -47,6 +47,15 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
   
+## 3.2.0 (Unreleased)
+
+### Features
+- `expiring-certificates` command was added.
+  This command returns a list of certificates
+  from an Ops Manager
+  expiring within a specified (`--expires-withing/-e`) timeframe. 
+  Default: "3m" (3 months)
+  
 ## 3.1.0
 
 ### Features
