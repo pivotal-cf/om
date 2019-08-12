@@ -32,7 +32,7 @@ func NewExpiringCertificates(service expiringCertsService, logger logger) *Expir
 
 func (e ExpiringCerts) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "returns a list of expiring certificates on an existing Ops Manager",
+		Description:      "returns a list of expiring certificates from an existing Ops Manager",
 		ShortDescription: "lists expiring certificates from the Ops Manager targeted",
 		Flags:            e.Options,
 	}
