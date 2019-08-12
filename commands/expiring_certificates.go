@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/pivotal-cf/jhanda"
@@ -82,7 +83,7 @@ func (e *ExpiringCerts) Execute(args []string) error {
 		}
 	}
 
-	return nil
+	return errors.New("found expiring certs in the foundation")
 }
 
 func (e *ExpiringCerts) groupByLocation(certs []api.ExpiringCertificate) (map[string][]api.ExpiringCertificate, map[string]map[string][]api.ExpiringCertificate) {

@@ -137,7 +137,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			}
 			command := commands.NewExpiringCertificates(service, logger)
 			err = command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 
 			contents := strings.Split(string(stdout.Contents()), "\n")
 			Expect(contents).To(ConsistOf(
