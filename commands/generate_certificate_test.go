@@ -3,10 +3,12 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -62,6 +64,23 @@ var _ = Describe("GenerateCertificate", func() {
 					"--domains", "*.apps.example.com, *.sys.example.com",
 				})
 				Expect(err).To(MatchError("failed to generate certificate"))
+			})
+
+			It("joins all --domains flags into one list of SANs", func() {
+				fakeService.GenerateCertificateStub = func(input api.DomainsInput) (string, error) {
+					return fmt.Sprintf("[%q]", strings.Join(input.Domains, ",")), nil
+				}
+
+				err := command.Execute([]string{
+					"--domains", "*.apps.example.com, *.sys.example.com",
+					"--domains", "opsmanager.example.com",
+					"--domains", "*.login.sys.example.com,*.uaa.sys.example.com",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+				format, content := fakeLogger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal(`["*.apps.example.com,*.sys.example.com,opsmanager.example.com,*.login.sys.example.com,*.uaa.sys.example.com"]`))
 			})
 		})
 	})
