@@ -1,9 +1,12 @@
 package commands_test
 
 import (
+	"errors"
 	"fmt"
+	"github.com/pivotal-cf/jhanda"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/pivotal-cf/om/api"
@@ -15,7 +18,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 )
 
-var _ = FDescribe("ExpiringCertificates", func() {
+var _ = Describe("ExpiringCertificates", func() {
 	var (
 		service *fakes.ExpiringCertsService
 		stdout  *gbytes.Buffer
@@ -35,36 +38,25 @@ var _ = FDescribe("ExpiringCertificates", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Getting expiring certificates...")))
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] Ops Manager")))
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] Credhub")))
+			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] No certificates are expiring in 3m")))
+		})
+
+		It("sets ExpiresWithin when passed", func() {
+			command := commands.NewExpiringCertificates(service, logger)
+			err := command.Execute([]string{
+				"--expires-within",
+				"5w",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
+
+			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Getting expiring certificates...")))
+			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] No certificates are expiring in 5w")))
 		})
 	})
 
-	When("there are expiringing certs", func() {
-		/*
-				{
-					"issuer": "/C=US/O=Pivotal",
-					"valid_from": "2017-02-23T19:31:00Z",
-					"valid_until": "2019-02-23T19:31:00Z",
-					"configurable": false,
-					"property_reference": ".properties.director_ssl",
-					"property_type": "rsa_cert_credentials",
-					"product_guid": "p-bosh-47f3d0d7ef2f573fbc95",
-					"location": "ops_manager",
-					"variable_path": null
-					},
-			    {
-					"issuer": "/CN=opsmgr-bosh-dns-tls-ca",
-					"valid_from": "2018-08-10T21:07:37Z",
-					"valid_until": "2022-08-09T21:07:37Z",
-					"configurable": false,
-					"property_reference": null,
-					"property_type": null,
-					"product_guid": null,
-					"location": "credhub",
-					"variable_path": "/opsmgr/bosh_dns/tls_ca"
-					}
-		*/
+	When("there are expiring certs", func() {
 		It("prints a clear message of the cert expiring", func() {
 			omTime := "2019-01-01T01:01:01Z"
 			opsManagerUntilTime, err := time.Parse(time.RFC3339, omTime)
@@ -80,10 +72,43 @@ var _ = FDescribe("ExpiringCertificates", func() {
 						ValidFrom:         time.Time{},
 						ValidUntil:        opsManagerUntilTime,
 						Configurable:      false,
-						PropertyReference: "",
+						PropertyReference: "property-reference-1",
 						PropertyType:      "",
-						ProductGUID:       "",
+						ProductGUID:       "product-guid-1",
 						Location:          "ops_manager",
+						VariablePath:      "",
+					},
+					{
+						Issuer:            "",
+						ValidFrom:         time.Time{},
+						ValidUntil:        opsManagerUntilTime,
+						Configurable:      false,
+						PropertyReference: "property-reference-2",
+						PropertyType:      "",
+						ProductGUID:       "product-guid-1",
+						Location:          "ops_manager",
+						VariablePath:      "",
+					},
+					{
+						Issuer:            "",
+						ValidFrom:         time.Time{},
+						ValidUntil:        opsManagerUntilTime,
+						Configurable:      false,
+						PropertyReference: "property-reference-3",
+						PropertyType:      "",
+						ProductGUID:       "product-guid-2",
+						Location:          "ops_manager",
+						VariablePath:      "",
+					},
+					{
+						Issuer:            "",
+						ValidFrom:         time.Time{},
+						ValidUntil:        opsManagerUntilTime,
+						Configurable:      false,
+						PropertyReference: "property-reference-4",
+						PropertyType:      "",
+						ProductGUID:       "product-guid-4",
+						Location:          "other_location",
 						VariablePath:      "",
 					},
 					{
@@ -94,8 +119,19 @@ var _ = FDescribe("ExpiringCertificates", func() {
 						PropertyReference: "",
 						PropertyType:      "",
 						ProductGUID:       "",
-						Location:          "credhub",
-						VariablePath:      "",
+						Location:          "credhub_location",
+						VariablePath:      "/opsmgr/bosh_dns/other_ca",
+					},
+					{
+						Issuer:            "",
+						ValidFrom:         time.Time{},
+						ValidUntil:        credhubUntilTime,
+						Configurable:      false,
+						PropertyReference: "",
+						PropertyType:      "",
+						ProductGUID:       "",
+						Location:          "credhub_location",
+						VariablePath:      "/opsmgr/bosh_dns/tls_ca",
 					},
 				}, nil
 			}
@@ -103,11 +139,83 @@ var _ = FDescribe("ExpiringCertificates", func() {
 			err = command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Getting expiring certificates...")))
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[X] Ops Manager")))
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta(fmt.Sprintf("    Cert expiring on: %s", opsManagerUntilTime))))
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[X] Credhub")))
-			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta(fmt.Sprintf("    Cert expiring on: %s", credhubUntilTime))))
+			contents := strings.Split(string(stdout.Contents()), "\n")
+			Expect(contents).To(ConsistOf(
+				"Getting expiring certificates...",
+				"[X] Credhub Location",
+				fmt.Sprintf("    /opsmgr/bosh_dns/other_ca: expiring on %s", credhubUntilTime.Format(time.RFC822)),
+				fmt.Sprintf("    /opsmgr/bosh_dns/tls_ca: expiring on %s", credhubUntilTime.Format(time.RFC822)),
+				"[X] Ops Manager",
+				fmt.Sprintf("    product-guid-1:"),
+				fmt.Sprintf("        property-reference-1: expiring on %s", opsManagerUntilTime.Format(time.RFC822)),
+				fmt.Sprintf("        property-reference-2: expiring on %s", opsManagerUntilTime.Format(time.RFC822)),
+				fmt.Sprintf("    product-guid-2:"),
+				fmt.Sprintf("        property-reference-3: expiring on %s", opsManagerUntilTime.Format(time.RFC822)),
+				"[X] Other Location",
+				fmt.Sprintf("    product-guid-4:"),
+				fmt.Sprintf("        property-reference-4: expiring on %s", opsManagerUntilTime.Format(time.RFC822)),
+				"",
+			))
+		})
+
+		It("sets ExpiresWithin to 3m as default", func() {
+			command := commands.NewExpiringCertificates(service, logger)
+			err := command.Execute([]string{})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("3m"))
+		})
+
+		It("sets ExpiresWithin when passed", func() {
+			command := commands.NewExpiringCertificates(service, logger)
+			err := command.Execute([]string{
+				"--expires-within",
+				"5w",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
+		})
+
+		It("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
+			command := commands.NewExpiringCertificates(service, logger)
+			err := command.Execute([]string{
+				"--expires-within",
+				"1s",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("only d,w,m, or y are supported. Default is \"3m\""))
+
+			command.Options.ExpiresWithin = "2d"
+			err = command.Execute([]string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			command.Options.ExpiresWithin = "11y"
+			err = command.Execute([]string{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	When("certs cannot be fetched", func() {
+		It("returns an error", func() {
+			service.ListExpiringCertificatesReturns(nil, errors.New("an api error"))
+			command := commands.NewExpiringCertificates(service, logger)
+
+			err := command.Execute([]string{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("could not fetch expiring certificates: an api error"))
+		})
+	})
+
+	Describe("Usage", func() {
+		It("returns usage information for the command", func() {
+			command := commands.NewStagedConfig(nil, nil)
+
+			Expect(command.Usage()).To(Equal(jhanda.Usage{
+				Description:      "This command generates a config from a staged product that can be passed in to om configure-product (Note: credentials are not available and will appear as '***')",
+				ShortDescription: "**EXPERIMENTAL** generates a config from a staged product",
+				Flags:            command.Options,
+			}))
 		})
 	})
 })
