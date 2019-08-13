@@ -19,7 +19,7 @@ type JobProperties struct {
 	Pre27NSXSecurityGroups []string     `json:"nsx_security_groups,omitempty" yaml:"nsx_security_groups,omitempty"`
 	Pre27NSXLBS            []Pre27NSXLB `json:"nsx_lbs,omitempty" yaml:"nsx_lbs,omitempty"`
 	FloatingIPs            string       `json:"floating_ips,omitempty" yaml:"floating_ips,omitempty"`
-	AdditionalVMExtensions []string     `json:"additional_vm_extensions,omitempty" yaml:"additional_vm_extensions,omitempty"`
+	AdditionalVMExtensions interface{}  `json:"additional_vm_extensions,omitempty" yaml:"additional_vm_extensions,omitempty"`
 }
 
 type NSX struct {

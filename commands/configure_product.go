@@ -3,10 +3,11 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/pivotal-cf/om/interpolate"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -22,11 +23,12 @@ type ConfigureProduct struct {
 	logger      logger
 	target      string
 	Options     struct {
-		ConfigFile string   `long:"config"    short:"c" description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
-		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
-		Vars       []string `long:"var" short:"v"       description:"Load variable from the command line. Format: VAR=VAL"`
-		VarsEnv    []string `long:"vars-env" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		OpsFile    []string `long:"ops-file"  short:"o" description:"YAML operations file"`
+		ConfigFile        string   `long:"config"             short:"c" description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
+		VarsFile          []string `long:"vars-file"          short:"l" description:"Load variables from a YAML file"`
+		Vars              []string `long:"var"                short:"v" description:"Load variable from the command line. Format: VAR=VAL"`
+		VarsEnv           []string `long:"vars-env"                     description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		OpsFile           []string `long:"ops-file"           short:"o" description:"YAML operations file"`
+		ForceVMExtensions bool     `long:"force-vm-extensions"          description:"If additional_vm_extensions is set to [] in a job's resource configuration, all VM extensions will be deleted from the job"`
 	}
 }
 
@@ -186,6 +188,18 @@ func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID
 		err = json.Unmarshal(userProvidedConfig[name], &jobProperties)
 		if err != nil {
 			return err
+		}
+
+		if !cp.Options.ForceVMExtensions && jobProperties.AdditionalVMExtensions != nil {
+			extensions, ok := jobProperties.AdditionalVMExtensions.([]interface{})
+			if !ok {
+				return fmt.Errorf("additonal_vm_resources for job %s is malformed, must be a list of strings, but got %v", name, jobProperties.AdditionalVMExtensions)
+			}
+
+			// if --force-vm-extensions isn't set, set this to nil so it's not marshalled before being sent to the API
+			if len(extensions) == 0 {
+				jobProperties.AdditionalVMExtensions = nil
+			}
 		}
 
 		err = cp.service.UpdateStagedProductJobResourceConfig(productGUID, jobs[name], jobProperties)

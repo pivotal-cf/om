@@ -192,141 +192,210 @@ var _ = Describe("ConfigureProduct", func() {
 		})
 
 		When("product resources are provided", func() {
-			BeforeEach(func() {
-				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
-			})
+			Context("when no vm extensions are provided", func() {
+				BeforeEach(func() {
+					config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
+				})
 
-			It("configures the resource that is provided", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-				service.ListStagedProductsReturns(api.StagedProductsOutput{
-					Products: []api.StagedProduct{
-						{GUID: "some-product-guid", Type: "cf"},
-						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
-					},
-				}, nil)
+				It("configures the resource that is provided", func() {
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+							{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+						},
+					}, nil)
 
-				service.ListStagedProductJobsReturns(map[string]string{
-					"some-job":       "a-guid",
-					"some-other-job": "a-different-guid",
-					"bad":            "do-not-use",
-				}, nil)
+					service.ListStagedProductJobsReturns(map[string]string{
+						"some-job":       "a-guid",
+						"some-other-job": "a-different-guid",
+						"bad":            "do-not-use",
+					}, nil)
 
-				service.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
-					if productGUID == "some-product-guid" {
-						switch jobGUID {
-						case "a-guid":
-							apiReturn := api.JobProperties{
-								Instances:         0,
-								PersistentDisk:    &api.Disk{Size: "000"},
-								InstanceType:      api.InstanceType{ID: "t2.micro"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-1"},
+					service.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
+						if productGUID == "some-product-guid" {
+							switch jobGUID {
+							case "a-guid":
+								apiReturn := api.JobProperties{
+									Instances:         0,
+									PersistentDisk:    &api.Disk{Size: "000"},
+									InstanceType:      api.InstanceType{ID: "t2.micro"},
+									InternetConnected: new(bool),
+									LBNames:           []string{"pre-existing-1"},
+								}
+
+								return apiReturn, nil
+							case "a-different-guid":
+								apiReturn := api.JobProperties{
+									Instances:         2,
+									PersistentDisk:    &api.Disk{Size: "20480"},
+									InstanceType:      api.InstanceType{ID: "m1.medium"},
+									InternetConnected: new(bool),
+									LBNames:           []string{"pre-existing-2"},
+								}
+
+								*apiReturn.InternetConnected = true
+
+								return apiReturn, nil
+							default:
+								return api.JobProperties{}, nil
 							}
-
-							return apiReturn, nil
-						case "a-different-guid":
-							apiReturn := api.JobProperties{
-								Instances:         2,
-								PersistentDisk:    &api.Disk{Size: "20480"},
-								InstanceType:      api.InstanceType{ID: "m1.medium"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-2"},
-							}
-
-							*apiReturn.InternetConnected = true
-
-							return apiReturn, nil
-						default:
-							return api.JobProperties{}, nil
 						}
+						return api.JobProperties{}, errors.New("guid not found")
 					}
-					return api.JobProperties{}, errors.New("guid not found")
-				}
 
-				err := client.Execute([]string{
-					"--config", configFile.Name(),
+					err := client.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
+					Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
+					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(2))
+
+					argProductGUID, argJobGUID, argProperties := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
+					Expect(argProductGUID).To(Equal("some-product-guid"))
+					Expect(argJobGUID).To(Equal("a-guid"))
+
+					jobProperties := api.JobProperties{
+						Instances:         float64(1),
+						PersistentDisk:    &api.Disk{Size: "20480"},
+						InstanceType:      api.InstanceType{ID: "m1.medium"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"some-lb"},
+					}
+
+					*jobProperties.InternetConnected = true
+
+					Expect(argProperties).To(Equal(jobProperties))
+
+					argProductGUID, argJobGUID, argProperties = service.UpdateStagedProductJobResourceConfigArgsForCall(1)
+					Expect(argProductGUID).To(Equal("some-product-guid"))
+					Expect(argJobGUID).To(Equal("a-different-guid"))
+
+					jobProperties = api.JobProperties{
+						Instances:         2,
+						PersistentDisk:    &api.Disk{Size: "20480"},
+						InstanceType:      api.InstanceType{ID: "m1.medium"},
+						InternetConnected: new(bool),
+						LBNames:           []string{"pre-existing-2"},
+					}
+
+					*jobProperties.InternetConnected = true
+
+					Expect(argProperties).To(Equal(jobProperties))
+
+					format, content := logger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+
+					format, content = logger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configuration for the following jobs:"))
+
+					format, content = logger.PrintfArgsForCall(2)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
+
+					format, content = logger.PrintfArgsForCall(3)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
 				})
-				Expect(err).NotTo(HaveOccurred())
 
-				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
-				Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
-				Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(2))
+				It("sets the max in flight for all jobs", func() {
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+							{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+						},
+					}, nil)
 
-				argProductGUID, argJobGUID, argProperties := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
-				Expect(argProductGUID).To(Equal("some-product-guid"))
-				Expect(argJobGUID).To(Equal("a-guid"))
+					service.ListStagedProductJobsReturns(map[string]string{
+						"some-job":       "a-guid",
+						"some-other-job": "a-different-guid",
+						"bad":            "do-not-use",
+					}, nil)
 
-				jobProperties := api.JobProperties{
-					Instances:         float64(1),
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: new(bool),
-					LBNames:           []string{"some-lb"},
-				}
+					err := client.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
 
-				*jobProperties.InternetConnected = true
+					Expect(service.UpdateStagedProductJobMaxInFlightCallCount()).To(Equal(1))
+					productGUID, payload := service.UpdateStagedProductJobMaxInFlightArgsForCall(0)
+					Expect(productGUID).To(Equal("some-product-guid"))
+					Expect(payload).To(Equal(map[string]interface{}{
+						"a-guid":           "20%",
+						"a-different-guid": 1,
+					}))
 
-				Expect(argProperties).To(Equal(jobProperties))
-
-				argProductGUID, argJobGUID, argProperties = service.UpdateStagedProductJobResourceConfigArgsForCall(1)
-				Expect(argProductGUID).To(Equal("some-product-guid"))
-				Expect(argJobGUID).To(Equal("a-different-guid"))
-
-				jobProperties = api.JobProperties{
-					Instances:         2,
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: new(bool),
-					LBNames:           []string{"pre-existing-2"},
-				}
-
-				*jobProperties.InternetConnected = true
-
-				Expect(argProperties).To(Equal(jobProperties))
-
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
-
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configuration for the following jobs:"))
-
-				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
-
-				format, content = logger.PrintfArgsForCall(3)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
+					format, content := logger.PrintfArgsForCall(4)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("applying max in flight for the following jobs:"))
+				})
 			})
 
-			It("sets the max in flight for all jobs", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-				service.ListStagedProductsReturns(api.StagedProductsOutput{
-					Products: []api.StagedProduct{
-						{GUID: "some-product-guid", Type: "cf"},
-						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
-					},
-				}, nil)
-
-				service.ListStagedProductJobsReturns(map[string]string{
-					"some-job":       "a-guid",
-					"some-other-job": "a-different-guid",
-					"bad":            "do-not-use",
-				}, nil)
-
-				err := client.Execute([]string{
-					"--config", configFile.Name(),
+			Context("when vm extensions are provided", func() {
+				BeforeEach(func() {
+					config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfigWithEmptyVMExtensions)
 				})
-				Expect(err).NotTo(HaveOccurred())
 
-				Expect(service.UpdateStagedProductJobMaxInFlightCallCount()).To(Equal(1))
-				productGUID, payload := service.UpdateStagedProductJobMaxInFlightArgsForCall(0)
-				Expect(productGUID).To(Equal("some-product-guid"))
-				Expect(payload).To(Equal(map[string]interface{}{
-					"a-guid":           "20%",
-					"a-different-guid": 1,
-				}))
+				It("Does not delete VM extensions if --force-vm-extensions is missing", func() {
 
-				format, content := logger.PrintfArgsForCall(4)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("applying max in flight for the following jobs:"))
+					returnProperties := api.JobProperties{
+						Instances:              1,
+						AdditionalVMExtensions: []string{"ext-a", "ext-b"},
+					}
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{{GUID: "some-product-guid", Type: "cf"}},
+					}, nil)
+
+					service.ListStagedProductJobsReturns(map[string]string{"some-job": "a-guid"}, nil)
+					service.GetStagedProductJobResourceConfigReturns(returnProperties, nil)
+					service.UpdateStagedProductJobResourceConfigStub = func(productGUID string, jobGUID string, props api.JobProperties) error {
+						returnProperties.Instances = props.Instances
+						if props.AdditionalVMExtensions != nil {
+							returnProperties.AdditionalVMExtensions = props.AdditionalVMExtensions
+						}
+						return nil
+					}
+					err := client.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
+					Expect(returnProperties.Instances).To(BeEquivalentTo(1))
+					Expect(returnProperties.AdditionalVMExtensions).To(HaveLen(2))
+				})
+
+				It("Does deletes VM extensions if --force-vm-extensions is missing", func() {
+
+					returnProperties := api.JobProperties{
+						Instances:              1,
+						AdditionalVMExtensions: []string{"ext-a", "ext-b"},
+					}
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{{GUID: "some-product-guid", Type: "cf"}},
+					}, nil)
+
+					service.ListStagedProductJobsReturns(map[string]string{"some-job": "a-guid"}, nil)
+					service.GetStagedProductJobResourceConfigReturns(returnProperties, nil)
+					service.UpdateStagedProductJobResourceConfigStub = func(productGUID string, jobGUID string, props api.JobProperties) error {
+						returnProperties.Instances = props.Instances
+						if props.AdditionalVMExtensions != nil {
+							returnProperties.AdditionalVMExtensions = props.AdditionalVMExtensions
+						}
+						return nil
+					}
+					err := client.Execute([]string{
+						"--config", configFile.Name(),
+						"--force-vm-extensions",
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
+					Expect(returnProperties.Instances).To(BeEquivalentTo(1))
+					Expect(returnProperties.AdditionalVMExtensions).To(HaveLen(0))
+				})
 			})
 		})
 
@@ -965,6 +1034,13 @@ const resourceConfig = `{
     "instance_type": { "id": "m1.medium" },
     "max_in_flight": 1
   }
+}`
+
+const resourceConfigWithEmptyVMExtensions = `{
+	"some-job": {
+		"instances": 1,
+		"additional_vm_extensions": []
+	}
 }`
 
 const automaticResourceConfig = `{

@@ -1,6 +1,8 @@
 package api_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -84,16 +86,17 @@ var _ = Describe("JobsService", func() {
 
 	Describe("GetStagedProductJobResourceConfig", func() {
 		It("fetches the resource config for a given job", func() {
+			respJSON := `{
+				"instances": 1,
+				"instance_type": { "id": "number-1" },
+				"persistent_disk": { "size_mb": "290" },
+				"internet_connected": true,
+				"elb_names": ["something"],
+				"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
+			}`
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`{
-					"instances": 1,
-					"instance_type": { "id": "number-1" },
-					"persistent_disk": { "size_mb": "290" },
-					"internet_connected": true,
-					"elb_names": ["something"],
-					"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
-				}`)),
+				Body:       ioutil.NopCloser(strings.NewReader(respJSON)),
 			}, nil)
 
 			job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
@@ -109,7 +112,10 @@ var _ = Describe("JobsService", func() {
 				AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
 			}
 			*jobProperties.InternetConnected = true
-			Expect(job).To(Equal(jobProperties))
+
+			jobJSON, err := json.Marshal(job)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(jobJSON).To(MatchJSON(respJSON))
 			request := client.DoArgsForCall(0)
 			Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
 		})
@@ -547,6 +553,97 @@ var _ = Describe("JobsService", func() {
 				"persistent_disk": { "size_mb": "290" },
 				"elb_names": ["something"]
 			}`))
+			})
+		})
+
+		Context("when no vm extensions are specified", func() {
+			It("does not affect existing extensions", func() {
+				jobProperties := api.JobProperties{
+					Instances:              1,
+					PersistentDisk:         &api.Disk{Size: "290"},
+					InstanceType:           api.InstanceType{ID: "number-1"},
+					LBNames:                []string{"something"},
+					AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
+				}
+
+				client.DoStub = func(r *http.Request) (*http.Response, error) {
+					var reqProps api.JobProperties
+
+					err := json.NewDecoder(r.Body).Decode(&reqProps)
+					Expect(err).NotTo(HaveOccurred())
+
+					jobProperties.Instances = reqProps.Instances
+					jobProperties.PersistentDisk = reqProps.PersistentDisk
+					jobProperties.InstanceType = reqProps.InstanceType
+					jobProperties.LBNames = reqProps.LBNames
+					if reqProps.AdditionalVMExtensions != nil {
+						jobProperties.AdditionalVMExtensions = reqProps.AdditionalVMExtensions
+					}
+
+					jobJSON, err := json.Marshal(jobProperties)
+					Expect(err).NotTo(HaveOccurred())
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBuffer(jobJSON)),
+					}, nil
+				}
+
+				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid", api.JobProperties{
+					Instances:      2,
+					PersistentDisk: &api.Disk{Size: "290"},
+					InstanceType:   api.InstanceType{ID: "number-1"},
+					LBNames:        []string{"something"},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.DoCallCount()).To(Equal(1))
+				Expect(jobProperties.Instances).To(BeEquivalentTo(2))
+				Expect(jobProperties.AdditionalVMExtensions).To(Equal([]string{"some-vm-extension", "some-other-vm-extension"}))
+			})
+		})
+
+		Context("when an empty list of vm extensions is specified", func() {
+			It("deletes existing extensions", func() {
+				jobProperties := api.JobProperties{
+					Instances:              1,
+					PersistentDisk:         &api.Disk{Size: "290"},
+					InstanceType:           api.InstanceType{ID: "number-1"},
+					LBNames:                []string{"something"},
+					AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
+				}
+
+				client.DoStub = func(r *http.Request) (*http.Response, error) {
+					var reqProps api.JobProperties
+
+					err := json.NewDecoder(r.Body).Decode(&reqProps)
+					Expect(err).NotTo(HaveOccurred())
+
+					jobProperties.Instances = reqProps.Instances
+					jobProperties.PersistentDisk = reqProps.PersistentDisk
+					jobProperties.InstanceType = reqProps.InstanceType
+					jobProperties.LBNames = reqProps.LBNames
+					if reqProps.AdditionalVMExtensions != nil {
+						jobProperties.AdditionalVMExtensions = reqProps.AdditionalVMExtensions
+					}
+
+					jobJSON, err := json.Marshal(jobProperties)
+					Expect(err).NotTo(HaveOccurred())
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewBuffer(jobJSON)),
+					}, nil
+				}
+
+				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid", api.JobProperties{
+					Instances:              2,
+					PersistentDisk:         &api.Disk{Size: "290"},
+					InstanceType:           api.InstanceType{ID: "number-1"},
+					LBNames:                []string{"something"},
+					AdditionalVMExtensions: []string{},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(client.DoCallCount()).To(Equal(1))
+				Expect(jobProperties.Instances).To(BeEquivalentTo(2))
+				Expect(jobProperties.AdditionalVMExtensions).To(HaveLen(0))
 			})
 		})
 
