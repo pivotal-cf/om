@@ -3,11 +3,12 @@ package commands_test
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"log"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/pivotal-cf/jhanda"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -139,7 +140,15 @@ var _ = Describe("ExpiringCertificates", func() {
 			err = command.Execute([]string{})
 			Expect(err).To(HaveOccurred())
 
+			// Regexp to remove ANSI color codes taken from https://superuser.com/a/380778
+			decolorize, err := regexp.Compile(`\x1b[[0-9;]*m`)
+			Expect(err).NotTo(HaveOccurred())
+
 			contents := strings.Split(string(stdout.Contents()), "\n")
+			for i := range contents {
+				contents[i] = decolorize.ReplaceAllLiteralString(contents[i], "")
+			}
+
 			Expect(contents).To(ConsistOf(
 				"Getting expiring certificates...",
 				"[X] Credhub Location",
