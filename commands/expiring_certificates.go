@@ -116,7 +116,7 @@ func (e *ExpiringCerts) printExpiringCertInfo(cert api.ExpiringCertificate) {
 }
 
 func (e ExpiringCerts) validateConfig() error {
-	matched, err := regexp.MatchString("^[1-9]+[dwmy]$", e.Options.ExpiresWithin)
+	matched, err := regexp.MatchString("^[1-9]+\\d*[dwmy]$", e.Options.ExpiresWithin)
 	if err != nil {
 		return err
 	}

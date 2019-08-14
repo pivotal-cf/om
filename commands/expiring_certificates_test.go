@@ -177,7 +177,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
 		})
 
-		It("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
+		FIt("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
 			command := commands.NewExpiringCertificates(service, logger)
 			err := command.Execute([]string{
 				"--expires-within",
@@ -186,12 +186,36 @@ var _ = Describe("ExpiringCertificates", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("only d,w,m, or y are supported. Default is \"3m\""))
 
-			command.Options.ExpiresWithin = "2d"
-			err = command.Execute([]string{})
+			command = commands.NewExpiringCertificates(service, logger)
+			err = command.Execute([]string{
+				"--expires-within",
+				"0d",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("only d,w,m, or y are supported. Default is \"3m\""))
+
+			err = command.Execute([]string{
+				"--expires-within",
+				"2d",
+			})
 			Expect(err).ToNot(HaveOccurred())
 
-			command.Options.ExpiresWithin = "11y"
-			err = command.Execute([]string{})
+			err = command.Execute([]string{
+				"--expires-within",
+				"11y",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{
+				"--expires-within",
+				"109w",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{
+				"--expires-within",
+				"20m",
+			})
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
