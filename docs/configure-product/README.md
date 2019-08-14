@@ -25,6 +25,7 @@ Usage: om [options] configure-product [<args>]
 
 Command Arguments:
   --config, -c              string             path to yml file containing all config fields (see docs/configure-product/README.md for format)
+  --force-vm-extensions     bool               If additional_vm_extensions is set to [] in a job's resource configuration, all VM extensions will be deleted from the job
   --ops-file, -o            string (variadic)  YAML operations file
   --vars-env                string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l           string (variadic)  Load variables from a YAML file
@@ -132,3 +133,12 @@ for use with Ops Manager 2.5 and after, or you will see this error:
 ```json
 {"errors":["Availability zones cannot find availability zone with name null"]}
 ```
+
+#### Using `--force-vm-extensions` to remove VM extensions from a job
+
+By default, if `additional_vm_extensions` is omitted or set to an empty list on a given job's resource configuration, 
+the VM extensions will not be altered. However, in all other cases, you are expected to pass a complete list of VM extensions
+to a job, and any extensions that exist on the job but not in the configuration will be deleted.
+
+If you specify `--force-vm-extensions` in your `configure-product` command AND the job's resource config has `additional_vm_extensions: []`,
+it will delete all extensions from the job. If `additional_vm_extensions` is omitted, extensions will not be changed.
