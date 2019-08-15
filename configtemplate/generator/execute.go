@@ -38,9 +38,9 @@ func (e *Executor) Generate() error {
 
 	productName := metadata.ProductName()
 
-	targetDirectory := e.baseDirectory
-	if !e.doNotIncludeProductVersion { //always happens
-		targetDirectory = path.Join(e.baseDirectory, productName, productVersion)
+	targetDirectory := path.Join(e.baseDirectory, productName)
+	if !e.doNotIncludeProductVersion {
+		targetDirectory = path.Join(targetDirectory, productVersion)
 	}
 	if err = e.createDirectory(targetDirectory); err != nil {
 		return err

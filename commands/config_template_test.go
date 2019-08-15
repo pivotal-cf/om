@@ -3,14 +3,15 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"io/ioutil"
-	"path/filepath"
 )
 
 var _ = Describe("ConfigTemplate", func() {
@@ -56,56 +57,113 @@ var _ = Describe("ConfigTemplate", func() {
 					args    []string
 				)
 
-				BeforeEach(func() {
-					tempDir = createOutputDirectory()
+				Context("When --exclude-version is not set", func() {
+					BeforeEach(func() {
+						tempDir = createOutputDirectory()
 
-					args = []string{
-						"--output-directory", tempDir,
-						"--pivnet-api-token", "b",
-						"--pivnet-product-slug", "c",
-						"--product-version", "d",
-					}
+						args = []string{
+							"--output-directory", tempDir,
+							"--pivnet-api-token", "b",
+							"--pivnet-product-slug", "c",
+							"--product-version", "d",
+						}
+					})
+
+					It("creates nested subdirectories named by product slug and version", func() {
+						err := command.Execute(args)
+						Expect(err).ToNot(HaveOccurred())
+
+						productDir := filepath.Join(tempDir, "example-product")
+						versionDir := filepath.Join(productDir, "1.1.1")
+
+						Expect(productDir).To(BeADirectory())
+						Expect(versionDir).To(BeADirectory())
+					})
+
+					It("creates the various generated sub directories within the product directory", func() {
+						err := command.Execute(args)
+						Expect(err).ToNot(HaveOccurred())
+
+						featuresDir := filepath.Join(tempDir, "example-product", "1.1.1", "features")
+						Expect(featuresDir).To(BeADirectory())
+
+						networkDir := filepath.Join(tempDir, "example-product", "1.1.1", "network")
+						Expect(networkDir).To(BeADirectory())
+
+						optionalDir := filepath.Join(tempDir, "example-product", "1.1.1", "optional")
+						Expect(optionalDir).To(BeADirectory())
+
+						resourceDir := filepath.Join(tempDir, "example-product", "1.1.1", "resource")
+						Expect(resourceDir).To(BeADirectory())
+					})
+
+					It("creates the correct files", func() {
+						err := command.Execute(args)
+						Expect(err).ToNot(HaveOccurred())
+
+						productDir := filepath.Join(tempDir, "example-product", "1.1.1")
+
+						Expect(filepath.Join(productDir, "errand-vars.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "product.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "default-vars.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "required-vars.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "resource-vars.yml")).To(BeAnExistingFile())
+					})
 				})
 
-				It("creates nested subdirectories named by product slug and version", func() {
-					err := command.Execute(args)
-					Expect(err).ToNot(HaveOccurred())
+				Context("When --exclude-version is set", func() {
+					BeforeEach(func() {
+						tempDir = createOutputDirectory()
 
-					productDir := filepath.Join(tempDir, "example-product")
-					versionDir := filepath.Join(productDir, "1.1.1")
+						args = []string{
+							"--output-directory", tempDir,
+							"--pivnet-api-token", "b",
+							"--pivnet-product-slug", "c",
+							"--product-version", "d",
+							"--exclude-version",
+						}
+					})
 
-					Expect(productDir).To(BeADirectory())
-					Expect(versionDir).To(BeADirectory())
-				})
+					It("creates nested subdirectories named by product slug", func() {
+						err := command.Execute(args)
+						Expect(err).ToNot(HaveOccurred())
 
-				It("creates the various generated sub directories within the product directory", func() {
-					err := command.Execute(args)
-					Expect(err).ToNot(HaveOccurred())
+						productDir := filepath.Join(tempDir, "example-product")
+						versionDir := filepath.Join(productDir, "1.1.1")
 
-					featuresDir := filepath.Join(tempDir, "example-product", "1.1.1", "features")
-					Expect(featuresDir).To(BeADirectory())
+						Expect(productDir).To(BeADirectory())
+						Expect(versionDir).NotTo(BeADirectory())
+					})
 
-					networkDir := filepath.Join(tempDir, "example-product", "1.1.1", "network")
-					Expect(networkDir).To(BeADirectory())
+					It("creates the various generated sub directories within the product directory", func() {
+						err := command.Execute(args)
+						Expect(err).ToNot(HaveOccurred())
 
-					optionalDir := filepath.Join(tempDir, "example-product", "1.1.1", "optional")
-					Expect(optionalDir).To(BeADirectory())
+						featuresDir := filepath.Join(tempDir, "example-product", "features")
+						Expect(featuresDir).To(BeADirectory())
 
-					resourceDir := filepath.Join(tempDir, "example-product", "1.1.1", "resource")
-					Expect(resourceDir).To(BeADirectory())
-				})
+						networkDir := filepath.Join(tempDir, "example-product", "network")
+						Expect(networkDir).To(BeADirectory())
 
-				It("creates the correct files", func() {
-					err := command.Execute(args)
-					Expect(err).ToNot(HaveOccurred())
+						optionalDir := filepath.Join(tempDir, "example-product", "optional")
+						Expect(optionalDir).To(BeADirectory())
 
-					productDir := filepath.Join(tempDir, "example-product", "1.1.1")
+						resourceDir := filepath.Join(tempDir, "example-product", "resource")
+						Expect(resourceDir).To(BeADirectory())
+					})
 
-					Expect(filepath.Join(productDir, "errand-vars.yml")).To(BeAnExistingFile())
-					Expect(filepath.Join(productDir, "product.yml")).To(BeAnExistingFile())
-					Expect(filepath.Join(productDir, "default-vars.yml")).To(BeAnExistingFile())
-					Expect(filepath.Join(productDir, "required-vars.yml")).To(BeAnExistingFile())
-					Expect(filepath.Join(productDir, "resource-vars.yml")).To(BeAnExistingFile())
+					It("creates the correct files", func() {
+						err := command.Execute(args)
+						Expect(err).ToNot(HaveOccurred())
+
+						productDir := filepath.Join(tempDir, "example-product")
+
+						Expect(filepath.Join(productDir, "errand-vars.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "product.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "default-vars.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "required-vars.yml")).To(BeAnExistingFile())
+						Expect(filepath.Join(productDir, "resource-vars.yml")).To(BeAnExistingFile())
+					})
 				})
 			})
 		})

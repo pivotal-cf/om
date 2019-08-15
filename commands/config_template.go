@@ -2,22 +2,24 @@ package commands
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/configtemplate/generator"
 	"github.com/pivotal-cf/om/configtemplate/metadata"
-	"os"
 )
 
 type ConfigTemplate struct {
 	environFunc   func() []string
 	buildProvider buildProvider
 	Options       struct {
-		OutputDirectory   string `long:"output-directory" required:"true"`
-		PivnetApiToken    string `long:"pivnet-api-token" required:"true"`
-		PivnetProductSlug string `long:"pivnet-product-slug" required:"true"`
-		ProductVersion    string `long:"product-version" required:"true"`
-		ProductFileGlob   string `long:"product-file-glob" default:"*.pivotal"`
+		OutputDirectory   string `long:"output-directory"    description:"a directory to create templates under. must already exist."                       required:"true"`
+		PivnetApiToken    string `long:"pivnet-api-token"                                                                                                   required:"true"`
+		PivnetProductSlug string `long:"pivnet-product-slug" description:"the product name in pivnet"                                                       required:"true"`
+		ProductVersion    string `long:"product-version"     description:"the version of the product from which to generate a template"                     required:"true"`
+		ProductFileGlob   string `long:"product-file-glob"   description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal" `
+		ExcludeVersion    bool   `long:"exclude-version"     description:"if set, will not output a version-specific directory"`
 	}
 }
 
@@ -72,7 +74,7 @@ func (c *ConfigTemplate) Execute(args []string) error {
 	return generator.NewExecutor(
 		metadataBytes,
 		c.Options.OutputDirectory,
-		false,
+		c.Options.ExcludeVersion,
 		true,
 	).Generate()
 }
