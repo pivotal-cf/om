@@ -28,6 +28,7 @@ type stagedConfigService interface {
 	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
+	GetStagedProductSyslogConfiguration(product string) (map[string]interface{}, error)
 	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
@@ -137,6 +138,11 @@ func (ec StagedConfig) Execute(args []string) error {
 		return err
 	}
 
+	syslogProperties, err := ec.service.GetStagedProductSyslogConfiguration(productGUID)
+	if err != nil {
+		return err
+	}
+
 	resourceConfig := map[string]config.ResourceConfig{}
 
 	for name, jobGUID := range jobs {
@@ -174,6 +180,7 @@ func (ec StagedConfig) Execute(args []string) error {
 		NetworkProperties:        networks,
 		ResourceConfigProperties: resourceConfig,
 		ErrandConfigs:            errandConfigs,
+		SyslogProperties:         syslogProperties,
 	}
 
 	output, err := yaml.Marshal(config)

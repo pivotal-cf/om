@@ -132,6 +132,17 @@ type ConfigureProductService struct {
 	updateStagedProductPropertiesReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateSyslogConfigurationStub        func(api.UpdateSyslogConfigurationInput) error
+	updateSyslogConfigurationMutex       sync.RWMutex
+	updateSyslogConfigurationArgsForCall []struct {
+		arg1 api.UpdateSyslogConfigurationInput
+	}
+	updateSyslogConfigurationReturns struct {
+		result1 error
+	}
+	updateSyslogConfigurationReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -734,6 +745,66 @@ func (fake *ConfigureProductService) UpdateStagedProductPropertiesReturnsOnCall(
 	}{result1}
 }
 
+func (fake *ConfigureProductService) UpdateSyslogConfiguration(arg1 api.UpdateSyslogConfigurationInput) error {
+	fake.updateSyslogConfigurationMutex.Lock()
+	ret, specificReturn := fake.updateSyslogConfigurationReturnsOnCall[len(fake.updateSyslogConfigurationArgsForCall)]
+	fake.updateSyslogConfigurationArgsForCall = append(fake.updateSyslogConfigurationArgsForCall, struct {
+		arg1 api.UpdateSyslogConfigurationInput
+	}{arg1})
+	fake.recordInvocation("UpdateSyslogConfiguration", []interface{}{arg1})
+	fake.updateSyslogConfigurationMutex.Unlock()
+	if fake.UpdateSyslogConfigurationStub != nil {
+		return fake.UpdateSyslogConfigurationStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateSyslogConfigurationReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureProductService) UpdateSyslogConfigurationCallCount() int {
+	fake.updateSyslogConfigurationMutex.RLock()
+	defer fake.updateSyslogConfigurationMutex.RUnlock()
+	return len(fake.updateSyslogConfigurationArgsForCall)
+}
+
+func (fake *ConfigureProductService) UpdateSyslogConfigurationCalls(stub func(api.UpdateSyslogConfigurationInput) error) {
+	fake.updateSyslogConfigurationMutex.Lock()
+	defer fake.updateSyslogConfigurationMutex.Unlock()
+	fake.UpdateSyslogConfigurationStub = stub
+}
+
+func (fake *ConfigureProductService) UpdateSyslogConfigurationArgsForCall(i int) api.UpdateSyslogConfigurationInput {
+	fake.updateSyslogConfigurationMutex.RLock()
+	defer fake.updateSyslogConfigurationMutex.RUnlock()
+	argsForCall := fake.updateSyslogConfigurationArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureProductService) UpdateSyslogConfigurationReturns(result1 error) {
+	fake.updateSyslogConfigurationMutex.Lock()
+	defer fake.updateSyslogConfigurationMutex.Unlock()
+	fake.UpdateSyslogConfigurationStub = nil
+	fake.updateSyslogConfigurationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureProductService) UpdateSyslogConfigurationReturnsOnCall(i int, result1 error) {
+	fake.updateSyslogConfigurationMutex.Lock()
+	defer fake.updateSyslogConfigurationMutex.Unlock()
+	fake.UpdateSyslogConfigurationStub = nil
+	if fake.updateSyslogConfigurationReturnsOnCall == nil {
+		fake.updateSyslogConfigurationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateSyslogConfigurationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ConfigureProductService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -757,6 +828,8 @@ func (fake *ConfigureProductService) Invocations() map[string][][]interface{} {
 	defer fake.updateStagedProductNetworksAndAZsMutex.RUnlock()
 	fake.updateStagedProductPropertiesMutex.RLock()
 	defer fake.updateStagedProductPropertiesMutex.RUnlock()
+	fake.updateSyslogConfigurationMutex.RLock()
+	defer fake.updateSyslogConfigurationMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

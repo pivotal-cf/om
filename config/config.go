@@ -8,6 +8,7 @@ type ProductConfiguration struct {
 	NetworkProperties        map[string]interface{}    `yaml:"network-properties,omitempty"`
 	ResourceConfigProperties map[string]ResourceConfig `yaml:"resource-config,omitempty"`
 	ErrandConfigs            map[string]ErrandConfig   `yaml:"errand-config,omitempty"`
+	SyslogProperties         map[string]interface{}    `yaml:"syslog-properties,omitempty"`
 }
 
 type ErrandConfig struct {
