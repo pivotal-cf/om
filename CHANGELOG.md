@@ -55,6 +55,25 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   from an Ops Manager
   expiring within a specified (`--expires-withing/-e`) timeframe. 
   Default: "3m" (3 months)
+- `configure-product` and `staged-config` now have support for the `/syslog_configurations` endpoint. 
+  This affects tiles, such as the Metrics tile,
+  that do not return these properties nested in the `product-properties` section. 
+  This provides a solution for issue [331](https://github.com/pivotal-cf/om/issues/331).
+  An example of this inside of your product config:
+  
+    ```
+    syslog-properties:
+      address: example.com
+      custom_rsyslog_configuration: null
+      enabled: true
+      forward_debug_logs: false
+      permitted_peer: null
+      port: "4444"
+      queue_size: null
+      ssl_ca_certificate: null
+      tls_enabled: false
+      transport_protocol: tcp
+    ```
   
 ## 3.1.0
 
