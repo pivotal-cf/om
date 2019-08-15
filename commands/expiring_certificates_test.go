@@ -3,11 +3,12 @@ package commands_test
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"log"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/pivotal-cf/jhanda"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -177,7 +178,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
 		})
 
-		FIt("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
+		It("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
 			command := commands.NewExpiringCertificates(service, logger)
 			err := command.Execute([]string{
 				"--expires-within",
