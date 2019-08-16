@@ -32,7 +32,7 @@ var _ = Describe("Expiring Certificates", func() {
 		It("supports a expiration range and returns a detailed response", func() {
 			client.DoStub = func(request *http.Request) (response *http.Response, e error) {
 				Expect(request.URL.Path).To(Equal("/api/v0/deployed/certificates"))
-				Expect(request.URL.RawQuery).To(Equal("expires_within=3h"))
+				Expect(request.URL.RawQuery).To(Equal("expires_within=3d"))
 
 				return &http.Response{StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader(`
@@ -54,7 +54,7 @@ var _ = Describe("Expiring Certificates", func() {
 				}, nil
 			}
 
-			expiresWithin := "3h"
+			expiresWithin := "3d"
 			certs, err := service.ListExpiringCertificates(expiresWithin)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -108,7 +108,7 @@ var _ = Describe("Expiring Certificates", func() {
 				return &http.Response{StatusCode: http.StatusInternalServerError}, nil
 			}
 
-			expiresWithin := "3h"
+			expiresWithin := "3d"
 			_, err := service.ListExpiringCertificates(expiresWithin)
 			Expect(err).To(HaveOccurred())
 		})
@@ -120,7 +120,7 @@ var _ = Describe("Expiring Certificates", func() {
 				return nil, fmt.Errorf("some error")
 			}
 
-			expiresWithin := "3h"
+			expiresWithin := "3d"
 			_, err := service.ListExpiringCertificates(expiresWithin)
 			Expect(err).To(HaveOccurred())
 		})
@@ -135,7 +135,7 @@ var _ = Describe("Expiring Certificates", func() {
 					`))}, nil
 			}
 
-			expiresWithin := "3h"
+			expiresWithin := "3d"
 			_, err := service.ListExpiringCertificates(expiresWithin)
 			Expect(err).To(HaveOccurred())
 		})

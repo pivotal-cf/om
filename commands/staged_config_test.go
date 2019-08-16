@@ -50,6 +50,9 @@ var _ = Describe("StagedConfig", func() {
 			Expect(fakeService.GetStagedProductNetworksAndAZsCallCount()).To(Equal(1))
 			Expect(fakeService.GetStagedProductNetworksAndAZsArgsForCall(0)).To(Equal("some-product-guid"))
 
+			Expect(fakeService.GetStagedProductSyslogConfigurationCallCount()).To(Equal(1))
+			Expect(fakeService.GetStagedProductSyslogConfigurationArgsForCall(0)).To(Equal("some-product-guid"))
+
 			Expect(fakeService.ListStagedProductJobsCallCount()).To(Equal(1))
 			Expect(fakeService.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
 
@@ -85,6 +88,9 @@ errand-config:
     pre-delete-state: do-something
   second-errand:
     post-deploy-state: false
+syslog-properties:
+  enabled: true
+  host: tcp://1.1.1.1
 `)))
 		})
 
@@ -150,6 +156,9 @@ errand-config:
     pre-delete-state: do-something
   second-errand:
     post-deploy-state: false
+syslog-properties:
+  enabled: true
+  host: tcp://1.1.1.1
 `)))
 			})
 		})
@@ -264,6 +273,9 @@ errand-config:
     pre-delete-state: do-something
   second-errand:
     post-deploy-state: false
+syslog-properties:
+  enabled: true
+  host: tcp://1.1.1.1
 `)))
 			})
 
@@ -316,7 +328,6 @@ errand-config:
 					Expect(err).To(MatchError("some-error"))
 				})
 			})
-
 		})
 
 		Context("failure cases", func() {
@@ -406,6 +417,20 @@ errand-config:
 				})
 			})
 
+			When("syslog properties returns an error", func() {
+				BeforeEach(func() {
+					fakeService.GetStagedProductSyslogConfigurationReturns(nil, errors.New("some-error"))
+				})
+
+				It("returns an error", func() {
+					command := commands.NewStagedConfig(fakeService, logger)
+					err := command.Execute([]string{
+						"--product-name", "some-product",
+					})
+					Expect(err).To(MatchError("some-error"))
+				})
+			})
+
 		})
 
 		Describe("Usage", func() {
@@ -477,6 +502,9 @@ errand-config:
     pre-delete-state: do-something
   second-errand:
     post-deploy-state: false
+syslog-properties:
+  enabled: true
+  host: tcp://1.1.1.1
 `
 		Context("and both selected_option and value are available", func() {
 			BeforeEach(func() {
@@ -687,6 +715,9 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 	fakeService.GetStagedProductJobMaxInFlightReturns(map[string]interface{}{
 		"some-job-guid": 2,
 	}, nil)
-
+	fakeService.GetStagedProductSyslogConfigurationReturns(map[string]interface{}{
+		"enabled": true,
+		"host":    "tcp://1.1.1.1",
+	}, nil)
 	return fakeService
 }

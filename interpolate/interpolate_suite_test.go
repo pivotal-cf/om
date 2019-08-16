@@ -27,7 +27,7 @@ var _ = Describe("Execute", func() {
 		It("returns that specific value", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: Bob}`),
-				Path: "/name",
+				Path:         "/name",
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(contents)).To(Equal("Bob\n"))
@@ -36,7 +36,7 @@ var _ = Describe("Execute", func() {
 		It("errors with an invalid path", func() {
 			_, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: Bob}`),
-				Path: "/age",
+				Path:         "/age",
 			})
 			Expect(err).To(HaveOccurred())
 		})
@@ -46,7 +46,7 @@ var _ = Describe("Execute", func() {
 		It("supports variables with a prefix", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((name))}`),
-				VarsEnvs: []string{"PREFIX"},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_name=Bob"}
 				},
@@ -58,7 +58,7 @@ var _ = Describe("Execute", func() {
 		It("errors with an invalid environment variable definition", func() {
 			_, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((name))}`),
-				VarsEnvs: []string{"PREFIX"},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_name"}
 				},
@@ -70,7 +70,7 @@ var _ = Describe("Execute", func() {
 		It("errors when the environment variable is invalid YAML", func() {
 			_, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((name))}`),
-				VarsEnvs: []string{"PREFIX"},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_name={]"}
 				},
@@ -82,7 +82,7 @@ var _ = Describe("Execute", func() {
 		It("modifies a number if it has been quoted", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{age: ((age))}`),
-				VarsEnvs: []string{"PREFIX"},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{`PREFIX_age="123"`}
 				},
@@ -94,7 +94,7 @@ var _ = Describe("Execute", func() {
 		It("handles multiline environment variables", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((name))}`),
-				VarsEnvs: []string{"PREFIX"},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_name=some\nmulti\nline\nvalue"}
 				},
@@ -106,7 +106,7 @@ var _ = Describe("Execute", func() {
 		It("handles environment variables that are objects", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((name))}`),
-				VarsEnvs: []string{"PREFIX"},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_name={some: value}"}
 				},
@@ -118,8 +118,8 @@ var _ = Describe("Execute", func() {
 		It("allows vars files to override environment variables", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{age: ((age))}`),
-				VarsFiles: []string{writeFile(`age: 456`)},
-				VarsEnvs: []string{"PREFIX"},
+				VarsFiles:    []string{writeFile(`age: 456`)},
+				VarsEnvs:     []string{"PREFIX"},
 				EnvironFunc: func() []string {
 					return []string{`PREFIX_age="123"`}
 				},
@@ -133,7 +133,7 @@ var _ = Describe("Execute", func() {
 		It("supports loading vars from files", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((username))}`),
-				VarsFiles: []string{writeFile(`username: Bob`)},
+				VarsFiles:    []string{writeFile(`username: Bob`)},
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Bob`))
@@ -145,7 +145,6 @@ var _ = Describe("Execute", func() {
 				VarsFiles: []string{
 					writeFile(`username: Bob`),
 					writeFile(`username: Susie`),
-
 				},
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -155,8 +154,8 @@ var _ = Describe("Execute", func() {
 		It("allows individual vars to override vars files", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((username))}`),
-				VarsFiles: []string{writeFile(`username: Bob`)},
-				Vars: []string{"username=Susie"},
+				VarsFiles:    []string{writeFile(`username: Bob`)},
+				Vars:         []string{"username=Susie"},
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Susie`))
@@ -167,7 +166,7 @@ var _ = Describe("Execute", func() {
 		It("supports ops file modifications", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: Susie}`),
-				OpsFiles: []string{writeFile(`[{type: replace, path: /name, value: Bob}]`)},
+				OpsFiles:     []string{writeFile(`[{type: replace, path: /name, value: Bob}]`)},
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Bob`))
@@ -176,7 +175,7 @@ var _ = Describe("Execute", func() {
 
 	It("fails when no variables are provided", func() {
 		_, err := interpolate.Execute(interpolate.Options{
-			TemplateFile: writeFile(`{name: ((username))}`),
+			TemplateFile:  writeFile(`{name: ((username))}`),
 			ExpectAllKeys: true,
 		})
 		Expect(err).To(HaveOccurred())

@@ -152,6 +152,7 @@ Commands:
   diagnostic-report               reports current state of your Ops Manager
   download-product                downloads a specified product file from Pivotal Network
   errands                         list errands for a product
+  expiring-certificates           lists expiring certificates from the Ops Manager targeted
   export-installation             exports the installation of the target Ops Manager
   generate-certificate            generates a new certificate signed by Ops Manager's root CA
   generate-certificate-authority  generates a certificate authority on the Opsman
