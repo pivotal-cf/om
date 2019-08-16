@@ -86,6 +86,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This was done to increase naming consistency.
   Both commands currently exist and do exactly the same thing.
   Thank you @jghiloni for the PR!
+- `config-template` now supports the `--exclude-version` flag.
+  If provided, the command will exclude the version directory in the `--output-directory` tree.
+  The contents will with or without the flag will remain the same.
+  Please note including the `--exclude-version` flag
+  will make it more difficult to track changes between versions
+  unless using a version control system (such as git).
+  Thanks to @jghiloni for the PR!
 
 ### Deprecation Notices
 - `tile-metadata` has been deprecated in favor of `product-metadata`.
