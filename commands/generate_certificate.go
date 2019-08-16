@@ -12,7 +12,7 @@ type GenerateCertificate struct {
 	service generateCertificateService
 	logger  logger
 	Options struct {
-		Domains string `long:"domains" short:"d" required:"true" description:"domains to generate certificates, delimited by comma, can include wildcard domains"`
+		Domains []string `long:"domains" short:"d" required:"true" description:"domains to generate certificates, can include wildcard domains. Can be delimited by comma, specified in multiple flags, or both"`
 	}
 }
 
@@ -30,9 +30,13 @@ func (g GenerateCertificate) Execute(args []string) error {
 		return fmt.Errorf("could not parse generate-certificate flags: %s", err)
 	}
 
-	domains := strings.Split(g.Options.Domains, ",")
-	for i, domain := range domains {
-		domains[i] = strings.TrimSpace(domain)
+	domains := make([]string, 0)
+
+	for _, tmpDomain := range g.Options.Domains {
+		tmpDomains := strings.Split(tmpDomain, ",")
+		for _, domain := range tmpDomains {
+			domains = append(domains, strings.TrimSpace(domain))
+		}
 	}
 
 	output, err := g.service.GenerateCertificate(api.DomainsInput{
