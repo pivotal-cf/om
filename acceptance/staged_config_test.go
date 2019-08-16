@@ -46,6 +46,19 @@ var _ = Describe("staged-config command", func() {
 					{"guid":"some-product-guid","type":"some-product"}
 				]`))
 				Expect(err).ToNot(HaveOccurred())
+			case "/api/v0/staged/products/some-product-guid/syslog_configuration":
+				_, err := w.Write([]byte(`{
+  				  "syslog_configuration": {
+					"enabled": true,
+   					"address": "example.com",
+					"port": 514,
+   					"transport_protocol": "tcp",
+					"queue_size": null,
+  					"tls_enabled": true,
+  					"permitted_peer": "*.example.com",
+					"ssl_ca_certificate": "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
+ 				 }}`))
+				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/staged/products/some-product-guid/properties":
 				_, err := w.Write([]byte(`{
           "properties": {
@@ -194,6 +207,15 @@ errand-config:
     post-deploy-state: false
   errand-2:
     pre-delete-state: true
+syslog-properties:
+  enabled: true
+  address: example.com
+  port: 514
+  transport_protocol: tcp
+  queue_size: null
+  tls_enabled: true
+  permitted_peer: "*.example.com"
+  ssl_ca_certificate: "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
 `))
 	})
 
@@ -243,6 +265,15 @@ errand-config:
     post-deploy-state: false
   errand-2:
     pre-delete-state: true
+syslog-properties:
+  enabled: true
+  address: example.com
+  port: 514
+  transport_protocol: tcp
+  queue_size: null
+  tls_enabled: true
+  permitted_peer: "*.example.com"
+  ssl_ca_certificate: "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
 `))
 		})
 	})

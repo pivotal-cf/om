@@ -96,7 +96,6 @@ var _ = Describe("UnauthenticatedClient", func() {
 			nonTLS12Server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 			defer nonTLS12Server.Close()
 
-
 			client := network.NewUnauthenticatedClient(nonTLS12Server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))

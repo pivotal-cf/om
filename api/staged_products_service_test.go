@@ -855,7 +855,103 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		})
 	})
 
-	Describe("UpdateStagedProductNetworksAndAZs", func() {
+	Describe("GetStagedProductSyslogConfiguration", func() {
+		BeforeEach(func() {
+			client.DoStub = func(req *http.Request) (*http.Response, error) {
+				var resp *http.Response
+				if strings.Contains(req.URL.Path, "some-product-guid") {
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+							"syslog_configuration": {
+								"enabled": true,
+								"address": "example.com"
+							}
+						}`)),
+					}
+				} else if strings.Contains(req.URL.Path, "missing-syslog-config") {
+					resp = &http.Response{
+						StatusCode: http.StatusUnprocessableEntity,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+  							"errors": {
+  							  "syslog": ["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint."]
+  							}
+						}`)),
+					}
+				} else if strings.Contains(req.URL.Path, "bad-response-code") {
+					resp = &http.Response{
+						StatusCode: http.StatusBadRequest,
+						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+					}
+				} else {
+					resp = &http.Response{
+						StatusCode: http.StatusOK,
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+  							invalid-json
+						}`)),
+					}
+				}
+
+				return resp, nil
+			}
+		})
+
+		It("returns the syslog configuration if it is configured for the specified product", func() {
+			syslogConfig, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(client.DoCallCount()).To(Equal(1))
+			req := client.DoArgsForCall(0)
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/syslog_configuration"))
+			Expect(req.Method).To(Equal("GET"))
+			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+
+			expectedResult := make(map[string]interface{})
+			expectedResult["enabled"] = true
+			expectedResult["address"] = "example.com"
+
+			Expect(syslogConfig).To(Equal(expectedResult))
+		})
+
+		Context("failure cases", func() {
+			When("the request fails", func() {
+				BeforeEach(func() {
+					client.DoReturns(&http.Response{}, errors.New("nope"))
+				})
+
+				It("returns an error", func() {
+					_, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError("could not make api request to staged product syslog_configuration endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/syslog_configuration: nope"))
+				})
+			})
+
+			When("the server returns a non-200 status code", func() {
+				It("returns nil when the status code is unprocessable (422)", func() {
+					syslogConfig, err := service.GetStagedProductSyslogConfiguration("missing-syslog-config")
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(syslogConfig).To(BeNil())
+				})
+
+				It("returns an error for any other status code that is non-200", func() {
+					_, err := service.GetStagedProductSyslogConfiguration("bad-response-code")
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				})
+			})
+
+			When("the response body cannot be decoded", func() {
+				It("returns an error", func() {
+					_, err := service.GetStagedProductSyslogConfiguration("")
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged product syslog_configuration response")))
+				})
+			})
+		})
+	})
+
+	Describe("UpdateStagedProductSyslogConfiguration", func() {
 		BeforeEach(func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				var resp *http.Response
@@ -865,36 +961,43 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 						StatusCode: http.StatusOK,
 						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
 					}
-				case "/api/v0/staged/products/some-product-guid/networks_and_azs":
+				case "/api/v0/staged/products/some-product-guid/syslog_configuration":
 					resp = &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+  							"syslog_configuration": {
+							"enabled": true,
+							"address": "example.com",
+							"port": 514,
+   							"transport_protocol": "tcp"
+  							}
+						}`)),
 					}
 				}
 				return resp, nil
 			}
 		})
 
-		It("configures the networks for the given staged product in the Ops Manager", func() {
-			err := service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
+		It("configures the syslog for the given staged product in the Ops Manager", func() {
+			err := service.UpdateSyslogConfiguration(api.UpdateSyslogConfigurationInput{
 				GUID: "some-product-guid",
-				NetworksAndAZs: `{
+				SyslogConfiguration: `{
 					"key": "value"
 				}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			By("configuring the product properties")
+			By("configuring the syslog properties")
 			Expect(client.DoCallCount()).To(Equal(1))
 			req := client.DoArgsForCall(0)
-			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/networks_and_azs"))
+			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/syslog_configuration"))
 			Expect(req.Method).To(Equal("PUT"))
 			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			reqBody, err := ioutil.ReadAll(req.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(reqBody).To(MatchJSON(`{
-				"networks_and_azs": {
+				"syslog_configuration": {
 					"key": "value"
 				}
 			}`))
@@ -907,11 +1010,12 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 
 				It("returns an error", func() {
-					err := service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
-						GUID:           "foo",
-						NetworksAndAZs: `{}`,
+					err := service.UpdateSyslogConfiguration(api.UpdateSyslogConfigurationInput{
+						GUID:                "foo",
+						SyslogConfiguration: `{}`,
 					})
-					Expect(err).To(MatchError("could not make api request to staged product networks_and_azs endpoint: could not send api request to PUT /api/v0/staged/products/foo/networks_and_azs: nope"))
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError("could not make api request to staged product syslog_configuration endpoint: could not send api request to PUT /api/v0/staged/products/foo/syslog_configuration: nope"))
 				})
 			})
 
@@ -924,9 +1028,9 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 
 				It("returns an error", func() {
-					err := service.UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput{
-						GUID:           "foo",
-						NetworksAndAZs: `{}`,
+					err := service.UpdateSyslogConfiguration(api.UpdateSyslogConfigurationInput{
+						GUID:                "foo",
+						SyslogConfiguration: `{}`,
 					})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
