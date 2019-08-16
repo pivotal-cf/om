@@ -82,6 +82,16 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
       om -e env.yml generate-certificate -d "example1.com" --domains "example2.com" \
          -d "example3.com,*.example4.com" --domains "example5.com,*.example6.com"
     ```
+- `product-metadata` has been added to replace `tile-metadata`.
+  This was done to increase naming consistency.
+  Both commands currently exist and do exactly the same thing.
+  Thank you @jghiloni for the PR!
+
+### Deprecation Notices
+- `tile-metadata` has been deprecated in favor of `product-metadata`.
+  This was done to increase naming consistency.
+  Both commands currently exist and do exactly the same thing.
+  The `tile-metadata` command will be removed in a future release.
   
 ## 3.1.0
 
