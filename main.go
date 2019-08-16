@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/pivotal-cf/om/interpolate"
 
 	"time"
 
@@ -192,7 +193,8 @@ func main() {
 	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
-	commandSet["tile-metadata"] = commands.NewTileMetadata(stdout)
+	commandSet["product-metadata"] = commands.NewProductMetadata(stdout)
+	commandSet["tile-metadata"] = commands.NewDeprecatedProductMetadata(stdout)
 	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
 	commandSet["update-ssl-certificate"] = commands.NewUpdateSSLCertificate(api, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
