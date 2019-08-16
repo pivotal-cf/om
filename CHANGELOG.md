@@ -74,6 +74,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
       tls_enabled: false
       transport_protocol: tcp
     ```
+- `generate-certificate` can now accept multiple `--domains | -d` flags.
+  Comma separated values can be passed with a single `--domains | -d` flag,
+  or using a `--domains | -d` flag for each value. Thanks to @jghiloni for the PR!
+  Example:
+    ```bash
+      om -e env.yml generate-certificate -d "example1.com" --domains "example2.com" \
+         -d "example3.com,*.example4.com" --domains "example5.com,*.example6.com"
+    ```
   
 ## 3.1.0
 
