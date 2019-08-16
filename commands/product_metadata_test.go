@@ -14,10 +14,10 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 )
 
-var _ = Describe("TileMetadata", func() {
+var _ = Describe("ProductMetadata", func() {
 	Describe("Execute", func() {
 		var (
-			command commands.TileMetadata
+			command commands.ProductMetadata
 			stdout  *fakes.Logger
 
 			productFile *os.File
@@ -27,7 +27,7 @@ var _ = Describe("TileMetadata", func() {
 		BeforeEach(func() {
 			stdout = &fakes.Logger{}
 
-			command = commands.NewTileMetadata(stdout)
+			command = commands.NewProductMetadata(stdout)
 
 			// write fake file
 			productFile, err = ioutil.TempFile("", "fake-tile")
@@ -84,7 +84,7 @@ product_version: 1.2.3
 			Context("when the flags cannot be parsed", func() {
 				It("returns an error", func() {
 					err = command.Execute([]string{"--bad-flag", "some-value"})
-					Expect(err).To(MatchError(MatchRegexp("could not parse tile-metadata flags")))
+					Expect(err).To(MatchError(MatchRegexp("could not parse product-metadata flags")))
 				})
 			})
 
@@ -127,11 +127,29 @@ product_version: 1.2.3
 	})
 
 	Describe("Usage", func() {
-		It("returns the usage information for the tile-metadata command", func() {
-			command := commands.TileMetadata{}
+		var (
+			command commands.ProductMetadata
+			stdout  *fakes.Logger
+		)
+
+		BeforeEach(func() {
+			stdout = &fakes.Logger{}
+		})
+
+		It("returns the usage information for the product-metadata command", func() {
+			command = commands.NewProductMetadata(stdout)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command prints metadata about the given tile",
-				ShortDescription: "prints tile metadata",
+				Description:      "This command prints metadata about the given product",
+				ShortDescription: "prints product metadata",
+				Flags:            command.Options,
+			}))
+		})
+
+		It("returns the usage information for the tile-metadata command", func() {
+			command = commands.NewDeprecatedProductMetadata(stdout)
+			Expect(command.Usage()).To(Equal(jhanda.Usage{
+				Description:      "*** DEPRECATED *** use 'product-metadata' instead\nThis command prints metadata about the given product",
+				ShortDescription: "**DEPRECATED** prints product metadata. Use product-metadata instead",
 				Flags:            command.Options,
 			}))
 		})

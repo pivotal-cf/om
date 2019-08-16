@@ -191,6 +191,45 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
+		When("product syslog is provided", func() {
+			BeforeEach(func() {
+				config = fmt.Sprintf(`{"product-name": "cf", "syslog-properties": %s}`, syslogProperties)
+			})
+
+			It("configures a product's syslog", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+				service.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+
+				err := client.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
+				actual := service.UpdateSyslogConfigurationArgsForCall(0)
+				Expect(actual.GUID).To(Equal("some-product-guid"))
+				Expect(actual.SyslogConfiguration).To(MatchJSON(syslogProperties))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("setting up syslog"))
+
+				format, content = logger.PrintfArgsForCall(2)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("finished setting up syslog"))
+
+				format, content = logger.PrintfArgsForCall(3)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("finished configuring product"))
+			})
+		})
+
 		When("product resources are provided", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
@@ -394,7 +433,7 @@ var _ = Describe("ConfigureProduct", func() {
 						configFile, err = ioutil.TempFile("", "")
 						Expect(err).NotTo(HaveOccurred())
 
-						_, err = configFile.WriteString(productPropertiesWithVariables)
+						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).NotTo(HaveOccurred())
 
 						varsFile, err := ioutil.TempFile("", "")
@@ -418,7 +457,7 @@ var _ = Describe("ConfigureProduct", func() {
 						configFile, err = ioutil.TempFile("", "")
 						Expect(err).NotTo(HaveOccurred())
 
-						_, err = configFile.WriteString(productPropertiesWithVariables)
+						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).NotTo(HaveOccurred())
 
 						err = client.Execute([]string{
@@ -436,7 +475,7 @@ var _ = Describe("ConfigureProduct", func() {
 						configFile, err = ioutil.TempFile("", "")
 						Expect(err).NotTo(HaveOccurred())
 
-						_, err = configFile.WriteString(productPropertiesWithVariables)
+						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).NotTo(HaveOccurred())
 
 						err = client.Execute([]string{
@@ -455,7 +494,7 @@ var _ = Describe("ConfigureProduct", func() {
 						configFile, err = ioutil.TempFile("", "")
 						Expect(err).NotTo(HaveOccurred())
 
-						_, err = configFile.WriteString(productPropertiesWithVariables)
+						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).NotTo(HaveOccurred())
 
 						err = client.Execute([]string{
@@ -471,7 +510,7 @@ var _ = Describe("ConfigureProduct", func() {
 					configFile, err = ioutil.TempFile("", "")
 					Expect(err).NotTo(HaveOccurred())
 
-					_, err = configFile.WriteString(productPropertiesWithVariables)
+					_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 					Expect(err).NotTo(HaveOccurred())
 
 					err = client.Execute([]string{
@@ -641,6 +680,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 
+				Expect(logger.PrintlnCallCount()).To(Equal(6))
 				msg := logger.PrintlnArgsForCall(0)[0]
 				Expect(msg).To(Equal("network properties are not provided, nothing to do here"))
 				msg = logger.PrintlnArgsForCall(1)[0]
@@ -650,6 +690,8 @@ var _ = Describe("ConfigureProduct", func() {
 				msg = logger.PrintlnArgsForCall(3)[0]
 				Expect(msg).To(Equal("max in flight properties are not provided, nothing to do here"))
 				msg = logger.PrintlnArgsForCall(4)[0]
+				Expect(msg).To(Equal("syslog configuration is not provided, nothing to do here"))
+				msg = logger.PrintlnArgsForCall(5)[0]
 				Expect(msg).To(Equal("errands are not provided, nothing to do here"))
 				format, content := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(ContainSubstring("finished configuring product"))
@@ -875,6 +917,46 @@ var _ = Describe("ConfigureProduct", func() {
 				})
 			})
 
+			When("the syslog cannot be configured", func() {
+				BeforeEach(func() {
+					config = `{"product-name": "some-product", "product-properties": {}, "syslog-properties": {}}`
+				})
+
+				It("returns an error", func() {
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+					service.UpdateSyslogConfigurationReturns(errors.New("some product error"))
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "some-product"},
+						},
+					}, nil)
+
+					err := command.Execute([]string{"--config", configFile.Name()})
+					Expect(err).To(MatchError("failed to configure product: some product error"))
+				})
+			})
+
+			When("when the syslog cannot be configured", func() {
+				BeforeEach(func() {
+					config = `{"product-name": "some-product", "product-properties": {}, "syslog-properties": {}}`
+				})
+
+				It("returns an error", func() {
+					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+					service.UpdateSyslogConfigurationReturns(errors.New("some product error"))
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "some-product"},
+						},
+					}, nil)
+
+					err := command.Execute([]string{"--config", configFile.Name()})
+					Expect(err).To(MatchError("failed to configure product: some product error"))
+				})
+			})
+
 			When("errand config errors", func() {
 				var (
 					configFile *os.File
@@ -951,6 +1033,13 @@ const networkProperties = `{
   "network": {"name": "network-one"}
 }`
 
+const syslogProperties = `{
+    "enabled": true,
+    "address": "example.com",
+    "port": 514,
+    "transport_protocol": "tcp"
+}`
+
 const resourceConfig = `{
   "some-job": {
     "instances": 1,
@@ -977,7 +1066,7 @@ const automaticResourceConfig = `{
   }
 }`
 
-const productPropertiesWithVariables = `---
+const productPropertiesWithVariableTemplate = `---
 product-name: cf
 product-properties:
   .properties.something:

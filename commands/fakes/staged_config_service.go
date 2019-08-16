@@ -87,6 +87,19 @@ type StagedConfigService struct {
 		result1 map[string]api.ResponseProperty
 		result2 error
 	}
+	GetStagedProductSyslogConfigurationStub        func(string) (map[string]interface{}, error)
+	getStagedProductSyslogConfigurationMutex       sync.RWMutex
+	getStagedProductSyslogConfigurationArgsForCall []struct {
+		arg1 string
+	}
+	getStagedProductSyslogConfigurationReturns struct {
+		result1 map[string]interface{}
+		result2 error
+	}
+	getStagedProductSyslogConfigurationReturnsOnCall map[int]struct {
+		result1 map[string]interface{}
+		result2 error
+	}
 	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
 	listDeployedProductsMutex       sync.RWMutex
 	listDeployedProductsArgsForCall []struct {
@@ -508,6 +521,69 @@ func (fake *StagedConfigService) GetStagedProductPropertiesReturnsOnCall(i int, 
 	}{result1, result2}
 }
 
+func (fake *StagedConfigService) GetStagedProductSyslogConfiguration(arg1 string) (map[string]interface{}, error) {
+	fake.getStagedProductSyslogConfigurationMutex.Lock()
+	ret, specificReturn := fake.getStagedProductSyslogConfigurationReturnsOnCall[len(fake.getStagedProductSyslogConfigurationArgsForCall)]
+	fake.getStagedProductSyslogConfigurationArgsForCall = append(fake.getStagedProductSyslogConfigurationArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetStagedProductSyslogConfiguration", []interface{}{arg1})
+	fake.getStagedProductSyslogConfigurationMutex.Unlock()
+	if fake.GetStagedProductSyslogConfigurationStub != nil {
+		return fake.GetStagedProductSyslogConfigurationStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getStagedProductSyslogConfigurationReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StagedConfigService) GetStagedProductSyslogConfigurationCallCount() int {
+	fake.getStagedProductSyslogConfigurationMutex.RLock()
+	defer fake.getStagedProductSyslogConfigurationMutex.RUnlock()
+	return len(fake.getStagedProductSyslogConfigurationArgsForCall)
+}
+
+func (fake *StagedConfigService) GetStagedProductSyslogConfigurationCalls(stub func(string) (map[string]interface{}, error)) {
+	fake.getStagedProductSyslogConfigurationMutex.Lock()
+	defer fake.getStagedProductSyslogConfigurationMutex.Unlock()
+	fake.GetStagedProductSyslogConfigurationStub = stub
+}
+
+func (fake *StagedConfigService) GetStagedProductSyslogConfigurationArgsForCall(i int) string {
+	fake.getStagedProductSyslogConfigurationMutex.RLock()
+	defer fake.getStagedProductSyslogConfigurationMutex.RUnlock()
+	argsForCall := fake.getStagedProductSyslogConfigurationArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *StagedConfigService) GetStagedProductSyslogConfigurationReturns(result1 map[string]interface{}, result2 error) {
+	fake.getStagedProductSyslogConfigurationMutex.Lock()
+	defer fake.getStagedProductSyslogConfigurationMutex.Unlock()
+	fake.GetStagedProductSyslogConfigurationStub = nil
+	fake.getStagedProductSyslogConfigurationReturns = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedConfigService) GetStagedProductSyslogConfigurationReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+	fake.getStagedProductSyslogConfigurationMutex.Lock()
+	defer fake.getStagedProductSyslogConfigurationMutex.Unlock()
+	fake.GetStagedProductSyslogConfigurationStub = nil
+	if fake.getStagedProductSyslogConfigurationReturnsOnCall == nil {
+		fake.getStagedProductSyslogConfigurationReturnsOnCall = make(map[int]struct {
+			result1 map[string]interface{}
+			result2 error
+		})
+	}
+	fake.getStagedProductSyslogConfigurationReturnsOnCall[i] = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StagedConfigService) ListDeployedProducts() ([]api.DeployedProductOutput, error) {
 	fake.listDeployedProductsMutex.Lock()
 	ret, specificReturn := fake.listDeployedProductsReturnsOnCall[len(fake.listDeployedProductsArgsForCall)]
@@ -704,6 +780,8 @@ func (fake *StagedConfigService) Invocations() map[string][][]interface{} {
 	defer fake.getStagedProductNetworksAndAZsMutex.RUnlock()
 	fake.getStagedProductPropertiesMutex.RLock()
 	defer fake.getStagedProductPropertiesMutex.RUnlock()
+	fake.getStagedProductSyslogConfigurationMutex.RLock()
+	defer fake.getStagedProductSyslogConfigurationMutex.RUnlock()
 	fake.listDeployedProductsMutex.RLock()
 	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.listStagedProductErrandsMutex.RLock()

@@ -163,6 +163,7 @@ Commands:
   interpolate                     Interpolates variables into a manifest
   pending-changes                 lists pending changes
   pre-deploy-check                **EXPERIMENTAL** lists pending changes
+  product-metadata                prints product metadata
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   ssl-certificate                 gets certificate applied to Ops Manager
   stage-product                   stages a given product in the Ops Manager targeted
@@ -170,7 +171,7 @@ Commands:
   staged-director-config          **EXPERIMENTAL** generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
-  tile-metadata                   prints tile metadata
+  tile-metadata                   **DEPRECATED** prints product metadata. Use product-metadata instead
   unstage-product                 unstages a given product from the Ops Manager targeted
   update-ssl-certificate          updates the SSL Certificate on the Ops Manager
   upload-product                  uploads a given product to the Ops Manager targeted
