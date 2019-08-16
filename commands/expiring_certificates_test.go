@@ -3,10 +3,11 @@ package commands_test
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"log"
 	"regexp"
 	"time"
+
+	"github.com/pivotal-cf/jhanda"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
