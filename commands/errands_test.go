@@ -69,7 +69,7 @@ var _ = Describe("Errands", func() {
 			))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{
 					"--product-name", "some-product-name",
@@ -83,14 +83,14 @@ var _ = Describe("Errands", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when an unknown flag is passed", func() {
+			When("an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
 					Expect(err).To(MatchError("could not parse errands flags: flag provided but not defined: -unknown-flag"))
 				})
 			})
 
-			Context("when the staged products finder fails", func() {
+			When("the staged products finder fails", func() {
 				It("returns an error", func() {
 					fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("there was an error"))
 					err := command.Execute([]string{"--product-name", "some-product"})
@@ -98,7 +98,7 @@ var _ = Describe("Errands", func() {
 				})
 			})
 
-			Context("when the errands service fails", func() {
+			When("the errands service fails", func() {
 				It("returns an error", func() {
 					fakeService.ListStagedProductErrandsReturns(api.ErrandsListOutput{}, errors.New("there was an error"))
 					err := command.Execute([]string{"--product-name", "some-product"})
@@ -106,7 +106,7 @@ var _ = Describe("Errands", func() {
 				})
 			})
 
-			Context("when the product name is missing", func() {
+			When("the product name is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("could not parse errands flags: missing required flag \"--product-name\""))

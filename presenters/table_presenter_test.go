@@ -205,7 +205,7 @@ var _ = Describe("TablePresenter", func() {
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
 
-		Context("when there are no installations", func() {
+		When("there are no installations", func() {
 			BeforeEach(func() {
 				installations = []models.Installation{}
 			})

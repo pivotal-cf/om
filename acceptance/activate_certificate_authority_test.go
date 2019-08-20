@@ -63,7 +63,7 @@ var _ = Describe("activate certificate authority", func() {
 		Expect(string(session.Out.Contents())).To(Equal("Certificate authority 'some-id' activated\n"))
 	})
 
-	Context("when the certificate authority does not exist", func() {
+	When("the certificate authority does not exist", func() {
 		It("errors", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

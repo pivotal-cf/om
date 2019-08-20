@@ -53,8 +53,8 @@ var _ = Describe("UploadStemcellService", func() {
 			Expect(string(body)).To(Equal("some content"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -63,7 +63,7 @@ var _ = Describe("UploadStemcellService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,

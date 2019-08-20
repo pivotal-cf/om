@@ -11,7 +11,7 @@ import (
 )
 
 var _ = Describe("global flags", func() {
-	Context("when provided an unknown global flag", func() {
+	When("provided an unknown global flag", func() {
 		It("prints the usage", func() {
 			cmd := exec.Command(pathToMain, "-?")
 
@@ -23,7 +23,7 @@ var _ = Describe("global flags", func() {
 		})
 	})
 
-	Context("when not provided a target flag", func() {
+	When("not provided a target flag", func() {
 		It("does not return an error if the command is help", func() {
 			cmd := exec.Command(pathToMain, "help")
 

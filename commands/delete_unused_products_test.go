@@ -46,8 +46,8 @@ var _ = Describe("DeleteProduct", func() {
 		})
 	})
 
-	Context("when an error occurs", func() {
-		Context("when deleting all products fails", func() {
+	When("an error occurs", func() {
+		When("deleting all products fails", func() {
 			It("returns an error", func() {
 				fakeService.DeleteAvailableProductsReturns(errors.New("something bad happened"))
 

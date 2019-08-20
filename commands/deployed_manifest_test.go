@@ -53,7 +53,7 @@ key: value
 	})
 
 	Context("failure cases", func() {
-		Context("when the flags cannot be parsed", func() {
+		When("the flags cannot be parsed", func() {
 			It("returns an error", func() {
 				err := command.Execute([]string{
 					"--unknown-flag", "unknown-value",
@@ -62,7 +62,7 @@ key: value
 			})
 		})
 
-		Context("when the deployed products cannot be listed", func() {
+		When("the deployed products cannot be listed", func() {
 			It("returns an error", func() {
 				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, errors.New("deployed products cannot be listed"))
 
@@ -73,7 +73,7 @@ key: value
 			})
 		})
 
-		Context("when the guid is not found", func() {
+		When("the guid is not found", func() {
 			It("returns an error", func() {
 				err := command.Execute([]string{
 					"--product-name", "unknown-product",
@@ -82,7 +82,7 @@ key: value
 			})
 		})
 
-		Context("when the manifest cannot be returned", func() {
+		When("the manifest cannot be returned", func() {
 			It("returns an error", func() {
 				fakeService.GetDeployedProductManifestReturns("", errors.New("manifest could not be retrieved"))
 				err := command.Execute([]string{

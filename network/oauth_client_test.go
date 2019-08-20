@@ -147,7 +147,7 @@ var _ = Describe("OAuthClient", func() {
 			Expect(err).To(MatchError(ContainSubstring("protocol version not supported")))
 		})
 
-		Context("when passing a url with no scheme", func() {
+		When("passing a url with no scheme", func() {
 			It("defaults to HTTPS", func() {
 				noScheme, err := url.Parse(server.URL)
 				Expect(err).NotTo(HaveOccurred())
@@ -168,8 +168,8 @@ var _ = Describe("OAuthClient", func() {
 			})
 		})
 
-		Context("when insecureSkipVerify is configured", func() {
-			Context("when it is set to false", func() {
+		When("insecureSkipVerify is configured", func() {
+			When("it is set to false", func() {
 				It("throws an error for invalid certificates", func() {
 					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", false, false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
@@ -182,7 +182,7 @@ var _ = Describe("OAuthClient", func() {
 				})
 			})
 
-			Context("when it is set to true", func() {
+			When("it is set to true", func() {
 				It("does not verify certificates", func() {
 					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
@@ -196,8 +196,8 @@ var _ = Describe("OAuthClient", func() {
 			})
 		})
 
-		Context("when includeCookies is configured", func() {
-			Context("when it is set to true", func() {
+		When("includeCookies is configured", func() {
+			When("it is set to true", func() {
 				It("has a cookie jar", func() {
 					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
@@ -219,7 +219,7 @@ var _ = Describe("OAuthClient", func() {
 				})
 			})
 
-			Context("when it is false", func() {
+			When("it is false", func() {
 				It("does not collect any of the cookies", func() {
 					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
@@ -241,8 +241,8 @@ var _ = Describe("OAuthClient", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the initial token cannot be retrieved", func() {
+		When("an error occurs", func() {
+			When("the initial token cannot be retrieved", func() {
 				var badServer *httptest.Server
 
 				BeforeEach(func() {
@@ -264,7 +264,7 @@ var _ = Describe("OAuthClient", func() {
 				})
 			})
 
-			Context("when the target url is empty", func() {
+			When("the target url is empty", func() {
 				It("returns an error", func() {
 					client, err := network.NewOAuthClient("", "username", "password", "", "", false, false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					Expect(err).NotTo(HaveOccurred())

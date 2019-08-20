@@ -82,7 +82,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -91,7 +91,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when the response body cannot be parsed", func() {
+			When("the response body cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						return &http.Response{StatusCode: http.StatusOK,
@@ -105,7 +105,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			})
 		})
 
-		Context("when Ops Manager returns a non-200 status code", func() {
+		When("Ops Manager returns a non-200 status code", func() {
 			It("returns an error", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
@@ -161,7 +161,7 @@ var _ = Describe("CertificateAuthorities", func() {
 
 		Context("failure cases", func() {
 
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -170,7 +170,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when Ops Manager returns a non-200 status code", func() {
+			When("Ops Manager returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						return &http.Response{
@@ -184,7 +184,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when the response body cannot be parsed", func() {
+			When("the response body cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						return &http.Response{StatusCode: http.StatusOK,
@@ -222,7 +222,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -231,7 +231,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when Ops Manager returns a non-200 status code", func() {
+			When("Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -309,7 +309,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -321,7 +321,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when the response body cannot be parsed", func() {
+			When("the response body cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						return &http.Response{StatusCode: http.StatusOK,
@@ -337,7 +337,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when it returns a non-200 status code", func() {
+			When("it returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -390,7 +390,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -401,7 +401,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when Ops Manager returns a non-200 status code", func() {
+			When("Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -455,7 +455,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -466,7 +466,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				})
 			})
 
-			Context("when Ops Manager returns a non-200 status code", func() {
+			When("Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response

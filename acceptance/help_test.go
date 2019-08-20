@@ -63,7 +63,7 @@ Command Arguments:
 `
 
 var _ = Describe("help", func() {
-	Context("when given no command at all", func() {
+	When("given no command at all", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain)
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -74,7 +74,7 @@ var _ = Describe("help", func() {
 		})
 	})
 
-	Context("when given the -h short flag", func() {
+	When("given the -h short flag", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "-h")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -85,7 +85,7 @@ var _ = Describe("help", func() {
 		})
 	})
 
-	Context("when given the --help long flag", func() {
+	When("given the --help long flag", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "--help")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -96,7 +96,7 @@ var _ = Describe("help", func() {
 		})
 	})
 
-	Context("when given the help command", func() {
+	When("given the help command", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "help")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -107,7 +107,7 @@ var _ = Describe("help", func() {
 		})
 	})
 
-	Context("when given a command", func() {
+	When("given a command", func() {
 		It("prints the usage for that command", func() {
 			command := exec.Command(pathToMain, "help", "configure-authentication")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

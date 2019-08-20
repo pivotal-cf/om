@@ -62,7 +62,7 @@ var _ = Describe("Trace Client", func() {
 		Expect(out).To(gbytes.Say(string(expectedContents)))
 	})
 
-	Context("when the underlying http client fails", func() {
+	When("the underlying http client fails", func() {
 		BeforeEach(func() {
 			fakeClient.DoReturns(nil, errors.New("boom!"))
 		})
@@ -73,7 +73,7 @@ var _ = Describe("Trace Client", func() {
 		})
 	})
 
-	Context("when the request body is larger than some arbitrary value", func() {
+	When("the request body is larger than some arbitrary value", func() {
 		It("only dumps the headers", func() {
 			request.Body = ioutil.NopCloser(strings.NewReader("{}"))
 			request.ContentLength = 1024 * 1024
@@ -88,7 +88,7 @@ var _ = Describe("Trace Client", func() {
 		})
 	})
 
-	Context("when the response body is larger than some arbitrary value", func() {
+	When("the response body is larger than some arbitrary value", func() {
 		It("only dumps the headers", func() {
 			responseBodySize := 1024 * 1024
 

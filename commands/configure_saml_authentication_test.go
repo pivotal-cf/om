@@ -222,7 +222,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 			})
 		})
 
-		Context("when the authentication setup has already been configured", func() {
+		When("the authentication setup has already been configured", func() {
 			It("returns without configuring the authentication system", func() {
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
@@ -240,7 +240,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 			})
 		})
 
-		Context("when config file is provided", func() {
+		When("config file is provided", func() {
 			var configFile *os.File
 
 			BeforeEach(func() {
@@ -316,14 +316,14 @@ precreated-client-secret: test-client-secret
 		})
 
 		Context("failure cases", func() {
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--banana"})
 					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: flag provided but not defined: -banana"))
 				})
 			})
 
-			Context("when config file cannot be opened", func() {
+			When("config file cannot be opened", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--config", "something"})
 					Expect(err).To(MatchError("could not parse configure-saml-authentication flags: could not load the config file: could not read file (something): open something: no such file or directory"))
@@ -331,7 +331,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the initial configuration status cannot be determined", func() {
+			When("the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
@@ -341,7 +341,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the initial configuration status is unknown", func() {
+			When("the initial configuration status is unknown", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnknown,
@@ -353,7 +353,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the setup service encounters an error", func() {
+			When("the setup service encounters an error", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnstarted,
@@ -367,7 +367,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the final configuration status cannot be determined", func() {
+			When("the final configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					eaOutputs := []api.EnsureAvailabilityOutput{
 						{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -388,7 +388,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the --saml-idp-metadata field is not configured with others", func() {
+			When("the --saml-idp-metadata field is not configured with others", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -403,7 +403,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the --saml-bosh-idp-metadata field is not configured with others", func() {
+			When("the --saml-bosh-idp-metadata field is not configured with others", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -418,7 +418,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the --saml-rbac-admin-group field is not configured with others", func() {
+			When("the --saml-rbac-admin-group field is not configured with others", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -433,7 +433,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the --saml-rbac-groups-attribute field is not configured with others", func() {
+			When("the --saml-rbac-groups-attribute field is not configured with others", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -448,7 +448,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the --decryption-passphrase flag is missing", func() {
+			When("the --decryption-passphrase flag is missing", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureSAMLAuthentication(nil, nil)
 					err := command.Execute([]string{

@@ -84,8 +84,8 @@ var _ = Describe("export-installation command", func() {
 		Expect(content).To(Equal([]byte("some-installation")))
 	})
 
-	Context("when an error occurs", func() {
-		Context("when the output file cannot be written to", func() {
+	When("an error occurs", func() {
+		When("the output file cannot be written to", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,
@@ -104,7 +104,7 @@ var _ = Describe("export-installation command", func() {
 			})
 		})
 
-		Context("when the request takes longer than specified timeout", func() {
+		When("the request takes longer than specified timeout", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,

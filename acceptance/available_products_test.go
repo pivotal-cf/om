@@ -87,7 +87,7 @@ var _ = Describe("available-products command", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when the json format is requested", func() {
+	When("the json format is requested", func() {
 		It("lists the available products in json", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -106,7 +106,7 @@ var _ = Describe("available-products command", func() {
 		})
 	})
 
-	Context("when there are no available products to list", func() {
+	When("there are no available products to list", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				w.Header().Set("Content-Type", "application/json")

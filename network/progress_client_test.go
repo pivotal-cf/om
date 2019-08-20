@@ -146,7 +146,7 @@ var _ = Describe("ProgressClient", func() {
 			Expect(progressBar.FinishCallCount()).To(Equal(1))
 		})
 
-		Context("when the polling interval is greater than 1", func() {
+		When("the polling interval is greater than 1", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					_, err := ioutil.ReadAll(req.Body)
@@ -179,7 +179,7 @@ var _ = Describe("ProgressClient", func() {
 			})
 		})
 
-		Context("when the polling interval is greater than the time it takes upload the product", func() {
+		When("the polling interval is greater than the time it takes upload the product", func() {
 			It("logs at the correct interval", func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					_, err := ioutil.ReadAll(req.Body)
@@ -208,8 +208,8 @@ var _ = Describe("ProgressClient", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors performing the request", func() {
+		When("an error occurs", func() {
+			When("the client errors performing the request", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						req.Body.Close()
@@ -224,7 +224,7 @@ var _ = Describe("ProgressClient", func() {
 				})
 			})
 
-			Context("when server responds with timeout error before upload has finished", func() {
+			When("server responds with timeout error before upload has finished", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusRequestTimeout,

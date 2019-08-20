@@ -50,7 +50,7 @@ var _ = Describe("GenerateCertificate", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the domains flag is missing", func() {
+			When("the domains flag is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("could not parse generate-certificate flags: missing required flag \"--domains\""))

@@ -117,7 +117,7 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 	})
 
-	Context("when the Ops Manager is already configured", func() {
+	When("the Ops Manager is already configured", func() {
 		It("prints a helpful message", func() {
 			fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 				Status: api.EnsureAvailabilityStatusComplete,
@@ -136,7 +136,7 @@ var _ = Describe("ImportInstallation", func() {
 		})
 	})
 
-	Context("when config file is provided", func() {
+	When("config file is provided", func() {
 		var configFile *os.File
 
 		BeforeEach(func() {
@@ -225,7 +225,7 @@ var _ = Describe("ImportInstallation", func() {
 		})
 	})
 
-	Context("when EnsureAvailability returns 'connection refused'", func() {
+	When("EnsureAvailability returns 'connection refused'", func() {
 		var command *commands.ImportInstallation
 
 		BeforeEach(func() {
@@ -298,7 +298,7 @@ var _ = Describe("ImportInstallation", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when the global decryption-passphrase is not provided", func() {
+		When("the global decryption-passphrase is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "", logger)
 				err := command.Execute([]string{"--polling-interval", "0"})
@@ -306,7 +306,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--polling-interval", "0", "--badflag"})
@@ -314,7 +314,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when config file cannot be opened", func() {
+		When("config file cannot be opened", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--config", "something"})
@@ -323,7 +323,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the --installation flag is missing", func() {
+		When("the --installation flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--polling-interval", "0"})
@@ -331,7 +331,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the --installation provided is a file that does not exist", func() {
+		When("the --installation provided is a file that does not exist", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 				err := command.Execute([]string{"--installation", "does-not-exist.zip"})
@@ -339,7 +339,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the --installation provided is not a valid zip file", func() {
+		When("the --installation provided is not a valid zip file", func() {
 			var notZipFile string
 			BeforeEach(func() {
 				tmpFile, err := ioutil.TempFile("", "")
@@ -358,7 +358,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the --installation provided does not have required installation.yml", func() {
+		When("the --installation provided does not have required installation.yml", func() {
 			var invalidInstallation string
 			BeforeEach(func() {
 				invalidInstallation = createZipFile([]struct{ Name, Body string }{})
@@ -376,7 +376,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the ensure_availability endpoint returns an error", func() {
+		When("the ensure_availability endpoint returns an error", func() {
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
@@ -385,7 +385,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the file cannot be opened", func() {
+		When("the file cannot be opened", func() {
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusUnstarted,
@@ -398,7 +398,7 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		Context("when the installation cannot be imported", func() {
+		When("the installation cannot be imported", func() {
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusUnstarted,

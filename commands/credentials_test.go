@@ -74,7 +74,7 @@ var _ = Describe("Credentials", func() {
 				))
 			})
 
-			Context("when the format flag is provided", func() {
+			When("the format flag is provided", func() {
 				It("sets the format on the presenter", func() {
 					err := command.Execute([]string{
 						"--product-name", "some-product",
@@ -87,7 +87,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the --product-name flag is missing", func() {
+			When("the --product-name flag is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--credential-reference", "some-credential",
@@ -96,7 +96,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the --credential-reference flag is missing", func() {
+			When("the --credential-reference flag is missing", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
@@ -107,7 +107,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the credential reference cannot be found", func() {
+			When("the credential reference cannot be found", func() {
 				BeforeEach(func() {
 					fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{}, nil)
 				})
@@ -123,7 +123,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the credentials cannot be fetched", func() {
+			When("the credentials cannot be fetched", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
@@ -139,7 +139,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the deployed products cannot be fetched", func() {
+			When("the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
 					fakeService.ListDeployedProductsReturns(
 						[]api.DeployedProductOutput{},
@@ -156,7 +156,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the product has not been deployed", func() {
+			When("the product has not been deployed", func() {
 				It("returns an error", func() {
 					fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
 						api.DeployedProductOutput{
@@ -202,7 +202,7 @@ var _ = Describe("Credentials", func() {
 				Expect(logger.PrintlnArgsForCall(0)[0]).To(Equal("some-password"))
 			})
 
-			Context("when the credential field cannot be found", func() {
+			When("the credential field cannot be found", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 

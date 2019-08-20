@@ -127,7 +127,7 @@ var _ = Describe("certificate-authority", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when the cert-pem flag is specified", func() {
+	When("the cert-pem flag is specified", func() {
 		It("prints the certificate contents", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -148,7 +148,7 @@ var _ = Describe("certificate-authority", func() {
 		})
 	})
 
-	Context("when json format is requested", func() {
+	When("json format is requested", func() {
 		It("prints the json output for the certificate authority", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

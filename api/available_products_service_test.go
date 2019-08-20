@@ -62,8 +62,8 @@ var _ = Describe("Available Products", func() {
 			Expect(request.Header.Get("Content-Type")).To(Equal("some content-type"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors performing the request", func() {
+		When("an error occurs", func() {
+			When("the client errors performing the request", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -74,7 +74,7 @@ var _ = Describe("Available Products", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -128,7 +128,7 @@ var _ = Describe("Available Products", func() {
 				})
 			})
 
-			Context("when the server won't fetch available products", func() {
+			When("the server won't fetch available products", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -140,7 +140,7 @@ var _ = Describe("Available Products", func() {
 				})
 			})
 
-			Context("when the response is not JSON", func() {
+			When("the response is not JSON", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -175,7 +175,7 @@ var _ = Describe("Available Products", func() {
 			Expect(request.URL.RawQuery).To(Equal("product_name=some-product&version=1.2.3-build.4"))
 		})
 
-		Context("when the ShouldDeleteAllProducts flag is provided", func() {
+		When("the ShouldDeleteAllProducts flag is provided", func() {
 			It("does not provide a product query to DELETE", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -196,8 +196,8 @@ var _ = Describe("Available Products", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when a non-200 status code is returned", func() {
+		When("an error occurs", func() {
+			When("a non-200 status code is returned", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,

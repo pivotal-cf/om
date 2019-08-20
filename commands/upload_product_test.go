@@ -74,7 +74,7 @@ var _ = Describe("UploadProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
 	})
 
-	Context("when the polling interval is provided", func() {
+	When("the polling interval is provided", func() {
 		It("passes the value to the products service", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			err := command.Execute([]string{
@@ -86,7 +86,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the same product is already present", func() {
+	When("the same product is already present", func() {
 		It("does nothing and exits gracefully", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 			metadataExtractor.ExtractMetadataReturns(extractor.Metadata{
@@ -112,7 +112,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the --shasum flag is defined", func() {
+	When("the --shasum flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
@@ -177,7 +177,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the --product-version flag is defined", func() {
+	When("the --product-version flag is defined", func() {
 		It("proceeds normally when the versions match", func() {
 			file, err := ioutil.TempFile("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
@@ -230,8 +230,8 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the product fails to upload the first time with a retryable error", func() {
-		Context("when the product is now present", func() {
+	When("the product fails to upload the first time with a retryable error", func() {
+		When("the product is now present", func() {
 			It("succeeds", func() {
 				stdout := gbytes.NewBuffer()
 				logger := log.New(stdout, "", 0)
@@ -277,7 +277,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when the product fails to upload three times", func() {
+	When("the product fails to upload three times", func() {
 		It("returns an error", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
@@ -297,7 +297,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 	})
 
-	Context("when config file is provided", func() {
+	When("config file is provided", func() {
 		var configFile *os.File
 
 		BeforeEach(func() {
@@ -346,7 +346,7 @@ product: will-be-overridden-by-command-line
 	})
 
 	Context("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
@@ -354,7 +354,7 @@ product: will-be-overridden-by-command-line
 			})
 		})
 
-		Context("when the product flag is not provided", func() {
+		When("the product flag is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 				err := command.Execute([]string{})
@@ -362,7 +362,7 @@ product: will-be-overridden-by-command-line
 			})
 		})
 
-		Context("when extracting the product metadata returns an error", func() {
+		When("extracting the product metadata returns an error", func() {
 			It("returns an error", func() {
 				metadataExtractor.ExtractMetadataReturns(extractor.Metadata{}, errors.New("some error"))
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
@@ -371,7 +371,7 @@ product: will-be-overridden-by-command-line
 			})
 		})
 
-		Context("when checking for product availability returns an error", func() {
+		When("checking for product availability returns an error", func() {
 			It("returns an error", func() {
 				fakeService.CheckProductAvailabilityReturns(true, errors.New("some error"))
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
@@ -380,7 +380,7 @@ product: will-be-overridden-by-command-line
 			})
 		})
 
-		Context("when adding the file fails", func() {
+		When("adding the file fails", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 				multipart.AddFileReturns(errors.New("bad file"))
@@ -390,7 +390,7 @@ product: will-be-overridden-by-command-line
 			})
 		})
 
-		Context("when the product cannot be uploaded", func() {
+		When("the product cannot be uploaded", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 				fakeService.UploadAvailableProductReturns(api.UploadAvailableProductOutput{}, errors.New("some product error"))

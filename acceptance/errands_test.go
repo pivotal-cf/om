@@ -94,7 +94,7 @@ var _ = Describe("errands command", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when json format is requested", func() {
+	When("json format is requested", func() {
 		It("lists the errands belonging to the product in json", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

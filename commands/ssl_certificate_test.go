@@ -50,7 +50,7 @@ var _ = Describe("SslCertificate", func() {
 			Expect(fakePresenter.PresentSSLCertificateArgsForCall(0)).To(Equal(sslCertificateOutput))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("calls the presenter to set the json format", func() {
 				err := sslCertificate.Execute([]string{
 					"--format", "json",
@@ -62,7 +62,7 @@ var _ = Describe("SslCertificate", func() {
 			})
 		})
 
-		Context("when the flag cannot parsed", func() {
+		When("the flag cannot parsed", func() {
 			It("returns an error", func() {
 				err := sslCertificate.Execute([]string{"--bogus", "nothing"})
 				Expect(err).To(MatchError(
@@ -71,7 +71,7 @@ var _ = Describe("SslCertificate", func() {
 			})
 		})
 
-		Context("when request for certificate authorities fails", func() {
+		When("request for certificate authorities fails", func() {
 			It("returns an error", func() {
 				fakeSSLCertificateService.GetSSLCertificateReturns(
 					api.SSLCertificateOutput{},

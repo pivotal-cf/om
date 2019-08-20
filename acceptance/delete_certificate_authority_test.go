@@ -67,7 +67,7 @@ var _ = Describe("delete certificate authority", func() {
 		Expect(string(session.Out.Contents())).To(Equal("Certificate authority 'some-id' deleted\n"))
 	})
 
-	Context("when the certificate authority does not exist", func() {
+	When("the certificate authority does not exist", func() {
 		It("errors", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,
@@ -86,7 +86,7 @@ var _ = Describe("delete certificate authority", func() {
 		})
 	})
 
-	Context("when the certificate authority is still active", func() {
+	When("the certificate authority is still active", func() {
 		It("errors", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

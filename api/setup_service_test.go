@@ -73,7 +73,7 @@ var _ = Describe("Setup", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client fails to make the request", func() {
+			When("the client fails to make the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("could not make request"))
 
@@ -82,7 +82,7 @@ var _ = Describe("Setup", func() {
 				})
 			})
 
-			Context("when the api returns an unexpected status code", func() {
+			When("the api returns an unexpected status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -98,7 +98,7 @@ var _ = Describe("Setup", func() {
 	})
 
 	Describe("EnsureAvailability", func() {
-		Context("when the availability endpoint returns an unexpected status code", func() {
+		When("the availability endpoint returns an unexpected status code", func() {
 			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
@@ -110,7 +110,7 @@ var _ = Describe("Setup", func() {
 			})
 		})
 
-		Context("when the availability endpoint returns an OK status with an unexpected body", func() {
+		When("the availability endpoint returns an OK status with an unexpected body", func() {
 			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -122,7 +122,7 @@ var _ = Describe("Setup", func() {
 			})
 		})
 
-		Context("when the availability endpoint returns a found status with an unexpected location header", func() {
+		When("the availability endpoint returns a found status with an unexpected location header", func() {
 			It("returns a helpful error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
@@ -137,7 +137,7 @@ var _ = Describe("Setup", func() {
 			})
 		})
 
-		Context("when the authentication mechanism has not been setup", func() {
+		When("the authentication mechanism has not been setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
@@ -155,7 +155,7 @@ var _ = Describe("Setup", func() {
 			})
 		})
 
-		Context("when the authentication mechanism is currently being setup", func() {
+		When("the authentication mechanism is currently being setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -170,7 +170,7 @@ var _ = Describe("Setup", func() {
 			})
 		})
 
-		Context("when the authentication mechanism is completely setup", func() {
+		When("the authentication mechanism is completely setup", func() {
 			It("makes a request to determine the availability of the OpsManager authentication mechanism", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusFound,
@@ -189,7 +189,7 @@ var _ = Describe("Setup", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the request fails", func() {
+			When("the request fails", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("failed to make round trip"))
 
@@ -198,7 +198,7 @@ var _ = Describe("Setup", func() {
 				})
 			})
 
-			Context("when the location header cannot be parsed", func() {
+			When("the location header cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusFound,

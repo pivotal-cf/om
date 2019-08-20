@@ -235,7 +235,7 @@ var _ = Describe("configure-director command", func() {
 		server.Close()
 	})
 
-	Context("when using command line arguments", func() {
+	When("using command line arguments", func() {
 		It("displays a helpful error message when using moved director properties", func() {
 			configFile, err := ioutil.TempFile("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())
@@ -438,7 +438,7 @@ var _ = Describe("configure-director command", func() {
 		})
 	})
 
-	Context("when specifying a config file", func() {
+	When("specifying a config file", func() {
 		It("configures the BOSH director using the API", func() {
 			configYAML := []byte(`
 ---

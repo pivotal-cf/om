@@ -57,7 +57,7 @@ var _ = Describe("UpdateSSLCertificate", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the service fails to apply a certificate", func() {
+			When("the service fails to apply a certificate", func() {
 				It("returns an error", func() {
 					fakeService.UpdateSSLCertificateReturns(errors.New("failed to apply certificate"))
 
@@ -69,14 +69,14 @@ var _ = Describe("UpdateSSLCertificate", func() {
 				})
 			})
 
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse update-ssl-certificate flags: flag provided but not defined: -badflag"))
 				})
 			})
 
-			Context("when the certificate flag is not provided", func() {
+			When("the certificate flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--private-key-pem", "some PrivateKey",
@@ -85,7 +85,7 @@ var _ = Describe("UpdateSSLCertificate", func() {
 				})
 			})
 
-			Context("when the private key flag is not provided", func() {
+			When("the private key flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--certificate-pem", "some CertPem",

@@ -60,7 +60,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the server won't fetch credential references", func() {
+			When("the server won't fetch credential references", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -72,7 +72,7 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			Context("when the response is not JSON", func() {
+			When("the response is not JSON", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,

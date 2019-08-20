@@ -73,7 +73,7 @@ var _ = Describe("Certificates", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the client cannot make the request", func() {
+			When("the client cannot make the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -82,7 +82,7 @@ var _ = Describe("Certificates", func() {
 				})
 			})
 
-			Context("when Ops Manager returns a non-200 status code", func() {
+			When("Ops Manager returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response

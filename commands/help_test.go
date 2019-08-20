@@ -61,7 +61,7 @@ var _ = Describe("Help", func() {
 	})
 
 	Describe("Execute", func() {
-		Context("when no command name is given", func() {
+		When("no command name is given", func() {
 			It("prints the global usage to the output", func() {
 				bake := &fakeCommand{
 					usage: jhanda.Usage{ShortDescription: "bakes you a cake"},
@@ -82,7 +82,7 @@ var _ = Describe("Help", func() {
 			})
 		})
 
-		Context("when a command name is given", func() {
+		When("a command name is given", func() {
 			It("prints the usage for that command", func() {
 				bake := &fakeCommand{
 					usage: jhanda.Usage{
@@ -103,7 +103,7 @@ var _ = Describe("Help", func() {
 				Expect(output.String()).To(ContainSubstring(COMMAND_USAGE))
 			})
 
-			Context("when the command does not exist", func() {
+			When("the command does not exist", func() {
 				It("returns an error", func() {
 					help := commands.NewHelp(output, flags, jhanda.CommandSet{})
 					err := help.Execute([]string{"missing-command"})
@@ -111,7 +111,7 @@ var _ = Describe("Help", func() {
 				})
 			})
 
-			Context("when the command flags cannot be determined", func() {
+			When("the command flags cannot be determined", func() {
 				It("returns an error", func() {
 					bake := &fakeCommand{
 						usage: jhanda.Usage{
@@ -127,7 +127,7 @@ var _ = Describe("Help", func() {
 				})
 			})
 
-			Context("when there are no flags", func() {
+			When("there are no flags", func() {
 				It("prints the usage of a flag-less command", func() {
 					bake := &fakeCommand{
 						usage: jhanda.Usage{
@@ -145,7 +145,7 @@ var _ = Describe("Help", func() {
 				})
 			})
 
-			Context("when there is an empty flag object", func() {
+			When("there is an empty flag object", func() {
 				It("prints the usage of a flag-less command", func() {
 					bake := &fakeCommand{
 						usage: jhanda.Usage{

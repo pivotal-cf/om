@@ -150,7 +150,7 @@ var _ = Describe("DeleteInstallation", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("no installation to delete"))
 		})
 
-		Context("when an installation is already running", func() {
+		When("an installation is already running", func() {
 			It("re-attaches to the installation", func() {
 				fakeService.RunningInstallationReturns(api.InstallationsServiceOutput{ID: 311, Status: "running"}, nil)
 
@@ -186,7 +186,7 @@ var _ = Describe("DeleteInstallation", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the delete to installation_asset_collection is unsuccessful", func() {
+			When("the delete to installation_asset_collection is unsuccessful", func() {
 				It("returns an error", func() {
 					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
@@ -197,7 +197,7 @@ var _ = Describe("DeleteInstallation", func() {
 				})
 			})
 
-			Context("when getting the installation status has an error", func() {
+			When("getting the installation status has an error", func() {
 				It("returns an error", func() {
 					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
@@ -212,7 +212,7 @@ var _ = Describe("DeleteInstallation", func() {
 				})
 			})
 
-			Context("when there is an error fetching the logs", func() {
+			When("there is an error fetching the logs", func() {
 				It("returns an error", func() {
 					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
@@ -233,7 +233,7 @@ var _ = Describe("DeleteInstallation", func() {
 				})
 			})
 
-			Context("when there is an error flushing the logs", func() {
+			When("there is an error flushing the logs", func() {
 				It("returns an error", func() {
 					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 

@@ -78,7 +78,7 @@ var _ = Describe("Curl", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Accept: text/plain\r\nContent-Length: 33\r\nContent-Type: application/json\r\n"))
 		})
 
-		Context("when --silent is specified", func() {
+		When("--silent is specified", func() {
 			It("does not write anything to stderr if the status is 200", func() {
 				fakeService.CurlReturns(api.RequestServiceCurlOutput{
 					StatusCode: http.StatusOK,
@@ -141,7 +141,7 @@ var _ = Describe("Curl", func() {
 			})
 		})
 
-		Context("When a custom content-type is passed in", func() {
+		When("a custom content-type is passed in", func() {
 			It("executes the API call with the given content type", func() {
 				fakeService.CurlReturns(api.RequestServiceCurlOutput{
 					Headers: http.Header{
@@ -168,7 +168,7 @@ var _ = Describe("Curl", func() {
 		})
 
 		Describe("pretty printing", func() {
-			Context("when the response type is JSON", func() {
+			When("the response type is JSON", func() {
 				It("pretty prints the response body", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Headers: http.Header{
@@ -190,7 +190,7 @@ var _ = Describe("Curl", func() {
 				})
 			})
 
-			Context("when the response type is not JSON", func() {
+			When("the response type is not JSON", func() {
 				It("doesn't format the response body", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Headers: http.Header{
@@ -214,14 +214,14 @@ var _ = Describe("Curl", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the flags cannot be parsed", func() {
+			When("the flags cannot be parsed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--bad-flag", "some-value"})
 					Expect(err).To(MatchError("could not parse curl flags: flag provided but not defined: -bad-flag"))
 				})
 			})
 
-			Context("when the request path is not provided", func() {
+			When("the request path is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--request", "GET",
@@ -231,7 +231,7 @@ var _ = Describe("Curl", func() {
 				})
 			})
 
-			Context("when the request service returns an error", func() {
+			When("the request service returns an error", func() {
 				It("returns an error", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{}, errors.New("some request error"))
 					err := command.Execute([]string{
@@ -243,7 +243,7 @@ var _ = Describe("Curl", func() {
 				})
 			})
 
-			Context("when the response body cannot be read", func() {
+			When("the response body cannot be read", func() {
 				It("returns an error", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Body: ioutil.NopCloser(errReader{}),
@@ -257,7 +257,7 @@ var _ = Describe("Curl", func() {
 				})
 			})
 
-			Context("when the response code is 400 or higher", func() {
+			When("the response code is 400 or higher", func() {
 				It("returns an error", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						StatusCode: 401,

@@ -59,7 +59,7 @@ var _ = Describe("StageProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished staging"))
 	})
 
-	Context("when a product has already been deployed", func() {
+	When("a product has already been deployed", func() {
 		It("stages the product", func() {
 			fakeService.CheckProductAvailabilityReturns(true, nil)
 
@@ -100,7 +100,7 @@ var _ = Describe("StageProduct", func() {
 		})
 	})
 
-	Context("when the product version has already been staged", func() {
+	When("the product version has already been staged", func() {
 		It("no-ops and returns successfully", func() {
 			fakeService.CheckProductAvailabilityReturns(true, nil)
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
@@ -127,7 +127,7 @@ var _ = Describe("StageProduct", func() {
 		})
 	})
 
-	Context("when there is a running installation", func() {
+	When("there is a running installation", func() {
 		BeforeEach(func() {
 			fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{
 				{
@@ -149,7 +149,7 @@ var _ = Describe("StageProduct", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewStageProduct(fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
@@ -157,7 +157,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the product-name flag is not provided", func() {
+		When("the product-name flag is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewStageProduct(fakeService, logger)
 				err := command.Execute([]string{"--product-version", "1.0"})
@@ -165,7 +165,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the product-version flag is not provided", func() {
+		When("the product-version flag is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewStageProduct(fakeService, logger)
 				err := command.Execute([]string{"--product-name", "some-product"})
@@ -173,7 +173,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the product is not available", func() {
+		When("the product is not available", func() {
 			BeforeEach(func() {
 				fakeService.CheckProductAvailabilityReturns(false, nil)
 			})
@@ -189,7 +189,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the product availability cannot be determined", func() {
+		When("the product availability cannot be determined", func() {
 			BeforeEach(func() {
 				fakeService.CheckProductAvailabilityReturns(false, errors.New("failed to check availability"))
 			})
@@ -205,7 +205,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the product cannot be staged", func() {
+		When("the product cannot be staged", func() {
 			It("returns an error", func() {
 				command := commands.NewStageProduct(fakeService, logger)
 				fakeService.CheckProductAvailabilityReturns(true, nil)
@@ -216,7 +216,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the diagnostic report cannot be fetched", func() {
+		When("the diagnostic report cannot be fetched", func() {
 			It("returns an error", func() {
 				command := commands.NewStageProduct(fakeService, logger)
 				fakeService.CheckProductAvailabilityReturns(true, nil)
@@ -227,7 +227,7 @@ var _ = Describe("StageProduct", func() {
 			})
 		})
 
-		Context("when the deployed products cannot be fetched", func() {
+		When("the deployed products cannot be fetched", func() {
 			BeforeEach(func() {
 				fakeService.ListDeployedProductsReturns(
 					[]api.DeployedProductOutput{},

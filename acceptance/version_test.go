@@ -24,7 +24,7 @@ var _ = Describe("version command", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Context("when given the -v short flag", func() {
+	When("given the -v short flag", func() {
 		It("returns the binary version", func() {
 			command := exec.Command(pathToVersionedMain, "-v")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -35,7 +35,7 @@ var _ = Describe("version command", func() {
 		})
 	})
 
-	Context("when given the --version long flag", func() {
+	When("given the --version long flag", func() {
 		It("returns the binary version", func() {
 			command := exec.Command(pathToVersionedMain, "--version")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -46,7 +46,7 @@ var _ = Describe("version command", func() {
 		})
 	})
 
-	Context("when given the version command", func() {
+	When("given the version command", func() {
 		It("returns the binary version", func() {
 			command := exec.Command(pathToVersionedMain, "version")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

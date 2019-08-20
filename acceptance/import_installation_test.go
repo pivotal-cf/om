@@ -113,7 +113,7 @@ var _ = Describe("import-installation command", func() {
 		Expect(passphrase).To(Equal("fake-passphrase"))
 	})
 
-	Context("when the ops manager is already configured", func() {
+	When("the ops manager is already configured", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string
@@ -151,8 +151,8 @@ var _ = Describe("import-installation command", func() {
 		})
 	})
 
-	Context("when an error occurs", func() {
-		Context("when the content cannot be read", func() {
+	When("an error occurs", func() {
+		When("the content cannot be read", func() {
 			BeforeEach(func() {
 				err := os.Remove(content.Name())
 				Expect(err).NotTo(HaveOccurred())

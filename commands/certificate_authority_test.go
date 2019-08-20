@@ -74,7 +74,7 @@ var _ = Describe("Certificate Authority", func() {
 			}))
 		})
 
-		Context("when the cert-pem flag is provided", func() {
+		When("the cert-pem flag is provided", func() {
 			It("logs the cert pem to the logger", func() {
 				err := certificateAuthority.Execute([]string{
 					"--id", "other-guid",
@@ -88,7 +88,7 @@ var _ = Describe("Certificate Authority", func() {
 			})
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("calls the presenter to set the json format", func() {
 				err := certificateAuthority.Execute([]string{
 					"--id", "other-guid",
@@ -102,7 +102,7 @@ var _ = Describe("Certificate Authority", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the args cannot parsed", func() {
+			When("the args cannot parsed", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{
 						"--bogus", "nothing",
@@ -113,7 +113,7 @@ var _ = Describe("Certificate Authority", func() {
 				})
 			})
 
-			Context("when the service fails to retrieve CAs", func() {
+			When("the service fails to retrieve CAs", func() {
 				BeforeEach(func() {
 					fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 						api.CertificateAuthoritiesOutput{},
@@ -129,14 +129,14 @@ var _ = Describe("Certificate Authority", func() {
 				})
 			})
 
-			Context("when the --id flag is missing", func() {
+			When("the --id flag is missing", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{})
 					Expect(err).To(MatchError(`could not parse certificate-authority flags: missing required flag "--id"`))
 				})
 			})
 
-			Context("when the request certificate authority is not found", func() {
+			When("the request certificate authority is not found", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{
 						"--id", "doesnt-exist",

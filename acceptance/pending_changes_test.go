@@ -121,7 +121,7 @@ var _ = Describe("pending_changes command", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when JSON format is requested", func() {
+	When("JSON format is requested", func() {
 		It("lists the pending changes in JSON format", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

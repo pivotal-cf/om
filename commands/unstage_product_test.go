@@ -46,7 +46,7 @@ var _ = Describe("UnstageProduct", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewUnstageProduct(fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
@@ -54,7 +54,7 @@ var _ = Describe("UnstageProduct", func() {
 			})
 		})
 
-		Context("when the product-name flag is not provided", func() {
+		When("the product-name flag is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewUnstageProduct(fakeService, logger)
 				err := command.Execute([]string{})
@@ -62,7 +62,7 @@ var _ = Describe("UnstageProduct", func() {
 			})
 		})
 
-		Context("when the product cannot be unstaged", func() {
+		When("the product cannot be unstaged", func() {
 			It("returns an error", func() {
 				command := commands.NewUnstageProduct(fakeService, logger)
 				fakeService.DeleteStagedProductReturns(errors.New("some product error"))

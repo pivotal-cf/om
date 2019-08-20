@@ -133,7 +133,7 @@ var _ = Describe("Director", func() {
         }`))
 		})
 
-		Context("when the Ops Manager does not support retrieving existing availability zones", func() {
+		When("the Ops Manager does not support retrieving existing availability zones", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					statusCode := http.StatusOK
@@ -422,7 +422,7 @@ var _ = Describe("Director", func() {
 			}`))
 		})
 
-		Context("when the Ops Manager does not support retrieving existing networks", func() {
+		When("the Ops Manager does not support retrieving existing networks", func() {
 			BeforeEach(func() {
 				client.DoStub = func(req *http.Request) (*http.Response, error) {
 					statusCode := http.StatusOK
@@ -514,7 +514,7 @@ var _ = Describe("Director", func() {
 				Expect(err).To(MatchError("could not send api request to PUT /api/v0/staged/director/networks: api endpoint failed"))
 			})
 
-			Context("when the network endpoint status is non-200", func() {
+			When("the network endpoint status is non-200", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						switch req.Method {
@@ -580,7 +580,7 @@ var _ = Describe("Director", func() {
 			}`))
 		})
 
-		Context("when the director has already been deployed", func() {
+		When("the director has already been deployed", func() {
 			It("issues a warning and doesn't configure the endpoint", func() {
 				client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusOK}, nil)
 
@@ -661,7 +661,7 @@ var _ = Describe("Director", func() {
 			}`))
 		})
 
-		Context("when some of the configurations are empty", func() {
+		When("some of the configurations are empty", func() {
 			It("returns only configurations that are populated", func() {
 				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(`{"iaas_configuration": {"prop": "other", "value": "one"},"director_configuration": {"prop": "blah", "value": "nothing"}}`))
 

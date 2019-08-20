@@ -46,7 +46,7 @@ var _ = Describe("ExportInstallation", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewExportInstallation(fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
@@ -54,7 +54,7 @@ var _ = Describe("ExportInstallation", func() {
 			})
 		})
 
-		Context("when output file is not provided", func() {
+		When("output file is not provided", func() {
 			It("returns an error and prints out usage", func() {
 				command := commands.NewExportInstallation(fakeService, logger)
 				err := command.Execute([]string{})
@@ -62,7 +62,7 @@ var _ = Describe("ExportInstallation", func() {
 			})
 		})
 
-		Context("when the installation cannot be exported", func() {
+		When("the installation cannot be exported", func() {
 			It("returns an error", func() {
 				command := commands.NewExportInstallation(fakeService, logger)
 				fakeService.DownloadInstallationAssetCollectionReturns(errors.New("some error"))

@@ -50,7 +50,7 @@ var _ = Describe("DecryptClient", func() {
 			fakeClient.DoReturnsOnCall(index+4, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
 		}
 
-		Context("when the response is successful", func() {
+		When("the response is successful", func() {
 			It("returns the response", func() {
 				successfulRequestOnIndex(0)
 				out := gbytes.NewBuffer()
@@ -85,7 +85,7 @@ var _ = Describe("DecryptClient", func() {
 			})
 		})
 
-		Context("when the response is error", func() {
+		When("the response is error", func() {
 			BeforeEach(func() {
 				fakeClient.DoReturns(nil, errors.New("some-error"))
 			})
@@ -100,7 +100,7 @@ var _ = Describe("DecryptClient", func() {
 			})
 		})
 
-		Context("when the network timeout", func() {
+		When("the network timeout", func() {
 			It("should retry a couple of times then return the error", func() {
 				fakeClient.DoReturnsOnCall(0, nil, &net.DNSError{IsTimeout: true})
 				fakeClient.DoReturnsOnCall(1, nil, &net.DNSError{IsTimeout: true})
@@ -118,7 +118,7 @@ var _ = Describe("DecryptClient", func() {
 			})
 		})
 
-		Context("when the decryption passphrase provided is wrong", func() {
+		When("the decryption passphrase provided is wrong", func() {
 			BeforeEach(func() {
 				fakeClient.DoReturnsOnCall(0, &http.Response{ // /api/v0/unlock
 					StatusCode:    http.StatusForbidden,

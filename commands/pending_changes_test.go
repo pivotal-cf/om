@@ -62,7 +62,7 @@ var _ = Describe("PendingChanges", func() {
 			Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 		})
 
-		Context("when the check flag is provided", func() {
+		When("the check flag is provided", func() {
 			var options []string
 
 			BeforeEach(func() {

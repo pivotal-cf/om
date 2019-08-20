@@ -44,7 +44,7 @@ var _ = Describe("DiagnosticReport", func() {
 	})
 
 	Context("failure cases", func() {
-		Context("when fetching the diagnostic report fails", func() {
+		When("fetching the diagnostic report fails", func() {
 			It("returns an error", func() {
 				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
@@ -53,7 +53,7 @@ var _ = Describe("DiagnosticReport", func() {
 			})
 		})
 
-		Context("when an unknown flag is passed", func() {
+		When("an unknown flag is passed", func() {
 			It("returns an error", func() {
 				err := command.Execute([]string{"--unknown-flag"})
 				Expect(err).To(MatchError("could not parse diagnostic-report flags: flag provided but not defined: -unknown-flag"))

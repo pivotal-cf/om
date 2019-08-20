@@ -24,7 +24,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 		command = commands.NewAssignMultiStemcell(fakeService, logger)
 	})
 
-	Context("when --stemcell exists for the specified product", func() {
+	When("--stemcell exists for the specified product", func() {
 		BeforeEach(func() {
 			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
@@ -104,7 +104,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 			}))
 		})
 
-		Context("when --stemcell latest is used", func() {
+		When("--stemcell latest is used", func() {
 			It("assign the latest stemcell available", func() {
 				err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:latest"})
 				Expect(err).NotTo(HaveOccurred())
@@ -126,7 +126,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 		})
 	})
 
-	Context("when config file is provided", func() {
+	When("config file is provided", func() {
 		var configFile *os.File
 
 		BeforeEach(func() {
@@ -181,7 +181,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when given stemcell version is not available", func() {
+	When("given stemcell version is not available", func() {
 		BeforeEach(func() {
 			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
@@ -209,7 +209,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when the product is not found but the stemcell exists", func() {
+	When("the product is not found but the stemcell exists", func() {
 		BeforeEach(func() {
 			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
@@ -236,7 +236,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when the product is staged for deletion", func() {
+	When("the product is staged for deletion", func() {
 		BeforeEach(func() {
 			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
@@ -261,7 +261,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when no available stemcell returned from api", func() {
+	When("no available stemcell returned from api", func() {
 		BeforeEach(func() {
 			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
@@ -291,7 +291,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when no available stemcell of the particular OS returned from api", func() {
+	When("no available stemcell of the particular OS returned from api", func() {
 		BeforeEach(func() {
 			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
@@ -323,28 +323,28 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when an unknown flag is provided", func() {
+	When("an unknown flag is provided", func() {
 		It("returns an error", func() {
 			err := command.Execute([]string{"--badflag"})
 			Expect(err).To(MatchError("could not parse assign-stemcell flags: flag provided but not defined: -badflag"))
 		})
 	})
 
-	Context("when the product flag is not provided", func() {
+	When("the product flag is not provided", func() {
 		It("returns an error", func() {
 			err := command.Execute([]string{})
 			Expect(err).To(MatchError("could not parse assign-stemcell flags: missing required flag \"--product\""))
 		})
 	})
 
-	Context("when there is no --stemcell provided", func() {
+	When("there is no --stemcell provided", func() {
 		It("returns an error", func() {
 			err := command.Execute([]string{"--product", "cf"})
 			Expect(err.Error()).To(ContainSubstring(`missing required flag "--stemcell"`))
 		})
 	})
 
-	Context("when incorrect os and version are entered", func() {
+	When("incorrect os and version are entered", func() {
 		It("returns an error", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu    1234.5"})
 			Expect(err).To(HaveOccurred())
@@ -352,7 +352,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	Context("when OpsManager is not 2.6+", func() {
+	When("OpsManager is not 2.6+", func() {
 		It("returns an error", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 

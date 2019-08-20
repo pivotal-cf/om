@@ -62,7 +62,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(ca))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{
 					"--format", "json",
@@ -77,7 +77,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the service fails to create a certificate", func() {
+			When("the service fails to create a certificate", func() {
 				It("returns an error", func() {
 					fakeService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
 
@@ -89,14 +89,14 @@ var _ = Describe("CreateCertificateAuthority", func() {
 				})
 			})
 
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse create-certificate-authority flags: flag provided but not defined: -badflag"))
 				})
 			})
 
-			Context("when the certificate flag is not provided", func() {
+			When("the certificate flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--private-key-pem", "some PrivateKey",
@@ -105,7 +105,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 				})
 			})
 
-			Context("when the private key flag is not provided", func() {
+			When("the private key flag is not provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--certificate-pem", "some CertPem",

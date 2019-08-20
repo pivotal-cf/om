@@ -78,7 +78,7 @@ var _ = Describe("Installations", func() {
 				}))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
 				Expect(err).NotTo(HaveOccurred())
@@ -89,14 +89,14 @@ var _ = Describe("Installations", func() {
 		})
 
 		Context("Failure cases", func() {
-			Context("when an unknown flag is passed", func() {
+			When("an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
 					Expect(err).To(MatchError("could not parse installations flags: flag provided but not defined: -unknown-flag"))
 				})
 			})
 
-			Context("when the api fails to list installations", func() {
+			When("the api fails to list installations", func() {
 				It("returns an error", func() {
 					fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
 

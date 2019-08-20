@@ -22,7 +22,7 @@ var _ = Describe("stage-product command", func() {
 		server             *httptest.Server
 	)
 
-	Context("when the same type of product is not already deployed", func() {
+	When("the same type of product is not already deployed", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string
@@ -117,7 +117,7 @@ var _ = Describe("stage-product command", func() {
 		})
 	})
 
-	Context("when the same type of product is already deployed", func() {
+	When("the same type of product is already deployed", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string
@@ -228,7 +228,7 @@ var _ = Describe("stage-product command", func() {
 		})
 	})
 
-	Context("when the same type of product is already staged", func() {
+	When("the same type of product is already staged", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string
@@ -337,7 +337,7 @@ var _ = Describe("stage-product command", func() {
 		})
 	})
 
-	Context("when an error occurs", func() {
+	When("an error occurs", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string
@@ -402,7 +402,7 @@ var _ = Describe("stage-product command", func() {
 			server.Close()
 		})
 
-		Context("when the product is not available", func() {
+		When("the product is not available", func() {
 			It("returns an error", func() {
 				command := exec.Command(pathToMain,
 					"--target", server.URL,

@@ -53,7 +53,7 @@ key: value
 	})
 
 	Context("failure cases", func() {
-		Context("when an unrecognized flag is passed", func() {
+		When("an unrecognized flag is passed", func() {
 			It("returns an error", func() {
 				err := command.Execute([]string{
 					"--some-unknown-flag", "some-value",
@@ -62,7 +62,7 @@ key: value
 			})
 		})
 
-		Context("when the staged products service find call fails", func() {
+		When("the staged products service find call fails", func() {
 			It("returns an error", func() {
 				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
 
@@ -73,7 +73,7 @@ key: value
 			})
 		})
 
-		Context("when the staged products service manifest call fails", func() {
+		When("the staged products service manifest call fails", func() {
 			It("returns an error", func() {
 				fakeService.GetStagedProductManifestReturns("", errors.New("product manifest failed"))
 

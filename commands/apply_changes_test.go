@@ -105,7 +105,7 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(writer.FlushArgsForCall(2)).To(Equal("some other logs"))
 		})
 
-		Context("when passed the ignore-warnings flag", func() {
+		When("passed the ignore-warnings flag", func() {
 			It("applies changes while ignoring warnings", func() {
 				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
 
@@ -119,7 +119,7 @@ var _ = Describe("ApplyChanges", func() {
 			})
 		})
 
-		Context("when passed the skip-deploy-products flag", func() {
+		When("passed the skip-deploy-products flag", func() {
 			It("applies changes while not deploying products", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -137,7 +137,7 @@ var _ = Describe("ApplyChanges", func() {
 			})
 		})
 
-		Context("when passed the product-name flag", func() {
+		When("passed the product-name flag", func() {
 			It("passes product names to the installation service", func() {
 				service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 				service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("error"))
@@ -335,7 +335,7 @@ errands: lolololol
 		})
 
 		Context("failure cases", func() {
-			Context("when checking for an already running installation returns an error", func() {
+			When("checking for an already running installation returns an error", func() {
 				It("returns an error", func() {
 					service.RunningInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
@@ -346,7 +346,7 @@ errands: lolololol
 				})
 			})
 
-			Context("when --product-name is used with an old version of ops manager", func() {
+			When("--product-name is used with an old version of ops manager", func() {
 				It("returns an error", func() {
 					versions := []string{"2.1-build.326", "1.12-build99"}
 					for _, version := range versions {
@@ -359,7 +359,7 @@ errands: lolololol
 				})
 			})
 
-			Context("when an installation cannot be triggered", func() {
+			When("an installation cannot be triggered", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
@@ -370,7 +370,7 @@ errands: lolololol
 				})
 			})
 
-			Context("when getting the installation status has an error", func() {
+			When("getting the installation status has an error", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
@@ -385,7 +385,7 @@ errands: lolololol
 				})
 			})
 
-			Context("when there is an error fetching the logs", func() {
+			When("there is an error fetching the logs", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
@@ -406,7 +406,7 @@ errands: lolololol
 				})
 			})
 
-			Context("when there is an error flushing the logs", func() {
+			When("there is an error flushing the logs", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 

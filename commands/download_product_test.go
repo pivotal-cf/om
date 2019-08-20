@@ -52,8 +52,8 @@ var _ = Describe("DownloadProduct", func() {
 		//Expect(err).ToNot(HaveOccurred())
 	})
 
-	Context("when the flags are set correctly", func() {
-		Context("when it can connect to the source", func() {
+	When("the flags are set correctly", func() {
+		When("it can connect to the source", func() {
 			BeforeEach(func() {
 				fa := &fakes.FileArtifacter{}
 				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
@@ -78,7 +78,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		Context("when a valid product-version-regex is provided", func() {
+		When("a valid product-version-regex is provided", func() {
 			BeforeEach(func() {
 				fakeProductDownloader.GetAllProductVersionsReturns(
 					[]string{"3.0.0", "1.1.11", "2.1.2", "2.1.1", "2.0.1"},
@@ -118,7 +118,7 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(downloadedFilePath).To(BeAnExistingFile())
 			})
 
-			Context("when the releases contains non-semver-compatible version", func() {
+			When("the releases contains non-semver-compatible version", func() {
 				BeforeEach(func() {
 
 					fakeProductDownloader.GetAllProductVersionsReturns(
@@ -234,7 +234,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		Context("when the stemcell-iaas flag is set", func() {
+		When("the stemcell-iaas flag is set", func() {
 			BeforeEach(func() {
 				fa := &fakes.FileArtifacter{}
 				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
@@ -343,7 +343,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		Context("when the file is already downloaded", func() {
+		When("the file is already downloaded", func() {
 			var tempDir string
 
 			BeforeEach(func() {
@@ -451,7 +451,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		Context("when the --config flag is passed", func() {
+		When("the --config flag is passed", func() {
 			BeforeEach(func() {
 				fa := &fakes.FileArtifacter{}
 				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
@@ -462,7 +462,7 @@ var _ = Describe("DownloadProduct", func() {
 				err        error
 			)
 
-			Context("when the config file contains variables", func() {
+			When("the config file contains variables", func() {
 				const downloadProductConfigWithVariablesTmpl = `---
 pivnet-api-token: "token"
 pivnet-file-glob: "*.pivotal"
@@ -652,21 +652,21 @@ output-directory: %s
 	})
 
 	Context("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				err = command.Execute([]string{"--badflag"})
 				Expect(err).To(MatchError("could not parse download-product flags: flag provided but not defined: -badflag"))
 			})
 		})
 
-		Context("when a required flag is not provided", func() {
+		When("a required flag is not provided", func() {
 			It("returns an error", func() {
 				err = command.Execute([]string{})
 				Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--output-directory\""))
 			})
 		})
 
-		Context("when pivnet-api-token is missing while no source is set", func() {
+		When("pivnet-api-token is missing while no source is set", func() {
 			It("returns an error", func() {
 				tempDir, err := ioutil.TempDir("", "om-tests-")
 				Expect(err).NotTo(HaveOccurred())
@@ -681,7 +681,7 @@ output-directory: %s
 			})
 		})
 
-		Context("when both product-version and product-version-regex are set", func() {
+		When("both product-version and product-version-regex are set", func() {
 			It("fails with an error saying that the user must pick one or the other", func() {
 				tempDir, err := ioutil.TempDir("", "om-tests-")
 				Expect(err).NotTo(HaveOccurred())
@@ -699,7 +699,7 @@ output-directory: %s
 			})
 		})
 
-		Context("when neither product-version nor product-version-regex are set", func() {
+		When("neither product-version nor product-version-regex are set", func() {
 			It("fails with an error saying that the user must provide one or the other", func() {
 				tempDir, err := ioutil.TempDir("", "om-tests-")
 				Expect(err).NotTo(HaveOccurred())
@@ -715,7 +715,7 @@ output-directory: %s
 			})
 		})
 
-		Context("when the release specified is not available", func() {
+		When("the release specified is not available", func() {
 			BeforeEach(func() {
 				fakeProductDownloader.GetLatestProductFileReturns(nil, fmt.Errorf("some-error"))
 			})

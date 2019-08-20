@@ -105,7 +105,7 @@ var _ = Describe("InstallationsService", func() {
 	})
 
 	Describe("CreateInstallation", func() {
-		Context("When deploying all products", func() {
+		When("deploying all products", func() {
 			It("triggers an installation on an Ops Manager, deploying all products", func() {
 				client.DoReturnsOnCall(0, &http.Response{
 					StatusCode: http.StatusOK,
@@ -136,7 +136,7 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		Context("When deploying no products", func() {
+		When("deploying no products", func() {
 			It("triggers an installation on an Ops Manager, deploying no products", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -166,7 +166,7 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		Context("When deploying some products", func() {
+		When("deploying some products", func() {
 			It("triggers an installation on an Ops Manager, deploying some products", func() {
 				client.DoReturnsOnCall(0, &http.Response{
 					StatusCode: http.StatusOK,
@@ -209,7 +209,7 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		Context("when given the errands", func() {
+		When("given the errands", func() {
 			It("sends the errands as a json parameter", func() {
 				client.DoReturnsOnCall(0, &http.Response{
 					StatusCode: http.StatusOK,
@@ -272,8 +272,8 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client has an error during the request", func() {
+		When("an error occurs", func() {
+			When("the client has an error during the request", func() {
 				It("returns an error", func() {
 					client.DoReturnsOnCall(0, &http.Response{
 						StatusCode: http.StatusOK,
@@ -293,7 +293,7 @@ var _ = Describe("InstallationsService", func() {
 				})
 			})
 
-			Context("when the client returns a non-2XX", func() {
+			When("the client returns a non-2XX", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -305,7 +305,7 @@ var _ = Describe("InstallationsService", func() {
 				})
 			})
 
-			Context("when the json cannot be decoded", func() {
+			When("the json cannot be decoded", func() {
 				It("returns an error", func() {
 					client.DoReturnsOnCall(0, &http.Response{
 						StatusCode: http.StatusOK,
@@ -345,8 +345,8 @@ var _ = Describe("InstallationsService", func() {
 			Expect(req.URL.Path).To(Equal("/api/v0/installations/3232"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client has an error during the request", func() {
+		When("an error occurs", func() {
+			When("the client has an error during the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -358,7 +358,7 @@ var _ = Describe("InstallationsService", func() {
 				})
 			})
 
-			Context("when the client returns a non-2XX", func() {
+			When("the client returns a non-2XX", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -370,7 +370,7 @@ var _ = Describe("InstallationsService", func() {
 				})
 			})
 
-			Context("when the json cannot be decoded", func() {
+			When("the json cannot be decoded", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -403,8 +403,8 @@ var _ = Describe("InstallationsService", func() {
 		})
 	})
 
-	Context("when an error occurs", func() {
-		Context("when the client has an error during the request", func() {
+	When("an error occurs", func() {
+		When("the client has an error during the request", func() {
 			It("returns an error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusInternalServerError,
@@ -416,7 +416,7 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		Context("when the client returns a non-2XX", func() {
+		When("the client returns a non-2XX", func() {
 			It("returns an error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusInternalServerError,
@@ -428,7 +428,7 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		Context("when the json cannot be decoded", func() {
+		When("the json cannot be decoded", func() {
 			It("returns an error", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,

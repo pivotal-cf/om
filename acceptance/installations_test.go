@@ -114,7 +114,7 @@ var _ = Describe("installations command", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when the --format flag is provided with json", func() {
+	When("the --format flag is provided with json", func() {
 		It("displays a list of recent installation events in json", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

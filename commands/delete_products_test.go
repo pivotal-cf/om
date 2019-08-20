@@ -39,7 +39,7 @@ var _ = Describe("DeleteProduct", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when deleting a product fails", func() {
+			When("deleting a product fails", func() {
 				It("returns an error", func() {
 					fakeService.DeleteAvailableProductsReturns(errors.New("something bad happened"))
 
@@ -48,7 +48,7 @@ var _ = Describe("DeleteProduct", func() {
 				})
 			})
 
-			Context("when the --product-name flag is missing", func() {
+			When("the --product-name flag is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--product-version", "1.2.3",
@@ -57,7 +57,7 @@ var _ = Describe("DeleteProduct", func() {
 				})
 			})
 
-			Context("when the --product-version flag is missing", func() {
+			When("the --product-version flag is missing", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{
 						"--product-name", "some-product",

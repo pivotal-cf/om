@@ -219,7 +219,7 @@ syslog-properties:
 `))
 	})
 
-	Context("when --include-credentials is used", func() {
+	When("--include-credentials is used", func() {
 		It("outputs the secret values in the template", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

@@ -69,8 +69,8 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(string(ins)).To(Equal("some-installation"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -79,7 +79,7 @@ var _ = Describe("InstallationAssetService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -91,7 +91,7 @@ var _ = Describe("InstallationAssetService", func() {
 				})
 			})
 
-			Context("when the output file cannot be written", func() {
+			When("the output file cannot be written", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -103,7 +103,7 @@ var _ = Describe("InstallationAssetService", func() {
 				})
 			})
 
-			Context("when the response length doesn't match the number of bytes copied", func() {
+			When("the response length doesn't match the number of bytes copied", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode:    http.StatusOK,
@@ -146,8 +146,8 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(string(body)).To(Equal("some installation"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					unauthedProgressClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -158,7 +158,7 @@ var _ = Describe("InstallationAssetService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					unauthedProgressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -214,8 +214,8 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -224,7 +224,7 @@ var _ = Describe("InstallationAssetService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -236,7 +236,7 @@ var _ = Describe("InstallationAssetService", func() {
 				})
 			})
 
-			Context("when the api response cannot be unmarshaled", func() {
+			When("the api response cannot be unmarshaled", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,

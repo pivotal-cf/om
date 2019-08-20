@@ -30,7 +30,7 @@ var _ = Describe("Version", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the output cannot be written to", func() {
+			When("the output cannot be written to", func() {
 				It("returns an error", func() {
 
 					version := commands.NewVersion("v1.2.3", badWriter{})

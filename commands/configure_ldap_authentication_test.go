@@ -236,7 +236,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 			})
 		})
 
-		Context("when the authentication setup has already been configured", func() {
+		When("the authentication setup has already been configured", func() {
 			BeforeEach(func() {
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
@@ -255,7 +255,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 			})
 		})
 
-		Context("when config file is provided", func() {
+		When("config file is provided", func() {
 			var configFile *os.File
 
 			BeforeEach(func() {
@@ -319,7 +319,7 @@ precreated-client-secret: test-client-secret
 		})
 
 		Context("failure cases", func() {
-			Context("when config file cannot be opened", func() {
+			When("config file cannot be opened", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--config", "something"})
 					Expect(err).To(MatchError("could not parse configure-ldap-authentication flags: could not load the config file: could not read file (something): open something: no such file or directory"))
@@ -327,7 +327,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the initial configuration status cannot be determined", func() {
+			When("the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
@@ -336,7 +336,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the initial configuration status is unknown", func() {
+			When("the initial configuration status is unknown", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnknown,
@@ -347,7 +347,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the setup service encounters an error", func() {
+			When("the setup service encounters an error", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnstarted,
@@ -360,7 +360,7 @@ precreated-client-secret: test-client-secret
 				})
 			})
 
-			Context("when the final configuration status cannot be determined", func() {
+			When("the final configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					eaOutputs := []api.EnsureAvailabilityOutput{
 						{Status: api.EnsureAvailabilityStatusUnstarted},

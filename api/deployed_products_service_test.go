@@ -59,14 +59,14 @@ key-4: 2147483648
 		})
 
 		Context("failure cases", func() {
-			Context("when the request object is invalid", func() {
+			When("the request object is invalid", func() {
 				It("returns an error", func() {
 					_, err := service.GetDeployedProductManifest("invalid-guid-%%%")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
 
-			Context("when the client request fails", func() {
+			When("the client request fails", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 
@@ -75,7 +75,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -87,7 +87,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the returned JSON is invalid", func() {
+			When("the returned JSON is invalid", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -150,7 +150,7 @@ key-4: 2147483648
 		})
 
 		Context("failure cases", func() {
-			Context("when the request fails", func() {
+			When("the request fails", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{}, errors.New("nope"))
 				})
@@ -161,7 +161,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -175,7 +175,7 @@ key-4: 2147483648
 				})
 			})
 
-			Context("when the server returns invalid JSON", func() {
+			When("the server returns invalid JSON", func() {
 				BeforeEach(func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,

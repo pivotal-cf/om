@@ -57,7 +57,7 @@ var _ = Describe("ReadCloser", func() {
 			Expect(bar.StartCallCount()).To(Equal(1))
 		})
 
-		Context("when io.EOF is returned from the reader", func() {
+		When("io.EOF is returned from the reader", func() {
 			It("stops the progress bar", func() {
 				_, err := readCloser.Read(make([]byte, 10))
 				Expect(err).NotTo(HaveOccurred())
@@ -118,7 +118,7 @@ var _ = Describe("ReadCloser", func() {
 			Expect(callbackCallCount).To(Equal(1))
 		})
 
-		Context("when there is no callback", func() {
+		When("there is no callback", func() {
 			It("does not panic", func() {
 				readCloser = progress.NewReadCloser(closer, bar, nil)
 

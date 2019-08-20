@@ -21,7 +21,7 @@ var _ = Describe("unstage-product command", func() {
 		server             *httptest.Server
 	)
 
-	Context("when the product is staged", func() {
+	When("the product is staged", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string
@@ -96,7 +96,7 @@ var _ = Describe("unstage-product command", func() {
 		})
 	})
 
-	Context("when the product is not staged", func() {
+	When("the product is not staged", func() {
 		BeforeEach(func() {
 			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var responseString string

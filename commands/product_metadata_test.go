@@ -81,28 +81,28 @@ product_version: 1.2.3
 		})
 
 		Context("failure cases", func() {
-			Context("when the flags cannot be parsed", func() {
+			When("the flags cannot be parsed", func() {
 				It("returns an error", func() {
 					err = command.Execute([]string{"--bad-flag", "some-value"})
 					Expect(err).To(MatchError(MatchRegexp("could not parse product-metadata flags")))
 				})
 			})
 
-			Context("when the flags are not specified", func() {
+			When("the flags are not specified", func() {
 				It("returns an error", func() {
 					err = command.Execute([]string{"-p", productFile.Name()})
 					Expect(err).To(MatchError(MatchRegexp("you must specify product-name and/or product-version")))
 				})
 			})
 
-			Context("when the specified product file is not found", func() {
+			When("the specified product file is not found", func() {
 				It("returns an error", func() {
 					err = command.Execute([]string{"-p", "non-existent-file", "--product-name"})
 					Expect(err).To(MatchError(MatchRegexp("failed to open product file")))
 				})
 			})
 
-			Context("when the file does not have metadata", func() {
+			When("the file does not have metadata", func() {
 				var (
 					badTile *os.File
 				)

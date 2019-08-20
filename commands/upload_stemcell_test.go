@@ -149,7 +149,7 @@ var _ = Describe("UploadStemcell", func() {
 			})
 		})
 
-		Context("when the product fails to upload the first time with a retryable error", func() {
+		When("the product fails to upload the first time with a retryable error", func() {
 			It("tries again", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
@@ -179,7 +179,7 @@ var _ = Describe("UploadStemcell", func() {
 			})
 		})
 
-		Context("when the product fails to upload three times", func() {
+		When("the product fails to upload three times", func() {
 			It("returns an error", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
@@ -210,7 +210,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
-	Context("when the stemcell already exists", func() {
+	When("the stemcell already exists", func() {
 		Context("and force is not specified", func() {
 			It("exits successfully without uploading", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
@@ -312,7 +312,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
-	Context("when the --shasum flag is defined", func() {
+	When("the --shasum flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			file, err := ioutil.TempFile("", "test-file.tgz")
@@ -371,7 +371,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
-	Context("when the diagnostic report is unavailable", func() {
+	When("the diagnostic report is unavailable", func() {
 		It("uploads the stemcell", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			submission := formcontent.ContentSubmission{
@@ -415,7 +415,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
-	Context("when config file is provided", func() {
+	When("config file is provided", func() {
 		var (
 			configFile *os.File
 			file       *os.File
@@ -472,7 +472,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 	})
 
 	Context("failure cases", func() {
-		Context("when an unknown flag is provided", func() {
+		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				err := command.Execute([]string{"--badflag"})
@@ -480,7 +480,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			})
 		})
 
-		Context("when the --stemcell flag is missing", func() {
+		When("the --stemcell flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				err := command.Execute([]string{})
@@ -488,7 +488,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			})
 		})
 
-		Context("when the file cannot be opened", func() {
+		When("the file cannot be opened", func() {
 			It("returns an error", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
@@ -499,7 +499,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			})
 		})
 
-		Context("when the stemcell cannot be uploaded", func() {
+		When("the stemcell cannot be uploaded", func() {
 			It("returns an error", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
@@ -510,7 +510,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			})
 		})
 
-		Context("when the diagnostic report cannot be fetched", func() {
+		When("the diagnostic report cannot be fetched", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("some diagnostic error"))

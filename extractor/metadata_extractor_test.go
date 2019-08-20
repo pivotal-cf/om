@@ -70,15 +70,15 @@ var _ = Describe("MetadataExtractor", func() {
 			Expect(metadata.Raw).To(MatchYAML(validYAML))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the product tarball does not exist", func() {
+		When("an error occurs", func() {
+			When("the product tarball does not exist", func() {
 				It("returns an error", func() {
 					_, err := metadataExtractor.ExtractMetadata("fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file or directory")))
 				})
 			})
 
-			Context("when no metadata file is found", func() {
+			When("no metadata file is found", func() {
 				var badProductFile *os.File
 				BeforeEach(func() {
 					badProductFile = createProductFile("", validYAML)
@@ -94,7 +94,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 			})
 
-			Context("when the metadata file contains bad YAML", func() {
+			When("the metadata file contains bad YAML", func() {
 				var badProductFile *os.File
 
 				BeforeEach(func() {
@@ -111,7 +111,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 			})
 
-			Context("when the metadata file does not contain product name or version", func() {
+			When("the metadata file does not contain product name or version", func() {
 				var badProductFile *os.File
 
 				BeforeEach(func() {
@@ -128,7 +128,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 			})
 
-			Context("when the metadata file is in the wrong place", func() {
+			When("the metadata file is in the wrong place", func() {
 				var wrongProductFile *os.File
 
 				BeforeEach(func() {
@@ -145,7 +145,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 			})
 
-			Context("when the metadata file is in a subdirectory", func() {
+			When("the metadata file is in a subdirectory", func() {
 				var nestedProductFile *os.File
 				BeforeEach(func() {
 					nestedProductFile = createProductFile("__MACOSX/metadata/._metadata.yml", validYAML)

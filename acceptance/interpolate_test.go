@@ -14,7 +14,7 @@ import (
 )
 
 var _ = Describe("interpolate command", func() {
-	Context("when given a valid YAML file", func() {
+	When("given a valid YAML file", func() {
 		createFile := func(contents string) *os.File {
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
@@ -267,7 +267,7 @@ hash:
 			})
 		})
 
-		Context("when no vars are provided", func() {
+		When("no vars are provided", func() {
 			It("errors", func() {
 				yamlFile := createFile("---\nname: ((name1))\nage: ((age1))")
 				command := exec.Command(pathToMain,
@@ -285,7 +285,7 @@ hash:
 		})
 	})
 
-	Context("when given standard input", func() {
+	When("given standard input", func() {
 		It("parses the stdin and returns the value", func() {
 			command := exec.Command(pathToMain,
 				"interpolate",

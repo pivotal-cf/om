@@ -66,7 +66,7 @@ var _ = Describe("StemcellService", func() {
 			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_assignments"))
 		})
 
-		Context("when an error occurs", func() {
+		When("an error occurs", func() {
 			When("invalid JSON is returned", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{
@@ -78,7 +78,7 @@ var _ = Describe("StemcellService", func() {
 					Expect(err).To(MatchError(ContainSubstring("invalid JSON: invalid character 'i' looking for beginning of object key string")))
 				})
 			})
-			Context("when the client errors before the request", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -87,7 +87,7 @@ var _ = Describe("StemcellService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -147,8 +147,8 @@ var _ = Describe("StemcellService", func() {
             }`))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
 
@@ -157,7 +157,7 @@ var _ = Describe("StemcellService", func() {
 				})
 			})
 
-			Context("when the api returns a non-200 status code", func() {
+			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,

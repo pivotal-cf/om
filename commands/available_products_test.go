@@ -65,7 +65,7 @@ var _ = Describe("AvailableProducts", func() {
 			))
 		})
 
-		Context("when the json flag is provided", func() {
+		When("the json flag is provided", func() {
 			It("sets the format to json on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
 				Expect(err).NotTo(HaveOccurred())
@@ -75,7 +75,7 @@ var _ = Describe("AvailableProducts", func() {
 			})
 		})
 
-		Context("when there are no products to list", func() {
+		When("there are no products to list", func() {
 			It("prints a helpful message instead of a table", func() {
 				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
@@ -89,7 +89,7 @@ var _ = Describe("AvailableProducts", func() {
 			})
 		})
 
-		Context("when the service fails to return the list", func() {
+		When("the service fails to return the list", func() {
 			It("returns the error", func() {
 				command := commands.NewAvailableProducts(apService, fakePresenter, logger)
 
@@ -100,7 +100,7 @@ var _ = Describe("AvailableProducts", func() {
 			})
 		})
 
-		Context("when an unknown flag is passed", func() {
+		When("an unknown flag is passed", func() {
 			It("returns an error", func() {
 				err := command.Execute([]string{"--unknown-flag"})
 				Expect(err).To(MatchError("could not parse available-products flags: flag provided but not defined: -unknown-flag"))

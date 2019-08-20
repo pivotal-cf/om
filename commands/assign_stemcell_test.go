@@ -23,7 +23,7 @@ var _ = Describe("AssignStemcell", func() {
 		command = commands.NewAssignStemcell(fakeService, logger)
 	})
 
-	Context("when --stemcell exists for the specified product", func() {
+	When("--stemcell exists for the specified product", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
 				Products: []api.ProductStemcell{
@@ -57,7 +57,7 @@ var _ = Describe("AssignStemcell", func() {
 			}))
 		})
 
-		Context("when --stemcell latest is used", func() {
+		When("--stemcell latest is used", func() {
 			It("assign the latest stemcell available", func() {
 				err := command.Execute([]string{"--product", "cf", "--stemcell", "latest"})
 				Expect(err).NotTo(HaveOccurred())
@@ -77,7 +77,7 @@ var _ = Describe("AssignStemcell", func() {
 		})
 	})
 
-	Context("when there is no --stemcell provided", func() {
+	When("there is no --stemcell provided", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
 				Products: []api.ProductStemcell{
@@ -112,7 +112,7 @@ var _ = Describe("AssignStemcell", func() {
 		})
 	})
 
-	Context("when config file is provided", func() {
+	When("config file is provided", func() {
 		var configFile *os.File
 
 		BeforeEach(func() {
@@ -161,7 +161,7 @@ stemcell: "1234.6"
 		})
 	})
 
-	Context("when given stemcell version is not available", func() {
+	When("given stemcell version is not available", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
 				Products: []api.ProductStemcell{
@@ -188,7 +188,7 @@ stemcell: "1234.6"
 		})
 	})
 
-	Context("when the product is not found but the stemcell exists", func() {
+	When("the product is not found but the stemcell exists", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
 				Products: []api.ProductStemcell{
@@ -213,7 +213,7 @@ stemcell: "1234.6"
 		})
 	})
 
-	Context("when the product is staged for deletion", func() {
+	When("the product is staged for deletion", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
 				Products: []api.ProductStemcell{
@@ -238,7 +238,7 @@ stemcell: "1234.6"
 		})
 	})
 
-	Context("when no available stemcell returned from api", func() {
+	When("no available stemcell returned from api", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
 				Products: []api.ProductStemcell{
@@ -266,14 +266,14 @@ stemcell: "1234.6"
 		})
 	})
 
-	Context("when an unknown flag is provided", func() {
+	When("an unknown flag is provided", func() {
 		It("returns an error", func() {
 			err := command.Execute([]string{"--badflag"})
 			Expect(err).To(MatchError("could not parse assign-stemcell flags: flag provided but not defined: -badflag"))
 		})
 	})
 
-	Context("when the product flag is not provided", func() {
+	When("the product flag is not provided", func() {
 		It("returns an error", func() {
 			err := command.Execute([]string{})
 			Expect(err).To(MatchError("could not parse assign-stemcell flags: missing required flag \"--product\""))

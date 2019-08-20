@@ -46,8 +46,8 @@ var _ = Describe("JobsService", func() {
 			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/jobs"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("bad"))
 
@@ -56,7 +56,7 @@ var _ = Describe("JobsService", func() {
 				})
 			})
 
-			Context("when the jobs endpoint returns a non-200 status code", func() {
+			When("the jobs endpoint returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -68,7 +68,7 @@ var _ = Describe("JobsService", func() {
 				})
 			})
 
-			Context("when decoding the json fails", func() {
+			When("decoding the json fails", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -366,7 +366,7 @@ var _ = Describe("JobsService", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the resource config endpoint returns an error", func() {
+			When("the resource config endpoint returns an error", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -379,7 +379,7 @@ var _ = Describe("JobsService", func() {
 				})
 			})
 
-			Context("when the resource config endpoint returns a non-200 status code", func() {
+			When("the resource config endpoint returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusTeapot,
@@ -392,7 +392,7 @@ var _ = Describe("JobsService", func() {
 				})
 			})
 
-			Context("when the resource config returns invalid JSON", func() {
+			When("the resource config returns invalid JSON", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -445,7 +445,7 @@ var _ = Describe("JobsService", func() {
 			}`))
 		})
 
-		Context("when internet_connected property is false", func() {
+		When("internet_connected property is false", func() {
 			It("passes the value to the flag in the JSON request", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -480,7 +480,7 @@ var _ = Describe("JobsService", func() {
 			})
 		})
 
-		Context("when floating_ips is specified", func() {
+		When("floating_ips is specified", func() {
 			It("passes the value to the flag in the JSON request", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -517,7 +517,7 @@ var _ = Describe("JobsService", func() {
 			})
 		})
 
-		Context("when the internet_connected property is not passed", func() {
+		When("the internet_connected property is not passed", func() {
 			It("does not pass the flag to the JSON request", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -550,8 +550,8 @@ var _ = Describe("JobsService", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the client errors before the request", func() {
+		When("an error occurs", func() {
+			When("the client errors before the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
@@ -567,7 +567,7 @@ var _ = Describe("JobsService", func() {
 				})
 			})
 
-			Context("when the server returns a non-200 status code", func() {
+			When("the server returns a non-200 status code", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,

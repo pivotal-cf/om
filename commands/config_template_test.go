@@ -57,7 +57,7 @@ var _ = Describe("ConfigTemplate", func() {
 					args    []string
 				)
 
-				Context("When --exclude-version is not set", func() {
+				When("--exclude-version is not set", func() {
 					BeforeEach(func() {
 						tempDir = createOutputDirectory()
 
@@ -111,7 +111,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 				})
 
-				Context("When --exclude-version is set", func() {
+				When("--exclude-version is set", func() {
 					BeforeEach(func() {
 						tempDir = createOutputDirectory()
 

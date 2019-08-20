@@ -65,7 +65,7 @@ var _ = Describe("Certificate Authorities", func() {
 			Expect(fakePresenter.PresentCertificateAuthoritiesArgsForCall(0)).To(Equal(certificateAuthoritiesOutput))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("calls the presenter to set the json format", func() {
 				err := certificateAuthorities.Execute([]string{
 					"--format", "json",
@@ -77,7 +77,7 @@ var _ = Describe("Certificate Authorities", func() {
 			})
 		})
 
-		Context("when the flag cannot parsed", func() {
+		When("the flag cannot parsed", func() {
 			It("returns an error", func() {
 				err := certificateAuthorities.Execute([]string{"--bogus", "nothing"})
 				Expect(err).To(MatchError(
@@ -86,7 +86,7 @@ var _ = Describe("Certificate Authorities", func() {
 			})
 		})
 
-		Context("when request for certificate authorities fails", func() {
+		When("request for certificate authorities fails", func() {
 			It("returns an error", func() {
 				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 					api.CertificateAuthoritiesOutput{},

@@ -94,7 +94,7 @@ syslog-properties:
 `)))
 		})
 
-		Context("when --include-placeholders is used", func() {
+		When("--include-placeholders is used", func() {
 			It("replaces *** with interpolatable placeholders and removes non-configurable properties", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
 				err := command.Execute([]string{
@@ -163,7 +163,7 @@ syslog-properties:
 			})
 		})
 
-		Context("when --include-credentials is used", func() {
+		When("--include-credentials is used", func() {
 			BeforeEach(func() {
 				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
 					{
@@ -331,7 +331,7 @@ syslog-properties:
 		})
 
 		Context("failure cases", func() {
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					command := commands.NewStagedConfig(fakeService, logger)
 					err := command.Execute([]string{"--badflag"})
@@ -339,7 +339,7 @@ syslog-properties:
 				})
 			})
 
-			Context("when product name is not provided", func() {
+			When("product name is not provided", func() {
 				It("returns an error and prints out usage", func() {
 					command := commands.NewStagedConfig(fakeService, logger)
 					err := command.Execute([]string{})
@@ -347,7 +347,7 @@ syslog-properties:
 				})
 			})
 
-			Context("when looking up the product GUID fails", func() {
+			When("looking up the product GUID fails", func() {
 				BeforeEach(func() {
 					fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
 				})
@@ -361,7 +361,7 @@ syslog-properties:
 				})
 			})
 
-			Context("when looking up the product properties fails", func() {
+			When("looking up the product properties fails", func() {
 				BeforeEach(func() {
 					fakeService.GetStagedProductPropertiesReturns(nil, errors.New("some-error"))
 				})
@@ -375,7 +375,7 @@ syslog-properties:
 				})
 			})
 
-			Context("when looking up the network fails", func() {
+			When("looking up the network fails", func() {
 				BeforeEach(func() {
 					fakeService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
 				})
@@ -389,7 +389,7 @@ syslog-properties:
 				})
 			})
 
-			Context("when listing jobs fails", func() {
+			When("listing jobs fails", func() {
 				BeforeEach(func() {
 					fakeService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
 				})
@@ -403,7 +403,7 @@ syslog-properties:
 				})
 			})
 
-			Context("when looking up the job fails", func() {
+			When("looking up the job fails", func() {
 				BeforeEach(func() {
 					fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
 				})

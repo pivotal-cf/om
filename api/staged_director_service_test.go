@@ -171,7 +171,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the properties request returns an error", func() {
+			When("the properties request returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -188,7 +188,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the properties request returns a non 200 error code", func() {
+			When("the properties request returns a non 200 error code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -208,7 +208,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns invalid json", func() {
+			When("the server returns invalid json", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -402,7 +402,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the properties request returns a non 200 error code", func() {
+			When("the properties request returns a non 200 error code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -422,7 +422,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns invalid json", func() {
+			When("the server returns invalid json", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -506,7 +506,7 @@ var _ = Describe("StagedProducts", func() {
 
 		})
 		Describe("failure cases", func() {
-			Context("when the properties request returns an error", func() {
+			When("the properties request returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -523,7 +523,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the properties request returns a non 200 error code", func() {
+			When("the properties request returns a non 200 error code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -543,7 +543,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns invalid json", func() {
+			When("the server returns invalid json", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -632,7 +632,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the properties request returns an error", func() {
+			When("the properties request returns an error", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -649,7 +649,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the properties request returns a non 200 error code", func() {
+			When("the properties request returns a non 200 error code", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response
@@ -669,7 +669,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when the server returns invalid json", func() {
+			When("the server returns invalid json", func() {
 				BeforeEach(func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						var resp *http.Response

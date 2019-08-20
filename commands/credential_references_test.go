@@ -61,7 +61,7 @@ var _ = Describe("CredentialReferences", func() {
 			))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("sets format on the presenter", func() {
 				err := command.Execute([]string{
 					"--product-name", "some-product",
@@ -75,7 +75,7 @@ var _ = Describe("CredentialReferences", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 					err := command.Execute([]string{"--badflag"})
@@ -83,7 +83,7 @@ var _ = Describe("CredentialReferences", func() {
 				})
 			})
 
-			Context("when the product-name flag is not provided", func() {
+			When("the product-name flag is not provided", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 					err := command.Execute([]string{})
@@ -91,7 +91,7 @@ var _ = Describe("CredentialReferences", func() {
 				})
 			})
 
-			Context("when the deployed product cannot be found", func() {
+			When("the deployed product cannot be found", func() {
 				BeforeEach(func() {
 					fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
 				})
@@ -106,7 +106,7 @@ var _ = Describe("CredentialReferences", func() {
 				})
 			})
 
-			Context("when there are no credential references to list", func() {
+			When("there are no credential references to list", func() {
 				It("prints a helpful message instead of a table", func() {
 					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 
@@ -123,7 +123,7 @@ var _ = Describe("CredentialReferences", func() {
 				})
 			})
 
-			Context("when the credential references cannot be fetched", func() {
+			When("the credential references cannot be fetched", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 
@@ -138,7 +138,7 @@ var _ = Describe("CredentialReferences", func() {
 				})
 			})
 
-			Context("when the deployed products cannot be fetched", func() {
+			When("the deployed products cannot be fetched", func() {
 				It("returns an error", func() {
 					fakeService.ListDeployedProductsReturns(
 						[]api.DeployedProductOutput{},

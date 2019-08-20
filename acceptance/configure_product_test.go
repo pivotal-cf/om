@@ -201,7 +201,7 @@ var _ = Describe("configure-product command", func() {
       }`))
 	})
 
-	Context("when a config file is provided", func() {
+	When("a config file is provided", func() {
 		var (
 			configFile *os.File
 			err        error

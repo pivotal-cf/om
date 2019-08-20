@@ -62,7 +62,7 @@ var _ = Describe("ErrandsService", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when ops manager returns a not-OK response code", func() {
+			When("ops manager returns a not-OK response code", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						return &http.Response{StatusCode: http.StatusTeapot,
@@ -75,14 +75,14 @@ var _ = Describe("ErrandsService", func() {
 				})
 			})
 
-			Context("when the product ID cannot be URL encoded", func() {
+			When("the product ID cannot be URL encoded", func() {
 				It("returns an error", func() {
 					err := service.UpdateStagedProductErrands("%%%", "some-errand", "true", "false")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
 
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -124,14 +124,14 @@ var _ = Describe("ErrandsService", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the product ID cannot be URL encoded", func() {
+			When("the product ID cannot be URL encoded", func() {
 				It("returns an error", func() {
 					_, err := service.ListStagedProductErrands("%%%")
 					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 				})
 			})
 
-			Context("when the client cannot make a request", func() {
+			When("the client cannot make a request", func() {
 				It("returns an error", func() {
 					client.DoReturns(nil, errors.New("client do errored"))
 
@@ -140,7 +140,7 @@ var _ = Describe("ErrandsService", func() {
 				})
 			})
 
-			Context("when the response body cannot be parsed", func() {
+			When("the response body cannot be parsed", func() {
 				It("returns an error", func() {
 					client.DoStub = func(req *http.Request) (*http.Response, error) {
 						return &http.Response{StatusCode: http.StatusOK,
@@ -153,7 +153,7 @@ var _ = Describe("ErrandsService", func() {
 				})
 			})
 
-			Context("when the http call returns an error status code", func() {
+			When("the http call returns an error status code", func() {
 				It("returns an error", func() {
 					client.DoStub = func(request *http.Request) (*http.Response, error) {
 						return &http.Response{

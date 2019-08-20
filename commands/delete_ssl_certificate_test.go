@@ -39,7 +39,7 @@ var _ = Describe("DeleteSSLCertificate", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the service fails to delete the custom certificate", func() {
+			When("the service fails to delete the custom certificate", func() {
 				It("returns an error", func() {
 					fakeService.DeleteSSLCertificateReturns(errors.New("failed to delete certificate"))
 
@@ -47,7 +47,7 @@ var _ = Describe("DeleteSSLCertificate", func() {
 					Expect(err).To(MatchError("failed to delete certificate"))
 				})
 			})
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse delete-ssl-certificate flags: flag provided but not defined: -badflag"))

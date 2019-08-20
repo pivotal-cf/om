@@ -55,7 +55,7 @@ var _ = Describe("StagedProducts", func() {
 			Expect(presenter.PresentStagedProductsArgsForCall(0)).To(Equal(stagedProducts))
 		})
 
-		Context("when the format flag is provided", func() {
+		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
 				Expect(err).NotTo(HaveOccurred())
@@ -66,7 +66,7 @@ var _ = Describe("StagedProducts", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when fetching the diagnostic report fails", func() {
+			When("fetching the diagnostic report fails", func() {
 				It("returns an error", func() {
 					fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
@@ -75,7 +75,7 @@ var _ = Describe("StagedProducts", func() {
 				})
 			})
 
-			Context("when an unknown flag is passed", func() {
+			When("an unknown flag is passed", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--unknown-flag"})
 					Expect(err).To(MatchError("could not parse staged-products flags: flag provided but not defined: -unknown-flag"))

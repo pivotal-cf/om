@@ -34,8 +34,8 @@ var _ = Describe("LogWriter", func() {
 			Expect(buffer.String()).To(Equal("logs-1\nlogs-2\nlogs-3\nlogs-4\nlogs-5\n"))
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the writer fails to copy", func() {
+		When("an error occurs", func() {
+			When("the writer fails to copy", func() {
 				It("returns an error", func() {
 					writer = commands.NewLogWriter(errorWriter{})
 					err := writer.Flush("logs-1\nlogs-2\nlogs-3\n")

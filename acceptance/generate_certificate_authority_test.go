@@ -99,7 +99,7 @@ var _ = Describe("generate certificate authority", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when the requested format is JSON", func() {
+	When("the requested format is JSON", func() {
 		It("generates a certificate authority", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

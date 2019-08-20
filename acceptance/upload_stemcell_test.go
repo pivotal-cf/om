@@ -148,7 +148,7 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 	})
 
-	Context("when the stemcell already exists", func() {
+	When("the stemcell already exists", func() {
 		It("exits early with no error", func() {
 			var diagnosticReport []byte
 			server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -212,8 +212,8 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 	})
 
-	Context("when an error occurs", func() {
-		Context("when the content to upload is empty", func() {
+	When("an error occurs", func() {
+		When("the content to upload is empty", func() {
 			It("returns an error", func() {
 				emptyContent, err := ioutil.TempFile("", "")
 				Expect(err).NotTo(HaveOccurred())
@@ -237,7 +237,7 @@ var _ = Describe("upload-stemcell command", func() {
 			})
 		})
 
-		Context("when the content cannot be read", func() {
+		When("the content cannot be read", func() {
 			It("returns an error", func() {
 				server := setupServerWithUploadHandler(func(w http.ResponseWriter, req *http.Request) {})
 				defer server.Close()
@@ -259,7 +259,7 @@ var _ = Describe("upload-stemcell command", func() {
 			})
 		})
 
-		Context("when the server returns EOF during upload", func() {
+		When("the server returns EOF during upload", func() {
 			var (
 				snip   chan struct{}
 				server *httptest.Server

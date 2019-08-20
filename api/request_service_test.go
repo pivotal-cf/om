@@ -66,7 +66,7 @@ var _ = Describe("RequestService", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the request cannot be constructed", func() {
+			When("the request cannot be constructed", func() {
 				It("returns an error", func() {
 					_, err := service.Curl(api.RequestServiceCurlInput{
 						Method: "PUT",
@@ -78,7 +78,7 @@ var _ = Describe("RequestService", func() {
 				})
 			})
 
-			Context("when the request cannot be made", func() {
+			When("the request cannot be made", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("boom"))
 

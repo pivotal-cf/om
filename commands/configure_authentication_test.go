@@ -80,7 +80,7 @@ It will have the username 'precreated-client' and the client secret you provided
 `))
 		})
 
-		Context("when the authentication setup has already been configured", func() {
+		When("the authentication setup has already been configured", func() {
 			It("returns without configuring the authentication system", func() {
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
@@ -102,7 +102,7 @@ It will have the username 'precreated-client' and the client secret you provided
 			})
 		})
 
-		Context("when config file is provided", func() {
+		When("config file is provided", func() {
 			var configFile *os.File
 
 			BeforeEach(func() {
@@ -234,7 +234,7 @@ This is only supported in OpsManager 2.5 and up.
 		})
 
 		Context("failure cases", func() {
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{"--banana"})
@@ -242,7 +242,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when config file cannot be opened", func() {
+			When("config file cannot be opened", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(service, logger)
 					err := command.Execute([]string{"--config", "something"})
@@ -251,7 +251,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the initial configuration status cannot be determined", func() {
+			When("the initial configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
@@ -265,7 +265,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the initial configuration status is unknown", func() {
+			When("the initial configuration status is unknown", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnknown,
@@ -281,7 +281,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the setup service encounters an error", func() {
+			When("the setup service encounters an error", func() {
 				It("returns an error", func() {
 					service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
 						Status: api.EnsureAvailabilityStatusUnstarted,
@@ -299,7 +299,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the final configuration status cannot be determined", func() {
+			When("the final configuration status cannot be determined", func() {
 				It("returns an error", func() {
 					eaOutputs := []api.EnsureAvailabilityOutput{
 						{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -324,7 +324,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the --username flag is missing", func() {
+			When("the --username flag is missing", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -335,7 +335,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the --password flag is missing", func() {
+			When("the --password flag is missing", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(nil, nil)
 					err := command.Execute([]string{
@@ -346,7 +346,7 @@ This is only supported in OpsManager 2.5 and up.
 				})
 			})
 
-			Context("when the --decryption-passphrase flag is missing", func() {
+			When("the --decryption-passphrase flag is missing", func() {
 				It("returns an error", func() {
 					command := commands.NewConfigureAuthentication(nil, nil)
 					err := command.Execute([]string{

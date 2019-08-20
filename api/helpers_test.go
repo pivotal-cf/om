@@ -42,7 +42,7 @@ var _ = Describe("Available Products", func() {
 			}, nil)
 		})
 
-		Context("when the product is available", func() {
+		When("the product is available", func() {
 			It("is true", func() {
 				available, err := service.CheckProductAvailability("available-product", "available-version")
 				Expect(err).NotTo(HaveOccurred())
@@ -51,7 +51,7 @@ var _ = Describe("Available Products", func() {
 			})
 		})
 
-		Context("when the product is unavailable", func() {
+		When("the product is unavailable", func() {
 			It("is false", func() {
 				available, err := service.CheckProductAvailability("unavailable-product", "available-version")
 				Expect(err).NotTo(HaveOccurred())
@@ -60,8 +60,8 @@ var _ = Describe("Available Products", func() {
 			})
 		})
 
-		Context("When an error occurs", func() {
-			Context("when the client can't connect to the server", func() {
+		When("an error occurs", func() {
+			When("the client can't connect to the server", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{}, errors.New("some error"))
 					_, err := service.CheckProductAvailability("", "")
@@ -106,7 +106,7 @@ var _ = Describe("Available Products", func() {
 			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 		})
 
-		Context("when there are no installations", func() {
+		When("there are no installations", func() {
 			It("returns a zero value installation", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -125,7 +125,7 @@ var _ = Describe("Available Products", func() {
 			})
 		})
 
-		Context("when there is no running installation", func() {
+		When("there is no running installation", func() {
 			It("returns a zero value installation", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -159,7 +159,7 @@ var _ = Describe("Available Products", func() {
 			})
 		})
 
-		Context("when only an earlier installation is listed in the running state", func() {
+		When("only an earlier installation is listed in the running state", func() {
 			It("does not consider the earlier installation to be running", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusOK,
@@ -192,7 +192,7 @@ var _ = Describe("Available Products", func() {
 		})
 
 		Context("error cases", func() {
-			Context("when the client has an error during the request", func() {
+			When("the client has an error during the request", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -204,7 +204,7 @@ var _ = Describe("Available Products", func() {
 				})
 			})
 
-			Context("when the client returns a non-2XX", func() {
+			When("the client returns a non-2XX", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
@@ -216,7 +216,7 @@ var _ = Describe("Available Products", func() {
 				})
 			})
 
-			Context("when the json cannot be decoded", func() {
+			When("the json cannot be decoded", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,

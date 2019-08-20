@@ -73,7 +73,7 @@ var _ = Describe("CreateVMExtension", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
 		})
 
-		Context("when using a config file", func() {
+		When("using a config file", func() {
 			Context("with a vars file", func() {
 				It("makes a request to the OpsMan to create a VM extension", func() {
 					configFile, err = ioutil.TempFile("", "")
@@ -168,7 +168,7 @@ var _ = Describe("CreateVMExtension", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the service fails to create a VM extension", func() {
+			When("the service fails to create a VM extension", func() {
 				It("returns an error", func() {
 					fakeService.CreateStagedVMExtensionReturns(errors.New("failed to create VM extension"))
 
@@ -181,7 +181,7 @@ var _ = Describe("CreateVMExtension", func() {
 				})
 			})
 
-			Context("when an unknown flag is provided", func() {
+			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse create-vm-extension flags: flag provided but not defined: -badflag"))

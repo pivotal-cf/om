@@ -111,7 +111,7 @@ var _ = Describe("Formcontent", func() {
 				`\r\n--\w+--\r\n$`))
 		})
 
-		Context("when the file provided is empty", func() {
+		When("the file provided is empty", func() {
 			It("returns an error", func() {
 				emptyFile, err := ioutil.TempFile("", "")
 				Expect(err).NotTo(HaveOccurred())
@@ -123,8 +123,8 @@ var _ = Describe("Formcontent", func() {
 			})
 		})
 
-		Context("when an error occurs", func() {
-			Context("when the original file cannot be read", func() {
+		When("an error occurs", func() {
+			When("the original file cannot be read", func() {
 				It("returns an error", func() {
 					form := formcontent.NewForm()
 

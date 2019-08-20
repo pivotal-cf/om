@@ -92,7 +92,7 @@ var _ = Describe("credentials command", func() {
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when json formatting is requested", func() {
+	When("json formatting is requested", func() {
 		It("lists credentials of a deployed product", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

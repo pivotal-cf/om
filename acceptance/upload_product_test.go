@@ -134,8 +134,8 @@ name: some-product`)
 		Expect(product).To(Equal(filepath.Base(productFile.Name())))
 	})
 
-	Context("when an error occurs", func() {
-		Context("when the content to upload is empty", func() {
+	When("an error occurs", func() {
+		When("the content to upload is empty", func() {
 			var emptyContent *os.File
 
 			BeforeEach(func() {
@@ -167,7 +167,7 @@ name: some-product`)
 			})
 		})
 
-		Context("when the content cannot be read", func() {
+		When("the content cannot be read", func() {
 			BeforeEach(func() {
 				err := os.Remove(productFile.Name())
 				Expect(err).NotTo(HaveOccurred())
@@ -191,7 +191,7 @@ name: some-product`)
 			})
 		})
 
-		Context("when the server returns EOF during upload", func() {
+		When("the server returns EOF during upload", func() {
 			BeforeEach(func() {
 				snip = make(chan struct{})
 				uploadCallCount := 0

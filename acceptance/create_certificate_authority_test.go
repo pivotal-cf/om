@@ -165,7 +165,7 @@ c8Ltdl0ms92X6z4Qh2GiA/URKQLC7yV/kSQfgPEwyITXv4cCqm3o
 		Expect(string(session.Out.Contents())).To(Equal(tableOutput))
 	})
 
-	Context("when json format is requested", func() {
+	When("json format is requested", func() {
 		It("creates a certificate authority in OpsMan", func() {
 			command := exec.Command(pathToMain,
 				"--target", server.URL,

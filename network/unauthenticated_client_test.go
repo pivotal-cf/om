@@ -61,7 +61,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 			Expect(string(body)).To(Equal("request"))
 		})
 
-		Context("when passing a url with no scheme", func() {
+		When("passing a url with no scheme", func() {
 			It("defaults to HTTPS", func() {
 				server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 					w.WriteHeader(http.StatusTeapot)
@@ -106,7 +106,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 		})
 
 		Context("failure cases", func() {
-			Context("when the target url cannot be parsed", func() {
+			When("the target url cannot be parsed", func() {
 				It("returns an error", func() {
 					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					_, err := client.Do(&http.Request{})
@@ -114,7 +114,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				})
 			})
 
-			Context("when the target url is empty", func() {
+			When("the target url is empty", func() {
 				It("returns an error", func() {
 					client := network.NewUnauthenticatedClient("", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
 					_, err := client.Do(&http.Request{})

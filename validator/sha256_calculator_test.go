@@ -35,7 +35,7 @@ var _ = Describe("FileSHA256HashCalculator", func() {
 			Expect(md5).To(Equal("7bb6f9f7a47a63e684925af3608c059edcc371eb81188c48c9714896fb1091fd"))
 		})
 
-		Context("when the file cannot be read", func() {
+		When("the file cannot be read", func() {
 			It("returns an error", func() {
 				_, err := fileSHA256HashCalculator.Checksum("non-existent-file")
 				Expect(err).To(MatchError("open non-existent-file: no such file or directory"))

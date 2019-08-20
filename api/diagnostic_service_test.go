@@ -69,8 +69,8 @@ var _ = Describe("Diagnostic Report", func() {
 				}))
 			})
 
-			Context("when an error occurs", func() {
-				Context("when the server returns a 500", func() {
+			When("an error occurs", func() {
+				When("the server returns a 500", func() {
 					It("returns a DiagnosticReportUnavailable error", func() {
 						client.DoReturns(&http.Response{
 							StatusCode: http.StatusInternalServerError,
@@ -82,7 +82,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when the resp is nil due to network error", func() {
+				When("the resp is nil due to network error", func() {
 					It("returns the error", func() {
 						client.DoReturns(nil, errors.New("some error"))
 						_, err := service.GetDiagnosticReport()
@@ -91,7 +91,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when the client fails before the request", func() {
+				When("the client fails before the request", func() {
 					It("returns an error", func() {
 						client.DoReturns(&http.Response{}, errors.New("some error"))
 
@@ -100,7 +100,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when the server returns a non-2XX status", func() {
+				When("the server returns a non-2XX status", func() {
 					It("returns an error", func() {
 						client.DoReturns(&http.Response{
 							StatusCode: http.StatusTeapot,
@@ -112,7 +112,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when invalid json is returned", func() {
+				When("invalid json is returned", func() {
 					It("returns an error", func() {
 						client.DoReturns(&http.Response{
 							StatusCode: http.StatusOK,
@@ -194,8 +194,8 @@ var _ = Describe("Diagnostic Report", func() {
 				}))
 			})
 
-			Context("when an error occurs", func() {
-				Context("when the server returns a 500", func() {
+			When("an error occurs", func() {
+				When("the server returns a 500", func() {
 					It("returns a DiagnosticReportUnavailable error", func() {
 						client.DoReturns(&http.Response{
 							StatusCode: http.StatusInternalServerError,
@@ -207,7 +207,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when the resp is nil due to network error", func() {
+				When("the resp is nil due to network error", func() {
 					It("returns the error", func() {
 						client.DoReturns(nil, errors.New("some error"))
 						_, err := service.GetDiagnosticReport()
@@ -216,7 +216,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when the client fails before the request", func() {
+				When("the client fails before the request", func() {
 					It("returns an error", func() {
 						client.DoReturns(&http.Response{}, errors.New("some error"))
 
@@ -225,7 +225,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when the server returns a non-2XX status", func() {
+				When("the server returns a non-2XX status", func() {
 					It("returns an error", func() {
 						client.DoReturns(&http.Response{
 							StatusCode: http.StatusTeapot,
@@ -237,7 +237,7 @@ var _ = Describe("Diagnostic Report", func() {
 					})
 				})
 
-				Context("when invalid json is returned", func() {
+				When("invalid json is returned", func() {
 					It("returns an error", func() {
 						client.DoReturns(&http.Response{
 							StatusCode: http.StatusOK,
