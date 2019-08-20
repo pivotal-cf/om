@@ -2,10 +2,8 @@ package network
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -30,7 +28,17 @@ type OAuthClient struct {
 	timeout       time.Duration
 }
 
-func NewOAuthClient(target, username, password string, clientID, clientSecret string, insecureSkipVerify bool, includeCookies bool, requestTimeout time.Duration, connectTimeout time.Duration) (OAuthClient, error) {
+func NewOAuthClient(
+	target,
+	username,
+	password string,
+	clientID,
+	clientSecret string,
+	insecureSkipVerify bool,
+	includeCookies bool,
+	requestTimeout time.Duration,
+	connectTimeout time.Duration,
+) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
@@ -42,19 +50,11 @@ func NewOAuthClient(target, username, password string, clientID, clientSecret st
 		ClientSecret: clientSecret,
 	}
 
-	httpclient := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: insecureSkipVerify,
-				MinVersion:         tls.VersionTLS12,
-			},
-			Dial: (&net.Dialer{
-				Timeout:   connectTimeout,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-		},
-	}
+	httpclient := newHTTPClient(
+		insecureSkipVerify,
+		connectTimeout,
+		requestTimeout,
+	)
 
 	var jar *cookiejar.Jar
 	if includeCookies {
