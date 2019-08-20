@@ -39,6 +39,7 @@ type httpClient interface {
 
 type options struct {
 	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d"  long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE"             description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
+	CACert               string `yaml:"ca-cert" long:"ca-cert" env:"OM_CA_CERT" description:"OpsManager CA certificate path or value"`
 	ClientID             string `yaml:"client-id"             short:"c"  long:"client-id"             env:"OM_CLIENT_ID"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
 	ClientSecret         string `yaml:"client-secret"         short:"s"  long:"client-secret"         env:"OM_CLIENT_SECRET"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
 	Help                 bool   `                             short:"h"  long:"help"                                             default:"false" description:"prints this usage information"`
@@ -98,12 +99,12 @@ func main() {
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
 	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient, _ = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, "", connectTimeout, requestTimeout)
+	unauthenticatedClient, _ = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 	if err != nil {
 		stderr.Fatal(err)
 	}
 
-	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, "", connectTimeout, requestTimeout)
+	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 
 	if err != nil {
 		stderr.Fatal(err)
