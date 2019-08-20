@@ -57,12 +57,15 @@ var _ = Describe("ExpiringCertificates", func() {
 	})
 
 	When("there are expiring certs", func() {
-		It("prints a clear message of the cert expiring", func() {
-			omTime := "2019-01-01T01:01:01Z"
+		It("prints a clear message of the cert expiring or expired", func() {
+			omTime := "2999-01-01T01:01:01Z"
 			opsManagerUntilTime, err := time.Parse(time.RFC3339, omTime)
 			Expect(err).NotTo(HaveOccurred())
-			credhubTime := "2019-12-12T12:12:12Z"
+			credhubTime := "2999-12-12T12:12:12Z"
 			credhubUntilTime, err := time.Parse(time.RFC3339, credhubTime)
+			Expect(err).NotTo(HaveOccurred())
+			credhubTimeAlreadyExpired := "2015-12-12T12:12:12Z"
+			credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
 			Expect(err).NotTo(HaveOccurred())
 
 			service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
@@ -114,7 +117,7 @@ var _ = Describe("ExpiringCertificates", func() {
 					{
 						Issuer:            "",
 						ValidFrom:         time.Time{},
-						ValidUntil:        credhubUntilTime,
+						ValidUntil:        credhubUntilTimeAlreadyExpired,
 						Configurable:      false,
 						PropertyReference: "",
 						PropertyType:      "",
@@ -139,20 +142,21 @@ var _ = Describe("ExpiringCertificates", func() {
 			err = command.Execute([]string{})
 			Expect(err).To(HaveOccurred())
 
-			Expect(stdout.Contents()).To(ContainSubstring("Getting expiring certificates..."))
-			Expect(stdout.Contents()).To(ContainSubstring("[X] Credhub Location"))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/other_ca: expiring on %s", credhubUntilTime.Format(time.RFC822))))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/tls_ca: expiring on %s", credhubUntilTime.Format(time.RFC822))))
-			Expect(stdout.Contents()).To(ContainSubstring("[X] Ops Manager"))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("    product-guid-1:")))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("        property-reference-1: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("        property-reference-2: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("    product-guid-2:")))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("        property-reference-3: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(stdout.Contents()).To(ContainSubstring("[X] Other Location"))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("    product-guid-4:")))
-			Expect(stdout.Contents()).To(ContainSubstring(fmt.Sprintf("        property-reference-4: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(stdout.Contents()).To(ContainSubstring(""))
+			contentsStr := string(stdout.Contents())
+			Expect(contentsStr).To(ContainSubstring("Getting expiring certificates..."))
+			Expect(contentsStr).To(ContainSubstring("[X] Credhub Location"))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/other_ca: expired on %s", credhubUntilTimeAlreadyExpired.Format(time.RFC822))))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/tls_ca: expiring on %s", credhubUntilTime.Format(time.RFC822))))
+			Expect(contentsStr).To(ContainSubstring("[X] Ops Manager"))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    product-guid-1:")))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-1: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-2: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    product-guid-2:")))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-3: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+			Expect(contentsStr).To(ContainSubstring("[X] Other Location"))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    product-guid-4:")))
+			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-4: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+			Expect(contentsStr).To(ContainSubstring(""))
 		})
 
 		It("sets ExpiresWithin to 3m as default", func() {

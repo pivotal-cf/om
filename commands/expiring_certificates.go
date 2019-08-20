@@ -64,6 +64,8 @@ func (e *ExpiringCerts) Execute(args []string) error {
 		return nil
 	}
 
+	e.logger.Println(color.RedString("ERROR: Found expiring certificates in the foundation:\n"))
+
 	expiringCertsWithVariablePath, expiringCertsWithProductGUID := e.groupByLocation(expiringCerts)
 	for location, certs := range expiringCertsWithVariablePath {
 		e.logger.Printf(color.RedString("[X] %s", location))
@@ -83,7 +85,7 @@ func (e *ExpiringCerts) Execute(args []string) error {
 		}
 	}
 
-	return errors.New("found expiring certs in the foundation")
+	return errors.New("found expiring certificates in the foundation")
 }
 
 func (e *ExpiringCerts) groupByLocation(certs []api.ExpiringCertificate) (map[string][]api.ExpiringCertificate, map[string]map[string][]api.ExpiringCertificate) {
@@ -107,12 +109,19 @@ func (e *ExpiringCerts) groupByLocation(certs []api.ExpiringCertificate) (map[st
 }
 
 func (e *ExpiringCerts) printExpiringCertInfo(cert api.ExpiringCertificate) {
+	expiringStr := "expiring"
+	if time.Now().After(cert.ValidUntil) {
+		expiringStr = "expired"
+	}
+
 	validUntil := cert.ValidUntil.Format(time.RFC822)
+
 	if cert.VariablePath != "" {
-		e.logger.Printf(color.RedString("    %s: expiring on %s"), cert.VariablePath, validUntil)
+		e.logger.Printf(color.RedString("    %s: %s on %s"), cert.VariablePath, expiringStr, validUntil)
 		return
 	}
-	e.logger.Printf(color.RedString("        %s: expiring on %s"), cert.PropertyReference, validUntil)
+
+	e.logger.Printf(color.RedString("        %s: %s on %s"), cert.PropertyReference, expiringStr, validUntil)
 }
 
 func (e ExpiringCerts) validateConfig() error {
