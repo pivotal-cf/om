@@ -28,17 +28,7 @@ type OAuthClient struct {
 	timeout       time.Duration
 }
 
-func NewOAuthClient(
-	target,
-	username,
-	password string,
-	clientID,
-	clientSecret string,
-	insecureSkipVerify bool,
-	includeCookies bool,
-	requestTimeout time.Duration,
-	connectTimeout time.Duration,
-) (OAuthClient, error) {
+func NewOAuthClient(target, username, password string, clientID, clientSecret string, insecureSkipVerify bool, requestTimeout time.Duration, connectTimeout time.Duration, ) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
@@ -56,22 +46,12 @@ func NewOAuthClient(
 		requestTimeout,
 	)
 
-	var jar *cookiejar.Jar
-	if includeCookies {
-		var err error
-		jar, err = cookiejar.New(nil)
-		if err != nil {
-			return OAuthClient{}, fmt.Errorf("could not create cookie jar")
-		}
-	}
-
 	insecureContext := context.Background()
 	insecureContext = context.WithValue(insecureContext, oauth2.HTTPClient, httpclient)
 
 	return OAuthClient{
 		oauthConfig:   conf,
 		oauthConfigCC: confCC,
-		jar:           jar,
 		context:       insecureContext,
 		username:      username,
 		password:      password,
