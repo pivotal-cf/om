@@ -28,7 +28,13 @@ type OAuthClient struct {
 	timeout       time.Duration
 }
 
-func NewOAuthClient(target, username, password string, clientID, clientSecret string, insecureSkipVerify bool, requestTimeout time.Duration, connectTimeout time.Duration, ) (OAuthClient, error) {
+func NewOAuthClient(
+	target, username, password string,
+	clientID, clientSecret string,
+	insecureSkipVerify bool,
+	caCert string,
+	connectTimeout time.Duration, requestTimeout time.Duration,
+) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",
 		ClientSecret: "",
@@ -40,11 +46,10 @@ func NewOAuthClient(target, username, password string, clientID, clientSecret st
 		ClientSecret: clientSecret,
 	}
 
-	httpclient := newHTTPClient(
-		insecureSkipVerify,
-		connectTimeout,
-		requestTimeout,
-	)
+	httpclient, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout, )
+	if err != nil {
+		return OAuthClient{}, err
+	}
 
 	insecureContext := context.Background()
 	insecureContext = context.WithValue(insecureContext, oauth2.HTTPClient, httpclient)

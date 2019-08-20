@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -61,7 +63,7 @@ var _ = Describe("OAuthClient", func() {
 
 	Describe("Do", func() {
 		It("makes a request with authentication", func() {
-			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(callCount).To(Equal(0))
@@ -96,7 +98,7 @@ var _ = Describe("OAuthClient", func() {
 		})
 
 		It("makes a request with client credentials", func() {
-			client, err := network.NewOAuthClient(server.URL, "", "", "client_id", "client_secret", true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+			client, err := network.NewOAuthClient(server.URL, "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(callCount).To(Equal(0))
@@ -134,7 +136,7 @@ var _ = Describe("OAuthClient", func() {
 			nonTLS12Server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 			defer nonTLS12Server.Close()
 
-			client, err := network.NewOAuthClient(nonTLS12Server.URL, "", "", "client_id", "client_secret", true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+			client, err := network.NewOAuthClient(nonTLS12Server.URL, "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 			Expect(err).NotTo(HaveOccurred())
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -152,7 +154,7 @@ var _ = Describe("OAuthClient", func() {
 				noScheme.Scheme = ""
 				finalURL := noScheme.String()
 
-				client, err := network.NewOAuthClient(finalURL, "opsman-username", "opsman-password", "", "", true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+				client, err := network.NewOAuthClient(finalURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 				Expect(err).NotTo(HaveOccurred())
 
 				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -168,7 +170,7 @@ var _ = Describe("OAuthClient", func() {
 		When("insecureSkipVerify is configured", func() {
 			When("it is set to false", func() {
 				It("throws an error for invalid certificates", func() {
-					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -181,7 +183,7 @@ var _ = Describe("OAuthClient", func() {
 
 			When("it is set to true", func() {
 				It("does not verify certificates", func() {
-					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -190,6 +192,54 @@ var _ = Describe("OAuthClient", func() {
 					_, err = client.Do(req)
 					Expect(err).NotTo(HaveOccurred())
 				})
+			})
+		})
+
+		When("supporting a ca cert", func() {
+			It("loads from a string", func() {
+				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
+				Expect(err).NotTo(HaveOccurred())
+				pemCert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}))
+
+				client, err := network.NewOAuthClient(
+					server.URL,
+					"opsman-username", "opsman-password",
+					"", "",
+					false,
+					pemCert,
+					time.Duration(5)*time.Second, time.Duration(30)*time.Second,
+				)
+
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("loads from a file", func() {
+				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
+				Expect(err).NotTo(HaveOccurred())
+				pemCert := writeFile(string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})))
+
+				client, err := network.NewOAuthClient(
+					server.URL,
+					"opsman-username", "opsman-password",
+					"", "",
+					false,
+					pemCert,
+					time.Duration(5)*time.Second, time.Duration(30)*time.Second,
+				)
+
+				Expect(err).NotTo(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 
@@ -205,7 +255,7 @@ var _ = Describe("OAuthClient", func() {
 				})
 
 				It("returns an error", func() {
-					client, err := network.NewOAuthClient(badServer.URL, "username", "password", "", "", true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+					client, err := network.NewOAuthClient(badServer.URL, "username", "password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -218,7 +268,7 @@ var _ = Describe("OAuthClient", func() {
 
 			When("the target url is empty", func() {
 				It("returns an error", func() {
-					client, err := network.NewOAuthClient("", "username", "password", "", "", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+					client, err := network.NewOAuthClient("", "username", "password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))

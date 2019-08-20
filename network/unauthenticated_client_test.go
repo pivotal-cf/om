@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -35,7 +37,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 			}))
 			server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 
-			client := network.NewUnauthenticatedClient(server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+			client, _ := network.NewUnauthenticatedClient(server.URL, true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 
 			request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
 			Expect(err).NotTo(HaveOccurred())
@@ -76,7 +78,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				noScheme.Scheme = ""
 				finalURL := strings.Replace(noScheme.String(), "//", "", 1)
 
-				client := network.NewUnauthenticatedClient(finalURL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+				client, _ := network.NewUnauthenticatedClient(finalURL, true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 				Expect(err).NotTo(HaveOccurred())
 
 				request, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -90,13 +92,53 @@ var _ = Describe("UnauthenticatedClient", func() {
 			})
 		})
 
+		When("supporting a ca cert", func() {
+			var server *httptest.Server
+			BeforeEach(func() {
+				server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				}))
+				server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
+			})
+
+			It("loads from a string", func() {
+				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
+				Expect(err).NotTo(HaveOccurred())
+				pemCert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}))
+
+				client, err := network.NewUnauthenticatedClient(server.URL, false, pemCert, time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.Do(request)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("loads from a file", func() {
+				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
+				Expect(err).NotTo(HaveOccurred())
+				pemCert := writeFile(string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})))
+
+				client, err := network.NewUnauthenticatedClient(server.URL, false, pemCert, time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = client.Do(request)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
 		It("enforces minimum TLS version 1.2", func() {
 			nonTLS12Server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {}))
 			nonTLS12Server.TLS.MaxVersion = tls.VersionTLS11
 			nonTLS12Server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 			defer nonTLS12Server.Close()
 
-			client := network.NewUnauthenticatedClient(nonTLS12Server.URL, true, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+			client, _ := network.NewUnauthenticatedClient(nonTLS12Server.URL, true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
 			Expect(err).NotTo(HaveOccurred())
@@ -108,7 +150,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 		Context("failure cases", func() {
 			When("the target url cannot be parsed", func() {
 				It("returns an error", func() {
-					client := network.NewUnauthenticatedClient("%%%", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+					client, _ := network.NewUnauthenticatedClient("%%%", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					_, err := client.Do(&http.Request{})
 					Expect(err).To(MatchError("could not parse target url: parse //%%%: invalid URL escape \"%%%\""))
 				})
@@ -116,7 +158,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 
 			When("the target url is empty", func() {
 				It("returns an error", func() {
-					client := network.NewUnauthenticatedClient("", false, time.Duration(30)*time.Second, time.Duration(5)*time.Second)
+					client, _ := network.NewUnauthenticatedClient("", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					_, err := client.Do(&http.Request{})
 					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
 				})

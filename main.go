@@ -98,8 +98,12 @@ func main() {
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
 	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, requestTimeout, connectTimeout)
-	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, requestTimeout, connectTimeout)
+	unauthenticatedClient, _ = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, "", connectTimeout, requestTimeout)
+	if err != nil {
+		stderr.Fatal(err)
+	}
+
+	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, "", connectTimeout, requestTimeout)
 
 	if err != nil {
 		stderr.Fatal(err)
@@ -109,7 +113,7 @@ func main() {
 		authedClient = network.NewDecryptClient(authedClient, unauthenticatedClient, global.DecryptionPassphrase, os.Stderr)
 	}
 
-	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, requestTimeout, connectTimeout)
+	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, "", connectTimeout, requestTimeout)
 	if err != nil {
 		stderr.Fatal(err)
 	}
