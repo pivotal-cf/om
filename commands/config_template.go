@@ -19,6 +19,7 @@ type ConfigTemplate struct {
 		PivnetProductSlug string `long:"pivnet-product-slug" description:"the product name in pivnet"                                                       required:"true"`
 		ProductVersion    string `long:"product-version"     description:"the version of the product from which to generate a template"                     required:"true"`
 		ProductFileGlob   string `long:"product-file-glob"   description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal" `
+		PivnetDisableSSL  bool   `long:"pivnet-disable-ssl"  description:"whether to disable ssl validation when contacting the Pivotal Network"`
 		ExcludeVersion    bool   `long:"exclude-version"     description:"if set, will not output a version-specific directory"`
 	}
 }
@@ -32,13 +33,7 @@ var pivnetHost = pivnet.DefaultHost
 var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 	return func(c *ConfigTemplate) MetadataProvider {
 		options := c.Options
-		return metadata.NewPivnetProvider(
-			pivnetHost,
-			options.PivnetApiToken,
-			options.PivnetProductSlug,
-			options.ProductVersion,
-			options.ProductFileGlob,
-		)
+		return metadata.NewPivnetProvider(pivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.ProductFileGlob, options.PivnetDisableSSL, )
 	}
 }
 

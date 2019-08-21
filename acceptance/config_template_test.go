@@ -41,7 +41,7 @@ var _ = Describe("config-template command", func() {
 			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
 			Expect(err).NotTo(HaveOccurred())
 
-			server = ghttp.NewServer()
+			server = ghttp.NewTLSServer()
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases"),
@@ -101,6 +101,7 @@ var _ = Describe("config-template command", func() {
 				"--pivnet-product-slug", productSlug,
 				"--product-version", productVersion,
 				"--pivnet-api-token", "token",
+				"--pivnet-disable-ssl",
 			)
 			command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
@@ -131,7 +132,7 @@ var _ = Describe("config-template command", func() {
 			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
 			Expect(err).NotTo(HaveOccurred())
 
-			server = ghttp.NewServer()
+			server = ghttp.NewTLSServer()
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/another-example-product/releases"),
@@ -212,6 +213,7 @@ var _ = Describe("config-template command", func() {
 					"--pivnet-product-slug", productSlug,
 					"--product-version", productVersion,
 					"--pivnet-api-token", "token",
+					"--pivnet-disable-ssl",
 				)
 				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
@@ -235,6 +237,7 @@ var _ = Describe("config-template command", func() {
 					"--product-version", productVersion,
 					"--pivnet-api-token", "token",
 					"--product-file-glob", "product.pivotal",
+					"--pivnet-disable-ssl",
 				)
 				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 

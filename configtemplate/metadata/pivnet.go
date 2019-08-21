@@ -19,13 +19,14 @@ import (
 	"howett.net/ranger"
 )
 
-func NewPivnetProvider(host, token, slug, version, glob string) Provider {
+func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Provider {
 
 	logWriter := os.Stderr
 	logger := log.New(logWriter, "", log.LstdFlags)
 	config := pivnetapi.ClientConfig{
 		Host:      host,
 		UserAgent: "tile-config-generator",
+		SkipSSLValidation: skipSSL,
 	}
 	ts := pivnetapi.NewAccessTokenOrLegacyToken(token, config.Host, config.UserAgent)
 	ls := logshim.NewLogShim(logger, logger, false)
