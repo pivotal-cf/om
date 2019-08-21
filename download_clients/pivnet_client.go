@@ -47,7 +47,7 @@ func NewPivnetClient(
 ) *pivnetClient {
 	downloader := factory(
 		pivnet.NewAccessTokenOrLegacyToken(
-			token, pivnetHost, userAgent),
+			token, pivnetHost, skipSSL, userAgent),
 		pivnet.ClientConfig{
 			Host:              pivnetHost,
 			UserAgent:         userAgent,

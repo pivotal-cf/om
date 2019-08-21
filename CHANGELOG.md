@@ -97,6 +97,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - When interacting with an OpsManager, that OpsManager may have a custom CA cert.
   In the global options `--ca-cert` has been added to allow the usage of that custom CA cert.
   The value of `--ca-cert` can be a file or command line string.
+  
+### Bug Fix
+- When using `config-template` or `download-product`,
+  the `--pivnet-skip-ssl` is honored when capturing the token. 
 
 ### Deprecation Notices
 - `tile-metadata` has been deprecated in favor of `product-metadata`.
