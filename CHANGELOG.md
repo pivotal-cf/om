@@ -61,7 +61,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This provides a solution for issue [331](https://github.com/pivotal-cf/om/issues/331).
   An example of this inside of your product config:
   
-    ```
+    ```yaml
     syslog-properties:
       address: example.com
       custom_rsyslog_configuration: null
@@ -93,6 +93,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   will make it more difficult to track changes between versions
   unless using a version control system (such as git).
   Thanks to @jghiloni for the PR!
+- `config-template` supports `--pivnet-disable-ssl` to skip SSL validation.
+- When interacting with an OpsManager, that OpsManager may have a custom CA cert.
+  In the global options `--ca-cert` has been added to allow the usage of that custom CA cert.
+  The value of `--ca-cert` can be a file or command line string.
 
 ### Deprecation Notices
 - `tile-metadata` has been deprecated in favor of `product-metadata`.
