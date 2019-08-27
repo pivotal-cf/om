@@ -47,13 +47,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
   
-## 3.2.0 (Unreleased)
+## 3.2.0
 
 ### Features
 - `expiring-certificates` command was added.
   This command returns a list of certificates
   from an Ops Manager
-  expiring within a specified (`--expires-withing/-e`) timeframe. 
+  expiring within a specified (`--expires-within/-e`) timeframe. 
   Default: "3m" (3 months)
 - `configure-product` and `staged-config` now have support for the `/syslog_configurations` endpoint. 
   This affects tiles, such as the Metrics tile,
