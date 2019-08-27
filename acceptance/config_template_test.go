@@ -236,7 +236,7 @@ var _ = Describe("config-template command", func() {
 					"--pivnet-product-slug", productSlug,
 					"--product-version", productVersion,
 					"--pivnet-api-token", "token",
-					"--product-file-glob", "product.pivotal",
+					"--pivnet-file-glob", "product.pivotal",
 					"--pivnet-disable-ssl",
 				)
 				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
