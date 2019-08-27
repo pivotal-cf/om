@@ -196,24 +196,19 @@ vmtypes-configuration:
 
 			offset := logger.PrintfCallCount() - 21 // handle the situation where vmtypes may not be configured
 
-			Expect(logger.PrintfArgsForCall(offset + 8)).To(Equal("started configuring resource options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(offset + 9)).To(Equal("applying resource configuration for the following jobs:"))
+			Expect(logger.PrintfArgsForCall(offset + 8)).To(Equal("started configuring vm extensions"))
+			Expect(logger.PrintfArgsForCall(offset + 9)).To(Equal("applying vmextensions configuration for the following:"))
 			formatStr, formatArg := logger.PrintfArgsForCall(offset + 10)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
-			Expect(logger.PrintfArgsForCall(offset + 11)).To(Equal("finished configuring resource options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(offset + 12)).To(Equal("started configuring vm extensions"))
-			Expect(logger.PrintfArgsForCall(offset + 13)).To(Equal("applying vmextensions configuration for the following:"))
-			formatStr, formatArg = logger.PrintfArgsForCall(offset + 14)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"a_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(offset + 15)
+			formatStr, formatArg = logger.PrintfArgsForCall(offset + 11)
 			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"another_vm_extension"}}))
 
 			expectedLogs := make(map[interface{}][]string)
-			formatStr1, _ := logger.PrintfArgsForCall(offset + 16)
-			formatStr2, formatArg := logger.PrintfArgsForCall(offset + 17)
+			formatStr1, _ := logger.PrintfArgsForCall(offset + 12)
+			formatStr2, formatArg := logger.PrintfArgsForCall(offset + 13)
 			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
-			formatStr1, _ = logger.PrintfArgsForCall(offset + 18)
-			formatStr2, formatArg = logger.PrintfArgsForCall(offset + 19)
+			formatStr1, _ = logger.PrintfArgsForCall(offset + 14)
+			formatStr2, formatArg = logger.PrintfArgsForCall(offset + 15)
 			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
 			Expect(expectedLogs).To(HaveKey("some_other_vm_extension"))
 			Expect(expectedLogs).To(HaveKey("some_vm_extension"))
@@ -221,8 +216,14 @@ vmtypes-configuration:
 			Expect(expectedLogs["some_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
 			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("deleting vm extension %s"))
 			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
+			Expect(logger.PrintfArgsForCall(offset + 16)).To(Equal("finished configuring vm extensions"))
 
-			Expect(logger.PrintfArgsForCall(offset + 20)).To(Equal("finished configuring vm extensions"))
+			Expect(logger.PrintfArgsForCall(offset + 17)).To(Equal("started configuring resource options for bosh tile"))
+			Expect(logger.PrintfArgsForCall(offset + 18)).To(Equal("applying resource configuration for the following jobs:"))
+			formatStr, formatArg = logger.PrintfArgsForCall(offset + 19)
+			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
+			Expect(logger.PrintfArgsForCall(offset + 20)).To(Equal("finished configuring resource options for bosh tile"))
+
 		}
 
 		It("configures the director", func() {

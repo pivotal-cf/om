@@ -132,12 +132,12 @@ func (c ConfigureDirector) Execute(args []string) error {
 		return err
 	}
 
-	err = c.configureResourceConfigurations(config)
+	err = c.configureVMExtensions(config)
 	if err != nil {
 		return err
 	}
 
-	err = c.configureVMExtensions(config)
+	err = c.configureResourceConfigurations(config)
 	if err != nil {
 		return err
 	}
