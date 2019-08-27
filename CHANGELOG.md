@@ -47,6 +47,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
   
+## 3.2.1
+
+### Bug Fixes
+- `configure-director` now will configure VM Extensions before setting Resource Config.
+  This fixes issue [#411](https://github.com/pivotal-cf/om/issues/411)   
+  
 ## 3.2.0
 
 ### Features
