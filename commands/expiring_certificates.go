@@ -64,7 +64,7 @@ func (e *ExpiringCerts) Execute(args []string) error {
 		return nil
 	}
 
-	e.logger.Println(color.RedString("ERROR: Found expiring certificates in the foundation:\n"))
+	e.logger.Println(color.RedString("Found expiring certificates in the foundation:\n"))
 
 	expiringCertsWithVariablePath, expiringCertsWithProductGUID := e.groupByLocation(expiringCerts)
 	for location, certs := range expiringCertsWithVariablePath {
