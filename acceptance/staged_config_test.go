@@ -154,6 +154,14 @@ var _ = Describe("staged-config command", func() {
                              "label": "Errand 2 Label"
                            }]}`))
 				Expect(err).ToNot(HaveOccurred())
+			case "/api/v0/info":
+				_, err := w.Write([]byte(`{
+						"info": {
+							"version": "2.4-build.79"
+						}
+					}`))
+
+				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())
