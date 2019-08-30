@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/commands"
+	commands "github.com/pivotal-cf/om/commands"
 )
 
 type StemcellArtifacter struct {

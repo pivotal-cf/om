@@ -896,57 +896,57 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 			}
 		})
 
-		It("returns the syslog configuration if it is configured for the specified product", func() {
-			syslogConfig, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+		When("syslog configuration is configured for the specified product", func() {
+			It("returns the syslog configuration ", func() {
+				syslogConfig, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
+				Expect(err).NotTo(HaveOccurred())
 
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
-			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/syslog_configuration"))
-			Expect(req.Method).To(Equal("GET"))
-			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+				Expect(client.DoCallCount()).To(Equal(1))
+				req := client.DoArgsForCall(0)
+				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/syslog_configuration"))
+				Expect(req.Method).To(Equal("GET"))
+				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
-			expectedResult := make(map[string]interface{})
-			expectedResult["enabled"] = true
-			expectedResult["address"] = "example.com"
+				expectedResult := make(map[string]interface{})
+				expectedResult["enabled"] = true
+				expectedResult["address"] = "example.com"
 
-			Expect(syslogConfig).To(Equal(expectedResult))
+				Expect(syslogConfig).To(Equal(expectedResult))
+			})
 		})
 
-		Context("failure cases", func() {
-			When("the request fails", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
-				})
-
-				It("returns an error", func() {
-					_, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("could not make api request to staged product syslog_configuration endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/syslog_configuration: nope"))
-				})
+		When("the request fails", func() {
+			BeforeEach(func() {
+				client.DoReturns(&http.Response{}, errors.New("nope"))
 			})
 
-			When("the server returns a non-200 status code", func() {
-				It("returns nil when the status code is unprocessable (422)", func() {
-					syslogConfig, err := service.GetStagedProductSyslogConfiguration("missing-syslog-config")
-					Expect(err).ToNot(HaveOccurred())
+			It("returns an error", func() {
+				_, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("could not make api request to staged product syslog_configuration endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/syslog_configuration: nope"))
+			})
+		})
 
-					Expect(syslogConfig).To(BeNil())
-				})
+		When("the server returns a non-200 status code", func() {
+			It("returns nil when the status code is unprocessable (422)", func() {
+				syslogConfig, err := service.GetStagedProductSyslogConfiguration("missing-syslog-config")
+				Expect(err).ToNot(HaveOccurred())
 
-				It("returns an error for any other status code that is non-200", func() {
-					_, err := service.GetStagedProductSyslogConfiguration("bad-response-code")
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				Expect(syslogConfig).To(BeNil())
 			})
 
-			When("the response body cannot be decoded", func() {
-				It("returns an error", func() {
-					_, err := service.GetStagedProductSyslogConfiguration("")
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged product syslog_configuration response")))
-				})
+			It("returns an error for any other status code that is non-200", func() {
+				_, err := service.GetStagedProductSyslogConfiguration("bad-response-code")
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+			})
+		})
+
+		When("the response body cannot be decoded", func() {
+			It("returns an error", func() {
+				_, err := service.GetStagedProductSyslogConfiguration("")
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged product syslog_configuration response")))
 			})
 		})
 	})

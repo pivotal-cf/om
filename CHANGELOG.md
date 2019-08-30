@@ -47,6 +47,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
   
+## 3.2.2
+
+### Bug Fixes
+- `staged-config` will now work again for Ops Manager versions <= 2.3.
+  This solves issue [#419](https://github.com/pivotal-cf/om/issues/419)
+
 ## 3.2.1
 
 ### Bug Fixes

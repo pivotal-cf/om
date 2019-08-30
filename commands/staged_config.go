@@ -34,6 +34,7 @@ type stagedConfigService interface {
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
 	GetStagedProductJobMaxInFlight(productGUID string) (map[string]interface{}, error)
+	Info() (api.Info, error)
 }
 
 func NewStagedConfig(service stagedConfigService, logger logger) StagedConfig {
@@ -54,6 +55,11 @@ func (ec StagedConfig) Usage() jhanda.Usage {
 func (ec StagedConfig) Execute(args []string) error {
 	if _, err := jhanda.Parse(&ec.Options, args); err != nil {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
+	}
+
+	info, err := ec.service.Info()
+	if err != nil {
+		return err
 	}
 
 	if ec.Options.IncludeCredentials {
@@ -138,9 +144,12 @@ func (ec StagedConfig) Execute(args []string) error {
 		return err
 	}
 
-	syslogProperties, err := ec.service.GetStagedProductSyslogConfiguration(productGUID)
-	if err != nil {
-		return err
+	var syslogProperties map[string]interface{}
+	if ok, _ := info.VersionAtLeast(2, 4); ok {
+		syslogProperties, err = ec.service.GetStagedProductSyslogConfiguration(productGUID)
+		if err != nil {
+			return err
+		}
 	}
 
 	resourceConfig := map[string]config.ResourceConfig{}

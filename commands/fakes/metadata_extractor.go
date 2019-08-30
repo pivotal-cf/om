@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/extractor"
+	extractor "github.com/pivotal-cf/om/extractor"
 )
 
 type MetadataExtractor struct {

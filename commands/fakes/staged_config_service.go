@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/pivotal-cf/om/api"
+	api "github.com/pivotal-cf/om/api"
 )
 
 type StagedConfigService struct {
@@ -98,6 +98,18 @@ type StagedConfigService struct {
 	}
 	getStagedProductSyslogConfigurationReturnsOnCall map[int]struct {
 		result1 map[string]interface{}
+		result2 error
+	}
+	InfoStub        func() (api.Info, error)
+	infoMutex       sync.RWMutex
+	infoArgsForCall []struct {
+	}
+	infoReturns struct {
+		result1 api.Info
+		result2 error
+	}
+	infoReturnsOnCall map[int]struct {
+		result1 api.Info
 		result2 error
 	}
 	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
@@ -584,6 +596,61 @@ func (fake *StagedConfigService) GetStagedProductSyslogConfigurationReturnsOnCal
 	}{result1, result2}
 }
 
+func (fake *StagedConfigService) Info() (api.Info, error) {
+	fake.infoMutex.Lock()
+	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
+	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Info", []interface{}{})
+	fake.infoMutex.Unlock()
+	if fake.InfoStub != nil {
+		return fake.InfoStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.infoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StagedConfigService) InfoCallCount() int {
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
+	return len(fake.infoArgsForCall)
+}
+
+func (fake *StagedConfigService) InfoCalls(stub func() (api.Info, error)) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = stub
+}
+
+func (fake *StagedConfigService) InfoReturns(result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	fake.infoReturns = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StagedConfigService) InfoReturnsOnCall(i int, result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	if fake.infoReturnsOnCall == nil {
+		fake.infoReturnsOnCall = make(map[int]struct {
+			result1 api.Info
+			result2 error
+		})
+	}
+	fake.infoReturnsOnCall[i] = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StagedConfigService) ListDeployedProducts() ([]api.DeployedProductOutput, error) {
 	fake.listDeployedProductsMutex.Lock()
 	ret, specificReturn := fake.listDeployedProductsReturnsOnCall[len(fake.listDeployedProductsArgsForCall)]
@@ -782,6 +849,8 @@ func (fake *StagedConfigService) Invocations() map[string][][]interface{} {
 	defer fake.getStagedProductPropertiesMutex.RUnlock()
 	fake.getStagedProductSyslogConfigurationMutex.RLock()
 	defer fake.getStagedProductSyslogConfigurationMutex.RUnlock()
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
 	fake.listDeployedProductsMutex.RLock()
 	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.listStagedProductErrandsMutex.RLock()

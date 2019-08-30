@@ -190,6 +190,6 @@ func (p *PropertyBlueprint) DataType() string {
 	} else if p.IsBool() {
 		return "bool"
 	} else {
-		panic("Type " + p.Type + " not recongnized")
+		panic("Type " + p.Type + " not recognized")
 	}
 }
