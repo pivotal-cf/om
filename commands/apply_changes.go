@@ -91,17 +91,26 @@ func (ac ApplyChanges) Execute(args []string) error {
 		return fmt.Errorf("could not check for any already running installation: %s", err)
 	}
 
-	if installation == (api.InstallationsServiceOutput{}) {
-		ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-		installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts, changedProducts, errands)
-		if err != nil {
-			return fmt.Errorf("installation failed to trigger: %s", err)
-		}
-	} else {
+	if installation != (api.InstallationsServiceOutput{}) {
 		startedAtFormatted := installation.StartedAt.Format(time.UnixDate)
+
 		ac.logger.Printf("found already running installation...re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
+		err = ac.waitForApplyChangesCompletion(installation)
+		ac.logger.Printf("found already running installation...re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
+
+		return err
 	}
 
+	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
+	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts, changedProducts, errands)
+	if err != nil {
+		return fmt.Errorf("installation failed to trigger: %s", err)
+	}
+
+	return ac.waitForApplyChangesCompletion(installation)
+}
+
+func (ac ApplyChanges) waitForApplyChangesCompletion(installation api.InstallationsServiceOutput) error {
 	for {
 		current, err := ac.service.GetInstallation(installation.ID)
 		if err != nil {

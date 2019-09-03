@@ -309,6 +309,8 @@ errands: lolololol
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
+			format, content = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
 
 			Expect(service.GetInstallationArgsForCall(0)).To(Equal(200))
 			Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(200))
