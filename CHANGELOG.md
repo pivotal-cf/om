@@ -46,6 +46,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Note the additional space before the `export` command.
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
+
+## 4.0.0
+
+### Breaking Changes
+- `apply-changes` will no longer reattach when it finds an already running installation.
+  to re-enable this feature, provide the `--reattach` flag.
+  This makes the behavior of `apply-changes` easier to anticipate
+  and specify whether applying all changes or applying changes to a particular product.  
   
 ## 3.2.2
 

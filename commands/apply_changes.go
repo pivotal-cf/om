@@ -20,6 +20,7 @@ type ApplyChanges struct {
 	Options        struct {
 		Config             string   `short:"c"   long:"config"               description:"path to yml file containing errand configuration (see docs/apply-changes/README.md for format)"`
 		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
+		Reattach           bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
 		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
 		ProductNames       []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
@@ -94,11 +95,16 @@ func (ac ApplyChanges) Execute(args []string) error {
 	if installation != (api.InstallationsServiceOutput{}) {
 		startedAtFormatted := installation.StartedAt.Format(time.UnixDate)
 
-		ac.logger.Printf("found already running installation...re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
-		err = ac.waitForApplyChangesCompletion(installation)
-		ac.logger.Printf("found already running installation...re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
+		if ac.Options.Reattach {
+			ac.logger.Printf("found already running installation... re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
+			err = ac.waitForApplyChangesCompletion(installation)
+			ac.logger.Printf("found already running installation... re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
 
-		return err
+			return err
+		} else {
+			ac.logger.Printf("found already running installation... not re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
+			return fmt.Errorf("apply changes is already running not re-attaching, use \"--reattach\" to enable reattaching")
+		}
 	}
 
 	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")

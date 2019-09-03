@@ -152,6 +152,55 @@ var _ = Describe("ApplyChanges", func() {
 			})
 		})
 
+		When("passed the reattach flag", func() {
+			It("re-attaches to an ongoing installation", func() {
+				installationStartedAt := time.Date(2017, time.February, 25, 02, 31, 1, 0, time.UTC)
+
+				service.RunningInstallationReturns(api.InstallationsServiceOutput{
+					ID:        200,
+					Status:    "running",
+					StartedAt: &installationStartedAt,
+				}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := command.Execute([]string{"--reattach"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.CreateInstallationCallCount()).To(Equal(0))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation... re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
+				format, content = logger.PrintfArgsForCall(1)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation... re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
+
+				Expect(service.GetInstallationArgsForCall(0)).To(Equal(200))
+				Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(200))
+			})
+		})
+
+		When("not passed reattach", func() {
+			It("errors of an already running installation", func() {
+				installationStartedAt := time.Date(2017, time.February, 25, 02, 31, 1, 0, time.UTC)
+
+				service.RunningInstallationReturns(api.InstallationsServiceOutput{
+					ID:        200,
+					Status:    "running",
+					StartedAt: &installationStartedAt,
+				}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := command.Execute([]string{})
+				Expect(err).To(HaveOccurred())
+
+				Expect(service.CreateInstallationCallCount()).To(Equal(0))
+
+				format, content := logger.PrintfArgsForCall(0)
+				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation... not re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
+			})
+		})
+
 		Context("Load config file", func() {
 			var fileName string
 
@@ -289,31 +338,6 @@ errands: lolololol
 					Expect(err.Error()).To(ContainSubstring("line 3: cannot unmarshal !!str `lolololol`"))
 				})
 			})
-		})
-
-		It("re-attaches to an ongoing installation", func() {
-			installationStartedAt := time.Date(2017, time.February, 25, 02, 31, 1, 0, time.UTC)
-
-			service.RunningInstallationReturns(api.InstallationsServiceOutput{
-				ID:        200,
-				Status:    "running",
-				StartedAt: &installationStartedAt,
-			}, nil)
-
-			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-
-			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(service.CreateInstallationCallCount()).To(Equal(0))
-
-			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
-			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation...re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
-
-			Expect(service.GetInstallationArgsForCall(0)).To(Equal(200))
-			Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(200))
 		})
 
 		It("handles a failed installation", func() {
