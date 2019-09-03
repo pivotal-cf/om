@@ -14,7 +14,7 @@ type ExportInstallation struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/export_installation_service.go --fake-name ExportInstallationService . exportInstallationService
+//counterfeiter:generate -o ./fakes/export_installation_service.go --fake-name ExportInstallationService . exportInstallationService
 type exportInstallationService interface {
 	DownloadInstallationAssetCollection(outputFile string) error
 }

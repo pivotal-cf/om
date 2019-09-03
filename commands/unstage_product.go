@@ -15,7 +15,7 @@ type UnstageProduct struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/unstage_product_service.go --fake-name UnstageProductService . unstageProductService
+//counterfeiter:generate -o ./fakes/unstage_product_service.go --fake-name UnstageProductService . unstageProductService
 type unstageProductService interface {
 	DeleteStagedProduct(api.UnstageProductInput) error
 }

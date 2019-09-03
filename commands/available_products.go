@@ -18,7 +18,7 @@ type AvailableProducts struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/available_products_service.go --fake-name AvailableProductsService . availableProductsService
+//counterfeiter:generate -o ./fakes/available_products_service.go --fake-name AvailableProductsService . availableProductsService
 
 type availableProductsService interface {
 	ListAvailableProducts() (api.AvailableProductsOutput, error)

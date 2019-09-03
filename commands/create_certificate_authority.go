@@ -18,7 +18,7 @@ type CreateCertificateAuthority struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/create_certificate_authority_service.go --fake-name CreateCertificateAuthorityService . createCertificateAuthorityService
+//counterfeiter:generate -o ./fakes/create_certificate_authority_service.go --fake-name CreateCertificateAuthorityService . createCertificateAuthorityService
 type createCertificateAuthorityService interface {
 	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.CA, error)
 }

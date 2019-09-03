@@ -24,7 +24,7 @@ type ConfigTemplate struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/metadata_provider.go --fake-name MetadataProvider . MetadataProvider
+//counterfeiter:generate -o ./fakes/metadata_provider.go --fake-name MetadataProvider . MetadataProvider
 type MetadataProvider interface {
 	MetadataBytes() ([]byte, error)
 }
@@ -33,7 +33,7 @@ var pivnetHost = pivnet.DefaultHost
 var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 	return func(c *ConfigTemplate) MetadataProvider {
 		options := c.Options
-		return metadata.NewPivnetProvider(pivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.ProductFileGlob, options.PivnetDisableSSL, )
+		return metadata.NewPivnetProvider(pivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.ProductFileGlob, options.PivnetDisableSSL)
 	}
 }
 

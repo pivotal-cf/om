@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-cf/om/models"
 )
 
-//go:generate counterfeiter -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
+//counterfeiter:generate -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
 
 type tableWriter interface {
 	SetHeader([]string)

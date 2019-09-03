@@ -26,13 +26,13 @@ type UploadProduct struct {
 	metadataExtractor metadataExtractor
 }
 
-//go:generate counterfeiter -o ./fakes/upload_product_service.go --fake-name UploadProductService . uploadProductService
+//counterfeiter:generate -o ./fakes/upload_product_service.go --fake-name UploadProductService . uploadProductService
 type uploadProductService interface {
 	UploadAvailableProduct(api.UploadAvailableProductInput) (api.UploadAvailableProductOutput, error)
 	CheckProductAvailability(string, string) (bool, error)
 }
 
-//go:generate counterfeiter -o ./fakes/metadata_extractor.go --fake-name MetadataExtractor . metadataExtractor
+//counterfeiter:generate -o ./fakes/metadata_extractor.go --fake-name MetadataExtractor . metadataExtractor
 type metadataExtractor interface {
 	ExtractMetadata(string) (extractor.Metadata, error)
 }

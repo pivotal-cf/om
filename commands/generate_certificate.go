@@ -16,7 +16,7 @@ type GenerateCertificate struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/generate_certificate_service.go --fake-name GenerateCertificateService . generateCertificateService
+//counterfeiter:generate -o ./fakes/generate_certificate_service.go --fake-name GenerateCertificateService . generateCertificateService
 type generateCertificateService interface {
 	GenerateCertificate(domains api.DomainsInput) (string, error)
 }

@@ -1,5 +1,7 @@
 package commands
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
 import (
 	"fmt"
 
@@ -15,7 +17,7 @@ type ActivateCertificateAuthority struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/activate_certificate_authority_service.go --fake-name ActivateCertificateAuthorityService . activateCertificateAuthorityService
+//counterfeiter:generate -o ./fakes/activate_certificate_authority_service.go --fake-name ActivateCertificateAuthorityService . activateCertificateAuthorityService
 type activateCertificateAuthorityService interface {
 	ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput) error
 }

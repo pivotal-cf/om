@@ -5,7 +5,7 @@ import (
 	"github.com/pivotal-cf/om/models"
 )
 
-//go:generate counterfeiter -o fakes/presenter.go --fake-name Presenter . Presenter
+//counterfeiter:generate -o fakes/presenter.go --fake-name Presenter . Presenter
 
 type Presenter interface {
 	PresentAvailableProducts([]models.Product)
@@ -22,7 +22,8 @@ type Presenter interface {
 	PresentDiagnosticReport(api.DiagnosticReport)
 }
 
-//go:generate counterfeiter -o fakes/formatted_presenter.go --fake-name FormattedPresenter . FormattedPresenter
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o fakes/formatted_presenter.go --fake-name FormattedPresenter . FormattedPresenter
 
 type FormattedPresenter interface {
 	Presenter

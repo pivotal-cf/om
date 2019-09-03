@@ -17,7 +17,7 @@ type PreDeployCheck struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/pre_deploy_check_service.go --fake-name PreDeployCheckService . preDeployCheckService
+//counterfeiter:generate -o ./fakes/pre_deploy_check_service.go --fake-name PreDeployCheckService . preDeployCheckService
 type preDeployCheckService interface {
 	Info() (api.Info, error)
 	ListPendingDirectorChanges() (api.PendingDirectorChangesOutput, error)

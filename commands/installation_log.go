@@ -15,7 +15,7 @@ type InstallationLog struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installation_log_service.go --fake-name InstallationLogService . installationLogService
+//counterfeiter:generate -o ./fakes/installation_log_service.go --fake-name InstallationLogService . installationLogService
 type installationLogService interface {
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 }

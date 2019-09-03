@@ -14,7 +14,7 @@ type DiagnosticReport struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/diagnostic_report_service.go --fake-name DiagnosticReportService . diagnosticReportService
+//counterfeiter:generate -o ./fakes/diagnostic_report_service.go --fake-name DiagnosticReportService . diagnosticReportService
 type diagnosticReportService interface {
 	GetDiagnosticReport() (api.DiagnosticReport, error)
 }

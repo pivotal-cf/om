@@ -16,7 +16,7 @@ type DeployedProducts struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/deployed_products_service.go --fake-name DeployedProductsService . deployedProductsService
+//counterfeiter:generate -o ./fakes/deployed_products_service.go --fake-name DeployedProductsService . deployedProductsService
 type deployedProductsService interface {
 	GetDiagnosticReport() (api.DiagnosticReport, error)
 }

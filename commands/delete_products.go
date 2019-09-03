@@ -15,7 +15,7 @@ type DeleteProduct struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/delete_product_service.go --fake-name DeleteProductService . deleteProductService
+//counterfeiter:generate -o ./fakes/delete_product_service.go --fake-name DeleteProductService . deleteProductService
 type deleteProductService interface {
 	DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error
 }

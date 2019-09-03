@@ -20,7 +20,7 @@ type Credentials struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/credentials_service.go --fake-name CredentialsService . credentialsService
+//counterfeiter:generate -o ./fakes/credentials_service.go --fake-name CredentialsService . credentialsService
 type credentialsService interface {
 	GetDeployedProductCredential(api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)

@@ -7,7 +7,7 @@ type RegenerateCertificates struct {
 	logger  logger
 }
 
-//go:generate counterfeiter -o ./fakes/regenerate_certificates_service.go --fake-name RegenerateCertificatesService . regenerateCertificatesService
+//counterfeiter:generate -o ./fakes/regenerate_certificates_service.go --fake-name RegenerateCertificatesService . regenerateCertificatesService
 type regenerateCertificatesService interface {
 	RegenerateCertificates() error
 }

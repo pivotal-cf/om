@@ -44,7 +44,7 @@ type directorConfig struct {
 	Field                   map[string]interface{} `yaml:",inline"`
 }
 
-//go:generate counterfeiter -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
+//counterfeiter:generate -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
 type configureDirectorService interface {
 	CreateCustomVMTypes(api.CreateVMTypes) error
 	CreateStagedVMExtension(api.CreateVMExtension) error

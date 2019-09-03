@@ -8,7 +8,8 @@ import (
 	"github.com/pivotal-cf/om/progress"
 )
 
-//go:generate counterfeiter -o ./fakes/progress_bar.go --fake-name ProgressBar . progressBar
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o ./fakes/progress_bar.go --fake-name ProgressBar . progressBar
 type progressBar interface {
 	Start()
 	Finish()
@@ -17,7 +18,7 @@ type progressBar interface {
 	NewProxyReader(io.Reader) io.ReadCloser
 }
 
-//go:generate counterfeiter -o ./fakes/livewriter.go --fake-name LiveWriter . liveWriter
+//counterfeiter:generate -o ./fakes/livewriter.go --fake-name LiveWriter . liveWriter
 type liveWriter interface {
 	io.Writer
 	Start()

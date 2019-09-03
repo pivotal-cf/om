@@ -25,7 +25,7 @@ type ApplyChanges struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
+//counterfeiter:generate -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
 type applyChangesService interface {
 	CreateInstallation(bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
@@ -35,7 +35,7 @@ type applyChangesService interface {
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
 
-//go:generate counterfeiter -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
+//counterfeiter:generate -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
 type logWriter interface {
 	Flush(logs string) error
 }

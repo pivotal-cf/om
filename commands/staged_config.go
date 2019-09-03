@@ -22,7 +22,7 @@ type StagedConfig struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/staged_config_service.go --fake-name StagedConfigService . stagedConfigService
+//counterfeiter:generate -o ./fakes/staged_config_service.go --fake-name StagedConfigService . stagedConfigService
 type stagedConfigService interface {
 	GetDeployedProductCredential(input api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
 	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)

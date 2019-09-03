@@ -18,7 +18,7 @@ type AssignStemcell struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/assign_stemcell_service.go --fake-name AssignStemcellService . assignStemcellService
+//counterfeiter:generate -o ./fakes/assign_stemcell_service.go --fake-name AssignStemcellService . assignStemcellService
 type assignStemcellService interface {
 	ListStemcells() (api.ProductStemcells, error)
 	AssignStemcell(input api.ProductStemcells) error

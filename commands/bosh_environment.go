@@ -25,13 +25,13 @@ type BoshEnvironment struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/bosh_environment_service.go --fake-name BoshEnvironmentService . boshEnvironmentService
+//counterfeiter:generate -o ./fakes/bosh_environment_service.go --fake-name BoshEnvironmentService . boshEnvironmentService
 type boshEnvironmentService interface {
 	GetBoshEnvironment() (api.GetBoshEnvironmentOutput, error)
 	ListCertificateAuthorities() (api.CertificateAuthoritiesOutput, error)
 }
 
-//go:generate counterfeiter -o ./fakes/renderer_factory.go --fake-name RendererFactory . rendererFactory
+//counterfeiter:generate -o ./fakes/renderer_factory.go --fake-name RendererFactory . rendererFactory
 type rendererFactory interface {
 	Create(shellType string) (renderers.Renderer, error)
 }

@@ -18,7 +18,7 @@ type PendingChanges struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/pending_changes_service.go --fake-name PendingChangesService . pendingChangesService
+//counterfeiter:generate -o ./fakes/pending_changes_service.go --fake-name PendingChangesService . pendingChangesService
 type pendingChangesService interface {
 	ListStagedPendingChanges() (api.PendingChangesOutput, error)
 }

@@ -18,7 +18,7 @@ import (
 	"github.com/pivotal-cf/pivnet-cli/gp"
 )
 
-//go:generate counterfeiter -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
+//counterfeiter:generate -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
 type PivnetDownloader interface {
 	ReleasesForProductSlug(productSlug string) ([]pivnet.Release, error)
 	ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error)
@@ -27,7 +27,7 @@ type PivnetDownloader interface {
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
 }
 
-//go:generate counterfeiter -o ./fakes/pivnet_filter_service.go --fake-name PivnetFilter . PivnetFilter
+//counterfeiter:generate -o ./fakes/pivnet_filter_service.go --fake-name PivnetFilter . PivnetFilter
 type PivnetFilter interface {
 	ReleasesByVersion(releases []pivnet.Release, version string) ([]pivnet.Release, error)
 	ProductFileKeysByGlobs(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error)

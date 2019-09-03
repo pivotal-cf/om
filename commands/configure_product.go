@@ -30,7 +30,7 @@ type ConfigureProduct struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/configure_product_service.go --fake-name ConfigureProductService . configureProductService
+//counterfeiter:generate -o ./fakes/configure_product_service.go --fake-name ConfigureProductService . configureProductService
 type configureProductService interface {
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)

@@ -16,7 +16,7 @@ type StageProduct struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/stage_product_service.go --fake-name StageProductService . stageProductService
+//counterfeiter:generate -o ./fakes/stage_product_service.go --fake-name StageProductService . stageProductService
 type stageProductService interface {
 	CheckProductAvailability(productName string, productVersion string) (bool, error)
 	GetDiagnosticReport() (api.DiagnosticReport, error)

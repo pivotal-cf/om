@@ -15,7 +15,8 @@ import (
 	"strings"
 )
 
-//go:generate counterfeiter -o ./fakes/config_service.go --fake-name Config . StowConfiger
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o ./fakes/config_service.go --fake-name Config . StowConfiger
 type StowConfiger interface {
 	Config(name string) (string, bool)
 	Set(name, value string)

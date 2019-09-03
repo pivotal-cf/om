@@ -15,7 +15,7 @@ type StagedManifest struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/staged_manifest_service.go --fake-name StagedManifestService . stagedManifestService
+//counterfeiter:generate -o ./fakes/staged_manifest_service.go --fake-name StagedManifestService . stagedManifestService
 type stagedManifestService interface {
 	GetStagedProductByName(product string) (api.StagedProductsFindOutput, error)
 	GetStagedProductManifest(guid string) (string, error)

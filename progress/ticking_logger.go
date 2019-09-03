@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-//go:generate counterfeiter -o ./fakes/live_writer.go --fake-name LiveWriter . liveWriter
+//counterfeiter:generate -o ./fakes/live_writer.go --fake-name LiveWriter . liveWriter
 type liveWriter interface {
 	io.Writer
 	Start()

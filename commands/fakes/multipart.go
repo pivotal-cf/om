@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	formcontent "github.com/pivotal-cf/om/formcontent"
+	"github.com/pivotal-cf/om/formcontent"
 )
 
 type Multipart struct {

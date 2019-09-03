@@ -4,7 +4,8 @@ import (
 	"io"
 )
 
-//go:generate counterfeiter -o ./fakes/progress_bar.go --fake-name ProgressBar . progressBar
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o ./fakes/progress_bar.go --fake-name ProgressBar . progressBar
 type progressBar interface {
 	Start()
 	Finish()

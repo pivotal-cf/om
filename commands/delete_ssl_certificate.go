@@ -12,7 +12,7 @@ type DeleteSSLCertificate struct {
 	Options struct{}
 }
 
-//go:generate counterfeiter -o ./fakes/delete_ssl_certificate_service.go --fake-name DeleteSSLCertificateService . deleteSSLCertificateService
+//counterfeiter:generate -o ./fakes/delete_ssl_certificate_service.go --fake-name DeleteSSLCertificateService . deleteSSLCertificateService
 
 type deleteSSLCertificateService interface {
 	DeleteSSLCertificate() error

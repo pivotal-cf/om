@@ -9,7 +9,7 @@ import (
 
 const maxBodySize = 1024 * 1024
 
-//go:generate counterfeiter -o ./fakes/httpclient.go --fake-name HttpClient . httpClient
+//counterfeiter:generate -o ./fakes/httpclient.go --fake-name HttpClient . httpClient
 
 type httpClient interface {
 	Do(*http.Request) (*http.Response, error)

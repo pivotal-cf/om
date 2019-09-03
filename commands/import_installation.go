@@ -24,7 +24,7 @@ type ImportInstallation struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/import_installation_service.go --fake-name ImportInstallationService . importInstallationService
+//counterfeiter:generate -o ./fakes/import_installation_service.go --fake-name ImportInstallationService . importInstallationService
 type importInstallationService interface {
 	UploadInstallationAssetCollection(api.ImportInstallationInput) error
 	EnsureAvailability(input api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error)

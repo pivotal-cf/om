@@ -16,7 +16,7 @@ type DeployedManifest struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/deployed_manifest_service.go --fake-name DeployedManifestService . deployedManifestService
+//counterfeiter:generate -o ./fakes/deployed_manifest_service.go --fake-name DeployedManifestService . deployedManifestService
 type deployedManifestService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	GetDeployedProductManifest(guid string) (string, error)

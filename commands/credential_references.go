@@ -19,7 +19,7 @@ type CredentialReferences struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/credential_references_service.go --fake-name CredentialReferencesService . credentialReferencesService
+//counterfeiter:generate -o ./fakes/credential_references_service.go --fake-name CredentialReferencesService . credentialReferencesService
 type credentialReferencesService interface {
 	ListDeployedProductCredentials(deployedProductGUID string) (api.CredentialReferencesOutput, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)

@@ -1,8 +1,6 @@
 module github.com/pivotal-cf/om
 
 require (
-	cloud.google.com/go v0.38.0
-	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.20.13 // indirect
 	github.com/bmatcuk/doublestar v1.1.3 // indirect
@@ -17,16 +15,15 @@ require (
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
-	github.com/google/go-querystring v1.0.0
-	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
+	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/gosuri/uilive v0.0.3 // indirect
 	github.com/graymeta/stow v0.0.0-20190417153120-00c3b5928f2a
 	github.com/hashicorp/go-version v1.2.0
-	github.com/kr/pty v1.1.8 // indirect
 	github.com/leodido/go-urn v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/onsi/ginkgo v1.9.0
@@ -38,14 +35,10 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/shirou/gopsutil v2.18.12+incompatible // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 // indirect
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/tools v0.0.0-20190821162956-65e3620a7ae7 // indirect
-	google.golang.org/api v0.7.0 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
-	google.golang.org/genproto v0.0.0-20190716160619-c506a9f90610 // indirect
-	google.golang.org/grpc v1.22.0 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.29.0

@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-cf/om/presenters"
 )
 
-//go:generate counterfeiter -o ./fakes/errands_service.go --fake-name ErrandsService . errandsService
+//counterfeiter:generate -o ./fakes/errands_service.go --fake-name ErrandsService . errandsService
 type errandsService interface {
 	GetStagedProductByName(productName string) (api.StagedProductsFindOutput, error)
 	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)

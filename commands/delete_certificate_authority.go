@@ -15,7 +15,7 @@ type DeleteCertificateAuthority struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/delete_certificate_authority_service.go --fake-name DeleteCertificateAuthorityService . deleteCertificateAuthorityService
+//counterfeiter:generate -o ./fakes/delete_certificate_authority_service.go --fake-name DeleteCertificateAuthorityService . deleteCertificateAuthorityService
 type deleteCertificateAuthorityService interface {
 	DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput) error
 }

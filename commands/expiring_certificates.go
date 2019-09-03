@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//go:generate counterfeiter -o ./fakes/expiring_certs_service.go --fake-name ExpiringCertsService . expiringCertsService
+//counterfeiter:generate -o ./fakes/expiring_certs_service.go --fake-name ExpiringCertsService . expiringCertsService
 type expiringCertsService interface {
 	ListExpiringCertificates(string) ([]api.ExpiringCertificate, error)
 }

@@ -22,7 +22,7 @@ type DeleteInstallation struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/delete_installation_service.go --fake-name DeleteInstallationService . deleteInstallationService
+//counterfeiter:generate -o ./fakes/delete_installation_service.go --fake-name DeleteInstallationService . deleteInstallationService
 type deleteInstallationService interface {
 	DeleteInstallationAssetCollection() (api.InstallationsServiceOutput, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)

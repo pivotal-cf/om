@@ -13,7 +13,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-//go:generate counterfeiter -o ./fakes/curl_service.go --fake-name CurlService . curlService
+//counterfeiter:generate -o ./fakes/curl_service.go --fake-name CurlService . curlService
 type curlService interface {
 	Curl(api.RequestServiceCurlInput) (api.RequestServiceCurlOutput, error)
 }

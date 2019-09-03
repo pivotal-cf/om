@@ -28,7 +28,7 @@ type UploadStemcell struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/multipart.go --fake-name Multipart . multipart
+//counterfeiter:generate -o ./fakes/multipart.go --fake-name Multipart . multipart
 type multipart interface {
 	Finalize() formcontent.ContentSubmission
 	Reset()
@@ -36,7 +36,7 @@ type multipart interface {
 	AddField(key, value string) error
 }
 
-//go:generate counterfeiter -o ./fakes/upload_stemcell_service.go --fake-name UploadStemcellService . uploadStemcellService
+//counterfeiter:generate -o ./fakes/upload_stemcell_service.go --fake-name UploadStemcellService . uploadStemcellService
 type uploadStemcellService interface {
 	UploadStemcell(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
 	GetDiagnosticReport() (api.DiagnosticReport, error)

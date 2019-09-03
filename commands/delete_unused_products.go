@@ -10,7 +10,7 @@ type DeleteUnusedProducts struct {
 	logger  logger
 }
 
-//go:generate counterfeiter -o ./fakes/delete_unused_products_service.go --fake-name DeleteUnusedProductsService . deleteUnusedProductsService
+//counterfeiter:generate -o ./fakes/delete_unused_products_service.go --fake-name DeleteUnusedProductsService . deleteUnusedProductsService
 type deleteUnusedProductsService interface {
 	DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error
 }

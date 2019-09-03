@@ -16,7 +16,7 @@ type UpdateSSLCertificate struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/update_ssl_certificate_service.go --fake-name UpdateSSLCertificateService . updateSSLCertificateService
+//counterfeiter:generate -o ./fakes/update_ssl_certificate_service.go --fake-name UpdateSSLCertificateService . updateSSLCertificateService
 type updateSSLCertificateService interface {
 	UpdateSSLCertificate(api.SSLCertificateInput) error
 }

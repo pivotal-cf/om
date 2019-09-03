@@ -18,7 +18,7 @@ type PersistentDisk struct {
 	Size interface{} `yaml:"size_mb"`
 }
 
-//go:generate counterfeiter -o ./fakes/jobtype.go --fake-name FakeJobType . jobtype
+//counterfeiter:generate -o ./fakes/jobtype.go --fake-name FakeJobType . jobtype
 type jobtype interface {
 	IsIncluded() bool
 	HasPersistentDisk() bool

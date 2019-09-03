@@ -16,7 +16,7 @@ type SSLCertificate struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/ssl_certificate_service.go --fake-name SSLCertificateService . sslCertificateService
+//counterfeiter:generate -o ./fakes/ssl_certificate_service.go --fake-name SSLCertificateService . sslCertificateService
 
 type sslCertificateService interface {
 	GetSSLCertificate() (api.SSLCertificateOutput, error)

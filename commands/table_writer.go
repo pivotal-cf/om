@@ -1,6 +1,6 @@
 package commands
 
-//go:generate counterfeiter -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
+//counterfeiter:generate -o ./fakes/table_writer.go --fake-name TableWriter . tableWriter
 
 type tableWriter interface {
 	SetHeader([]string)

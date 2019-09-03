@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//go:generate counterfeiter -o ./fakes/create_vm_extension_service.go --fake-name CreateVMExtensionService . createVMExtensionService
+//counterfeiter:generate -o ./fakes/create_vm_extension_service.go --fake-name CreateVMExtensionService . createVMExtensionService
 type createVMExtensionService interface {
 	CreateStagedVMExtension(api.CreateVMExtension) error
 }

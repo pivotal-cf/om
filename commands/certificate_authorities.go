@@ -16,7 +16,7 @@ type CertificateAuthorities struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/certificate_authorities_service.go --fake-name CertificateAuthoritiesService . certificateAuthoritiesService
+//counterfeiter:generate -o ./fakes/certificate_authorities_service.go --fake-name CertificateAuthoritiesService . certificateAuthoritiesService
 
 type certificateAuthoritiesService interface {
 	ListCertificateAuthorities() (api.CertificateAuthoritiesOutput, error)

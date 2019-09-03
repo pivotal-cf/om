@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	os "os"
-	sync "sync"
+	"os"
+	"sync"
 
-	commands "github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/commands"
 )
 
 type ProductDownloader struct {

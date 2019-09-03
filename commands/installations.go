@@ -17,7 +17,7 @@ type Installations struct {
 	}
 }
 
-//go:generate counterfeiter -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
+//counterfeiter:generate -o ./fakes/installations_service.go --fake-name InstallationsService . installationsService
 type installationsService interface {
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
