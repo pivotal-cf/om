@@ -126,7 +126,8 @@ var _ = Describe("apply-changes command", func() {
 			"--username", "some-running-install-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
-			"apply-changes")
+			"apply-changes",
+			"--reattach")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
@@ -135,7 +136,7 @@ var _ = Describe("apply-changes command", func() {
 
 		Expect(installationsStatusCallCount).To(Equal(3))
 
-		Expect(session.Out).To(gbytes.Say(`found already running installation...re-attaching \(Installation ID: 42, Started: Thu Mar  2 06:50:32 UTC 2017\)`))
+		Expect(session.Out).To(gbytes.Say(`found already running installation... re-attaching \(Installation ID: 42, Started: Thu Mar  2 06:50:32 UTC 2017\)`))
 		Expect(session.Out).To(gbytes.Say("something logged for call #0"))
 		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
 		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
