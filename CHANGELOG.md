@@ -55,6 +55,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This makes the behavior of `apply-changes` easier to anticipate
   and specify whether applying all changes or applying changes to a particular product.  
   
+### Features
+- `config-template` now accepts `--pivnet-file-glob` insstead of `--product-file-glob`.
+  This is to create consistency with the `download-product` command's naming conventions.
+  Thanks to @poligraph for the PR!
 ## 3.2.2
 
 ### Bug Fixes
