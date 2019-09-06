@@ -153,7 +153,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcell.Version()),
 	)
 	if err != nil {
-		return fmt.Errorf("could not download stemcell: %s", err)
+		return fmt.Errorf("could not download stemcell: %s\nNo stemcell identified on on PivNet. Remove -stemcell-iaas and/or contact support", err)
 	}
 
 	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
