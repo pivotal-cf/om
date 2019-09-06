@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"archive/zip"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -107,6 +108,7 @@ name: some-product`)
 
 	JustBeforeEach(func() {
 		server = httptest.NewTLSServer(&UploadProductTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
+		server.TLS.MinVersion = tls.VersionTLS12
 	})
 
 	AfterEach(func() {
