@@ -107,8 +107,11 @@ name: some-product`)
 	})
 
 	JustBeforeEach(func() {
-		server = httptest.NewTLSServer(&UploadProductTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
-		server.TLS.MinVersion = tls.VersionTLS12
+		server = httptest.NewUnstartedServer(&UploadProductTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
+		server.TLS = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+		server.StartTLS()
 	})
 
 	AfterEach(func() {
