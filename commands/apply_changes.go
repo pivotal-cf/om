@@ -103,7 +103,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return err
 		} else {
 			ac.logger.Printf("found already running installation... not re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
-			return fmt.Errorf("apply changes is already running not re-attaching, use \"--reattach\" to enable reattaching")
+			return fmt.Errorf("apply changes is already running, use \"--reattach\" to enable reattaching")
 		}
 	}
 
