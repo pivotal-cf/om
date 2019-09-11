@@ -8,6 +8,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -173,7 +174,7 @@ func CanRetry(err error) bool {
 			err = ue.Err
 		}
 
-		if err == io.EOF {
+		if err == io.EOF || strings.Contains(err.Error(), "use of closed connection") {
 			return true
 		}
 
