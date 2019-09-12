@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"io/ioutil"
-	"net/http/httptest"
 	"os"
 	"os/exec"
 	"regexp"
@@ -15,30 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("global env file", func() {
-	When("provided --env flag", func() {
-		var (
-			configContent string
-			configFile    *os.File
-			command       *exec.Cmd
-			server        *httptest.Server
-		)
-
-		createConfigFile := func(target string) {
-			var err error
-
-			configFile, err = ioutil.TempFile("", "config.yml")
-			Expect(err).NotTo(HaveOccurred())
-
-			_, err = configFile.WriteString(fmt.Sprintf(configContent, target))
-			Expect(err).NotTo(HaveOccurred())
-
-			err = configFile.Close()
-			Expect(err).NotTo(HaveOccurred())
-		}
-
-		BeforeEach(func() {
-			configContent = `
+const validConfigFile = `
 ---
 password: some-env-provided-password
 username: some-env-provided-username
@@ -46,11 +22,30 @@ target: %s
 skip-ssl-validation: true
 connect-timeout: 10
 `
-			server = testServer(true)
-			createConfigFile(server.URL)
-		})
+
+var _ = Describe("global env file", func() {
+	When("provided --env flag", func() {
+		var (
+			configFile *os.File
+			command    *exec.Cmd
+		)
+
+		createConfigFile := func(configContent string) {
+			var err error
+
+			configFile, err = ioutil.TempFile("", "config.yml")
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = configFile.WriteString(configContent)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = configFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+		}
 
 		It("authenticates with creds in config file", func() {
+			server := testServer(true)
+			createConfigFile(fmt.Sprintf(validConfigFile, server.URL))
 			command := exec.Command(pathToMain,
 				"--env", configFile.Name(),
 				"curl",
@@ -65,7 +60,8 @@ connect-timeout: 10
 		})
 
 		It("errors if given an unexpected key", func() {
-			configContent = `
+			server := testServer(false)
+			configContent := fmt.Sprintf(`
 ---
 password: some-env-provided-password
 username: some-env-provided-username
@@ -73,16 +69,8 @@ target: %s
 skip-ssl-validation: true
 connect-timeout: 10
 bad-key: bad-value
-`
-
-			configFile, err := ioutil.TempFile("", "config.yml")
-			Expect(err).NotTo(HaveOccurred())
-
-			_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))
-			Expect(err).NotTo(HaveOccurred())
-
-			err = configFile.Close()
-			Expect(err).NotTo(HaveOccurred())
+`, server.URL)
+			createConfigFile(configContent)
 
 			command := exec.Command(pathToMain,
 				"--env", configFile.Name(),
@@ -100,8 +88,7 @@ bad-key: bad-value
 
 		When("the env file contains variables", func() {
 			BeforeEach(func() {
-				createConfigFile("((target_url))")
-
+				createConfigFile(fmt.Sprintf(validConfigFile,"((target_url))"))
 				command = exec.Command(pathToMain,
 					"--env", configFile.Name(),
 					"curl",
@@ -113,7 +100,9 @@ bad-key: bad-value
 				BeforeEach(func() {
 					command.Env = append(command.Env, "OM_VARS_ENV=OM_VAR")
 				})
+
 				It("uses variables with the specified prefix in the env file", func() {
+					server := testServer(true)
 					command.Env = append(command.Env, fmt.Sprintf("OM_VAR_target_url=%s", server.URL))
 					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 					Expect(err).NotTo(HaveOccurred())
@@ -123,6 +112,7 @@ bad-key: bad-value
 					Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 
 				})
+
 				When("the env file contains variables not found in the environment", func() {
 					It("exits 1 and lists the missing variables", func() {
 						session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -159,16 +149,7 @@ bad-key: bad-value
 
 		When("given an invalid env file", func() {
 			BeforeEach(func() {
-				var err error
-
-				configFile, err = ioutil.TempFile("", "config.yml")
-				Expect(err).NotTo(HaveOccurred())
-
-				_, err = configFile.WriteString(`this is invalid yaml`)
-				Expect(err).NotTo(HaveOccurred())
-
-				err = configFile.Close()
-				Expect(err).NotTo(HaveOccurred())
+				createConfigFile("invalid yaml")
 
 				command = exec.Command(pathToMain,
 					"--env", configFile.Name(),
@@ -176,6 +157,7 @@ bad-key: bad-value
 					"-p", "/api/v0/available_products",
 				)
 			})
+
 			It("returns an error", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
