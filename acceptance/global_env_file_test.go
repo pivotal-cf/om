@@ -1,6 +1,8 @@
 package acceptance
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"io/ioutil"
@@ -20,6 +22,15 @@ password: some-env-provided-password
 username: some-env-provided-username
 target: %s
 skip-ssl-validation: true
+connect-timeout: 10
+`
+
+const validWithCaCertConfigFile = `
+---
+password: some-env-provided-password
+username: some-env-provided-username
+target: %s
+ca-cert: %s
 connect-timeout: 10
 `
 
@@ -59,6 +70,26 @@ var _ = Describe("global env file", func() {
 			Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 		})
 
+		It("supports a string from --ca-cert", func() {
+			server := testServer(true)
+			cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
+			Expect(err).NotTo(HaveOccurred())
+			pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
+			caCertFilename := writeFile(string(pemCert))
+
+			createConfigFile(fmt.Sprintf(validWithCaCertConfigFile, server.URL, caCertFilename))
+			command := exec.Command(pathToMain,
+				"--env", configFile.Name(),
+				"curl",
+				"-p", "/api/v0/available_products",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+		})
+
 		It("errors if given an unexpected key", func() {
 			server := testServer(false)
 			configContent := fmt.Sprintf(`
@@ -88,7 +119,7 @@ bad-key: bad-value
 
 		When("the env file contains variables", func() {
 			BeforeEach(func() {
-				createConfigFile(fmt.Sprintf(validConfigFile,"((target_url))"))
+				createConfigFile(fmt.Sprintf(validConfigFile, "((target_url))"))
 				command = exec.Command(pathToMain,
 					"--env", configFile.Name(),
 					"curl",

@@ -268,6 +268,9 @@ func setEnvFileProperties(global *options) error {
 	if global.DecryptionPassphrase == "" {
 		global.DecryptionPassphrase = opts.DecryptionPassphrase
 	}
+	if global.CACert == "" {
+		global.CACert = opts.CACert
+	}
 
 	err = checkForVars(global)
 	if err != nil {
