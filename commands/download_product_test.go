@@ -172,7 +172,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		When("a file is being donwloaded with a SHA sum value from the downloader", func() {
+		When("a file is being downloaded with a SHA sum value from the downloader", func() {
 			When("the shasum is valid for the downloaded file", func() {
 				BeforeEach(func() {
 					fa := &fakes.FileArtifacter{}
@@ -648,7 +648,6 @@ output-directory: %s
 					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, unPrefixedFileName)))
 				})
 			})
-
 		})
 	})
 

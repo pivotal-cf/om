@@ -41,30 +41,39 @@ type ProductDownloader interface {
 }
 
 type DownloadProductOptions struct {
-	Source              string   `long:"source"                short:"s"  description:"enables download from external sources when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
-	ConfigFile          string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-	OutputDir           string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-	PivnetFileGlob      string   `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
-	PivnetProductSlug   string   `long:"pivnet-product-slug"   short:"p"  description:"path to product" required:"true"`
-	PivnetDisableSSL    bool     `long:"pivnet-disable-ssl"               description:"whether to disable ssl validation when contacting the Pivotal Network"`
-	PivnetToken         string   `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
-	ProductVersion      string   `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
-	ProductVersionRegex string   `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
-	S3Bucket            string   `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
-	S3AccessKeyID       string   `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
-	S3AuthType          string   `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
-	S3SecretAccessKey   string   `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
-	S3RegionName        string   `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
-	S3Endpoint          string   `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
-	S3DisableSSL        bool     `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
-	S3EnableV2Signing   bool     `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
-	S3ProductPath       string   `long:"s3-product-path"                  description:"specify the lookup path where the s3 product artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
-	S3StemcellPath      string   `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
-	Stemcell            bool     `long:"download-stemcell"                description:"no-op for backwards compatibility"`
-	StemcellIaas        string   `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
-	VarsEnv             []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-	VarsFile            []string `long:"vars-file" short:"l"  description:"load variables from a YAML file"`
-	Vars                []string `long:"var"                              description:"Load variable from the command line. Format: VAR=VAL"`
+	Source     string   `long:"source"                short:"s"  description:"enables download from external sources when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
+	ConfigFile string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+	OutputDir  string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+	VarsFile   []string `long:"vars-file" short:"l"  description:"load variables from a YAML file"`
+	Vars       []string `long:"var"                              description:"Load variable from the command line. Format: VAR=VAL"`
+
+	PivnetFileGlob      string `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
+	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"  description:"path to product" required:"true"`
+	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"               description:"whether to disable ssl validation when contacting the Pivotal Network"`
+	PivnetToken         string `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
+	ProductVersion      string `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+	ProductVersionRegex string `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+
+	GCSBucket             string `long:"gcs-bucket"`
+	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json"`
+	GCSProjectID          string `long:"gcs-project-id" alias:"gcp-project-id"`
+	GCSProductPath        string `long:"gcs-product-path"`
+	GCSStemcellPath       string `long:"gcs-stemcell-path"`
+
+	S3Bucket          string `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
+	S3AccessKeyID     string `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
+	S3AuthType        string `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
+	S3SecretAccessKey string `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
+	S3RegionName      string `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
+	S3Endpoint        string `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
+	S3DisableSSL      bool   `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
+	S3EnableV2Signing bool   `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
+	S3ProductPath     string `long:"s3-product-path"                  description:"specify the lookup path where the s3 product artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+	S3StemcellPath    string `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
+
+	Stemcell     bool   `long:"download-stemcell"                description:"no-op for backwards compatibility"`
+	StemcellIaas string `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 }
 
 type DownloadProduct struct {
@@ -208,7 +217,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 func (c *DownloadProduct) createClient() error {
 	plugin, ok := plugins[c.Options.Source]
 	if !ok {
-		return fmt.Errorf("could not find valid plugin to match")
+		return fmt.Errorf("could not find valid source for '%s'", c.Options.Source)
 	}
 
 	value, err := plugin(c.Options, c.progressWriter, c.stdout, c.stderr)

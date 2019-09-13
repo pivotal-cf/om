@@ -1,6 +1,7 @@
 module github.com/pivotal-cf/om
 
 require (
+	cloud.google.com/go v0.38.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.23.19 // indirect
 	github.com/bmatcuk/doublestar v1.1.5 // indirect
@@ -37,6 +38,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20190910064555-bbd175535a8b // indirect
 	golang.org/x/tools v0.0.0-20190821162956-65e3620a7ae7 // indirect
+	google.golang.org/api v0.8.0
 	google.golang.org/appengine v1.6.2 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
