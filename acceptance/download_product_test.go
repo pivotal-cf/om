@@ -76,6 +76,8 @@ var _ = Describe("download-product command", func() {
 
 				fileInfo, err := os.Stat(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal"))
 				Expect(err).ToNot(HaveOccurred())
+				Expect(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal.partial")).ToNot(BeAnExistingFile())
+				Expect(filepath.Join(tmpDir, "[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.partial")).ToNot(BeAnExistingFile())
 
 				By("ensuring an assign stemcell artifact is created")
 				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
@@ -108,6 +110,9 @@ var _ = Describe("download-product command", func() {
 				cachedFileInfo, err := os.Stat(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(cachedFileInfo.ModTime()).To(Equal(fileInfo.ModTime()))
+
+				Expect(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal.partial")).ToNot(BeAnExistingFile())
+				Expect(filepath.Join(tmpDir, "[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.partial")).ToNot(BeAnExistingFile())
 			})
 		})
 
@@ -461,6 +466,7 @@ var _ = Describe("download-product command", func() {
 			Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 
 			Expect(filepath.Join(tmpDir, "example-product.pivotal")).To(BeAnExistingFile())
+			Expect(filepath.Join(tmpDir, "example-product.pivotal.partial")).ToNot(BeAnExistingFile())
 		})
 	})
 })

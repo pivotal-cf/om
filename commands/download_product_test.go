@@ -112,10 +112,10 @@ var _ = Describe("DownloadProduct", func() {
 				Expect(version).To(Equal("2.1.2"))
 
 				_, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(0)
-				Expect(pf.Name()).To(Equal(path.Join(tempDir, "cf-2.1-build.11.pivotal")))
+				Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "cf-2.1-build.11.pivotal.partial")))
 
-				downloadedFilePath := path.Join(tempDir, "cf-2.1-build.11.pivotal")
-				Expect(downloadedFilePath).To(BeAnExistingFile())
+				Expect(filepath.Join(tempDir, "cf-2.1-build.11.pivotal")).To(BeAnExistingFile())
+				Expect(filepath.Join(tempDir, "cf-2.1-build.11.pivotal.partial")).NotTo(BeAnExistingFile())
 			})
 
 			When("the releases contains non-semver-compatible version", func() {
@@ -278,13 +278,14 @@ var _ = Describe("DownloadProduct", func() {
 
 				fa, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(1)
 				Expect(fa.Name()).To(Equal("/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz"))
-				Expect(pf.Name()).To(Equal(path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")))
+				Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz.partial")))
 
 				fileName := path.Join(tempDir, "download-file.json")
 				fileContent, err := ioutil.ReadFile(fileName)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fileName).To(BeAnExistingFile())
 				downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
+				downloadedStemcellFilePath := path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")
 				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
 							{
 								"product_path": "%s",
@@ -292,7 +293,7 @@ var _ = Describe("DownloadProduct", func() {
 								"product_version": "2.0.0",
 								"stemcell_path": "%s",
 								"stemcell_version": "97.190"
-							}`, downloadedFilePath, pf.Name())))
+							}`, downloadedFilePath, downloadedStemcellFilePath)))
 
 				fileName = path.Join(tempDir, "assign-stemcell.yml")
 				fileContent, err = ioutil.ReadFile(fileName)
