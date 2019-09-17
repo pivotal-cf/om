@@ -104,7 +104,7 @@ func (b *stowClient) listFiles() ([]string, error) {
 	}
 
 	if len(paths) == 0 {
-		return nil, fmt.Errorf("bucket contains no files")
+		return nil, fmt.Errorf("bucket '%s' contains no files", b.bucket)
 	}
 
 	return paths, nil

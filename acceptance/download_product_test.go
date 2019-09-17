@@ -211,7 +211,7 @@ var _ = Describe("download-product command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
-				Expect(session.Err).To(gbytes.Say(`could not download product: bucket contains no files`))
+				Expect(session.Err).To(gbytes.Say(fmt.Sprintf("could not download product: bucket '%s' contains no files", bucketName)))
 			})
 		})
 

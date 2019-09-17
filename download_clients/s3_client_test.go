@@ -517,7 +517,7 @@ var _ = Describe("S3Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetLatestStemcellForProduct(nil, exampleTileFileName)
-				Expect(err).To(MatchError("could not find stemcells on s3: bucket contains no files"))
+				Expect(err).To(MatchError("could not find stemcells on s3: bucket 'bucket' contains no files"))
 			})
 
 			It("errors when cannot get latest stemcell version", func() {
