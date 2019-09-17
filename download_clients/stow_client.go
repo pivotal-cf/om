@@ -47,6 +47,18 @@ type stowClient struct {
 	kind           string
 }
 
+func NewStowClient(stower Stower, bucket string, config stow.ConfigMap, progressWriter io.Writer, productPath string, stemcellPath string, kind string) stowClient {
+	return stowClient{
+		stower:         stower,
+		bucket:         bucket,
+		Config:         config,
+		progressWriter: progressWriter,
+		productPath:    productPath,
+		stemcellPath:   stemcellPath,
+		kind:           kind,
+	}
+}
+
 func (b stowClient) GetAllProductVersions(slug string) ([]string, error) {
 	return b.getAllProductVersionsFromPath(slug, b.productPath)
 }
