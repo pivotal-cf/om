@@ -354,7 +354,7 @@ var _ = Describe("stowClient", func() {
 				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "blobstore")
 
 				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
-				Expect(err).To(MatchError("could not find stemcells on blobstore: bucket contains no files"))
+				Expect(err).To(MatchError("could not find stemcells on blobstore: bucket 'bucket' contains no files"))
 			})
 
 			It("errors when cannot get latest stemcell version", func() {
