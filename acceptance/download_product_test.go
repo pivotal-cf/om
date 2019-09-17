@@ -379,8 +379,7 @@ var _ = Describe("download-product command", func() {
 			}
 
 			// upload artifact to it
-			fmt.Println("**********************************", config.GinkgoConfig.ParallelNode)
-			bucketName = fmt.Sprintf("om-acceptance-bucket-%d", config.GinkgoConfig.ParallelNode)
+			bucketName = fmt.Sprintf("om-acceptance-bucket-%d", time.Now().UnixNano())
 			runCommand("gsutil", "mb","gs://"+bucketName)
 		})
 
@@ -413,8 +412,8 @@ var _ = Describe("download-product command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
-				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source gcs`))
-				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.*from source gcs`))
+				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source google`))
+				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.*from source google`))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 
 				fileInfo, err := os.Stat(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal"))

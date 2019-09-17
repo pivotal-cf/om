@@ -18,15 +18,11 @@ type GCSConfiguration struct {
 	StemcellPath       string
 }
 
-type GCSClient struct {
-	stowClient
-}
-
-func NewGCSClient(stower Stower, config GCSConfiguration, progressWriter io.Writer) (*GCSClient, error) {
+func NewGCSClient(stower Stower, config GCSConfiguration, progressWriter io.Writer) (stowClient, error) {
 	validate := validator.New()
 	err := validate.Struct(config)
 	if err != nil {
-		return nil, err
+		return stowClient{}, err
 	}
 
 	stowConfig := stow.ConfigMap{
@@ -35,21 +31,15 @@ func NewGCSClient(stower Stower, config GCSConfiguration, progressWriter io.Writ
 		google.ConfigScopes:    storage.DevstorageReadOnlyScope,
 	}
 
-	return &GCSClient{
-		stowClient: stowClient{
-			stower:         stower,
-			Config:         stowConfig,
-			bucket:         config.Bucket,
-			progressWriter: progressWriter,
-			productPath:    config.ProductPath,
-			stemcellPath:   config.StemcellPath,
-			kind:           "google",
-		},
-	}, nil
-}
-
-func (s3 GCSClient) Name() string {
-	return "gcs"
+	return NewStowClient(
+		stower,
+		config.Bucket,
+		stowConfig,
+		progressWriter,
+		config.ProductPath,
+		config.StemcellPath,
+		"google",
+	), nil
 }
 
 func init() {

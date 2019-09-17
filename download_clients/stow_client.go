@@ -59,12 +59,16 @@ func NewStowClient(stower Stower, bucket string, config stow.ConfigMap, progress
 	}
 }
 
-func (b stowClient) GetAllProductVersions(slug string) ([]string, error) {
-	return b.getAllProductVersionsFromPath(slug, b.productPath)
+func (s stowClient) Name() string {
+	return s.kind
 }
 
-func (b stowClient) getAllProductVersionsFromPath(slug, path string) ([]string, error) {
-	files, err := b.listFiles()
+func (s stowClient) GetAllProductVersions(slug string) ([]string, error) {
+	return s.getAllProductVersionsFromPath(slug, s.productPath)
+}
+
+func (s stowClient) getAllProductVersionsFromPath(slug, path string) ([]string, error) {
+	files, err := s.listFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -96,14 +100,14 @@ func (b stowClient) getAllProductVersionsFromPath(slug, path string) ([]string, 
 	return versions, nil
 }
 
-func (b *stowClient) listFiles() ([]string, error) {
-	container, err := b.getContainer()
+func (s *stowClient) listFiles() ([]string, error) {
+	container, err := s.getContainer()
 	if err != nil {
 		return nil, err
 	}
 
 	var paths []string
-	err = b.stower.Walk(container, stow.NoPrefix, 100, func(item stow.Item, err error) error {
+	err = s.stower.Walk(container, stow.NoPrefix, 100, func(item stow.Item, err error) error {
 		if err != nil {
 			return err
 		}
@@ -122,41 +126,41 @@ func (b *stowClient) listFiles() ([]string, error) {
 	return paths, nil
 }
 
-func (b *stowClient) getContainer() (stow.Container, error) {
-	location, err := b.stower.Dial(b.kind, b.Config)
+func (s *stowClient) getContainer() (stow.Container, error) {
+	location, err := s.stower.Dial(s.kind, s.Config)
 	if err != nil {
 		return nil, err
 	}
-	container, err := location.Container(b.bucket)
+	container, err := location.Container(s.bucket)
 	if err != nil {
-		endpoint, _ := b.Config.Config("endpoint")
+		endpoint, _ := s.Config.Config("endpoint")
 		if endpoint != "" {
 			return nil, fmt.Errorf(
 				"could not reach provided endpoint and bucket '%s/%s': %s\nCheck bucket and endpoint configuration",
 				endpoint,
-				b.bucket,
+				s.bucket,
 				err,
 			)
 		}
 		return nil, fmt.Errorf(
 			"could not reach provided bucket '%s': %s\nCheck bucket and endpoint configuration",
-			b.bucket,
+			s.bucket,
 			err,
 		)
 	}
 	return container, nil
 }
 
-func (b stowClient) GetLatestProductFile(slug, version, glob string) (commands.FileArtifacter, error) {
-	files, err := b.listFiles()
+func (s stowClient) GetLatestProductFile(slug, version, glob string) (commands.FileArtifacter, error) {
+	files, err := s.listFiles()
 	if err != nil {
 		return nil, err
 	}
 
 	validFile := regexp.MustCompile(
 		fmt.Sprintf(`^/?(%s|%s)/?\[%s,%s\]`,
-			regexp.QuoteMeta(strings.Trim(b.productPath, "/")),
-			regexp.QuoteMeta(strings.Trim(b.stemcellPath, "/")),
+			regexp.QuoteMeta(strings.Trim(s.productPath, "/")),
+			regexp.QuoteMeta(strings.Trim(s.stemcellPath, "/")),
 			slug,
 			regexp.QuoteMeta(version),
 		),
@@ -199,24 +203,24 @@ func (b stowClient) GetLatestProductFile(slug, version, glob string) (commands.F
 	return &stowFileArtifact{name: globMatchedFilepaths[0]}, nil
 }
 
-func (b stowClient) DownloadProductToFile(fa commands.FileArtifacter, destinationFile *os.File) error {
-	blobReader, size, err := b.initializeBlobReader(fa.Name())
+func (s stowClient) DownloadProductToFile(fa commands.FileArtifacter, destinationFile *os.File) error {
+	blobReader, size, err := s.initializeBlobReader(fa.Name())
 	if err != nil {
 		return err
 	}
 
-	progressBar, wrappedBlobReader := b.startProgressBar(size, blobReader)
+	progressBar, wrappedBlobReader := s.startProgressBar(size, blobReader)
 	defer progressBar.Finish()
 
-	if err = b.streamBufferToFile(destinationFile, wrappedBlobReader); err != nil {
+	if err = s.streamBufferToFile(destinationFile, wrappedBlobReader); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (b *stowClient) initializeBlobReader(filename string) (blobToRead io.ReadCloser, fileSize int64, err error) {
-	container, err := b.getContainer()
+func (s *stowClient) initializeBlobReader(filename string) (blobToRead io.ReadCloser, fileSize int64, err error) {
+	container, err := s.getContainer()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -234,22 +238,22 @@ func (b *stowClient) initializeBlobReader(filename string) (blobToRead io.ReadCl
 	return blobToRead, fileSize, err
 }
 
-func (b stowClient) startProgressBar(size int64, item io.Reader) (progressBar *progress.Bar, reader io.Reader) {
+func (s stowClient) startProgressBar(size int64, item io.Reader) (progressBar *progress.Bar, reader io.Reader) {
 	progressBar = progress.NewBar()
 	progressBar.SetTotal64(size)
-	progressBar.SetOutput(b.progressWriter)
+	progressBar.SetOutput(s.progressWriter)
 	reader = progressBar.NewProxyReader(item)
-	_, _ = b.progressWriter.Write([]byte("Downloading product from b..."))
+	_, _ = s.progressWriter.Write([]byte("Downloading product from s..."))
 	progressBar.Start()
 	return progressBar, reader
 }
 
-func (b stowClient) streamBufferToFile(destinationFile *os.File, wrappedBlobReader io.Reader) error {
+func (s stowClient) streamBufferToFile(destinationFile *os.File, wrappedBlobReader io.Reader) error {
 	_, err := io.Copy(destinationFile, wrappedBlobReader)
 	return err
 }
 
-func (b stowClient) GetLatestStemcellForProduct(_ commands.FileArtifacter, downloadedProductFileName string) (commands.StemcellArtifacter, error) {
+func (s stowClient) GetLatestStemcellForProduct(_ commands.FileArtifacter, downloadedProductFileName string) (commands.StemcellArtifacter, error) {
 	definedStemcell, err := stemcellFromProduct(downloadedProductFileName)
 	if err != nil {
 		return nil, err
@@ -260,9 +264,9 @@ func (b stowClient) GetLatestStemcellForProduct(_ commands.FileArtifacter, downl
 		return nil, err
 	}
 
-	allStemcellVersions, err := b.getAllProductVersionsFromPath(definedStemcell.Slug(), b.stemcellPath)
+	allStemcellVersions, err := s.getAllProductVersionsFromPath(definedStemcell.Slug(), s.stemcellPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not find stemcells on %s: %s", b.kind, err)
+		return nil, fmt.Errorf("could not find stemcells on %s: %s", s.kind, err)
 	}
 
 	var filteredVersions []string

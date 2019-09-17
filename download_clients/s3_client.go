@@ -24,15 +24,11 @@ type S3Configuration struct {
 	AuthType        string
 }
 
-type S3Client struct {
-	stowClient
-}
-
-func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer) (*S3Client, error) {
+func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer) (stowClient, error) {
 	validate := validator.New()
 	err := validate.Struct(config)
 	if err != nil {
-		return nil, err
+		return stowClient{}, err
 	}
 
 	disableSSL := strconv.FormatBool(config.DisableSSL)
@@ -43,7 +39,7 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 
 	err = validateAccessKeyAuthType(config)
 	if err != nil {
-		return nil, err
+		return stowClient{}, err
 	}
 
 	stowConfig := stow.ConfigMap{
@@ -56,21 +52,15 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 		s3.ConfigAuthType:    config.AuthType,
 	}
 
-	return &S3Client{
-		stowClient: stowClient{
-			stower:         stower,
-			Config:         stowConfig,
-			bucket:         config.Bucket,
-			progressWriter: progressWriter,
-			productPath:    config.ProductPath,
-			stemcellPath:   config.StemcellPath,
-			kind:           "s3",
-		},
-	}, nil
-}
-
-func (s3 S3Client) Name() string {
-	return s3.kind
+	return NewStowClient(
+		stower,
+		config.Bucket,
+		stowConfig,
+		progressWriter,
+		config.ProductPath,
+		config.StemcellPath,
+		"s3",
+	), nil
 }
 
 func validateAccessKeyAuthType(config S3Configuration) error {
