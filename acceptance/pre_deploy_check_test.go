@@ -180,6 +180,7 @@ var _ = Describe("pre_deploy_check command", func() {
 
     Error: verifier: NetworksPingableVerifier
     Why: NetworksPingableVerifier error
+    Disable: ` + "`om disable-director-verifiers --type NetworksPingableVerifier`" + `
 
 [X] product: p-guid
     Error: Availability Zone is not assigned

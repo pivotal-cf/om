@@ -6,6 +6,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
+	"strings"
 )
 
 type PreDeployCheck struct {
@@ -133,6 +134,9 @@ func (pc PreDeployCheck) determineDirectorErrors(directorOutput api.PendingDirec
 		for _, err := range verifier.Errors {
 			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
+
+		errBuffer[len(errBuffer)-1] = strings.TrimRight(errBuffer[len(errBuffer)-1], "\n")
+		errBuffer = append(errBuffer, fmt.Sprintf("    Disable: `om disable-director-verifiers --type %s`\n", verifier.Type))
 	}
 
 	return errBuffer
