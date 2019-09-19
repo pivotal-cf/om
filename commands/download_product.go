@@ -53,8 +53,8 @@ type DownloadProductOptions struct {
 	ProductVersionRegex string `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
 	Bucket       string `long:"blobstore-bucket" alias:"s3-bucket,gcs-bucket,azure-container" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path" description:"specify the lookup path where the s3|gcs product artifacts are stored"`
-	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path" description:"specify the lookup path where the s3|gcs stemcell artifacts are stored"`
+	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path,azure-product-path" description:"specify the lookup path where the s3|gcs product artifacts are stored"`
+	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs stemcell artifacts are stored"`
 
 	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json" description:"the service account key JSON"`
 	GCSProjectID          string `long:"gcs-project-id" alias:"gcp-project-id" description:"the project id for the bucket's gcp account"`
@@ -68,7 +68,7 @@ type DownloadProductOptions struct {
 	S3EnableV2Signing bool   `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
 
 	AzureStorageAccount string `long:"azure-storage-account" description:"the name of the storage account where the container exists"`
-	AzureKey            string `long:"azure-key" description:"the access key for the storage account"`
+	AzureKey            string `long:"azure-storage-key" description:"the access key for the storage account"`
 
 	Stemcell     bool   `long:"download-stemcell"                description:"no-op for backwards compatibility"`
 	StemcellIaas string `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
