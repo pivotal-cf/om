@@ -54,6 +54,43 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This command allows verifiers known to be inappropriate
   for a given environment
   to be disabled.
+- `download-product` supports GCS (Google Cloud Storage)
+  for Pivnet download artifacts.
+  
+  An example config,
+  
+  ```yaml
+  pivnet-file-glob: "*.tgz"
+  pivnet-product-slug: pivotal-telemetry-collector
+  product-version: "1.0.1"
+  output-directory: /tmp
+  source: gcs
+  gcs-bucket: some-bucket
+  gcs-service-account-json: |
+    {account-JSON}
+  gcs-project-id: project-id
+  ```
+  
+  This will download the `[pivotal-telemetry-collector,1.0.1]telemetry-collector-1.0.1.tgz`
+  from the `some-bucket` bucket from the GCS account.
+  
+- `download-product` supports Azure Storage.
+  for Pivnet download artifacts.
+  
+  ```yaml
+  pivnet-file-glob: "*.tgz"
+  pivnet-product-slug: pivotal-telemetry-collector
+  product-version: "1.0.1"
+  output-directory: /tmp
+  source: azure
+  azure-container: pivnet-blobs
+  azure-storage-account: some-storage-account
+  azure-key: "storage-account-key"
+  ```
+
+  This will download the `[[pivotal-telemetry-collector,1.0.1]telemetry-collector-1.0.1.tgz`
+  from the `pivnet-blobs` container
+  from the `some-storage-account` storage account from Azure Storage.
 
 ## 4.0.1
 
