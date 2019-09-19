@@ -83,7 +83,7 @@ func init() {
 		_ *log.Logger,
 	) (commands.ProductDownloader, error) {
 		config := S3Configuration{
-			Bucket:          c.S3Bucket,
+			Bucket:          c.Bucket,
 			AccessKeyID:     c.S3AccessKeyID,
 			AuthType:        c.S3AuthType,
 			SecretAccessKey: c.S3SecretAccessKey,
@@ -91,8 +91,8 @@ func init() {
 			Endpoint:        c.S3Endpoint,
 			DisableSSL:      c.S3DisableSSL,
 			EnableV2Signing: c.S3EnableV2Signing,
-			ProductPath:     c.S3ProductPath,
-			StemcellPath:    c.S3StemcellPath,
+			ProductPath:     c.ProductPath,
+			StemcellPath:    c.StemcellPath,
 		}
 
 		return NewS3Client(wrapStow{}, config, progressWriter)

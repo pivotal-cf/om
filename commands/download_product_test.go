@@ -35,7 +35,10 @@ var _ = Describe("DownloadProduct", func() {
 	})
 
 	JustBeforeEach(func() {
-		commands.RegisterProductClient("", func(c commands.DownloadProductOptions, progressWriter io.Writer, stdout *log.Logger, stderr *log.Logger) (downloader commands.ProductDownloader, e error) {
+		commands.RegisterProductClient("pivnet", func(c commands.DownloadProductOptions, progressWriter io.Writer, stdout *log.Logger, stderr *log.Logger) (downloader commands.ProductDownloader, e error) {
+			return fakeProductDownloader, nil
+		})
+		commands.RegisterProductClient("s3", func(c commands.DownloadProductOptions, progressWriter io.Writer, stdout *log.Logger, stderr *log.Logger) (downloader commands.ProductDownloader, e error) {
 			return fakeProductDownloader, nil
 		})
 		buffer = gbytes.NewBuffer()
@@ -556,7 +559,7 @@ output-directory: %s
 		})
 
 		Describe("managing and reporting the filename written to the filesystem", func() {
-			When("S3 configuration is provided and, blobstore is not set", func() {
+			When("S3 configuration is provided and source is not set", func() {
 				BeforeEach(func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/my-great-product.pivotal")
@@ -604,7 +607,7 @@ output-directory: %s
 				})
 			})
 
-			When("S3 configuration is not provided, and blobstore is not set", func() {
+			When("S3 configuration is not provided and source is not set", func() {
 				BeforeEach(func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/my-great-product.pivotal")

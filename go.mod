@@ -48,3 +48,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/pivotal-cf/jhanda => github.com/jtarchie/jhanda v0.0.0-20190919193415-3ae540879dbe

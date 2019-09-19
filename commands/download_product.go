@@ -17,21 +17,18 @@ import (
 )
 
 //counterfeiter:generate -o ./fakes/file_artifacter.go --fake-name FileArtifacter . FileArtifacter
-
 type FileArtifacter interface {
 	Name() string
 	SHA256() string
 }
 
 //counterfeiter:generate -o ./fakes/stemcell_artifacter.go --fake-name StemcellArtifacter . StemcellArtifacter
-
 type StemcellArtifacter interface {
 	Slug() string
 	Version() string
 }
 
 //counterfeiter:generate -o ./fakes/product_downloader_service.go --fake-name ProductDownloader . ProductDownloader
-
 type ProductDownloader interface {
 	Name() string
 	GetAllProductVersions(slug string) ([]string, error)
@@ -41,7 +38,7 @@ type ProductDownloader interface {
 }
 
 type DownloadProductOptions struct {
-	Source     string   `long:"source"                short:"s"  description:"enables download from external sources when set to \"s3\". if not provided, files will be downloaded from Pivnet"`
+	Source     string   `long:"source"                short:"s"  description:"enables download from external sources when set to [s3|gcs|pivnet]" default:"pivnet"`
 	ConfigFile string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 	OutputDir  string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
@@ -55,13 +52,13 @@ type DownloadProductOptions struct {
 	ProductVersion      string `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
-	GCSBucket             string `long:"gcs-bucket"`
-	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json"`
-	GCSProjectID          string `long:"gcs-project-id" alias:"gcp-project-id"`
-	GCSProductPath        string `long:"gcs-product-path"`
-	GCSStemcellPath       string `long:"gcs-stemcell-path"`
+	Bucket       string `long:"blobstore-bucket" alias:"s3-bucket,gcs-bucket" description:"bucket name where the product resides in the s3|gcs compatible blobstore"`
+	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path" description:"specify the lookup path where the s3|gcs product artifacts are stored"`
+	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path" description:"specify the lookup path where the s3|gcs stemcell artifacts are stored"`
 
-	S3Bucket          string `long:"s3-bucket"                        description:"bucket name where the product resides in the s3 compatible blobstore"`
+	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json" description:"the service account key JSON"`
+	GCSProjectID          string `long:"gcs-project-id" alias:"gcp-project-id" description:"the project id for the bucket's gcp account"`
+
 	S3AccessKeyID     string `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
 	S3AuthType        string `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
 	S3SecretAccessKey string `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
@@ -69,8 +66,6 @@ type DownloadProductOptions struct {
 	S3Endpoint        string `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
 	S3DisableSSL      bool   `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
 	S3EnableV2Signing bool   `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
-	S3ProductPath     string `long:"s3-product-path"                  description:"specify the lookup path where the s3 product artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
-	S3StemcellPath    string `long:"s3-stemcell-path"                 description:"specify the lookup path where the s3 stemcell artifacts are stored. for example, \"/location-name/\" will look for files under s3://bucket-name/location-name/"`
 
 	Stemcell     bool   `long:"download-stemcell"                description:"no-op for backwards compatibility"`
 	StemcellIaas string `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
@@ -237,7 +232,7 @@ func (c *DownloadProduct) validate() error {
 	if c.Options.ProductVersionRegex == "" && c.Options.ProductVersion == "" {
 		return fmt.Errorf("no version information provided; please provide either --product-version or --product-version-regex")
 	}
-	if c.Options.PivnetToken == "" && c.Options.Source == "" {
+	if c.Options.PivnetToken == "" && c.Options.Source == "pivnet" {
 		return fmt.Errorf(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
 	}
 
@@ -312,7 +307,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 
 	var productFilePath string
-	if c.Options.Source != "" || c.Options.S3Bucket == "" {
+	if c.Options.Source != "pivnet" || c.Options.Bucket == "" {
 		productFilePath = filepath.Join(c.Options.OutputDir, filepath.Base(fileArtifact.Name()))
 	} else {
 		productFilePath = filepath.Join(c.Options.OutputDir, prefixPath+filepath.Base(fileArtifact.Name()))

@@ -50,11 +50,11 @@ func init() {
 		_ *log.Logger,
 	) (commands.ProductDownloader, error) {
 		config := GCSConfiguration{
-			Bucket:             c.GCSBucket,
+			Bucket:             c.Bucket,
 			ProjectID:          c.GCSProjectID,
 			ServiceAccountJSON: c.GCSServiceAccountJSON,
-			ProductPath:        c.GCSProductPath,
-			StemcellPath:       c.GCSStemcellPath,
+			ProductPath:        c.ProductPath,
+			StemcellPath:       c.StemcellPath,
 		}
 
 		return NewGCSClient(wrapStow{}, config, progressWriter)
