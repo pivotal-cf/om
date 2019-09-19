@@ -8,7 +8,7 @@ sometimes pushed post-release.
 `om` went 1.0.0 on May 7, 2019
 
 As of that release, `om` is [semantically versioned](https://semver.org/).
-When consuming `om` in your CI system, 
+When consuming `om` in your CI system,
 it is now safe to pin to a particular minor version line (major.minor.patch)
 without fear of breaking changes.
 
@@ -45,7 +45,15 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   ```
   Note the additional space before the `export` command.
   This ensures that commands are not kept in `bash` history.
-  The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
+  The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
+
+## 4.1.0
+
+## Features
+- We've added a `disable-director-verifiers` command.
+  This command allows verifiers known to be inappropriate
+  for a given environment
+  to be disabled.
 
 ## 4.0.1
 
@@ -62,7 +70,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   and specify whether applying all changes or applying changes to a particular product.  
   
 ### Features
-- `config-template` now accepts `--pivnet-file-glob` insstead of `--product-file-glob`.
+- `config-template` now accepts `--pivnet-file-glob` instead of `--product-file-glob`.
   This is to create consistency with the `download-product` command's naming conventions.
   Thanks to @poligraph for the PR!
 ## 3.2.2
