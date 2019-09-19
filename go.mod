@@ -2,6 +2,7 @@ module github.com/pivotal-cf/om
 
 require (
 	cloud.google.com/go v0.38.0
+	github.com/Azure/go-autorest/autorest/to v0.3.0 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aws/aws-sdk-go v1.23.19 // indirect
 	github.com/bmatcuk/doublestar v1.1.5 // indirect
@@ -10,6 +11,7 @@ require (
 	github.com/cloudfoundry/bosh-utils v0.0.0-20190907100209-78dc2d34165f // indirect
 	github.com/cppforlife/go-patch v0.2.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dnaeon/go-vcr v1.0.1 // indirect
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ole/go-ole v1.2.4 // indirect

@@ -38,7 +38,7 @@ type ProductDownloader interface {
 }
 
 type DownloadProductOptions struct {
-	Source     string   `long:"source"                short:"s"  description:"enables download from external sources when set to [s3|gcs|pivnet]" default:"pivnet"`
+	Source     string   `long:"source"                short:"s"  description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
 	ConfigFile string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 	OutputDir  string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
@@ -52,7 +52,7 @@ type DownloadProductOptions struct {
 	ProductVersion      string `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
-	Bucket       string `long:"blobstore-bucket" alias:"s3-bucket,gcs-bucket" description:"bucket name where the product resides in the s3|gcs compatible blobstore"`
+	Bucket       string `long:"blobstore-bucket" alias:"s3-bucket,gcs-bucket,azure-container" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
 	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path" description:"specify the lookup path where the s3|gcs product artifacts are stored"`
 	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path" description:"specify the lookup path where the s3|gcs stemcell artifacts are stored"`
 
@@ -66,6 +66,9 @@ type DownloadProductOptions struct {
 	S3Endpoint        string `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
 	S3DisableSSL      bool   `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
 	S3EnableV2Signing bool   `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
+
+	AzureStorageAccount string `long:"azure-storage-account" description:"the name of the storage account where the container exists"`
+	AzureKey            string `long:"azure-key" description:"the access key for the storage account"`
 
 	Stemcell     bool   `long:"download-stemcell"                description:"no-op for backwards compatibility"`
 	StemcellIaas string `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
