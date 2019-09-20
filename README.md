@@ -152,6 +152,7 @@ Commands:
   deployed-products               lists deployed products
   diagnostic-report               reports current state of your Ops Manager
   disable-director-verifiers      disables director verifiers
+  disable-product-verifiers       disables product verifiers
   download-product                downloads a specified product file from Pivotal Network
   errands                         list errands for a product
   expiring-certificates           lists expiring certificates from the Ops Manager targeted
