@@ -170,7 +170,6 @@ func createPivotalFile(productFileName, metadataFilename string) string {
 	return tempfile.Name()
 }
 
-
 func uploadGCSFile(localFile, serviceAccountKey, bucketName, objectName string) {
 	f, err := os.Open(localFile)
 	Expect(err).ToNot(HaveOccurred())

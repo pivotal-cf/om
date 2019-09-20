@@ -176,11 +176,16 @@ func (pc PreDeployCheck) determineProductErrors(productOutput api.PendingProduct
 		}
 	}
 
+	productNameParts := strings.Split(productOutput.EndpointResults.Identifier, "-")
+	productName := strings.Join(productNameParts[0:len(productNameParts)-1], "-")
 	for _, verifier := range productOutput.EndpointResults.Verifiers {
 		errBuffer = append(errBuffer, fmt.Sprintf(boldError.Sprintf("    Error:")+" verifier: %s", verifier.Type))
 		for _, err := range verifier.Errors {
 			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
 		}
+
+		errBuffer[len(errBuffer)-1] = strings.TrimRight(errBuffer[len(errBuffer)-1], "\n")
+		errBuffer = append(errBuffer, fmt.Sprintf("    Disable: `om disable-product-verifiers --product-name %s --type %s`\n", productName, verifier.Type))
 	}
 
 	return errBuffer

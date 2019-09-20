@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("disable_product_verifiers command", func() {
+var _ = Describe("disable_product_verifiers command", func() {
 	var (
 		server *httptest.Server
 	)

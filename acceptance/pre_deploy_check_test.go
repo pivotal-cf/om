@@ -197,6 +197,7 @@ var _ = Describe("pre_deploy_check command", func() {
 
     Error: verifier: NetworksPingableVerifier
     Why: NetworksPingableVerifier error
+    Disable: ` + "`om disable-product-verifiers --product-name p --type NetworksPingableVerifier`" + `
 
 `))
 		})
