@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -40,6 +41,20 @@ var _ = Describe("download-product command", func() {
 
 			// upload artifact to it
 			bucketName = fmt.Sprintf("om-acceptance-bucket-%d", time.Now().UnixNano())
+
+			//log into gcloud
+			clientEmail := struct {
+				Email string `json:"client_email"`
+			}{}
+			err = json.Unmarshal([]byte(serviceAccountKey), &clientEmail)
+			Expect(err).NotTo(HaveOccurred())
+			authFile, err := ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+			err = ioutil.WriteFile(authFile.Name(), []byte(serviceAccountKey), 0600)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(authFile.Close()).NotTo(HaveOccurred())
+			runCommand("gcloud", "auth", "activate-service-account", clientEmail.Email, "--key-file", authFile.Name())
+
 			runCommand("gsutil", "mb", "gs://"+bucketName)
 		})
 
