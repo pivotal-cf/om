@@ -6,6 +6,8 @@ image_resource:
     tag: testing
 inputs:
 - name: om
+params:
+  OM_pivnet_token:
 run:
   path: "/bin/bash"
   args:
