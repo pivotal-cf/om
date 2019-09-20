@@ -82,9 +82,7 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	}
 
 	if len(errorBuffer) > 0 {
-		for _, err := range errorBuffer {
-			pc.logger.Printf("%s\n", err)
-		}
+		pc.logger.Printf(strings.Join(errorBuffer, "\n") + "\n")
 
 		return fmt.Errorf("OpsManager is not fully configured")
 	}
@@ -132,10 +130,9 @@ func (pc PreDeployCheck) determineDirectorErrors(directorOutput api.PendingDirec
 	for _, verifier := range directorOutput.EndpointResults.Verifiers {
 		errBuffer = append(errBuffer, fmt.Sprintf(boldError.Sprintf("    Error:")+" verifier: %s", verifier.Type))
 		for _, err := range verifier.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
 		}
 
-		errBuffer[len(errBuffer)-1] = strings.TrimRight(errBuffer[len(errBuffer)-1], "\n")
 		errBuffer = append(errBuffer, fmt.Sprintf("    Disable: `om disable-director-verifiers --type %s`\n", verifier.Type))
 	}
 
@@ -181,10 +178,9 @@ func (pc PreDeployCheck) determineProductErrors(productOutput api.PendingProduct
 	for _, verifier := range productOutput.EndpointResults.Verifiers {
 		errBuffer = append(errBuffer, fmt.Sprintf(boldError.Sprintf("    Error:")+" verifier: %s", verifier.Type))
 		for _, err := range verifier.Errors {
-			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s\n", err))
+			errBuffer = append(errBuffer, fmt.Sprintf("    Why: %s", err))
 		}
 
-		errBuffer[len(errBuffer)-1] = strings.TrimRight(errBuffer[len(errBuffer)-1], "\n")
 		errBuffer = append(errBuffer, fmt.Sprintf("    Disable: `om disable-product-verifiers --product-name %s --type %s`\n", productName, verifier.Type))
 	}
 
