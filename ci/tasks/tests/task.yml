@@ -24,7 +24,6 @@ run:
       CGO_ENABLED=1 ginkgo \
         -r \
         -p \
-        -v \
         -race \
         -succinct \
         -randomizeAllSpecs \
