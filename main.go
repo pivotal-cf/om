@@ -179,6 +179,7 @@ func main() {
 	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
 	commandSet["diagnostic-report"] = commands.NewDiagnosticReport(presenter, api)
 	commandSet["disable-director-verifiers"] = commands.NewDisableDirectorVerifiers(presenter, api, stdout)
+	commandSet["disable-product-verifiers"] = commands.NewDisableProductVerifiers(presenter, api, stdout)
 	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr)
 	commandSet["errands"] = commands.NewErrands(presenter, api)
 	commandSet["expiring-certificates"] = commands.NewExpiringCertificates(api, stdout)
