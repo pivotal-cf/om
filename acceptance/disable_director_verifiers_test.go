@@ -1,9 +1,8 @@
 package acceptance
 
 import (
-	"io/ioutil"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -14,56 +13,27 @@ import (
 
 var _ = Describe("disable_director_verifiers command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			defer GinkgoRecover()
-
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/director/verifiers/install_time":
-				Expect(req.Method).To(Equal(http.MethodGet))
-
-				_, err := w.Write([]byte(`{ "verifiers": [
-					{ "type":"some-verifier-type", "enabled":true }
-				]}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/director/verifiers/install_time/some-verifier-type":
-				Expect(req.Method).To(Equal(http.MethodPut))
-				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				defer req.Body.Close()
-
-				Expect(string(body)).To(Equal(`{ "enabled": false }`))
-
-				_, err = w.Write([]byte(`{
-					"type": "some-verifier-type",
-					"enabled": false
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				w.WriteHeader(http.StatusNotFound)
-				_, err := w.Write([]byte(`{
-					"errors": {
-					  "base": [
-						"No verifier on director with type '<missing-verifier>'"
-					  ]
-					}
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/director/verifiers/install_time"),
+				ghttp.RespondWith(http.StatusOK, `{ "verifiers": [
+							{ "type":"some-verifier-type", "enabled":true }
+						]}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/director/verifiers/install_time/some-verifier-type"),
+				ghttp.RespondWith(http.StatusOK, `{
+							"type": "some-verifier-type",
+							"enabled": false
+						}`),
+				ghttp.VerifyJSON(`{ "enabled": false }`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -72,7 +42,7 @@ var _ = Describe("disable_director_verifiers command", func() {
 
 	It("disables any verifiers passed in if they exist", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -94,7 +64,7 @@ The following verifiers were disabled:
 
 	It("errors if any verifiers passed in don't exist", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
