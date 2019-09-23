@@ -92,6 +92,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   from the `pivnet-blobs` container
   from the `some-storage-account` storage account from Azure Storage.
 
+- The command `disable-director-verifiers` has been added.
+  It allows verifiers to be disabled that are preventing the director from being deployed.
+  This feature should be used with caution as the verifiers can provide useful feedback on mis-configuration. 
+
+- The command `disable-product-verifiers` has been added.
+  It allows verifiers to be disabled that are preventing a product from being deployed.
+  This feature should be used with caution as the verifiers can provide useful feedback on mis-configuration.
+
 ## 4.0.1
 
 ### Bug Fixes
