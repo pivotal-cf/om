@@ -1,11 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
-	"io/ioutil"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -16,64 +13,31 @@ import (
 
 var _ = Describe("disable_product_verifiers command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			defer GinkgoRecover()
-
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products":
-				Expect(req.Method).To(Equal(http.MethodGet))
-
-				_, err := w.Write([]byte(`[{"installation_name":"cf","guid":"cf-guid","type":"cf","product_version":"1.10.0-build.177"}]`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/cf-guid/verifiers/install_time":
-				Expect(req.Method).To(Equal(http.MethodGet))
-
-				_, err := w.Write([]byte(`{ "verifiers": [
-					{ "type":"some-verifier-type", "enabled":true }
-				]}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/cf-guid/verifiers/install_time/some-verifier-type":
-				Expect(req.Method).To(Equal(http.MethodPut))
-				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				defer req.Body.Close()
-
-				Expect(string(body)).To(Equal(`{ "enabled": false }`))
-
-				_, err = w.Write([]byte(`{
-					"type": "some-verifier-type",
-					"enabled": false
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-				//
-				//w.WriteHeader(http.StatusNotFound)
-				//_, err := w.Write([]byte(`{
-				//	"errors": {
-				//	  "base": [
-				//		"No verifier on director with type '<missing-verifier>'"
-				//	  ]
-				//	}
-				//}`))
-				//Expect(err).ToNot(HaveOccurred())
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+				ghttp.RespondWith(http.StatusOK, `[{"installation_name":"cf","guid":"cf-guid","type":"cf","product_version":"1.10.0-build.177"}]`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/products/cf-guid/verifiers/install_time"),
+				ghttp.RespondWith(http.StatusOK, `{ "verifiers": [
+							{ "type":"some-verifier-type", "enabled":true }
+						]}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/products/cf-guid/verifiers/install_time/some-verifier-type"),
+				ghttp.RespondWith(http.StatusOK, `{
+							"type": "some-verifier-type",
+							"enabled": false
+						}`),
+				ghttp.VerifyJSON(`{ "enabled": false }`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -82,7 +46,8 @@ var _ = Describe("disable_product_verifiers command", func() {
 
 	It("disables any verifiers passed in if they exist", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
+			"--trace",
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -105,7 +70,7 @@ The following verifiers were disabled:
 
 	It("errors if any verifiers passed in don't exist", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -128,3 +93,18 @@ No changes were made.
 `))
 	})
 })
+
+func createTLSServer() *ghttp.Server {
+	server := ghttp.NewTLSServer()
+	server.RouteToHandler("POST", "/uaa/oauth/token",
+		ghttp.CombineHandlers(
+			ghttp.RespondWith(http.StatusOK, `{
+							"access_token": "some-opsman-token",
+							"token_type": "bearer",
+							"expires_in": 3600
+						}`, map[string][]string{
+				"Content-Type": []string{"application/json"},
+			}),
+		))
+	return server
+}
