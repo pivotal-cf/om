@@ -3,7 +3,6 @@ package commands_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"io/ioutil"
@@ -239,17 +238,6 @@ hello: world`))
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("no file or STDIN input provided."))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewInterpolate(os.Environ, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "Interpolates variables into a manifest",
-				ShortDescription: "Interpolates variables into a manifest",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

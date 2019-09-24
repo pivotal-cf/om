@@ -94,8 +94,8 @@ func (c Interpolate) Execute(args []string) error {
 
 func (c Interpolate) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "Interpolates variables into a manifest",
-		ShortDescription: "Interpolates variables into a manifest",
+		Description:      "interpolates variables into a manifest",
+		ShortDescription: "interpolates variables into a manifest",
 		Flags:            c.Options,
 	}
 }
