@@ -163,7 +163,7 @@ Commands:
   import-installation             imports a given installation to the Ops Manager targeted
   installation-log                output installation logs
   installations                   list recent installation events
-  interpolate                     Interpolates variables into a manifest
+  interpolate                     interpolates variables into a manifest
   pending-changes                 lists pending changes
   pre-deploy-check                **EXPERIMENTAL** lists pending changes
   product-metadata                prints product metadata
