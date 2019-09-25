@@ -136,8 +136,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `expiring-certificates` command was added.
   This command returns a list of certificates
   from an Ops Manager
-  expiring within a specified (`--expires-within/-e`) timeframe. 
+  expiring within a specified (`--expires-within/-e`) time frame. 
   Default: "3m" (3 months)
+  Root CAs cannot be included in this list until Ops Manager 2.7.
 - `configure-product` and `staged-config` now have support for the `/syslog_configurations` endpoint. 
   This affects tiles, such as the Metrics tile,
   that do not return these properties nested in the `product-properties` section. 
