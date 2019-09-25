@@ -35,7 +35,7 @@ func NewDisableProductVerifiers(presenter presenters.FormattedPresenter, service
 func (dpv DisableProductVerifiers) Execute(args []string) error {
 	_, err := jhanda.Parse(&dpv.Options, args)
 	if err != nil {
-		return fmt.Errorf("could not parse disable-director-verifiers flags: %s", err)
+		return fmt.Errorf("could not parse disable-product-verifiers flags: %s", err)
 	}
 
 	productName := dpv.Options.ProductName
@@ -67,7 +67,7 @@ func (dpv DisableProductVerifiers) Execute(args []string) error {
 
 		dpv.logger.Println("\nNo changes were made.\n")
 
-		return errors.New("verifier does not exist for director")
+		return errors.New("verifier does not exist for product")
 	}
 
 	dpv.logger.Printf("Disabling Product Verifiers for %s...\n\n", productName)

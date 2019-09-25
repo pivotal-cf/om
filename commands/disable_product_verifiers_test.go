@@ -93,7 +93,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 
 			err := command.Execute([]string{"--product-name", "cf", "--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("verifier does not exist for director"))
+			Expect(err.Error()).To(Equal("verifier does not exist for product"))
 
 			Expect(service.DisableProductVerifiersCallCount()).To(Equal(0))
 
@@ -107,7 +107,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 	When("flags are provided", func() {
 		It("returns an error if an unknown flag is provided", func() {
 			err := command.Execute([]string{"--badflag"})
-			Expect(err).To(MatchError("could not parse disable-director-verifiers flags: flag provided but not defined: -badflag"))
+			Expect(err).To(MatchError("could not parse disable-product-verifiers flags: flag provided but not defined: -badflag"))
 		})
 
 		It("returns an error if there is no --type provided", func() {
