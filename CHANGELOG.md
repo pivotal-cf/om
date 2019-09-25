@@ -241,9 +241,11 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   We are working on scoping a selective deploy feature that makes sense for users.
   We would love to have feedback from users about this.
   
-- remove `revert-staged-changes`
-  `unstage-product` functionally does the same thing,
-  but uses the API. This resolves issue [#399](https://github.com/pivotal-cf/om/issues/399)
+- remove revert-staged-changes
+  unstage-product will revert the changes if the tile has not been installed.
+  There is currently no replacement for this command,
+  however, it was not working for newer versions of Ops Manager, and did nothing. 
+  This resolves issue [#399](https://github.com/pivotal-cf/om/issues/399)
   
 ### Bug Fix
 - `apply-changes` will error with _product not found_ if that product has not been staged.
