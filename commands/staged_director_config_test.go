@@ -14,12 +14,14 @@ import (
 
 var _ = Describe("StagedDirectorConfig", func() {
 	var (
-		logger      *fakes.Logger
+		stdout      *fakes.Logger
+		stderr      *fakes.Logger
 		fakeService *fakes.StagedDirectorConfigService
 	)
 
 	BeforeEach(func() {
-		logger = &fakes.Logger{}
+		stdout = &fakes.Logger{}
+		stderr = &fakes.Logger{}
 		fakeService = &fakes.StagedDirectorConfigService{}
 	})
 
@@ -125,11 +127,11 @@ var _ = Describe("StagedDirectorConfig", func() {
 		})
 
 		It("writes a complete config file with filtered sensitive fields to stdout", func() {
-			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			output := logger.PrintlnArgsForCall(0)
+			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -177,11 +179,11 @@ vmtypes-configuration: {}
 				{CreateVMType: api.CreateVMType{Name: "vm-type2", CPU: 2, RAM: 2048, EphemeralDisk: 10240}, BuiltIn: false},
 			}, nil)
 
-			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
-			output := logger.PrintlnArgsForCall(0)
+			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -234,7 +236,7 @@ vmtypes-configuration:
 		})
 
 		It("doesn't redact values when --no-redact is passed", func() {
-			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{"--no-redact"})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -245,11 +247,11 @@ vmtypes-configuration:
 		When("getting availability_zones returns an empty array", func() {
 			It("doesn't return the az in the config", func() {
 				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, nil)
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 network-assignment:
   network:
@@ -301,13 +303,13 @@ vmtypes-configuration: {}
 				},
 			}, nil)
 
-			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{
 				"--no-redact",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			output := logger.PrintlnArgsForCall(0)
+			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -383,13 +385,13 @@ vmtypes-configuration: {}
 			}
 			fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
 
-			command := commands.NewStagedDirectorConfig(fakeService, logger)
+			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{
 				"--no-redact",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			output := logger.PrintlnArgsForCall(0)
+			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -439,13 +441,13 @@ vmtypes-configuration: {}
 
 		Describe("with --no-redact", func() {
 			It("Includes the filtered fields when printing to stdout", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--no-redact",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -507,13 +509,13 @@ vmtypes-configuration: {}
 					},
 				}, nil)
 
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--no-redact",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -567,13 +569,13 @@ vmtypes-configuration: {}
 
 		Describe("with --include-placeholders", func() {
 			It("Includes the placeholder fields when printing to stdout", func() {
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`az-configuration:
 - name: some-az
   iaas_configuration_name: some-iaas
@@ -640,13 +642,13 @@ vmtypes-configuration: {}
 					},
 				}, nil)
 
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -710,13 +712,13 @@ vmtypes-configuration: {}
 					},
 				}, nil)
 
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -773,13 +775,13 @@ vmtypes-configuration: {}
 					},
 				}, nil)
 
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -844,13 +846,13 @@ vmtypes-configuration: {}
 				}
 				fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
 
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -903,13 +905,13 @@ vmtypes-configuration: {}
 				}
 				fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
 
-				command := commands.NewStagedDirectorConfig(fakeService, logger)
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				output := logger.PrintlnArgsForCall(0)
+				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
@@ -951,7 +953,7 @@ vmtypes-configuration: {}
 		Describe("failure cases", func() {
 			When("an unknown flag is provided", func() {
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{"--badflag"})
 					Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
 				})
@@ -963,7 +965,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -975,7 +977,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -987,7 +989,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -999,7 +1001,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -1011,7 +1013,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -1023,7 +1025,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -1038,7 +1040,7 @@ vmtypes-configuration: {}
 				})
 
 				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, logger)
+					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
@@ -1047,7 +1049,7 @@ vmtypes-configuration: {}
 
 		Describe("Usage", func() {
 			It("returns usage information for the command", func() {
-				command := commands.NewStagedDirectorConfig(nil, nil)
+				command := commands.NewStagedDirectorConfig(nil, nil, nil)
 
 				Expect(command.Usage()).To(Equal(jhanda.Usage{
 					Description:      "This command generates a config from a staged director that can be passed in to om configure-director",

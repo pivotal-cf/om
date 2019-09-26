@@ -197,7 +197,7 @@ func main() {
 	commandSet["ssl-certificate"] = commands.NewSSLCertificate(api, presenter)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
-	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout)
+	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout, stderr)
 	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
 	commandSet["product-metadata"] = commands.NewProductMetadata(stdout)

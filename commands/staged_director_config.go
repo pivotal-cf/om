@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -13,7 +12,8 @@ import (
 )
 
 type StagedDirectorConfig struct {
-	logger  logger
+	stdout  logger
+	stderr  logger
 	service stagedDirectorConfigService
 	Options struct {
 		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"Replace obscured credentials to interpolatable placeholders.\n\t\t\t\t    To include credentials hidden by OpsMan, use with \"--no-redact\""`
@@ -39,9 +39,10 @@ type stagedDirectorConfigService interface {
 	ListVMTypes() ([]api.VMType, error)
 }
 
-func NewStagedDirectorConfig(service stagedDirectorConfigService, logger logger) StagedDirectorConfig {
+func NewStagedDirectorConfig(service stagedDirectorConfigService, stdout logger, stderr logger) StagedDirectorConfig {
 	return StagedDirectorConfig{
-		logger:  logger,
+		stdout:  stdout,
+		stderr:  stderr,
 		service: service,
 	}
 }
@@ -164,11 +165,13 @@ func (sdc StagedDirectorConfig) Execute(args []string) error {
 
 	configYaml, err := yaml.Marshal(config)
 	if err != nil {
-		log.Println("hi")
 		return err
 	}
 
-	sdc.logger.Println(string(configYaml))
+	sdc.stdout.Println(string(configYaml))
+	if !sdc.Options.NoRedact {
+		sdc.stderr.Println("NOTE: Because `--no-redact` has not been provided, the `iaas-configurations` and other credentials will be hidden.")
+	}
 	return nil
 }
 

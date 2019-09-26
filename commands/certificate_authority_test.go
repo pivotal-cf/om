@@ -75,7 +75,7 @@ var _ = Describe("Certificate Authority", func() {
 		})
 
 		When("the cert-pem flag is provided", func() {
-			It("logs the cert pem to the logger", func() {
+			It("logs the cert pem to the stdout", func() {
 				err := certificateAuthority.Execute([]string{
 					"--id", "other-guid",
 					"--cert-pem",
