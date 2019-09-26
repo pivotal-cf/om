@@ -973,14 +973,4 @@ iaas-configurations:
 			})
 		})
 	})
-
-	Describe("Usage", func() {
-		It("returns the usage", func() {
-			usage := command.Usage()
-
-			Expect(usage.Description).To(Equal("This authenticated command configures the director."))
-			Expect(usage.ShortDescription).To(Equal("configures the director"))
-			Expect(usage.Flags).To(Equal(command.Options))
-		})
-	})
 })

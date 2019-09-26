@@ -217,7 +217,7 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 
 	existingNetworksJSON, err := ioutil.ReadAll(existingNetworksResponse.Body)
 	if err != nil {
-			return Networks{}, errors.Wrap(err, "unable to read existing network configuration") // un-tested
+		return Networks{}, errors.Wrap(err, "unable to read existing network configuration") // un-tested
 	}
 
 	var existingNetworks Networks

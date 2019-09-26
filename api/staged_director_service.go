@@ -32,14 +32,10 @@ type AvailabilityZonesOutput struct {
 }
 
 type AvailabilityZoneOutput struct {
-	Name                  string          `yaml:"name"`
-	Clusters              []ClusterOutput `yaml:"clusters,omitempty"`
-	IAASConfigurationGUID string          `yaml:"iaas_configuration_guid,omitempty"`
-}
-
-type ClusterOutput struct {
-	Cluster      string `yaml:"cluster"`
-	ResourcePool string `yaml:"resource_pool"`
+	Name                  string                 `yaml:"name"`
+	IAASConfigurationGUID string                 `yaml:"iaas_configuration_guid,omitempty"`
+	IAASConfigurationName string                 `yaml:"iaas_configuration_name"`
+	Fields                map[string]interface{} `yaml:",inline"`
 }
 
 func (a Api) GetStagedDirectorProperties(redact bool) (map[string]interface{}, error) {
@@ -103,22 +99,54 @@ func (a Api) GetStagedDirectorIaasConfigurations(redact bool) (map[string][]map[
 func (a Api) GetStagedDirectorAvailabilityZones() (AvailabilityZonesOutput, error) {
 	var properties AvailabilityZonesOutput
 
-	resp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
+	azResp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/availability_zones", nil)
 	if err != nil {
-		return properties, err // un-tested
+		return AvailabilityZonesOutput{}, err
 	}
-	defer resp.Body.Close()
+	defer azResp.Body.Close()
 
-	if resp.StatusCode == http.StatusMethodNotAllowed {
-		return properties, nil
+	if azResp.StatusCode == http.StatusMethodNotAllowed {
+		return AvailabilityZonesOutput{}, nil
 	}
 
-	if err = validateStatusOK(resp); err != nil {
+	if err = validateStatusOK(azResp); err != nil {
 		return AvailabilityZonesOutput{}, err
 	}
 
-	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
-		return properties, errors.Wrap(err, "could not parse json")
+	if err = yaml.NewDecoder(azResp.Body).Decode(&properties); err != nil {
+		return AvailabilityZonesOutput{}, errors.Wrap(err, "could not parse json")
+	}
+
+	iaasResp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/iaas_configurations", nil)
+	if err != nil {
+		return AvailabilityZonesOutput{}, err // un-tested
+	}
+	defer iaasResp.Body.Close()
+
+	if err = validateStatusOK(iaasResp); err != nil {
+		return AvailabilityZonesOutput{}, err
+	}
+
+	var iaasConfigs struct {
+		Configs []struct {
+			Name string
+			GUID string
+		} `yaml:"iaas_configurations"`
+	}
+
+	if err = yaml.NewDecoder(iaasResp.Body).Decode(&iaasConfigs); err != nil {
+		return AvailabilityZonesOutput{}, errors.Wrap(err, "could not parse json")
+	}
+
+	for _, iaas := range iaasConfigs.Configs {
+		for index, property := range properties.AvailabilityZones {
+			if property.IAASConfigurationGUID == iaas.GUID {
+				property.IAASConfigurationName = iaas.Name
+				property.IAASConfigurationGUID = ""
+
+				properties.AvailabilityZones[index] = property
+			}
+		}
 	}
 
 	return properties, nil

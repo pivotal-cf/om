@@ -44,7 +44,7 @@ func (a Api) ListDirectorVerifiers() ([]Verifier, error) {
 }
 
 func (a Api) DisableDirectorVerifiers(verifiers []string) error {
-	for _, verifier := range verifiers{
+	for _, verifier := range verifiers {
 		resp, err := a.sendAPIRequest("PUT", fmt.Sprintf(disableDirectorVerifiersEndpointTemplate, verifier), []byte(`{ "enabled": false }`))
 		if err != nil {
 			return errors.Wrap(err, "could not make api request to disable_director_verifiers endpoint")

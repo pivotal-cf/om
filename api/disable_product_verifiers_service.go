@@ -40,7 +40,7 @@ func (a Api) ListProductVerifiers(productName string) ([]Verifier, string, error
 }
 
 func (a Api) DisableProductVerifiers(verifiers []string, productGUID string) error {
-	for _, verifier := range verifiers{
+	for _, verifier := range verifiers {
 		resp, err := a.sendAPIRequest("PUT", fmt.Sprintf(disableProductVerifiersEndpointTemplate, productGUID, verifier), []byte(`{ "enabled": false }`))
 		if err != nil {
 			return errors.Wrap(err, "could not make api request to disable_product_verifiers endpoint")

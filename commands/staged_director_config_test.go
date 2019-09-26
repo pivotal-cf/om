@@ -29,10 +29,10 @@ var _ = Describe("StagedDirectorConfig", func() {
 				AvailabilityZones: []api.AvailabilityZoneOutput{
 					{
 						Name:                  "some-az",
-						IAASConfigurationGUID: "some-iaas-guid",
-					},
-					{
-						Name: "some-other-az",
+						IAASConfigurationName: "some-iaas",
+					}, {
+						Name:                  "some-other-az",
+						IAASConfigurationName: "some-other-iaas",
 					},
 				},
 			}
@@ -133,8 +133,9 @@ var _ = Describe("StagedDirectorConfig", func() {
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -184,8 +185,9 @@ vmtypes-configuration: {}
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -309,8 +311,9 @@ vmtypes-configuration: {}
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -390,8 +393,9 @@ vmtypes-configuration: {}
 			Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -445,8 +449,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -512,8 +517,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -570,8 +576,9 @@ vmtypes-configuration: {}
 				output := logger.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -643,8 +650,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -712,8 +720,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -774,8 +783,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -844,8 +854,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
@@ -902,8 +913,9 @@ vmtypes-configuration: {}
 				Expect(output).To(ContainElement(MatchYAML(`
 az-configuration:
 - name: some-az
-  iaas_configuration_guid: some-iaas-guid
+  iaas_configuration_name: some-iaas
 - name: some-other-az
+  iaas_configuration_name: some-other-iaas
 network-assignment:
   network:
     name: network-1
