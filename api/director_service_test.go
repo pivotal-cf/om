@@ -544,7 +544,10 @@ var _ = Describe("Director", func() {
 
 	Describe("NetworkAndAZ", func() {
 		It("creates an network and az assignment", func() {
-			client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusNotFound}, nil)
+			client.DoReturnsOnCall(0, &http.Response{
+				StatusCode: http.StatusNotFound,
+				Body:       ioutil.NopCloser(strings.NewReader("")),
+			}, nil)
 			client.DoReturnsOnCall(1, &http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
@@ -582,7 +585,10 @@ var _ = Describe("Director", func() {
 
 		When("the director has already been deployed", func() {
 			It("issues a warning and doesn't configure the endpoint", func() {
-				client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusOK}, nil)
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("")),
+				}, nil)
 
 				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{
 					NetworkAZ: json.RawMessage(`{
@@ -613,7 +619,10 @@ var _ = Describe("Director", func() {
 			})
 
 			It("returns an error when the api endpoint fails", func() {
-				client.DoReturnsOnCall(0, &http.Response{StatusCode: http.StatusNotFound}, nil)
+				client.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusNotFound,
+					Body:       ioutil.NopCloser(strings.NewReader("")),
+				}, nil)
 				client.DoReturnsOnCall(1, &http.Response{
 					StatusCode: http.StatusTeapot,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))

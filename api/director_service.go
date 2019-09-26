@@ -85,25 +85,25 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput, 
 		}
 
 		if az.GUID != "" {
-			resp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/availability_zones/%s", az.GUID), jsonData)
+			azPutResp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/availability_zones/%s", az.GUID), jsonData)
 			if err != nil {
 				return err
 			}
-			defer resp.Body.Close()
+			defer azPutResp.Body.Close()
 
-			if err = validateStatusOKOrVerificationWarning(resp, ignoreVerifierWarnings); err != nil {
+			if err = validateStatusOKOrVerificationWarning(azPutResp, ignoreVerifierWarnings); err != nil {
 				return err
 			}
 			continue
 		}
 
-		resp, err := a.sendAPIRequest("POST", "/api/v0/staged/director/availability_zones", jsonData)
+		azPostResp, err := a.sendAPIRequest("POST", "/api/v0/staged/director/availability_zones", jsonData)
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer azPostResp.Body.Close()
 
-		if err = validateStatusOKOrVerificationWarning(resp, ignoreVerifierWarnings); err != nil {
+		if err = validateStatusOKOrVerificationWarning(azPostResp, ignoreVerifierWarnings); err != nil {
 			return err
 		}
 	}
@@ -153,12 +153,13 @@ func (a Api) UpdateStagedDirectorNetworks(input NetworkInput) error {
 }
 
 func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) error {
-	resp, err := a.sendAPIRequest("GET", "/api/v0/deployed/director/credentials", nil)
+	credsResp, err := a.sendAPIRequest("GET", "/api/v0/deployed/director/credentials", nil)
 	if err != nil {
 		return err
 	}
+	defer credsResp.Body.Close()
 
-	switch resp.StatusCode {
+	switch credsResp.StatusCode {
 	case http.StatusOK:
 		a.logger.Println("unable to set network assignment for director as it has already been deployed")
 		return nil
@@ -168,19 +169,19 @@ func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) e
 			return errors.Wrap(err, "could not marshal json")
 		}
 
-		resp, err = a.sendAPIRequest("PUT", "/api/v0/staged/director/network_and_az", jsonData)
+		netResp, err := a.sendAPIRequest("PUT", "/api/v0/staged/director/network_and_az", jsonData)
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer netResp.Body.Close()
 
-		if err = validateStatusOK(resp); err != nil {
+		if err = validateStatusOK(netResp); err != nil {
 			return err
 		}
 
 		return nil
 	default:
-		return fmt.Errorf("unexpected request status code: %d", resp.StatusCode)
+		return fmt.Errorf("unexpected request status code: %d", credsResp.StatusCode)
 	}
 }
 
@@ -216,7 +217,7 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 
 	existingNetworksJSON, err := ioutil.ReadAll(existingNetworksResponse.Body)
 	if err != nil {
-		return Networks{}, errors.Wrap(err, "unable to read existing network configuration") // un-tested
+			return Networks{}, errors.Wrap(err, "unable to read existing network configuration") // un-tested
 	}
 
 	var existingNetworks Networks
@@ -262,16 +263,17 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 		return fmt.Errorf("could not unmarshal iaas_configurations object: %v", err)
 	}
 
-	response, err := a.sendAPIRequest("GET", "/api/v0/staged/director/iaas_configurations", nil)
+	iaasGetResp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/iaas_configurations", nil)
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	defer iaasGetResp.Body.Close()
 
-	existingIAASJSON, err := ioutil.ReadAll(response.Body)
+	existingIAASJSON, err := ioutil.ReadAll(iaasGetResp.Body)
 	if err != nil {
 		return err
 	}
+
 	var existingIAASes IAASConfigurationsAPIPayload
 	err = yaml.Unmarshal(existingIAASJSON, &existingIAASes)
 	if err != nil {
@@ -301,24 +303,29 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 		}
 
 		if config.GUID == "" {
-			resp, err := a.sendAPIRequest("POST", "/api/v0/staged/director/iaas_configurations", jsonData)
+			iaasCreateResp, err := a.sendAPIRequest("POST", "/api/v0/staged/director/iaas_configurations", jsonData)
 			if err != nil {
 				return err
 			}
-			if resp.StatusCode == http.StatusNotImplemented {
+			defer iaasCreateResp.Body.Close()
+
+			if iaasCreateResp.StatusCode == http.StatusNotImplemented {
 				return a.updateIAASConfigurationInDirectorProperties(iaasConfigurations)
 			}
-			if err = validateStatusOK(resp); err != nil {
+
+			if err = validateStatusOK(iaasCreateResp); err != nil {
 				return err
 			}
 			continue
 		}
 
-		resp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/iaas_configurations/%s", config.GUID), jsonData)
+		iaasUpdateResp, err := a.sendAPIRequest("PUT", fmt.Sprintf("/api/v0/staged/director/iaas_configurations/%s", config.GUID), jsonData)
 		if err != nil {
 			return err
 		}
-		if err = validateStatusOK(resp); err != nil {
+		defer iaasUpdateResp.Body.Close()
+
+		if err = validateStatusOK(iaasUpdateResp); err != nil {
 			return err
 		}
 	}
@@ -332,9 +339,14 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 	}
 
 	resp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/properties", nil)
-	existingIAASJSON, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("could not get IAAS configuration from the director: %s", err)
+	}
+	defer resp.Body.Close()
+
+	existingIAASJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("could not read IAAS configuration: %s", err)
 	}
 
 	var existingIAAS IAASConfigurationDirectorPropertiesPayload
@@ -342,6 +354,7 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response from Ops Manager: %s", err)
 	}
+
 	if existingIAAS.IAASConfiguration != nil {
 		for _, config := range iaasConfigurations {
 			if config.Name == existingIAAS.IAASConfiguration.Name {
@@ -354,6 +367,7 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 	iaasConfig := IAASConfigurationDirectorPropertiesPayload{
 		IAASConfiguration: iaasConfigurations[0],
 	}
+
 	contents, err := yaml.Marshal(iaasConfig)
 	if err != nil {
 		return errors.Wrap(err, "problem marshalling request") // un-tested
@@ -363,6 +377,7 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 	if err != nil {
 		return errors.Wrap(err, "problem converting request to JSON") // un-tested
 	}
+
 	err = a.UpdateStagedDirectorProperties(jsonData)
 	if err != nil {
 		return fmt.Errorf("failed to update IAAS configuration in the director properties: %s", err)
@@ -376,6 +391,7 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 	if err != nil {
 		return AvailabilityZones{}, err
 	}
+	defer existingAzsResponse.Body.Close()
 
 	switch {
 	case existingAzsResponse.StatusCode == http.StatusOK:
