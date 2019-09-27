@@ -12,13 +12,14 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = FDescribe("configure-director command", func() {
+var _ = Describe("configure-director command", func() {
 	var (
 		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
 		server = createTLSServer()
+		server.RouteToHandler("GET", "/api/v0/info", ghttp.RespondWith(http.StatusOK, `{ "info": { "version": "2.5.3" } }`))
 		server.RouteToHandler("GET", "/api/v0/installations",
 			ghttp.RespondWith(http.StatusOK, `{"installations": []}`, map[string][]string{
 				"Content-Type": []string{"application/json"},
@@ -118,12 +119,6 @@ var _ = FDescribe("configure-director command", func() {
 	It("configures the BOSH director using the API", func() {
 		server.RouteToHandler("PUT", "/api/v0/staged/director/properties",
 			ghttp.VerifyJSON(`{
-					"iaas_configuration": {
-						"project": "some-project",
-						"default_deployment_tag": "my-vms",
-						"associated_service_account": "some-service-account",
-						"auth_json": "{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n"
-					},
 					"director_configuration": {
 						"ntp_servers_string": "us.example.org, time.something.com",
 						"resurrector_enabled": false,
@@ -139,8 +134,34 @@ var _ = FDescribe("configure-director command", func() {
 					}
 	  			}`),
 		)
-		server.RouteToHandler("POST", "/api/v0/staged/director/availability_zones",
-			ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-1"}}`),
+		server.RouteToHandler("GET", "/api/v0/staged/director/iaas_configurations",
+			ghttp.RespondWith(http.StatusOK, `{
+				"iaas_configurations": [{
+					"guid": "guid-one",
+					"name": "some-iaas"
+				},{
+					"guid": "guid-two",
+					"name": "another-iaas"
+				}]
+			}`),
+		)
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/director/iaas_configurations/guid-one"),
+				ghttp.VerifyJSON(`{"iaas_configuration":{"associated_service_account":"some-service-account","auth_json":"{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n","default_deployment_tag":"my-vms","guid":"guid-one","name":"some-iaas","project":"some-project"}}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/director/iaas_configurations/guid-two"),
+				ghttp.VerifyJSON(`{"iaas_configuration":{"associated_service_account":"some-service-account","auth_json":"{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n","default_deployment_tag":"my-vms","guid":"guid-two","name":"another-iaas","project":"some-project"}}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
+				ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-1", "iaas_configuration_guid":"guid-one"}}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
+				ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-2", "iaas_configuration_guid":"guid-two"}}`),
+			),
 		)
 		server.RouteToHandler("GET", "/api/v0/staged/director/networks",
 			ghttp.RespondWith(http.StatusOK, ""),
@@ -200,6 +221,9 @@ var _ = FDescribe("configure-director command", func() {
 ---
 az-configuration:
 - name: some-az-1
+  iaas_configuration_name: some-iaas
+- name: some-az-2
+  iaas_configuration_name: another-iaas
 networks-configuration:
   networks:
   - name: network-1
@@ -224,15 +248,25 @@ properties-configuration:
     resurrector_enabled: false
     director_hostname: foo.example.com
     max_threads: 5
-  iaas_configuration:
-    project: some-project
-    default_deployment_tag: my-vms
-    associated_service_account: some-service-account
-    auth_json: |
-      {
-        "some-auth-field": "some-service-key",
-        "some-private_key": "some-key"
-      }
+iaas-configurations:
+- name: some-iaas 
+  project: some-project
+  default_deployment_tag: my-vms
+  associated_service_account: some-service-account
+  auth_json: |
+    {
+      "some-auth-field": "some-service-key",
+      "some-private_key": "some-key"
+    }
+- name: another-iaas 
+  project: some-project
+  default_deployment_tag: my-vms
+  associated_service_account: some-service-account
+  auth_json: |
+    {
+      "some-auth-field": "some-service-key",
+      "some-private_key": "some-key"
+    }
 `)
 
 		tempfile, err := ioutil.TempFile("", "config.yaml")
@@ -247,6 +281,7 @@ properties-configuration:
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
+			"--trace",
 			"configure-director",
 			"--config", tempfile.Name(),
 		)
@@ -259,14 +294,35 @@ properties-configuration:
 
 	Describe("--ignore-verifier-warnings flag", func() {
 		It("configures the BOSH director using the API, and ignores verifier warnings", func() {
+			server.RouteToHandler("GET", "/api/v0/staged/director/iaas_configurations",
+				ghttp.RespondWith(http.StatusOK, `{
+				"iaas_configurations": [{
+					"guid": "guid-one",
+					"name": "some-iaas"
+				},{
+					"guid": "guid-two",
+					"name": "another-iaas"
+				}]
+			}`),
+			)
+
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
-					ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-1"}}`),
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/director/iaas_configurations/guid-one"),
+					ghttp.VerifyJSON(`{"iaas_configuration":{"associated_service_account":"some-service-account","auth_json":"{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n","default_deployment_tag":"my-vms","guid":"guid-one","name":"some-iaas","project":"some-project"}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/director/iaas_configurations/guid-two"),
+					ghttp.VerifyJSON(`{"iaas_configuration":{"associated_service_account":"some-service-account","auth_json":"{\n  \"some-auth-field\": \"some-service-key\",\n  \"some-private_key\": \"some-key\"\n}\n","default_deployment_tag":"my-vms","guid":"guid-two","name":"another-iaas","project":"some-project"}}`),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
-					ghttp.VerifyJSON(`{"availability_zone":{"name":"some-existing-az"}}`),
+					ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-1", "iaas_configuration_guid":"guid-one"}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.RespondWith(http.StatusMultiStatus, ""),
+					ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
+					ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-2", "iaas_configuration_guid":"guid-two"}}`),
 				),
 			)
 
@@ -274,10 +330,30 @@ properties-configuration:
 ---
 az-configuration:
 - name: some-az-1
-- name: some-existing-az
+  iaas_configuration_name: some-iaas
+- name: some-az-2
+  iaas_configuration_name: another-iaas
+iaas-configurations:
+- name: some-iaas 
+  project: some-project
+  default_deployment_tag: my-vms
+  associated_service_account: some-service-account
+  auth_json: |
+    {
+      "some-auth-field": "some-service-key",
+      "some-private_key": "some-key"
+    }
+- name: another-iaas 
+  project: some-project
+  default_deployment_tag: my-vms
+  associated_service_account: some-service-account
+  auth_json: |
+    {
+      "some-auth-field": "some-service-key",
+      "some-private_key": "some-key"
+    }
 `)
 
-			//verifierErrorOccured = true
 			tempfile, err := ioutil.TempFile("", "config.yaml")
 			Expect(err).ToNot(HaveOccurred())
 

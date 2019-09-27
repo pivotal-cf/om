@@ -34,6 +34,18 @@ var _ = Describe("Director", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "existing-iaas-guid",
+								"name": "existing-iaas"
+							}, {
+								"guid": "new-iaas-guid",
+								"name": "new-iaas"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
 						ghttp.RespondWith(http.StatusOK, `{
 							"availability_zones": [{
@@ -59,6 +71,7 @@ var _ = Describe("Director", func() {
 								"a_field": "some_val",
 								"guid": "existing-az-guid",
 								"name": "existing-az",
+								"iaas_configuration_guid": "existing-iaas-guid",
 								"clusters": [{
 									"cluster": "pizza",
 									"guid": "pepperoni",
@@ -72,7 +85,8 @@ var _ = Describe("Director", func() {
 						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
 						ghttp.VerifyJSON(`{
 							"availability_zone":{
-								"name": "new-az"
+								"name": "new-az",
+								"iaas_configuration_guid": "new-iaas-guid"
 							}
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{}`),
@@ -85,10 +99,12 @@ var _ = Describe("Director", func() {
 								"cluster": "pizza",
 								"res_pool": "abcd"
 							}],
+							"iaas_configuration_name": "existing-iaas",
 							"name": "existing-az",
 							"a_field":"some_val"
 						}, {
-							"name": "new-az"
+							"name": "new-az",
+							"iaas_configuration_name": "new-iaas"
 						}
 					]`),
 				}, false)
@@ -104,7 +120,8 @@ var _ = Describe("Director", func() {
 						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
 						ghttp.VerifyJSON(`{
 							"availability_zone":{
-								"name": "some-az"
+								"name": "new-az",
+								"iaas_configuration_guid": "new-iaas-guid"
 							}
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{}`),
@@ -112,7 +129,8 @@ var _ = Describe("Director", func() {
 				)
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage(`[{
-						"name": "some-az"
+						"name": "new-az",
+						"iaas_configuration_name": "new-iaas"
 					}]`),
 				}, false)
 				Expect(err).NotTo(HaveOccurred())
@@ -123,6 +141,15 @@ var _ = Describe("Director", func() {
 			It("continues to configure the availability zones", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "new-iaas-guid",
+								"name": "new-iaas"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
 						ghttp.RespondWith(http.StatusNotFound, ""),
 					),
@@ -130,14 +157,15 @@ var _ = Describe("Director", func() {
 						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
 						ghttp.VerifyJSON(`{
 							"availability_zone":{
-								"name": "new-az"
+								"name": "new-az",
+								"iaas_configuration_guid": "new-iaas-guid"
 							}
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{}`),
 					),
 				)
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
-					AvailabilityZones: json.RawMessage(`[{"name": "new-az"}]`),
+					AvailabilityZones: json.RawMessage(`[{"name": "new-az", "iaas_configuration_name": "new-iaas"}]`),
 				}, false)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -148,11 +176,67 @@ var _ = Describe("Director", func() {
 			})
 		})
 
+		When("there is only 1 az config passed in without a name and no iaases exists", func() {
+			It("send the request anyway", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": []
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zone": [{"name": "new"}]}`),
+					),
+				)
+
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name":"not-existing"}]`),
+				}, false)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
+		When("there is only 1 az config passed in without a name and only 1 iaas config is returned by the api", func() {
+			It("send the request anyway", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+						"iaas_configurations": [{
+							"guid": "missing-guid",
+							"name": "missing"
+						}]
+					}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zone": [{"name": "existing"}]}`),
+					),
+				)
+
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`),
+				}, false)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
 		Context("failure cases", func() {
 			It("returns an error when the provided AZ config is malformed", func() {
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("{malformed"),
 				}, false)
+
 				Expect(err).To(MatchError(HavePrefix("provided AZ config is not well-formed JSON")))
 			})
 
@@ -160,12 +244,34 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage("[{}]"),
 				}, false)
+
 				Expect(err).To(MatchError(HavePrefix("provided AZ config [0] does not specify the AZ 'name'")))
 			})
 
-			It("returns an error when the GET http status is not a 200 or 404", func() {
+			It("returns an error when the GET iaas_configurations request fails", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+							server.CloseClientConnections()
+						}),
+					),
+				)
+
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
+				Expect(err.Error()).To(ContainSubstring("could not send api request to GET /api/v0/staged/director/iaas_configurations"))
+			})
+
+			It("returns an error when the GET availability zones http status is not a 200 or 404", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					),
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
@@ -173,18 +279,16 @@ var _ = Describe("Director", func() {
 				Expect(err).To(MatchError(ContainSubstring("500")))
 			})
 
-			It("returns an error when the GET to the api endpoint fails", func() {
-				server.Close()
-
-				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
-
-				Expect(err).To(MatchError(ContainSubstring(
-					"could not send api request to GET /api/v0/staged/director/availability_zones")))
-			})
-
 			It("returns an error when the GET returns malformed existing AZs", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, "malformed"),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, "malformed"),
+					),
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
@@ -195,8 +299,18 @@ var _ = Describe("Director", func() {
 
 			It("ignores warnings when the PUT http status is 207 and ignoreVerifierWarnings is true", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
-					ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+					),
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, true)
@@ -205,43 +319,134 @@ var _ = Describe("Director", func() {
 
 			It("returns an error when the PUT and POST http status is 207 and ignoreVerifierWarnings is false", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
-					ghttp.RespondWith(http.StatusMultiStatus, "{}"),
-					ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
-					ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "existing-guid",
+								"name": "existing"
+							}, {
+								"guid": "new-guid",
+								"name": "new"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+					),
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
-					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`),
+					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name": "new"}]`),
 				}, false)
 				Expect(err).To(MatchError(ContainSubstring("Multi-Status")))
 
+				server.Reset()
+
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "existing-guid",
+								"name": "existing"
+							},{
+								"guid": "new-guid",
+								"name": "new"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/availability_zones/123"),
+						ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+					),
+				)
+
 				err = service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
-					AvailabilityZones: json.RawMessage(`[{"name": "existing"}]`),
+					AvailabilityZones: json.RawMessage(`[{"name": "existing", "iaas_configuration_name": "existing"}]`),
 				}, false)
 				Expect(err).To(MatchError(ContainSubstring("Multi-Status")))
 			})
 
+			It("returns an error when there is 1 az config passed in and multiple iaas configs are returned by the api", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "missing-guid",
+								"name": "missing"
+							}, {
+								"guid": "another-guid",
+								"name": "another"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones": [{"name": "existing", "guid":"123"}]}`),
+					),
+				)
+
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name": "new"}]`),
+				}, false)
+				Expect(err).To(MatchError(ContainSubstring("provided AZ 'iaas_configuration_name' ('new') doesn't match any existing iaas_configurations")))
+			})
+
 			It("returns an error when the PUT http status is non-200", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "new-guid",
+								"name": "new"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
+					),
 					ghttp.RespondWith(http.StatusInternalServerError, "{}"),
 				)
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
-					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`)}, false)
+					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name": "new"}]`)}, false)
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
 
 			It("returns an error when the PUT to the api endpoint fails", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "new-guid",
+								"name": "new"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
+					),
 					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 						server.CloseClientConnections()
 					}),
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
-					AvailabilityZones: json.RawMessage(`[{"name": "new"}]`)}, false)
+					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name": "new"}]`)}, false)
 
 				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/staged/director/availability_zones"))
 			})
@@ -331,8 +536,14 @@ var _ = Describe("Director", func() {
 			When("the Ops Manager does not support retrieving existing networks", func() {
 				It("continues to configure the networks", func() {
 					server.AppendHandlers(
-						ghttp.RespondWith(http.StatusNotFound, ""),
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/networks"),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/director/networks"),
+							ghttp.RespondWith(http.StatusNotFound, ""),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("PUT", "/api/v0/staged/director/networks"),
+							ghttp.RespondWith(http.StatusOK, ""),
+						),
 					)
 
 					err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
@@ -378,7 +589,10 @@ var _ = Describe("Director", func() {
 
 			It("returns an error when the api endpoint fails", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, `{"networks": []}`),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/networks"),
+						ghttp.RespondWith(http.StatusOK, `{"networks": []}`),
+					),
 					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 						server.CloseClientConnections()
 					}),
@@ -392,8 +606,14 @@ var _ = Describe("Director", func() {
 
 			It("returns an error when the network endpoint status is non-200", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, `{"networks": []}`),
-					ghttp.RespondWith(http.StatusInternalServerError, ""),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/networks"),
+						ghttp.RespondWith(http.StatusOK, `{"networks": []}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/networks"),
+						ghttp.RespondWith(http.StatusInternalServerError, ""),
+					),
 				)
 
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
@@ -472,17 +692,28 @@ var _ = Describe("Director", func() {
 		})
 
 		Context("failure cases", func() {
-			It("returns an error when the http status is non-200", func() {
+			It("returns an error when the http status of the network_and_az endpoint is non-200", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusTeapot, ""),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/director/credentials"),
+						ghttp.RespondWith(http.StatusNotFound, ""),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/network_and_az"),
+						ghttp.RespondWith(http.StatusTeapot, ""),
+					),
 				)
+
 				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
 				Expect(err).To(MatchError(ContainSubstring("418")))
 			})
 
 			It("returns an error when the api endpoint fails", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusNotFound, ""),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/director/credentials"),
+						ghttp.RespondWith(http.StatusNotFound, ""),
+					),
 					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 						server.CloseClientConnections()
 					}),
@@ -541,13 +772,20 @@ var _ = Describe("Director", func() {
 
 		Context("failure cases", func() {
 			It("returns an error when the http status is non-200", func() {
-				server.AppendHandlers(ghttp.RespondWith(http.StatusTeapot, ""))
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/properties"),
+						ghttp.RespondWith(http.StatusTeapot, ""),
+					),
+				)
+
 				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(``))
 				Expect(err).To(MatchError(ContainSubstring("418 I'm a teapot")))
 			})
 
 			It("returns an error when the api endpoint fails", func() {
 				server.Close()
+
 				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(``))
 				Expect(err.Error()).To(ContainSubstring("could not send api request to PUT /api/v0/staged/director/properties"))
 			})
@@ -706,7 +944,10 @@ var _ = Describe("Director", func() {
 
 			It("returns error if POST to iaas_configurations fails", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, ""),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, ""),
+					),
 					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 						server.CloseClientConnections()
 					}),
@@ -738,7 +979,10 @@ var _ = Describe("Director", func() {
 
 			It("returns an error if the response body is not JSON", func() {
 				server.AppendHandlers(
-					ghttp.RespondWith(http.StatusOK, "bad payload"),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, "bad payload"),
+					),
 				)
 
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))

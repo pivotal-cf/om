@@ -40,6 +40,8 @@ type AZ struct {
 	GUID     string                 `yaml:"guid,omitempty"`
 	Name     string                 `yaml:"name"`
 	Clusters []*Cluster             `yaml:"clusters,omitempty"`
+	IAASName string                 `yaml:"iaas_configuration_name,omitempty"`
+	IAASGUID string                 `yaml:"iaas_configuration_guid"`
 	Fields   map[string]interface{} `yaml:",inline"`
 }
 
@@ -64,6 +66,28 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput, 
 		if az.Name == "" {
 			return fmt.Errorf("provided AZ config [%d] does not specify the AZ 'name'", i)
 		}
+	}
+
+	iaasConfigs, err := a.GetStagedDirectorIaasConfigurations(true)
+	if err != nil {
+		return err
+	}
+
+	for index, az := range azs.AvailabilityZones {
+		found := false
+
+		for _, iaas := range iaasConfigs["iaas_configurations"] {
+			if az.IAASName == iaas["name"].(string) {
+				found = true
+				azs.AvailabilityZones[index].IAASGUID = iaas["guid"].(string)
+			}
+		}
+
+		if !found && len(iaasConfigs["iaas_configurations"]) > 1 {
+			return fmt.Errorf("provided AZ 'iaas_configuration_name' ('%s') doesn't match any existing iaas_configurations", az.IAASName)
+		}
+
+		azs.AvailabilityZones[index].IAASName = ""
 	}
 
 	azs, err = a.addGUIDToExistingAZs(azs)
