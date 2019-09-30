@@ -88,13 +88,21 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   from the `pivnet-blobs` container
   from the `some-storage-account` storage account from Azure Storage.
 
-- The command `disable-director-verifiers` has been added.
-  It allows verifiers to be disabled that are preventing the director from being deployed.
-  This feature should be used with caution as the verifiers can provide useful feedback on mis-configuration. 
+- The commands `disable-director-verifiers`
+  and `disable-product-verifiers` have been added.
+  They allow verifiers that are preventing Apply Changes from succeeding to be disabled.
+  This feature should be used with caution,
+  as the verifiers can provide useful feedback on mis-configuration. 
 
-- The command `disable-product-verifiers` has been added.
-  It allows verifiers to be disabled that are preventing a product from being deployed.
-  This feature should be used with caution as the verifiers can provide useful feedback on mis-configuration.
+- When using `staged-director-config` and `configure-director`,
+  the `iaas_configuration_name` will be used to assign an IAAS to an availability zone.
+  This provides support for multiple iaas configurations on vSphere and Openstack.
+  Prior to this, the `iass_configuration_guid` had to be discovered prior to assigning an availability zone;
+  now the name can be used in one step.
+  
+- We've also made miscellanious improvements
+  to warning and error messages,
+  and to documentation.
 
 ## 4.0.1
 
