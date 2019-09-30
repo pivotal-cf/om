@@ -50,10 +50,6 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 4.1.0
 
 ## Features
-- We've added a `disable-director-verifiers` command.
-  This command allows verifiers known to be inappropriate
-  for a given environment
-  to be disabled.
 - `download-product` supports GCS (Google Cloud Storage)
   for Pivnet download artifacts.
   
