@@ -11,9 +11,14 @@ import (
 )
 
 type ConfigTemplate struct {
-	environFunc   func() []string
+	environFunc   envProvider
 	buildProvider buildProvider
 	Options       struct {
+		ConfigFile string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
+		VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)" experimental:"true"`
+		VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
+		Vars       []string `long:"var"                                  description:"Load variable from the command line. Format: VAR=VAL"`
+
 		OutputDirectory   string `long:"output-directory"               description:"a directory to create templates under. must already exist."                       required:"true"`
 		PivnetApiToken    string `long:"pivnet-api-token"                                                                                                   required:"true"`
 		PivnetProductSlug string `long:"pivnet-product-slug"            description:"the product name in pivnet"                                                       required:"true"`
@@ -38,19 +43,22 @@ var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 }
 
 type buildProvider func(*ConfigTemplate) MetadataProvider
+type envProvider func() []string
 
 func NewConfigTemplate(bp buildProvider) *ConfigTemplate {
+	return NewConfigTemplateWithEnvironment(bp, os.Environ)
+}
+
+func NewConfigTemplateWithEnvironment(bp buildProvider, environFunc envProvider) *ConfigTemplate {
 	return &ConfigTemplate{
-		environFunc:   os.Environ,
+		environFunc:   environFunc,
 		buildProvider: bp,
 	}
 }
 
 //Execute - generates config template and ops files
 func (c *ConfigTemplate) Execute(args []string) error {
-	_, err := jhanda.Parse(
-		&c.Options,
-		args)
+	err := loadConfigFile(args, &c.Options, c.environFunc)
 	if err != nil {
 		return fmt.Errorf("could not parse config-template flags: %s", err.Error())
 	}

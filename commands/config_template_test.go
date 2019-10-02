@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -16,7 +17,8 @@ import (
 
 var _ = Describe("ConfigTemplate", func() {
 	var (
-		command *commands.ConfigTemplate
+		command     *commands.ConfigTemplate
+		environFunc func() []string
 	)
 
 	createOutputDirectory := func() string {
@@ -25,6 +27,10 @@ var _ = Describe("ConfigTemplate", func() {
 
 		return tempDir
 	}
+
+	BeforeEach(func() {
+		environFunc = func() []string { return nil }
+	})
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
@@ -233,6 +239,117 @@ var _ = Describe("ConfigTemplate", func() {
 				Entry("with pivnet-product-slug", "--pivnet-product-slug"),
 				Entry("with product-version", "--product-version"),
 			)
+		})
+
+		When("the --config flag is passed", func() {
+			BeforeEach(func() {
+				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+					f := &fakes.MetadataProvider{}
+					f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
+					return f
+				})
+			})
+			var (
+				configFile *os.File
+				err        error
+			)
+
+			When("the config file contains variables", func() {
+				const downloadProductConfigWithVariablesTmpl = `---
+pivnet-api-token: "token"
+pivnet-file-glob: "*.pivotal"
+pivnet-product-slug: ((product-slug))
+product-version: 2.0.0
+output-directory: %s
+`
+
+				BeforeEach(func() {
+					configFile, err = ioutil.TempFile("", "")
+					Expect(err).NotTo(HaveOccurred())
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
+					Expect(err).NotTo(HaveOccurred())
+
+					err = configFile.Close()
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					err = os.RemoveAll(configFile.Name())
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				It("returns an error if missing variables", func() {
+					err = command.Execute([]string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+				})
+
+				Context("passed in a vars-file", func() {
+					var varsFile *os.File
+
+					BeforeEach(func() {
+						varsFile, err = ioutil.TempFile("", "")
+						Expect(err).NotTo(HaveOccurred())
+
+						_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
+						Expect(err).NotTo(HaveOccurred())
+
+						err = varsFile.Close()
+						Expect(err).NotTo(HaveOccurred())
+					})
+
+					AfterEach(func() {
+						err = os.RemoveAll(varsFile.Name())
+						Expect(err).NotTo(HaveOccurred())
+					})
+
+					It("can interpolate variables into the configuration", func() {
+						err = command.Execute([]string{
+							"--config", configFile.Name(),
+							"--vars-file", varsFile.Name(),
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
+
+				Context("given vars", func() {
+					It("can interpolate variables into the configuration", func() {
+						err = command.Execute([]string{
+							"--config", configFile.Name(),
+							"--var", "product-slug=elastic-runtime",
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
+
+				Context("passed as environment variables", func() {
+					BeforeEach(func() {
+						environFunc = func() []string {
+							return []string{"OM_VAR_product-slug='sea-slug'"}
+						}
+
+						command = commands.NewConfigTemplateWithEnvironment(func(*commands.ConfigTemplate) commands.MetadataProvider {
+							f := &fakes.MetadataProvider{}
+							f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
+							return f
+						}, environFunc)
+					})
+
+					It("can interpolate variables into the configuration", func() {
+						err = command.Execute([]string{
+							"--config", configFile.Name(),
+							"--vars-env", "OM_VAR",
+						})
+						Expect(err).NotTo(HaveOccurred())
+					})
+				})
+			})
 		})
 
 		Describe("metadata extraction and parsing failures", func() {
