@@ -656,7 +656,7 @@ var _ = Describe("ConfigureProduct", func() {
 					"--config", configFile.Name(),
 				})
 
-				Expect(err).To(MatchError("could not fetch existing job configuration: some error"))
+				Expect(err).To(MatchError("could not fetch existing job configuration for some-job: some error"))
 			})
 		})
 
