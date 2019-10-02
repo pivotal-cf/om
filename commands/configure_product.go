@@ -186,7 +186,7 @@ func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID
 		cp.logger.Printf("\t%s", name)
 		jobProperties, err := cp.service.GetStagedProductJobResourceConfig(productGUID, jobs[name])
 		if err != nil {
-			return fmt.Errorf("could not fetch existing job configuration: %s", err)
+			return fmt.Errorf("could not fetch existing job configuration for %s: %s", name, err)
 		}
 
 		err = json.Unmarshal(userProvidedConfig[name], &jobProperties)

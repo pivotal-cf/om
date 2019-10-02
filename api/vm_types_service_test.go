@@ -171,7 +171,8 @@ var _ = Describe("VMTypes", func() {
 
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusInternalServerError,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
+			}, nil)
 
 			_, err := service.ListVMTypes()
 

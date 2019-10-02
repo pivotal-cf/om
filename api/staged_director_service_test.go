@@ -238,7 +238,7 @@ var _ = Describe("StagedProducts", func() {
 					)
 
 					_, err := service.GetStagedDirectorProperties(false)
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response from /api/v0/staged/director/properties")))
 				})
 			})
 
@@ -443,7 +443,7 @@ var _ = Describe("StagedProducts", func() {
 					)
 
 					_, err := service.GetStagedDirectorIaasConfigurations(false)
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response from /api/v0/staged/director/iaas_configurations")))
 				})
 			})
 
@@ -547,7 +547,7 @@ var _ = Describe("StagedProducts", func() {
 					)
 
 					_, err := service.GetStagedDirectorAvailabilityZones()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response from /api/v0/staged/director/availability_zones")))
 				})
 			})
 
@@ -578,7 +578,7 @@ var _ = Describe("StagedProducts", func() {
 					)
 
 					_, err := service.GetStagedDirectorAvailabilityZones()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response from /api/v0/staged/director/iaas_configurations")))
 				})
 			})
 
@@ -674,7 +674,7 @@ var _ = Describe("StagedProducts", func() {
 					)
 
 					_, err := service.GetStagedDirectorNetworks()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response from /api/v0/staged/director/networks")))
 				})
 			})
 
