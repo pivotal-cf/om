@@ -26,7 +26,7 @@ var _ = Describe("configure-director command", func() {
 			}),
 		)
 		server.RouteToHandler("GET", "/api/v0/staged/director/availability_zones",
-			ghttp.RespondWith(http.StatusOK, "{}"),
+			ghttp.RespondWith(http.StatusOK, `{}`),
 		)
 	})
 

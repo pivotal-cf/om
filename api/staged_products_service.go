@@ -142,7 +142,7 @@ func (a Api) DeleteStagedProduct(input UnstageProductInput) error {
 		return fmt.Errorf("product is not staged: %s", input.ProductName)
 	}
 
-	resp, err := a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), []byte("{}"))
+	resp, err := a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), []byte(`{}`))
 	if err != nil {
 		return err
 	}

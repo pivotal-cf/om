@@ -91,7 +91,7 @@ var _ = Describe("StemcellService", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					_, err := service.ListStemcells()
@@ -161,7 +161,7 @@ var _ = Describe("StemcellService", func() {
 				It("returns an error", func() {
 					fakeClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					err := service.AssignStemcell(input)

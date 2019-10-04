@@ -1,11 +1,8 @@
 package acceptance
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gbytes"
@@ -13,67 +10,72 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/om/api"
 )
 
 var _ = Describe("configure-ldap-authentication command", func() {
+	var (
+		server *ghttp.Server
+	)
+
+	BeforeEach(func() {
+		server = createTLSServer()
+	})
+
+	AfterEach(func() {
+		server.Close()
+	})
+
 	It("configures the admin user account on OpsManager with LDAP", func() {
-		var auth struct {
-			Setup api.SetupInput `json:"setup"`
-		}
-		var ensureAvailabilityCallCount int
-
-		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`))
-				Expect(err).NotTo(HaveOccurred())
-			case "/api/v0/info":
-				_, err := w.Write([]byte(`{
-						"info": {
-							"version": "2.6.0"
-						}
-					}`))
-
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/setup":
-				err := json.NewDecoder(req.Body).Decode(&auth)
-				Expect(err).NotTo(HaveOccurred())
-			case "/login/ensure_availability":
-				ensureAvailabilityCallCount++
-
-				if ensureAvailabilityCallCount == 1 {
-					w.Header().Set("Location", "/setup")
-					w.WriteHeader(http.StatusFound)
-					return
-				}
-
-				if ensureAvailabilityCallCount < 3 {
-					w.WriteHeader(http.StatusOK)
-					_, err := w.Write([]byte("Waiting for authentication system to start..."))
-					Expect(err).ToNot(HaveOccurred())
-					return
-				}
-
-				w.Header().Set("Location", "/auth/cloudfoundry")
-				w.WriteHeader(http.StatusFound)
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
-
-		defer server.Close()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/login/ensure_availability"),
+				ghttp.RespondWith(http.StatusFound, "", map[string][]string{"Location": {"/setup"}}),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"info": {
+						"version": "2.6.0"
+					}
+				}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v0/setup"),
+				ghttp.VerifyJSON(`{
+        			"setup": {
+						"identity_provider": "ldap",
+						"decryption_passphrase": "some-passphrase",
+						"decryption_passphrase_confirmation": "some-passphrase",
+						"eula_accepted": "true",
+						"ldap_settings": {
+							"email_attribute": "mail",
+							"group_search_base": "ou=groups,dc=opsmanager,dc=com",
+							"group_search_filter": "member={0}",
+							"ldap_password": "password",
+							"ldap_rbac_admin_group_name": "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com",
+							"ldap_referrals": "follow",
+							"ldap_username": "cn=admin,dc=opsmanager,dc=com",
+							"server_url": "ldap://YOUR-LDAP-SERVER",
+							"user_search_base": "ou=users,dc=opsmanager,dc=com",
+							"user_search_filter": "cn={0}"
+						},
+						"create_bosh_admin_client": true
+        			}
+				}`),
+				ghttp.RespondWith(http.StatusOK, ""),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/login/ensure_availability"),
+				ghttp.RespondWith(http.StatusOK, "Waiting for authentication system to start..."),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/login/ensure_availability"),
+				ghttp.RespondWith(http.StatusFound, "", map[string][]string{"Location": {"/auth/cloudfoundry"}}),
+			),
+		)
 
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--skip-ssl-validation",
 			"configure-ldap-authentication",
 			"--decryption-passphrase", "some-passphrase",
@@ -93,28 +95,6 @@ var _ = Describe("configure-ldap-authentication command", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session, "5s").Should(gexec.Exit(0))
-
-		Expect(auth.Setup).To(Equal(api.SetupInput{
-			IdentityProvider:                 "ldap",
-			DecryptionPassphrase:             "some-passphrase",
-			DecryptionPassphraseConfirmation: "some-passphrase",
-			EULAAccepted:                     "true",
-			CreateBoshAdminClient:            true,
-			LDAPSettings: &api.LDAPSettings{
-				EmailAttribute:     "mail",
-				GroupSearchBase:    "ou=groups,dc=opsmanager,dc=com",
-				GroupSearchFilter:  "member={0}",
-				LDAPPassword:       "password",
-				LDAPRBACAdminGroup: "cn=opsmgradmins,ou=groups,dc=opsmanager,dc=com",
-				LDAPReferral:       "follow",
-				LDAPUsername:       "cn=admin,dc=opsmanager,dc=com",
-				ServerURL:          "ldap://YOUR-LDAP-SERVER",
-				UserSearchBase:     "ou=users,dc=opsmanager,dc=com",
-				UserSearchFilter:   "cn={0}",
-			},
-		}))
-
-		Expect(ensureAvailabilityCallCount).To(Equal(3))
 
 		Expect(session.Out).To(gbytes.Say("configuring LDAP authentication..."))
 		Expect(session.Out).To(gbytes.Say("waiting for configuration to complete..."))

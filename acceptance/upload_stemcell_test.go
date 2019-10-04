@@ -40,7 +40,7 @@ func (t *UploadStemcellTestServer) ServeHTTP(w http.ResponseWriter, req *http.Re
 				"expires_in": 3600
 			}`
 	case "/api/v0/diagnostic_report":
-		responseString = "{}"
+		responseString = `{}`
 	case "/api/v0/stemcells":
 		auth := req.Header.Get("Authorization")
 
@@ -88,7 +88,7 @@ var _ = Describe("upload-stemcell command", func() {
 			}
 
 			stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
-			_, err = w.Write([]byte("{}"))
+			_, err = w.Write([]byte(`{}`))
 			Expect(err).ToNot(HaveOccurred())
 		}
 	}
@@ -280,7 +280,7 @@ var _ = Describe("upload-stemcell command", func() {
 							panic(err)
 						}
 
-						_, err = w.Write([]byte("{}"))
+						_, err = w.Write([]byte(`{}`))
 						Expect(err).ToNot(HaveOccurred())
 					}
 				})

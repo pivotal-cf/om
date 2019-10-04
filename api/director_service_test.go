@@ -270,7 +270,7 @@ var _ = Describe("Director", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
-						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+						ghttp.RespondWith(http.StatusInternalServerError, `{}`),
 					),
 				)
 
@@ -309,7 +309,7 @@ var _ = Describe("Director", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/availability_zones"),
-						ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+						ghttp.RespondWith(http.StatusMultiStatus, `{}`),
 					),
 				)
 
@@ -337,7 +337,7 @@ var _ = Describe("Director", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
-						ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+						ghttp.RespondWith(http.StatusMultiStatus, `{}`),
 					),
 				)
 
@@ -367,7 +367,7 @@ var _ = Describe("Director", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/availability_zones/123"),
-						ghttp.RespondWith(http.StatusMultiStatus, "{}"),
+						ghttp.RespondWith(http.StatusMultiStatus, `{}`),
 					),
 				)
 
@@ -418,7 +418,7 @@ var _ = Describe("Director", func() {
 						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
 						ghttp.RespondWith(http.StatusOK, `{"availability_zones":[]}`),
 					),
-					ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					ghttp.RespondWith(http.StatusInternalServerError, `{}`),
 				)
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name": "new"}]`)}, false)
@@ -582,7 +582,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
-					Networks: json.RawMessage("{}"),
+					Networks: json.RawMessage(`{}`),
 				})
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
@@ -599,7 +599,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
-					Networks: json.RawMessage("{}"),
+					Networks: json.RawMessage(`{}`),
 				})
 				Expect(err.Error()).To(ContainSubstring("could not send api request to PUT /api/v0/staged/director/networks"))
 			})
@@ -617,7 +617,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
-					Networks: json.RawMessage("{}"),
+					Networks: json.RawMessage(`{}`),
 				})
 				Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
 			})
@@ -644,7 +644,7 @@ var _ = Describe("Director", func() {
 								}
 							}
 						}`),
-						ghttp.RespondWith(http.StatusOK, "{}"),
+						ghttp.RespondWith(http.StatusOK, `{}`),
 					),
 				)
 

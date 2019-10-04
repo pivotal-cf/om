@@ -35,7 +35,7 @@ func (t *UploadProductTestServer) ServeHTTP(w http.ResponseWriter, req *http.Req
 				"expires_in": 3600
 			}`
 	case "/api/v0/diagnostic_report":
-		responseString = "{}"
+		responseString = `{}`
 	case "/api/v0/available_products":
 		if req.Method == "GET" {
 			responseString = "[]"
@@ -99,7 +99,7 @@ name: some-product`)
 			Expect(err).NotTo(HaveOccurred())
 
 			product = req.MultipartForm.File["product[file]"][0].Filename
-			_, err = w.Write([]byte("{}"))
+			_, err = w.Write([]byte(`{}`))
 			Expect(err).ToNot(HaveOccurred())
 		}
 
@@ -107,11 +107,6 @@ name: some-product`)
 
 	JustBeforeEach(func() {
 		server = httptest.NewTLSServer(&UploadProductTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
-		//server = httptest.NewUnstartedServer(&UploadProductTestServer{UploadHandler: http.HandlerFunc(uploadHandler)})
-		//server.TLS = &tls.Config{
-		//	MinVersion: tls.VersionTLS12,
-		//}
-		//server.StartTLS()
 	})
 
 	AfterEach(func() {
@@ -214,7 +209,7 @@ name: some-product`)
 						}
 
 						product = req.MultipartForm.File["product[file]"][0].Filename
-						_, err = w.Write([]byte("{}"))
+						_, err = w.Write([]byte(`{}`))
 						Expect(err).ToNot(HaveOccurred())
 					}
 				}

@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 	"time"
 
@@ -17,66 +15,11 @@ import (
 
 var _ = Describe("assign-multi-stemcell command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/api/v0/info":
-				responseString = `{
-						"info": {
-							"version": "2.6.0"
-						}
-					}`
-
-			case "/uaa/oauth/token":
-				_ = req.ParseForm()
-
-				if req.PostForm.Get("password") == "" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
-
-			case "/api/v0/stemcell_associations":
-				if req.Method == "GET" {
-					responseString = `{"products": 
-					[
-						{
-							"guid": "cf-guid", 
-							"identifier": "cf", 
-							"available_stemcells": [
-							{
-								"os": "ubuntu-trusty",
-								"version": "1234.5"
-							}, {
-								"os": "ubuntu-trusty",
-								"version": "1234.57"
-							}]
-						}
-					]
-				}`
-				} else if req.Method == "PATCH" {
-					responseString = `{}`
-				}
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-
-			_, err := w.Write([]byte(responseString))
-			Expect(err).ToNot(HaveOccurred())
-		}))
+		server = createTLSServer()
 	})
 
 	AfterEach(func() {
@@ -84,8 +27,48 @@ var _ = Describe("assign-multi-stemcell command", func() {
 	})
 
 	It("successfully sends the stemcell to the Ops Manager", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"info": {
+						"version": "2.6.0"
+					}
+				}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/stemcell_associations"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"products": [{
+						"guid": "cf-guid",
+						"identifier": "cf",
+						"available_stemcells": [{
+							"os": "ubuntu-trusty",
+							"version": "1234.5"
+						}, {
+							"os": "ubuntu-trusty",
+							"version": "1234.57"
+						}]
+					}]
+				}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PATCH", "/api/v0/stemcell_associations"),
+				ghttp.VerifyJSON(`{
+					"products": [{
+						"guid": "cf-guid",
+						"staged_stemcells": [{
+							"os": "ubuntu-trusty",
+							"version": "1234.57"
+						}]
+					}]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			),
+		)
+
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "pass",
 			"--skip-ssl-validation",

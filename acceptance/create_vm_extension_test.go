@@ -44,7 +44,7 @@ var _ = Describe("create VM extension", func() {
 }
 `))
 
-				responseJSON, err := json.Marshal([]byte("{}"))
+				responseJSON, err := json.Marshal([]byte(`{}`))
 				Expect(err).NotTo(HaveOccurred())
 
 				_, err = w.Write([]byte(responseJSON))

@@ -75,7 +75,7 @@ var _ = Describe("Trace Client", func() {
 
 	When("the request body is larger than some arbitrary value", func() {
 		It("only dumps the headers", func() {
-			request.Body = ioutil.NopCloser(strings.NewReader("{}"))
+			request.Body = ioutil.NopCloser(strings.NewReader(`{}`))
 			request.ContentLength = 1024 * 1024
 
 			_, err := traceClient.Do(request)
@@ -84,7 +84,7 @@ var _ = Describe("Trace Client", func() {
 			expectedContents, err := httputil.DumpRequest(request, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(out).To(gbytes.Say(string(expectedContents)))
-			Expect(out).NotTo(gbytes.Say("{}"))
+			Expect(out).NotTo(gbytes.Say(`{}`))
 		})
 	})
 

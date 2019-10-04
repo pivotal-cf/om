@@ -95,7 +95,7 @@ var _ = Describe("InstallationAssetService", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					err := service.DownloadInstallationAssetCollection("fake-dir/fake-file")
@@ -107,7 +107,7 @@ var _ = Describe("InstallationAssetService", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode:    http.StatusOK,
-						Body:          ioutil.NopCloser(strings.NewReader("{}")),
+						Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
 						ContentLength: 50,
 					}, nil)
 
@@ -122,7 +122,7 @@ var _ = Describe("InstallationAssetService", func() {
 		It("makes a request to import the installation to the Ops Manager", func() {
 			unauthedProgressClient.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader("{}")),
+					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 
@@ -162,7 +162,7 @@ var _ = Describe("InstallationAssetService", func() {
 				It("returns an error", func() {
 					unauthedProgressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
@@ -228,7 +228,7 @@ var _ = Describe("InstallationAssetService", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					_, err := service.DeleteInstallationAssetCollection()

@@ -22,15 +22,15 @@ var _ = Describe("disable_director_verifiers command", func() {
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/staged/director/verifiers/install_time"),
 				ghttp.RespondWith(http.StatusOK, `{ "verifiers": [
-							{ "type":"some-verifier-type", "enabled":true }
-						]}`),
+					{ "type":"some-verifier-type", "enabled":true }
+				]}`),
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("PUT", "/api/v0/staged/director/verifiers/install_time/some-verifier-type"),
 				ghttp.RespondWith(http.StatusOK, `{
-							"type": "some-verifier-type",
-							"enabled": false
-						}`),
+					"type": "some-verifier-type",
+					"enabled": false
+				}`),
 				ghttp.VerifyJSON(`{ "enabled": false }`),
 			),
 		)

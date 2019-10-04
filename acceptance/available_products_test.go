@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gbytes"
@@ -15,10 +13,6 @@ import (
 )
 
 var _ = Describe("available-products command", func() {
-	var (
-		server *httptest.Server
-	)
-
 	const tableOutput = `+--------------+---------+
 |     NAME     | VERSION |
 +--------------+---------+
@@ -27,44 +21,12 @@ var _ = Describe("available-products command", func() {
 +--------------+---------+
 `
 
-	const jsonOutput = `[
-		{
-			"name": "some-product",
-			"version": "1.2.3"
-		},
-		{
-			"name": "p-redis",
-			"version": "1.7.2"
-		}
-	]`
+	var (
+		server *ghttp.Server
+	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/available_products":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				_, err := w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
 	})
 
 	AfterEach(func() {
@@ -72,8 +34,21 @@ var _ = Describe("available-products command", func() {
 	})
 
 	It("lists the available products", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+				ghttp.RespondWith(http.StatusOK, `[{
+					"name": "some-product",
+					"product_version": "1.2.3"
+				}, {
+					"name":"p-redis",
+					"product_version":"1.7.2"
+				}]`),
+			),
+		)
+
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -89,8 +64,21 @@ var _ = Describe("available-products command", func() {
 
 	When("the json format is requested", func() {
 		It("lists the available products in json", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+					ghttp.RespondWith(http.StatusOK, `[{
+					"name": "some-product",
+					"product_version": "1.2.3"
+				}, {
+					"name":"p-redis",
+					"product_version":"1.7.2"
+				}]`),
+				),
+			)
+
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
@@ -102,43 +90,27 @@ var _ = Describe("available-products command", func() {
 
 			Eventually(session).Should(gexec.Exit(0))
 
-			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))
+			Expect(string(session.Out.Contents())).To(MatchJSON(`[{
+				"name": "some-product",
+				"version": "1.2.3"
+			}, {
+				"name": "p-redis",
+				"version": "1.7.2"
+			}]`))
 		})
 	})
 
 	When("there are no available products to list", func() {
-		BeforeEach(func() {
-			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/available_products":
-					auth := req.Header.Get("Authorization")
-					if auth != "Bearer some-opsman-token" {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					_, err := w.Write([]byte(`[]`))
-					Expect(err).ToNot(HaveOccurred())
-				default:
-					out, err := httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-					Fail(fmt.Sprintf("unexpected request: %s", out))
-				}
-			}))
-		})
-
 		It("prints a helpful message", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+					ghttp.RespondWith(http.StatusOK, `[]`),
+				),
+			)
+
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",

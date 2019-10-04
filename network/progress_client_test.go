@@ -37,7 +37,7 @@ var _ = Describe("ProgressClient", func() {
 				req.Body.Close()
 				return &http.Response{
 					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("{}")),
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 
@@ -55,7 +55,7 @@ var _ = Describe("ProgressClient", func() {
 
 			rawRespBody, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(rawRespBody)).To(Equal("{}"))
+			Expect(string(rawRespBody)).To(Equal(`{}`))
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("POST"))

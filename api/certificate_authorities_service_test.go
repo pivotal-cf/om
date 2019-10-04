@@ -210,7 +210,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				method = req.Method
 
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader("{}")),
+					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 
@@ -367,7 +367,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		It("activates a certificate authority", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader("{}")),
+					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 
@@ -386,7 +386,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			Expect(contentType).To(Equal("application/json"))
 
 			Expect(request.URL.Path).To(Equal("/api/v0/certificate_authorities/some-certificate-authority-guid/activate"))
-			Expect(string(body)).To(MatchJSON("{}"))
+			Expect(string(body)).To(MatchJSON(`{}`))
 		})
 
 		Context("failure cases", func() {
@@ -431,7 +431,7 @@ var _ = Describe("CertificateAuthorities", func() {
 		It("deletes a certificate authority", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader("{}")),
+					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 

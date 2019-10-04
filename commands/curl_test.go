@@ -85,7 +85,7 @@ var _ = Describe("Curl", func() {
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
 					},
-					Body: stringCloser("{}"),
+					Body: stringCloser(`{}`),
 				}, nil)
 
 				err := command.Execute([]string{
@@ -104,7 +104,7 @@ var _ = Describe("Curl", func() {
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
 					},
-					Body: stringCloser("{}"),
+					Body: stringCloser(`{}`),
 				}, nil)
 
 				err := command.Execute([]string{
@@ -123,7 +123,7 @@ var _ = Describe("Curl", func() {
 					Headers: http.Header{
 						"Content-Type": []string{"application/json"},
 					},
-					Body: stringCloser("{}"),
+					Body: stringCloser(`{}`),
 				}, nil)
 
 				err := command.Execute([]string{

@@ -32,7 +32,7 @@ var _ = Describe("delete-unused-products command", func() {
 			}`
 			case "/api/v0/available_products":
 				if req.Method == "DELETE" {
-					responseString = "{}"
+					responseString = `{}`
 				}
 			default:
 				out, err := httputil.DumpRequest(req, true)

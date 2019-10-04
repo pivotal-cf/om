@@ -30,7 +30,7 @@ var _ = Describe("UploadStemcellService", func() {
 		It("makes a request to upload the stemcell to the OpsManager", func() {
 			progressClient.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader("{}")),
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 			}, nil)
 
 			output, err := service.UploadStemcell(api.StemcellUploadInput{
@@ -67,7 +67,7 @@ var _ = Describe("UploadStemcellService", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					_, err := service.UploadStemcell(api.StemcellUploadInput{})

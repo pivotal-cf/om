@@ -75,7 +75,7 @@ var _ = Describe("import-installation command", func() {
 
 				installation = req.MultipartForm.File["installation[file]"][0].Filename
 				passphrase = req.MultipartForm.Value["passphrase"][0]
-				responseString = "{}"
+				responseString = `{}`
 			default:
 				out, err := httputil.DumpRequest(req, true)
 				Expect(err).NotTo(HaveOccurred())

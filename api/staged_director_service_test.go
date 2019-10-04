@@ -569,11 +569,11 @@ var _ = Describe("StagedProducts", func() {
 					server.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
-							ghttp.RespondWith(http.StatusOK, "{}"),
+							ghttp.RespondWith(http.StatusOK, `{}`),
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
-							ghttp.RespondWith(http.StatusTeapot, "{}"),
+							ghttp.RespondWith(http.StatusTeapot, `{}`),
 						),
 					)
 
@@ -587,7 +587,7 @@ var _ = Describe("StagedProducts", func() {
 					server.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
-							ghttp.RespondWith(http.StatusOK, "{}"),
+							ghttp.RespondWith(http.StatusOK, `{}`),
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),

@@ -38,7 +38,7 @@ var _ = Describe("ErrandsService", func() {
 				header = req.Header
 
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader("{}")),
+					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 

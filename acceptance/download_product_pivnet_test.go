@@ -103,7 +103,7 @@ var _ = Describe("download-product command", func() {
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/v2/products/example-product/releases/24/product_files/1/download"),
-					ghttp.RespondWith(http.StatusFound, "{}", http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/example-product/releases/24/product_files/1/download", server.URL())}}),
+					ghttp.RespondWith(http.StatusFound, `{}`, http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/example-product/releases/24/product_files/1/download", server.URL())}}),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("HEAD", "/api/v2/products/example-product/releases/24/product_files/1/download"),

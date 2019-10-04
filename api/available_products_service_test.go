@@ -42,7 +42,7 @@ var _ = Describe("Available Products", func() {
 				Expect(string(body)).To(Equal("some content"))
 
 				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader("{}")),
+					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 
@@ -78,7 +78,7 @@ var _ = Describe("Available Products", func() {
 				It("returns an error", func() {
 					progressClient.DoReturns(&http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("{}")),
+						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 					}, nil)
 
 					_, err := service.UploadAvailableProduct(api.UploadAvailableProductInput{

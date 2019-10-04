@@ -118,7 +118,7 @@ func (a Api) CreateCertificateAuthority(certBody CertificateAuthorityInput) (CA,
 }
 
 func (a Api) ActivateCertificateAuthority(input ActivateCertificateAuthorityInput) error {
-	resp, err := a.sendAPIRequest("POST", fmt.Sprintf("/api/v0/certificate_authorities/%s/activate", input.GUID), []byte("{}"))
+	resp, err := a.sendAPIRequest("POST", fmt.Sprintf("/api/v0/certificate_authorities/%s/activate", input.GUID), []byte(`{}`))
 	if err != nil {
 		return err
 	}

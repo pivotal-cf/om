@@ -30,7 +30,7 @@ var _ = Describe("Setup", func() {
 		It("makes a request to setup the OpsManager", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader("{}")),
+				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 			}, nil)
 
 			output, err := service.Setup(api.SetupInput{

@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 	"time"
 
@@ -17,43 +15,11 @@ import (
 
 var _ = Describe("assign-stemcell command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_ = req.ParseForm()
-
-				if req.PostForm.Get("password") == "" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
-			case "/api/v0/stemcell_assignments":
-				if req.Method == "GET" {
-					responseString = `{"products": [{"guid": "cf-guid", "identifier": "cf", "available_stemcell_versions": ["1234.5, 1234.9"]}]}`
-				} else if req.Method == "PATCH" {
-					responseString = `{}`
-				}
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-
-			_, err := w.Write([]byte(responseString))
-			Expect(err).ToNot(HaveOccurred())
-		}))
+		server = createTLSServer()
 	})
 
 	AfterEach(func() {
@@ -61,8 +27,33 @@ var _ = Describe("assign-stemcell command", func() {
 	})
 
 	It("successfully sends the stemcell to the Ops Manager", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/stemcell_assignments"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"products": [{
+						"guid": "cf-guid",
+						"identifier": "cf",
+						"available_stemcell_versions": [
+							"1234.5, 1234.9"
+						]
+					}]
+				}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PATCH", "/api/v0/stemcell_assignments"),
+				ghttp.VerifyJSON(` {
+					"products": [{
+						"guid": "cf-guid",
+						"staged_stemcell_version": "1234.5, 1234.9"
+					}]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			),
+		)
+
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "pass",
 			"--skip-ssl-validation",

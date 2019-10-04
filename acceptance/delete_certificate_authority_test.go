@@ -28,7 +28,7 @@ var _ = Describe("delete certificate authority", func() {
 			}`))
 				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/certificate_authorities/some-id":
-				_, err := w.Write([]byte("{}"))
+				_, err := w.Write([]byte(`{}`))
 				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/certificate_authorities/missing-id":
 				w.WriteHeader(http.StatusNotFound)

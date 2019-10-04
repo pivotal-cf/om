@@ -28,8 +28,8 @@ var _ = Describe("DecryptClient", func() {
 		successfulRequestOnIndex := func(index int) {
 			fakeClient.DoReturnsOnCall(index, &http.Response{ // /api/v0/unlock
 				StatusCode:    http.StatusOK,
-				ContentLength: int64(len([]byte("{}"))),
-				Body:          ioutil.NopCloser(strings.NewReader("{}")),
+				ContentLength: int64(len([]byte(`{}`))),
+				Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
 			}, nil)
 			fakeClient.DoReturnsOnCall(index+1, &http.Response{ // /api/v0/ensure_availability
 				StatusCode:    http.StatusOK,
@@ -122,8 +122,8 @@ var _ = Describe("DecryptClient", func() {
 			BeforeEach(func() {
 				fakeClient.DoReturnsOnCall(0, &http.Response{ // /api/v0/unlock
 					StatusCode:    http.StatusForbidden,
-					ContentLength: int64(len([]byte("{}"))),
-					Body:          ioutil.NopCloser(strings.NewReader("{}")),
+					ContentLength: int64(len([]byte(`{}`))),
+					Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
 			})
 

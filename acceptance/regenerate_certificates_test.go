@@ -28,7 +28,7 @@ var _ = Describe("regenerate certificates", func() {
 			}`))
 				Expect(err).ToNot(HaveOccurred())
 			case "/api/v0/certificate_authorities/active/regenerate":
-				_, err := w.Write([]byte("{}"))
+				_, err := w.Write([]byte(`{}`))
 				Expect(err).ToNot(HaveOccurred())
 			default:
 				out, err := httputil.DumpRequest(req, true)
