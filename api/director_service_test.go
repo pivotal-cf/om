@@ -29,6 +29,10 @@ var _ = Describe("Director", func() {
 		})
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	Describe("AZConfiguration", func() {
 		When("happy path", func() {
 			BeforeEach(func() {
