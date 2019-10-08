@@ -1,12 +1,12 @@
 package commands_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -65,7 +65,7 @@ var _ = Describe("ConfigureProduct", func() {
 				Expect(actual.Properties).To(MatchJSON(productProperties))
 
 				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring cf..."))
 
 				format, content = logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("setting properties"))
@@ -178,7 +178,7 @@ var _ = Describe("ConfigureProduct", func() {
 				Expect(actual.NetworksAndAZs).To(MatchJSON(networkProperties))
 
 				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring cf..."))
 
 				format, content = logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("setting up network"))
@@ -217,7 +217,7 @@ var _ = Describe("ConfigureProduct", func() {
 				Expect(actual.SyslogConfiguration).To(MatchJSON(syslogProperties))
 
 				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring cf..."))
 
 				format, content = logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("setting up syslog"))
@@ -250,38 +250,6 @@ var _ = Describe("ConfigureProduct", func() {
 					"bad":            "do-not-use",
 				}, nil)
 
-				service.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
-					if productGUID == "some-product-guid" {
-						switch jobGUID {
-						case "a-guid":
-							apiReturn := api.JobProperties{
-								Instances:         0,
-								PersistentDisk:    &api.Disk{Size: "000"},
-								InstanceType:      api.InstanceType{ID: "t2.micro"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-1"},
-							}
-
-							return apiReturn, nil
-						case "a-different-guid":
-							apiReturn := api.JobProperties{
-								Instances:         2,
-								PersistentDisk:    &api.Disk{Size: "20480"},
-								InstanceType:      api.InstanceType{ID: "m1.medium"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-2"},
-							}
-
-							*apiReturn.InternetConnected = true
-
-							return apiReturn, nil
-						default:
-							return api.JobProperties{}, nil
-						}
-					}
-					return api.JobProperties{}, errors.New("guid not found")
-				}
-
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
@@ -289,51 +257,35 @@ var _ = Describe("ConfigureProduct", func() {
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 				Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
-				Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(2))
-
-				argProductGUID, argJobGUID, argProperties := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
-				Expect(argProductGUID).To(Equal("some-product-guid"))
-				Expect(argJobGUID).To(Equal("a-guid"))
-
-				jobProperties := api.JobProperties{
-					Instances:         float64(1),
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: new(bool),
-					LBNames:           []string{"some-lb"},
-				}
-
-				*jobProperties.InternetConnected = true
-
-				Expect(argProperties).To(Equal(jobProperties))
-
-				argProductGUID, argJobGUID, argProperties = service.UpdateStagedProductJobResourceConfigArgsForCall(1)
-				Expect(argProductGUID).To(Equal("some-product-guid"))
-				Expect(argJobGUID).To(Equal("a-different-guid"))
-
-				jobProperties = api.JobProperties{
-					Instances:         2,
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: new(bool),
-					LBNames:           []string{"pre-existing-2"},
-				}
-
-				*jobProperties.InternetConnected = true
-
-				Expect(argProperties).To(Equal(jobProperties))
+				Expect(service.ConfigureJobResourceConfigCallCount()).To(Equal(1))
+				productGUID, userConfig := service.ConfigureJobResourceConfigArgsForCall(0)
+				Expect(productGUID).To(Equal("some-product-guid"))
+				payload, err := json.Marshal(userConfig)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(payload).To(MatchJSON(`{
+          		    "some-job": {
+          		        "persistent_disk": {"size_mb": "20480"},
+          		        "elb_names": ["some-lb"],
+          		        "instance_type": {"id": "m1.medium"},
+          		        "instances": 1,
+          		        "internet_connected": true,
+          		        "max_in_flight": "20%"
+          		    },
+          		    "some-other-job": {
+          		        "persistent_disk": {"size_mb": "20480"},
+          		        "instance_type": {"id": "m1.medium"},
+          		        "max_in_flight": 1
+          		    }
+          		}`))
 
 				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring product..."))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring cf..."))
 
 				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configuration for the following jobs:"))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("applying resource configurations..."))
 
 				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-job"))
-
-				format, content = logger.PrintfArgsForCall(3)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("\tsome-other-job"))
+				Expect(fmt.Sprintf(format, content...)).To(Equal("finished applying resource configurations"))
 			})
 
 			It("sets the max in flight for all jobs", func() {
@@ -364,7 +316,7 @@ var _ = Describe("ConfigureProduct", func() {
 					"a-different-guid": 1,
 				}))
 
-				format, content := logger.PrintfArgsForCall(4)
+				format, content := logger.PrintfArgsForCall(3)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("applying max in flight for the following jobs:"))
 			})
 		})
@@ -387,38 +339,6 @@ var _ = Describe("ConfigureProduct", func() {
 					"some-other-job": "a-different-guid",
 					"bad":            "do-not-use",
 				}, nil)
-
-				service.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
-					if productGUID == "some-product-guid" {
-						switch jobGUID {
-						case "a-guid":
-							apiReturn := api.JobProperties{
-								Instances:         0,
-								PersistentDisk:    &api.Disk{Size: "000"},
-								InstanceType:      api.InstanceType{ID: "t2.micro"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-1"},
-							}
-
-							return apiReturn, nil
-						case "a-different-guid":
-							apiReturn := api.JobProperties{
-								Instances:         2,
-								PersistentDisk:    &api.Disk{Size: "20480"},
-								InstanceType:      api.InstanceType{ID: "m1.medium"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-2"},
-							}
-
-							*apiReturn.InternetConnected = true
-
-							return apiReturn, nil
-						default:
-							return api.JobProperties{}, nil
-						}
-					}
-					return api.JobProperties{}, errors.New("guid not found")
-				}
 			})
 
 			AfterEach(func() {
@@ -574,64 +494,6 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
-		When("the instance count is not an int", func() {
-			BeforeEach(func() {
-				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, automaticResourceConfig)
-			})
-
-			It("configures the resource that is provided", func() {
-				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-				service.ListStagedProductsReturns(api.StagedProductsOutput{
-					Products: []api.StagedProduct{
-						{GUID: "some-product-guid", Type: "cf"},
-					},
-				}, nil)
-
-				service.ListStagedProductJobsReturns(map[string]string{
-					"some-job": "a-guid",
-				}, nil)
-
-				service.GetStagedProductJobResourceConfigStub = func(productGUID, jobGUID string) (api.JobProperties, error) {
-					if productGUID == "some-product-guid" {
-						switch jobGUID {
-						case "a-guid":
-							apiReturn := api.JobProperties{
-								Instances:         0,
-								PersistentDisk:    &api.Disk{Size: "000"},
-								InstanceType:      api.InstanceType{ID: "t2.micro"},
-								InternetConnected: new(bool),
-								LBNames:           []string{"pre-existing-1"},
-							}
-
-							return apiReturn, nil
-						default:
-							return api.JobProperties{}, nil
-						}
-					}
-					return api.JobProperties{}, errors.New("guid not found")
-				}
-
-				err := client.Execute([]string{
-					"--config", configFile.Name(),
-				})
-				Expect(err).NotTo(HaveOccurred())
-
-				_, _, argProperties := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
-
-				jobProperties := api.JobProperties{
-					Instances:         "automatic",
-					PersistentDisk:    &api.Disk{Size: "20480"},
-					InstanceType:      api.InstanceType{ID: "m1.medium"},
-					InternetConnected: new(bool),
-					LBNames:           []string{"some-lb"},
-				}
-
-				*jobProperties.InternetConnected = true
-
-				Expect(argProperties).To(Equal(jobProperties))
-			})
-		})
-
 		When("GetStagedProductJobResourceConfig returns an error", func() {
 			BeforeEach(func() {
 				config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
@@ -651,12 +513,12 @@ var _ = Describe("ConfigureProduct", func() {
 					"bad":            "do-not-use",
 				}, nil)
 
-				service.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some error"))
+				service.ConfigureJobResourceConfigReturns(errors.New("some error"))
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
 
-				Expect(err).To(MatchError("could not fetch existing job configuration for some-job: some error"))
+				Expect(err).To(MatchError("failed to configure resources: some error"))
 			})
 		})
 
@@ -782,31 +644,6 @@ var _ = Describe("ConfigureProduct", func() {
 
 					err := command.Execute([]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("failed to fetch jobs: boom"))
-				})
-			})
-
-			When("resources fail to configure", func() {
-				BeforeEach(func() {
-					config = fmt.Sprintf(`{"product-name": "cf", "resource-config": %s}`, resourceConfig)
-				})
-
-				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-					service.ListStagedProductsReturns(api.StagedProductsOutput{
-						Products: []api.StagedProduct{
-							{GUID: "some-product-guid", Type: "cf"},
-						},
-					}, nil)
-
-					service.ListStagedProductJobsReturns(
-						map[string]string{
-							"some-job": "a-guid",
-						}, nil)
-
-					service.UpdateStagedProductJobResourceConfigReturns(errors.New("bad things happened"))
-
-					err := command.Execute([]string{"--config", configFile.Name()})
-					Expect(err).To(MatchError("failed to configure resources: bad things happened"))
 				})
 			})
 
@@ -1007,17 +844,6 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewConfigureProduct(nil, nil, "", nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command configures a staged product",
-				ShortDescription: "configures a staged product",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

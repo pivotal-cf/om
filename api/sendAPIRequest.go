@@ -3,9 +3,8 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"net/http"
-
 	"github.com/pkg/errors"
+	"net/http"
 )
 
 func (a Api) sendAPIRequest(method, endpoint string, jsonData []byte) (*http.Response, error) {

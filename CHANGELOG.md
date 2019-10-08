@@ -51,6 +51,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ### Features
 - `config-template` now includes `max-in-flight` for all resources. (PR: @jghiloni)
+- When using `configure-product` and `configure-director`,
+  the `addtional_vm_extensions` for a resource will have the following behaviour:
+  * If not set in config file, the value from Ops Manager will be persisted.
+  * If defined in the config file and an emtpy array (`[]`), the values on Ops Manager will be removed.
+  * If defined in the file with a value (`["web_lb"]`), these values will be set on Ops Manager.
+  
+  In short, the config file is the source of truth.
 
 ## 4.1.0
 

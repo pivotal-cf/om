@@ -75,7 +75,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 					Type:    "some-verifier-type",
 					Enabled: true,
 				},
-			}, "cf-guid",nil)
+			}, "cf-guid", nil)
 
 			service.DisableProductVerifiersReturns(errors.New("some error occurred"))
 
@@ -111,7 +111,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 		})
 
 		It("returns an error if there is no --type provided", func() {
-			err := command.Execute([]string{"--product-name", "cf", })
+			err := command.Execute([]string{"--product-name", "cf"})
 			Expect(err.Error()).To(ContainSubstring(`missing required flag "--type"`))
 		})
 

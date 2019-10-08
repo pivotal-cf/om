@@ -162,9 +162,7 @@ var _ = Describe("CreateVMExtension", func() {
 					format, content := fakeLogger.PrintfArgsForCall(0)
 					Expect(fmt.Sprintf(format, content...)).To(Equal("VM Extension 'some-vm-extension' created/updated\n"))
 				})
-
 			})
-
 		})
 
 		Context("failure cases", func() {

@@ -36,6 +36,10 @@ var _ = Describe("DisableProductVerifiersService", func() {
 		})
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	Describe("ListProductVerifiers", func() {
 		It("lists available verifiers for a product", func() {
 			server.AppendHandlers(

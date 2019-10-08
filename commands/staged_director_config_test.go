@@ -96,10 +96,11 @@ var _ = Describe("StagedDirectorConfig", func() {
 			}, nil)
 
 			fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
-				Instances: 1,
-				InstanceType: api.InstanceType{
-					ID: "automatic",
+				"instances": 1.0,
+				"instance_type": map[string]interface{}{
+					"id": "automatic",
 				},
+				"additional_vm_extensions": []string{"some-vm-extension"},
 			}, nil)
 
 			expectedVMExtensions := []api.VMExtension{
@@ -149,6 +150,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -201,6 +203,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -264,6 +267,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -327,6 +331,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -409,6 +414,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -465,6 +471,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -533,6 +540,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -592,6 +600,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -666,6 +675,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -736,6 +746,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -799,6 +810,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -870,6 +882,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -929,6 +942,7 @@ networks-configuration:
   - name: network-1
 resource-configuration:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic

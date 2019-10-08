@@ -16,18 +16,13 @@ import (
 
 var _ = Describe("configure-product command", func() {
 	var (
-		server *ghttp.Server
+		server     *ghttp.Server
+		configFile *os.File
+		err        error
 	)
 
 	BeforeEach(func() {
 		server = createTLSServer()
-	})
-
-	AfterEach(func() {
-		server.Close()
-	})
-
-	BeforeEach(func() {
 		server.AppendHandlers(
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/installations"),
@@ -76,16 +71,7 @@ var _ = Describe("configure-product command", func() {
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config"),
-				ghttp.RespondWith(http.StatusOK, `{}`),
-			),
-		)
-	})
-
-	It("successfully configures any product", func() {
-		server.AppendHandlers(
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config"),
-				ghttp.VerifyJSON(`{
+				ghttp.RespondWith(http.StatusOK, `{
 					"instances": 1,
 					"persistent_disk": {
 						"size_mb": "20480"
@@ -93,60 +79,102 @@ var _ = Describe("configure-product command", func() {
 					"instance_type": {
 						"id": "m1.medium"
 					},
-					"additional_vm_extensions": [
-						"some-vm-extension",
-						"some-other-vm-extension"
-					]
+					"additional_vm_extensions": []
 				}`),
+			),
+		)
+	})
+
+	AfterEach(func() {
+		server.Close()
+	})
+
+	It("successfully configures any product", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config"),
+				ghttp.VerifyJSON(`{
+						"instances": 1,
+						"persistent_disk": {
+							"size_mb": "20480"
+						},
+						"instance_type": {
+							"id": "m1.medium"
+						},
+						"additional_vm_extensions": [
+							"some-vm-extension",
+							"some-other-vm-extension"
+						]
+					}`),
 				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/just-a-guid/resource_config"),
-				ghttp.RespondWith(http.StatusOK, `{}`),
+				ghttp.RespondWith(http.StatusOK, `{
+						"instances": 1,
+						"persistent_disk": {
+							"size_mb": "20480"
+						},
+						"instance_type": {
+							"id": "m1.medium"
+						},
+						"additional_vm_extensions": []
+					}`),
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/just-a-guid/resource_config"),
 				ghttp.VerifyJSON(`{
-        			"instances": "automatic",
-        			"persistent_disk": {
-          				"size_mb": "20480"
-        			},
-        			"instance_type": {
-          				"id": "m1.medium"
-        			}
-      			}`),
+        				"instances": "automatic",
+        				"persistent_disk": {
+          					"size_mb": "20480"
+        				},
+        				"instance_type": {
+          					"id": "m1.medium"
+        				},
+						"additional_vm_extensions": []
+      				}`),
 				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 				ghttp.RespondWith(http.StatusOK, `{
-					"jobs": [{
-						"name": "not-the-job",
-						"guid": "bad-guid"
-					}, {
-						"name": "some-job",
-						"guid": "the-right-guid"
-					}, {
-						"name": "some-other-job",
-						"guid": "just-a-guid"
-					}]
-				}`),
+						"jobs": [{
+							"name": "not-the-job",
+							"guid": "bad-guid"
+						}, {
+							"name": "some-job",
+							"guid": "the-right-guid"
+						}, {
+							"name": "some-other-job",
+							"guid": "just-a-guid"
+						}]
+					}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
+				ghttp.VerifyJSON(`{
+				  		"syslog_configuration": {
+							"address": "example.com",
+							"enabled": true,
+							"port": 514,
+							"queue_size": null,
+							"tls_enabled": false,
+							"transport_protocol": "udp"
+				  		}
+        			}`),
+				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/staged/pending_changes"),
 				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 		)
-		configFileContents := fmt.Sprintf(`{
-			"product-name": "cf",
-			"product-properties": %s,
-			"network-properties": %s,
-			"resource-config": %s
-		}`, propertiesJSON, productNetworkJSON, resourceConfigJSON)
-		configFile, err := ioutil.TempFile("", "")
-		Expect(err).ToNot(HaveOccurred())
+
+		configFile, err = ioutil.TempFile("", "")
+		Expect(err).NotTo(HaveOccurred())
+
 		_, err = configFile.WriteString(configFileContents)
-		Expect(err).ToNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL(),
@@ -166,116 +194,11 @@ var _ = Describe("configure-product command", func() {
 		Expect(session.Out).To(gbytes.Say("finished setting properties"))
 	})
 
-	When("a config file is provided", func() {
-		var (
-			configFile *os.File
-			err        error
-		)
-
-		AfterEach(func() {
-			os.RemoveAll(configFile.Name())
-		})
-
-		It("successfully configures any product", func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config"),
-					ghttp.VerifyJSON(`{
-						"instances": 1,
-						"persistent_disk": {
-							"size_mb": "20480"
-						},
-						"instance_type": {
-							"id": "m1.medium"
-						},
-						"additional_vm_extensions": [
-							"some-vm-extension",
-							"some-other-vm-extension"
-						]
-					}`),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/just-a-guid/resource_config"),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/just-a-guid/resource_config"),
-					ghttp.VerifyJSON(`{
-        				"instances": "automatic",
-        				"persistent_disk": {
-          					"size_mb": "20480"
-        				},
-        				"instance_type": {
-          					"id": "m1.medium"
-        				}
-      				}`),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
-					ghttp.RespondWith(http.StatusOK, `{
-						"jobs": [{
-							"name": "not-the-job",
-							"guid": "bad-guid"
-						}, {
-							"name": "some-job",
-							"guid": "the-right-guid"
-						}, {
-							"name": "some-other-job",
-							"guid": "just-a-guid"
-						}]
-					}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
-					ghttp.VerifyJSON(`{
-				  		"syslog_configuration": {
-							"address": "example.com",
-							"enabled": true,
-							"port": 514,
-							"queue_size": null,
-							"tls_enabled": false,
-							"transport_protocol": "udp"
-				  		}
-        			}`),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/pending_changes"),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-			)
-
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			_, err = configFile.WriteString(configFileContents)
-			Expect(err).NotTo(HaveOccurred())
-
-			command := exec.Command(pathToMain,
-				"--target", server.URL(),
-				"--username", "some-username",
-				"--password", "some-password",
-				"--skip-ssl-validation",
-				"configure-product",
-				"--config", configFile.Name(),
-			)
-
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
-
-			Eventually(session).Should(gexec.Exit(0))
-
-			Expect(session.Out).To(gbytes.Say("setting properties"))
-			Expect(session.Out).To(gbytes.Say("finished setting properties"))
-		})
-
-		It("successfully configures a product on nsx", func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config"),
-					ghttp.VerifyJSON(`{
+	It("successfully configures a product on nsx", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/the-right-guid/resource_config"),
+				ghttp.VerifyJSON(`{
           				"instances": 1,
           				"persistent_disk": {
 					  		"size_mb": "20480"
@@ -287,6 +210,7 @@ var _ = Describe("configure-product command", func() {
 							"sg1",
 					  		"sg2"
           				],
+						"additional_vm_extensions": [],
           				"nsx_lbs": [
           					{
           						"edge_name": "edge-1",
@@ -302,11 +226,11 @@ var _ = Describe("configure-product command", func() {
           					}
           				]
         			}`),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
-					ghttp.RespondWith(http.StatusOK, `{
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+				ghttp.RespondWith(http.StatusOK, `{
 						"jobs": [{
 							"name": "not-the-job",
 							"guid": "bad-guid"
@@ -318,40 +242,39 @@ var _ = Describe("configure-product command", func() {
 							"guid": "just-a-guid"
 						}]
 					}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/pending_changes"),
-					ghttp.RespondWith(http.StatusOK, `{}`),
-				),
-			)
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/pending_changes"),
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			),
+		)
 
-			nsxConfigFileContents := fmt.Sprintf(`{
+		nsxConfigFileContents := fmt.Sprintf(`{
 				"product-name": "cf",
 				"product-properties": %s,
 				"network-properties": %s,
 				"resource-config": %s
 			}`, propertiesJSON, productNetworkJSON, nsxResourceConfigJSON)
 
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
+		configFile, err = ioutil.TempFile("", "")
+		Expect(err).ToNot(HaveOccurred())
 
-			_, err = configFile.WriteString(nsxConfigFileContents)
-			Expect(err).ToNot(HaveOccurred())
+		_, err = configFile.WriteString(nsxConfigFileContents)
+		Expect(err).ToNot(HaveOccurred())
 
-			command := exec.Command(pathToMain,
-				"--target", server.URL(),
-				"--username", "some-username",
-				"--password", "some-password",
-				"--skip-ssl-validation",
-				"configure-product",
-				"--config", configFile.Name(),
-			)
+		command := exec.Command(pathToMain,
+			"--target", server.URL(),
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"configure-product",
+			"--config", configFile.Name(),
+		)
 
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(0))
-		})
+		Eventually(session).Should(gexec.Exit(0))
 	})
 })
 
@@ -392,17 +315,17 @@ const nsxResourceConfigJSON = `
 
 const resourceConfigJSON = `
 {
-  "some-job": {
-    "instances": 1,
-    "persistent_disk": { "size_mb": "20480" },
-    "instance_type": { "id": "m1.medium" },
-    "additional_vm_extensions": ["some-vm-extension", "some-other-vm-extension"]
-  },
-  "some-other-job": {
-	  "instances": "automatic",
+	"some-job": {
+		"instances": 1,
 		"persistent_disk": { "size_mb": "20480" },
-    "instance_type": { "id": "m1.medium" }
-  }
+		"instance_type": { "id": "m1.medium" },
+		"additional_vm_extensions": ["some-vm-extension", "some-other-vm-extension"]
+	},
+	"some-other-job": {
+		"instances": "automatic",
+		"persistent_disk": { "size_mb": "20480" },
+		"instance_type": { "id": "m1.medium" }
+	}
 }`
 
 const configFileContents = `---

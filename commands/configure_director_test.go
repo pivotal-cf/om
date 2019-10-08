@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -17,7 +19,7 @@ import (
 
 var _ = Describe("ConfigureDirector", func() {
 	var (
-		logger     *fakes.Logger
+		stdout     *gbytes.Buffer
 		service    *fakes.ConfigureDirectorService
 		command    commands.ConfigureDirector
 		err        error
@@ -27,21 +29,13 @@ var _ = Describe("ConfigureDirector", func() {
 
 	BeforeEach(func() {
 		service = &fakes.ConfigureDirectorService{}
-		logger = &fakes.Logger{}
+		stdout = gbytes.NewBuffer()
+		logger := log.New(stdout, "", 0)
 		service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
 		service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 			Product: api.StagedProduct{
 				GUID: "p-bosh-guid",
 			},
-		}, nil)
-		service.ListStagedProductJobsReturns(map[string]string{
-			"resource": "some-resource-guid",
-		}, nil)
-		service.GetStagedProductJobResourceConfigReturns(api.JobProperties{
-			InstanceType: api.InstanceType{
-				ID: "automatic",
-			},
-			FloatingIPs: "1.2.3.4",
 		}, nil)
 		service.ListStagedVMExtensionsReturns([]api.VMExtension{
 			{Name: "some_vm_extension"},
@@ -151,22 +145,6 @@ vmtypes-configuration:
 			))
 			Expect(service.GetStagedProductByNameCallCount()).To(Equal(1))
 			Expect(service.GetStagedProductByNameArgsForCall(0)).To(Equal("p-bosh"))
-			Expect(service.ListStagedProductJobsCallCount()).To(Equal(1))
-			Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("p-bosh-guid"))
-			Expect(service.GetStagedProductJobResourceConfigCallCount()).To(Equal(1))
-			productGUID, instanceGroupGUID := service.GetStagedProductJobResourceConfigArgsForCall(0)
-			Expect(productGUID).To(Equal("p-bosh-guid"))
-			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
-			Expect(service.UpdateStagedProductJobResourceConfigCallCount()).To(Equal(1))
-			productGUID, instanceGroupGUID, jobConfiguration := service.UpdateStagedProductJobResourceConfigArgsForCall(0)
-			Expect(productGUID).To(Equal("p-bosh-guid"))
-			Expect(instanceGroupGUID).To(Equal("some-resource-guid"))
-			Expect(jobConfiguration).To(Equal(api.JobProperties{
-				InstanceType: api.InstanceType{
-					ID: "some-type",
-				},
-				FloatingIPs: "1.2.3.4",
-			}))
 
 			Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(1))
 			Expect(service.CreateStagedVMExtensionCallCount()).To(Equal(2))
@@ -184,46 +162,28 @@ vmtypes-configuration:
 			Expect(deletedExtensions).To(ContainElement("some_other_vm_extension"))
 			Expect(deletedExtensions).To(ContainElement("some_vm_extension"))
 
-			Expect(logger.PrintfCallCount()).To(BeNumerically(">=", 21))
-			Expect(logger.PrintfArgsForCall(0)).To(Equal("started configuring director options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(1)).To(Equal("finished configuring director options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(2)).To(Equal("started configuring availability zone options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(3)).To(Equal("finished configuring availability zone options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(4)).To(Equal("started configuring network options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(5)).To(Equal("finished configuring network options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(6)).To(Equal("started configuring network assignment options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(7)).To(Equal("finished configuring network assignment options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("started configuring director options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("finished configuring director options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("started configuring availability zone options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("finished configuring availability zone options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("started configuring network options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("finished configuring network options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("started configuring network assignment options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("finished configuring network assignment options for bosh tile"))
 
-			offset := logger.PrintfCallCount() - 21 // handle the situation where vmtypes may not be configured
+			Expect(stdout).To(gbytes.Say("started configuring vm extensions"))
+			Expect(stdout).To(gbytes.Say("applying vmextensions configuration for the following:"))
+			Expect(stdout).To(gbytes.Say("\ta_vm_extension"))
+			Expect(stdout).To(gbytes.Say("\tanother_vm_extension"))
 
-			Expect(logger.PrintfArgsForCall(offset + 8)).To(Equal("started configuring vm extensions"))
-			Expect(logger.PrintfArgsForCall(offset + 9)).To(Equal("applying vmextensions configuration for the following:"))
-			formatStr, formatArg := logger.PrintfArgsForCall(offset + 10)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"a_vm_extension"}}))
-			formatStr, formatArg = logger.PrintfArgsForCall(offset + 11)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"another_vm_extension"}}))
+			Expect(stdout).To(gbytes.Say("deleting vm extension some_other_vm_extension"))
+			Expect(stdout).To(gbytes.Say("done deleting vm extension some_other_vm_extension"))
+			Expect(stdout).To(gbytes.Say("deleting vm extension some_vm_extension"))
+			Expect(stdout).To(gbytes.Say("done deleting vm extension some_vm_extension"))
+			Expect(stdout).To(gbytes.Say("finished configuring vm extensions"))
 
-			expectedLogs := make(map[interface{}][]string)
-			formatStr1, _ := logger.PrintfArgsForCall(offset + 12)
-			formatStr2, formatArg := logger.PrintfArgsForCall(offset + 13)
-			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
-			formatStr1, _ = logger.PrintfArgsForCall(offset + 14)
-			formatStr2, formatArg = logger.PrintfArgsForCall(offset + 15)
-			expectedLogs[formatArg[0]] = []string{formatStr1, formatStr2}
-			Expect(expectedLogs).To(HaveKey("some_other_vm_extension"))
-			Expect(expectedLogs).To(HaveKey("some_vm_extension"))
-			Expect(expectedLogs["some_vm_extension"]).To(ContainElement("deleting vm extension %s"))
-			Expect(expectedLogs["some_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
-			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("deleting vm extension %s"))
-			Expect(expectedLogs["some_other_vm_extension"]).To(ContainElement("done deleting vm extension %s"))
-			Expect(logger.PrintfArgsForCall(offset + 16)).To(Equal("finished configuring vm extensions"))
-
-			Expect(logger.PrintfArgsForCall(offset + 17)).To(Equal("started configuring resource options for bosh tile"))
-			Expect(logger.PrintfArgsForCall(offset + 18)).To(Equal("applying resource configuration for the following jobs:"))
-			formatStr, formatArg = logger.PrintfArgsForCall(offset + 19)
-			Expect([]interface{}{formatStr, formatArg}).To(Equal([]interface{}{"\t%s", []interface{}{"resource"}}))
-			Expect(logger.PrintfArgsForCall(offset + 20)).To(Equal("finished configuring resource options for bosh tile"))
-
+			Expect(stdout).To(gbytes.Say("started configuring resource options for bosh tile"))
+			Expect(stdout).To(gbytes.Say("finished configuring resource options for bosh tile"))
 		}
 
 		It("configures the director", func() {
@@ -243,8 +203,7 @@ vmtypes-configuration:
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(logger.PrintfCallCount()).To(Equal(22))
-					Expect(logger.PrintfArgsForCall(8)).To(Equal("creating custom vm types"))
+					Expect(stdout).To(gbytes.Say("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(0))
 					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(0))
 					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
@@ -272,56 +231,9 @@ vmtypes-configuration:
 			})
 
 			Context("setting resource configuration with custom VM types", func() {
-				var types []api.VMType
 				BeforeEach(func() {
-					service.CreateCustomVMTypesStub = func(t api.CreateVMTypes) error {
-						types = make([]api.VMType, len(t.VMTypes), len(t.VMTypes))
-						for i := range t.VMTypes {
-							types[i] = api.VMType{CreateVMType: t.VMTypes[i], BuiltIn: false}
-						}
+					service.ListVMTypesReturns(nil, errors.New("hello"))
 
-						return nil
-					}
-					service.ListVMTypesReturns(types, nil)
-					service.UpdateStagedProductJobResourceConfigStub = func(x string, y string, p api.JobProperties) error {
-						for i := range types {
-							if types[i].Name == p.InstanceType.ID {
-								return nil
-							}
-						}
-
-						return errors.New(`{"errors":{"instance_type_id":["must be in catalog or \"automatic\""]}}`)
-					}
-				})
-
-				It("doesn't throw an error if the type exists", func() {
-					simpleConfig := `
-resource-configuration:
-  resource:
-    instance_type:
-      id: vmtype3
-vmtypes-configuration:
-  vm_types:
-  - name: vmtype3
-    cpu: 1
-    ram: 2048
-    ephemeral_disk: 10240
-  - name: vmtype4
-    cpu: 2
-    ram: 4096
-    ephemeral_disk: 20480
-`
-					newConfigFile, err := ioutil.TempFile("", "config.yml")
-					Expect(err).NotTo(HaveOccurred())
-					defer newConfigFile.Close()
-
-					_, err = newConfigFile.WriteString(simpleConfig)
-					Expect(err).NotTo(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--config", newConfigFile.Name(),
-					})
-					Expect(err).NotTo(HaveOccurred())
 				})
 
 				It("does throw an error if the type doesn't exist", func() {
@@ -387,8 +299,7 @@ vmtypes-configuration:
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(logger.PrintfCallCount()).To(Equal(1))
-					Expect(logger.PrintfArgsForCall(0)).To(Equal("creating custom vm types"))
+					Expect(stdout).To(gbytes.Say("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(1))
 					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(1))
 					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
@@ -419,8 +330,7 @@ vmtypes-configuration:
 					})
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(logger.PrintfCallCount()).To(Equal(1))
-					Expect(logger.PrintfArgsForCall(0)).To(Equal("creating custom vm types"))
+					Expect(stdout).To(gbytes.Say("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(1))
 					Expect(service.DeleteCustomVMTypesCallCount()).To(Equal(1))
 					Expect(service.CreateCustomVMTypesCallCount()).To(Equal(1))
@@ -450,127 +360,11 @@ vmtypes-configuration:
 			})
 
 			Context("with a valid config", func() {
-				var (
-					completeConfigurationJSON []byte
-					templateConfigurationJSON []byte
-				)
-
-				BeforeEach(func() {
-					azConfiguration := []interface{}{map[string]interface{}{
-						"name": "AZ1",
-						"clusters": []interface{}{map[string]interface{}{
-							"cluster": "pizza-boxes",
-						}},
-					}}
-					iaasConfiguration := map[string]interface{}{
-						"some-iaas-assignment": "iaas",
-					}
-					networkAssignment := map[string]interface{}{
-						"network": map[string]interface{}{
-							"name": "network",
-						},
-						"singleton_availability_zone": map[string]interface{}{
-							"name": "singleton",
-						},
-					}
-					syslogConfiguration := map[string]interface{}{
-						"some-syslog-assignment": "syslog",
-					}
-					networksConfiguration := map[string]interface{}{
-						"network": "network-1",
-					}
-					directorConfiguration := map[string]interface{}{
-						"some-director-assignment": "director",
-					}
-					securityConfiguration := map[string]interface{}{
-						"some-security-assignment": "security",
-					}
-					resourceConfiguration := map[string]interface{}{
-						"resource": map[string]interface{}{
-							"instance_type": map[string]interface{}{
-								"id": "some-type",
-							},
-						},
-					}
-					vmextensionConfig := []map[string]interface{}{
-						{
-							"name": "a_vm_extension",
-							"cloud_properties": map[string]interface{}{
-								"source_dest_check": false,
-							},
-						},
-
-						{
-							"name": "another_vm_extension",
-							"cloud_properties": map[string]interface{}{
-								"foo": "bar",
-							},
-						},
-					}
-
-					templateNetworkAssign := map[string]interface{}{
-						"network": map[string]interface{}{
-							"name": "((network_name))",
-						},
-						"singleton_availability_zone": map[string]interface{}{
-							"name": "singleton",
-						},
-					}
-
-					dnsConfig := map[string]interface{}{
-						"recurse": "true",
-					}
-
-					configurationMAP := map[string]interface{}{}
-					configurationMAP["network-assignment"] = networkAssignment
-					configurationMAP["az-configuration"] = azConfiguration
-					configurationMAP["networks-configuration"] = networksConfiguration
-					configurationMAP["resource-configuration"] = resourceConfiguration
-					configurationMAP["vmextensions-configuration"] = vmextensionConfig
-
-					configurationMAP["properties-configuration"] = map[string]interface{}{
-						"director_configuration": directorConfiguration,
-						"iaas_configuration":     iaasConfiguration,
-						"security_configuration": securityConfiguration,
-						"dns_configuration":      dnsConfig,
-						"syslog_configuration":   syslogConfiguration,
-					}
-
-					completeConfigurationJSON, err = json.Marshal(configurationMAP)
-					Expect(err).NotTo(HaveOccurred())
-
-					configurationMAP["network-assignment"] = templateNetworkAssign
-					templateConfigurationJSON, err = json.Marshal(configurationMAP)
-					Expect(err).NotTo(HaveOccurred())
-				})
-
-				It("configures the director", func() {
-					configFile, err := ioutil.TempFile("", "config.yaml")
-					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.Write(completeConfigurationJSON)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(configFile.Close()).ToNot(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--config", configFile.Name(),
-					})
-					Expect(err).NotTo(HaveOccurred())
-
-					ExpectDirectorToBeConfiguredCorrectly()
-				})
-
 				When("the config file(s) contain variables", func() {
-
 					Context("not provided", func() {
 						It("returns an error", func() {
-							configFile, err := ioutil.TempFile("", "config.yaml")
-							Expect(err).ToNot(HaveOccurred())
-							_, err = configFile.Write(templateConfigurationJSON)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(configFile.Close()).ToNot(HaveOccurred())
-
 							err = command.Execute([]string{
-								"--config", configFile.Name(),
+								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
 							})
 							Expect(err).To(HaveOccurred())
 							Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
@@ -579,108 +373,80 @@ vmtypes-configuration:
 
 					Context("passed in a file (--vars-file)", func() {
 						It("interpolates variables into the configuration", func() {
-							configFile, err := ioutil.TempFile("", "config.yaml")
-							Expect(err).ToNot(HaveOccurred())
-							_, err = configFile.Write(templateConfigurationJSON)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(configFile.Close()).ToNot(HaveOccurred())
-
-							varsFile, err := ioutil.TempFile("", "vars.yaml")
-							Expect(err).ToNot(HaveOccurred())
-							_, err = varsFile.WriteString(`network_name: network`)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(varsFile.Close()).ToNot(HaveOccurred())
-
 							err = command.Execute([]string{
-								"--config", configFile.Name(),
-								"--vars-file", varsFile.Name(),
+								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--vars-file", writeFile("name: network"),
 							})
 							Expect(err).NotTo(HaveOccurred())
 
-							ExpectDirectorToBeConfiguredCorrectly()
+							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+								Name:            "network",
+								CloudProperties: json.RawMessage("null"),
+							}))
 						})
 					})
 
 					Context("passed in a var (--var)", func() {
 						It("interpolates variables into the configuration", func() {
-							configFile, err := ioutil.TempFile("", "config.yaml")
-							Expect(err).ToNot(HaveOccurred())
-							_, err = configFile.Write(templateConfigurationJSON)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(configFile.Close()).ToNot(HaveOccurred())
-
 							err = command.Execute([]string{
-								"--config", configFile.Name(),
-								"--var", "network_name=network",
+								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--var", "name=network",
 							})
 							Expect(err).NotTo(HaveOccurred())
-
-							ExpectDirectorToBeConfiguredCorrectly()
+							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+								Name:            "network",
+								CloudProperties: json.RawMessage("null"),
+							}))
 						})
 					})
 
 					Context("passed as environment variables (--vars-env)", func() {
 						It("interpolates variables into the configuration", func() {
-
+							logger := log.New(stdout, "", 0)
 							command = commands.NewConfigureDirector(
-								func() []string { return []string{"OM_VAR_network_name=network"} },
+								func() []string { return []string{"OM_VAR_name=network"} },
 								service,
 								logger)
 
-							configFile, err := ioutil.TempFile("", "config.yaml")
-							Expect(err).ToNot(HaveOccurred())
-							_, err = configFile.Write(templateConfigurationJSON)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(configFile.Close()).ToNot(HaveOccurred())
-
 							err = command.Execute([]string{
-								"--config", configFile.Name(),
+								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
 								"--vars-env", "OM_VAR",
 							})
 							Expect(err).NotTo(HaveOccurred())
-
-							ExpectDirectorToBeConfiguredCorrectly()
+							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+								Name:            "network",
+								CloudProperties: json.RawMessage("null"),
+							}))
 						})
 
 						It("supports the experimental feature of OM_VARS_ENV", func() {
 							os.Setenv("OM_VARS_ENV", "OM_VAR")
 							defer os.Unsetenv("OM_VARS_ENV")
 
+							logger := log.New(stdout, "", 0)
+
 							command = commands.NewConfigureDirector(
-								func() []string { return []string{"OM_VAR_network_name=network"} },
+								func() []string { return []string{"OM_VAR_name=network"} },
 								service,
 								logger)
 
-							configFile, err := ioutil.TempFile("", "config.yaml")
-							Expect(err).ToNot(HaveOccurred())
-							_, err = configFile.Write(templateConfigurationJSON)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(configFile.Close()).ToNot(HaveOccurred())
-
 							err = command.Execute([]string{
-								"--config", configFile.Name(),
+								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
 							})
 							Expect(err).NotTo(HaveOccurred())
-
-							ExpectDirectorToBeConfiguredCorrectly()
+							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
+								Name:            "network",
+								CloudProperties: json.RawMessage("null"),
+							}))
 						})
 					})
-
 				})
-
 			})
 
 			Context("with unrecognized top-level-keys", func() {
 				It("returns error saying the specified key", func() {
-					configYAML := `{"unrecognized-key": {"some-attr": "some-val"}, "unrecognized-other-key": {}, "network-assignment": {"some-attr1": "some-val1"}}`
-					configFile, err := ioutil.TempFile("", "config.yaml")
-					Expect(err).ToNot(HaveOccurred())
-					_, err = configFile.WriteString(configYAML)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(configFile.Close()).ToNot(HaveOccurred())
-
 					err = command.Execute([]string{
-						"--config", configFile.Name(),
+						"--config", writeFile(`{"unrecognized-key": {"some-attr": "some-val"}, "unrecognized-other-key": {}, "network-assignment": {"some-attr1": "some-val1"}}`),
 					})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: "unrecognized-key", "unrecognized-other-key"`))
@@ -690,18 +456,8 @@ vmtypes-configuration:
 
 		When("no vm_extension configuration is provided", func() {
 			It("does not list, create or delete vm extensions", func() {
-				configurationMAP := map[string]interface{}{}
-
-				completeConfigurationJSON, err := json.Marshal(configurationMAP)
-				Expect(err).NotTo(HaveOccurred())
-				configFile, err := ioutil.TempFile("", "config.yaml")
-				Expect(err).ToNot(HaveOccurred())
-				_, err = configFile.Write(completeConfigurationJSON)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(configFile.Close()).ToNot(HaveOccurred())
-
 				err = command.Execute([]string{
-					"--config", configFile.Name(),
+					"--config", writeFile(`{}`),
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(0))
@@ -712,14 +468,8 @@ vmtypes-configuration:
 
 		When("empty vm_extension configuration is provided", func() {
 			It("should delete existing vm extensions", func() {
-				configFile, err := ioutil.TempFile("", "config.yaml")
-				Expect(err).ToNot(HaveOccurred())
-				_, err = configFile.Write([]byte(`vmextensions-configuration: []`))
-				Expect(err).ToNot(HaveOccurred())
-				Expect(configFile.Close()).ToNot(HaveOccurred())
-
 				err = command.Execute([]string{
-					"--config", configFile.Name(),
+					"--config", writeFile(`vmextensions-configuration: []`),
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(1))
@@ -728,15 +478,19 @@ vmtypes-configuration:
 		})
 
 		When("only some of the configure-director top-level keys are provided", func() {
-			BeforeEach(func() {
-				config = `{"networks-configuration":{"network":"network-1"},"properties-configuration":{"some-director-assignment":"director"}}`
-			})
-
 			It("only updates the config for the provided flags, and sets others to empty", func() {
 				err := command.Execute([]string{
-					"--config", configFile.Name(),
+					"--config", writeFile(`{
+						"networks-configuration": {
+							"network": "network-1"
+						}, 
+						"properties-configuration": {
+							"some-director-assignment": "director"
+						}
+					}`),
 				})
 				Expect(err).NotTo(HaveOccurred())
+
 				Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(0))
 				Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
 				Expect(service.UpdateStagedDirectorNetworksArgsForCall(0)).To(Equal(api.NetworkInput{
@@ -751,7 +505,7 @@ vmtypes-configuration:
 		})
 
 		When("there is a running installation", func() {
-			BeforeEach(func() {
+			It("returns an error", func() {
 				service.ListInstallationsReturns([]api.InstallationsServiceOutput{
 					{
 						ID:         999,
@@ -762,11 +516,11 @@ vmtypes-configuration:
 						UserName:   "admin",
 					},
 				}, nil)
-			})
-			It("returns an error", func() {
+
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
 				})
+
 				Expect(err).To(MatchError("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes"))
 				Expect(service.ListInstallationsCallCount()).To(Equal(1))
 			})
@@ -789,149 +543,65 @@ vmtypes-configuration:
 			})
 
 			When("configuring availability_zones fails", func() {
-				BeforeEach(func() {
-					config = `{"az-configuration": {}}`
-				})
-
 				It("returns an error", func() {
 					service.UpdateStagedDirectorAvailabilityZonesReturns(errors.New("az endpoint failed"))
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"az-configuration": {}}`)})
 					Expect(err).To(MatchError("availability zones configuration could not be applied: az endpoint failed"))
 				})
 			})
 
 			When("configuring networks fails", func() {
-				BeforeEach(func() {
-					config = `{"networks-configuration": {}}`
-				})
-
 				It("returns an error", func() {
 					service.UpdateStagedDirectorNetworksReturns(errors.New("networks endpoint failed"))
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"networks-configuration": {}}`)})
 					Expect(err).To(MatchError("networks configuration could not be applied: networks endpoint failed"))
 				})
 			})
 
 			When("configuring networks fails", func() {
-				BeforeEach(func() {
-					config = `{"network-assignment": {}}`
-				})
-
 				It("returns an error", func() {
 					service.UpdateStagedDirectorNetworkAndAZReturns(errors.New("director service failed"))
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"network-assignment": {}}`)})
 					Expect(err).To(MatchError("network and AZs could not be applied: director service failed"))
 				})
 			})
 
 			When("configuring properties fails", func() {
-				BeforeEach(func() {
-					config = `{"properties-configuration": {"director_configuration": {}}}`
-				})
-
 				It("returns an error", func() {
 					service.UpdateStagedDirectorPropertiesReturns(errors.New("properties end point failed"))
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"properties-configuration": {"director_configuration": {}}}`)})
 					Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
 				})
 			})
 
 			When("retrieving staged products fails", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {}}`
-				})
-
 				It("returns an error", func() {
 					service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"resource-configuration": {}}`)})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
 			})
 
 			When("user-provided top-level resource config is not valid JSON", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {{{{}`
-				})
-
 				It("returns an error", func() {
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"resource-configuration": {{{{}`)})
 					Expect(err).To(MatchError(ContainSubstring("did not find expected ',' or '}'")))
 				})
 			})
 
-			When("retrieving jobs for product fails", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {}}`
-				})
-
-				It("returns an error", func() {
-					service.ListStagedProductJobsReturns(nil, errors.New("some-error"))
-					err := command.Execute([]string{"--config", configFile.Name()})
-					Expect(err).To(MatchError(ContainSubstring("some-error")))
-				})
-			})
-
-			When("user-provided job does not exist", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {"invalid-resource": {}}}`
-				})
-
-				It("returns an error", func() {
-					err := command.Execute([]string{"--config", configFile.Name()})
-					Expect(err).To(MatchError(ContainSubstring("invalid-resource")))
-				})
-			})
-
-			When("retrieving existing job config fails", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {"resource": {}}}`
-				})
-
-				It("returns an error", func() {
-					service.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
-					err := command.Execute([]string{"--config", configFile.Name()})
-					Expect(err).To(MatchError(ContainSubstring("some-error")))
-				})
-			})
-
-			When("user-provided nested resource config is not valid JSON", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {"resource": "%%%"}}`
-				})
-
-				It("returns an error", func() {
-					err := command.Execute([]string{"--config", configFile.Name()})
-					Expect(err).To(MatchError(ContainSubstring("could not decode resource-configuration json for job 'resource'")))
-				})
-			})
-
 			When("configuring the job fails", func() {
-				BeforeEach(func() {
-					config = `{"resource-configuration": {"resource": {}}}`
-				})
-
 				It("returns an error", func() {
-					service.UpdateStagedProductJobResourceConfigReturns(errors.New("some-error"))
-					err := command.Execute([]string{"--config", configFile.Name()})
+					service.ConfigureJobResourceConfigReturns(errors.New("some-error"))
+					err := command.Execute([]string{"--config", writeFile(`{"resource-configuration": {"resource": {}}}`)})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
 			})
 		})
 
 		When("iaas-configurations is set", func() {
-			BeforeEach(func() {
-				config = `
-iaas-configurations:
-- {
-	  guid: some-guid,
-	  name: default,
-  }
-`
-			})
-
 			It("configures the director", func() {
 				err := command.Execute([]string{
-					"--config", configFile.Name(),
+					"--config", writeFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`),
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -943,7 +613,7 @@ iaas-configurations:
 				When("setting iaas configurations fails", func() {
 					It("returns an error", func() {
 						service.UpdateStagedDirectorIAASConfigurationsReturns(errors.New("iaas failed"))
-						err := command.Execute([]string{"--config", configFile.Name()})
+						err := command.Execute([]string{"--config", writeFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
 						Expect(err).To(MatchError("iaas configurations could not be completed: iaas failed"))
 					})
 				})
@@ -954,7 +624,7 @@ iaas-configurations:
 						for _, version := range versions {
 							service.InfoReturns(api.Info{Version: version}, nil)
 
-							err := command.Execute([]string{"--config", configFile.Name()})
+							err := command.Execute([]string{"--config", writeFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
 							Expect(err).To(MatchError(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s", version)))
 						}
 					})
@@ -962,15 +632,20 @@ iaas-configurations:
 			})
 
 			When("iaas-configurations and properties-configuration.iaas-configuration are both set", func() {
-				BeforeEach(func() {
-					config = `{"iaas-configurations": [], "properties-configuration": {"iaas-configuration": {}}}`
-				})
-
 				It("returns an error", func() {
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := command.Execute([]string{"--config", writeFile(`{"iaas-configurations": [], "properties-configuration": {"iaas-configuration": {}}}`)})
 					Expect(err).To(MatchError("iaas-configurations cannot be used with properties-configuration.iaas-configurations\nPlease only use one implementation."))
 				})
 			})
 		})
 	})
 })
+
+func writeFile(contents string) string {
+	file, err := ioutil.TempFile("", "")
+	Expect(err).NotTo(HaveOccurred())
+
+	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
+	Expect(err).NotTo(HaveOccurred())
+	return file.Name()
+}

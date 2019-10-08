@@ -1,6 +1,11 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+	"gopkg.in/yaml.v2"
+
+	yamlConverter "github.com/ghodss/yaml"
+)
 
 // In general we'd like to keep the API layer as simple as possible, e.g. each method hits a single API endpoint.
 // This file contains helper methods that we wish we API endpoints, but the Ops Manager API does not yet support these actions.
@@ -54,4 +59,18 @@ func (a Api) GetStagedProductByName(productName string) (StagedProductsFindOutpu
 	}
 
 	return StagedProductsFindOutput{Product: foundProduct}, nil
+}
+
+func (a Api) getJSONProperties(properties interface{}) (string, error) {
+	yamlProperties, err := yaml.Marshal(properties)
+	if err != nil {
+		return "", err
+	}
+
+	jsonProperties, err := yamlConverter.YAMLToJSON(yamlProperties)
+	if err != nil {
+		return "", err
+	}
+
+	return string(jsonProperties), nil
 }

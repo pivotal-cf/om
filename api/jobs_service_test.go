@@ -1,38 +1,51 @@
 package api_test
 
 import (
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
+	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
+	"gopkg.in/yaml.v2"
+	"net/http"
 
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("JobsService", func() {
 	var (
-		client  *fakes.HttpClient
+		server  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		server = ghttp.NewServer()
+
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{server.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		server.Close()
 	})
 
 	Describe("ListStagedProductJobs", func() {
 		It("returns a map of the jobs", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`{"jobs": [{"name":"job-1","guid":"some-guid-1"},
-				{"name":"job-2","guid":"some-guid-2"}]}`)),
-			}, nil)
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"jobs": [{
+							"name": "job-1",
+							"guid": "some-guid-1"
+						}, {
+							"name": "job-2",
+							"guid": "some-guid-2"
+						}]
+					}`),
+				),
+			)
 
 			jobs, err := service.ListStagedProductJobs("some-product-guid")
 			Expect(err).NotTo(HaveOccurred())
@@ -40,43 +53,53 @@ var _ = Describe("JobsService", func() {
 				"job-1": "some-guid-1",
 				"job-2": "some-guid-2",
 			}))
-
-			request := client.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("GET"))
-			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/jobs"))
 		})
 
 		When("an error occurs", func() {
 			When("the client errors before the request", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("bad"))
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+								server.CloseClientConnections()
+							}),
+						),
+					)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(MatchError("could not make api request to jobs endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs: bad"))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("could not make api request to jobs endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs"))
 				})
 			})
 
 			When("the jobs endpoint returns a non-200 status code", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(``)),
-					}, nil)
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+							ghttp.RespondWith(http.StatusNotFound, `{}`),
+						),
+					)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("request failed: unexpected response"))
 				})
 			})
 
 			When("decoding the json fails", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(``)),
-					}, nil)
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+							ghttp.RespondWith(http.StatusOK, `bad-json`),
+						),
+					)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("failed to decode jobs json response:")))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("failed to decode jobs json response:"))
 				})
 			})
 		})
@@ -84,502 +107,357 @@ var _ = Describe("JobsService", func() {
 
 	Describe("GetStagedProductJobResourceConfig", func() {
 		It("fetches the resource config for a given job", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`{
-					"instances": 1,
-					"instance_type": { "id": "number-1" },
-					"persistent_disk": { "size_mb": "290" },
-					"internet_connected": true,
-					"elb_names": ["something"],
-					"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
-				}`)),
-			}, nil)
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"instances": 1,
+						"instance_type": { "id": "number-1" },
+						"persistent_disk": { "size_mb": "290" },
+						"internet_connected": true,
+						"elb_names": ["something"],
+						"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
+					}`),
+				),
+			)
 
 			job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(client.DoCallCount()).To(Equal(1))
+
 			jobProperties := api.JobProperties{
-				Instances:              float64(1),
-				PersistentDisk:         &api.Disk{Size: "290"},
-				InstanceType:           api.InstanceType{ID: "number-1"},
-				InternetConnected:      new(bool),
-				LBNames:                []string{"something"},
-				AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
+				"instances":          1.0,
+				"instance_type":      map[string]interface{}{"id": "number-1"},
+				"persistent_disk":    map[string]interface{}{"size_mb": "290"},
+				"internet_connected": true,
+				"elb_names":          []interface{}{"something"},
+				"additional_vm_extensions": []interface{}{
+					"some-vm-extension",
+					"some-other-vm-extension",
+				},
 			}
-			*jobProperties.InternetConnected = true
-			Expect(job).To(Equal(jobProperties))
-			request := client.DoArgsForCall(0)
-			Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
-		})
 
-		Context("with floating ips", func() {
-			It("fetches the resource config for a given job including floating ips", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{
-						"instances": 1,
-						"instance_type": { "id": "number-1" },
-						"persistent_disk": { "size_mb": "290" },
-						"internet_connected": true,
-						"floating_ips": "some-floating-ip"
-					}`)),
-				}, nil)
-
-				job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(client.DoCallCount()).To(Equal(1))
-				jobProperties := api.JobProperties{
-					Instances:         float64(1),
-					PersistentDisk:    &api.Disk{Size: "290"},
-					InstanceType:      api.InstanceType{ID: "number-1"},
-					InternetConnected: new(bool),
-					FloatingIPs:       "some-floating-ip",
-				}
-				*jobProperties.InternetConnected = true
-				Expect(job).To(Equal(jobProperties))
-				request := client.DoArgsForCall(0)
-				Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
-			})
-		})
-
-		Context("with nsx", func() {
-			Context("with versions of Ops Manager earlier than 2.7", func() {
-				It("includes nsx properties in the resource config as prefixed 'nsx_' keys", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader(`{
-						"instances": 1,
-						"instance_type": { "id": "number-1" },
-						"persistent_disk": { "size_mb": "290" },
-						"internet_connected": true,
-						"elb_names": ["something"],
-						"nsx_security_groups":["sg1", "sg2"],
-						"nsx_lbs": [
-							{
-								"edge_name": "edge-1",
-								"pool_name": "pool-1",
-								"security_group": "sg-1",
-								"port": 5000
-							},
-							{
-								"edge_name": "edge-2",
-								"pool_name": "pool-2",
-								"security_group": "sg-2",
-								"port": 5000
-							}
-						]
-					}`)),
-					}, nil)
-
-					job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-					Expect(err).NotTo(HaveOccurred())
-					Expect(client.DoCallCount()).To(Equal(1))
-					jobProperties := api.JobProperties{
-						Instances:              float64(1),
-						PersistentDisk:         &api.Disk{Size: "290"},
-						InstanceType:           api.InstanceType{ID: "number-1"},
-						InternetConnected:      new(bool),
-						LBNames:                []string{"something"},
-						Pre27NSXSecurityGroups: []string{"sg1", "sg2"},
-						Pre27NSXLBS: []api.Pre27NSXLB{
-							api.Pre27NSXLB{
-								EdgeName:      "edge-1",
-								PoolName:      "pool-1",
-								SecurityGroup: "sg-1",
-								Port:          5000,
-							},
-							api.Pre27NSXLB{
-								EdgeName:      "edge-2",
-								PoolName:      "pool-2",
-								SecurityGroup: "sg-2",
-								Port:          5000,
-							},
-						},
-					}
-					*jobProperties.InternetConnected = true
-					Expect(job).To(Equal(jobProperties))
-					request := client.DoArgsForCall(0)
-					Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
-				})
-			})
-
-			Context("with versions of Ops Manager greater than 2.7", func() {
-				It("includes nsx properties in the resource config as nested nsx keys", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader(`{
-						"instances": 1,
-						"instance_type": { "id": "number-1" },
-						"persistent_disk": { "size_mb": "290" },
-						"internet_connected": true,
-						"elb_names": ["something"],
-						"nsx": {
-							"security_groups": [
-								"group1",
-								"group2"
-							],
-							"lbs": [
-								{
-									"edge_name": "my-edge",
-									"pool_name": "my-pool",
-									"security_group": "group1",
-									"port": 8899
-								}
-							]
-						},
-						"nsxt": {
-							"ns_groups": [],
-							"vif_type": null,
-							"lb": {
-								"server_pools": [
-									{
-										"name": "test-pool",
-										"port": 1011
-									}
-								]
-							}
-						}
-					}`)),
-					}, nil)
-
-					job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-					Expect(err).NotTo(HaveOccurred())
-					Expect(client.DoCallCount()).To(Equal(1))
-					jobProperties := api.JobProperties{
-						Instances:         float64(1),
-						PersistentDisk:    &api.Disk{Size: "290"},
-						InstanceType:      api.InstanceType{ID: "number-1"},
-						InternetConnected: new(bool),
-						LBNames:           []string{"something"},
-						NSX: &api.NSX{
-							SecurityGroups: []string{"group1", "group2"},
-							LBS: []api.Pre27NSXLB{
-								api.Pre27NSXLB{
-									EdgeName:      "my-edge",
-									PoolName:      "my-pool",
-									SecurityGroup: "group1",
-									Port:          8899,
-								},
-							},
-						},
-						NSXT: &api.NSXT{
-							NSGroups: []string{},
-							VIFType:  nil,
-							LB: api.NSXTLB{
-								ServerPools: []api.ServerPool{
-									{
-										Name: "test-pool",
-										Port: 1011,
-									},
-								},
-							},
-						},
-					}
-					*jobProperties.InternetConnected = true
-					Expect(job).To(Equal(jobProperties))
-					request := client.DoArgsForCall(0)
-					Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
-				})
-				It("sets vif_type to null if not provided", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader(`{
-						"instances": 1,
-						"instance_type": { "id": "number-1" },
-						"persistent_disk": { "size_mb": "290" },
-						"internet_connected": true,
-						"elb_names": ["something"],
-						"nsx": {
-							"security_groups": [
-								"group1",
-								"group2"
-							],
-							"lbs": [
-								{
-									"edge_name": "my-edge",
-									"pool_name": "my-pool",
-									"security_group": "group1",
-									"port": 8899
-								}
-							]
-						},
-						"nsxt": {
-							"ns_groups": [],
-							"vif_type": null,
-							"lb": {
-								"server_pools": [
-									{
-										"name": "test-pool",
-										"port": 1011
-									}
-								]
-							}
-						}
-					}`)),
-					}, nil)
-
-					job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-					Expect(err).NotTo(HaveOccurred())
-					Expect(client.DoCallCount()).To(Equal(1))
-					jobProperties := api.JobProperties{
-						Instances:         float64(1),
-						PersistentDisk:    &api.Disk{Size: "290"},
-						InstanceType:      api.InstanceType{ID: "number-1"},
-						InternetConnected: new(bool),
-						LBNames:           []string{"something"},
-						NSX: &api.NSX{
-							SecurityGroups: []string{"group1", "group2"},
-							LBS: []api.Pre27NSXLB{
-								api.Pre27NSXLB{
-									EdgeName:      "my-edge",
-									PoolName:      "my-pool",
-									SecurityGroup: "group1",
-									Port:          8899,
-								},
-							},
-						},
-						NSXT: &api.NSXT{
-							NSGroups: []string{},
-							VIFType:  nil,
-							LB: api.NSXTLB{
-								ServerPools: []api.ServerPool{
-									{
-										Name: "test-pool",
-										Port: 1011,
-									},
-								},
-							},
-						},
-					}
-					*jobProperties.InternetConnected = true
-					Expect(job).To(Equal(jobProperties))
-					request := client.DoArgsForCall(0)
-					Expect("/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config").To(Equal(request.URL.Path))
-				})
-			})
+			Expect(job).To(BeEquivalentTo(jobProperties))
 		})
 
 		Context("failure cases", func() {
 			When("the resource config endpoint returns an error", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, errors.New("some client error"))
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+								server.CloseClientConnections()
+							}),
+						),
+					)
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-					Expect(err).To(MatchError("could not make api request to resource_config endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config: some client error"))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("could not make api request to resource_config endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"))
 				})
 			})
 
 			When("the resource config endpoint returns a non-200 status code", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+							ghttp.RespondWith(http.StatusNotFound, `{}`),
+						),
+					)
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("unexpected response"))
 				})
 			})
 
 			When("the resource config returns invalid JSON", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`%%%`)),
-					}, nil)
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+							ghttp.RespondWith(http.StatusOK, `bad-json`),
+						),
+					)
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-
-					Expect(err).To(MatchError(ContainSubstring("invalid character")))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("invalid character"))
 				})
 			})
 		})
 	})
 
-	Describe("UpdateStagedProductJobResourceConfig", func() {
+	Describe("ConfigureJobResourceConfig", func() {
 		It("configures job resources", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-			}, nil)
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"jobs": [{
+							"name": "some-job",
+							"guid": "some-guid"
+						}, {
+							"name": "another-job",
+							"guid": "another-guid"
+						}, {
+							"name": "third-job",
+							"guid": "third-guid"
+						}]
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/another-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"instance_type": {
+							"id": "automatic"
+						},
+						"persistent_disk": {
+							"size_mb": "20480"
+						}
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/another-guid/resource_config"),
+					ghttp.VerifyJSON(`{
+						"instance_type": {
+							"id": "automatic"
+						},
+						"persistent_disk": {
+							"size_mb": "20480"
+						},
+				  		"additional_vm_extensions": [],
+				  		"instance_type": {
+							"id": "automatic"
+				  		},
+				  		"instances": 2
+        			}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"instance_type": {
+							"id": "automatic"
+						},
+						"persistent_disk": {
+							"size_mb": "20480"
+						}
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.VerifyJSON(`{
+				  		"additional_vm_extensions": [
+							"some-vm-extension",
+							"some-other-vm-extension"
+				  		],
+				  		"instance_type": {
+							"id": "number-1"
+				  		},
+				  		"instances": 1,
+				  		"internet_connected": true,
+				  		"lb_names": [
+							"something"
+				  		],
+				  		"persistent_disk": {
+							"size": 290
+				  		}
+        			}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/third-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"instance_type": {
+							"id": "automatic"
+						},
+						"persistent_disk": {
+							"size_mb": "20480"
+						},
+				  		"additional_vm_extensions": ["test-extension"]
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/third-guid/resource_config"),
+					ghttp.VerifyJSON(`{
+				  		"additional_vm_extensions": ["test-extension"],
+				  		"instance_type": {
+							"id": "number-2"
+				  		},
+						"persistent_disk": {
+							"size_mb": "20480"
+						}
+        			}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
 
-			jobProperties := api.JobProperties{
-				Instances:              1,
-				PersistentDisk:         &api.Disk{Size: "290"},
-				InstanceType:           api.InstanceType{ID: "number-1"},
-				InternetConnected:      new(bool),
-				LBNames:                []string{"something"},
-				AdditionalVMExtensions: []string{"some-vm-extension", "some-other-vm-extension"},
-			}
-			*jobProperties.InternetConnected = true
+			configContents := `
+some-job:
+  instances: 1
+  persistent_disk:
+    size: 290
+  instance_type:
+    id: number-1
+  internet_connected: true
+  lb_names: ["something"]
+  additional_vm_extensions: ["some-vm-extension", "some-other-vm-extension"]
+another-job:
+  instances: 2
+  additional_vm_extensions: []
+third-job:
+  instance_type:
+    id: number-2
+`
 
-			err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid", jobProperties)
+			var config map[string]interface{}
+			err := yaml.UnmarshalStrict([]byte(configContents), &config)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = service.ConfigureJobResourceConfig("some-product-guid", config)
 			Expect(err).NotTo(HaveOccurred())
+		})
 
-			Expect(client.DoCallCount()).To(Equal(1))
-			request := client.DoArgsForCall(0)
+		DescribeTable("additional_vm_extensions", func(serverExtensions string, configExtensions string, expectatedExtensions string) {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"jobs": [{
+							"name": "some-job",
+							"guid": "some-guid"
+						}]
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+						"instance_type": {
+							"id": "automatic"
+						},
+						"additional_vm_extensions": [%s],
+						"persistent_disk": {
+							"size_mb": "20480"
+						}
+					}`, serverExtensions)),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.VerifyJSON(fmt.Sprintf(`{
+				  		"additional_vm_extensions": [
+							%s
+				  		],
+						"instances": 2,
+				  		"instance_type": {
+							"id": "automatic"
+				  		},
+				  		"persistent_disk": {
+							"size_mb": "20480"
+				  		}
+        			}`, expectatedExtensions)),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
 
-			Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
-			Expect("PUT").To(Equal(request.Method))
-			Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
-			reqBytes, err := ioutil.ReadAll(request.Body)
+			configContents := fmt.Sprintf(`
+some-job:
+  instances: 2
+  %s
+`, configExtensions)
+
+			var config map[string]interface{}
+			err := yaml.UnmarshalStrict([]byte(configContents), &config)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = service.ConfigureJobResourceConfig("some-product-guid", config)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(reqBytes).To(MatchJSON(`{
-				"instances": 1,
-				"instance_type": { "id": "number-1" },
-				"persistent_disk": { "size_mb": "290" },
-				"internet_connected": true,
-				"elb_names": ["something"],
-				"additional_vm_extensions": ["some-vm-extension","some-other-vm-extension"]
-			}`))
-		})
-
-		When("internet_connected property is false", func() {
-			It("passes the value to the flag in the JSON request", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-				}, nil)
-
-				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
-					api.JobProperties{
-						Instances:         1,
-						PersistentDisk:    &api.Disk{Size: "290"},
-						InstanceType:      api.InstanceType{ID: "number-1"},
-						InternetConnected: new(bool),
-						LBNames:           []string{"something"},
-					})
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(client.DoCallCount()).To(Equal(1))
-				request := client.DoArgsForCall(0)
-
-				Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
-				Expect("PUT").To(Equal(request.Method))
-				Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
-				reqBytes, err := ioutil.ReadAll(request.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(reqBytes).To(MatchJSON(`{
-				"instances": 1,
-				"instance_type": { "id": "number-1" },
-				"internet_connected": false,
-				"persistent_disk": { "size_mb": "290" },
-				"elb_names": ["something"]
-			}`))
-			})
-		})
-
-		When("floating_ips is specified", func() {
-			It("passes the value to the flag in the JSON request", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-				}, nil)
-
-				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
-					api.JobProperties{
-						Instances:         1,
-						PersistentDisk:    &api.Disk{Size: "290"},
-						InstanceType:      api.InstanceType{ID: "number-1"},
-						InternetConnected: new(bool),
-						LBNames:           []string{"something"},
-						FloatingIPs:       "fl.oa.ting.ip",
-					})
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(client.DoCallCount()).To(Equal(1))
-				request := client.DoArgsForCall(0)
-
-				Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
-				Expect("PUT").To(Equal(request.Method))
-				Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
-				reqBytes, err := ioutil.ReadAll(request.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(reqBytes).To(MatchJSON(`{
-				"instances": 1,
-				"instance_type": { "id": "number-1" },
-				"internet_connected": false,
-				"persistent_disk": { "size_mb": "290" },
-				"elb_names": ["something"],
-				"floating_ips": "fl.oa.ting.ip"
-			}`))
-			})
-		})
-
-		When("the internet_connected property is not passed", func() {
-			It("does not pass the flag to the JSON request", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-				}, nil)
-
-				err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-job-guid",
-					api.JobProperties{
-						Instances:      1,
-						PersistentDisk: &api.Disk{Size: "290"},
-						InstanceType:   api.InstanceType{ID: "number-1"},
-						LBNames:        []string{"something"},
-					})
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(client.DoCallCount()).To(Equal(1))
-				request := client.DoArgsForCall(0)
-
-				Expect("application/json").To(Equal(request.Header.Get("Content-Type")))
-				Expect("PUT").To(Equal(request.Method))
-				Expect("/api/v0/staged/products/some-product-guid/jobs/some-job-guid/resource_config").To(Equal(request.URL.Path))
-				reqBytes, err := ioutil.ReadAll(request.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(reqBytes).To(MatchJSON(`{
-				"instances": 1,
-				"instance_type": { "id": "number-1" },
-				"persistent_disk": { "size_mb": "290" },
-				"elb_names": ["something"]
-			}`))
-			})
-		})
+		},
+			Entry("empty-missing-empty", ``, ``, ``),
+			Entry("empty-empty-empty", ``, `additional_vm_extensions: []`, ``),
+			Entry("empty-filled-filled", ``, `additional_vm_extensions: ["a"]`, `"a"`),
+			Entry("filled-missing-filled", `"a"`, ``, `"a"`),
+			Entry("filled-empty-filled", `"a"`, `additional_vm_extensions: []`, ``),
+			Entry("filled-filled-filled", `"b"`, `additional_vm_extensions: ["a"]`, `"a"`),
+		)
 
 		When("an error occurs", func() {
-			When("the client errors before the request", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, errors.New("bad things"))
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+						ghttp.RespondWith(http.StatusOK, `{
+								"jobs": [{
+									"name": "some-job",
+									"guid": "some-guid"
+								}]
+							}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+						ghttp.RespondWith(http.StatusOK, `{
+								"instance_type": {
+									"id": "automatic"
+								},
+								"persistent_disk": {
+									"size_mb": "20480"
+								}
+							}`),
+					),
+				)
+			})
 
-					err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-other-guid", api.JobProperties{
-						Instances:      2,
-						PersistentDisk: &api.Disk{Size: "000"},
-						InstanceType:   api.InstanceType{ID: "number-2"},
-					})
-					Expect(err).To(MatchError("could not make api request to jobs resource_config endpoint: could not send api request to PUT /api/v0/staged/products/some-product-guid/jobs/some-other-guid/resource_config: bad things"))
+			When("the client errors before the request", func() {
+				It("returns an error when updating the resource config", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+								server.CloseClientConnections()
+							}),
+						),
+					)
+
+					configContents := `
+some-job:
+  instances: 1
+`
+
+					var config map[string]interface{}
+					err := yaml.UnmarshalStrict([]byte(configContents), &config)
+					Expect(err).ToNot(HaveOccurred())
+
+					err = service.ConfigureJobResourceConfig("some-product-guid", config)
+
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("could not make api request to jobs resource_config endpoint"))
 				})
 			})
 
-			When("the server returns a non-200 status code", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+			When("the client errors before the request", func() {
+				It("returns an error when updating the resource config", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+							ghttp.RespondWith(http.StatusNotFound, `{}`),
+						),
+					)
 
-					err := service.UpdateStagedProductJobResourceConfig("some-product-guid", "some-other-guid", api.JobProperties{
-						Instances:      2,
-						PersistentDisk: &api.Disk{Size: "000"},
-						InstanceType:   api.InstanceType{ID: "number-2"},
-					})
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:")))
+					configContents := `
+some-job:
+  instances: 1
+`
+
+					var config map[string]interface{}
+					err := yaml.UnmarshalStrict([]byte(configContents), &config)
+					Expect(err).ToNot(HaveOccurred())
+
+					err = service.ConfigureJobResourceConfig("some-product-guid", config)
+
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("failed to configure resources for some-job"))
 				})
 			})
 		})

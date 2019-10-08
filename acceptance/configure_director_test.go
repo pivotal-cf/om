@@ -177,45 +177,57 @@ var _ = Describe("configure-director command", func() {
 		)
 		server.RouteToHandler("GET", "/api/v0/staged/products",
 			ghttp.RespondWith(http.StatusOK, `[
-					{
-						"installation_name": "component-type1-installation-name",
-						"guid": "component-type1-guid",
-						"type": "component-type1"
-					},
-					{
-						"installation_name": "p-bosh-installation-name",
-						"guid": "p-bosh-guid",
-						"type": "p-bosh"
-					}
-				]`),
+				{
+					"installation_name": "component-type1-installation-name",
+					"guid": "component-type1-guid",
+					"type": "component-type1"
+				},
+				{
+					"installation_name": "p-bosh-installation-name",
+					"guid": "p-bosh-guid",
+					"type": "p-bosh"
+				}
+			]`),
 		)
 		server.RouteToHandler("GET", "/api/v0/staged/products/p-bosh-guid/jobs",
 			ghttp.RespondWith(http.StatusOK, `
-					{
-						"jobs": [
-							{
-								"name": "compilation",
-								"guid": "compilation-guid"
-							}
-						]
-					}
-				`),
+				{
+					"jobs": [
+						{
+							"name": "compilation",
+							"guid": "compilation-guid"
+						}
+					]
+				}
+			`),
 		)
 		server.RouteToHandler("GET", "/api/v0/staged/products/p-bosh-guid/jobs/compilation-guid/resource_config",
 			ghttp.RespondWith(http.StatusOK, `{
-					"instances": 1,
-					"instance_type": {
-						"id": "automatic"
-					},
-					"persistent_disk": {
-						"size_mb": "20480"
-					},
-					"internet_connected": true,
-					"elb_names": ["my-elb"]
-				}`),
+				"instances": 1,
+				"instance_type": {
+					"id": "automatic"
+				},
+				"persistent_disk": {
+					"size_mb": "20480"
+				},
+				"additional_vm_extensions": [],
+				"internet_connected": true,
+				"elb_names": ["my-elb"]
+			}`),
 		)
 		server.RouteToHandler("PUT", "/api/v0/staged/products/p-bosh-guid/jobs/compilation-guid/resource_config",
-			ghttp.VerifyJSON(`{"instances":1,"persistent_disk":{"size_mb":"20480"},"instance_type":{"id":"m4.xlarge"},"internet_connected":true,"elb_names":["my-elb"]}`),
+			ghttp.VerifyJSON(`{
+				"instances": 1,
+				"persistent_disk": {
+					"size_mb": "20480"
+				},
+				"instance_type": {
+					"id": "m4.xlarge"
+				},
+				"additional_vm_extensions": [],
+				"internet_connected": true,
+				"elb_names": ["my-elb"]
+			}`),
 		)
 		configYAML := []byte(`
 ---
@@ -296,14 +308,14 @@ iaas-configurations:
 		It("configures the BOSH director using the API, and ignores verifier warnings", func() {
 			server.RouteToHandler("GET", "/api/v0/staged/director/iaas_configurations",
 				ghttp.RespondWith(http.StatusOK, `{
-				"iaas_configurations": [{
-					"guid": "guid-one",
-					"name": "some-iaas"
-				},{
-					"guid": "guid-two",
-					"name": "another-iaas"
-				}]
-			}`),
+					"iaas_configurations": [{
+						"guid": "guid-one",
+						"name": "some-iaas"
+					},{
+						"guid": "guid-two",
+						"name": "another-iaas"
+					}]
+				}`),
 			)
 
 			server.AppendHandlers(
@@ -323,6 +335,14 @@ iaas-configurations:
 					ghttp.RespondWith(http.StatusMultiStatus, ""),
 					ghttp.VerifyRequest("POST", "/api/v0/staged/director/availability_zones"),
 					ghttp.VerifyJSON(`{"availability_zone":{"name":"some-az-2", "iaas_configuration_guid":"guid-two"}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[{
+						"installation_name": "p-bosh-installation-name",
+						"guid": "p-bosh-guid",
+						"type": "p-bosh"
+					}]`),
 				),
 			)
 

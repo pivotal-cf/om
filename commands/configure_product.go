@@ -32,13 +32,12 @@ type ConfigureProduct struct {
 
 //counterfeiter:generate -o ./fakes/configure_product_service.go --fake-name ConfigureProductService . configureProductService
 type configureProductService interface {
-	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
+	ConfigureJobResourceConfig(productGUID string, config map[string]interface{}) error
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	ListStagedPendingChanges() (api.PendingChangesOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	ListStagedProducts() (api.StagedProductsOutput, error)
 	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
-	UpdateStagedProductJobResourceConfig(productGUID, jobGUID string, jobProperties api.JobProperties) error
 	UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput) error
 	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
 	UpdateStagedProductJobMaxInFlight(string, map[string]interface{}) error
@@ -70,14 +69,14 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return err
 	}
 
-	cp.logger.Printf("configuring product...")
-
 	cfg := configureProduct{ValidateConfigComplete: true}
 
 	cfg, err = cp.interpolateConfig(cfg)
 	if err != nil {
 		return err
 	}
+
+	cp.logger.Printf("configuring %s...", cfg.ProductName)
 
 	err = cp.validateConfig(cfg)
 	if err != nil {
@@ -99,7 +98,7 @@ func (cp ConfigureProduct) Execute(args []string) error {
 		return err
 	}
 
-	err = cp.configureResources(cfg, productGUID)
+	err = cp.configureResourceConfiguration(cfg, productGUID)
 	if err != nil {
 		return err
 	}
@@ -152,7 +151,7 @@ func getJSONProperties(properties interface{}) (string, error) {
 	return string(jsonProperties), nil
 }
 
-func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID string) error {
+func (cp *ConfigureProduct) configureResourceConfiguration(cfg configureProduct, productGUID string) error {
 	if cfg.ResourceConfigProperties == nil {
 		cp.logger.Println("resource config properties are not provided, nothing to do here")
 		return nil
@@ -163,42 +162,21 @@ func (cp *ConfigureProduct) configureResources(cfg configureProduct, productGUID
 		return err
 	}
 
-	var userProvidedConfig map[string]json.RawMessage
+	var userProvidedConfig map[string]interface{}
 	err = json.Unmarshal([]byte(productResources), &userProvidedConfig)
 	if err != nil {
 		return fmt.Errorf("could not decode product-resource json: %s", err)
 	}
 
-	jobs, err := cp.service.ListStagedProductJobs(productGUID)
+	cp.logger.Printf("applying resource configurations...")
+
+	err = cp.service.ConfigureJobResourceConfig(productGUID, userProvidedConfig)
 	if err != nil {
-		return fmt.Errorf("failed to fetch jobs: %s", err)
+		return fmt.Errorf("failed to configure resources: %s", err)
 	}
 
-	var names []string
-	for name := range userProvidedConfig {
-		names = append(names, name)
-	}
+	cp.logger.Printf("finished applying resource configurations")
 
-	sort.Strings(names)
-
-	cp.logger.Printf("applying resource configuration for the following jobs:")
-	for _, name := range names {
-		cp.logger.Printf("\t%s", name)
-		jobProperties, err := cp.service.GetStagedProductJobResourceConfig(productGUID, jobs[name])
-		if err != nil {
-			return fmt.Errorf("could not fetch existing job configuration for %s: %s", name, err)
-		}
-
-		err = json.Unmarshal(userProvidedConfig[name], &jobProperties)
-		if err != nil {
-			return err
-		}
-
-		err = cp.service.UpdateStagedProductJobResourceConfig(productGUID, jobs[name], jobProperties)
-		if err != nil {
-			return fmt.Errorf("failed to configure resources: %s", err)
-		}
-	}
 	return nil
 }
 

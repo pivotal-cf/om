@@ -78,6 +78,7 @@ network-properties:
     name: az-one
 resource-config:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -146,6 +147,7 @@ network-properties:
     name: az-one
 resource-config:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -263,6 +265,7 @@ network-properties:
     name: az-one
 resource-config:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -542,6 +545,7 @@ network-properties:
     name: az-one
 resource-config:
   some-job:
+    additional_vm_extensions: ["some-vm-extension"]
     instances: 1
     instance_type:
       id: automatic
@@ -757,10 +761,11 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 		"some-job": "some-job-guid",
 	}, nil)
 	fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{
-		InstanceType: api.InstanceType{
-			ID: "automatic",
+		"instances": 1.0,
+		"instance_type": map[string]interface{}{
+			"id": "automatic",
 		},
-		Instances: 1,
+		"additional_vm_extensions": []string{"some-vm-extension"},
 	}, nil)
 	fakeService.GetStagedProductJobMaxInFlightReturns(map[string]interface{}{
 		"some-job-guid": 2,

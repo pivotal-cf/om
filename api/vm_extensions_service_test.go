@@ -30,21 +30,18 @@ var _ = Describe("VMExtensions", func() {
 					StatusCode: http.StatusOK,
 					Body: ioutil.NopCloser(strings.NewReader(
 						`{
-  "vm_extensions": [
-    {
-      "name": "vm_ext1",
-      "cloud_properties": {
-        "source_dest_check": false
-      }
-    },
-    {
-      "name": "vm_ext2",
-      "cloud_properties": {
-        "key_name": "operations_keypair"
-      }
-    }
-  ]
-}`,
+					  	"vm_extensions": [{
+							"name": "vm_ext1",
+							"cloud_properties": {
+								"source_dest_check": false
+							}
+						}, {
+							"name": "vm_ext2",
+							"cloud_properties": {
+								"key_name": "operations_keypair"
+								}
+							}]
+						}`,
 					))}, nil
 			} else {
 				return &http.Response{

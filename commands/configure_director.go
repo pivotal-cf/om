@@ -46,16 +46,15 @@ type directorConfig struct {
 
 //counterfeiter:generate -o ./fakes/configure_director_service.go --fake-name ConfigureDirectorService . configureDirectorService
 type configureDirectorService interface {
+	ConfigureJobResourceConfig(productGUID string, config map[string]interface{}) error
 	CreateCustomVMTypes(api.CreateVMTypes) error
 	CreateStagedVMExtension(api.CreateVMExtension) error
 	DeleteCustomVMTypes() error
 	DeleteVMExtension(name string) error
 	GetStagedProductByName(name string) (api.StagedProductsFindOutput, error)
-	GetStagedProductJobResourceConfig(string, string) (api.JobProperties, error)
 	GetStagedProductManifest(guid string) (manifest string, err error)
 	Info() (api.Info, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
-	ListStagedProductJobs(string) (map[string]string, error)
 	ListStagedVMExtensions() ([]api.VMExtension, error)
 	ListVMTypes() ([]api.VMType, error)
 	UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput) error
@@ -63,7 +62,6 @@ type configureDirectorService interface {
 	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
 	UpdateStagedDirectorNetworks(api.NetworkInput) error
 	UpdateStagedDirectorProperties(api.DirectorProperties) error
-	UpdateStagedProductJobResourceConfig(string, string, api.JobProperties) error
 }
 
 func NewConfigureDirector(environFunc func() []string, service configureDirectorService, logger logger) ConfigureDirector {
@@ -137,7 +135,12 @@ func (c ConfigureDirector) Execute(args []string) error {
 		return err
 	}
 
-	err = c.configureResourceConfigurations(config)
+	productGUID, err := c.getProductGUID()
+	if err != nil {
+		return err
+	}
+
+	err = c.configureResourceConfiguration(config, productGUID)
 	if err != nil {
 		return err
 	}
@@ -366,35 +369,6 @@ func (c ConfigureDirector) configureNetworkAssignment(config *directorConfig) er
 	return nil
 }
 
-func (c ConfigureDirector) configureResourceConfigurations(config *directorConfig) error {
-	if config.ResourceConfiguration != nil {
-		c.logger.Printf("started configuring resource options for bosh tile")
-
-		productGUID, err := c.getProductGUID()
-		if err != nil {
-			return err
-		}
-
-		jobNames := c.getUserProvidedJobNames(config)
-
-		jobs, err := c.service.ListStagedProductJobs(productGUID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch jobs: %s", err)
-		}
-
-		c.logger.Printf("applying resource configuration for the following jobs:")
-		for _, jobName := range jobNames {
-			err := c.configureResourceConfiguration(config, jobs, jobName, productGUID)
-			if err != nil {
-				return err
-			}
-		}
-
-		c.logger.Printf("finished configuring resource options for bosh tile")
-	}
-	return nil
-}
-
 func (c ConfigureDirector) addNewExtensions(extensionsToDelete map[string]api.VMExtension, newExtensions interface{}) (map[string]api.VMExtension, error) {
 	var newVMExtensions []api.VMExtension
 
@@ -449,7 +423,14 @@ func (c ConfigureDirector) getExistingExtensions() (map[string]api.VMExtension, 
 }
 
 func (c ConfigureDirector) deleteExtensions(extensionsToDelete map[string]api.VMExtension) error {
-	for _, extensionToDelete := range extensionsToDelete {
+	keys := []string{}
+	for k := range extensionsToDelete {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		extensionToDelete := extensionsToDelete[key]
 		c.logger.Printf("deleting vm extension %s", extensionToDelete.Name)
 		err := c.service.DeleteVMExtension(extensionToDelete.Name)
 		if err != nil {
@@ -543,44 +524,20 @@ func (c ConfigureDirector) getProductGUID() (string, error) {
 	return findOutput.Product.GUID, nil
 }
 
-func (c ConfigureDirector) getUserProvidedJobNames(config *directorConfig) []string {
-	var names []string
-
-	for name := range config.ResourceConfiguration {
-		names = append(names, name)
+func (c ConfigureDirector) configureResourceConfiguration(config *directorConfig, productGUID string) error {
+	if config.ResourceConfiguration == nil {
+		c.logger.Println("resource config property for bosh tile was not provided, nothing to do here")
+		return nil
 	}
 
-	sort.Strings(names)
+	c.logger.Printf("started configuring resource options for bosh tile")
 
-	return names
-}
-
-func (c ConfigureDirector) configureResourceConfiguration(config *directorConfig, jobs map[string]string, jobName string, productGUID string) error {
-	c.logger.Printf("\t%s", jobName)
-	jobGUID, ok := jobs[jobName]
-	if !ok {
-		return fmt.Errorf("product 'p-bosh' does not contain a job named '%s'", jobName)
-	}
-
-	jobProperties, err := c.service.GetStagedProductJobResourceConfig(productGUID, jobGUID)
+	err := c.service.ConfigureJobResourceConfig(productGUID, config.ResourceConfiguration)
 	if err != nil {
-		return fmt.Errorf("could not fetch existing job configuration for '%s': %s", jobName, err)
+		return fmt.Errorf("failed to configure resources: %s", err)
 	}
 
-	prop, err := getJSONProperties(config.ResourceConfiguration[jobName])
-	if err != nil {
-		return fmt.Errorf("could not unmarshall resource configuration: %v", err)
-	}
-
-	err = json.Unmarshal([]byte(prop), &jobProperties)
-	if err != nil {
-		return fmt.Errorf("could not decode resource-configuration json for job '%s': %s", jobName, err)
-	}
-
-	err = c.service.UpdateStagedProductJobResourceConfig(productGUID, jobGUID, jobProperties)
-	if err != nil {
-		return fmt.Errorf("failed to configure resources for '%s': %s", jobName, err)
-	}
+	c.logger.Printf("finished configuring resource options for bosh tile")
 
 	return nil
 }
