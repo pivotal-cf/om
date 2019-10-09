@@ -39,9 +39,9 @@ var _ = Describe("Resource Config", func() {
 			Expect(resourceConfig).ToNot(BeNil())
 			Expect(len(resourceConfig)).Should(Equal(2))
 			Expect(resourceConfig).Should(HaveKey("job1"))
-			Expect(resourceConfig["job1"].MaxInFlight).Should(Not(BeNil()))
+			Expect(resourceConfig["job1"].MaxInFlight).ToNot(BeNil())
 			Expect(resourceConfig).Should(HaveKey("job2"))
-			Expect(resourceConfig["job2"].MaxInFlight).Should(Not(BeNil()))
+			Expect(resourceConfig["job2"].MaxInFlight).ToNot(BeNil())
 		})
 	})
 	Context("CreateResource", func() {
@@ -86,6 +86,77 @@ var _ = Describe("Resource Config", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(yml).Should(MatchYAML(withoutPersistentDisk))
 		})
+	})
 
+	Context("CreateResourceVars", func() {
+		It("Should include instances when configurable", func() {
+			metadata := &generator.Metadata{
+				JobTypes: []generator.JobType{
+					{
+						Name:                "job1",
+						InstanceDefinition:  generator.InstanceDefinition{Configurable: true, Default: 1},
+						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+					},
+				},
+			}
+			vars := generator.CreateResourceVars(metadata)
+			Expect(vars).To(HaveKey("job1_instances"))
+		})
+
+		It("Should not include instances when not configurable", func() {
+			metadata := &generator.Metadata{
+				JobTypes: []generator.JobType{
+					{
+						Name:                "job1",
+						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
+						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+					},
+				},
+			}
+			vars := generator.CreateResourceVars(metadata)
+			Expect(vars).ToNot(HaveKey("job1_instances"))
+		})
+
+		It("Should include a disk variable with persistent disk", func() {
+			metadata := &generator.Metadata{
+				JobTypes: []generator.JobType{
+					{
+						Name:                "job1",
+						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
+						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: true}},
+					},
+				},
+			}
+			vars := generator.CreateResourceVars(metadata)
+			Expect(vars).To(HaveKey("job1_persistent_disk_size"))
+		})
+
+		It("Should not include a disk variable without persistent disk", func() {
+			metadata := &generator.Metadata{
+				JobTypes: []generator.JobType{
+					{
+						Name:                "job1",
+						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
+						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+					},
+				},
+			}
+			vars := generator.CreateResourceVars(metadata)
+			Expect(vars).ToNot(HaveKey("job1_persistent_disk_size"))
+		})
+
+		It("Should include max_in_flight", func() {
+			metadata := &generator.Metadata{
+				JobTypes: []generator.JobType{
+					{
+						Name:                "job1",
+						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
+						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+					},
+				},
+			}
+			vars := generator.CreateResourceVars(metadata)
+			Expect(vars).To(HaveKey("job1_max_in_flight"))
+		})
 	})
 })
