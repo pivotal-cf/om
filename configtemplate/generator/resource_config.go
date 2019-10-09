@@ -73,7 +73,7 @@ func AddResourceVars(jobName string, job jobtype, vars map[string]interface{}) {
 	if job.HasPersistentDisk() {
 		vars[fmt.Sprintf("%s_persistent_disk_size", jobName)] = "automatic"
 	}
-	vars[fmt.Sprintf("%s_max_in_flight", jobName)] = 1
+	vars[fmt.Sprintf("%s_max_in_flight", jobName)] = "default"
 }
 
 func determineJobName(jobName string) string {
