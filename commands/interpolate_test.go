@@ -253,6 +253,15 @@ hello: world`))
 			})
 		})
 
+		When("no stdin provided and --config -", func() {
+			It("errors", func() {
+				command = commands.NewInterpolate(func() []string { return nil }, logger, os.Stdin)
+				err := command.Execute([]string{"--config", "-"})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("no file or STDIN input provided."))
+			})
+		})
+
 		When("the config is passed via stdin with no config flag", func() {
 			It("uses stdin", func() {
 				err := command.Execute([]string{})
