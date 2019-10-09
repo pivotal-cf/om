@@ -9,6 +9,7 @@ type Resource struct {
 	InstanceType   InstanceType    `yaml:"instance_type,omitempty"`
 	Instances      interface{}     `yaml:"instances,omitempty"`
 	PersistentDisk *PersistentDisk `yaml:"persistent_disk,omitempty"`
+	MaxInFlight    interface{}     `yaml:"max_in_flight"`
 }
 
 type InstanceType struct {
@@ -47,8 +48,9 @@ func CreateResource(jobName string, job jobtype) Resource {
 		resource.PersistentDisk = &PersistentDisk{
 			Size: fmt.Sprintf("((%s_persistent_disk_size))", jobName),
 		}
-
 	}
+	resource.MaxInFlight = fmt.Sprintf("((%s_max_in_flight))", jobName)
+
 	return resource
 }
 
@@ -71,6 +73,7 @@ func AddResourceVars(jobName string, job jobtype, vars map[string]interface{}) {
 	if job.HasPersistentDisk() {
 		vars[fmt.Sprintf("%s_persistent_disk_size", jobName)] = "automatic"
 	}
+	vars[fmt.Sprintf("%s_max_in_flight", jobName)] = 1
 }
 
 func determineJobName(jobName string) string {

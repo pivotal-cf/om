@@ -12,11 +12,13 @@ var withPersistentDisk = `instance_type:
   id: ((myjob_instance_type))
 instances: ((myjob_instances))
 persistent_disk:
-  size_mb: ((myjob_persistent_disk_size))`
+  size_mb: ((myjob_persistent_disk_size))
+max_in_flight: ((myjob_max_in_flight))`
 
 var withoutPersistentDisk = `instance_type:
   id: ((myjob_instance_type))
-instances: ((myjob_instances))`
+instances: ((myjob_instances))
+max_in_flight: ((myjob_max_in_flight))`
 
 var _ = Describe("Resource Config", func() {
 	Context("CreateResourceConfig", func() {
@@ -37,7 +39,9 @@ var _ = Describe("Resource Config", func() {
 			Expect(resourceConfig).ToNot(BeNil())
 			Expect(len(resourceConfig)).Should(Equal(2))
 			Expect(resourceConfig).Should(HaveKey("job1"))
+			Expect(resourceConfig["job1"].MaxInFlight).Should(Not(BeNil()))
 			Expect(resourceConfig).Should(HaveKey("job2"))
+			Expect(resourceConfig["job2"].MaxInFlight).Should(Not(BeNil()))
 		})
 	})
 	Context("CreateResource", func() {
