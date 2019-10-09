@@ -1,16 +1,18 @@
 package commands_test
 
 import (
+	"io/ioutil"
+	"os"
+	"strings"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"io/ioutil"
-	"os"
-	"strings"
 )
 
 var templateNoParameters = `hello: world`
+var templateNoParametersOverStdin = `hello: from standard input`
 var templateWithParameters = `hello: ((hello))`
 var templateWithMultipleParameters = `
 hello: ((hello))
@@ -27,11 +29,21 @@ var _ = Describe("Interpolate", func() {
 	var (
 		command commands.Interpolate
 		logger  *fakes.Logger
+		stdin   *os.File
 	)
 
 	BeforeEach(func() {
+		var err error
+		stdin, err = ioutil.TempFile("", "")
+		Expect(err).NotTo(HaveOccurred())
+		ioutil.WriteFile(stdin.Name(), []byte(templateNoParametersOverStdin), os.ModeCharDevice|0755) // mimic a character device so it'll be picked up in the conditional
 		logger = &fakes.Logger{}
-		command = commands.NewInterpolate(func() []string { return nil }, logger)
+		command = commands.NewInterpolate(func() []string { return nil }, logger, stdin)
+	})
+
+	AfterEach(func() {
+		err := os.Remove(stdin.Name())
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	Describe("Execute", func() {
@@ -234,9 +246,42 @@ hello: world`))
 
 		When("no flags are set and no stdin provided", func() {
 			It("errors", func() {
+				command = commands.NewInterpolate(func() []string { return nil }, logger, os.Stdin)
 				err := command.Execute([]string{})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("no file or STDIN input provided."))
+			})
+		})
+
+		When("the config is passed via stdin with no config flag", func() {
+			It("uses stdin", func() {
+				err := command.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: from standard input"))
+			})
+		})
+
+		When("the config is passed via stdin with --config -", func() {
+			It("uses stdin", func() {
+				err := command.Execute([]string{"--config", "-"})
+				Expect(err).NotTo(HaveOccurred())
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: from standard input"))
+			})
+		})
+
+		When("the config is passed via stdin and a config file", func() {
+			It("uses the config file", func() {
+				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+				Expect(err).NotTo(HaveOccurred())
+				err = command.Execute([]string{
+					"--config", inputFile,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				content := logger.PrintlnArgsForCall(0)
+				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
 		})
 	})

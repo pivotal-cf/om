@@ -2,16 +2,18 @@ package commands
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
-	"github.com/pivotal-cf/om/interpolate"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/interpolate"
 )
 
 type Interpolate struct {
 	environFunc func() []string
 	logger      logger
+	input       *os.File
 	Options     struct {
 		ConfigFile        string   `long:"config"       short:"c" description:"path for file to be interpolated"`
 		Path              string   `long:"path"                   description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
@@ -23,10 +25,11 @@ type Interpolate struct {
 	}
 }
 
-func NewInterpolate(environFunc func() []string, logger logger) Interpolate {
+func NewInterpolate(environFunc func() []string, logger logger, input *os.File) Interpolate {
 	return Interpolate{
 		environFunc: environFunc,
 		logger:      logger,
+		input:       input,
 	}
 }
 
@@ -35,16 +38,15 @@ func (c Interpolate) Execute(args []string) error {
 		return fmt.Errorf("could not parse interpolate flags: %s", err)
 	}
 
-	input := os.Stdin
-	info, err := input.Stat()
+	info, err := c.input.Stat()
 	if err != nil {
 		return fmt.Errorf("error in STDIN: %s", err)
 	}
 
 	// Bitwise AND uses stdin's file mode mask against the unix character device to
 	// determine if it's pointing to stdin's pipe
-	if info.Mode()&os.ModeCharDevice == 0 {
-		contents, err := ioutil.ReadAll(input)
+	if info.Mode()&os.ModeCharDevice == 0 && (len(c.Options.ConfigFile) == 0 || c.Options.ConfigFile == "-") {
+		contents, err := ioutil.ReadAll(c.input)
 		if err != nil {
 			return fmt.Errorf("error reading STDIN: %s", err)
 		}
