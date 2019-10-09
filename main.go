@@ -190,7 +190,7 @@ func main() {
 	commandSet["import-installation"] = commands.NewImportInstallation(form, api, global.DecryptionPassphrase, stdout)
 	commandSet["installation-log"] = commands.NewInstallationLog(api, stdout)
 	commandSet["installations"] = commands.NewInstallations(api, presenter)
-	commandSet["interpolate"] = commands.NewInterpolate(os.Environ, stdout)
+	commandSet["interpolate"] = commands.NewInterpolate(os.Environ, stdout, os.Stdin)
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
 	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api, stdout)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
