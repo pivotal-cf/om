@@ -2,7 +2,8 @@ package commands_test
 
 import (
 	"errors"
-	"fmt"
+	"github.com/onsi/gomega/gbytes"
+	"log"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -17,7 +18,8 @@ import (
 
 var _ = Describe("ConfigureAuthentication", func() {
 	var (
-		logger  *fakes.Logger
+		stdout  *gbytes.Buffer
+		logger  *log.Logger
 		service *fakes.ConfigureAuthenticationService
 	)
 
@@ -26,7 +28,8 @@ var _ = Describe("ConfigureAuthentication", func() {
 		service.InfoReturns(api.Info{
 			Version: "2.5-build.1",
 		}, nil)
-		logger = &fakes.Logger{}
+		stdout = gbytes.NewBuffer()
+		logger = log.New(stdout, "", 0)
 	})
 
 	FDescribe("Execute", func() {
@@ -64,17 +67,10 @@ var _ = Describe("ConfigureAuthentication", func() {
 
 			Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
 
-			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuring internal userstore..."))
-
-			format, content = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-			format, content = logger.PrintfArgsForCall(2)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
-
-			format, content = logger.PrintfArgsForCall(3)
-			Expect(fmt.Sprintf(format, content...)).To(Equal(`
+			Expect(stdout).To(gbytes.Say("configuring internal userstore..."))
+			Expect(stdout).To(gbytes.Say("waiting for configuration to complete..."))
+			Expect(stdout).To(gbytes.Say("configuration complete"))
+			Expect(stdout).To(gbytes.Say(`
 Ops Manager UAA client will be created when authentication system starts.
 It will have the username 'precreated-client' and the client secret you provided.
 `))
@@ -97,13 +93,15 @@ It will have the username 'precreated-client' and the client secret you provided
 				Expect(service.EnsureAvailabilityCallCount()).To(Equal(1))
 				Expect(service.SetupCallCount()).To(Equal(0))
 
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration previously completed, skipping configuration"))
+				Expect(stdout).To(gbytes.Say("configuration previously completed, skipping configuration"))
 			})
 		})
 
 		When("config file is provided", func() {
-			var configFile *os.File
+			var (
+				configFile          *os.File
+				eaExpectedCallCount int
+			)
 
 			BeforeEach(func() {
 				var err error
@@ -124,6 +122,8 @@ decryption-passphrase: some-passphrase
 					{Status: api.EnsureAvailabilityStatusPending},
 					{Status: api.EnsureAvailabilityStatusComplete},
 				}
+				eaExpectedCallCount = len(eaOutputs)
+
 				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
 				}
@@ -146,16 +146,11 @@ decryption-passphrase: some-passphrase
 					EULAAccepted:                     "true",
 				}))
 
-				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(eaExpectedCallCount))
 
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring internal userstore..."))
-
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+				Expect(stdout).To(gbytes.Say("configuring internal userstore..."))
+				Expect(stdout).To(gbytes.Say("waiting for configuration to complete..."))
+				Expect(stdout).To(gbytes.Say("configuration complete"))
 			})
 
 			It("is overridden by commandline flags", func() {
@@ -176,16 +171,11 @@ decryption-passphrase: some-passphrase
 					EULAAccepted:                     "true",
 				}))
 
-				Expect(service.EnsureAvailabilityCallCount()).To(Equal(4))
+				Expect(service.EnsureAvailabilityCallCount()).To(Equal(eaExpectedCallCount))
 
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuring internal userstore..."))
-
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("waiting for configuration to complete..."))
-
-				format, content = logger.PrintfArgsForCall(2)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("configuration complete"))
+				Expect(stdout).To(gbytes.Say("configuring internal userstore..."))
+				Expect(stdout).To(gbytes.Say("waiting for configuration to complete..."))
+				Expect(stdout).To(gbytes.Say("configuration complete"))
 			})
 		})
 
