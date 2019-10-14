@@ -29,7 +29,7 @@ var _ = Describe("ConfigureAuthentication", func() {
 		logger = &fakes.Logger{}
 	})
 
-	Describe("Execute", func() {
+	FDescribe("Execute", func() {
 		It("sets up a user with the specified configuration information, waiting for the setup to complete", func() {
 			eaOutputs := []api.EnsureAvailabilityOutput{
 				{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -117,20 +117,19 @@ decryption-passphrase: some-passphrase
 
 				_, err = configFile.WriteString(configContent)
 				Expect(err).NotTo(HaveOccurred())
-			})
 
-			It("reads configuration from config file", func() {
 				eaOutputs := []api.EnsureAvailabilityOutput{
 					{Status: api.EnsureAvailabilityStatusUnstarted},
 					{Status: api.EnsureAvailabilityStatusPending},
 					{Status: api.EnsureAvailabilityStatusPending},
 					{Status: api.EnsureAvailabilityStatusComplete},
 				}
-
 				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
 				}
+			})
 
+			It("reads configuration from config file", func() {
 				command := commands.NewConfigureAuthentication(service, logger)
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
@@ -160,17 +159,6 @@ decryption-passphrase: some-passphrase
 			})
 
 			It("is overridden by commandline flags", func() {
-				eaOutputs := []api.EnsureAvailabilityOutput{
-					{Status: api.EnsureAvailabilityStatusUnstarted},
-					{Status: api.EnsureAvailabilityStatusPending},
-					{Status: api.EnsureAvailabilityStatusPending},
-					{Status: api.EnsureAvailabilityStatusComplete},
-				}
-
-				service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
-					return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
-				}
-
 				command := commands.NewConfigureAuthentication(service, logger)
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
