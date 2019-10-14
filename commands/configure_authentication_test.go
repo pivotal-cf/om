@@ -12,7 +12,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"io/ioutil"
-	"os"
 )
 
 var _ = Describe("ConfigureAuthentication.Execute", func() {
@@ -20,7 +19,6 @@ var _ = Describe("ConfigureAuthentication.Execute", func() {
 		stdout  *gbytes.Buffer
 		logger  *log.Logger
 		service *fakes.ConfigureAuthenticationService
-		err     error
 	)
 
 	BeforeEach(func() {
@@ -98,22 +96,17 @@ It will have the username 'precreated-client' and the client secret you provided
 
 	When("a complete config file is provided", func() {
 		var (
-			configFile          *os.File
-			configContent       string
+			configFile          string
 			eaExpectedCallCount int
 		)
 
 		BeforeEach(func() {
-			configContent = `
+			configContent := `
 username: some-username
 password: some-password
 decryption-passphrase: some-passphrase
 `
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			configFile = writeTestConfigFile(configContent)
 
 			eaOutputs := []api.EnsureAvailabilityOutput{
 				{Status: api.EnsureAvailabilityStatusUnstarted},
@@ -131,7 +124,7 @@ decryption-passphrase: some-passphrase
 		It("reads configuration from config file", func() {
 			command := commands.NewConfigureAuthentication(service, logger)
 			err := command.Execute([]string{
-				"--config", configFile.Name(),
+				"--config", configFile,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -155,7 +148,7 @@ decryption-passphrase: some-passphrase
 		It("respects vars from flags over those in the config file", func() {
 			command := commands.NewConfigureAuthentication(service, logger)
 			err := command.Execute([]string{
-				"--config", configFile.Name(),
+				"--config", configFile,
 				"--password", "some-password-1",
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -178,25 +171,42 @@ decryption-passphrase: some-passphrase
 		})
 	})
 
-	PWhen("a config file with vars and a --vars-file is provided", func() {
+	When("a config file with vars and a --vars-file is provided", func() {
 		var (
 			configFile string
 			varsFile   string
 		)
 
 		BeforeEach(func() {
+			eaOutputs := []api.EnsureAvailabilityOutput{
+				{Status: api.EnsureAvailabilityStatusUnstarted},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusPending},
+				{Status: api.EnsureAvailabilityStatusComplete},
+			}
+
+			service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
+			}
+
 			configContent := `
 username: some-username
 password: ((vars-password))
 decryption-passphrase: ((vars-passphrase))
 `
 			varsContent := `
-vars-password: a-vars-file-password:
+vars-password: a-vars-file-password
 vars-passphrase: a-vars-file-passphrase
 `
 
-			configFile = writeFile(configContent)
-			varsFile = writeFile(varsContent)
+			configFile = writeTestConfigFile(configContent)
+
+			file, err := ioutil.TempFile("", "vars-*.yml")
+			Expect(err).NotTo(HaveOccurred())
+			err = ioutil.WriteFile(file.Name(), []byte(varsContent), 0777)
+			Expect(err).NotTo(HaveOccurred())
+
+			varsFile = file.Name()
 		})
 
 		It("uses values from the vars file", func() {
@@ -206,6 +216,16 @@ vars-passphrase: a-vars-file-passphrase
 				"--vars-file", varsFile,
 			})
 			Expect(err).NotTo(HaveOccurred())
+
+			Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+				IdentityProvider:                 "internal",
+				AdminUserName:                    "some-username",
+				AdminPassword:                    "a-vars-file-password",
+				AdminPasswordConfirmation:        "a-vars-file-password",
+				DecryptionPassphrase:             "a-vars-file-passphrase",
+				DecryptionPassphraseConfirmation: "a-vars-file-passphrase",
+				EULAAccepted:                     "true",
+			}))
 		})
 	})
 

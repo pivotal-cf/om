@@ -27,7 +27,8 @@ type ConfigureAuthentication struct {
 		HTTPSProxyURL          string   `long:"https-proxy-url"                                    description:"proxy for outbound HTTPS network traffic"`
 		NoProxy                string   `long:"no-proxy"                                           description:"comma-separated list of hosts that do not go through the proxy"`
 		PrecreatedClientSecret string   `long:"precreated-client-secret"                           description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
-		VarsEnv                []string `env:"OM_VARS_ENV" experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsEnv                []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true"     description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile               []string `long:"vars-file"                                          description:"Load variables from a YAML file"`
 	}
 }
 
