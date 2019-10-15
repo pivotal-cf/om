@@ -164,8 +164,8 @@ Commands:
   installation-log                output installation logs
   installations                   list recent installation events
   interpolate                     interpolates variables into a manifest
-  pending-changes                 lists pending changes
-  pre-deploy-check                **EXPERIMENTAL** lists pending changes
+  pending-changes                 checks for pending changes
+  pre-deploy-check                **EXPERIMENTAL** checks completeness and validity of product configuration
   product-metadata                prints product metadata
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   ssl-certificate                 gets certificate applied to Ops Manager
