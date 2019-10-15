@@ -420,7 +420,8 @@ vmtypes-configuration:
 						})
 
 						It("supports the experimental feature of OM_VARS_ENV", func() {
-							os.Setenv("OM_VARS_ENV", "OM_VAR")
+							err := os.Setenv("OM_VARS_ENV", "OM_VAR")
+							Expect(err).ToNot(HaveOccurred())
 							defer os.Unsetenv("OM_VARS_ENV")
 
 							logger := log.New(stdout, "", 0)

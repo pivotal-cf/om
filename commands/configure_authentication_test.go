@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/onsi/gomega/gbytes"
 	"log"
+	"os"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -42,7 +43,7 @@ var _ = Describe("ConfigureAuthentication.Execute", func() {
 			return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
 		}
 
-		command := commands.NewConfigureAuthentication(service, logger)
+		command := commands.NewConfigureAuthentication(nil, service, logger)
 		err := command.Execute([]string{
 			"--username", "some-username",
 			"--password", "some-password",
@@ -79,7 +80,7 @@ It will have the username 'precreated-client' and the client secret you provided
 				Status: api.EnsureAvailabilityStatusComplete,
 			}, nil)
 
-			command := commands.NewConfigureAuthentication(service, logger)
+			command := commands.NewConfigureAuthentication(nil, service, logger)
 			err := command.Execute([]string{
 				"--username", "some-username",
 				"--password", "some-password",
@@ -122,7 +123,7 @@ decryption-passphrase: some-passphrase
 		})
 
 		It("reads configuration from config file", func() {
-			command := commands.NewConfigureAuthentication(service, logger)
+			command := commands.NewConfigureAuthentication(nil, service, logger)
 			err := command.Execute([]string{
 				"--config", configFile,
 			})
@@ -146,7 +147,7 @@ decryption-passphrase: some-passphrase
 		})
 
 		It("respects vars from flags over those in the config file", func() {
-			command := commands.NewConfigureAuthentication(service, logger)
+			command := commands.NewConfigureAuthentication(nil, service, logger)
 			err := command.Execute([]string{
 				"--config", configFile,
 				"--password", "some-password-1",
@@ -171,61 +172,143 @@ decryption-passphrase: some-passphrase
 		})
 	})
 
-	When("a config file with vars and a --vars-file is provided", func() {
-		var (
-			configFile string
-			varsFile   string
-		)
+	When("the config file(s) contain variables", func() {
+		var configFile string
 
 		BeforeEach(func() {
-			eaOutputs := []api.EnsureAvailabilityOutput{
-				{Status: api.EnsureAvailabilityStatusUnstarted},
-				{Status: api.EnsureAvailabilityStatusPending},
-				{Status: api.EnsureAvailabilityStatusPending},
-				{Status: api.EnsureAvailabilityStatusComplete},
-			}
-
-			service.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
-				return eaOutputs[service.EnsureAvailabilityCallCount()-1], nil
-			}
+			service.EnsureAvailabilityReturnsOnCall(0, api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil)
+			service.EnsureAvailabilityReturnsOnCall(1, api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusComplete}, nil)
 
 			configContent := `
 username: some-username
 password: ((vars-password))
 decryption-passphrase: ((vars-passphrase))
 `
-			varsContent := `
+
+			configFile = writeTestConfigFile(configContent)
+		})
+
+		Context("variables are not provided", func() {
+			It("returns an error", func() {
+				command := commands.NewConfigureAuthentication(nil, service, logger)
+				err := command.Execute([]string{
+					"--config", configFile,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+			})
+		})
+
+		Context("passed in a file (--vars-file)", func() {
+			var varsFile string
+
+			BeforeEach(func() {
+				varsContent := `
 vars-password: a-vars-file-password
 vars-passphrase: a-vars-file-passphrase
 `
 
-			configFile = writeTestConfigFile(configContent)
+				file, err := ioutil.TempFile("", "vars-*.yml")
+				Expect(err).NotTo(HaveOccurred())
+				err = ioutil.WriteFile(file.Name(), []byte(varsContent), 0777)
+				Expect(err).NotTo(HaveOccurred())
 
-			file, err := ioutil.TempFile("", "vars-*.yml")
-			Expect(err).NotTo(HaveOccurred())
-			err = ioutil.WriteFile(file.Name(), []byte(varsContent), 0777)
-			Expect(err).NotTo(HaveOccurred())
+				varsFile = file.Name()
+			})
 
-			varsFile = file.Name()
+			It("uses values from the vars file", func() {
+				command := commands.NewConfigureAuthentication(nil, service, logger)
+				err := command.Execute([]string{
+					"--config", configFile,
+					"--vars-file", varsFile,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "internal",
+					AdminUserName:                    "some-username",
+					AdminPassword:                    "a-vars-file-password",
+					AdminPasswordConfirmation:        "a-vars-file-password",
+					DecryptionPassphrase:             "a-vars-file-passphrase",
+					DecryptionPassphraseConfirmation: "a-vars-file-passphrase",
+					EULAAccepted:                     "true",
+				}))
+			})
 		})
 
-		It("uses values from the vars file", func() {
-			command := commands.NewConfigureAuthentication(service, logger)
-			err := command.Execute([]string{
-				"--config", configFile,
-				"--vars-file", varsFile,
-			})
-			Expect(err).NotTo(HaveOccurred())
+		Context("passed in a var (--var)", func() {
+			It("uses values from the command line", func() {
+				command := commands.NewConfigureAuthentication(nil, service, logger)
+				err := command.Execute([]string{
+					"--config", configFile,
+					"--var", "vars-password=a-command-line-password",
+					"--var", "vars-passphrase=a-command-line-passphrase",
+				})
+				Expect(err).NotTo(HaveOccurred())
 
-			Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
-				IdentityProvider:                 "internal",
-				AdminUserName:                    "some-username",
-				AdminPassword:                    "a-vars-file-password",
-				AdminPasswordConfirmation:        "a-vars-file-password",
-				DecryptionPassphrase:             "a-vars-file-passphrase",
-				DecryptionPassphraseConfirmation: "a-vars-file-passphrase",
-				EULAAccepted:                     "true",
-			}))
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "internal",
+					AdminUserName:                    "some-username",
+					AdminPassword:                    "a-command-line-password",
+					AdminPasswordConfirmation:        "a-command-line-password",
+					DecryptionPassphrase:             "a-command-line-passphrase",
+					DecryptionPassphraseConfirmation: "a-command-line-passphrase",
+					EULAAccepted:                     "true",
+				}))
+			})
+		})
+
+		Context("passed as environment variables (--vars-env)", func() {
+			It("interpolates variables into the configuration", func() {
+				command := commands.NewConfigureAuthentication(
+					func() []string { return []string{"OM_VAR_vars-password=an-env-var-password", "OM_VAR_vars-passphrase=an-env-var-passphrase"} },
+					service,
+					logger,
+				)
+
+				err := command.Execute([]string{
+					"--config", configFile,
+					"--vars-env", "OM_VAR",
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "internal",
+					AdminUserName:                    "some-username",
+					AdminPassword:                    "an-env-var-password",
+					AdminPasswordConfirmation:        "an-env-var-password",
+					DecryptionPassphrase:             "an-env-var-passphrase",
+					DecryptionPassphraseConfirmation: "an-env-var-passphrase",
+					EULAAccepted:                     "true",
+				}))
+			})
+
+			It("supports the experimental feature of OM_VARS_ENV", func() {
+				err := os.Setenv("OM_VARS_ENV", "OM_VAR")
+				Expect(err).ToNot(HaveOccurred())
+				defer os.Unsetenv("OM_VARS_ENV")
+
+				command := commands.NewConfigureAuthentication(
+					func() []string { return []string{"OM_VAR_vars-password=an-env-var-password", "OM_VAR_vars-passphrase=an-env-var-passphrase"} },
+					service,
+					logger,
+				)
+
+				err = command.Execute([]string{
+					"--config", configFile,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
+					IdentityProvider:                 "internal",
+					AdminUserName:                    "some-username",
+					AdminPassword:                    "an-env-var-password",
+					AdminPasswordConfirmation:        "an-env-var-password",
+					DecryptionPassphrase:             "an-env-var-passphrase",
+					DecryptionPassphraseConfirmation: "an-env-var-passphrase",
+					EULAAccepted:                     "true",
+				}))
+			})
 		})
 	})
 
@@ -246,7 +329,7 @@ vars-passphrase: a-vars-file-passphrase
 				Version: "2.4-build.1",
 			}, nil)
 
-			command := commands.NewConfigureAuthentication(service, logger)
+			command := commands.NewConfigureAuthentication(nil, service, logger)
 			err := command.Execute([]string{
 				"--username", "some-username",
 				"--password", "some-password",
@@ -264,7 +347,7 @@ This is only supported in OpsManager 2.5 and up.
 	Context("failure cases", func() {
 		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
-				command := commands.NewConfigureAuthentication(service, logger)
+				command := commands.NewConfigureAuthentication(nil, service, logger)
 				err := command.Execute([]string{"--banana"})
 				Expect(err).To(MatchError("could not parse configure-authentication flags: flag provided but not defined: -banana"))
 			})
@@ -272,7 +355,7 @@ This is only supported in OpsManager 2.5 and up.
 
 		When("config file cannot be opened", func() {
 			It("returns an error", func() {
-				command := commands.NewConfigureAuthentication(service, logger)
+				command := commands.NewConfigureAuthentication(nil, service, logger)
 				err := command.Execute([]string{"--config", "something"})
 				Expect(err).To(MatchError("could not parse configure-authentication flags: could not load the config file: could not read file (something): open something: no such file or directory"))
 			})
@@ -282,7 +365,7 @@ This is only supported in OpsManager 2.5 and up.
 			It("returns an error", func() {
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
-				command := commands.NewConfigureAuthentication(service, logger)
+				command := commands.NewConfigureAuthentication(nil, service, logger)
 				err := command.Execute([]string{
 					"--username", "some-username",
 					"--password", "some-password",
@@ -298,7 +381,7 @@ This is only supported in OpsManager 2.5 and up.
 					Status: api.EnsureAvailabilityStatusUnknown,
 				}, nil)
 
-				command := commands.NewConfigureAuthentication(service, logger)
+				command := commands.NewConfigureAuthentication(nil, service, logger)
 				err := command.Execute([]string{
 					"--username", "some-username",
 					"--password", "some-password",
@@ -316,7 +399,7 @@ This is only supported in OpsManager 2.5 and up.
 
 				service.SetupReturns(api.SetupOutput{}, errors.New("could not setup"))
 
-				command := commands.NewConfigureAuthentication(service, logger)
+				command := commands.NewConfigureAuthentication(nil, service, logger)
 				err := command.Execute([]string{
 					"--username", "some-username",
 					"--password", "some-password",
@@ -341,7 +424,7 @@ This is only supported in OpsManager 2.5 and up.
 					return eaOutputs[service.EnsureAvailabilityCallCount()-1], eaErrors[service.EnsureAvailabilityCallCount()-1]
 				}
 
-				command := commands.NewConfigureAuthentication(service, logger)
+				command := commands.NewConfigureAuthentication(nil, service, logger)
 				err := command.Execute([]string{
 					"--username", "some-username",
 					"--password", "some-password",
@@ -353,7 +436,7 @@ This is only supported in OpsManager 2.5 and up.
 
 		When("the --username flag is missing", func() {
 			It("returns an error", func() {
-				command := commands.NewConfigureAuthentication(nil, nil)
+				command := commands.NewConfigureAuthentication(nil, nil, nil)
 				err := command.Execute([]string{
 					"--password", "some-password",
 					"--decryption-passphrase", "some-passphrase",
@@ -364,7 +447,7 @@ This is only supported in OpsManager 2.5 and up.
 
 		When("the --password flag is missing", func() {
 			It("returns an error", func() {
-				command := commands.NewConfigureAuthentication(nil, nil)
+				command := commands.NewConfigureAuthentication(nil, nil, nil)
 				err := command.Execute([]string{
 					"--username", "some-username",
 					"--decryption-passphrase", "some-passphrase",
@@ -375,7 +458,7 @@ This is only supported in OpsManager 2.5 and up.
 
 		When("the --decryption-passphrase flag is missing", func() {
 			It("returns an error", func() {
-				command := commands.NewConfigureAuthentication(nil, nil)
+				command := commands.NewConfigureAuthentication(nil, nil, nil)
 				err := command.Execute([]string{
 					"--username", "some-username",
 					"--password", "some-password",
