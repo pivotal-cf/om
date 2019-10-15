@@ -18,6 +18,7 @@ type configureAuthenticationService interface {
 type ConfigureAuthentication struct {
 	service configureAuthenticationService
 	logger  logger
+	environFunc func() []string
 	Options struct {
 		ConfigFile             string   `long:"config"                short:"c"                    description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Username               string   `long:"username"              short:"u"  env:"OM_USERNAME" description:"admin username" required:"true"`
@@ -27,12 +28,15 @@ type ConfigureAuthentication struct {
 		HTTPSProxyURL          string   `long:"https-proxy-url"                                    description:"proxy for outbound HTTPS network traffic"`
 		NoProxy                string   `long:"no-proxy"                                           description:"comma-separated list of hosts that do not go through the proxy"`
 		PrecreatedClientSecret string   `long:"precreated-client-secret"                           description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
-		VarsEnv                []string `env:"OM_VARS_ENV" experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsEnv                []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true"     description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile               []string `long:"vars-file"                                          description:"Load variables from a YAML file"`
+		Vars                   []string `long:"var"                                                description:"Load variable from the command line. Format: VAR=VAL"`
 	}
 }
 
-func NewConfigureAuthentication(service configureAuthenticationService, logger logger) ConfigureAuthentication {
+func NewConfigureAuthentication(environFunc func() []string, service configureAuthenticationService, logger logger) ConfigureAuthentication {
 	return ConfigureAuthentication{
+		environFunc: environFunc,
 		service: service,
 		logger:  logger,
 	}
@@ -41,7 +45,7 @@ func NewConfigureAuthentication(service configureAuthenticationService, logger l
 func (ca ConfigureAuthentication) Execute(args []string) error {
 	var opsManUaaClientMsg string
 
-	err := loadConfigFile(args, &ca.Options, nil)
+	err := loadConfigFile(args, &ca.Options, ca.environFunc)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-authentication flags: %s", err)
 	}

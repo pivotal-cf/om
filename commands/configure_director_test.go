@@ -364,7 +364,7 @@ vmtypes-configuration:
 					Context("not provided", func() {
 						It("returns an error", func() {
 							err = command.Execute([]string{
-								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 							})
 							Expect(err).To(HaveOccurred())
 							Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
@@ -374,8 +374,8 @@ vmtypes-configuration:
 					Context("passed in a file (--vars-file)", func() {
 						It("interpolates variables into the configuration", func() {
 							err = command.Execute([]string{
-								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
-								"--vars-file", writeFile("name: network"),
+								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--vars-file", writeTestConfigFile("name: network"),
 							})
 							Expect(err).NotTo(HaveOccurred())
 
@@ -389,7 +389,7 @@ vmtypes-configuration:
 					Context("passed in a var (--var)", func() {
 						It("interpolates variables into the configuration", func() {
 							err = command.Execute([]string{
-								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 								"--var", "name=network",
 							})
 							Expect(err).NotTo(HaveOccurred())
@@ -409,7 +409,7 @@ vmtypes-configuration:
 								logger)
 
 							err = command.Execute([]string{
-								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 								"--vars-env", "OM_VAR",
 							})
 							Expect(err).NotTo(HaveOccurred())
@@ -420,7 +420,8 @@ vmtypes-configuration:
 						})
 
 						It("supports the experimental feature of OM_VARS_ENV", func() {
-							os.Setenv("OM_VARS_ENV", "OM_VAR")
+							err := os.Setenv("OM_VARS_ENV", "OM_VAR")
+							Expect(err).ToNot(HaveOccurred())
 							defer os.Unsetenv("OM_VARS_ENV")
 
 							logger := log.New(stdout, "", 0)
@@ -431,7 +432,7 @@ vmtypes-configuration:
 								logger)
 
 							err = command.Execute([]string{
-								"--config", writeFile("vmextensions-configuration: [{name: ((name))}]"),
+								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 							})
 							Expect(err).NotTo(HaveOccurred())
 							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
@@ -446,7 +447,7 @@ vmtypes-configuration:
 			Context("with unrecognized top-level-keys", func() {
 				It("returns error saying the specified key", func() {
 					err = command.Execute([]string{
-						"--config", writeFile(`{"unrecognized-key": {"some-attr": "some-val"}, "unrecognized-other-key": {}, "network-assignment": {"some-attr1": "some-val1"}}`),
+						"--config", writeTestConfigFile(`{"unrecognized-key": {"some-attr": "some-val"}, "unrecognized-other-key": {}, "network-assignment": {"some-attr1": "some-val1"}}`),
 					})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: "unrecognized-key", "unrecognized-other-key"`))
@@ -457,7 +458,7 @@ vmtypes-configuration:
 		When("no vm_extension configuration is provided", func() {
 			It("does not list, create or delete vm extensions", func() {
 				err = command.Execute([]string{
-					"--config", writeFile(`{}`),
+					"--config", writeTestConfigFile(`{}`),
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(0))
@@ -469,7 +470,7 @@ vmtypes-configuration:
 		When("empty vm_extension configuration is provided", func() {
 			It("should delete existing vm extensions", func() {
 				err = command.Execute([]string{
-					"--config", writeFile(`vmextensions-configuration: []`),
+					"--config", writeTestConfigFile(`vmextensions-configuration: []`),
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(1))
@@ -480,7 +481,7 @@ vmtypes-configuration:
 		When("only some of the configure-director top-level keys are provided", func() {
 			It("only updates the config for the provided flags, and sets others to empty", func() {
 				err := command.Execute([]string{
-					"--config", writeFile(`{
+					"--config", writeTestConfigFile(`{
 						"networks-configuration": {
 							"network": "network-1"
 						}, 
@@ -545,7 +546,7 @@ vmtypes-configuration:
 			When("configuring availability_zones fails", func() {
 				It("returns an error", func() {
 					service.UpdateStagedDirectorAvailabilityZonesReturns(errors.New("az endpoint failed"))
-					err := command.Execute([]string{"--config", writeFile(`{"az-configuration": {}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"az-configuration": {}}`)})
 					Expect(err).To(MatchError("availability zones configuration could not be applied: az endpoint failed"))
 				})
 			})
@@ -553,7 +554,7 @@ vmtypes-configuration:
 			When("configuring networks fails", func() {
 				It("returns an error", func() {
 					service.UpdateStagedDirectorNetworksReturns(errors.New("networks endpoint failed"))
-					err := command.Execute([]string{"--config", writeFile(`{"networks-configuration": {}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"networks-configuration": {}}`)})
 					Expect(err).To(MatchError("networks configuration could not be applied: networks endpoint failed"))
 				})
 			})
@@ -561,7 +562,7 @@ vmtypes-configuration:
 			When("configuring networks fails", func() {
 				It("returns an error", func() {
 					service.UpdateStagedDirectorNetworkAndAZReturns(errors.New("director service failed"))
-					err := command.Execute([]string{"--config", writeFile(`{"network-assignment": {}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"network-assignment": {}}`)})
 					Expect(err).To(MatchError("network and AZs could not be applied: director service failed"))
 				})
 			})
@@ -569,7 +570,7 @@ vmtypes-configuration:
 			When("configuring properties fails", func() {
 				It("returns an error", func() {
 					service.UpdateStagedDirectorPropertiesReturns(errors.New("properties end point failed"))
-					err := command.Execute([]string{"--config", writeFile(`{"properties-configuration": {"director_configuration": {}}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"properties-configuration": {"director_configuration": {}}}`)})
 					Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
 				})
 			})
@@ -577,14 +578,14 @@ vmtypes-configuration:
 			When("retrieving staged products fails", func() {
 				It("returns an error", func() {
 					service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
-					err := command.Execute([]string{"--config", writeFile(`{"resource-configuration": {}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"resource-configuration": {}}`)})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
 			})
 
 			When("user-provided top-level resource config is not valid JSON", func() {
 				It("returns an error", func() {
-					err := command.Execute([]string{"--config", writeFile(`{"resource-configuration": {{{{}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"resource-configuration": {{{{}`)})
 					Expect(err).To(MatchError(ContainSubstring("did not find expected ',' or '}'")))
 				})
 			})
@@ -592,7 +593,7 @@ vmtypes-configuration:
 			When("configuring the job fails", func() {
 				It("returns an error", func() {
 					service.ConfigureJobResourceConfigReturns(errors.New("some-error"))
-					err := command.Execute([]string{"--config", writeFile(`{"resource-configuration": {"resource": {}}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"resource-configuration": {"resource": {}}}`)})
 					Expect(err).To(MatchError(ContainSubstring("some-error")))
 				})
 			})
@@ -601,7 +602,7 @@ vmtypes-configuration:
 		When("iaas-configurations is set", func() {
 			It("configures the director", func() {
 				err := command.Execute([]string{
-					"--config", writeFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`),
+					"--config", writeTestConfigFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`),
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -613,7 +614,7 @@ vmtypes-configuration:
 				When("setting iaas configurations fails", func() {
 					It("returns an error", func() {
 						service.UpdateStagedDirectorIAASConfigurationsReturns(errors.New("iaas failed"))
-						err := command.Execute([]string{"--config", writeFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
+						err := command.Execute([]string{"--config", writeTestConfigFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
 						Expect(err).To(MatchError("iaas configurations could not be completed: iaas failed"))
 					})
 				})
@@ -624,7 +625,7 @@ vmtypes-configuration:
 						for _, version := range versions {
 							service.InfoReturns(api.Info{Version: version}, nil)
 
-							err := command.Execute([]string{"--config", writeFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
+							err := command.Execute([]string{"--config", writeTestConfigFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
 							Expect(err).To(MatchError(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s", version)))
 						}
 					})
@@ -633,19 +634,10 @@ vmtypes-configuration:
 
 			When("iaas-configurations and properties-configuration.iaas-configuration are both set", func() {
 				It("returns an error", func() {
-					err := command.Execute([]string{"--config", writeFile(`{"iaas-configurations": [], "properties-configuration": {"iaas-configuration": {}}}`)})
+					err := command.Execute([]string{"--config", writeTestConfigFile(`{"iaas-configurations": [], "properties-configuration": {"iaas-configuration": {}}}`)})
 					Expect(err).To(MatchError("iaas-configurations cannot be used with properties-configuration.iaas-configurations\nPlease only use one implementation."))
 				})
 			})
 		})
 	})
 })
-
-func writeFile(contents string) string {
-	file, err := ioutil.TempFile("", "")
-	Expect(err).NotTo(HaveOccurred())
-
-	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
-	Expect(err).NotTo(HaveOccurred())
-	return file.Name()
-}

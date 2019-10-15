@@ -76,8 +76,8 @@ func (pc PendingChanges) Execute(args []string) error {
 
 func (pc PendingChanges) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command lists all pending changes.",
-		ShortDescription: "lists pending changes",
+		Description:      "This authenticated command lists all products and will display whether they are unchanged (no pending changes) or changed (has pending changes).",
+		ShortDescription: "checks for pending changes",
 		Flags:            pc.Options,
 	}
 }
