@@ -172,7 +172,7 @@ decryption-passphrase: some-passphrase
 		})
 	})
 
-	When("the config file(s) contain variables", func() {
+	When("the config file contains variables", func() {
 		var configFile string
 
 		BeforeEach(func() {
