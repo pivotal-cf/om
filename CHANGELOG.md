@@ -47,7 +47,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 4.2.0
+## 4.2.0 (Unreleased)
 
 ### Features
 - `config-template` now includes `max-in-flight` for all resources. (PR: @jghiloni)
@@ -56,8 +56,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   * If not set in config file, the value from Ops Manager will be persisted.
   * If defined in the config file and an emtpy array (`[]`), the values on Ops Manager will be removed.
   * If defined in the file with a value (`["web_lb"]`), these values will be set on Ops Manager.
-  
-  In short, the config file is the source of truth.
+- `configure-authentication`, `configure-ldap-authentication`, and `configure-saml-authentication`
+  now support the `--var`, `--vars-file`, and `--vars-env` flags. 
+- `config-template` now supports the `--config`, `--var`, `--vars-file`, and `--vars-env` flags.
+  Thanks @jghiloni for the PR!
 
 ## 4.1.0
 
