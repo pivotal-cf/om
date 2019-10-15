@@ -9,10 +9,11 @@ import (
 )
 
 type ConfigureSAMLAuthentication struct {
-	service configureAuthenticationService
-	logger  logger
-	Options struct {
-		ConfigFile                string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+	service     configureAuthenticationService
+	logger      logger
+	environFunc func() []string
+	Options     struct {
+		ConfigFile                string   `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		DecryptionPassphrase      string   `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
 		HTTPProxyURL              string   `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
 		HTTPSProxyURL             string   `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
@@ -23,14 +24,17 @@ type ConfigureSAMLAuthentication struct {
 		RBACGroupsAttribute       string   `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
 		SkipCreateBoshAdminClient bool     `long:"skip-create-bosh-admin-client"                    description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
 		PrecreatedClientSecret    string   `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option"`
-		VarsEnv                   []string `env:"OM_VARS_ENV" experimental:"true" description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsEnv                   []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true"   description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile                  []string `long:"vars-file"                                        description:"Load variables from a YAML file"`
+		Vars                      []string `long:"var"                                              description:"Load variable from the command line. Format: VAR=VAL"`
 	}
 }
 
-func NewConfigureSAMLAuthentication(service configureAuthenticationService, logger logger) ConfigureSAMLAuthentication {
+func NewConfigureSAMLAuthentication(environFunc func() []string, service configureAuthenticationService, logger logger) ConfigureSAMLAuthentication {
 	return ConfigureSAMLAuthentication{
-		service: service,
-		logger:  logger,
+		environFunc: environFunc,
+		service:     service,
+		logger:      logger,
 	}
 }
 
@@ -40,7 +44,7 @@ func (ca ConfigureSAMLAuthentication) Execute(args []string) error {
 		opsManUaaClientMsg string
 	)
 
-	err := loadConfigFile(args, &ca.Options, nil)
+	err := loadConfigFile(args, &ca.Options, ca.environFunc)
 	if err != nil {
 		return fmt.Errorf("could not parse configure-saml-authentication flags: %s", err)
 	}
