@@ -47,7 +47,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 4.2.0 (Unreleased)
+## 4.3.0 (Unreleased)
+
+## 4.2.0
 
 ### Features
 - `config-template` now includes `max-in-flight` for all resources. (PR: @jghiloni)
