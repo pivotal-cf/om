@@ -61,7 +61,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `configure-authentication`, `configure-ldap-authentication`, and `configure-saml-authentication`
   now support the `--var`, `--vars-file`, and `--vars-env` flags. 
 - `config-template` now supports the `--config`, `--var`, `--vars-file`, and `--vars-env` flags.
-  Thanks @jghiloni for the PR!
+  (PR: @jghiloni)
 
 ## 4.1.0
 
@@ -137,7 +137,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Features
 - `config-template` now accepts `--pivnet-file-glob` instead of `--product-file-glob`.
   This is to create consistency with the `download-product` command's naming conventions.
-  Thanks to @poligraph for the PR!
+  (PR: @poligraph)
 ## 3.2.2
 
 ### Bug Fixes
@@ -180,7 +180,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
     ```
 - `generate-certificate` can now accept multiple `--domains | -d` flags.
   Comma separated values can be passed with a single `--domains | -d` flag,
-  or using a `--domains | -d` flag for each value. Thanks to @jghiloni for the PR!
+  or using a `--domains | -d` flag for each value. (PR: @jghiloni)
   Example:
     ```bash
       om -e env.yml generate-certificate -d "example1.com" --domains "example2.com" \
@@ -189,14 +189,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `product-metadata` has been added to replace `tile-metadata`.
   This was done to increase naming consistency.
   Both commands currently exist and do exactly the same thing.
-  Thank you @jghiloni for the PR!
+  (PR: @jghiloni)
 - `config-template` now supports the `--exclude-version` flag.
   If provided, the command will exclude the version directory in the `--output-directory` tree.
   The contents will with or without the flag will remain the same.
   Please note including the `--exclude-version` flag
   will make it more difficult to track changes between versions
   unless using a version control system (such as git).
-  Thanks to @jghiloni for the PR!
+  (PR: @jghiloni)
 - `config-template` supports `--pivnet-disable-ssl` to skip SSL validation.
 - When interacting with an OpsManager, that OpsManager may have a custom CA cert.
   In the global options `--ca-cert` has been added to allow the usage of that custom CA cert.
@@ -246,7 +246,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Features
 
 - `pivnet-api-token` is now optional in `download-product`
-  if a source is defined. Thanks to @vchrisb for the PR!
+  if a source is defined. (PR: @vchrisb)
 - `configure-authentication`, `configure-ldap-authentication`, and `configure-saml-authentication`
   can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
@@ -342,7 +342,7 @@ Was a release to make sure that `brew upgrade` works.
   be the one that takes priority,
   and will be interpolated.
 * `om configure-director` now supports custom VM types.
-  Thanks for the PR @jghiloni!
+  (PR: @jghiloni)
   Refer to the [VM Types Bosh documentation](https://bosh.io/docs/cloud-config/#vm-types) for IaaS specific use cases.
   For further info: [`configure-director` readme](https://github.com/pivotal-cf/om/tree/master/docs/configure-director#vmtypes-configuration). 
   Please note this is an advanced feature, and should be used at your own discretion.
@@ -363,7 +363,7 @@ Was a release to make sure that `brew upgrade` works.
   this command can be a gatekeeper in CI 
   before running an `apply-changes`
 * `download-product` will now include the `product-version` in `download-file.json`
-  Thanks to @vchrisb for the PR on issue [#360](https://github.com/pivotal-cf/om/issues/360)
+  (PR: @vchrisb)
 
 ### Bug Fixes
 * Extra values passed in the env file 
@@ -482,7 +482,7 @@ Was a release to make sure that `brew upgrade` works.
 
 ### Features
 * configure-director now has the option to `ignore-verifier-warnings`.
-  ([PR #338](https://github.com/pivotal-cf/om/pull/338) Thanks @Logiraptor!)
+  (PR: @Logiraptor)
   This is an _advanced_ feature
   that should only be used if the user knows how to disable verifiers in OpsManager.
   This flag will only disable verifiers for configure-director,
@@ -520,8 +520,8 @@ Was a release to make sure that `brew upgrade` works.
   number). A change was made to the info service to accept the new semver formatting as well as the old 
   versioning. 
 * upload-product (among other things) is no longer sensitive to subdirectories in tile metadata directories
-* to support 2.5, @jplebre and @edwardecook submitted a PR to support new semver versioning for 
-  OpsManager in addition to supporting the current versioning format.
+* to support 2.5, new semver versioning for OpsManager was added in addition to supporting the current versioning format.
+  (PR: @jplebre & @edwardecook)
   
 ### WARNING
 
