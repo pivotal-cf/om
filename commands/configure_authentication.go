@@ -16,10 +16,10 @@ type configureAuthenticationService interface {
 }
 
 type ConfigureAuthentication struct {
-	service configureAuthenticationService
-	logger  logger
+	service     configureAuthenticationService
+	logger      logger
 	environFunc func() []string
-	Options struct {
+	Options     struct {
 		ConfigFile             string   `long:"config"                short:"c"                    description:"path to yml file for configuration (keys must match the following command line flags)"`
 		Username               string   `long:"username"              short:"u"  env:"OM_USERNAME" description:"admin username" required:"true"`
 		Password               string   `long:"password"              short:"p"  env:"OM_PASSWORD" description:"admin password" required:"true"`
@@ -37,8 +37,8 @@ type ConfigureAuthentication struct {
 func NewConfigureAuthentication(environFunc func() []string, service configureAuthenticationService, logger logger) ConfigureAuthentication {
 	return ConfigureAuthentication{
 		environFunc: environFunc,
-		service: service,
-		logger:  logger,
+		service:     service,
+		logger:      logger,
 	}
 }
 

@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -14,182 +12,81 @@ import (
 
 var _ = Describe("staged-config command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/api/v0/staged/products/some-product-guid/max_in_flight":
-				_, err := w.Write([]byte(`{
-					"max_in_flight": {"some-guid": "20%"}
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products":
-				_, err := w.Write([]byte(`[
-					{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
-					{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0"}
-				]`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/deployed/products":
-				_, err := w.Write([]byte(`[
-					{"guid":"p-bosh-guid","type":"p-bosh"},
-					{"guid":"some-product-guid","type":"some-product"}
-				]`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/some-product-guid/syslog_configuration":
-				_, err := w.Write([]byte(`{
-  				  "syslog_configuration": {
-					"enabled": true,
-   					"address": "example.com",
-					"port": 514,
-   					"transport_protocol": "tcp",
-					"queue_size": null,
-  					"tls_enabled": true,
-  					"permitted_peer": "*.example.com",
-					"ssl_ca_certificate": "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
- 				 }}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/some-product-guid/properties":
-				_, err := w.Write([]byte(`{
-          "properties": {
-            ".properties.some-configurable-property": {
-              "type": "string",
-              "configurable": true,
-              "credential": false,
-              "value": "some-configurable-value",
-              "optional": true
-            },
-            ".properties.some-non-configurable-property": {
-              "type": "string",
-              "configurable": false,
-              "credential": false,
-              "value": "some-non-configurable-value",
-              "optional": false
-            },
-            ".properties.some-secret-property": {
-              "type": "string",
-              "configurable": true,
-              "credential": true,
-              "value": {
-                "some-secret-key": "***"
-              },
-              "optional": true
-            }
-          }
-        }`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-				_, err := w.Write([]byte(`{
-          "networks_and_azs": {
-            "singleton_availability_zone": {
-              "name": "az-one"
-            },
-            "other_availability_zones": [
-              {
-                "name": "az-two"
-              },
-              {
-                "name": "az-three"
-              }
-            ],
-            "network": {
-              "name": "network-one"
-            }
-          }
-        }`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/some-product-guid/jobs":
-				_, err := w.Write([]byte(`{
-					"jobs": [
-					  {
-							"name": "some-job",
-							"guid": "some-guid"
-						}
-					]
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config":
-				_, err := w.Write([]byte(`{
-						"instances": 1,
-						"instance_type": {
-							"id": "automatic"
-						},
-						"persistent_disk": {
-							"size_mb": "20480"
-						},
-						"internet_connected": true,
-						"elb_names": ["my-elb"]
-					}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/deployed/products/some-product-guid/credentials/.properties.some-secret-property":
-				_, err := w.Write([]byte(`{
-						"credential": {
-							"type": "some-secret-type",
-							"value": {
-								"some-secret-key": "some-secret-value"
-							}
-						}
-					}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/products/some-product-guid/errands":
-				_, err := w.Write([]byte(`{ "errands": [
-                           {
-                             "name": "errand-1",
-                             "post_deploy": false,
-                             "label": "Errand 1 Label"
-                           },
-                           {
-                             "name": "errand-2",
-                             "pre_delete": true,
-                             "label": "Errand 2 Label"
-                           }]}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/info":
-				_, err := w.Write([]byte(`{
-						"info": {
-							"version": "2.4-build.79"
-						}
-					}`))
-
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"info": {
+						"version": "2.4-build.79"
+					}
+				}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
 		server.Close()
 	})
 
-	It("outputs a configuration template based on the staged product", func() {
-		command := exec.Command(pathToMain,
-			"--target", server.URL,
-			"--username", "some-username",
-			"--password", "some-password",
-			"--skip-ssl-validation",
-			"staged-config",
-			"--product-name", "some-product",
-		)
+	When("--include-credentials is not used", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, stagedProductsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.RespondWith(http.StatusOK, stagedPropertiesJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
+					ghttp.RespondWith(http.StatusOK, stagedNetworksAndAzsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+					ghttp.RespondWith(http.StatusOK, stagedJobsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/max_in_flight"),
+					ghttp.RespondWith(http.StatusOK, `{"max_in_flight": {"some-guid": "20%"}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
+					ghttp.RespondWith(http.StatusOK, stagedSyslogConfigurationJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, stagedResourceConfigJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/errands"),
+					ghttp.RespondWith(http.StatusOK, stagedErrandsJSON),
+				),
+			)
+		})
 
-		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		It("outputs a configuration template based on the staged product", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"staged-config",
+				"--product-name", "some-product",
+			)
 
-		Eventually(session, "10s").Should(gexec.Exit(0))
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
 
-		Expect(string(session.Out.Contents())).To(MatchYAML(`---
+			Eventually(session, "10s").Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).To(MatchYAML(`---
 product-name: some-product
 product-properties:
   .properties.some-configurable-property:
@@ -225,12 +122,70 @@ syslog-properties:
   permitted_peer: "*.example.com"
   ssl_ca_certificate: "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
 `))
+		})
 	})
 
 	When("--include-credentials is used", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, `[
+						{"guid":"p-bosh-guid","type":"p-bosh"},
+						{"guid":"some-product-guid","type":"some-product"}
+					]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, stagedProductsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.RespondWith(http.StatusOK, stagedPropertiesJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/.properties.some-secret-property"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"credential": {
+							"type": "some-secret-type",
+							"value": {
+								"some-secret-key": "some-secret-value"
+							}
+						}
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
+					ghttp.RespondWith(http.StatusOK, stagedNetworksAndAzsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+					ghttp.RespondWith(http.StatusOK, stagedJobsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/max_in_flight"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"max_in_flight": {"some-guid": "20%"}
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
+					ghttp.RespondWith(http.StatusOK, stagedSyslogConfigurationJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, stagedResourceConfigJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/errands"),
+					ghttp.RespondWith(http.StatusOK, stagedErrandsJSON),
+				),
+			)
+		})
+
 		It("outputs the secret values in the template", func() {
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
@@ -286,3 +241,96 @@ syslog-properties:
 		})
 	})
 })
+
+const stagedProductsJSON = `[
+	{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
+	{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0"}
+]`
+
+const stagedPropertiesJSON = `{
+	"properties": {
+		".properties.some-configurable-property": {
+			"type": "string",
+			"configurable": true,
+			"credential": false,
+			"value": "some-configurable-value",
+			"optional": true
+		},
+		".properties.some-non-configurable-property": {
+			"type": "string",
+			"configurable": false,
+			"credential": false,
+			"value": "some-non-configurable-value",
+			"optional": false
+		},
+		".properties.some-secret-property": {
+			"type": "string",
+			"configurable": true,
+			"credential": true,
+			"value": {
+				"some-secret-key": "***"
+			},
+			"optional": true
+		}
+	}
+}`
+
+const stagedNetworksAndAzsJSON = `{
+	"networks_and_azs": {
+		"singleton_availability_zone": {
+			"name": "az-one"
+		},
+		"other_availability_zones": [{
+			"name": "az-two"
+		}, {
+			"name": "az-three"
+		}],
+		"network": {
+			"name": "network-one"
+		}
+	}
+}`
+
+const stagedSyslogConfigurationJSON = `{
+	"syslog_configuration": {
+		"enabled": true,
+		"address": "example.com",
+		"port": 514,
+		"transport_protocol": "tcp",
+		"queue_size": null,
+		"tls_enabled": true,
+		"permitted_peer": "*.example.com",
+		"ssl_ca_certificate": "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
+	}
+}`
+
+const stagedResourceConfigJSON = `{
+	"instances": 1,
+	"instance_type": {
+		"id": "automatic"
+	},
+	"persistent_disk": {
+		"size_mb": "20480"
+	},
+	"internet_connected": true,
+	"elb_names": ["my-elb"]
+}`
+
+const stagedErrandsJSON = `{
+	"errands": [{
+		"name": "errand-1",
+		"post_deploy": false,
+		"label": "Errand 1 Label"
+	}, {
+		"name": "errand-2",
+		"pre_delete": true,
+		"label": "Errand 2 Label"
+	}]
+}`
+
+const stagedJobsJSON = `{
+	"jobs": [{
+		"name": "some-job",
+		"guid": "some-guid"
+	}]
+}`

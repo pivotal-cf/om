@@ -2,7 +2,6 @@ package acceptance
 
 import (
 	"github.com/onsi/gomega/ghttp"
-	"net/http"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -36,7 +35,6 @@ var _ = Describe("create VM extension", func() {
 						]
 					}
 				}`),
-				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 		)
 

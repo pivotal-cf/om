@@ -63,7 +63,6 @@ var _ = Describe("assign-multi-stemcell command", func() {
 						}]
 					}]
 				}`),
-				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 		)
 

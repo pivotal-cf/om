@@ -41,7 +41,7 @@ func readFile(docName string) (docContents string) {
 }
 
 func getCommandNames() []string {
-	command := exec.Command(pathToMain,"--help")
+	command := exec.Command(pathToMain, "--help")
 
 	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())

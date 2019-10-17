@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -13,34 +11,26 @@ import (
 )
 
 var _ = Describe("generate certificate", func() {
-	var server *httptest.Server
-	const output = `
-{
-  "certificate": "-----BEGIN CERTIFICATE-----\nMIIDTzCCAjegAw...\n-----END CERTIFICATE-----\n",
-  "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQ...\n-----END RSA PRIVATE KEY-----\n"
-}`
+	const output = `{
+		"certificate": "-----BEGIN CERTIFICATE-----\nfake-cert\n-----END CERTIFICATE-----\n",
+		"key": "-----BEGIN RSA PRIVATE KEY-----\nfake-key\n-----END RSA PRIVATE KEY-----\n"
+	}`
+
+	var (
+		server *ghttp.Server
+	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/certificates/generate":
-				_, err := w.Write([]byte(output))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v0/certificates/generate"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"certificate": "-----BEGIN CERTIFICATE-----\nfake-cert\n-----END CERTIFICATE-----\n",
+					"key": "-----BEGIN RSA PRIVATE KEY-----\nfake-key\n-----END RSA PRIVATE KEY-----\n"
+				}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -49,7 +39,7 @@ var _ = Describe("generate certificate", func() {
 
 	It("generates a certificate authority on the OpsMan", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -61,6 +51,6 @@ var _ = Describe("generate certificate", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
-		Expect(string(session.Out.Contents())).To(ContainSubstring(output))
+		Expect(string(session.Out.Contents())).To(MatchJSON(output))
 	})
 })

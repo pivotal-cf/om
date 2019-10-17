@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -15,144 +13,46 @@ import (
 
 var _ = Describe("pre_deploy_check command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
+
+	BeforeEach(func() {
+		server = createTLSServer()
+	})
+
+	AfterEach(func() {
+		server.Close()
+	})
 
 	Describe("When there are products that are mis-configured", func() {
 		BeforeEach(func() {
-			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					_, err := w.Write([]byte(`{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/info":
-					_, err := w.Write([]byte(`{
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/info"),
+					ghttp.RespondWith(http.StatusOK, `{
 						"info": {
 							"version": "2.6.0"
 						}
-					}`))
-
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/staged/director/pre_deploy_check":
-					_, err := w.Write([]byte(`{
-				  "pre_deploy_check": {
-					"identifier": "p-bosh-guid",
-					"complete": false,
-					"network": {
-					  "assigned": true
-					},
-					"availability_zone": {
-					  "assigned": false
-					},
-					"stemcells": [
-					  {
-						"assigned": false,
-						"required_stemcell_version": "250.2",
-						"required_stemcell_os": "ubuntu-xenial"
-					  }
-					],
-					"properties": [
-						{
-							"name": ".properties.iaas_configuration.project",
-							"type": null,
-							"errors": [
-								"can't be blank"
-							]
-						}
-					],
-					"resources": {
-					  "jobs": [{
-						"identifier": "job-identifier",
-						"guid": "job-guid",
-						"error": [
-						  "Instance : Value must be a positive integer"
-						]
-					  }]
-					},
-					"verifiers": [
-					  {
-						"type": "NetworksPingableVerifier",
-						"errors": [ 
-						  "NetworksPingableVerifier error"
-						],
-						"ignorable": true
-					  }
-					]
-				  }
-				}`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/staged/products":
-					_, err := w.Write([]byte(`[{"guid":"p-guid"}]`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/staged/products/p-guid/pre_deploy_check":
-					_, err := w.Write([]byte(`{
-				  "pre_deploy_check": {
-					"identifier": "p-guid",
-					"complete": false,
-					"network": {
-					  "assigned": true
-					},
-					"availability_zone": {
-					  "assigned": false
-					},
-					"stemcells": [
-					  {
-						"assigned": false,
-						"required_stemcell_version": "250.2",
-						"required_stemcell_os": "ubuntu-xenial"
-					  }
-					],
-					"properties": [
-						{
-							"name": ".properties.iaas_configuration.project",
-							"type": null,
-							"errors": [
-								"can't be blank"
-							]
-						}
-					],
-					"resources": {
-					  "jobs": [{
-						"identifier": "job-identifier",
-						"guid": "job-guid",
-						"error": [
-						  "Instance : Value must be a positive integer"
-						]
-					  }]
-					},
-					"verifiers": [
-					  {
-						"type": "NetworksPingableVerifier",
-						"errors": [ 
-						  "NetworksPingableVerifier error"
-						],
-						"ignorable": true
-					  }
-					]
-				  }
-				}`))
-					Expect(err).ToNot(HaveOccurred())
-				default:
-					out, err := httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-					Fail(fmt.Sprintf("unexpected request: %s", out))
-				}
-			}))
-		})
-
-		AfterEach(func() {
-			server.Close()
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/director/pre_deploy_check"),
+					ghttp.RespondWith(http.StatusOK, misconfiguredDirectorJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[{"guid":"p-guid"}]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/p-guid/pre_deploy_check"),
+					ghttp.RespondWith(http.StatusOK, misconfiguredProductJSON),
+				),
+			)
 		})
 
 		It("exits with an error if director or products are not completely configured", func() {
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
@@ -205,95 +105,33 @@ var _ = Describe("pre_deploy_check command", func() {
 
 	Describe("all products are good", func() {
 		BeforeEach(func() {
-			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					_, err := w.Write([]byte(`{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/info":
-					_, err := w.Write([]byte(`{
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/info"),
+					ghttp.RespondWith(http.StatusOK, `{
 						"info": {
 							"version": "2.6.0"
 						}
-					}`))
-
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/staged/director/pre_deploy_check":
-					_, err := w.Write([]byte(`{
-				  "pre_deploy_check": {
-					"identifier": "p-bosh-guid",
-					"complete": true,
-					"network": {
-					  "assigned": true
-					},
-					"availability_zone": {
-					  "assigned": true
-					},
-					"stemcells": [
-					  {
-						"assigned": true,
-						"required_stemcell_version": "250.2",
-						"required_stemcell_os": "ubuntu-xenial"
-					  }
-					],
-					"properties": [],
-					"resources": {
-					  "jobs": []
-					},
-					"verifiers": []
-				  }
-				}`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/staged/products":
-					_, err := w.Write([]byte(`[{"guid":"p-guid"}]`))
-					Expect(err).ToNot(HaveOccurred())
-				case "/api/v0/staged/products/p-guid/pre_deploy_check":
-					_, err := w.Write([]byte(`{
-				  "pre_deploy_check": {
-					"identifier": "p-guid",
-					"complete": true,
-					"network": {
-					  "assigned": true
-					},
-					"availability_zone": {
-					  "assigned": true
-					},
-					"stemcells": [
-					  {
-						"assigned": true,
-						"required_stemcell_version": "250.2",
-						"required_stemcell_os": "ubuntu-xenial"
-					  }
-					],
-					"properties": [],
-					"resources": {
-					  "jobs": []
-					},
-					"verifiers": []
-				  }
-				}`))
-					Expect(err).ToNot(HaveOccurred())
-				default:
-					out, err := httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-					Fail(fmt.Sprintf("unexpected request: %s", out))
-				}
-			}))
-		})
-
-		AfterEach(func() {
-			server.Close()
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/director/pre_deploy_check"),
+					ghttp.RespondWith(http.StatusOK, correctlyConfiguredDirectorJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[{"guid":"p-guid"}]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/p-guid/pre_deploy_check"),
+					ghttp.RespondWith(http.StatusOK, correctlyConfiguredProductJSON),
+				),
+			)
 		})
 
 		It("exits with an error if director or products are not completely configured", func() {
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
@@ -314,3 +152,131 @@ The director and products are configured correctly.
 		})
 	})
 })
+
+const misconfiguredDirectorJSON = `{
+	"pre_deploy_check": {
+		"identifier": "p-bosh-guid",
+		"complete": false,
+		"network": {
+			"assigned": true
+		},
+		"availability_zone": {
+			"assigned": false
+		},
+		"stemcells": [{
+			"assigned": false,
+			"required_stemcell_version": "250.2",
+			"required_stemcell_os": "ubuntu-xenial"
+		}],
+		"properties": [{
+			"name": ".properties.iaas_configuration.project",
+			"type": null,
+			"errors": [
+				"can't be blank"
+			]
+		}],
+		"resources": {
+			"jobs": [{
+				"identifier": "job-identifier",
+				"guid": "job-guid",
+				"error": [
+					"Instance : Value must be a positive integer"
+				]
+			}]
+		},
+		"verifiers": [{
+			"type": "NetworksPingableVerifier",
+			"errors": [
+				"NetworksPingableVerifier error"
+			],
+			"ignorable": true
+		}]
+	}
+}`
+
+const misconfiguredProductJSON = `{
+	"pre_deploy_check": {
+		"identifier": "p-guid",
+		"complete": false,
+		"network": {
+			"assigned": true
+		},
+		"availability_zone": {
+			"assigned": false
+		},
+		"stemcells": [{
+			"assigned": false,
+			"required_stemcell_version": "250.2",
+			"required_stemcell_os": "ubuntu-xenial"
+		}],
+		"properties": [{
+			"name": ".properties.iaas_configuration.project",
+			"type": null,
+			"errors": [
+				"can't be blank"
+			]
+		}],
+		"resources": {
+			"jobs": [{
+				"identifier": "job-identifier",
+				"guid": "job-guid",
+				"error": [
+					"Instance : Value must be a positive integer"
+				]
+			}]
+		},
+		"verifiers": [{
+			"type": "NetworksPingableVerifier",
+			"errors": [
+				"NetworksPingableVerifier error"
+			],
+			"ignorable": true
+		}]
+	}
+}`
+
+const correctlyConfiguredDirectorJSON = `{
+	"pre_deploy_check": {
+		"identifier": "p-bosh-guid",
+		"complete": true,
+		"network": {
+			"assigned": true
+		},
+		"availability_zone": {
+			"assigned": true
+		},
+		"stemcells": [{
+			"assigned": true,
+			"required_stemcell_version": "250.2",
+			"required_stemcell_os": "ubuntu-xenial"
+		}],
+		"properties": [],
+		"resources": {
+			"jobs": []
+		},
+		"verifiers": []
+	}
+}`
+
+const correctlyConfiguredProductJSON = `{
+	"pre_deploy_check": {
+		"identifier": "p-guid",
+		"complete": true,
+		"network": {
+			"assigned": true
+		},
+		"availability_zone": {
+			"assigned": true
+		},
+		"stemcells": [{
+			"assigned": true,
+			"required_stemcell_version": "250.2",
+			"required_stemcell_os": "ubuntu-xenial"
+		}],
+		"properties": [],
+		"resources": {
+			"jobs": []
+		},
+		"verifiers": []
+	}
+}`

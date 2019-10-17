@@ -43,7 +43,7 @@ var _ = Describe("Pivnet Client", func() {
 				),
 			)
 
-			provider := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false, )
+			provider := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
 			_, err := provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("the glob '*.pivotal' matches multiple files. Write your glob to match exactly one of the following:\n  something.pivotal\n  something-else.pivotal"))
@@ -86,7 +86,7 @@ var _ = Describe("Pivnet Client", func() {
 				),
 			)
 
-			provider := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false, )
+			provider := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
 
 			_, err := provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())

@@ -2,12 +2,10 @@ package acceptance
 
 import (
 	"archive/zip"
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os"
 	"os/exec"
 
@@ -18,11 +16,6 @@ import (
 )
 
 var _ = Describe("global trace flag", func() {
-	var (
-		productFile *os.File
-		server      *httptest.Server
-	)
-
 	const tableOutput = `+--------------+---------+
 |     NAME     | VERSION |
 +--------------+---------+
@@ -30,6 +23,11 @@ var _ = Describe("global trace flag", func() {
 | p-redis      | 1.7.2   |
 +--------------+---------+
 `
+
+	var (
+		productFile *os.File
+		server      *ghttp.Server
+	)
 
 	BeforeEach(func() {
 		var err error
@@ -56,39 +54,24 @@ name: some-product`)
 
 		err = zipper.Close()
 		Expect(err).NotTo(HaveOccurred())
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
 
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/available_products":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				switch req.Method {
-				case "GET":
-					_, err := w.Write([]byte(`[{"name": "some-product", "product_version": "1.2.3"},{"name":"p-redis","product_version":"1.7.2"}]`))
-					Expect(err).ToNot(HaveOccurred())
-				case "POST":
-					w.WriteHeader(http.StatusOK)
-				default:
-					Fail(fmt.Sprintf("unexpected method: %s", req.Method))
-				}
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+				ghttp.RespondWith(http.StatusOK, `[{
+					"name": "some-product",
+					"product_version": "1.2.3"
+				}, {
+					"name": "p-redis",
+					"product_version": "1.7.2"
+				}]`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v0/available_products"),
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -98,7 +81,7 @@ name: some-product`)
 
 	It("prints helpful debug output for http request", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -117,7 +100,7 @@ name: some-product`)
 
 	It("prints helpful debug output for upload requests", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",

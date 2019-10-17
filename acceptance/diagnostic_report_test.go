@@ -1,64 +1,39 @@
 package acceptance
 
 import (
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 	"time"
 )
 
 var _ = Describe("diagnostic-report command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
+	BeforeEach(func() {
+		server = createTLSServer()
+	})
+
+	AfterEach(func() {
+		server.Close()
+	})
+
 	When("The Operations Manager is version 2.5-", func() {
-		BeforeEach(func() {
-			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				var responseString string
-				w.Header().Set("Content-Type", "application/json")
-
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					_ = req.ParseForm()
-
-					if req.PostForm.Get("password") == "" {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					responseString = `{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`
-
-				case "/api/v0/diagnostic_report":
-					responseString = fakeReport25
-
-				default:
-					out, err := httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-					Fail(fmt.Sprintf("unexpected request: %s", out))
-				}
-
-				_, err := w.Write([]byte(responseString))
-				Expect(err).ToNot(HaveOccurred())
-			}))
-		})
-
-		AfterEach(func() {
-			server.Close()
-		})
-
 		It("successfully returns the entire diagnostic report json", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+					ghttp.RespondWith(http.StatusOK, fakeReport25),
+				),
+			)
+
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "pass",
 				"--skip-ssl-validation",
@@ -74,47 +49,16 @@ var _ = Describe("diagnostic-report command", func() {
 	})
 
 	When("The Operations Manager is version 2.6+", func() {
-		BeforeEach(func() {
-			server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				var responseString string
-				w.Header().Set("Content-Type", "application/json")
-
-				switch req.URL.Path {
-				case "/uaa/oauth/token":
-					_ = req.ParseForm()
-
-					if req.PostForm.Get("password") == "" {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					responseString = `{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`
-
-				case "/api/v0/diagnostic_report":
-					responseString = fakeReport26
-
-				default:
-					out, err := httputil.DumpRequest(req, true)
-					Expect(err).NotTo(HaveOccurred())
-					Fail(fmt.Sprintf("unexpected request: %s", out))
-				}
-
-				_, err := w.Write([]byte(responseString))
-				Expect(err).ToNot(HaveOccurred())
-			}))
-		})
-
-		AfterEach(func() {
-			server.Close()
-		})
-
 		It("successfully returns the entire diagnostic report json", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+					ghttp.RespondWith(http.StatusOK, fakeReport26),
+				),
+			)
+
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "pass",
 				"--skip-ssl-validation",

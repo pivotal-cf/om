@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -14,8 +12,6 @@ import (
 )
 
 var _ = Describe("staged-products command", func() {
-	var server *httptest.Server
-
 	const tableOutput = `+----------------+------------------+
 |      NAME      |     VERSION      |
 +----------------+------------------+
@@ -29,42 +25,27 @@ var _ = Describe("staged-products command", func() {
 		{"name":"acme-product-2","version":"1.8.9-build.1"}
 	]`
 
+	const diagnosticReport = `{
+		"added_products": {
+			"staged": [
+				{"name":"acme-product-1","version":"1.13.0-build.100"},
+				{"name":"acme-product-2","version":"1.8.9-build.1"}
+			]
+		}
+	}`
+
+	var (
+		server *ghttp.Server
+	)
+
 	BeforeEach(func() {
-		diagnosticReport := []byte(`{
-			"added_products": {
-				"staged": [
-					{"name":"acme-product-1","version":"1.13.0-build.100"},
-					{"name":"acme-product-2","version":"1.8.9-build.1"}
-				]
-			}
-		}`)
-
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/diagnostic_report":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				_, err := w.Write(diagnosticReport)
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+				ghttp.RespondWith(http.StatusOK, diagnosticReport),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -73,7 +54,7 @@ var _ = Describe("staged-products command", func() {
 
 	It("lists the staged products on Ops Manager", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -90,7 +71,7 @@ var _ = Describe("staged-products command", func() {
 	When("json format is requested", func() {
 		It("lists the staged products on Ops Manager", func() {
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",

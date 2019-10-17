@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -13,37 +11,12 @@ import (
 )
 
 var _ = Describe("delete certificate authority", func() {
-	var server *httptest.Server
+	var (
+		server *ghttp.Server
+	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/certificate_authorities/some-id":
-				_, err := w.Write([]byte(`{}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/certificate_authorities/missing-id":
-				w.WriteHeader(http.StatusNotFound)
-				_, err := w.Write([]byte(`{"errors":["Certificate with specified guid not found"]}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/certificate_authorities/active-id":
-				w.WriteHeader(http.StatusUnprocessableEntity)
-				_, err := w.Write([]byte(`{"errors":["Active certificates cannot be deleted"]}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
 	})
 
 	AfterEach(func() {
@@ -51,8 +24,12 @@ var _ = Describe("delete certificate authority", func() {
 	})
 
 	It("deletes a certificate authority", func() {
+		server.AppendHandlers(
+			ghttp.VerifyRequest("DELETE", "/api/v0/certificate_authorities/some-id"),
+		)
+
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -69,8 +46,19 @@ var _ = Describe("delete certificate authority", func() {
 
 	When("the certificate authority does not exist", func() {
 		It("errors", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/certificate_authorities/missing-id"),
+					ghttp.RespondWith(http.StatusNotFound, `{
+						"errors": [
+							"Certificate with specified guid not found"
+						]
+					}`),
+				),
+			)
+
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
@@ -88,8 +76,19 @@ var _ = Describe("delete certificate authority", func() {
 
 	When("the certificate authority is still active", func() {
 		It("errors", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/certificate_authorities/active-id"),
+					ghttp.RespondWith(http.StatusUnprocessableEntity, `{
+						"errors": [
+							"Active certificates cannot be deleted"
+						]
+					}`),
+				),
+			)
+
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
