@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -13,38 +11,18 @@ import (
 )
 
 var _ = Describe("curl command", func() {
-	var server *httptest.Server
+	var (
+		server *ghttp.Server
+	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				responseString = `{
-					"access_token": "some-opsman-token",
-					"token_type": "bearer",
-					"expires_in": 3600
-				}`
-			case "/api/v0/some-api-endpoint":
-				auth := req.Header.Get("Authorization")
-
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				responseString = `{"some-key": "some-value"}`
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-
-			_, err := w.Write([]byte(responseString))
-			Expect(err).ToNot(HaveOccurred())
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v0/some-api-endpoint"),
+				ghttp.RespondWith(http.StatusOK, `{"some-key": "some-value"}`, map[string][]string{"Content-Type": {"application/json"}}),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -53,7 +31,7 @@ var _ = Describe("curl command", func() {
 
 	It("issues an API with credentials", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",

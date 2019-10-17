@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -13,8 +11,6 @@ import (
 )
 
 var _ = Describe("installations command", func() {
-	var server *httptest.Server
-
 	const tableOutput = `+----+-------------+-----------+--------------------------+--------------------------+
 | ID |    USER     |  STATUS   |        STARTED AT        |       FINISHED AT        |
 +----+-------------+-----------+--------------------------+--------------------------+
@@ -47,51 +43,38 @@ var _ = Describe("installations command", func() {
 		}
 	]`
 
-	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
+	var (
+		server *ghttp.Server
+	)
 
-			switch req.URL.Path {
-			case "/api/v0/installations":
-				_, err := w.Write([]byte(`{
-				  "installations": [
-				    {
-				      "user_name": "some-user",
-				      "finished_at": "2017-05-24T23:55:56.106Z",
-				      "started_at": "2017-05-24T23:38:37.316Z",
-				      "status": "succeeded",
-				      "id": 1
-				    },
-				    {
-				      "user_name": "some-user-2",
-				      "finished_at": "2017-05-24T23:55:56.106Z",
-				      "started_at": "2017-05-24T23:38:37.316Z",
-				      "status": "failed",
-				      "id": 2
-				    },
-				    {
-				      "user_name": "some-user-3",
-				      "finished_at": null,
-				      "started_at": "2017-05-24T23:38:37.316Z",
-				      "status": "running",
-				      "id": 3
-				    }
-				  ]
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+	BeforeEach(func() {
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations"),
+				ghttp.RespondWith(http.StatusOK, `{
+					"installations": [{
+						"user_name": "some-user",
+						"finished_at": "2017-05-24T23:55:56.106Z",
+						"started_at": "2017-05-24T23:38:37.316Z",
+						"status": "succeeded",
+						"id": 1
+					}, {
+						"user_name": "some-user-2",
+						"finished_at": "2017-05-24T23:55:56.106Z",
+						"started_at": "2017-05-24T23:38:37.316Z",
+						"status": "failed",
+						"id": 2
+					}, {
+						"user_name": "some-user-3",
+						"finished_at": null,
+						"started_at": "2017-05-24T23:38:37.316Z",
+						"status": "running",
+						"id": 3
+					}]
+				}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -100,7 +83,7 @@ var _ = Describe("installations command", func() {
 
 	It("displays a list of recent installation events", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -117,7 +100,7 @@ var _ = Describe("installations command", func() {
 	When("the --format flag is provided with json", func() {
 		It("displays a list of recent installation events in json", func() {
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",

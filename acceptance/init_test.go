@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
+	"net/http"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -64,4 +66,21 @@ func runCommand(args ...string) {
 	configure, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
 	Eventually(configure, "10s").Should(gexec.Exit(0))
+}
+
+func createTLSServer() *ghttp.Server {
+	server := ghttp.NewTLSServer()
+	server.RouteToHandler("POST", "/uaa/oauth/token",
+		ghttp.CombineHandlers(
+			ghttp.RespondWith(http.StatusOK, `{
+				"access_token": "some-opsman-token",
+				"token_type": "bearer",
+				"expires_in": 3600
+			}`, map[string][]string{
+				"Content-Type": {"application/json"},
+			}),
+		),
+	)
+
+	return server
 }

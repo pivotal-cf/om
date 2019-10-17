@@ -47,7 +47,7 @@ func NewOAuthClient(
 		ClientSecret: clientSecret,
 	}
 
-	httpclient, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout, )
+	httpclient, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout)
 	if err != nil {
 		return OAuthClient{}, err
 	}

@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gbytes"
@@ -16,60 +14,34 @@ import (
 
 var _ = Describe("delete-installation command", func() {
 	var (
-		server                       *httptest.Server
-		installationsStatusCallCount int
-		installationsLogsCallCount   int
-		logLines                     string
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/installations":
-				_, err := w.Write([]byte(`{}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/installation_asset_collection":
-				auth := req.Header.Get("Authorization")
-				if auth != "Bearer some-opsman-token" {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				_, err := w.Write([]byte(`{ "install": { "id": 42 } }`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/installations/42":
-				if installationsStatusCallCount == 3 {
-					_, err := w.Write([]byte(`{ "status": "succeeded" }`))
-					Expect(err).ToNot(HaveOccurred())
-					return
-				}
-
-				installationsStatusCallCount++
-				_, err := w.Write([]byte(`{ "status": "running" }`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/installations/42/logs":
-				if installationsLogsCallCount != 3 {
-					logLines += fmt.Sprintf("something logged for call #%d\n", installationsLogsCallCount)
-				}
-
-				_, err := w.Write([]byte(fmt.Sprintf(`{ "logs": %q }`, logLines)))
-				Expect(err).ToNot(HaveOccurred())
-				installationsLogsCallCount++
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.VerifyRequest("GET", "/api/v0/installations"),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("DELETE", "/api/v0/installation_asset_collection"),
+				ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations/42"),
+				ghttp.RespondWith(http.StatusOK, `{ "status": "running" }`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations/42/logs"),
+				ghttp.RespondWith(http.StatusOK, `{ "logs": "call #0\n"}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations/42"),
+				ghttp.RespondWith(http.StatusOK, `{ "status": "succeeded" }`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations/42/logs"),
+				ghttp.RespondWith(http.StatusOK, `{ "logs": "call #0\ncall #1"}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -78,7 +50,7 @@ var _ = Describe("delete-installation command", func() {
 
 	It("successfully deletes the installation on the Ops Manager", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -90,11 +62,8 @@ var _ = Describe("delete-installation command", func() {
 
 		Eventually(session, "5s").Should(gexec.Exit(0))
 
-		Expect(installationsStatusCallCount).To(Equal(3))
-
 		Expect(session.Out).To(gbytes.Say("attempting to delete the installation on the targeted Ops Manager"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #0"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #1"))
-		Expect(session.Out).To(gbytes.Say("something logged for call #2"))
+		Expect(session.Out).To(gbytes.Say("call #0"))
+		Expect(session.Out).To(gbytes.Say("call #1"))
 	})
 })

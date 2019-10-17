@@ -261,7 +261,9 @@ vars-passphrase: a-vars-file-passphrase
 		Context("passed as environment variables (--vars-env)", func() {
 			It("interpolates variables into the configuration", func() {
 				command := commands.NewConfigureAuthentication(
-					func() []string { return []string{"OM_VAR_vars-password=an-env-var-password", "OM_VAR_vars-passphrase=an-env-var-passphrase"} },
+					func() []string {
+						return []string{"OM_VAR_vars-password=an-env-var-password", "OM_VAR_vars-passphrase=an-env-var-passphrase"}
+					},
 					service,
 					logger,
 				)
@@ -289,7 +291,9 @@ vars-passphrase: a-vars-file-passphrase
 				defer os.Unsetenv("OM_VARS_ENV")
 
 				command := commands.NewConfigureAuthentication(
-					func() []string { return []string{"OM_VAR_vars-password=an-env-var-password", "OM_VAR_vars-passphrase=an-env-var-passphrase"} },
+					func() []string {
+						return []string{"OM_VAR_vars-password=an-env-var-password", "OM_VAR_vars-passphrase=an-env-var-passphrase"}
+					},
 					service,
 					logger,
 				)

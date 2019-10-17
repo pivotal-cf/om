@@ -24,8 +24,8 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 	logWriter := os.Stderr
 	logger := log.New(logWriter, "", log.LstdFlags)
 	config := pivnetapi.ClientConfig{
-		Host:      host,
-		UserAgent: "tile-config-generator",
+		Host:              host,
+		UserAgent:         "tile-config-generator",
 		SkipSSLValidation: skipSSL,
 	}
 	ts := pivnetapi.NewAccessTokenOrLegacyToken(token, config.Host, skipSSL, config.UserAgent)

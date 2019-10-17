@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -13,29 +11,18 @@ import (
 )
 
 var _ = Describe("installation-log command", func() {
-	var server *httptest.Server
+	var (
+		server *ghttp.Server
+	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/api/v0/installations/999/logs":
-				_, err := w.Write([]byte(`{"logs": "log output"}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations/999/logs"),
+				ghttp.RespondWith(http.StatusOK, `{"logs": "log output"}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -44,7 +31,7 @@ var _ = Describe("installation-log command", func() {
 
 	It("displays the log output for the specified installation", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",

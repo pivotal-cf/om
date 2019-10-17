@@ -93,18 +93,3 @@ No changes were made.
 `))
 	})
 })
-
-func createTLSServer() *ghttp.Server {
-	server := ghttp.NewTLSServer()
-	server.RouteToHandler("POST", "/uaa/oauth/token",
-		ghttp.CombineHandlers(
-			ghttp.RespondWith(http.StatusOK, `{
-							"access_token": "some-opsman-token",
-							"token_type": "bearer",
-							"expires_in": 3600
-						}`, map[string][]string{
-				"Content-Type": []string{"application/json"},
-			}),
-		))
-	return server
-}

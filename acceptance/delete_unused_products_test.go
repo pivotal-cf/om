@@ -1,10 +1,7 @@
 package acceptance
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
+	"github.com/onsi/gomega/ghttp"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -15,34 +12,14 @@ import (
 
 var _ = Describe("delete-unused-products command", func() {
 	var (
-		server *httptest.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var responseString string
-			w.Header().Set("Content-Type", "application/json")
-
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				responseString = `{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`
-			case "/api/v0/available_products":
-				if req.Method == "DELETE" {
-					responseString = `{}`
-				}
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-
-			_, err := w.Write([]byte(responseString))
-			Expect(err).ToNot(HaveOccurred())
-		}))
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.VerifyRequest("DELETE", "/api/v0/available_products"),
+		)
 	})
 
 	AfterEach(func() {
@@ -51,7 +28,7 @@ var _ = Describe("delete-unused-products command", func() {
 
 	It("successfully deletes unused products in Ops Manager", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",

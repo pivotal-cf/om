@@ -48,7 +48,6 @@ var _ = Describe("assign-stemcell command", func() {
 						"staged_stemcell_version": "1234.5, 1234.9"
 					}]
 				}`),
-				ghttp.RespondWith(http.StatusOK, `{}`),
 			),
 		)
 

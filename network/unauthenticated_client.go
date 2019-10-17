@@ -13,7 +13,7 @@ type UnauthenticatedClient struct {
 	client *http.Client
 }
 
-func NewUnauthenticatedClient(target string, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration, ) (UnauthenticatedClient, error) {
+func NewUnauthenticatedClient(target string, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration) (UnauthenticatedClient, error) {
 	client, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout)
 	if err != nil {
 		return UnauthenticatedClient{}, nil

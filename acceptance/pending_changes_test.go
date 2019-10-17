@@ -1,10 +1,8 @@
 package acceptance
 
 import (
-	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"net/http/httptest"
-	"net/http/httputil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -14,10 +12,6 @@ import (
 )
 
 var _ = Describe("pending_changes command", func() {
-	var (
-		server *httptest.Server
-	)
-
 	const tableOutput = `+----------------+---------+--------------------+
 |    PRODUCT     | ACTION  |      ERRANDS       |
 +----------------+---------+--------------------+
@@ -54,20 +48,16 @@ var _ = Describe("pending_changes command", func() {
 		}
 	]`
 
-	BeforeEach(func() {
-		server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
+	var (
+		server *ghttp.Server
+	)
 
-			switch req.URL.Path {
-			case "/uaa/oauth/token":
-				_, err := w.Write([]byte(`{
-				"access_token": "some-opsman-token",
-				"token_type": "bearer",
-				"expires_in": 3600
-			}`))
-				Expect(err).ToNot(HaveOccurred())
-			case "/api/v0/staged/pending_changes":
-				_, err := w.Write([]byte(`{
+	BeforeEach(func() {
+		server = createTLSServer()
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/pending_changes"),
+				ghttp.RespondWith(http.StatusOK, `{
 					"product_changes": [{
 						"guid": "some-product-1",
 						"errands": [
@@ -91,14 +81,9 @@ var _ = Describe("pending_changes command", func() {
 						],
 						"action": "delete"
 					}]
-				}`))
-				Expect(err).ToNot(HaveOccurred())
-			default:
-				out, err := httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
-				Fail(fmt.Sprintf("unexpected request: %s", out))
-			}
-		}))
+				}`),
+			),
+		)
 	})
 
 	AfterEach(func() {
@@ -107,7 +92,7 @@ var _ = Describe("pending_changes command", func() {
 
 	It("lists the pending changes belonging to the product", func() {
 		command := exec.Command(pathToMain,
-			"--target", server.URL,
+			"--target", server.URL(),
 			"--username", "some-username",
 			"--password", "some-password",
 			"--skip-ssl-validation",
@@ -124,7 +109,7 @@ var _ = Describe("pending_changes command", func() {
 	When("JSON format is requested", func() {
 		It("lists the pending changes in JSON format", func() {
 			command := exec.Command(pathToMain,
-				"--target", server.URL,
+				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",

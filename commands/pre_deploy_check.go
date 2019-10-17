@@ -189,7 +189,7 @@ func (pc PreDeployCheck) determineProductErrors(productOutput api.PendingProduct
 
 func (pc PreDeployCheck) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "**EXPERIMENTAL** This authenticated checks completeness and validity of product configuration." +
+		Description: "**EXPERIMENTAL** This authenticated checks completeness and validity of product configuration." +
 			" This includes whether stemcells are assigned, missing configuration, and failed validators for a product.",
 		ShortDescription: "**EXPERIMENTAL** checks completeness and validity of product configuration",
 		Flags:            pc.Options,

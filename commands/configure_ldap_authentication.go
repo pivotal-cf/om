@@ -11,7 +11,7 @@ type ConfigureLDAPAuthentication struct {
 	service     configureAuthenticationService
 	logger      logger
 	environFunc func() []string
-	Options struct {
+	Options     struct {
 		ConfigFile                string   `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
 		DecryptionPassphrase      string   `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
 		HTTPProxyURL              string   `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
