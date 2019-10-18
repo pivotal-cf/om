@@ -1,51 +1,47 @@
 package api_test
 
 import (
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/api"
+	"net/http"
 )
 
 var _ = Describe("Credentials", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
-
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
 	})
 
+	AfterEach(func() {
+		client.Close()
+	})
+
 	Describe("ListDeployedProductCredentials", func() {
-
 		It("lists credential references", func() {
-			var path string
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"credentials": [
+							".properties.some-credentials", 
+							".my-job.some-credentials"
+						]
+					}`),
+				),
+			)
 
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				path = req.URL.Path
-
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(
-						strings.NewReader(`{"credentials":[".properties.some-credentials",".my-job.some-credentials"]}`),
-					),
-				}, nil
-			}
 			output, err := service.ListDeployedProductCredentials("some-deployed-product-guid")
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(path).To(Equal("/api/v0/deployed/products/some-deployed-product-guid/credentials"))
 			Expect(output.Credentials).To(ConsistOf(
 				[]string{
 					".properties.some-credentials",
@@ -54,71 +50,76 @@ var _ = Describe("Credentials", func() {
 			))
 		})
 
-		Describe("errors", func() {
-			Context("the client can't connect to the server", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some error"))
-					_, err := service.ListDeployedProductCredentials("invalid-product")
-					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
-				})
+		Context("the client can't connect to the server", func() {
+			It("returns an error", func() {
+				client.Close()
+
+				_, err := service.ListDeployedProductCredentials("invalid-product")
+				Expect(err).To(MatchError(ContainSubstring("could not make api request")))
 			})
+		})
 
-			When("the server won't fetch credential references", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+		When("the server won't fetch credential references", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials"),
+						ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+					),
+				)
 
-					_, err := service.ListDeployedProductCredentials("")
-					Expect(err).To(MatchError(ContainSubstring("request failed")))
-				})
+				_, err := service.ListDeployedProductCredentials("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("request failed")))
 			})
+		})
 
-			When("the response is not JSON", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
-					}, nil)
+		When("the response is not JSON", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					_, err := service.ListDeployedProductCredentials("some-deployed-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
-				})
+				_, err := service.ListDeployedProductCredentials("some-deployed-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 			})
 		})
 	})
 
 	Describe("GetDeployedProductCredential", func() {
-
 		It("fetch a credential reference", func() {
-			var path string
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/.properties.some-credentials"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"credential":{
+							"type": "rsa_cert_credentials",
+							"credential": true,
+							"value":{
+								"private_key_pem": "some-private-key",
+								"cert_pem": "some-cert-pem"
+							}
+						}
+					}`),
+				),
+			)
 
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				path = req.URL.Path
-
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(
-						strings.NewReader(`{"credential":{"type":"rsa_cert_credentials", "credential": true, "value":{"private_key_pem":"some-private-key", "cert_pem":"some-cert-pem"}}}`),
-					),
-				}, nil
-			}
 			output, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 				DeployedGUID:        "some-deployed-product-guid",
 				CredentialReference: ".properties.some-credentials",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(path).To(Equal("/api/v0/deployed/products/some-deployed-product-guid/credentials/.properties.some-credentials"))
 			Expect(output.Credential.Value["private_key_pem"]).To(Equal("some-private-key"))
 			Expect(output.Credential.Value["cert_pem"]).To(Equal("some-cert-pem"))
 		})
 
-		Describe("errors", func() {
-			Context("the client can't connect to the server", func() {
+			When("the client can't connect to the server", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some error"))
+					client.Close()
+
 					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 						DeployedGUID: "invalid-product-guid",
 					})
@@ -128,10 +129,12 @@ var _ = Describe("Credentials", func() {
 
 			When("the server won't fetch credential references", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products/invalid-product-guid/credentials/"),
+							ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+						),
+					)
 
 					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 						DeployedGUID: "invalid-product-guid",
@@ -142,17 +145,18 @@ var _ = Describe("Credentials", func() {
 
 			When("the response is not JSON", func() {
 				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`asdf`)),
-					}, nil)
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/"),
+							ghttp.RespondWith(http.StatusOK, `invalid-json`),
+						),
+					)
 
 					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 						DeployedGUID: "some-deployed-product-guid",
 					})
 					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
 				})
-			})
 		})
 	})
 })
