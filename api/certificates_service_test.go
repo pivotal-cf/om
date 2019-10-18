@@ -1,106 +1,81 @@
 package api_test
 
 import (
-	"bytes"
-	"errors"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
+	"net/http"
 )
 
 var _ = Describe("Certificates", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		client.Close()
 	})
 
 	Describe("GenerateCertificate", func() {
 		It("returns a cert and key", func() {
-			var path string
-			var header http.Header
-			var body io.Reader
-
-			requestBody := `{
-"certificate": "some-certificate",
-"key": "some-key"
-}`
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				path = req.URL.Path
-				body = req.Body
-				header = req.Header
-
-				var resp *http.Response
-				if path == "/api/v0/certificates/generate" && req.Method == "POST" {
-					return &http.Response{StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(strings.NewReader(requestBody)),
-					}, nil
-				}
-				return resp, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v0/certificates/generate"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"domains": [
+							"*.example.com",
+							"*.example.org"
+						]
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{
+						"certificate": "some-certificate",
+						"key": "some-key"
+					}`),
+				),
+			)
 
 			output, err := service.GenerateCertificate(api.DomainsInput{
 				Domains: []string{"*.example.com", "*.example.org"},
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(header.Get("Content-Type")).To(Equal("application/json"))
-
-			bodyBytes, err := ioutil.ReadAll(body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(bodyBytes)).To(MatchJSON(`{
-				"domains": [
-				"*.example.com",
-				"*.example.org"
-				]
+			Expect(output).To(MatchJSON(`{
+				"certificate": "some-certificate",
+				"key": "some-key"
 			}`))
-
-			Expect(output).To(Equal(requestBody))
-
-			Expect(path).To(Equal("/api/v0/certificates/generate"))
 		})
 
-		Context("failure cases", func() {
-			When("the client cannot make the request", func() {
-				It("returns an error", func() {
-					client.DoReturns(nil, errors.New("client do errored"))
+		When("the client cannot make the request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
-					Expect(err).To(MatchError("could not send api request to POST /api/v0/certificates/generate: client do errored"))
-				})
+				_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/certificates/generate"))
 			})
+		})
 
-			When("Ops Manager returns a non-200 status code", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						if req.URL.Path == "/api/v0/certificates/generate" &&
-							req.Method == "POST" {
-							return &http.Response{
-								StatusCode: http.StatusInternalServerError,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
-							}, nil
-						}
-						return resp, nil
-					}
-				})
+		When("Ops Manager returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/certificates/generate"),
+						ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+					),
+				)
 
-				It("returns an error", func() {
-					_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})
