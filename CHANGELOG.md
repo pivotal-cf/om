@@ -47,7 +47,17 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+<<<<<<< Updated upstream
 ## 4.3.0 (Unreleased)
+=======
+## 4.2.1
+
+### Bug fixes
+* `interpolate` command now has order precedence when a file or stdin is provided.
+  - `--config` with a file always takes precedence
+  - `--config -` will read directly from STDIN
+  - STDIN provided with no `--config` will use STDIN
+>>>>>>> Stashed changes
 
 ## 4.2.0
 
