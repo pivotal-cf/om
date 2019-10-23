@@ -53,8 +53,8 @@ type DownloadProductOptions struct {
 	ProductVersionRegex string `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
 	Bucket       string `long:"blobstore-bucket" alias:"s3-bucket,gcs-bucket,azure-container" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path,azure-product-path" description:"specify the lookup path where the s3|gcs product artifacts are stored"`
-	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs stemcell artifacts are stored"`
+	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path,azure-product-path" description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
+	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
 
 	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json" description:"the service account key JSON"`
 	GCSProjectID          string `long:"gcs-project-id" alias:"gcp-project-id" description:"the project id for the bucket's gcp account"`
