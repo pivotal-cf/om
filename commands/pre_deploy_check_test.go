@@ -158,7 +158,8 @@ Expect(err).To(MatchError(ContainSubstring("something bad happened with the prod
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
+			err := command.Execute([]string{})
+			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: another-p-guid"))
@@ -268,7 +269,8 @@ Expect(err).To(MatchError(ContainSubstring("something bad happened with the prod
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
+			err := command.Execute([]string{})
+			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: another-p-guid"))
@@ -292,7 +294,8 @@ Expect(err).To(MatchError(ContainSubstring("something bad happened with the prod
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
+			err := command.Execute([]string{})
+			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: p-guid"))

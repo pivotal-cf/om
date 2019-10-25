@@ -133,6 +133,7 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fileArtifact.Name()).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
@@ -146,6 +147,7 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "pcf-vsphere*ova")
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fileArtifact.Name()).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
