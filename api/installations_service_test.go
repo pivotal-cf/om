@@ -289,8 +289,7 @@ var _ = Describe("InstallationsService", func() {
 					}, errors.New("some error"))
 
 					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations")))
 				})
 			})
 

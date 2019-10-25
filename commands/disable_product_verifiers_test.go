@@ -92,8 +92,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 			}}, "cf-guid", nil)
 
 			err := command.Execute([]string{"--product-name", "cf", "--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("verifier does not exist for product"))
+			Expect(err).To(MatchError(ContainSubstring("verifier does not exist for product")))
 
 			Expect(service.DisableProductVerifiersCallCount()).To(Equal(0))
 
@@ -112,12 +111,12 @@ var _ = Describe("DisableProductVerifiers", func() {
 
 		It("returns an error if there is no --type provided", func() {
 			err := command.Execute([]string{"--product-name", "cf"})
-			Expect(err.Error()).To(ContainSubstring(`missing required flag "--type"`))
+			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
 		})
 
 		It("returns an error if there is no --product-name provided", func() {
 			err := command.Execute([]string{})
-			Expect(err.Error()).To(ContainSubstring(`missing required flag "--product-name"`))
+			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--product-name"`)))
 		})
 	})
 })

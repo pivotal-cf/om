@@ -72,8 +72,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 				}
 
 				_, err := service.ListDirectorVerifiers()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 			})
 
 			It("returns an error when the http request could not be made", func() {
@@ -82,8 +81,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 				}
 
 				_, err := service.ListDirectorVerifiers()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not make api request to list_director_verifiers endpoint"))
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to list_director_verifiers endpoint")))
 			})
 
 			It("returns an error when the response is not JSON", func() {
@@ -94,8 +92,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 				}
 
 				_, err := service.ListDirectorVerifiers()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not unmarshal list_director_verifiers response"))
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal list_director_verifiers response")))
 			})
 		})
 	})
@@ -140,8 +137,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 				}
 
 				err := service.DisableDirectorVerifiers([]string{"some-verifier-type"})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 			})
 
 			It("returns an error when the http request could not be made", func() {
@@ -150,8 +146,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 				}
 
 				err := service.DisableDirectorVerifiers([]string{"some-verifier-type"})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not make api request to disable_director_verifiers endpoint"))
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to disable_director_verifiers endpoint")))
 			})
 		})
 	})

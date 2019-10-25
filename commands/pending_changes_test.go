@@ -189,9 +189,8 @@ var _ = Describe("PendingChanges.Execute", func() {
 
 					err := command.Execute([]string{})
 					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid some-product-without-errands"))
-					Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+					Expect(err).To(MatchError(ContainSubstring("configuration is incomplete for guid some-product-without-errands")))
+					Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
 				})
 
 				It("returns an error for stemcell_present: false", func() {
@@ -211,9 +210,8 @@ var _ = Describe("PendingChanges.Execute", func() {
 
 					err := command.Execute([]string{})
 					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands"))
-					Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+					Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands")))
+					Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
 				})
 
 				It("returns an error for configurable_properties_valid: false", func() {
@@ -234,9 +232,8 @@ var _ = Describe("PendingChanges.Execute", func() {
 
 					err := command.Execute([]string{})
 					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid some-product-without-errands"))
-					Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+					Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid some-product-without-errands")))
+					Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
 				})
 
 				When("multiple products fail completeness_checks", func() {
@@ -268,14 +265,13 @@ var _ = Describe("PendingChanges.Execute", func() {
 
 						err := command.Execute([]string{})
 						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
-						Expect(err).To(HaveOccurred())
-						Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid some-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid some-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid second-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid second-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid second-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+						Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid some-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("configuration is incomplete for guid some-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid second-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid second-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("configuration is incomplete for guid second-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
 					})
 				})
 
@@ -298,11 +294,10 @@ var _ = Describe("PendingChanges.Execute", func() {
 
 						err := command.Execute([]string{})
 						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
-						Expect(err).To(HaveOccurred())
-						Expect(err.Error()).To(ContainSubstring("one or more properties are invalid for guid some-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("configuration is incomplete for guid some-product-without-errands"))
-						Expect(err.Error()).To(ContainSubstring("Please validate your Ops Manager installation in the UI"))
+						Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid some-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("configuration is incomplete for guid some-product-without-errands")))
+						Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
 					})
 				})
 			})

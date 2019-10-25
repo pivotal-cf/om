@@ -223,8 +223,7 @@ var _ = Describe("StagedProducts", func() {
 					server.Close()
 
 					_, err := service.GetStagedDirectorProperties(false)
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`could not send api request to GET /api/v0/staged/director/properties?redact=false`))
+					Expect(err).To(MatchError(ContainSubstring(`could not send api request to GET /api/v0/staged/director/properties?redact=false`)))
 				})
 			})
 
@@ -532,8 +531,7 @@ var _ = Describe("StagedProducts", func() {
 					server.Close()
 
 					_, err := service.GetStagedDirectorAvailabilityZones()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`could not send api request to GET /api/v0/staged/director/availability_zones`))
+					Expect(err).To(MatchError(ContainSubstring(`could not send api request to GET /api/v0/staged/director/availability_zones`)))
 				})
 			})
 
@@ -659,8 +657,7 @@ var _ = Describe("StagedProducts", func() {
 					server.Close()
 
 					_, err := service.GetStagedDirectorNetworks()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`could not send api request to GET /api/v0/staged/director/networks`))
+					Expect(err).To(MatchError(ContainSubstring(`could not send api request to GET /api/v0/staged/director/networks`)))
 				})
 			})
 

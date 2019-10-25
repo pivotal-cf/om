@@ -177,7 +177,7 @@ var _ = Describe("OAuthClient", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					_, err = client.Do(req)
-					Expect(err.Error()).To(HaveSuffix("certificate signed by unknown authority"))
+					Expect(err).To(MatchError(ContainSubstring("certificate signed by unknown authority")))
 				})
 			})
 

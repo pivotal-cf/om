@@ -140,8 +140,7 @@ var _ = Describe("PreDeployCheckService", func() {
 				}
 
 				_, err := service.ListPendingDirectorChanges()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 			})
 
 			It("returns an error when the http request could not be made", func() {
@@ -150,8 +149,7 @@ var _ = Describe("PreDeployCheckService", func() {
 				}
 
 				_, err := service.ListPendingDirectorChanges()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not make api request to pre_deploy_check endpoint"))
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to pre_deploy_check endpoint")))
 			})
 
 			It("returns an error when the response is not JSON", func() {
@@ -163,8 +161,7 @@ var _ = Describe("PreDeployCheckService", func() {
 				}
 
 				_, err := service.ListPendingDirectorChanges()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not unmarshal pre_deploy_check response"))
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal pre_deploy_check response")))
 			})
 		})
 	})
@@ -343,8 +340,7 @@ var _ = Describe("PreDeployCheckService", func() {
 					}
 
 					_, err := service.ListAllPendingProductChanges()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("unexpected response"))
+					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 				})
 
 				It("returns an error when the http request could not be made", func() {
@@ -353,8 +349,7 @@ var _ = Describe("PreDeployCheckService", func() {
 					}
 
 					_, err := service.ListAllPendingProductChanges()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to pre_deploy_check endpoint"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to pre_deploy_check endpoint")))
 				})
 
 				It("returns an error when the response is not JSON", func() {
@@ -365,8 +360,7 @@ var _ = Describe("PreDeployCheckService", func() {
 					}
 
 					_, err := service.ListAllPendingProductChanges()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not unmarshal pre_deploy_check response"))
+					Expect(err).To(MatchError(ContainSubstring("could not unmarshal pre_deploy_check response")))
 				})
 			})
 		})
@@ -387,8 +381,7 @@ var _ = Describe("PreDeployCheckService", func() {
 					}
 
 					_, err := service.ListAllPendingProductChanges()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("unexpected response"))
+					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 				})
 
 				It("returns an error when the http request could not be made", func() {
@@ -404,8 +397,7 @@ var _ = Describe("PreDeployCheckService", func() {
 					}
 
 					_, err := service.ListAllPendingProductChanges()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to pre_deploy_check endpoint"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to pre_deploy_check endpoint")))
 				})
 
 				It("returns an error when the response is not JSON", func() {
@@ -423,8 +415,7 @@ var _ = Describe("PreDeployCheckService", func() {
 					}
 
 					_, err := service.ListAllPendingProductChanges()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not unmarshal pre_deploy_check response"))
+					Expect(err).To(MatchError(ContainSubstring("could not unmarshal pre_deploy_check response")))
 				})
 			})
 		})

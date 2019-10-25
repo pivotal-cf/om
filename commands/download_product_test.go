@@ -498,8 +498,7 @@ output-directory: %s
 					err = command.Execute([]string{
 						"--config", configFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 				})
 
 				Context("passed in a vars-file", func() {
@@ -697,8 +696,7 @@ output-directory: %s
 					"--product-version-regex", ".*",
 					"--output-directory", tempDir,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other"))
+				Expect(err).To(MatchError(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other")))
 			})
 		})
 
@@ -713,8 +711,7 @@ output-directory: %s
 					"--pivnet-product-slug", "elastic-runtime",
 					"--output-directory", tempDir,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("no version information provided; please provide either --product-version or --product-version-regex"))
+				Expect(err).To(MatchError(ContainSubstring("no version information provided; please provide either --product-version or --product-version-regex")))
 			})
 		})
 
@@ -734,8 +731,7 @@ output-directory: %s
 					"--product-version", "2.0.0",
 					"--output-directory", tempDir,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not download product: some-error"))
+				Expect(err).To(MatchError(ContainSubstring("could not download product: some-error")))
 			})
 		})
 	})

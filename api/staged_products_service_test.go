@@ -193,7 +193,7 @@ var _ = Describe("StagedProducts", func() {
 						ProductName:    "foo",
 						ProductVersion: "bar",
 					}, "")
-					Expect(err.Error()).To(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error"))
+					Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error")))
 				})
 			})
 
@@ -363,8 +363,8 @@ var _ = Describe("StagedProducts", func() {
 					"the-guid-with-the-invalid-value": "maximum",
 				})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring(`invalid max_in_flight value provided for job 'the-guid-with-the-invalid-value': 'maximum'
-valid options configurations include percentages ('50%'), counts ('2'), and 'default'`))
+				Expect(err).To(MatchError(ContainSubstring(`invalid max_in_flight value provided for job 'the-guid-with-the-invalid-value': 'maximum'
+valid options configurations include percentages ('50%'), counts ('2'), and 'default'`)))
 
 				Expect(client.DoCallCount()).To(Equal(0))
 			})
@@ -574,7 +574,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 
 				It("returns an error", func() {
 					_, err := service.ListStagedProducts()
-					Expect(err.Error()).To(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: nope"))
+					Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: nope")))
 				})
 			})
 

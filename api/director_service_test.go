@@ -263,7 +263,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{}, false)
-				Expect(err.Error()).To(ContainSubstring("could not send api request to GET /api/v0/staged/director/iaas_configurations"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to GET /api/v0/staged/director/iaas_configurations")))
 			})
 
 			It("returns an error when the GET availability zones http status is not a 200 or 404", func() {
@@ -451,8 +451,7 @@ var _ = Describe("Director", func() {
 
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage(`[{"name": "new", "iaas_configuration_name": "new"}]`)}, false)
-
-				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/staged/director/availability_zones"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/staged/director/availability_zones")))
 			})
 		})
 	})
@@ -605,7 +604,7 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
 					Networks: json.RawMessage(`{}`),
 				})
-				Expect(err.Error()).To(ContainSubstring("could not send api request to PUT /api/v0/staged/director/networks"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to PUT /api/v0/staged/director/networks")))
 			})
 
 			It("returns an error when the network endpoint status is non-200", func() {
@@ -724,7 +723,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration{})
-				Expect(err.Error()).To(ContainSubstring("could not send api request to PUT /api/v0/staged/director/network_and_az"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to PUT /api/v0/staged/director/network_and_az")))
 			})
 		})
 	})
@@ -791,7 +790,7 @@ var _ = Describe("Director", func() {
 				server.Close()
 
 				err := service.UpdateStagedDirectorProperties(api.DirectorProperties(``))
-				Expect(err.Error()).To(ContainSubstring("could not send api request to PUT /api/v0/staged/director/properties"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to PUT /api/v0/staged/director/properties")))
 			})
 		})
 	})
@@ -900,9 +899,8 @@ var _ = Describe("Director", func() {
 					)
 
 					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "config1"}, {"name": "config2"}]`))
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("multiple iaas_configurations are not allowed for your IAAS."))
-					Expect(err.Error()).To(ContainSubstring("Supported IAASes include: vsphere and openstack."))
+					Expect(err).To(MatchError(ContainSubstring("multiple iaas_configurations are not allowed for your IAAS.")))
+					Expect(err).To(MatchError(ContainSubstring("Supported IAASes include: vsphere and openstack.")))
 				})
 
 				It("updates IAASConfiguration using UpdateStagedDirectorProperties", func() {
@@ -978,7 +976,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
-				Expect(err.Error()).To(ContainSubstring("could not send api request to PUT /api/v0/staged/director/iaas_configurations/some-guid"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to PUT /api/v0/staged/director/iaas_configurations/some-guid")))
 			})
 
 			It("returns an error if the response body is not JSON", func() {
@@ -990,8 +988,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("failed to unmarshal JSON response from Ops Manager"))
+				Expect(err).To(MatchError(ContainSubstring("failed to unmarshal JSON response from Ops Manager")))
 			})
 		})
 	})

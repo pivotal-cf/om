@@ -291,8 +291,7 @@ var _ = Describe("ImportInstallation", func() {
 			err := command.Execute([]string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("could not check Ops Manager Status:"))
+			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))
 			close(done)
 		}, 1)
 	})

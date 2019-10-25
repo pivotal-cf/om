@@ -335,7 +335,7 @@ errands: lolololol
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{"--config", fileName})
-					Expect(err.Error()).To(ContainSubstring("line 3: cannot unmarshal !!str `lolololol`"))
+					Expect(err).To(MatchError(ContainSubstring("line 3: cannot unmarshal !!str `lolololol`")))
 				})
 			})
 		})

@@ -225,8 +225,7 @@ vmtypes-configuration:
 					err = command.Execute([]string{
 						"--config", newConfigFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(Equal("if custom_types = true, vm_types must not be empty"))
+					Expect(err).To(MatchError(ContainSubstring("if custom_types = true, vm_types must not be empty")))
 				})
 			})
 
@@ -354,8 +353,7 @@ vmtypes-configuration:
 					err = command.Execute([]string{
 						"--config", configFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`could not be parsed as valid configuration:`))
+					Expect(err).To(MatchError(ContainSubstring(`could not be parsed as valid configuration:`)))
 				})
 			})
 
@@ -366,8 +364,7 @@ vmtypes-configuration:
 							err = command.Execute([]string{
 								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 							})
-							Expect(err).To(HaveOccurred())
-							Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+							Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 						})
 					})
 
@@ -449,8 +446,7 @@ vmtypes-configuration:
 					err = command.Execute([]string{
 						"--config", writeTestConfigFile(`{"unrecognized-key": {"some-attr": "some-val"}, "unrecognized-other-key": {}, "network-assignment": {"some-attr1": "some-val1"}}`),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: "unrecognized-key", "unrecognized-other-key"`))
+					Expect(err).To(MatchError(ContainSubstring(`the config file contains unrecognized keys: "unrecognized-key", "unrecognized-other-key"`)))
 				})
 			})
 		})
@@ -531,8 +527,7 @@ vmtypes-configuration:
 			When("no director configuration flags are provided", func() {
 				It("returns an error ", func() {
 					err := command.Execute([]string{})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("missing required flag \"--config\""))
+					Expect(err).To(MatchError(ContainSubstring("missing required flag \"--config\"")))
 				})
 			})
 

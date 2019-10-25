@@ -381,8 +381,7 @@ syslog-properties:
 					"--product-name", "some-product",
 					"--include-credentials",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("info error"))
+				Expect(err).To(MatchError(ContainSubstring("info error")))
 			})
 		})
 

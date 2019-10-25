@@ -95,8 +95,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			}}, nil)
 
 			err := command.Execute([]string{"--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("verifier does not exist for director"))
+			Expect(err).To(MatchError(ContainSubstring("verifier does not exist for director")))
 
 			Expect(service.DisableDirectorVerifiersCallCount()).To(Equal(0))
 
@@ -163,7 +162,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 
 		It("returns an error if there is no --type provided", func() {
 			err := command.Execute([]string{})
-			Expect(err.Error()).To(ContainSubstring(`missing required flag "--type"`))
+			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
 		})
 	})
 

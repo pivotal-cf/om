@@ -178,8 +178,7 @@ var _ = Describe("Execute", func() {
 			TemplateFile:  writeFile(`{name: ((username))}`),
 			ExpectAllKeys: true,
 		})
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(Equal("Expected to find variables: username"))
+		Expect(err).To(MatchError(ContainSubstring("Expected to find variables: username")))
 	})
 })
 

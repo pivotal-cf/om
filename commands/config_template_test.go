@@ -286,8 +286,7 @@ output-directory: %s
 					err = command.Execute([]string{
 						"--config", configFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 				})
 
 				Context("passed in a vars-file", func() {

@@ -179,9 +179,8 @@ stemcell: "1234.6"
 		})
 		It("returns an error with the available stemcells", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "1234.1"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("stemcell version 1234.1 not found in Ops Manager"))
-			Expect(err.Error()).To(ContainSubstring("Available Stemcells for \"cf\": 1234.5, 1234.6"))
+			Expect(err).To(MatchError(ContainSubstring("stemcell version 1234.1 not found in Ops Manager")))
+			Expect(err).To(MatchError(ContainSubstring("Available Stemcells for \"cf\": 1234.5, 1234.6")))
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(0))
@@ -205,8 +204,7 @@ stemcell: "1234.6"
 
 		It("returns an error", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "1234.5"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("could not list product stemcell: product \"cf\" not found"))
+			Expect(err).To(MatchError(ContainSubstring("could not list product stemcell: product \"cf\" not found")))
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(0))
@@ -230,8 +228,7 @@ stemcell: "1234.6"
 
 		It("returns an error", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "1234.5"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("could not assign stemcell: product \"cf\" is staged for deletion"))
+			Expect(err).To(MatchError(ContainSubstring("could not assign stemcell: product \"cf\" is staged for deletion")))
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(0))
@@ -256,10 +253,9 @@ stemcell: "1234.6"
 
 		It("returns an error", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "1234.5"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("no stemcells are available for \"cf\"."))
-			Expect(err.Error()).To(ContainSubstring("minimum required stemcell version is: 1234.9"))
-			Expect(err.Error()).To(ContainSubstring("upload-stemcell, and try again"))
+			Expect(err).To(MatchError(ContainSubstring("no stemcells are available for \"cf\".")))
+			Expect(err).To(MatchError(ContainSubstring("minimum required stemcell version is: 1234.9")))
+			Expect(err).To(MatchError(ContainSubstring("upload-stemcell, and try again")))
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(0))

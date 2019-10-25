@@ -184,16 +184,14 @@ var _ = Describe("ExpiringCertificates", func() {
 				"--expires-within",
 				"1s",
 			})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("only d,w,m, or y are supported. Default is \"3m\""))
+			Expect(err).To(MatchError(ContainSubstring("only d,w,m, or y are supported. Default is \"3m\"")))
 
 			command = commands.NewExpiringCertificates(service, logger)
 			err = command.Execute([]string{
 				"--expires-within",
 				"0d",
 			})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("only d,w,m, or y are supported. Default is \"3m\""))
+			Expect(err).To(MatchError(ContainSubstring("only d,w,m, or y are supported. Default is \"3m\"")))
 
 			err = command.Execute([]string{
 				"--expires-within",
@@ -227,8 +225,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			command := commands.NewExpiringCertificates(service, logger)
 
 			err := command.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("could not fetch expiring certificates: an api error"))
+			Expect(err).To(MatchError(ContainSubstring("could not fetch expiring certificates: an api error")))
 		})
 	})
 

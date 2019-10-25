@@ -68,8 +68,7 @@ var _ = Describe("JobsService", func() {
 					)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to jobs endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to jobs endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs")))
 				})
 			})
 
@@ -83,8 +82,7 @@ var _ = Describe("JobsService", func() {
 					)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("request failed: unexpected response"))
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				})
 			})
 
@@ -98,8 +96,7 @@ var _ = Describe("JobsService", func() {
 					)
 
 					_, err := service.ListStagedProductJobs("some-product-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("failed to decode jobs json response:"))
+					Expect(err).To(MatchError(ContainSubstring("failed to decode jobs json response:")))
 				})
 			})
 		})
@@ -153,8 +150,7 @@ var _ = Describe("JobsService", func() {
 					)
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to resource_config endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to resource_config endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config")))
 				})
 			})
 
@@ -168,8 +164,7 @@ var _ = Describe("JobsService", func() {
 					)
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("unexpected response"))
+					Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 				})
 			})
 
@@ -183,8 +178,7 @@ var _ = Describe("JobsService", func() {
 					)
 
 					_, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("invalid character"))
+					Expect(err).To(MatchError(ContainSubstring("invalid character")))
 				})
 			})
 		})
@@ -431,8 +425,7 @@ some-job:
 
 					err = service.ConfigureJobResourceConfig("some-product-guid", config)
 
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to jobs resource_config endpoint"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to jobs resource_config endpoint")))
 				})
 			})
 
@@ -456,8 +449,7 @@ some-job:
 
 					err = service.ConfigureJobResourceConfig("some-product-guid", config)
 
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("failed to configure resources for some-job"))
+					Expect(err).To(MatchError(ContainSubstring("failed to configure resources for some-job")))
 				})
 			})
 		})

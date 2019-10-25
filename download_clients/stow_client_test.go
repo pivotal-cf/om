@@ -97,7 +97,7 @@ var _ = Describe("stowClient", func() {
 				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 				_, err := client.GetAllProductVersions("someslug")
-				Expect(err.Error()).To(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType"))
+				Expect(err).To(MatchError(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType")))
 			})
 		})
 
@@ -117,7 +117,7 @@ var _ = Describe("stowClient", func() {
 				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 				_, err := client.GetAllProductVersions("someslug")
-				Expect(err.Error()).To(ContainSubstring("no files matching pivnet-product-slug someslug found"))
+				Expect(err).To(MatchError(ContainSubstring("no files matching pivnet-product-slug someslug found")))
 			})
 		})
 	})
@@ -133,7 +133,6 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
-			Expect(err).ToNot(HaveOccurred())
 			Expect(fileArtifact.Name()).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
@@ -147,7 +146,6 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "pcf-vsphere*ova")
-			Expect(err).ToNot(HaveOccurred())
 			Expect(fileArtifact.Name()).To(Equal("[product-slug,1.1.1]pcf-vsphere-2.1-build.348.ova"))
 		})
 
@@ -162,8 +160,7 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 			_, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("the glob '*vsphere*ova' matches multiple files. Write your glob to match exactly one of the following"))
+			Expect(err).To(MatchError(ContainSubstring("the glob '*vsphere*ova' matches multiple files. Write your glob to match exactly one of the following")))
 		})
 
 		It("errors when zero prefixed files match the glob", func() {
@@ -177,8 +174,7 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
 
 			_, err := client.GetLatestProductFile("product-slug", "1.1.1", "*.zip")
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("the glob '*.zip' matches no file"))
+			Expect(err).To(MatchError(ContainSubstring("the glob '*.zip' matches no file")))
 		})
 
 		DescribeTable("the item exists in the path in the bucket", func(productPath string) {
@@ -259,8 +255,7 @@ var _ = Describe("stowClient", func() {
 			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "")
 
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), file)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType"))
+			Expect(err).To(MatchError(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType")))
 		})
 
 		It("errors when cannot open file", func() {

@@ -64,8 +64,7 @@ var _ = Describe("Available Products", func() {
 					_, err := service.UploadAvailableProduct(api.UploadAvailableProductInput{
 						PollingInterval: 1,
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not make api request to available_products endpoint"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to available_products endpoint")))
 				})
 			})
 

@@ -88,8 +88,7 @@ var _ = Describe("DisableProductVerifiersService", func() {
 				)
 
 				_, _, err := service.ListProductVerifiers("cf")
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 			})
 
 			It("returns an error", func() {
@@ -99,16 +98,14 @@ var _ = Describe("DisableProductVerifiersService", func() {
 				)
 
 				_, _, err := service.ListProductVerifiers("cf")
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 			})
 
 			It("returns an error when the http request could not be made", func() {
 				server.Close()
 
 				_, _, err := service.ListProductVerifiers("cf")
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not make request"))
+				Expect(err).To(MatchError(ContainSubstring("could not make request")))
 			})
 
 			It("returns an error when the list_product_verifiers response is not JSON", func() {
@@ -118,8 +115,7 @@ var _ = Describe("DisableProductVerifiersService", func() {
 				)
 
 				_, _, err := service.ListProductVerifiers("cf")
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not unmarshal list_product_verifiers response"))
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal list_product_verifiers response")))
 			})
 		})
 	})
@@ -150,16 +146,14 @@ var _ = Describe("DisableProductVerifiersService", func() {
 				)
 
 				err := service.DisableProductVerifiers([]string{"some-verifier-type"}, "cf-guid")
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("unexpected response")))
 			})
 
 			It("returns an error when the http request could not be made", func() {
 				server.Close()
 
 				err := service.DisableProductVerifiers([]string{"some-verifier-type"}, "cf-guid")
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not make api request to disable_product_verifiers endpoint"))
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to disable_product_verifiers endpoint")))
 			})
 		})
 	})

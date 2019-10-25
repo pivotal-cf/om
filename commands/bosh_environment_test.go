@@ -86,9 +86,7 @@ var _ = Describe("bosh-env", func() {
 		Describe("Execute with a nonexistent ssh key", func() {
 			It("executes the API call", func() {
 				err := command.Execute([]string{"-i", "somepath.pem"})
-
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("ssh key file 'somepath.pem' does not exist"))
+				Expect(err).To(MatchError(ContainSubstring("ssh key file 'somepath.pem' does not exist")))
 			})
 		})
 

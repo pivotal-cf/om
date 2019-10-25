@@ -436,8 +436,7 @@ var _ = Describe("ConfigureProduct", func() {
 					err = client.Execute([]string{
 						"--config", configFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 				})
 			})
 
@@ -488,8 +487,7 @@ var _ = Describe("ConfigureProduct", func() {
 						"-c", configFile.Name(),
 						"-o", opsFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("could not find expected directive name"))
+					Expect(err).To(MatchError(ContainSubstring("could not find expected directive name")))
 				})
 			})
 		})
@@ -677,7 +675,7 @@ var _ = Describe("ConfigureProduct", func() {
 							},
 						}, nil)
 						err := command.Execute([]string{"--config", "some/non-existant/path.yml"})
-						Expect(err.Error()).To(ContainSubstring("open some/non-existant/path.yml: no such file or directory"))
+						Expect(err).To(MatchError(ContainSubstring("open some/non-existant/path.yml: no such file or directory")))
 					})
 				})
 
@@ -840,8 +838,7 @@ var _ = Describe("ConfigureProduct", func() {
 					err = client.Execute([]string{
 						"--config", configFile.Name(),
 					})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`))
+					Expect(err).To(MatchError(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`)))
 				})
 			})
 		})

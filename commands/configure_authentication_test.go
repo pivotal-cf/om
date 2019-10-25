@@ -194,8 +194,7 @@ decryption-passphrase: ((vars-passphrase))
 				err := command.Execute([]string{
 					"--config", configFile,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+				Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 			})
 		})
 
@@ -340,11 +339,10 @@ vars-passphrase: a-vars-file-passphrase
 				"--decryption-passphrase", "some-passphrase",
 				"--precreated-client-secret", "test-client-secret",
 			})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`
+			Expect(err).To(MatchError(ContainSubstring(`
 Cannot use the "--precreated-client-secret" argument.
 This is only supported in OpsManager 2.5 and up.
-`))
+`)))
 		})
 	})
 

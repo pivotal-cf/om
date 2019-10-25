@@ -290,8 +290,7 @@ var _ = Describe("UploadProduct", func() {
 			Expect(multipart.FinalizeCallCount()).To(Equal(3))
 			Expect(multipart.ResetCallCount()).To(Equal(2))
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("EOF"))
+			Expect(err).To(MatchError(ContainSubstring("EOF")))
 
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(3))
 		})

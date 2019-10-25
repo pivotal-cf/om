@@ -131,15 +131,13 @@ var _ = Describe("UploadStemcell", func() {
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "flalsee",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("--floating must be \"true\" or \"false\". Default: true"))
+				Expect(err).To(MatchError(ContainSubstring("--floating must be \"true\" or \"false\". Default: true")))
 
 				err = command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "trurure",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("--floating must be \"true\" or \"false\". Default: true"))
+				Expect(err).To(MatchError(ContainSubstring("--floating must be \"true\" or \"false\". Default: true")))
 
 				err = command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
@@ -198,8 +196,7 @@ var _ = Describe("UploadStemcell", func() {
 				err := command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("EOF"))
+				Expect(err).To(MatchError(ContainSubstring("EOF")))
 
 				Expect(multipart.AddFileCallCount()).To(Equal(3))
 				Expect(multipart.FinalizeCallCount()).To(Equal(3))

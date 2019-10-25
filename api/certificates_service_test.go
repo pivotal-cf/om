@@ -60,8 +60,7 @@ var _ = Describe("Certificates", func() {
 				client.Close()
 
 				_, err := service.GenerateCertificate(api.DomainsInput{Domains: []string{"some-domains"}})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/certificates/generate"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/certificates/generate")))
 			})
 		})
 

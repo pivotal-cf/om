@@ -76,8 +76,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				client.Close()
 
 				_, err := service.ListCertificateAuthorities()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to GET /api/v0/certificate_authorities"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to GET /api/v0/certificate_authorities")))
 			})
 		})
 
@@ -145,8 +144,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				client.Close()
 
 				_, err := service.GenerateCertificateAuthority()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/generate"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/generate")))
 			})
 		})
 
@@ -197,8 +195,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				client.Close()
 
 				err := service.RegenerateCertificates()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/active/regenerate"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/active/regenerate")))
 			})
 		})
 
@@ -269,8 +266,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					CertPem:       certPem,
 					PrivateKeyPem: privateKey,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities")))
 			})
 		})
 
@@ -287,8 +283,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					CertPem:       certPem,
 					PrivateKeyPem: privateKey,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("invalid character"))
+				Expect(err).To(MatchError(ContainSubstring("invalid character")))
 			})
 		})
 
@@ -304,8 +299,7 @@ var _ = Describe("CertificateAuthorities", func() {
 					CertPem:       certPem,
 					PrivateKeyPem: privateKey,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("request failed: unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})
@@ -333,8 +327,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 					GUID: "some-certificate-authority-guid",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/some-certificate-authority-guid/activate"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/some-certificate-authority-guid/activate")))
 			})
 		})
 
@@ -351,8 +344,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 					GUID: "some-certificate-authority-guid",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("request failed: unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})
@@ -380,8 +372,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 					GUID: "some-certificate-authority-guid",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not send api request to DELETE /api/v0/certificate_authorities/some-certificate-authority-guid"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to DELETE /api/v0/certificate_authorities/some-certificate-authority-guid")))
 			})
 		})
 
@@ -397,8 +388,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 					GUID: "some-certificate-authority-guid",
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("request failed: unexpected response"))
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})

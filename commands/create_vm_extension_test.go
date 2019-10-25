@@ -221,7 +221,7 @@ var _ = Describe("CreateVMExtension", func() {
 						"--config", configFile.Name(),
 					})
 
-					Expect(err.Error()).Should(ContainSubstring("Expected to find variables"))
+					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 
 				})
 			})
@@ -237,9 +237,7 @@ var _ = Describe("CreateVMExtension", func() {
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
 					})
-
-					Expect(err.Error()).Should(ContainSubstring("could not be parsed as valid configuration: yaml"))
-
+					Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration: yaml")))
 				})
 			})
 

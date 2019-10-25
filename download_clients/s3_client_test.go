@@ -51,9 +51,7 @@ var _ = Describe("S3Client", func() {
 			stower := &mockStower{}
 			config := download_clients.S3Configuration{}
 			_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
-			Expect(err).To(HaveOccurred())
-
-			Expect(err.Error()).To(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param))
+			Expect(err).To(MatchError(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param)))
 		},
 			Entry("requires Bucket", "Bucket"),
 			Entry("requires RegionName", "RegionName"),

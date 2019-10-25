@@ -87,9 +87,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("something bad happened with the director"))
+Expect(err).To(MatchError(ContainSubstring("something bad happened with the director")))
 		})
 	})
 
@@ -98,9 +96,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 			service.ListAllPendingProductChangesReturns([]api.PendingProductChangesOutput{}, errors.New("something bad happened with the product"))
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("something bad happened with the product"))
+Expect(err).To(MatchError(ContainSubstring("something bad happened with the product")))
 		})
 	})
 
@@ -134,8 +130,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: another-p-guid"))
@@ -163,9 +158,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+			err := command.Execute([]string{})Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] product: another-p-guid"))
@@ -228,8 +221,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				}, nil)
 				command := commands.NewPreDeployCheck(presenter, service, logger)
 				err := command.Execute([]string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+				Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 				contents := string(stdout.Contents())
 				boldErr := color.New(color.Bold)
@@ -276,9 +268,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+			err := command.Execute([]string{})Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: another-p-guid"))
@@ -302,9 +292,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+			err := command.Execute([]string{})Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] product: p-guid"))
@@ -369,8 +357,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				}, nil)
 				command := commands.NewPreDeployCheck(presenter, service, logger)
 				err := command.Execute([]string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("OpsManager is not fully configured"))
+				Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 				contents := string(stdout.Contents())
 				boldErr := color.New(color.Bold)

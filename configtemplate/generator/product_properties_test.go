@@ -24,8 +24,7 @@ var _ = Describe("Product Properties", func() {
 				}
 
 				_, err := generator.GetRequiredPropertyVars(metadata)
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not create required-vars file"))
+				Expect(err).To(MatchError(ContainSubstring("could not create required-vars file")))
 			})
 		})
 
@@ -708,8 +707,7 @@ var _ = Describe("Product Properties", func() {
 				}
 
 				_, err := generator.CreateProductPropertiesFeaturesOpsFiles(metadata)
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not create feature ops files"))
+				Expect(err).To(MatchError(ContainSubstring("could not create feature ops files")))
 			})
 		})
 

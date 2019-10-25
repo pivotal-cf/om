@@ -149,11 +149,10 @@ This is only supported in OpsManager 2.4 and up.
 
 		It("errors out if you try to provide a client secret", func() {
 			err := command.Execute(commandLineArgs)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`
+			Expect(err).To(MatchError(ContainSubstring(`
 Cannot use the "--precreated-client-secret" argument.
 This is only supported in OpsManager 2.5 and up.
-`))
+`)))
 		})
 	})
 
@@ -308,8 +307,7 @@ ldap-referrals: follow
 				err := command.Execute([]string{
 					"--config", configFile,
 				})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("Expected to find variables"))
+				Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
 			})
 		})
 

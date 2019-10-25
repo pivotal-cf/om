@@ -248,8 +248,7 @@ hello: world`))
 			It("errors", func() {
 				command = commands.NewInterpolate(func() []string { return nil }, logger, os.Stdin)
 				err := command.Execute([]string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("no file or STDIN input provided."))
+				Expect(err).To(MatchError(ContainSubstring("no file or STDIN input provided.")))
 			})
 		})
 

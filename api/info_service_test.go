@@ -39,19 +39,19 @@ var _ = Describe("Info Service", func() {
 			It("returns an error when no version defined", func() {
 				ok, err := api.Info{Version: ""}.VersionAtLeast(2, 2)
 				Expect(ok).To(Equal(false))
-				Expect(err.Error()).To(ContainSubstring("invalid version: ''"))
+				Expect(err).To(MatchError(ContainSubstring("invalid version: ''")))
 			})
 
 			It("returns an error when major version is not a number", func() {
 				ok, err := api.Info{Version: "xxx.1.0"}.VersionAtLeast(2, 2)
 				Expect(ok).To(Equal(false))
-				Expect(err.Error()).To(ContainSubstring("invalid version: 'xxx.1.0'"))
+				Expect(err).To(MatchError(ContainSubstring("invalid version: 'xxx.1.0'")))
 			})
 
 			It("returns an error when minor version is not a number", func() {
 				ok, err := api.Info{Version: "1.xxx.0"}.VersionAtLeast(2, 2)
 				Expect(ok).To(Equal(false))
-				Expect(err.Error()).To(ContainSubstring("invalid version: '1.xxx.0'"))
+				Expect(err).To(MatchError(ContainSubstring("invalid version: '1.xxx.0'")))
 			})
 		})
 	})
