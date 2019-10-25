@@ -31,7 +31,7 @@ var _ = Describe("InstallationLog", func() {
 				"--id", "999",
 			})
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GetInstallationLogsCallCount()).To(Equal(1))
 			requestedInstallationId := fakeService.GetInstallationLogsArgsForCall(0)

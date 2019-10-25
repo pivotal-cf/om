@@ -28,7 +28,7 @@ var _ = Describe("config-template command", func() {
 		BeforeEach(func() {
 			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
 			contents, err := ioutil.ReadFile(pivotalFile)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
 			var fakePivnetMetadataResponse []byte
@@ -36,10 +36,10 @@ var _ = Describe("config-template command", func() {
 			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
 			defer fixtureMetadata.Close()
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			server = ghttp.NewTLSServer()
 			server.AppendHandlers(
@@ -91,7 +91,7 @@ var _ = Describe("config-template command", func() {
 
 		It("writes a config template subdir for the product in the output directory", func() {
 			outputDir, err := ioutil.TempDir("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			productSlug, productVersion := "example-product", "1.0-build.0"
 
@@ -106,7 +106,7 @@ var _ = Describe("config-template command", func() {
 			command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, "10s").Should(gexec.Exit(0))
 
@@ -119,7 +119,7 @@ var _ = Describe("config-template command", func() {
 		BeforeEach(func() {
 			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
 			contents, err := ioutil.ReadFile(pivotalFile)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
 			var fakePivnetMetadataResponse []byte
@@ -127,10 +127,10 @@ var _ = Describe("config-template command", func() {
 			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
 			defer fixtureMetadata.Close()
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			server = ghttp.NewTLSServer()
 			server.AppendHandlers(
@@ -203,7 +203,7 @@ var _ = Describe("config-template command", func() {
 		Context("and the user has not provided a product file glob", func() {
 			It("errors because the default glob did not match", func() {
 				outputDir, err := ioutil.TempDir("", "")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				productSlug, productVersion := "another-example-product", "1.0-build.0"
 
@@ -218,7 +218,7 @@ var _ = Describe("config-template command", func() {
 				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, "10s").Should(gexec.Exit(1))
 			})
@@ -226,7 +226,7 @@ var _ = Describe("config-template command", func() {
 		Context("and the user has provided a glob with a unique match", func() {
 			It("writes a config template subdir for the product in the output directory", func() {
 				outputDir, err := ioutil.TempDir("", "")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				productSlug, productVersion := "another-example-product", "1.0-build.0"
 
@@ -242,7 +242,7 @@ var _ = Describe("config-template command", func() {
 				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				productDir := filepath.Join(outputDir, "example-product", "1.0-build.0")

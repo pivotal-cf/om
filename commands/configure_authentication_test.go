@@ -50,7 +50,7 @@ var _ = Describe("ConfigureAuthentication.Execute", func() {
 			"--decryption-passphrase", "some-passphrase",
 			"--precreated-client-secret", "test-client-secret",
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 			IdentityProvider:                 "internal",
@@ -86,7 +86,7 @@ It will have the username 'precreated-client' and the client secret you provided
 				"--password", "some-password",
 				"--decryption-passphrase", "some-passphrase",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.EnsureAvailabilityCallCount()).To(Equal(1))
 			Expect(service.SetupCallCount()).To(Equal(0))
@@ -127,7 +127,7 @@ decryption-passphrase: some-passphrase
 			err := command.Execute([]string{
 				"--config", configFile,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 				IdentityProvider:                 "internal",
@@ -152,7 +152,7 @@ decryption-passphrase: some-passphrase
 				"--config", configFile,
 				"--password", "some-password-1",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 				IdentityProvider:                 "internal",
@@ -208,9 +208,9 @@ vars-passphrase: a-vars-file-passphrase
 `
 
 				file, err := ioutil.TempFile("", "vars-*.yml")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = ioutil.WriteFile(file.Name(), []byte(varsContent), 0777)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				varsFile = file.Name()
 			})
@@ -221,7 +221,7 @@ vars-passphrase: a-vars-file-passphrase
 					"--config", configFile,
 					"--vars-file", varsFile,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 					IdentityProvider:                 "internal",
@@ -243,7 +243,7 @@ vars-passphrase: a-vars-file-passphrase
 					"--var", "vars-password=a-command-line-password",
 					"--var", "vars-passphrase=a-command-line-passphrase",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 					IdentityProvider:                 "internal",
@@ -271,7 +271,7 @@ vars-passphrase: a-vars-file-passphrase
 					"--config", configFile,
 					"--vars-env", "OM_VAR",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 					IdentityProvider:                 "internal",
@@ -300,7 +300,7 @@ vars-passphrase: a-vars-file-passphrase
 				err = command.Execute([]string{
 					"--config", configFile,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 					IdentityProvider:                 "internal",

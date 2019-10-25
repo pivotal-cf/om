@@ -31,7 +31,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 				"--certificate-pem", "some CertPem",
 				"--private-key-pem", "some PrivateKey",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.CreateCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakeService.CreateCertificateAuthorityArgsForCall(0)).To(Equal(api.CertificateAuthorityInput{
@@ -56,7 +56,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 				"--certificate-pem", "some CertPem",
 				"--private-key-pem", "some PrivateKey",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(ca))
@@ -69,7 +69,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 					"--certificate-pem", "some CertPem",
 					"--private-key-pem", "some PrivateKey",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))

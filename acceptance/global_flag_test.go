@@ -19,7 +19,7 @@ var _ = Describe("global flags", func() {
 			cmd := exec.Command(pathToMain, "-?")
 
 			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Expect(session.Err).Should(gbytes.Say("flag provided but not defined: -?"))
@@ -31,7 +31,7 @@ var _ = Describe("global flags", func() {
 			cmd := exec.Command(pathToMain, "help")
 
 			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 		})
@@ -40,7 +40,7 @@ var _ = Describe("global flags", func() {
 			cmd := exec.Command(pathToMain, "version")
 
 			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 		})
@@ -50,7 +50,7 @@ var _ = Describe("global flags", func() {
 		It("supports a file from --ca-cert", func() {
 			server := testServer(true)
 			cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
 
 			command := exec.Command(pathToMain,
@@ -63,7 +63,7 @@ var _ = Describe("global flags", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 		})
@@ -71,7 +71,7 @@ var _ = Describe("global flags", func() {
 		It("supports a string from --ca-cert", func() {
 			server := testServer(true)
 			cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
 			caCertFilename := writeFile(string(pemCert))
 
@@ -85,7 +85,7 @@ var _ = Describe("global flags", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 		})
@@ -105,7 +105,7 @@ var _ = Describe("global flags", func() {
 		command.Env = append(command.Env, "PASSWORD=bogus")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
@@ -114,9 +114,9 @@ var _ = Describe("global flags", func() {
 
 func writeFile(contents string) string {
 	file, err := ioutil.TempFile("", "")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

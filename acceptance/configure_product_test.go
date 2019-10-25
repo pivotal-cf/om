@@ -171,10 +171,10 @@ var _ = Describe("configure-product command", func() {
 		)
 
 		configFile, err = ioutil.TempFile("", "")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(configFileContents)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL(),
@@ -186,7 +186,7 @@ var _ = Describe("configure-product command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 
@@ -272,7 +272,7 @@ var _ = Describe("configure-product command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 	})

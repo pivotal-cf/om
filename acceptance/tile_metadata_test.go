@@ -20,17 +20,17 @@ var _ = Describe("tile-metadata command", func() {
 	BeforeEach(func() {
 		var err error
 		productFile, err = ioutil.TempFile("", "fake-tile")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		z := zip.NewWriter(productFile)
 
 		f, err := z.Create("metadata/fake-tile.yml")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = f.Write([]byte(`
 name: fake-tile
 product_version: 1.2.3
 `))
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(z.Close()).To(Succeed())
 	})
@@ -47,7 +47,7 @@ product_version: 1.2.3
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(session.Out.Contents()).To(ContainSubstring("fake-tile"))
@@ -61,7 +61,7 @@ product_version: 1.2.3
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(session.Out.Contents()).To(ContainSubstring("1.2.3"))

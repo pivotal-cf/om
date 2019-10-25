@@ -47,7 +47,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 
 		It("assigns the stemcell", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))
@@ -66,7 +66,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 
 		It("assigns multiple stemcells", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6", "--stemcell", "ubuntu-xenial:1234.67"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))
@@ -86,7 +86,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 
 		It("assigns multiple stemcells with the same version number", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6", "--stemcell", "ubuntu-xenial:1234.6"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))
@@ -107,7 +107,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 		When("--stemcell latest is used", func() {
 			It("assign the latest stemcell available", func() {
 				err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:latest"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
 				Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))
@@ -154,15 +154,15 @@ product: cf
 stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 `
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("reads configuration from config file", func() {
 			err := command.Execute([]string{"--config", configFile.Name()})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))

@@ -38,7 +38,7 @@ var _ = Describe("Credentials", func() {
 			)
 
 			output, err := service.GetBoshEnvironment()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.Client).To(Equal("ops_manager"))
 			Expect(output.ClientSecret).To(Equal("foo"))

@@ -39,7 +39,7 @@ var _ = Describe("StagedConfig", func() {
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GetStagedProductByNameCallCount()).To(Equal(1))
 			Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product"))
@@ -102,7 +102,7 @@ syslog-properties:
 					"--product-name", "some-product",
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(logger.PrintlnCallCount()).To(Equal(1))
 				output := logger.PrintlnArgsForCall(0)
@@ -190,7 +190,7 @@ syslog-properties:
 					"--product-name", "some-product",
 					"--include-credentials",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(7))
 
@@ -514,7 +514,7 @@ syslog-properties:
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(logger.PrintlnCallCount()).To(Equal(1))
 			output := logger.PrintlnArgsForCall(0)
@@ -575,7 +575,7 @@ syslog-properties:
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(logger.PrintlnCallCount()).To(Equal(1))
 				output := logger.PrintlnArgsForCall(0)
@@ -604,7 +604,7 @@ syslog-properties:
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(logger.PrintlnCallCount()).To(Equal(1))
 				output := logger.PrintlnArgsForCall(0)

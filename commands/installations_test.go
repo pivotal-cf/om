@@ -58,7 +58,7 @@ var _ = Describe("Installations", func() {
 
 		It("lists recent installations as a table", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentInstallationsCallCount()).To(Equal(1))
 			installations := fakePresenter.PresentInstallationsArgsForCall(0)
@@ -81,7 +81,7 @@ var _ = Describe("Installations", func() {
 		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))

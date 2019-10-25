@@ -36,7 +36,7 @@ var _ = Describe("delete-unused-products command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, 5).Should(gexec.Exit(0))
 		Eventually(session.Out, 5).Should(gbytes.Say("trashing unused products"))

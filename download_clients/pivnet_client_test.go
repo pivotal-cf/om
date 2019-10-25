@@ -162,7 +162,7 @@ var _ = Describe("PivnetClient", func() {
 		It("downloads a product file to given destination", func() {
 			fakePivnetDownloader.DownloadProductFileReturns(nil)
 			tmpFile, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			client := download_clients.NewPivnetClient(logger, nil, fakePivnetFactory, "", fakePivnetFilter, true)
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), tmpFile)
@@ -172,7 +172,7 @@ var _ = Describe("PivnetClient", func() {
 		It("returns an error if the product file could not be downloaded", func() {
 			fakePivnetDownloader.DownloadProductFileReturns(errors.New("download error"))
 			tmpFile, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			client := download_clients.NewPivnetClient(logger, nil, fakePivnetFactory, "", fakePivnetFilter, true)
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), tmpFile)

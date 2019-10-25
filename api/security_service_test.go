@@ -33,7 +33,7 @@ var _ = Describe("Security", func() {
 			}, nil)
 
 			output, err := service.GetSecurityRootCACertificate()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))

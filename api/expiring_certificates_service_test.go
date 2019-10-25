@@ -56,12 +56,12 @@ var _ = Describe("Expiring Certificates", func() {
 
 			expiresWithin := "3d"
 			certs, err := service.ListExpiringCertificates(expiresWithin)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			fromTime, err := time.Parse(time.RFC3339, "2018-08-10T21:07:37Z")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			toTime, err := time.Parse(time.RFC3339, "2022-08-09T21:07:37Z")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(certs).To(Equal([]api.ExpiringCertificate{
 				{
@@ -94,7 +94,7 @@ var _ = Describe("Expiring Certificates", func() {
 		}
 
 		_, err := service.ListExpiringCertificates(expiresWithin)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 	},
 		Entry("days", "2d", "2d"),
 		Entry("weeks", "1w", "1w"),

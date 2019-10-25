@@ -79,13 +79,13 @@ var _ = Describe("DeleteInstallation", func() {
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
 			_, err := stdin.WriteString("yes\n")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = stdin.WriteString("yes\n")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Do you really want to delete the installation? [yes/no]: "))
@@ -142,7 +142,7 @@ var _ = Describe("DeleteInstallation", func() {
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
 			err := command.Execute([]string{"--force"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to delete the installation on the targeted Ops Manager"))
@@ -173,7 +173,7 @@ var _ = Describe("DeleteInstallation", func() {
 				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
 				err := command.Execute([]string{"--force"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.DeleteInstallationAssetCollectionCallCount()).To(Equal(0))
 

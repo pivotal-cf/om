@@ -48,7 +48,7 @@ var _ = Describe("JobsService", func() {
 			)
 
 			jobs, err := service.ListStagedProductJobs("some-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(jobs).To(Equal(map[string]string{
 				"job-1": "some-guid-1",
 				"job-2": "some-guid-2",
@@ -120,7 +120,7 @@ var _ = Describe("JobsService", func() {
 
 			job, err := service.GetStagedProductJobResourceConfig("some-product-guid", "some-guid")
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			jobProperties := api.JobProperties{
 				"instances":          1.0,
@@ -312,7 +312,7 @@ third-job:
 			Expect(err).ToNot(HaveOccurred())
 
 			err = service.ConfigureJobResourceConfig("some-product-guid", config)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		DescribeTable("additional_vm_extensions", func(serverExtensions string, configExtensions string, expectatedExtensions string) {
@@ -367,7 +367,7 @@ some-job:
 			Expect(err).ToNot(HaveOccurred())
 
 			err = service.ConfigureJobResourceConfig("some-product-guid", config)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		},
 			Entry("empty-missing-empty", ``, ``, ``),
 			Entry("empty-empty-empty", ``, `additional_vm_extensions: []`, ``),

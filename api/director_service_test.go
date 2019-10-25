@@ -112,7 +112,7 @@ var _ = Describe("Director", func() {
 						}
 					]`),
 				}, false)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(stderr.Invocations()).To(HaveLen(1))
 				message := stderr.PrintlnArgsForCall(0)
 				Expect(message[0]).To(Equal("successfully fetched AZs, continuing"))
@@ -137,7 +137,7 @@ var _ = Describe("Director", func() {
 						"iaas_configuration_name": "new-iaas"
 					}]`),
 				}, false)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -171,7 +171,7 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
 					AvailabilityZones: json.RawMessage(`[{"name": "new-az", "iaas_configuration_name": "new-iaas"}]`),
 				}, false)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stderr.PrintlnCallCount()).To(Equal(1))
 				warning := stderr.PrintlnArgsForCall(0)
@@ -489,7 +489,7 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
 					Networks: json.RawMessage(`{"networks": [{"name": "yup"}]}`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("configures networks and associates existing guids", func() {
@@ -509,7 +509,7 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
 					Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network"}]}`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("configures networks and associates existing guids and no guid for new network", func() {
@@ -531,7 +531,7 @@ var _ = Describe("Director", func() {
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
 					Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network"},{"name":"new-network"}]}`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -556,7 +556,7 @@ var _ = Describe("Director", func() {
 							}]
 						}`),
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(stderr.PrintlnCallCount()).To(Equal(1))
 					warning := stderr.PrintlnArgsForCall(0)
@@ -662,7 +662,7 @@ var _ = Describe("Director", func() {
 					}`),
 				})
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			When("the director has already been deployed", func() {
@@ -751,7 +751,7 @@ var _ = Describe("Director", func() {
 				"syslog_configuration": {"imsyslog": "yep"}
 			}`))
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			When("some of the configurations are empty", func() {
@@ -767,7 +767,7 @@ var _ = Describe("Director", func() {
 					)
 					err := service.UpdateStagedDirectorProperties(api.DirectorProperties(`{"iaas_configuration": {"prop": "other", "value": "one"}, "director_configuration": {"prop": "blah", "value": "nothing"}}`))
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 
@@ -811,7 +811,7 @@ var _ = Describe("Director", func() {
 				)
 
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "one"}]`))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("updates existing iaas configuration if the name already exists", func() {
@@ -837,7 +837,7 @@ var _ = Describe("Director", func() {
 					),
 				)
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -866,7 +866,7 @@ var _ = Describe("Director", func() {
 					),
 				)
 				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"},{"name":"new"}]`))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			When("IAASConfigurations POST endpoint is not implemented", func() {
@@ -886,7 +886,7 @@ var _ = Describe("Director", func() {
 					)
 
 					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "new"}]`))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				})
 
 				It("fails if there are multiple configurations defined", func() {
@@ -932,7 +932,7 @@ var _ = Describe("Director", func() {
 					)
 
 					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "other-field": "value"}]`))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		})

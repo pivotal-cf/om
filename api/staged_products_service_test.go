@@ -53,7 +53,7 @@ var _ = Describe("StagedProducts", func() {
 				ProductName:    "some-product",
 				ProductVersion: "some-version",
 			}, "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(2))
 
@@ -66,7 +66,7 @@ var _ = Describe("StagedProducts", func() {
 			Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products"))
 			Expect(stReq.Method).To(Equal("POST"))
 			stReqBody, err := ioutil.ReadAll(stReq.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(stReqBody).To(MatchJSON(`{
 							"name": "some-product",
@@ -100,7 +100,7 @@ var _ = Describe("StagedProducts", func() {
 					ProductName:    "some-product",
 					ProductVersion: "1.1.0",
 				}, "some-deployed-guid")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(client.DoCallCount()).To(Equal(2))
 
@@ -109,7 +109,7 @@ var _ = Describe("StagedProducts", func() {
 				Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products/some-deployed-guid"))
 				Expect(stReq.Method).To(Equal("PUT"))
 				stReqBody, err := ioutil.ReadAll(stReq.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stReqBody).To(MatchJSON(`{
 					"to_version": "1.1.0"
@@ -151,7 +151,7 @@ var _ = Describe("StagedProducts", func() {
 					ProductName:    "some-product",
 					ProductVersion: "1.1.0",
 				}, "")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(client.DoCallCount()).To(Equal(2))
 
@@ -164,7 +164,7 @@ var _ = Describe("StagedProducts", func() {
 				Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products/some-staged-guid"))
 				Expect(stReq.Method).To(Equal("PUT"))
 				stReqBody, err := ioutil.ReadAll(stReq.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stReqBody).To(MatchJSON(`{
 					"to_version": "1.1.0"
@@ -268,7 +268,7 @@ var _ = Describe("StagedProducts", func() {
 				return &http.Response{StatusCode: http.StatusOK, Body: responseBody}, nil
 			}
 			jobsWithMaxInFlight, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(jobsWithMaxInFlight).To(Equal(map[string]interface{}{
 				"some-job-guid":    "20%",
 				"some-other-guid":  1.00,
@@ -326,13 +326,13 @@ var _ = Describe("StagedProducts", func() {
 				"some-third-guid":  "1",
 				"some-fourth-guid": "default",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(1))
 			request := client.DoArgsForCall(0)
 			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/product-type1-guid/max_in_flight"))
 			requestBody, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(requestBody).To(MatchYAML(`{
 				max_in_flight: {
@@ -346,7 +346,7 @@ var _ = Describe("StagedProducts", func() {
 		When("no jobs are passed", func() {
 			It("does nothing", func() {
 				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(client.DoCallCount()).To(Equal(0))
 			})
@@ -426,7 +426,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 			err := service.DeleteStagedProduct(api.UnstageProductInput{
 				ProductName: "some-product",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(client.DoCallCount()).To(Equal(2))
 
@@ -439,7 +439,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 			Expect(deleteReq.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid"))
 			Expect(deleteReq.Method).To(Equal("DELETE"))
 			_, err = ioutil.ReadAll(deleteReq.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("the product is not staged", func() {
@@ -544,7 +544,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 
 		It("retrieves a list of staged products from the Ops Manager", func() {
 			output, err := service.ListStagedProducts()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(Equal(api.StagedProductsOutput{
 				Products: []api.StagedProduct{
@@ -681,7 +681,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 					"key": "value"
 				}`,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			By("configuring the product properties")
 			Expect(client.DoCallCount()).To(Equal(2))
@@ -691,7 +691,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			reqBody, err := ioutil.ReadAll(req.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(reqBody).To(MatchJSON(`{
 				"properties": {
 					"key": "value"
@@ -714,7 +714,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 					}
 				}`,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				By("configuring the product properties")
 				Expect(client.DoCallCount()).To(Equal(2))
@@ -724,7 +724,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 				reqBody, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(reqBody).To(MatchJSON(`{
 				"properties": {
 					"key": "value",
@@ -755,7 +755,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 					}
 				}`,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				By("configuring the product properties")
 				Expect(client.DoCallCount()).To(Equal(2))
@@ -765,7 +765,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 				reqBody, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(reqBody).To(MatchJSON(`{
 				"properties": {
 					"key": "value",
@@ -794,7 +794,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 						}
 					}`,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				By("configuring the product properties")
 				Expect(client.DoCallCount()).To(Equal(2))
@@ -804,7 +804,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 				reqBody, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(reqBody).To(MatchJSON(`{
 					"properties": {
 						"key": "value",
@@ -899,7 +899,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		When("syslog configuration is configured for the specified product", func() {
 			It("returns the syslog configuration ", func() {
 				syslogConfig, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(client.DoCallCount()).To(Equal(1))
 				req := client.DoArgsForCall(0)
@@ -985,7 +985,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 					"key": "value"
 				}`,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			By("configuring the syslog properties")
 			Expect(client.DoCallCount()).To(Equal(1))
@@ -995,7 +995,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			reqBody, err := ioutil.ReadAll(req.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(reqBody).To(MatchJSON(`{
 				"syslog_configuration": {
 					"key": "value"
@@ -1063,7 +1063,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 
 		It("returns the manifest for a product", func() {
 			manifest, err := service.GetStagedProductManifest("some-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(manifest).To(MatchYAML(`---
 key-1:
   key-2: value-1
@@ -1159,7 +1159,7 @@ key-4: 2147483648
 
 		It("returns the configuration for a product", func() {
 			config, err := service.GetStagedProductProperties("some-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config).To(HaveKeyWithValue(".properties.some-configurable-property", api.ResponseProperty{
 				Value:        "some-value",
@@ -1282,7 +1282,7 @@ key-4: 2147483648
 
 		It("returns the networks + azs for a product", func() {
 			config, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(config).To(Equal(map[string]interface{}{
 				"singleton_availability_zone": map[string]interface{}{
 					"name": "az-one",
@@ -1315,7 +1315,7 @@ key-4: 2147483648
 
 			It("returns an empty payload without error", func() {
 				config, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(config).To(Equal(map[string]interface{}(nil)))
 			})
 		})

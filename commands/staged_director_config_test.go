@@ -130,7 +130,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 		It("writes a complete config file with filtered sensitive fields to stdout", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
@@ -183,7 +183,7 @@ vmtypes-configuration: {}
 
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
@@ -241,7 +241,7 @@ vmtypes-configuration:
 		It("doesn't redact values when --no-redact is passed", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 			err := command.Execute([]string{"--no-redact"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			invocations := fakeService.Invocations()["GetStagedDirectorProperties"]
 			Expect(invocations[0]).To(Equal([]interface{}{false}))
@@ -252,7 +252,7 @@ vmtypes-configuration:
 				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, nil)
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
 				err := command.Execute([]string{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -311,7 +311,7 @@ vmtypes-configuration: {}
 			err := command.Execute([]string{
 				"--no-redact",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
@@ -394,7 +394,7 @@ vmtypes-configuration: {}
 			err := command.Execute([]string{
 				"--no-redact",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			output := stdout.PrintlnArgsForCall(0)
 			Expect(output).To(ContainElement(MatchYAML(`
@@ -451,7 +451,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--no-redact",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -520,7 +520,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--no-redact",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -581,7 +581,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`az-configuration:
@@ -655,7 +655,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -726,7 +726,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -790,7 +790,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -862,7 +862,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`
@@ -922,7 +922,7 @@ vmtypes-configuration: {}
 				err := command.Execute([]string{
 					"--include-placeholders",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
 				Expect(output).To(ContainElement(MatchYAML(`

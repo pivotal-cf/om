@@ -80,7 +80,7 @@ var _ = Describe("PreDeployCheckService", func() {
 			}
 
 			output, err := service.ListPendingDirectorChanges()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.EndpointResults).To(Equal(api.PreDeployCheck{
 				Identifier: "p-bosh-guid",
@@ -250,7 +250,7 @@ var _ = Describe("PreDeployCheckService", func() {
 			}
 
 			output, err := service.ListAllPendingProductChanges()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(Equal([]api.PendingProductChangesOutput{
 				{

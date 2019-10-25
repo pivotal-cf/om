@@ -124,7 +124,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			}, nil)
 
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		AfterEach(func() {
@@ -136,10 +136,10 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			configContent := `type: [ "some-verifier-type", "another-verifier-type" ]`
 
 			_, err := configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = command.Execute([]string{"--config", configFile.Name()})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListDirectorVerifiersCallCount()).To(Equal(1))
 			Expect(service.DisableDirectorVerifiersCallCount()).To(Equal(1))
@@ -147,7 +147,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 
 		It("returns an error if the config file is malformed", func() {
 			_, err := configFile.WriteString("malformed-yaml")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = command.Execute([]string{"--config", configFile.Name()})
 			Expect(err).To(HaveOccurred())

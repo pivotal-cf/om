@@ -45,7 +45,7 @@ var _ = Describe("StemcellService", func() {
 			}, nil)
 
 			output, err := service.ListStemcells()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.ProductStemcells{
 				Products: []api.ProductStemcell{
 					{
@@ -130,13 +130,13 @@ var _ = Describe("StemcellService", func() {
 				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
 
 			err := service.AssignStemcell(input)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			request := fakeClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("PATCH"))
 			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_assignments"))
 			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(body).To(MatchJSON(`{
               "products": [
                 {

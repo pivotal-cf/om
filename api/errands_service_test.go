@@ -43,13 +43,13 @@ var _ = Describe("ErrandsService", func() {
 			}
 
 			err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", false)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
 			Expect(method).To(Equal("PUT"))
 			Expect(header.Get("Content-Type")).To(Equal("application/json"))
 
 			bodyBytes, err := ioutil.ReadAll(body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(bodyBytes)).To(MatchJSON(`{
 				"errands": [
             {
@@ -111,7 +111,7 @@ var _ = Describe("ErrandsService", func() {
 			}
 
 			output, err := service.ListStagedProductErrands("some-product-id")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.Errands).To(ConsistOf([]api.Errand{
 				{Name: "first-errand", PostDeploy: "true"},

@@ -32,7 +32,7 @@ var _ = Describe("ReadCloser", func() {
 		It("reads from the wrapped reader", func() {
 			buffer := make([]byte, 10)
 			n, err := readCloser.Read(buffer)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(n).To(Equal(10))
 			Expect(buffer).To(Equal([]byte("abcdefghij")))
 
@@ -47,12 +47,12 @@ var _ = Describe("ReadCloser", func() {
 
 		It("starts the progress bar only once", func() {
 			_, err := readCloser.Read([]byte{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(bar.StartCallCount()).To(Equal(1))
 
 			_, err = readCloser.Read([]byte{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(bar.StartCallCount()).To(Equal(1))
 		})
@@ -60,7 +60,7 @@ var _ = Describe("ReadCloser", func() {
 		When("io.EOF is returned from the reader", func() {
 			It("stops the progress bar", func() {
 				_, err := readCloser.Read(make([]byte, 10))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(bar.FinishCallCount()).To(Equal(0))
 
@@ -95,7 +95,7 @@ var _ = Describe("ReadCloser", func() {
 			Expect(callbackCallCount).To(Equal(0))
 
 			err := readCloser.Close()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(closer.callCount).To(Equal(1))
 			Expect(bar.FinishCallCount()).To(Equal(1))
@@ -104,14 +104,14 @@ var _ = Describe("ReadCloser", func() {
 
 		It("no-ops if Close is called a second time", func() {
 			err := readCloser.Close()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(closer.callCount).To(Equal(1))
 			Expect(bar.FinishCallCount()).To(Equal(1))
 			Expect(callbackCallCount).To(Equal(1))
 
 			err = readCloser.Close()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(closer.callCount).To(Equal(1))
 			Expect(bar.FinishCallCount()).To(Equal(1))
@@ -124,7 +124,7 @@ var _ = Describe("ReadCloser", func() {
 
 				Expect(func() {
 					readCloser.Close()
-				}).NotTo(Panic())
+				}).ToNot(Panic())
 			})
 		})
 	})

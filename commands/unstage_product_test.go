@@ -30,7 +30,7 @@ var _ = Describe("UnstageProduct", func() {
 		err := command.Execute([]string{
 			"--product-name", "some-product",
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(fakeService.DeleteStagedProductCallCount()).To(Equal(1))
 		Expect(fakeService.DeleteStagedProductArgsForCall(0)).To(Equal(

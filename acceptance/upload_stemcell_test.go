@@ -23,11 +23,11 @@ var _ = Describe("upload-stemcell command", func() {
 
 	createStemcell := func(filename string) string {
 		dir, err := ioutil.TempDir("", "")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		path := filepath.Join(dir, filename)
 		err = ioutil.WriteFile(path, []byte("content so validation does not fail"), 0777)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		return path
 	}
 
@@ -80,7 +80,7 @@ var _ = Describe("upload-stemcell command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
@@ -103,7 +103,7 @@ var _ = Describe("upload-stemcell command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 				Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
@@ -162,7 +162,7 @@ var _ = Describe("upload-stemcell command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("stemcell has already been uploaded"))
@@ -189,7 +189,7 @@ var _ = Describe("upload-stemcell command", func() {
 		When("the content to upload is empty", func() {
 			It("returns an error", func() {
 				emptyContent, err := ioutil.TempFile("", "")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				command := exec.Command(pathToMain,
 					"--target", server.URL(),
@@ -201,7 +201,7 @@ var _ = Describe("upload-stemcell command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 10*time.Second).Should(gexec.Exit(1))
 				Eventually(session.Err).Should(gbytes.Say("failed to upload stemcell: file provided has no content"))
@@ -221,7 +221,7 @@ var _ = Describe("upload-stemcell command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 10*time.Second).Should(gexec.Exit(1))
 				Eventually(session.Err).Should(gbytes.Say(`no such file or directory`))
@@ -271,7 +271,7 @@ var _ = Describe("upload-stemcell command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 

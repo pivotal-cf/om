@@ -73,7 +73,7 @@ var _ = Describe("configure-director command", func() {
 				}
 			},
             }`)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		command := exec.Command(pathToMain,
 			"--target", server.URL(),
@@ -97,7 +97,7 @@ var _ = Describe("configure-director command", func() {
 		_, err = configFile.WriteString(`{
            		"what is this": "key?"
             }`)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		command = exec.Command(pathToMain,
 			"--target", server.URL(),
@@ -299,7 +299,7 @@ iaas-configurations:
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 	})
@@ -392,7 +392,7 @@ iaas-configurations:
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, "40s").Should(gexec.Exit(0))
 		})

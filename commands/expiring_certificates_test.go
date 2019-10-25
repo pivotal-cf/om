@@ -35,7 +35,7 @@ var _ = Describe("ExpiringCertificates", func() {
 		It("displays a helpful message", func() {
 			command := commands.NewExpiringCertificates(service, logger)
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Getting expiring certificates...")))
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] No certificates are expiring in 3m")))
@@ -47,7 +47,7 @@ var _ = Describe("ExpiringCertificates", func() {
 				"--expires-within",
 				"5w",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
 
@@ -60,13 +60,13 @@ var _ = Describe("ExpiringCertificates", func() {
 		It("prints a clear message of the cert expiring or expired", func() {
 			omTime := "2999-01-01T01:01:01Z"
 			opsManagerUntilTime, err := time.Parse(time.RFC3339, omTime)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			credhubTime := "2999-12-12T12:12:12Z"
 			credhubUntilTime, err := time.Parse(time.RFC3339, credhubTime)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			credhubTimeAlreadyExpired := "2015-12-12T12:12:12Z"
 			credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
 				return []api.ExpiringCertificate{
@@ -162,7 +162,7 @@ var _ = Describe("ExpiringCertificates", func() {
 		It("sets ExpiresWithin to 3m as default", func() {
 			command := commands.NewExpiringCertificates(service, logger)
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("3m"))
 		})
@@ -173,7 +173,7 @@ var _ = Describe("ExpiringCertificates", func() {
 				"--expires-within",
 				"5w",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
 		})

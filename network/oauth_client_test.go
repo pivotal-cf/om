@@ -37,7 +37,7 @@ var _ = Describe("OAuthClient", func() {
 				callCount++
 				var err error
 				receivedRequest, err = httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				w.Header().Set("Content-Type", "application/json")
 
@@ -64,15 +64,15 @@ var _ = Describe("OAuthClient", func() {
 	Describe("Do", func() {
 		It("makes a request with authentication", func() {
 			client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(callCount).To(Equal(0))
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			resp, err := client.Do(req)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(resp.StatusCode).To(Equal(http.StatusNoContent))
 
@@ -89,7 +89,7 @@ var _ = Describe("OAuthClient", func() {
 			Expect(password).To(BeEmpty())
 
 			err = req.ParseForm()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(req.Form).To(Equal(url.Values{
 				"grant_type": []string{"password"},
 				"username":   []string{"opsman-username"},
@@ -99,15 +99,15 @@ var _ = Describe("OAuthClient", func() {
 
 		It("makes a request with client credentials", func() {
 			client, err := network.NewOAuthClient(server.URL, "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(callCount).To(Equal(0))
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			resp, err := client.Do(req)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(resp.StatusCode).To(Equal(http.StatusNoContent))
 
@@ -124,7 +124,7 @@ var _ = Describe("OAuthClient", func() {
 			Expect(password).To(Equal("client_secret"))
 
 			err = req.ParseForm()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(req.Form).To(Equal(url.Values{
 				"grant_type": []string{"client_credentials"},
 			}))
@@ -137,10 +137,10 @@ var _ = Describe("OAuthClient", func() {
 			defer nonTLS12Server.Close()
 
 			client, err := network.NewOAuthClient(nonTLS12Server.URL, "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.Do(req)
 			Expect(err).To(MatchError(ContainSubstring("protocol version not supported")))
@@ -149,19 +149,19 @@ var _ = Describe("OAuthClient", func() {
 		When("passing a url with no scheme", func() {
 			It("defaults to HTTPS", func() {
 				noScheme, err := url.Parse(server.URL)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				noScheme.Scheme = ""
 				finalURL := noScheme.String()
 
 				client, err := network.NewOAuthClient(finalURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				resp, err := client.Do(req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(resp.StatusCode).To(Equal(http.StatusNoContent))
 			})
@@ -171,10 +171,10 @@ var _ = Describe("OAuthClient", func() {
 			When("it is set to false", func() {
 				It("throws an error for invalid certificates", func() {
 					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = client.Do(req)
 					Expect(err).To(MatchError(ContainSubstring("certificate signed by unknown authority")))
@@ -184,13 +184,13 @@ var _ = Describe("OAuthClient", func() {
 			When("it is set to true", func() {
 				It("does not verify certificates", func() {
 					client, err := network.NewOAuthClient(server.URL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = client.Do(req)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		})
@@ -198,7 +198,7 @@ var _ = Describe("OAuthClient", func() {
 		When("supporting a ca cert", func() {
 			It("loads from a string", func() {
 				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				pemCert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}))
 
 				client, err := network.NewOAuthClient(
@@ -210,18 +210,18 @@ var _ = Describe("OAuthClient", func() {
 					time.Duration(5)*time.Second, time.Duration(30)*time.Second,
 				)
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.Do(req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("loads from a file", func() {
 				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				pemCert := writeFile(string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})))
 
 				client, err := network.NewOAuthClient(
@@ -233,13 +233,13 @@ var _ = Describe("OAuthClient", func() {
 					time.Duration(5)*time.Second, time.Duration(30)*time.Second,
 				)
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.Do(req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -256,10 +256,10 @@ var _ = Describe("OAuthClient", func() {
 
 				It("returns an error", func() {
 					client, err := network.NewOAuthClient(badServer.URL, "username", "password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = client.Do(req)
 					Expect(err).To(MatchError(ContainSubstring("token could not be retrieved from target url: oauth2: cannot fetch token: 500")))
@@ -269,10 +269,10 @@ var _ = Describe("OAuthClient", func() {
 			When("the target url is empty", func() {
 				It("returns an error", func() {
 					client, err := network.NewOAuthClient("", "username", "password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = client.Do(req)
 					Expect(err).To(MatchError(ContainSubstring("")))

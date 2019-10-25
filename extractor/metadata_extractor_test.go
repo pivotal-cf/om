@@ -22,10 +22,10 @@ name: some-product`
 func createProductFile(metadataFilePath, contents string) *os.File {
 	var err error
 	productFile, err := ioutil.TempFile("", "")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	stat, err := productFile.Stat()
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	zipper := zip.NewWriter(productFile)
 
@@ -34,13 +34,13 @@ func createProductFile(metadataFilePath, contents string) *os.File {
 		UncompressedSize64: uint64(stat.Size()),
 		ModifiedTime:       uint16(stat.ModTime().Unix()),
 	})
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	_, err = io.WriteString(productWriter, contents)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	err = zipper.Close()
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	return productFile
 }
@@ -63,7 +63,7 @@ var _ = Describe("MetadataExtractor", func() {
 	Describe("ExtractMetadata", func() {
 		It("Extracts the product name and version from the given pivotal file", func() {
 			metadata, err := metadataExtractor.ExtractMetadata(productFile.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(metadata.Name).To(Equal("some-product"))
 			Expect(metadata.Version).To(Equal("1.8.14"))

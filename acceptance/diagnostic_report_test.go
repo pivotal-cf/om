@@ -41,7 +41,7 @@ var _ = Describe("diagnostic-report command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 			Eventually(session.Out.Contents()).Should(MatchJSON(fakeReport25))
@@ -66,7 +66,7 @@ var _ = Describe("diagnostic-report command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 			Eventually(session.Out.Contents()).Should(MatchJSON(fakeReport26))

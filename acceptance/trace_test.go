@@ -32,10 +32,10 @@ var _ = Describe("global trace flag", func() {
 	BeforeEach(func() {
 		var err error
 		productFile, err = ioutil.TempFile("", "cool_name.com")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		stat, err := productFile.Stat()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		zipper := zip.NewWriter(productFile)
 
@@ -44,16 +44,16 @@ var _ = Describe("global trace flag", func() {
 			UncompressedSize64: uint64(stat.Size()),
 			ModifiedTime:       uint16(stat.ModTime().Unix()),
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = io.WriteString(productWriter, `
 ---
 product_version: 1.8.14
 name: some-product`)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		err = zipper.Close()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		server = createTLSServer()
 		server.AppendHandlers(
@@ -89,7 +89,7 @@ name: some-product`)
 			"available-products")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
@@ -110,7 +110,7 @@ name: some-product`)
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 

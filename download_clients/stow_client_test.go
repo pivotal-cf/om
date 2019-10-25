@@ -208,10 +208,10 @@ var _ = Describe("stowClient", func() {
 		BeforeEach(func() {
 			var err error
 			file, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = file.WriteString(fileContents)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(file.Close()).ToNot(HaveOccurred())
 		})

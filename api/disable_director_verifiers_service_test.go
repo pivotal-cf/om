@@ -46,7 +46,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 			}
 
 			output, err := service.ListDirectorVerifiers()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(Equal([]api.Verifier{
 				{
@@ -112,7 +112,7 @@ var _ = Describe("DisableDirectorVerifiersService", func() {
 			}
 
 			err := service.DisableDirectorVerifiers([]string{"some-verifier-type", "another-verifier-type"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal(http.MethodPut))

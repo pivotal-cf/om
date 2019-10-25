@@ -69,7 +69,7 @@ var _ = Describe("help", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain)
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(ContainSubstring(GLOBAL_USAGE))
@@ -80,7 +80,7 @@ var _ = Describe("help", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "-h")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(ContainSubstring(GLOBAL_USAGE))
@@ -91,7 +91,7 @@ var _ = Describe("help", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "--help")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(ContainSubstring(GLOBAL_USAGE))
@@ -102,7 +102,7 @@ var _ = Describe("help", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain, "help")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(ContainSubstring(GLOBAL_USAGE))
@@ -113,7 +113,7 @@ var _ = Describe("help", func() {
 		It("prints the usage for that command", func() {
 			command := exec.Command(pathToMain, "help", "configure-authentication")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(ContainSubstring(CONFIGURE_AUTHENTICATION_USAGE))

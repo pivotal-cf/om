@@ -29,7 +29,7 @@ var _ = Describe("Execute", func() {
 				TemplateFile: writeFile(`{name: Bob}`),
 				Path:         "/name",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(contents)).To(Equal("Bob\n"))
 		})
 
@@ -51,7 +51,7 @@ var _ = Describe("Execute", func() {
 					return []string{"PREFIX_name=Bob"}
 				},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Bob`))
 		})
 
@@ -87,7 +87,7 @@ var _ = Describe("Execute", func() {
 					return []string{`PREFIX_age="123"`}
 				},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`age: "123"`))
 		})
 
@@ -99,7 +99,7 @@ var _ = Describe("Execute", func() {
 					return []string{"PREFIX_name=some\nmulti\nline\nvalue"}
 				},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: "some\nmulti\nline\nvalue"`))
 		})
 
@@ -111,7 +111,7 @@ var _ = Describe("Execute", func() {
 					return []string{"PREFIX_name={some: value}"}
 				},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: {some: value}`))
 		})
 
@@ -124,7 +124,7 @@ var _ = Describe("Execute", func() {
 					return []string{`PREFIX_age="123"`}
 				},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`age: 456`))
 		})
 	})
@@ -135,7 +135,7 @@ var _ = Describe("Execute", func() {
 				TemplateFile: writeFile(`{name: ((username))}`),
 				VarsFiles:    []string{writeFile(`username: Bob`)},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Bob`))
 		})
 
@@ -147,7 +147,7 @@ var _ = Describe("Execute", func() {
 					writeFile(`username: Susie`),
 				},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Susie`))
 		})
 
@@ -157,7 +157,7 @@ var _ = Describe("Execute", func() {
 				VarsFiles:    []string{writeFile(`username: Bob`)},
 				Vars:         []string{"username=Susie"},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Susie`))
 		})
 	})
@@ -168,7 +168,7 @@ var _ = Describe("Execute", func() {
 				TemplateFile: writeFile(`{name: Susie}`),
 				OpsFiles:     []string{writeFile(`[{type: replace, path: /name, value: Bob}]`)},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Bob`))
 		})
 	})
@@ -184,9 +184,9 @@ var _ = Describe("Execute", func() {
 
 func writeFile(contents string) string {
 	file, err := ioutil.TempFile("", "")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

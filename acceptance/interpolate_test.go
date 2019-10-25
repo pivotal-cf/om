@@ -30,7 +30,7 @@ var _ = Describe("interpolate command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(0))
 			Expect(session.Out.Contents()).To(MatchYAML(`
@@ -52,7 +52,7 @@ name: bob
 				defer yamlFile.Close()
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -76,7 +76,7 @@ name: moe
 				defer yamlFile.Close()
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -101,7 +101,7 @@ name: bob
 				command.Env = append(command.Env, "OM_VAR_has_pet1=true")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -123,7 +123,7 @@ has_pet: true
 				command.Env = append(command.Env, "OM_VAR_name1=\"moe\"")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -148,7 +148,7 @@ name: '"moe"'
 				command.Env = append(command.Env, "OM_VAR_2_name1=bob")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -174,7 +174,7 @@ name: bob
 				command.Env = append(command.Env, "OM_VAR_name1=moe")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -197,7 +197,7 @@ name: moe
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -219,7 +219,7 @@ name: moe
 				command.Env = append(command.Env, "OM_VAR_multi_line_value=some\nmulti\nline\nvalue")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -252,7 +252,7 @@ some-key:
 				command.Env = append(command.Env, fmt.Sprintf("OM_VAR_hash=%s", hashContents))
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`
@@ -277,7 +277,7 @@ hash:
 				defer yamlFile.Close()
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(1))
 				Eventually(session.Err, 5).Should(gbytes.Say("Expected to find variables:\nage1"))
@@ -293,7 +293,7 @@ hash:
 			command.Stdin = strings.NewReader("---\nname: bob\nage: 100")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(0))
 			Expect(session.Out.Contents()).To(MatchYAML(`
@@ -311,7 +311,7 @@ name: bob
 				command.Stdin = strings.NewReader("---\nname: bob\nage: 100")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 5).Should(gexec.Exit(0))
 				Expect(session.Out.Contents()).To(MatchYAML(`

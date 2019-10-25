@@ -98,10 +98,10 @@ var _ = Describe("bosh-env", func() {
 			BeforeEach(func() {
 				os.Mkdir("./tmp", os.ModePerm)
 				f, err = ioutil.TempFile("./tmp", "opsmankey-*.pem")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				keyFile, err = filepath.Abs(f.Name())
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			AfterEach(func() {
@@ -110,14 +110,14 @@ var _ = Describe("bosh-env", func() {
 
 			It("Resolves to the absolute path", func() {
 				wd, err := os.Getwd()
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				defer func() {
 					err = os.Chdir(wd)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				}()
 
 				err = os.Chdir("./tmp")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = command.Execute([]string{"-i", filepath.Base(keyFile)})
 				Expect(err).ShouldNot(HaveOccurred())

@@ -76,7 +76,7 @@ var _ = Describe("Help", func() {
 					"clean": clean,
 				})
 				err := help.Execute([]string{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(output.String()).To(ContainSubstring(GLOBAL_USAGE))
 			})
@@ -98,7 +98,7 @@ var _ = Describe("Help", func() {
 
 				help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{"bake": bake})
 				err := help.Execute([]string{"bake"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(output.String()).To(ContainSubstring(COMMAND_USAGE))
 			})
@@ -138,10 +138,10 @@ var _ = Describe("Help", func() {
 
 					help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{"bake": bake})
 					err := help.Execute([]string{"bake"})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
-					Expect(output.String()).NotTo(ContainSubstring("Command Arguments"))
+					Expect(output.String()).ToNot(ContainSubstring("Command Arguments"))
 				})
 			})
 
@@ -157,10 +157,10 @@ var _ = Describe("Help", func() {
 
 					help := commands.NewHelp(output, strings.TrimSpace(flags), jhanda.CommandSet{"bake": bake})
 					err := help.Execute([]string{"bake"})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
-					Expect(output.String()).NotTo(ContainSubstring("Command Arguments"))
+					Expect(output.String()).ToNot(ContainSubstring("Command Arguments"))
 				})
 			})
 		})

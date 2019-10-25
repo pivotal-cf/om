@@ -38,7 +38,7 @@ var _ = Describe("UploadStemcellService", func() {
 				Stemcell:      strings.NewReader("some content"),
 				ContentType:   "some content-type",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.StemcellUploadOutput{}))
 
 			request := progressClient.DoArgsForCall(0)
@@ -48,7 +48,7 @@ var _ = Describe("UploadStemcellService", func() {
 			Expect(request.Header.Get("Content-Type")).To(Equal("some content-type"))
 
 			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(body)).To(Equal("some content"))
 		})

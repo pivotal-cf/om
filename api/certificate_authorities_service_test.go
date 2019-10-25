@@ -52,7 +52,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			)
 
 			output, err := service.ListCertificateAuthorities()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.CAs).To(ConsistOf([]api.CA{{
 				GUID:      "some-guid",
@@ -127,7 +127,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			)
 
 			ca, err := service.GenerateCertificateAuthority()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(ca).To(Equal(api.CA{
 				GUID:      "some-guid",
@@ -187,7 +187,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			)
 
 			err := service.RegenerateCertificates()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("the client cannot make a request", func() {
@@ -246,7 +246,7 @@ var _ = Describe("CertificateAuthorities", func() {
 				CertPem:       certPem,
 				PrivateKeyPem: privateKey,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(ca).To(Equal(api.CA{
 				GUID:      "some-guid",
@@ -317,7 +317,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			err := service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
 				GUID: "some-certificate-authority-guid",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("the client cannot make a request", func() {
@@ -362,7 +362,7 @@ var _ = Describe("CertificateAuthorities", func() {
 			err := service.DeleteCertificateAuthority(api.DeleteCertificateAuthorityInput{
 				GUID: "some-certificate-authority-guid",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("the client cannot make a request", func() {

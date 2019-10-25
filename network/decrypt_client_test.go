@@ -58,7 +58,7 @@ var _ = Describe("DecryptClient", func() {
 
 				req := http.Request{Method: "some-method"}
 				resp, err := decryptClient.Do(&req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeClient.DoCallCount()).To(Equal(4))
 				Expect(fakeClient.DoArgsForCall(3).Method).To(Equal("some-method"))
@@ -73,10 +73,10 @@ var _ = Describe("DecryptClient", func() {
 
 				req := http.Request{Method: "some-method"}
 				_, err := decryptClient.Do(&req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				resp, err := decryptClient.Do(&req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeClient.DoCallCount()).To(Equal(5))
 				Expect(fakeClient.DoArgsForCall(3).Method).To(Equal("some-method"))

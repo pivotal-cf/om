@@ -30,7 +30,7 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 			err := command.Execute([]string{
 				"--id", "some-certificate-authority-id",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.DeleteCertificateAuthorityCallCount()).To(Equal(1))
 			Expect(fakeService.DeleteCertificateAuthorityArgsForCall(0)).To(Equal(api.DeleteCertificateAuthorityInput{

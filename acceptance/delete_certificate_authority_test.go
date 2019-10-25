@@ -38,7 +38,7 @@ var _ = Describe("delete certificate authority", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(Equal("Certificate authority 'some-id' deleted\n"))
@@ -67,7 +67,7 @@ var _ = Describe("delete certificate authority", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Expect(string(session.Err.Contents())).To(ContainSubstring("Certificate with specified guid not found"))
@@ -97,7 +97,7 @@ var _ = Describe("delete certificate authority", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Expect(string(session.Err.Contents())).To(ContainSubstring("Active certificates cannot be deleted"))

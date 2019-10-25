@@ -45,17 +45,17 @@ var _ = Describe("Setup", func() {
 				HTTPSProxyURL:                    "http://https-proxy.com",
 				NoProxy:                          "10.10.10.10,11.11.11.11",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.SetupOutput{}))
 
 			request := client.DoArgsForCall(0)
-			Expect(request).NotTo(BeNil())
+			Expect(request).ToNot(BeNil())
 			Expect(request.Method).To(Equal("POST"))
 			Expect(request.URL.Path).To(Equal("/api/v0/setup"))
 			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(body).To(MatchJSON(`{
 				"setup": {
     			"identity_provider": "some-provider",
@@ -148,7 +148,7 @@ var _ = Describe("Setup", func() {
 				}, nil)
 
 				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusUnstarted,
 				}))
@@ -163,7 +163,7 @@ var _ = Describe("Setup", func() {
 				}, nil)
 
 				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusPending,
 				}))
@@ -181,7 +181,7 @@ var _ = Describe("Setup", func() {
 				}, nil)
 
 				output, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output).To(Equal(api.EnsureAvailabilityOutput{
 					Status: api.EnsureAvailabilityStatusComplete,
 				}))

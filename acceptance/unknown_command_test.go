@@ -15,7 +15,7 @@ var _ = Describe("unknown command", func() {
 		cmd := exec.Command(pathToMain, "-t", "pcf.foo.cf-app.com", "banana")
 
 		session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(1))
 		Expect(session.Err).Should(gbytes.Say("unknown command: banana"))

@@ -32,11 +32,11 @@ var _ = Describe("ConfigureProduct", func() {
 
 		JustBeforeEach(func() {
 			configFile, err = ioutil.TempFile("", "config.yml")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			defer configFile.Close()
 
 			_, err = configFile.WriteString(config)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("product properties are provided", func() {
@@ -57,7 +57,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 				actual := service.UpdateStagedProductPropertiesArgsForCall(0)
@@ -170,7 +170,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 				actual := service.UpdateStagedProductNetworksAndAZsArgsForCall(0)
@@ -209,7 +209,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 				actual := service.UpdateSyslogConfigurationArgsForCall(0)
@@ -253,7 +253,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 				Expect(service.ListStagedProductJobsArgsForCall(0)).To(Equal("some-product-guid"))
@@ -261,7 +261,7 @@ var _ = Describe("ConfigureProduct", func() {
 				productGUID, userConfig := service.ConfigureJobResourceConfigArgsForCall(0)
 				Expect(productGUID).To(Equal("some-product-guid"))
 				payload, err := json.Marshal(userConfig)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(payload).To(MatchJSON(`{
           		    "some-job": {
           		        "persistent_disk": {"size_mb": "20480"},
@@ -306,7 +306,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := client.Execute([]string{
 					"--config", configFile.Name(),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.UpdateStagedProductJobMaxInFlightCallCount()).To(Equal(1))
 				productGUID, payload := service.UpdateStagedProductJobMaxInFlightArgsForCall(0)
@@ -351,22 +351,22 @@ var _ = Describe("ConfigureProduct", func() {
 						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 						configFile, err = ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						varsFile, err := ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = varsFile.WriteString(`password: something-secure`)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						err = client.Execute([]string{
 							"--config", configFile.Name(),
 							"--vars-file", varsFile.Name(),
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 
@@ -375,16 +375,16 @@ var _ = Describe("ConfigureProduct", func() {
 						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 						configFile, err = ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						err = client.Execute([]string{
 							"--config", configFile.Name(),
 							"--var", "password=something-secure",
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 
@@ -393,16 +393,16 @@ var _ = Describe("ConfigureProduct", func() {
 						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)
 
 						configFile, err = ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						err = client.Execute([]string{
 							"--config", configFile.Name(),
 							"--vars-env", "OM_VAR",
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 
 					It("supports the experimental feature of OM_VARS_ENV", func() {
@@ -412,15 +412,15 @@ var _ = Describe("ConfigureProduct", func() {
 						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)
 
 						configFile, err = ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						err = client.Execute([]string{
 							"--config", configFile.Name(),
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 
@@ -428,10 +428,10 @@ var _ = Describe("ConfigureProduct", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = client.Execute([]string{
 						"--config", configFile.Name(),
@@ -445,22 +445,22 @@ var _ = Describe("ConfigureProduct", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlProductProperties)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					opsFile, err := ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = opsFile.WriteString(productOpsFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = client.Execute([]string{
 						"--config", configFile.Name(),
 						"--ops-file", opsFile.Name(),
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 					Expect(service.UpdateStagedProductPropertiesCallCount()).To(Equal(1))
@@ -472,16 +472,16 @@ var _ = Describe("ConfigureProduct", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlProductProperties)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					opsFile, err := ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = opsFile.WriteString(`%%%`)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = client.Execute([]string{
 						"-c", configFile.Name(),
@@ -536,7 +536,7 @@ var _ = Describe("ConfigureProduct", func() {
 				err := command.Execute([]string{
 					"--config", configFile.Name(),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 
@@ -699,10 +699,10 @@ var _ = Describe("ConfigureProduct", func() {
 						}, nil)
 
 						configFile, err = ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(invalidConfig)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						err = client.Execute([]string{"--config", configFile.Name()})
 						Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration")))
@@ -813,10 +813,10 @@ var _ = Describe("ConfigureProduct", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(errandConfigFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = client.Execute([]string{
 						"--config", configFile.Name(),

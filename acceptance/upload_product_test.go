@@ -25,10 +25,10 @@ var _ = Describe("upload-product command", func() {
 	BeforeEach(func() {
 		var err error
 		productFile, err = ioutil.TempFile("", "cool_name.com")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		stat, err := productFile.Stat()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		zipper := zip.NewWriter(productFile)
 
@@ -37,16 +37,16 @@ var _ = Describe("upload-product command", func() {
 			UncompressedSize64: uint64(stat.Size()),
 			ModifiedTime:       uint16(stat.ModTime().Unix()),
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = io.WriteString(productWriter, `
 ---
 product_version: 1.8.14
 name: some-product`)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		err = zipper.Close()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		server = createTLSServer()
 		server.AppendHandlers(
@@ -68,7 +68,7 @@ name: some-product`)
 					ghttp.VerifyRequest("POST", "/api/v0/available_products"),
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 						err := req.ParseMultipartForm(100)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						requestFileName := req.MultipartForm.File["product[file]"][0].Filename
 						Expect(requestFileName).To(Equal(filepath.Base(productFile.Name())))
@@ -92,7 +92,7 @@ name: some-product`)
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(0))
 			Eventually(session.Out, 5).Should(gbytes.Say("processing product"))
@@ -107,12 +107,12 @@ name: some-product`)
 		BeforeEach(func() {
 			var err error
 			emptyContent, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		AfterEach(func() {
 			err := os.Remove(emptyContent.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("returns an error", func() {
@@ -126,7 +126,7 @@ name: some-product`)
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(1))
 			Eventually(session.Err, 5).Should(gbytes.Say("not a valid zip file"))
@@ -136,7 +136,7 @@ name: some-product`)
 	When("the content cannot be read", func() {
 		BeforeEach(func() {
 			err := os.Remove(productFile.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("returns an error", func() {
@@ -150,7 +150,7 @@ name: some-product`)
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(1))
 			Eventually(session.Err, 5).Should(gbytes.Say(`no such file or directory`))
@@ -205,7 +205,7 @@ name: some-product`)
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(0))
 

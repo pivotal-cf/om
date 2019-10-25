@@ -76,7 +76,7 @@ var _ = Describe("Info Service", func() {
 			}, nil)
 
 			info, err := service.Info()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(info.Version).To(Equal("v2.1-build.79"))
 		})
 

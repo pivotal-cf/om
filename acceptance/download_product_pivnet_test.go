@@ -34,7 +34,7 @@ var _ = Describe("download-product command", func() {
 		BeforeEach(func() {
 			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
 			contents, err := ioutil.ReadFile(pivotalFile)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
 			var fakePivnetMetadataResponse []byte
@@ -42,15 +42,15 @@ var _ = Describe("download-product command", func() {
 			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
 			defer fixtureMetadata.Close()
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			server = ghttp.NewTLSServer()
 			pathToHTTPSPivnet, err = gexec.Build("github.com/pivotal-cf/om",
 				"--ldflags", fmt.Sprintf("-X github.com/pivotal-cf/om/download_clients.pivnetHost=%s", server.URL()))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -134,7 +134,7 @@ var _ = Describe("download-product command", func() {
 				"--output-directory", tmpDir,
 			)
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Eventually(session, "10s").Should(gexec.Exit(0))
 			Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source pivnet`))
 			Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
@@ -154,19 +154,19 @@ func fileContents(paths ...string) []byte {
 
 func createPivotalFile(productFileName, metadataFilename string) string {
 	tempfile, err := ioutil.TempFile("", productFileName)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	zipper := zip.NewWriter(tempfile)
 	file, err := zipper.Create("metadata/props.yml")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	contents, err := ioutil.ReadFile(metadataFilename)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	_, err = file.Write(contents)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
-	Expect(zipper.Close()).NotTo(HaveOccurred())
+	Expect(zipper.Close()).ToNot(HaveOccurred())
 	return tempfile.Name()
 }
 

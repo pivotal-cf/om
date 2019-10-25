@@ -69,7 +69,7 @@ var _ = Describe("import-installation command", func() {
 					defer GinkgoRecover()
 
 					err := req.ParseMultipartForm(100)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					installation = req.MultipartForm.File["installation[file]"][0].Filename
 					passphrase = req.MultipartForm.Value["passphrase"][0]
@@ -92,7 +92,7 @@ var _ = Describe("import-installation command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, 5).Should(gexec.Exit(0))
 		Eventually(session.Out, 5).Should(gbytes.Say("processing installation"))
@@ -121,7 +121,7 @@ var _ = Describe("import-installation command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(0))
 			Eventually(session.Out, 5).Should(gbytes.Say("Ops Manager is already configured"))
@@ -131,7 +131,7 @@ var _ = Describe("import-installation command", func() {
 	When("the content cannot be read", func() {
 		BeforeEach(func() {
 			err := os.Remove(content.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("returns an error", func() {
@@ -144,7 +144,7 @@ var _ = Describe("import-installation command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(1))
 			Eventually(session.Err, 5).Should(gbytes.Say(`does not exist. Please check the name and try again.`))

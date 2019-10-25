@@ -45,13 +45,13 @@ var _ = Describe("global env file", func() {
 			var err error
 
 			configFile, err = ioutil.TempFile("", "config.yml")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = configFile.Close()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		}
 
 		It("authenticates with creds in config file", func() {
@@ -64,7 +64,7 @@ var _ = Describe("global env file", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
@@ -73,7 +73,7 @@ var _ = Describe("global env file", func() {
 		It("supports a string from --ca-cert", func() {
 			server := testServer(true)
 			cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
 			caCertFilename := writeFile(string(pemCert))
 
@@ -85,7 +85,7 @@ var _ = Describe("global env file", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 		})
@@ -110,7 +110,7 @@ bad-key: bad-value
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Expect(string(session.Err.Contents())).To(ContainSubstring("could not parse env file: "))
@@ -136,7 +136,7 @@ bad-key: bad-value
 					server := testServer(true)
 					command.Env = append(command.Env, fmt.Sprintf("OM_VAR_target_url=%s", server.URL))
 					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Eventually(session).Should(gexec.Exit(0))
 
@@ -147,7 +147,7 @@ bad-key: bad-value
 				When("the env file contains variables not found in the environment", func() {
 					It("exits 1 and lists the missing variables", func() {
 						session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						Eventually(session).Should(gexec.Exit(1))
 
@@ -164,7 +164,7 @@ bad-key: bad-value
 			Context("and the OM_VARS_ENV environment variable IS NOT set", func() {
 				It("exits 1, lists the needed vars, and notes the experimental OM_VARS_ENV feature", func() {
 					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Eventually(session).Should(gexec.Exit(1))
 
@@ -191,7 +191,7 @@ bad-key: bad-value
 
 			It("returns an error", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("could not parse env file: "))
@@ -208,7 +208,7 @@ bad-key: bad-value
 			})
 			It("returns an error", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session).Should(gexec.Exit(1))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("env file does not exist: "))

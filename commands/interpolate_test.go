@@ -35,7 +35,7 @@ var _ = Describe("Interpolate", func() {
 	BeforeEach(func() {
 		var err error
 		stdin, err = ioutil.TempFile("", "")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		ioutil.WriteFile(stdin.Name(), []byte(templateNoParametersOverStdin), os.ModeCharDevice|0755) // mimic a character device so it'll be picked up in the conditional
 		logger = &fakes.Logger{}
 		command = commands.NewInterpolate(func() []string { return nil }, logger, stdin)
@@ -43,7 +43,7 @@ var _ = Describe("Interpolate", func() {
 
 	AfterEach(func() {
 		err := os.Remove(stdin.Name())
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Describe("Execute", func() {
@@ -56,45 +56,45 @@ var _ = Describe("Interpolate", func() {
 
 		BeforeEach(func() {
 			tmpFile, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			inputFile = tmpFile.Name()
 
 			tmpFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			varsFile = tmpFile.Name()
 
 			tmpFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			varsFile2 = tmpFile.Name()
 
 			tmpFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			opsFile = tmpFile.Name()
 		})
 
 		AfterEach(func() {
 			err := os.Remove(inputFile)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			err = os.Remove(varsFile)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			err = os.Remove(varsFile2)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			err = os.Remove(opsFile)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		Context("no vars or ops file inputs", func() {
 			It("succeeds", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
@@ -102,7 +102,7 @@ var _ = Describe("Interpolate", func() {
 
 			It("fails when all parameters are not specified", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 				})
@@ -115,14 +115,14 @@ var _ = Describe("Interpolate", func() {
 		Context("with vars file input", func() {
 			It("succeeds", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = ioutil.WriteFile(varsFile, []byte(varsFileParameter), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--vars-file", varsFile,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
@@ -130,17 +130,17 @@ var _ = Describe("Interpolate", func() {
 
 			It("succeeds when multiple vars files", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = ioutil.WriteFile(varsFile, []byte(varsFileParameter), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = ioutil.WriteFile(varsFile2, []byte(varsFileParameter2), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--vars-file", varsFile,
 					"--vars-file", varsFile2,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: new world"))
@@ -150,12 +150,12 @@ var _ = Describe("Interpolate", func() {
 		Context("with vars input", func() {
 			It("succeeds", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--var", "hello=world",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
@@ -163,13 +163,13 @@ var _ = Describe("Interpolate", func() {
 
 			It("succeeds with multiple vars inputs", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--var", "hello=world",
 					"--var", "world=hello",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world\nworld: hello"))
@@ -177,14 +177,14 @@ var _ = Describe("Interpolate", func() {
 
 			It("takes the last value if there are duplicate vars", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--var", "hello=world",
 					"--var", "world=hello",
 					"--var", "hello=otherWorld",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: otherWorld\nworld: hello"))
@@ -194,14 +194,14 @@ var _ = Describe("Interpolate", func() {
 		Context("with ops file input", func() {
 			It("succeeds", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = ioutil.WriteFile(opsFile, []byte(opsFileParameter), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--ops-file", opsFile,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML(`foo: bar
@@ -212,15 +212,15 @@ hello: world`))
 		When("path flag is set", func() {
 			It("returns a value from the interpolated file", func() {
 				err := ioutil.WriteFile(inputFile, []byte(`{"a": "((interpolated-value))", "c":"d" }`), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = ioutil.WriteFile(varsFile, []byte(`{"interpolated-value": "b"}`), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 					"--vars-file", varsFile,
 					"--path", "/a",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML(`b`))
@@ -231,12 +231,12 @@ hello: world`))
 			When("there are missing parameters", func() {
 				It("succeeds", func() {
 					err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					err = command.Execute([]string{
 						"--config", inputFile,
 						"--skip-missing",
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					content := logger.PrintlnArgsForCall(0)
 					Expect(content[0].(string)).To(MatchYAML(templateWithParameters))
@@ -264,7 +264,7 @@ hello: world`))
 		When("the config is passed via stdin with no config flag", func() {
 			It("uses stdin", func() {
 				err := command.Execute([]string{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: from standard input"))
 			})
@@ -273,7 +273,7 @@ hello: world`))
 		When("the config is passed via stdin with --config -", func() {
 			It("uses stdin", func() {
 				err := command.Execute([]string{"--config", "-"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: from standard input"))
 			})
@@ -282,11 +282,11 @@ hello: world`))
 		When("the config is passed via stdin and a config file", func() {
 			It("uses the config file", func() {
 				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				err = command.Execute([]string{
 					"--config", inputFile,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				content := logger.PrintlnArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))

@@ -100,7 +100,7 @@ var _ = Describe("certificate-authorities", func() {
 			"certificate-authorities")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 
@@ -141,7 +141,7 @@ var _ = Describe("certificate-authorities", func() {
 				"--format", "json")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 

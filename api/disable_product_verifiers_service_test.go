@@ -65,7 +65,7 @@ var _ = Describe("DisableProductVerifiersService", func() {
 			)
 
 			verifiers, guid, err := service.ListProductVerifiers("cf")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(verifiers).To(Equal([]api.Verifier{
 				{

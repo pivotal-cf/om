@@ -15,9 +15,9 @@ func TestCommands(t *testing.T) {
 
 func writeTestConfigFile(contents string) string {
 	file, err := ioutil.TempFile("", "config-*.yml")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

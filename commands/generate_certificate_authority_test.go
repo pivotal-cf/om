@@ -43,7 +43,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 
 		It("makes a request to the Opsman to generate a certificate authority and prints to a table", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
 
@@ -56,7 +56,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 				err := command.Execute([]string{
 					"--format", "json",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))

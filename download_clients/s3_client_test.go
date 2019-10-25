@@ -279,14 +279,14 @@ func (m mockItem) Size() (int64, error) {
 
 func createPivotalFile(productFileName, stemcellName, stemcellVersion string) string {
 	tempfile, err := ioutil.TempFile("", productFileName)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	zipper := zip.NewWriter(tempfile)
 	file, err := zipper.Create("metadata/props.yml")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	contents, err := ioutil.ReadFile("./fixtures/example-product-metadata.yml")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	context := struct {
 		StemcellName    string
@@ -297,11 +297,11 @@ func createPivotalFile(productFileName, stemcellName, stemcellVersion string) st
 	}
 
 	tmpl, err := template.New("example-product").Parse(string(contents))
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	err = tmpl.Execute(file, context)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
-	Expect(zipper.Close()).NotTo(HaveOccurred())
+	Expect(zipper.Close()).ToNot(HaveOccurred())
 	return tempfile.Name()
 }

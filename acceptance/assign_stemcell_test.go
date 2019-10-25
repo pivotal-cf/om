@@ -61,7 +61,7 @@ var _ = Describe("assign-stemcell command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		Eventually(session.Out).Should(gbytes.Say("assigned stemcell successfully"))

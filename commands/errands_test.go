@@ -49,7 +49,7 @@ var _ = Describe("Errands", func() {
 
 		It("lists the available products", func() {
 			err := command.Execute([]string{"--product-name", "some-product-name"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GetStagedProductByNameCallCount()).To(Equal(1))
 			Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product-name"))
@@ -75,7 +75,7 @@ var _ = Describe("Errands", func() {
 					"--product-name", "some-product-name",
 					"--format", "json",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))

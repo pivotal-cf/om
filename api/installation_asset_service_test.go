@@ -40,12 +40,12 @@ var _ = Describe("InstallationAssetService", func() {
 		BeforeEach(func() {
 			var err error
 			outputFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		AfterEach(func() {
 			err := os.Remove(outputFile.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("makes a request to export the current Ops Manager installation", func() {
@@ -56,7 +56,7 @@ var _ = Describe("InstallationAssetService", func() {
 			}, nil)
 
 			err := service.DownloadInstallationAssetCollection(outputFile.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			By("posting to the installation_asset_collection endpoint")
 			request := progressClient.DoArgsForCall(0)
@@ -65,7 +65,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 			By("writing the installation to a local file")
 			ins, err := ioutil.ReadFile(outputFile.Name())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(ins)).To(Equal("some-installation"))
 		})
 
@@ -132,7 +132,7 @@ var _ = Describe("InstallationAssetService", func() {
 				ContentType:     "some content-type",
 				PollingInterval: 1,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			request := unauthedProgressClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("POST"))
@@ -141,7 +141,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(request.Header.Get("Content-Type")).To(Equal("some content-type"))
 
 			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(body)).To(Equal("some installation"))
 		})
@@ -187,7 +187,7 @@ var _ = Describe("InstallationAssetService", func() {
 			}
 
 			output, err := service.DeleteInstallationAssetCollection()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output.ID).To(Equal(12))
 
 			request := client.DoArgsForCall(0)
@@ -196,7 +196,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
 
 			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(body)).To(Equal(`{"errands": {}}`))
 		})
@@ -210,7 +210,7 @@ var _ = Describe("InstallationAssetService", func() {
 			}
 
 			output, err := service.DeleteInstallationAssetCollection()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 		})
 

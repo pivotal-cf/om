@@ -29,7 +29,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				var err error
 				requestDump, err = httputil.DumpRequest(req, true)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				w.WriteHeader(http.StatusTeapot)
 				_, err = w.Write([]byte("response"))
@@ -40,26 +40,26 @@ var _ = Describe("UnauthenticatedClient", func() {
 			client, _ := network.NewUnauthenticatedClient(server.URL, true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 
 			request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			response, err := client.Do(request)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
-			Expect(response).NotTo(BeNil())
+			Expect(response).ToNot(BeNil())
 			Expect(response.StatusCode).To(Equal(http.StatusTeapot))
 
 			body, err := ioutil.ReadAll(response.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(body)).To(Equal("response"))
 
 			request, err = http.ReadRequest(bufio.NewReader(bytes.NewReader(requestDump)))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.String()).To(Equal("/path?query"))
 
 			body, err = ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(body)).To(Equal("request"))
 		})
 
@@ -73,21 +73,21 @@ var _ = Describe("UnauthenticatedClient", func() {
 				server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 
 				noScheme, err := url.Parse(server.URL)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				noScheme.Scheme = ""
 				finalURL := strings.Replace(noScheme.String(), "//", "", 1)
 
 				client, _ := network.NewUnauthenticatedClient(finalURL, true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				request, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				response, err := client.Do(request)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
-				Expect(response).NotTo(BeNil())
+				Expect(response).ToNot(BeNil())
 				Expect(response.StatusCode).To(Equal(http.StatusTeapot))
 			})
 		})
@@ -103,32 +103,32 @@ var _ = Describe("UnauthenticatedClient", func() {
 
 			It("loads from a string", func() {
 				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				pemCert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}))
 
 				client, err := network.NewUnauthenticatedClient(server.URL, false, pemCert, time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.Do(request)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("loads from a file", func() {
 				cert, err := x509.ParseCertificate(server.TLS.Certificates[0].Certificate[0])
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				pemCert := writeFile(string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})))
 
 				client, err := network.NewUnauthenticatedClient(server.URL, false, pemCert, time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				request, err := http.NewRequest("GET", "/path?query", strings.NewReader("request"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.Do(request)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -141,7 +141,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 			client, _ := network.NewUnauthenticatedClient(nonTLS12Server.URL, true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = client.Do(req)
 			Expect(err).To(MatchError(ContainSubstring("protocol version not supported")))

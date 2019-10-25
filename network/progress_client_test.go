@@ -44,17 +44,17 @@ var _ = Describe("ProgressClient", func() {
 			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some content")))
 
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Second))
 
 			resp, err := progressClient.Do(req)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
 			rawRespBody, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(rawRespBody)).To(Equal(`{}`))
 
 			request := client.DoArgsForCall(0)
@@ -62,7 +62,7 @@ var _ = Describe("ProgressClient", func() {
 			Expect(request.URL.Path).To(Equal("/some/endpoint"))
 
 			rawReqBody, err := ioutil.ReadAll(req.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(rawReqBody)).To(Equal("some content"))
 
 			Expect(progressBar.ResetCallCount()).To(Equal(1))
@@ -77,7 +77,7 @@ var _ = Describe("ProgressClient", func() {
 		It("logs while waiting for a response from the Ops Manager", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
 				_, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				time.Sleep(120 * time.Millisecond)
 
@@ -90,12 +90,12 @@ var _ = Describe("ProgressClient", func() {
 			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 			req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 50*time.Millisecond))
 
 			_, err = progressClient.Do(req)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			By("starting the live log writer", func() {
 				Expect(liveWriter.StartCallCount()).To(Equal(1))
@@ -122,17 +122,17 @@ var _ = Describe("ProgressClient", func() {
 			progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("fake-wrapper-response")))
 
 			req, err := http.NewRequest("GET", "/some/endpoint", nil)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Second))
 
 			resp, err := progressClient.Do(req)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
 			rawRespBody, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(rawRespBody)).To(Equal("fake-wrapper-response"))
 
 			request := client.DoArgsForCall(0)
@@ -164,12 +164,12 @@ var _ = Describe("ProgressClient", func() {
 				progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 				req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				req = req.WithContext(context.WithValue(req.Context(), "polling-interval", 20*time.Millisecond))
 
 				_, err = progressClient.Do(req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(liveWriter.StartCallCount()).To(Equal(1))
 				Expect(liveWriter.WriteCallCount()).To(BeNumerically("~", 2, 1))
@@ -197,10 +197,10 @@ var _ = Describe("ProgressClient", func() {
 				progressBar.NewProxyReaderReturns(ioutil.NopCloser(strings.NewReader("some-fake-installation")))
 
 				req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				_, err = progressClient.Do(req)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(liveWriter.StartCallCount()).To(Equal(1))
 				Expect(liveWriter.WriteCallCount()).To(Equal(1))
@@ -217,7 +217,7 @@ var _ = Describe("ProgressClient", func() {
 					}
 
 					req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = progressClient.Do(req)
 					Expect(err).To(MatchError("some client error"))
@@ -233,7 +233,7 @@ var _ = Describe("ProgressClient", func() {
 
 					var req *http.Request
 					req, err := http.NewRequest("POST", "/some/endpoint", strings.NewReader("some content"))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					var (
 						resp *http.Response

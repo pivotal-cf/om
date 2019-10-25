@@ -56,7 +56,7 @@ var _ = Describe("PendingChangesService", func() {
 			}
 
 			output, err := service.ListStagedPendingChanges()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.ChangeList).To(ConsistOf([]api.ProductChange{
 				{

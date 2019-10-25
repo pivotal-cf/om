@@ -31,7 +31,7 @@ var _ = Describe("GenerateCertificate", func() {
 			err := command.Execute([]string{
 				"--domains", "*.apps.example.com, *.sys.example.com",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GenerateCertificateCallCount()).To(Equal(1))
 		})
@@ -42,7 +42,7 @@ var _ = Describe("GenerateCertificate", func() {
 			err := command.Execute([]string{
 				"--domains", "*.apps.example.com, *.sys.example.com",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
 			format, content := fakeLogger.PrintfArgsForCall(0)
@@ -76,7 +76,7 @@ var _ = Describe("GenerateCertificate", func() {
 					"--domains", "opsmanager.example.com",
 					"--domains", "*.login.sys.example.com,*.uaa.sys.example.com",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
 				format, content := fakeLogger.PrintfArgsForCall(0)

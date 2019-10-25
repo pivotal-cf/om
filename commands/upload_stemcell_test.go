@@ -49,7 +49,7 @@ var _ = Describe("UploadStemcell", func() {
 			err := command.Execute([]string{
 				"--stemcell", "/path/to/stemcell.tgz",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			key, file := multipart.AddFileArgsForCall(0)
 			Expect(key).To(Equal("stemcell[file]"))
@@ -98,7 +98,7 @@ var _ = Describe("UploadStemcell", func() {
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "false",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				key, file := multipart.AddFileArgsForCall(0)
 				Expect(key).To(Equal("stemcell[file]"))
@@ -167,7 +167,7 @@ var _ = Describe("UploadStemcell", func() {
 				err := command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(multipart.AddFileCallCount()).To(Equal(2))
 				Expect(multipart.FinalizeCallCount()).To(Equal(2))
@@ -227,7 +227,7 @@ var _ = Describe("UploadStemcell", func() {
 				err := command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				format, v := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
@@ -259,7 +259,7 @@ var _ = Describe("UploadStemcell", func() {
 					err := command.Execute([]string{
 						"--stemcell", "/path/to/stemcell.tgz",
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					format, v := logger.PrintfArgsForCall(1)
 					Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
@@ -287,7 +287,7 @@ var _ = Describe("UploadStemcell", func() {
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--force",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				key, file := multipart.AddFileArgsForCall(0)
 				Expect(key).To(Equal("stemcell[file]"))
@@ -335,7 +335,7 @@ var _ = Describe("UploadStemcell", func() {
 				"--stemcell", file.Name(),
 				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches stemcell shasum."))
 		})
@@ -385,7 +385,7 @@ var _ = Describe("UploadStemcell", func() {
 			err := command.Execute([]string{
 				"--stemcell", "/path/to/stemcell.tgz",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			key, file := multipart.AddFileArgsForCall(0)
 			Expect(key).To(Equal("stemcell[file]"))
@@ -424,10 +424,10 @@ var _ = Describe("UploadStemcell", func() {
 shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 `
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			file, err = ioutil.TempFile("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
@@ -462,7 +462,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 				"--stemcell", file.Name(),
 				"--config", configFile.Name(),
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches stemcell shasum."))
 		})

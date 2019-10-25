@@ -70,7 +70,7 @@ var _ = Describe("ConfigureSAMLAuthentication.Execute", func() {
 		expectedPayload.PrecreatedClientSecret = "test-client-secret"
 
 		err := command.Execute(commandLineArgs)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
@@ -111,7 +111,7 @@ It will have the username 'precreated-client' and the client secret you provided
 
 		It("configures SAML with bosh admin client warning", func() {
 			err := command.Execute(commandLineArgs)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
@@ -163,7 +163,7 @@ This is only supported in OpsManager 2.5 and up.
 			commandLineArgs = append(commandLineArgs, "--precreated-client-secret", "test-client-secret")
 
 			err := command.Execute(commandLineArgs)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
@@ -195,7 +195,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 
 			It("configures SAML and notifies the user that it skipped client creation", func() {
 				err := command.Execute(commandLineArgs)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
@@ -227,7 +227,7 @@ This was skipped due to the 'skip-create-bosh-admin-client' flag.
 
 			command := commands.NewConfigureSAMLAuthentication(nil, service, logger)
 			err := command.Execute(commandLineArgs)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.EnsureAvailabilityCallCount()).To(Equal(1))
 			Expect(service.SetupCallCount()).To(Equal(0))
@@ -251,10 +251,10 @@ decryption-passphrase: some-passphrase
 precreated-client-secret: test-client-secret
 `
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			expectedPayload.PrecreatedClientSecret = "test-client-secret"
 		})
@@ -263,7 +263,7 @@ precreated-client-secret: test-client-secret
 			err := command.Execute([]string{
 				"--config", configFile.Name(),
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
 
@@ -284,7 +284,7 @@ precreated-client-secret: test-client-secret
 				"--config", configFile.Name(),
 				"--saml-idp-metadata", "https://super.example.com:6543",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.SetupArgsForCall(0)).To(Equal(api.SetupInput{
 				IdentityProvider:                 "saml",

@@ -45,7 +45,7 @@ var _ = Describe("Available Products", func() {
 		When("the product is available", func() {
 			It("is true", func() {
 				available, err := service.CheckProductAvailability("available-product", "available-version")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(available).To(BeTrue())
 			})
@@ -54,7 +54,7 @@ var _ = Describe("Available Products", func() {
 		When("the product is unavailable", func() {
 			It("is false", func() {
 				available, err := service.CheckProductAvailability("unavailable-product", "available-version")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(available).To(BeFalse())
 			})
@@ -93,7 +93,7 @@ var _ = Describe("Available Products", func() {
 
 			output, err := service.RunningInstallation()
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.InstallationsServiceOutput{
 				ID:         3,
 				Status:     "running",
@@ -115,7 +115,7 @@ var _ = Describe("Available Products", func() {
 
 				output, err := service.RunningInstallation()
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 
 				req := client.DoArgsForCall(0)
@@ -148,7 +148,7 @@ var _ = Describe("Available Products", func() {
 
 				output, err := service.RunningInstallation()
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 
 				req := client.DoArgsForCall(0)
@@ -181,7 +181,7 @@ var _ = Describe("Available Products", func() {
 
 				output, err := service.RunningInstallation()
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 
 				req := client.DoArgsForCall(0)
@@ -242,7 +242,7 @@ var _ = Describe("Available Products", func() {
 			}, nil)
 
 			finderOutput, err := service.GetStagedProductByName("some-product-name")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(finderOutput.Product.GUID).To(Equal("some-product-id"))
 		})
 

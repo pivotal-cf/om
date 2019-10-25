@@ -77,7 +77,7 @@ var _ = Describe("assign-multi-stemcell command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		Eventually(session.Out).Should(gbytes.Say(`assigning stemcells: "ubuntu-trusty 1234.57" to product "cf"`))

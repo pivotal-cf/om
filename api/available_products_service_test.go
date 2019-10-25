@@ -52,7 +52,7 @@ var _ = Describe("Available Products", func() {
 				ContentType:     "some content-type",
 				PollingInterval: 1,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.UploadAvailableProductOutput{}))
 		})
 
@@ -99,7 +99,7 @@ var _ = Describe("Available Products", func() {
 			)
 
 			output, err := service.ListAvailableProducts()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.ProductsList).To(ConsistOf([]api.ProductInfo{{
 				Name:    "available-product",
@@ -158,7 +158,7 @@ var _ = Describe("Available Products", func() {
 				ProductName:    "some-product",
 				ProductVersion: "1.2.3-build.4",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("the ShouldDeleteAllProducts flag is provided", func() {
@@ -173,7 +173,7 @@ var _ = Describe("Available Products", func() {
 				err := service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
 					ShouldDeleteAllProducts: true,
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 

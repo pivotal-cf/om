@@ -42,7 +42,7 @@ var _ = Describe("RequestService", func() {
 				Data:    strings.NewReader("some-request-body"),
 				Headers: http.Header{"Content-Type": []string{"application/json"}},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("PUT"))
@@ -52,7 +52,7 @@ var _ = Describe("RequestService", func() {
 			}))
 
 			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(body)).To(Equal("some-request-body"))
 
 			Expect(output.StatusCode).To(Equal(http.StatusTeapot))
@@ -61,7 +61,7 @@ var _ = Describe("RequestService", func() {
 			}))
 
 			body, err = ioutil.ReadAll(output.Body)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(body)).To(Equal("some-response-body"))
 		})
 

@@ -17,25 +17,25 @@ var _ = Describe("Formcontent", func() {
 
 		BeforeEach(func() {
 			handle, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle.WriteString("some content")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			fileWithContent = handle.Name()
 
 			form = formcontent.NewForm()
 			err = form.AddFile("something[original-file]", fileWithContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			err = form.AddField("key", "value")
 			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
-			Expect(submission.ContentLength).NotTo(BeZero())
+			Expect(submission.ContentLength).ToNot(BeZero())
 
 			// drain the reader to force pipe to be closed
 			_, err = ioutil.ReadAll(submission.Content)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		AfterEach(func() {
@@ -47,15 +47,15 @@ var _ = Describe("Formcontent", func() {
 			form.Reset()
 
 			err := form.AddFile("something[other-file]", fileWithContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
-			Expect(submission.ContentLength).NotTo(BeZero())
+			Expect(submission.ContentLength).ToNot(BeZero())
 
 			contents, err := ioutil.ReadAll(submission.Content)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(ContainSubstring("other-file"))
-			Expect(contents).NotTo(ContainSubstring("original-file"))
+			Expect(contents).ToNot(ContainSubstring("original-file"))
 		})
 	})
 
@@ -67,18 +67,18 @@ var _ = Describe("Formcontent", func() {
 
 		BeforeEach(func() {
 			handle1, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle1.WriteString("some content")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			fileWithContent1 = handle1.Name()
 
 			handle2, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle2.WriteString("some more content")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			fileWithContent2 = handle2.Name()
 
@@ -92,15 +92,15 @@ var _ = Describe("Formcontent", func() {
 
 		It("writes out the provided file as a multipart form using the writer", func() {
 			err := form.AddFile("something[file1]", fileWithContent1)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = form.AddFile("something[file2]", fileWithContent2)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
 
 			content, err := ioutil.ReadAll(submission.Content)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(content)).To(MatchRegexp(`^--\w+\r\nContent-Disposition: form-data; name=\"something\[file1\]\"; filename=\"\w+\"\r\n` +
 				`Content-Type: application/octet-stream\r\n\r\n` +
@@ -114,7 +114,7 @@ var _ = Describe("Formcontent", func() {
 		When("the file provided is empty", func() {
 			It("returns an error", func() {
 				emptyFile, err := ioutil.TempFile("", "")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				form := formcontent.NewForm()
 
@@ -142,15 +142,15 @@ var _ = Describe("Formcontent", func() {
 
 		It("writes out the provided fields into the multipart form using the writer", func() {
 			err := form.AddField("key1", "value1")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = form.AddField("key2", "value2")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
 
 			content, err := ioutil.ReadAll(submission.Content)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(content)).To(MatchRegexp(`^--\w+\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1` +
 				`\r\n--\w+\r\nContent-Disposition: form-data; name="key2"\r\n\r\nvalue2` +
@@ -165,10 +165,10 @@ var _ = Describe("Formcontent", func() {
 			var err error
 
 			handle1, err := ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle1.WriteString("some content")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			fileWithContent1 = handle1.Name()
 
@@ -181,15 +181,15 @@ var _ = Describe("Formcontent", func() {
 
 		It("writes out the provided fields into the multipart form using the writer", func() {
 			err := form.AddField("key1", "value1")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = form.AddFile("file1", fileWithContent1)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
 
 			content, err := ioutil.ReadAll(submission.Content)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(submission.ContentLength).To(Equal(int64(373)))
 			Expect(string(content)).To(MatchRegexp(`^--\w+\r\nContent-Disposition: form-data; name=\"file1\"; filename=\"\w+\"\r\n` +
@@ -209,7 +209,7 @@ var _ = Describe("Formcontent", func() {
 
 		It("returns a content submission which includes the correct length and content type", func() {
 			err := form.AddField("key1", "value1")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			submission := form.Finalize()
 

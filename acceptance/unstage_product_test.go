@@ -56,7 +56,7 @@ var _ = Describe("unstage-product command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("unstaging cf"))
@@ -92,7 +92,7 @@ var _ = Describe("unstage-product command", func() {
 				"--product-name", "cf",
 			)
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Eventually(session.Err).Should(gbytes.Say("product is not staged: cf"))

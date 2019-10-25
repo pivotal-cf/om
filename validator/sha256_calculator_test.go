@@ -20,17 +20,17 @@ var _ = Describe("FileSHA256HashCalculator", func() {
 		fileSHA256HashCalculator = validator.NewSHA256Calculator()
 
 		tempDir, err := ioutil.TempDir("", "")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		fileToSHA256 = filepath.Join(tempDir, "file-to-sum")
 		err = ioutil.WriteFile(fileToSHA256, []byte("file contents"), 0644)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Describe("Checksum", func() {
 		It("Calculates the checksum", func() {
 			md5, err := fileSHA256HashCalculator.Checksum(fileToSHA256)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(md5).To(Equal("7bb6f9f7a47a63e684925af3608c059edcc371eb81188c48c9714896fb1091fd"))
 		})

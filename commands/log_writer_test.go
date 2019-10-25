@@ -24,12 +24,12 @@ var _ = Describe("LogWriter", func() {
 
 		It("writes the given log lines", func() {
 			err := writer.Flush("logs-1\nlogs-2\nlogs-3\n")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(buffer.String()).To(Equal("logs-1\nlogs-2\nlogs-3\n"))
 
 			err = writer.Flush("logs-1\nlogs-2\nlogs-3\nlogs-4\nlogs-5\n")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(buffer.String()).To(Equal("logs-1\nlogs-2\nlogs-3\nlogs-4\nlogs-5\n"))
 		})

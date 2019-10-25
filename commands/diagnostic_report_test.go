@@ -33,7 +33,7 @@ var _ = Describe("DiagnosticReport", func() {
 
 		It("displays the diagnostic report", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
 			_ = diagnosticReport

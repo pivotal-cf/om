@@ -29,7 +29,7 @@ var _ = Describe("using env vars for Ops Man target information", func() {
 		command.Env = append(command.Env, "OM_TARGET="+server.URL)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
@@ -48,7 +48,7 @@ var _ = Describe("using env vars for Ops Man target information", func() {
 		command.Env = append(command.Env, "OM_PASSWORD=some-env-provided-password")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
@@ -67,7 +67,7 @@ var _ = Describe("using env vars for Ops Man target information", func() {
 		command.Env = append(command.Env, "OM_CLIENT_SECRET=shhh-secret")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
@@ -88,13 +88,13 @@ connect-timeout: 10
 		server := testServer(true)
 
 		configFile, err = ioutil.TempFile("", "config.yml")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		err = configFile.Close()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		command := exec.Command(pathToMain,
 			"--env", configFile.Name(),
@@ -106,7 +106,7 @@ connect-timeout: 10
 		command.Env = append(command.Env, "OM_PASSWORD=invalid-password")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Eventually(session).Should(gexec.Exit(1))
 	})
 
@@ -125,13 +125,13 @@ username: ((username))
 `
 
 			configFile, err = ioutil.TempFile("", "config.yml")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = configFile.Close()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			command := exec.Command(pathToMain,
 				"--env", configFile.Name(),
@@ -166,13 +166,13 @@ connect-timeout: 10
 			server := testServer(true)
 
 			configFile, err = ioutil.TempFile("", "config.yml")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = configFile.Close()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			command := exec.Command(pathToMain,
 				"--env", configFile.Name(),
@@ -182,7 +182,7 @@ connect-timeout: 10
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
@@ -228,7 +228,7 @@ func testServer(useUsernamePasswordAuth bool) *httptest.Server {
 			Expect(err).ToNot(HaveOccurred())
 		default:
 			_, err := httputil.DumpRequest(req, true)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			w.WriteHeader(http.StatusNotFound)
 		}

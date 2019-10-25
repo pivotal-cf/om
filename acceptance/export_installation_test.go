@@ -21,7 +21,7 @@ var _ = Describe("export-installation command", func() {
 
 	BeforeEach(func() {
 		tempFile, err := ioutil.TempFile("", "")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		outputFileName = tempFile.Name()
 
 		server = createTLSServer()
@@ -54,7 +54,7 @@ var _ = Describe("export-installation command", func() {
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, 5).Should(gexec.Exit(0))
 		Expect(session.Err).To(gbytes.Say("exporting installation"))
@@ -63,7 +63,7 @@ var _ = Describe("export-installation command", func() {
 		Expect(session.Err).To(gbytes.Say("finished exporting installation"))
 
 		content, err := ioutil.ReadFile(outputFileName)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(content).To(Equal([]byte("some-installation")))
 	})
 
@@ -79,7 +79,7 @@ var _ = Describe("export-installation command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 5).Should(gexec.Exit(1))
 			Eventually(session.Err, 5).Should(gbytes.Say("cannot create output file:"))
@@ -99,7 +99,7 @@ var _ = Describe("export-installation command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 3).Should(gexec.Exit(1))
 			Eventually(session.Err, 3).Should(gbytes.Say(`.*request canceled \(Client\.Timeout exceeded while awaiting headers\)`))

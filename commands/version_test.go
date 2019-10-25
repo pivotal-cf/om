@@ -24,7 +24,7 @@ var _ = Describe("Version", func() {
 			version := commands.NewVersion("v1.2.3", output)
 
 			err := version.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(ContainSubstring("v1.2.3\n"))
 		})

@@ -72,7 +72,7 @@ var _ = Describe("stage-product command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("staging cf"))
@@ -128,7 +128,7 @@ var _ = Describe("stage-product command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("staging cf"))
@@ -182,7 +182,7 @@ var _ = Describe("stage-product command", func() {
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Eventually(session.Out).Should(gbytes.Say("staging cf"))
@@ -230,7 +230,7 @@ var _ = Describe("stage-product command", func() {
 				"--product-version", "2.0",
 			)
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Eventually(session.Err).Should(gbytes.Say("cannot find product bosh 2.0"))

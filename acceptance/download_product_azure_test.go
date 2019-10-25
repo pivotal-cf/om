@@ -78,7 +78,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source azure`))
 				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.*from source azure`))
@@ -91,7 +91,7 @@ var _ = Describe("download-product command", func() {
 
 				By("ensuring an assign stemcell artifact is created")
 				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 
 				By("running the command again, it uses the cache")
@@ -110,7 +110,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[pivnet-example-slug,1.10.1]example-product.pivotal already exists, skip downloading"))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))

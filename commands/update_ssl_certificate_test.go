@@ -31,7 +31,7 @@ var _ = Describe("UpdateSSLCertificate", func() {
 				"--certificate-pem", "some CertPem",
 				"--private-key-pem", "some PrivateKey",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(1))
 			Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateInput{
@@ -47,7 +47,7 @@ var _ = Describe("UpdateSSLCertificate", func() {
 				"--certificate-pem", "some CertPem",
 				"--private-key-pem", "some PrivateKey",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeLogger.PrintfCallCount()).To(Equal(2))
 			format, content := fakeLogger.PrintfArgsForCall(0)

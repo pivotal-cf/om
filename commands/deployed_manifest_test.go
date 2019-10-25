@@ -38,7 +38,7 @@ key: value
 		err := command.Execute([]string{
 			"--product-name", "some-product",
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(fakeService.ListDeployedProductsCallCount()).To(Equal(1))
 

@@ -93,7 +93,7 @@ var _ = Describe("VMTypes", func() {
 			},
 		})
 
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)
@@ -103,7 +103,7 @@ var _ = Describe("VMTypes", func() {
 		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 		jsonBody, err := ioutil.ReadAll(req.Body)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(jsonBody).To(MatchJSON(`{ 
 		"vm_types": [ 
 			{
@@ -126,7 +126,7 @@ var _ = Describe("VMTypes", func() {
 	It("lists VM Types", func() {
 		vmtypes, err := service.ListVMTypes()
 
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)
@@ -142,7 +142,7 @@ var _ = Describe("VMTypes", func() {
 
 	It("deletes VM Types", func() {
 		err := service.DeleteCustomVMTypes()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)
@@ -209,9 +209,9 @@ var _ = Describe("VMTypes", func() {
 
 			var vmType api.VMType
 			err := json.Unmarshal([]byte(typeJson), &vmType)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(vmType.BuiltIn).To(BeTrue())
-			Expect(vmType.CreateVMType.ExtraProperties).NotTo(HaveKey("builtin"))
+			Expect(vmType.CreateVMType.ExtraProperties).ToNot(HaveKey("builtin"))
 		})
 	})
 })

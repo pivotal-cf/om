@@ -21,7 +21,7 @@ func parseTime(timeString interface{}) *time.Time {
 	timeValue, err := time.Parse(time.RFC3339, timeString.(string))
 
 	if err != nil {
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 	}
 
 	return &timeValue
@@ -72,7 +72,7 @@ var _ = Describe("InstallationsService", func() {
 
 			output, err := service.ListInstallations()
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal([]api.InstallationsServiceOutput{
 				{
 					ID:         3,
@@ -122,7 +122,7 @@ var _ = Describe("InstallationsService", func() {
 
 				output, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
 				req := client.DoArgsForCall(2)
@@ -131,7 +131,7 @@ var _ = Describe("InstallationsService", func() {
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 
 				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":"all"}`))
 			})
 		})
@@ -152,7 +152,7 @@ var _ = Describe("InstallationsService", func() {
 				}, nil)
 				output, err := service.CreateInstallation(false, false, nil, api.ApplyErrandChanges{})
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
 				req := client.DoArgsForCall(2)
@@ -161,7 +161,7 @@ var _ = Describe("InstallationsService", func() {
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 
 				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":"none"}`))
 			})
 		})
@@ -182,7 +182,7 @@ var _ = Describe("InstallationsService", func() {
 				}, nil)
 
 				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
 				req := client.DoArgsForCall(2)
@@ -190,7 +190,7 @@ var _ = Describe("InstallationsService", func() {
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 
 				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":["guid2"]}`))
 			})
 
@@ -233,7 +233,7 @@ var _ = Describe("InstallationsService", func() {
 						},
 					},
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 
 				req := client.DoArgsForCall(2)
@@ -241,7 +241,7 @@ var _ = Describe("InstallationsService", func() {
 				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 
 				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(string(body)).To(MatchJSON(`{"ignore_warnings":"false","deploy_products":["guid2"],"errands":{"guid1":{"run_post_deploy":{"errand1":"default"}}}}`)) // TODO product1-guid
 			})
 
@@ -336,7 +336,7 @@ var _ = Describe("InstallationsService", func() {
 
 			output, err := service.GetInstallation(3232)
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output.Status).To(Equal("running"))
 
 			req := client.DoArgsForCall(0)
@@ -393,7 +393,7 @@ var _ = Describe("InstallationsService", func() {
 
 			output, err := service.GetInstallationLogs(3232)
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(output.Logs).To(Equal("some logs"))
 
 			req := client.DoArgsForCall(0)

@@ -82,7 +82,7 @@ var _ = Describe("ApplyChanges", func() {
 			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
@@ -112,7 +112,7 @@ var _ = Describe("ApplyChanges", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{"--ignore-warnings"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				ignoreWarnings, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
@@ -124,7 +124,7 @@ var _ = Describe("ApplyChanges", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{"--skip-deploy-products"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				_, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
@@ -165,7 +165,7 @@ var _ = Describe("ApplyChanges", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{"--reattach"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.CreateInstallationCallCount()).To(Equal(0))
 
@@ -208,7 +208,7 @@ var _ = Describe("ApplyChanges", func() {
 				BeforeEach(func() {
 					fh, err := ioutil.TempFile("", "")
 					defer fh.Close()
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					_, err = fh.WriteString(`
 ---
 errands:
@@ -225,18 +225,18 @@ errands:
       errand_b: "default"
 `)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					fileName = fh.Name()
 				})
 
 				It("parses the config file correctly", func() {
 					fh, err := os.Open(fileName)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					defer fh.Close()
 
 					applyErrandChanges := api.ApplyErrandChanges{}
 					err = yaml.NewDecoder(fh).Decode(&applyErrandChanges)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(applyErrandChanges).To(Equal(api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
@@ -264,7 +264,7 @@ errands:
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 					err := command.Execute([]string{"--config", fileName})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
@@ -321,13 +321,13 @@ errands:
 				BeforeEach(func() {
 					fh, err := ioutil.TempFile("", "")
 					defer fh.Close()
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					_, err = fh.WriteString(`
 ---
 errands: lolololol
 `)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					fileName = fh.Name()
 				})
 

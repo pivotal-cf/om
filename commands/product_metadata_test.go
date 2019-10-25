@@ -38,16 +38,16 @@ var _ = Describe("ProductMetadata", func() {
 			// have this as a separate file in the zip, which influences the regexp
 			// needed to capture the metadata file
 			_, err := z.Create("metadata/")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			f, err := z.Create("metadata/fake-tile.yml")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = f.Write([]byte(`
 name: fake-tile
 product_version: 1.2.3
 `))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(z.Close()).To(Succeed())
 		})
@@ -62,7 +62,7 @@ product_version: 1.2.3
 				productFile.Name(),
 				"--product-name",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			content := stdout.PrintlnArgsForCall(0)
 			Expect(content).To(ContainElement("fake-tile"))
@@ -74,7 +74,7 @@ product_version: 1.2.3
 				productFile.Name(),
 				"--product-version",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			content := stdout.PrintlnArgsForCall(0)
 			Expect(content).To(ContainElement("1.2.3"))
@@ -109,7 +109,7 @@ product_version: 1.2.3
 
 				BeforeEach(func() {
 					badTile, err = ioutil.TempFile("", "bad-tile")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					z := zip.NewWriter(badTile)
 					Expect(z.Close()).To(Succeed())
 				})

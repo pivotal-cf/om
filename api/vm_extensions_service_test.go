@@ -57,7 +57,7 @@ var _ = Describe("VMExtensions", func() {
 			CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
 		})
 
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)
@@ -67,7 +67,7 @@ var _ = Describe("VMExtensions", func() {
 		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 		jsonBody, err := ioutil.ReadAll(req.Body)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(jsonBody).To(MatchJSON(`{
 			"name": "some-vm-extension",
 			"cloud_properties": {"iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"]}
@@ -77,7 +77,7 @@ var _ = Describe("VMExtensions", func() {
 	It("lists VM Extensions", func() {
 		vmextensions, err := service.ListStagedVMExtensions()
 
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)
@@ -93,7 +93,7 @@ var _ = Describe("VMExtensions", func() {
 
 	It("deletes a VM Extension", func() {
 		err := service.DeleteVMExtension("some-vm-extension")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(client.DoCallCount()).To(Equal(1))
 		req := client.DoArgsForCall(0)

@@ -54,7 +54,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 
 	It("lists the pending changes", func() {
 		err := command.Execute([]string{})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
 		Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
@@ -137,7 +137,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 			It("lists change information for all products and does not return an error", func() {
 				err := command.Execute(options)
 				Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})
@@ -145,7 +145,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 	When("the format flag is provided", func() {
 		It("sets the format on the presenter", func() {
 			err := command.Execute([]string{"--format", "json"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
 		})

@@ -62,7 +62,7 @@ var _ = Describe("CreateVMExtension", func() {
 				"--cloud-properties", "{ \"iam_instance_profile\": \"some-iam-profile\", \"elbs\": [\"some-elb\"] }",
 			})
 
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 				Name:            "some-vm-extension",
 				CloudProperties: json.RawMessage(`{ "iam_instance_profile": "some-iam-profile", "elbs": ["some-elb"] }`),
@@ -77,23 +77,23 @@ var _ = Describe("CreateVMExtension", func() {
 			Context("with a vars file", func() {
 				It("makes a request to the OpsMan to create a VM extension", func() {
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					varsFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = varsFile.WriteString(`vm_extension_name: some-vm-extension`)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
 						"--vars-file", varsFile.Name(),
 					})
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 						Name:            "some-vm-extension",
 						CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
@@ -109,20 +109,20 @@ var _ = Describe("CreateVMExtension", func() {
 			Context("with a var defined", func() {
 				It("makes a request to the OpsMan to create a VM extension", func() {
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					varsFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
 						"--var", "vm_extension_name=some-vm-extension",
 					})
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 						Name:            "some-vm-extension",
 						CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
@@ -142,17 +142,17 @@ var _ = Describe("CreateVMExtension", func() {
 						fakeService,
 						fakeLogger)
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
 						"--vars-env", "OM_VAR",
 					})
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(fakeService.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 						Name:            "some-vm-extension",
 						CloudProperties: json.RawMessage("{\"elbs\":[\"some-elb\"],\"iam_instance_profile\":\"some-iam-profile\"}"),
@@ -194,10 +194,10 @@ var _ = Describe("CreateVMExtension", func() {
 				})
 				It("returns an error when name not in file", func() {
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionNoNameFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
@@ -212,10 +212,10 @@ var _ = Describe("CreateVMExtension", func() {
 			Context("fails to interpolate config file", func() {
 				It("returns an error", func() {
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
@@ -229,10 +229,10 @@ var _ = Describe("CreateVMExtension", func() {
 			Context("bad yaml in config file", func() {
 				It("returns an error", func() {
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString("asdfasdf")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err := command.Execute([]string{
 						"--config", configFile.Name(),

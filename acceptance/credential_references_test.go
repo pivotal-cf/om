@@ -67,7 +67,7 @@ var _ = Describe("credential references command", func() {
 			"--product-name", "some-product")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 
@@ -86,7 +86,7 @@ var _ = Describe("credential references command", func() {
 				"--product-name", "some-product")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 

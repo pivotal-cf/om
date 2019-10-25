@@ -29,7 +29,7 @@ var _ = Describe("Trace Client", func() {
 	BeforeEach(func() {
 		var err error
 		request, err = http.NewRequest("GET", "http://example.com", nil)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		fakeClient = &fakes.HttpClient{}
 
@@ -43,7 +43,7 @@ var _ = Describe("Trace Client", func() {
 
 	It("calls the underlying http client", func() {
 		resp, err := traceClient.Do(request)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(fakeClient.DoCallCount()).To(Equal(1))
 		Expect(resp).To(Equal(response))
@@ -51,14 +51,14 @@ var _ = Describe("Trace Client", func() {
 
 	It("dumps the http request and response to the writer", func() {
 		_, err := traceClient.Do(request)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		expectedContents, err := httputil.DumpRequest(request, true)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(out).To(gbytes.Say(string(expectedContents)))
 
 		expectedContents, err = httputil.DumpResponse(response, true)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(out).To(gbytes.Say(string(expectedContents)))
 	})
 
@@ -79,12 +79,12 @@ var _ = Describe("Trace Client", func() {
 			request.ContentLength = 1024 * 1024
 
 			_, err := traceClient.Do(request)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			expectedContents, err := httputil.DumpRequest(request, false)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(out).To(gbytes.Say(string(expectedContents)))
-			Expect(out).NotTo(gbytes.Say(`{}`))
+			Expect(out).ToNot(gbytes.Say(`{}`))
 		})
 	})
 
@@ -101,12 +101,12 @@ var _ = Describe("Trace Client", func() {
 			response.ContentLength = int64(responseBodySize)
 
 			_, err := traceClient.Do(request)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			expectedContents, err := httputil.DumpResponse(response, false)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(out).To(gbytes.Say(string(expectedContents)))
-			Expect(out).NotTo(gbytes.Say("aaaaaaaaaaaa"))
+			Expect(out).ToNot(gbytes.Say("aaaaaaaaaaaa"))
 		})
 	})
 })

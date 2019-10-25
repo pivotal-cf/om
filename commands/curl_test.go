@@ -58,7 +58,7 @@ var _ = Describe("Curl", func() {
 				"--request", "POST",
 				"--data", `{"some-key": "some-value"}`,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			input := fakeService.CurlArgsForCall(0)
 			Expect(input.Path).To(Equal("/api/v0/some/path"))
@@ -66,7 +66,7 @@ var _ = Describe("Curl", func() {
 			Expect(input.Headers).To(HaveKeyWithValue("Content-Type", []string{"application/json"}))
 
 			data, err := ioutil.ReadAll(input.Data)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(data)).To(Equal(`{"some-key": "some-value"}`))
 			content := stdout.PrintlnArgsForCall(0)
 			Expect(fmt.Sprint(content...)).To(MatchJSON(`{"some-response-key": "%some-response-value"}`))
@@ -93,7 +93,7 @@ var _ = Describe("Curl", func() {
 					"--request", "GET",
 					"--silent",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stderr.Invocations()).To(BeEmpty())
 			})
@@ -112,7 +112,7 @@ var _ = Describe("Curl", func() {
 					"--request", "POST",
 					"--silent",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stderr.Invocations()).To(HaveLen(0))
 			})
@@ -158,7 +158,7 @@ var _ = Describe("Curl", func() {
 					"--data", `some_key=some_value`,
 					"--header", "Content-Type: application/x-www-form-urlencoded",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				input := fakeService.CurlArgsForCall(0)
 				Expect(input.Path).To(Equal("/api/v0/some/path"))
@@ -183,7 +183,7 @@ var _ = Describe("Curl", func() {
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					content := stdout.PrintlnArgsForCall(0)
 					Expect(fmt.Sprint(content...)).To(Equal("{\n  \"some-response-key\": \"some-response-value\"\n}"))
@@ -205,7 +205,7 @@ var _ = Describe("Curl", func() {
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					content := stdout.PrintlnArgsForCall(0)
 					Expect(fmt.Sprint(content...)).To(Equal(`{"some-response-key": "some-response-value"}`))

@@ -71,7 +71,7 @@ var _ = Describe("credentials command", func() {
 			"--credential-reference", "some-credential")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 
@@ -91,7 +91,7 @@ var _ = Describe("credentials command", func() {
 				"--credential-reference", "some-credential")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 
@@ -111,7 +111,7 @@ var _ = Describe("credentials command", func() {
 			"--credential-field", "some-credential-key")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 

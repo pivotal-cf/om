@@ -40,7 +40,7 @@ var _ = Describe("Credentials", func() {
 			)
 
 			output, err := service.ListDeployedProductCredentials("some-deployed-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.Credentials).To(ConsistOf(
 				[]string{
@@ -110,7 +110,7 @@ var _ = Describe("Credentials", func() {
 				DeployedGUID:        "some-deployed-product-guid",
 				CredentialReference: ".properties.some-credentials",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output.Credential.Value["private_key_pem"]).To(Equal("some-private-key"))
 			Expect(output.Credential.Value["cert_pem"]).To(Equal("some-cert-pem"))

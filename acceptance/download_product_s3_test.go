@@ -64,7 +64,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source s3`))
 				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.*from source s3`))
@@ -77,7 +77,7 @@ var _ = Describe("download-product command", func() {
 
 				By("ensuring an assign stemcell artifact is created")
 				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 
 				By("running the command again, it uses the cache")
@@ -98,7 +98,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[pivnet-example-slug,1.10.1]example-product.pivotal already exists, skip downloading"))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))
@@ -131,7 +131,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`could not reach provided endpoint and bucket `))
 			})
@@ -157,7 +157,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 			})
@@ -180,7 +180,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 			})
@@ -205,7 +205,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(fmt.Sprintf("could not download product: bucket '%s' contains no files", bucketName)))
 			})
@@ -236,7 +236,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`no product files with expected prefix \[example-product,1.10.1\] found. Please ensure the file you're trying to download was initially persisted from Pivotal Network net using an appropriately configured download-product command`))
 			})
@@ -266,7 +266,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
@@ -303,7 +303,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`could not download product: the glob '\*\.yml' matches multiple files`))
 			})
@@ -332,7 +332,7 @@ var _ = Describe("download-product command", func() {
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",

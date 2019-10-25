@@ -49,7 +49,7 @@ var _ = Describe("AvailableProducts", func() {
 
 		It("lists the available products", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentAvailableProductsCallCount()).To(Equal(1))
 			products := fakePresenter.PresentAvailableProductsArgsForCall(0)
@@ -68,7 +68,7 @@ var _ = Describe("AvailableProducts", func() {
 		When("the json flag is provided", func() {
 			It("sets the format to json on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
@@ -82,7 +82,7 @@ var _ = Describe("AvailableProducts", func() {
 				apService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, nil)
 
 				err := command.Execute([]string{})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(logger.PrintfArgsForCall(0)).To(Equal("no available products found"))
 				Expect(fakePresenter.PresentAvailableProductsCallCount()).To(Equal(0))

@@ -138,7 +138,7 @@ var _ = Describe("ConfigTemplate", func() {
 						versionDir := filepath.Join(productDir, "1.1.1")
 
 						Expect(productDir).To(BeADirectory())
-						Expect(versionDir).NotTo(BeADirectory())
+						Expect(versionDir).ToNot(BeADirectory())
 					})
 
 					It("creates the various generated sub directories within the product directory", func() {
@@ -265,21 +265,21 @@ output-directory: %s
 
 				BeforeEach(func() {
 					configFile, err = ioutil.TempFile("", "")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = configFile.Close()
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				})
 
 				AfterEach(func() {
 					err = os.RemoveAll(configFile.Name())
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 				})
 
 				It("returns an error if missing variables", func() {
@@ -294,18 +294,18 @@ output-directory: %s
 
 					BeforeEach(func() {
 						varsFile, err = ioutil.TempFile("", "")
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 
 						err = varsFile.Close()
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 
 					AfterEach(func() {
 						err = os.RemoveAll(varsFile.Name())
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 
 					It("can interpolate variables into the configuration", func() {
@@ -313,7 +313,7 @@ output-directory: %s
 							"--config", configFile.Name(),
 							"--vars-file", varsFile.Name(),
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 
@@ -323,7 +323,7 @@ output-directory: %s
 							"--config", configFile.Name(),
 							"--var", "product-slug=elastic-runtime",
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 
@@ -345,7 +345,7 @@ output-directory: %s
 							"--config", configFile.Name(),
 							"--vars-env", "OM_VAR",
 						})
-						Expect(err).NotTo(HaveOccurred())
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 			})

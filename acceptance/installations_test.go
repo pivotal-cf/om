@@ -90,7 +90,7 @@ var _ = Describe("installations command", func() {
 			"installations")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 
@@ -108,7 +108,7 @@ var _ = Describe("installations command", func() {
 				"--format", "json")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Eventually(session, "40s").Should(gexec.Exit(0))
 
 			Expect(string(session.Out.Contents())).To(MatchJSON(jsonOutput))

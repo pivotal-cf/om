@@ -51,7 +51,7 @@ var _ = Describe("CredentialReferences", func() {
 			err := command.Execute([]string{
 				"--product-name", "some-product",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(1))
 			Expect(fakePresenter.PresentCredentialReferencesArgsForCall(0)).To(ConsistOf(
@@ -67,7 +67,7 @@ var _ = Describe("CredentialReferences", func() {
 					"--product-name", "some-product",
 					"--format", "json",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
@@ -115,7 +115,7 @@ var _ = Describe("CredentialReferences", func() {
 					err := command.Execute([]string{
 						"--product-name", "some-product",
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 

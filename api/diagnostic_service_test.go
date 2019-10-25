@@ -35,7 +35,7 @@ var _ = Describe("Diagnostic Report", func() {
 				}, nil)
 
 				report, err := service.GetDiagnosticReport()
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				request := client.DoArgsForCall(0)
 				Expect(request.Method).To(Equal("GET"))
@@ -108,7 +108,7 @@ var _ = Describe("Diagnostic Report", func() {
 						}, nil)
 
 						_, err := service.GetDiagnosticReport()
-						Expect(err).NotTo(MatchError("request failed: unexpected response"))
+						Expect(err).ToNot(MatchError("request failed: unexpected response"))
 					})
 				})
 
@@ -120,7 +120,7 @@ var _ = Describe("Diagnostic Report", func() {
 						}, nil)
 
 						_, err := service.GetDiagnosticReport()
-						Expect(err).NotTo(MatchError("invalid json received from server"))
+						Expect(err).ToNot(MatchError("invalid json received from server"))
 					})
 				})
 			})
@@ -136,7 +136,7 @@ var _ = Describe("Diagnostic Report", func() {
 				}, nil)
 
 				report, err := service.GetDiagnosticReport()
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				request := client.DoArgsForCall(0)
 				Expect(request.Method).To(Equal("GET"))
@@ -233,7 +233,7 @@ var _ = Describe("Diagnostic Report", func() {
 						}, nil)
 
 						_, err := service.GetDiagnosticReport()
-						Expect(err).NotTo(MatchError("request failed: unexpected response"))
+						Expect(err).ToNot(MatchError("request failed: unexpected response"))
 					})
 				})
 
@@ -245,7 +245,7 @@ var _ = Describe("Diagnostic Report", func() {
 						}, nil)
 
 						_, err := service.GetDiagnosticReport()
-						Expect(err).NotTo(MatchError("invalid json received from server"))
+						Expect(err).ToNot(MatchError("invalid json received from server"))
 					})
 				})
 			})
@@ -260,7 +260,7 @@ var _ = Describe("Diagnostic Report", func() {
 			}, nil)
 
 			report, err := service.GetDiagnosticReport()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))

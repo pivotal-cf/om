@@ -42,7 +42,7 @@ var _ = Describe("AssignStemcell", func() {
 
 		It("assigns the stemcell", func() {
 			err := command.Execute([]string{"--product", "cf", "--stemcell", "1234.6"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(1))
@@ -60,7 +60,7 @@ var _ = Describe("AssignStemcell", func() {
 		When("--stemcell latest is used", func() {
 			It("assign the latest stemcell available", func() {
 				err := command.Execute([]string{"--product", "cf", "--stemcell", "latest"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 				Expect(fakeService.AssignStemcellCallCount()).To(Equal(1))
@@ -96,7 +96,7 @@ var _ = Describe("AssignStemcell", func() {
 
 		It("defaults to latest", func() {
 			err := command.Execute([]string{"--product", "cf"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(1))
@@ -137,15 +137,15 @@ product: cf
 stemcell: "1234.6"
 `
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("reads configuration from config file", func() {
 			err := command.Execute([]string{"--config", configFile.Name()})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(1))

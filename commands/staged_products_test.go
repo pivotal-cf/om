@@ -46,7 +46,7 @@ var _ = Describe("StagedProducts", func() {
 
 		It("lists the staged products", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
 
@@ -58,7 +58,7 @@ var _ = Describe("StagedProducts", func() {
 		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
 				err := command.Execute([]string{"--format", "json"})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(presenter.SetFormatCallCount()).To(Equal(1))
 				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))

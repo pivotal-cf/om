@@ -85,7 +85,7 @@ var _ = Describe("ImportInstallation", func() {
 		err := command.Execute([]string{"--polling-interval", "0",
 			"--installation", installationFile,
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 		key, file := multipart.AddFileArgsForCall(0)
@@ -128,7 +128,7 @@ var _ = Describe("ImportInstallation", func() {
 			err := command.Execute([]string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("Ops Manager is already configured"))
@@ -143,10 +143,10 @@ var _ = Describe("ImportInstallation", func() {
 			var err error
 			configContent := fmt.Sprintf(`installation: %s`, installationFile)
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("reads configuration from config file", func() {
@@ -174,7 +174,7 @@ var _ = Describe("ImportInstallation", func() {
 			err := command.Execute([]string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 			key, file := multipart.AddFileArgsForCall(0)
@@ -212,7 +212,7 @@ var _ = Describe("ImportInstallation", func() {
 				"--config", configFile.Name(),
 				"--installation", installationFile,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 			key, file := multipart.AddFileArgsForCall(0)
@@ -258,7 +258,7 @@ var _ = Describe("ImportInstallation", func() {
 			err := command.Execute([]string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
 
 			Expect(logger.PrintfCallCount()).To(Equal(5))

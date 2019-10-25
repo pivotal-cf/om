@@ -29,7 +29,7 @@ var _ = Describe("DeleteProduct", func() {
 	Describe("Execute", func() {
 		It("deletes all the product", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.DeleteAvailableProductsCallCount()).To(Equal(1))
 

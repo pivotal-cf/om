@@ -40,7 +40,7 @@ var _ = Describe("StageProduct", func() {
 			"--product-name", "some-product",
 			"--product-version", "some-version",
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(fakeService.ListDeployedProductsCallCount()).To(Equal(1))
 
@@ -80,7 +80,7 @@ var _ = Describe("StageProduct", func() {
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListDeployedProductsCallCount()).To(Equal(1))
 
@@ -118,7 +118,7 @@ var _ = Describe("StageProduct", func() {
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("some-product some-version is already staged"))

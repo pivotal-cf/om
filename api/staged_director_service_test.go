@@ -87,7 +87,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			config, err := service.GetStagedDirectorProperties(true)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config["iaas_configuration"]).To(Equal(map[interface{}]interface{}{
 				"vcenter_host":                 "10.10.10.0",
@@ -214,7 +214,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			_, err := service.GetStagedDirectorProperties(false)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		Context("failure cases", func() {
@@ -290,7 +290,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			config, err := service.GetStagedDirectorIaasConfigurations(true)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config["iaas_configurations"]).Should(Equal([]map[string]interface{}{
 				{
@@ -351,7 +351,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			_, err := service.GetStagedDirectorIaasConfigurations(false)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		Context("with nested json objects in response", func() {
@@ -387,7 +387,7 @@ var _ = Describe("StagedProducts", func() {
 				)
 
 				config, err := service.GetStagedDirectorIaasConfigurations(true)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(config["iaas_configurations"]).Should(Equal([]map[string]interface{}{
 					{
@@ -427,7 +427,7 @@ var _ = Describe("StagedProducts", func() {
 
 				resp, err := service.GetStagedDirectorIaasConfigurations(false)
 				Expect(resp).To(BeNil())
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -495,7 +495,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			config, err := service.GetStagedDirectorAvailabilityZones()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config.AvailabilityZones).To(Equal([]api.AvailabilityZoneOutput{
 				{
@@ -520,7 +520,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			config, err := service.GetStagedDirectorAvailabilityZones()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config).To(Equal(api.AvailabilityZonesOutput{}))
 
@@ -627,7 +627,7 @@ var _ = Describe("StagedProducts", func() {
 			)
 
 			config, err := service.GetStagedDirectorNetworks()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config.ICMP).To(Equal(true))
 

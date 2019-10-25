@@ -55,7 +55,7 @@ var _ = Describe("Credentials", func() {
 					"--product-name", "some-product",
 					"--credential-reference", ".properties.some-credentials",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(1))
 				Expect(fakeService.GetDeployedProductCredentialArgsForCall(0)).To(Equal(api.GetDeployedProductCredentialInput{
@@ -81,7 +81,7 @@ var _ = Describe("Credentials", func() {
 						"--credential-reference", "some-credential",
 						"--format", "json",
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
 				})
@@ -197,7 +197,7 @@ var _ = Describe("Credentials", func() {
 					"--credential-reference", ".properties.some-credentials",
 					"--credential-field", "password",
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(logger.PrintlnCallCount()).To(Equal(1))
 				Expect(logger.PrintlnArgsForCall(0)[0]).To(Equal("some-password"))
 			})

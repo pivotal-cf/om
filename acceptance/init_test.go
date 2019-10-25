@@ -23,7 +23,7 @@ var (
 var _ = SynchronizedBeforeSuite(func() []byte {
 	var err error
 	omPath, err := gexec.Build("../main.go", "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	minioPath, _ := exec.LookPath("minio")
 	if minioPath != "" {
@@ -37,7 +37,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 			"TERM=xterm-256color",
 		}
 		minio, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(minio.Out, "10s").Should(gbytes.Say("Endpoint:"))
 		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://127.0.0.1:9001", "minio", "password")

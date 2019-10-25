@@ -29,7 +29,7 @@ var _ = Describe("ExportInstallation", func() {
 		err := command.Execute([]string{
 			"--output-file", "/path/to/output.zip",
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		By("calling export on the installation service")
 		Expect(fakeService.DownloadInstallationAssetCollectionCallCount()).To(Equal(1))

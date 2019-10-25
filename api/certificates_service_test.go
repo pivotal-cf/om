@@ -47,7 +47,7 @@ var _ = Describe("Certificates", func() {
 			output, err := service.GenerateCertificate(api.DomainsInput{
 				Domains: []string{"*.example.com", "*.example.org"},
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(MatchJSON(`{
 				"certificate": "some-certificate",

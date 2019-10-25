@@ -61,11 +61,11 @@ var _ = Describe("ConfigureDirector", func() {
 
 	JustBeforeEach(func() {
 		configFile, err = ioutil.TempFile("", "config.yml")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 		defer configFile.Close()
 
 		_, err = configFile.WriteString(config)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Describe("Execute", func() {
@@ -190,7 +190,7 @@ vmtypes-configuration:
 			err := command.Execute([]string{
 				"--config", configFile.Name(),
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			ExpectDirectorToBeConfiguredCorrectly()
 		})
@@ -201,7 +201,7 @@ vmtypes-configuration:
 					err := command.Execute([]string{
 						"--config", configFile.Name(),
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(stdout).To(gbytes.Say("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(0))
@@ -216,11 +216,11 @@ vmtypes-configuration:
   custom_only: true
 `
 					newConfigFile, err := ioutil.TempFile("", "config.yml")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
 					_, err = newConfigFile.WriteString(simpleConfig)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = command.Execute([]string{
 						"--config", newConfigFile.Name(),
@@ -253,11 +253,11 @@ vmtypes-configuration:
     ephemeral_disk: 20480
 `
 					newConfigFile, err := ioutil.TempFile("", "config.yml")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
 					_, err = newConfigFile.WriteString(simpleConfig)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = command.Execute([]string{
 						"--config", newConfigFile.Name(),
@@ -287,16 +287,16 @@ vmtypes-configuration:
     ephemeral_disk: 20480
 `
 					newConfigFile, err := ioutil.TempFile("", "config.yml")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
 					_, err = newConfigFile.WriteString(simpleConfig)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = command.Execute([]string{
 						"--config", newConfigFile.Name(),
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(stdout).To(gbytes.Say("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(1))
@@ -318,16 +318,16 @@ vmtypes-configuration:
     ephemeral_disk: 20480
 `
 					newConfigFile, err := ioutil.TempFile("", "config.yml")
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
 					_, err = newConfigFile.WriteString(simpleConfig)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					err = command.Execute([]string{
 						"--config", newConfigFile.Name(),
 					})
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(stdout).To(gbytes.Say("creating custom vm types"))
 					Expect(service.ListVMTypesCallCount()).To(Equal(1))
@@ -374,7 +374,7 @@ vmtypes-configuration:
 								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 								"--vars-file", writeTestConfigFile("name: network"),
 							})
-							Expect(err).NotTo(HaveOccurred())
+							Expect(err).ToNot(HaveOccurred())
 
 							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 								Name:            "network",
@@ -389,7 +389,7 @@ vmtypes-configuration:
 								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 								"--var", "name=network",
 							})
-							Expect(err).NotTo(HaveOccurred())
+							Expect(err).ToNot(HaveOccurred())
 							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 								Name:            "network",
 								CloudProperties: json.RawMessage("null"),
@@ -409,7 +409,7 @@ vmtypes-configuration:
 								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 								"--vars-env", "OM_VAR",
 							})
-							Expect(err).NotTo(HaveOccurred())
+							Expect(err).ToNot(HaveOccurred())
 							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 								Name:            "network",
 								CloudProperties: json.RawMessage("null"),
@@ -431,7 +431,7 @@ vmtypes-configuration:
 							err = command.Execute([]string{
 								"--config", writeTestConfigFile("vmextensions-configuration: [{name: ((name))}]"),
 							})
-							Expect(err).NotTo(HaveOccurred())
+							Expect(err).ToNot(HaveOccurred())
 							Expect(service.CreateStagedVMExtensionArgsForCall(0)).To(Equal(api.CreateVMExtension{
 								Name:            "network",
 								CloudProperties: json.RawMessage("null"),
@@ -456,7 +456,7 @@ vmtypes-configuration:
 				err = command.Execute([]string{
 					"--config", writeTestConfigFile(`{}`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(0))
 				Expect(service.CreateStagedVMExtensionCallCount()).To(Equal(0))
 				Expect(service.DeleteVMExtensionCallCount()).To(Equal(0))
@@ -468,7 +468,7 @@ vmtypes-configuration:
 				err = command.Execute([]string{
 					"--config", writeTestConfigFile(`vmextensions-configuration: []`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(service.ListStagedVMExtensionsCallCount()).To(Equal(1))
 				Expect(service.DeleteVMExtensionCallCount()).To(Equal(2))
 			})
@@ -486,7 +486,7 @@ vmtypes-configuration:
 						}
 					}`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.UpdateStagedDirectorAvailabilityZonesCallCount()).To(Equal(0))
 				Expect(service.UpdateStagedDirectorNetworksCallCount()).To(Equal(1))
@@ -599,7 +599,7 @@ vmtypes-configuration:
 				err := command.Execute([]string{
 					"--config", writeTestConfigFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`),
 				})
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.UpdateStagedDirectorIAASConfigurationsCallCount()).To(Equal(1))
 				Expect(string(service.UpdateStagedDirectorIAASConfigurationsArgsForCall(0))).To(MatchYAML(`[{guid: some-guid, name: default}]`))

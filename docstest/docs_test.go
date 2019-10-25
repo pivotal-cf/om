@@ -31,11 +31,11 @@ var _ = Describe("Documentation coverage", func() {
 
 func readFile(docName string) (docContents string) {
 	docPath, err := filepath.Abs(docName)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	docContentsBytes, err := ioutil.ReadFile(docPath)
 	docContents = string(docContentsBytes)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	return docContents
 }
@@ -44,7 +44,7 @@ func getCommandNames() []string {
 	command := exec.Command(pathToMain, "--help")
 
 	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	session.Wait()
 

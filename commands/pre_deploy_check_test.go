@@ -104,7 +104,7 @@ Expect(err).To(MatchError(ContainSubstring("something bad happened with the prod
 		It("displays a helpful message", func() {
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Scanning OpsManager now ...")))
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] director: p-bosh-guid")))

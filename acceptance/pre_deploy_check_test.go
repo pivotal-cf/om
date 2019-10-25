@@ -59,7 +59,7 @@ var _ = Describe("pre_deploy_check command", func() {
 				"pre-deploy-check")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 
@@ -138,7 +138,7 @@ var _ = Describe("pre_deploy_check command", func() {
 				"pre-deploy-check")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 

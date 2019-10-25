@@ -40,7 +40,7 @@ var _ = Describe("installation-log command", func() {
 			"999")
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session, "40s").Should(gexec.Exit(0))
 

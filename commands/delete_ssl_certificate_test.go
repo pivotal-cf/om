@@ -27,7 +27,7 @@ var _ = Describe("DeleteSSLCertificate", func() {
 	Describe("Execute", func() {
 		It("deletes the custom ssl certificate", func() {
 			err := command.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.DeleteSSLCertificateCallCount()).To(Equal(1))
 

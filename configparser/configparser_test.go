@@ -171,7 +171,7 @@ var _ = Describe("Config Parser", func() {
 	Context("given nil handler", func() {
 		It("removes all the credential types from the payload", func() {
 			output, err := getOutput(configparser.NewNilHandler())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(MatchYAML(`---
 .properties.collection:
@@ -194,7 +194,7 @@ var _ = Describe("Config Parser", func() {
 	Context("given placeholder handler", func() {
 		It("replace all the credential types to placeholders", func() {
 			output, err := getOutput(configparser.NewPlaceholderHandler())
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(MatchYAML(`---
 ".properties.some-string-property":
@@ -258,7 +258,7 @@ var _ = Describe("Config Parser", func() {
 			}, nil)
 
 			output, err := getOutput(configparser.NewGetCredentialHandler(productGUID, fakeCredService))
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeCredService.GetDeployedProductCredentialCallCount()).To(Equal(7))
 

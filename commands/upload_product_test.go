@@ -50,7 +50,7 @@ var _ = Describe("UploadProduct", func() {
 		err := command.Execute([]string{
 			"--product", "/path/to/some-product.tgz",
 		})
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		key, file := multipart.AddFileArgsForCall(0)
 		Expect(key).To(Equal("product[file]"))
@@ -81,7 +81,7 @@ var _ = Describe("UploadProduct", func() {
 				"--product", "/path/to/some-product.tgz",
 				"--polling-interval", "48",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeService.UploadAvailableProductArgsForCall(0).PollingInterval).To(Equal(48))
 		})
 	})
@@ -103,7 +103,7 @@ var _ = Describe("UploadProduct", func() {
 			err := command.Execute([]string{
 				"--product", "/path/to/some-product.tgz",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
 
@@ -139,7 +139,7 @@ var _ = Describe("UploadProduct", func() {
 				"--product", file.Name(),
 				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
 
@@ -201,7 +201,7 @@ var _ = Describe("UploadProduct", func() {
 				"--product", file.Name(),
 				"--product-version", "1.5.0",
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
 
@@ -251,7 +251,7 @@ var _ = Describe("UploadProduct", func() {
 					"--product", "/path/to/some-product.tgz",
 				})
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
 				Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(1))
 
@@ -267,7 +267,7 @@ var _ = Describe("UploadProduct", func() {
 			fakeService.UploadAvailableProductReturnsOnCall(1, api.UploadAvailableProductOutput{}, nil)
 
 			err := command.Execute([]string{"--product", "/some/path"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(multipart.AddFileCallCount()).To(Equal(2))
 			Expect(multipart.FinalizeCallCount()).To(Equal(2))
@@ -306,10 +306,10 @@ product-version: 1.5.0
 product: will-be-overridden-by-command-line
 `
 			configFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("reads configuration from config file", func() {
@@ -335,7 +335,7 @@ product: will-be-overridden-by-command-line
 				"--config", configFile.Name(),
 				"--product", file.Name(),
 			})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(metadataExtractor.ExtractMetadataCallCount()).To(Equal(1))
 			Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(0))
 

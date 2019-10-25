@@ -26,7 +26,7 @@ var _ = Describe("DeleteProduct", func() {
 	Describe("Execute", func() {
 		It("deletes the specific product", func() {
 			err := command.Execute([]string{"-p", "some-product-name", "-v", "1.2.3-build.4"})
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.DeleteAvailableProductsCallCount()).To(Equal(1))
 

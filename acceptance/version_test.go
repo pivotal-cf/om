@@ -21,14 +21,14 @@ var _ = Describe("version command", func() {
 		var err error
 		pathToVersionedMain, err = gexec.Build("github.com/pivotal-cf/om",
 			"--ldflags", fmt.Sprintf("-X main.version=%s -X main.applySleepDurationString=1ms", version))
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	When("given the -v short flag", func() {
 		It("returns the binary version", func() {
 			command := exec.Command(pathToVersionedMain, "-v")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
@@ -39,7 +39,7 @@ var _ = Describe("version command", func() {
 		It("returns the binary version", func() {
 			command := exec.Command(pathToVersionedMain, "--version")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
@@ -50,7 +50,7 @@ var _ = Describe("version command", func() {
 		It("returns the binary version", func() {
 			command := exec.Command(pathToVersionedMain, "version")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
 			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
