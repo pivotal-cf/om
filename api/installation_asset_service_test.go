@@ -1,9 +1,8 @@
 package api_test
 
 import (
-	"errors"
+	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -15,21 +14,27 @@ import (
 
 var _ = Describe("InstallationAssetService", func() {
 	var (
-		client                 *fakes.HttpClient
-		progressClient         *fakes.HttpClient
-		unauthedProgressClient *fakes.HttpClient
+		client                 *ghttp.Server
+		progressClient         *ghttp.Server
+		unauthedProgressClient *ghttp.Server
 		service                api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
-		progressClient = &fakes.HttpClient{}
-		unauthedProgressClient = &fakes.HttpClient{}
+		client = ghttp.NewServer()
+		progressClient = ghttp.NewServer()
+		unauthedProgressClient = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client:                 client,
-			ProgressClient:         progressClient,
-			UnauthedProgressClient: unauthedProgressClient,
+			Client:                 httpClient{serverURI: client.URL()},
+			ProgressClient:         httpClient{serverURI: progressClient.URL()},
+			UnauthedProgressClient: httpClient{serverURI: unauthedProgressClient.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		client.Close()
+		progressClient.Close()
+		unauthedProgressClient.Close()
 	})
 
 	Describe("DownloadInstallationAssetCollection", func() {
@@ -49,19 +54,15 @@ var _ = Describe("InstallationAssetService", func() {
 		})
 
 		It("makes a request to export the current Ops Manager installation", func() {
-			progressClient.DoReturns(&http.Response{
-				StatusCode:    http.StatusOK,
-				ContentLength: int64(len([]byte("some-installation"))),
-				Body:          ioutil.NopCloser(strings.NewReader("some-installation")),
-			}, nil)
+			progressClient.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installation_asset_collection"),
+					ghttp.RespondWith(http.StatusOK, "some-installation"),
+				),
+			)
 
 			err := service.DownloadInstallationAssetCollection(outputFile.Name())
 			Expect(err).ToNot(HaveOccurred())
-
-			By("posting to the installation_asset_collection endpoint")
-			request := progressClient.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("GET"))
-			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
 
 			By("writing the installation to a local file")
 			ins, err := ioutil.ReadFile(outputFile.Name())
@@ -69,101 +70,88 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(string(ins)).To(Equal("some-installation"))
 		})
 
-		When("an error occurs", func() {
-			When("the client errors before the request", func() {
-				It("returns an error", func() {
-					progressClient.DoReturns(&http.Response{}, errors.New("some client error"))
+		When("the client errors before the request", func() {
+			It("returns an error", func() {
+				progressClient.Close()
 
-					err := service.DownloadInstallationAssetCollection("fake-file")
-					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: could not send api request to GET /api/v0/installation_asset_collection: some client error"))
-				})
+				err := service.DownloadInstallationAssetCollection("fake-file")
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to installation_asset_collection endpoint: could not send api request to GET /api/v0/installation_asset_collection")))
 			})
+		})
 
-			When("the api returns a non-200 status code", func() {
-				It("returns an error", func() {
-					progressClient.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
-					}, nil)
+		When("the api returns a non-200 status code", func() {
+			It("returns an error", func() {
+				progressClient.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/installation_asset_collection"),
+						ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+					),
+				)
 
-					err := service.DownloadInstallationAssetCollection("fake-file")
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				err := service.DownloadInstallationAssetCollection("fake-file")
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the output file cannot be written", func() {
-				It("returns an error", func() {
-					progressClient.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+		When("the output file cannot be written", func() {
+			It("returns an error", func() {
+				progressClient.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/installation_asset_collection"),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
 
-					err := service.DownloadInstallationAssetCollection("fake-dir/fake-file")
-					Expect(err).To(MatchError(ContainSubstring("no such file")))
-				})
-			})
-
-			When("the response length doesn't match the number of bytes copied", func() {
-				It("returns an error", func() {
-					progressClient.DoReturns(&http.Response{
-						StatusCode:    http.StatusOK,
-						Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
-						ContentLength: 50,
-					}, nil)
-
-					err := service.DownloadInstallationAssetCollection(outputFile.Name())
-					Expect(err).To(MatchError(ContainSubstring("invalid response length")))
-				})
+				err := service.DownloadInstallationAssetCollection("fake-dir/fake-file")
+				Expect(err).To(MatchError(ContainSubstring("no such file")))
 			})
 		})
 	})
 
 	Describe("UploadInstallationAssetCollection", func() {
 		It("makes a request to import the installation to the Ops Manager", func() {
-			unauthedProgressClient.DoStub = func(req *http.Request) (*http.Response, error) {
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
-				}, nil
-			}
+			unauthedProgressClient.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v0/installation_asset_collection"),
+					ghttp.VerifyBody([]byte("some installation")),
+					ghttp.VerifyContentType("some content-type"),
+					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						Expect(req.ContentLength).To(Equal(int64(17)))
+
+						w.Write([]byte(`{}`))
+					}),
+				),
+			)
 
 			err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
-				ContentLength:   10,
+				ContentLength:   17,
 				Installation:    strings.NewReader("some installation"),
 				ContentType:     "some content-type",
 				PollingInterval: 1,
 			})
 			Expect(err).ToNot(HaveOccurred())
-
-			request := unauthedProgressClient.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("POST"))
-			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
-			Expect(request.ContentLength).To(Equal(int64(10)))
-			Expect(request.Header.Get("Content-Type")).To(Equal("some content-type"))
-
-			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(string(body)).To(Equal("some installation"))
 		})
 
 		When("an error occurs", func() {
 			When("the client errors before the request", func() {
 				It("returns an error", func() {
-					unauthedProgressClient.DoReturns(&http.Response{}, errors.New("some client error"))
+					unauthedProgressClient.Close()
 
 					err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
 						PollingInterval: 1,
 					})
-					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: some client error"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to installation_asset_collection endpoint")))
 				})
 			})
 
 			When("the api returns a non-200 status code", func() {
 				It("returns an error", func() {
-					unauthedProgressClient.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+					unauthedProgressClient.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installation_asset_collection"),
+							ghttp.RespondWith(http.StatusTeapot, `{}`),
+						),
+					)
 
 					err := service.UploadInstallationAssetCollection(api.ImportInstallationInput{
 						PollingInterval: 1,
@@ -176,76 +164,71 @@ var _ = Describe("InstallationAssetService", func() {
 
 	Describe("DeleteInstallationAssetCollection", func() {
 		It("makes a request to delete the installation on the Ops Manager", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/installation_asset_collection"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{"errands": {}}`),
+					ghttp.RespondWith(http.StatusOK, `{
 						"install": {
 							"id": 12
 						}
-					}`)),
-				}, nil
-			}
+					}`),
+				),
+			)
 
 			output, err := service.DeleteInstallationAssetCollection()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(output.ID).To(Equal(12))
-
-			request := client.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("DELETE"))
-			Expect(request.URL.Path).To(Equal("/api/v0/installation_asset_collection"))
-			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
-
-			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(string(body)).To(Equal(`{"errands": {}}`))
 		})
 
 		It("gracefully quits when there is no installation to delete", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				return &http.Response{
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					StatusCode: http.StatusGone,
-				}, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/installation_asset_collection"),
+					ghttp.RespondWith(http.StatusGone, `{}`),
+				),
+			)
 
 			output, err := service.DeleteInstallationAssetCollection()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(output).To(Equal(api.InstallationsServiceOutput{}))
 		})
 
-		When("an error occurs", func() {
-			When("the client errors before the request", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("some client error"))
+		When("the client errors before the request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.DeleteInstallationAssetCollection()
-					Expect(err).To(MatchError("could not make api request to installation_asset_collection endpoint: could not send api request to DELETE /api/v0/installation_asset_collection: some client error"))
-				})
+				_, err := service.DeleteInstallationAssetCollection()
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to installation_asset_collection endpoint: could not send api request to DELETE /api/v0/installation_asset_collection")))
 			})
+		})
 
-			When("the api returns a non-200 status code", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+		When("the api returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", "/api/v0/installation_asset_collection"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-					_, err := service.DeleteInstallationAssetCollection()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.DeleteInstallationAssetCollection()
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the api response cannot be unmarshaled", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("%%%")),
-					}, nil)
+		When("the api response cannot be unmarshaled", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", "/api/v0/installation_asset_collection"),
+						ghttp.RespondWith(http.StatusOK, `%%%`),
+					),
+				)
 
-					_, err := service.DeleteInstallationAssetCollection()
-					Expect(err).To(MatchError(ContainSubstring("invalid character")))
-				})
+				_, err := service.DeleteInstallationAssetCollection()
+				Expect(err).To(MatchError(ContainSubstring("invalid character")))
 			})
 		})
 	})

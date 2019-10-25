@@ -1,45 +1,42 @@
 package api_test
 
 import (
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/api"
+	"net/http"
 )
 
 var _ = Describe("Diagnostic Report", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		client.Close()
 	})
 
 	Describe("Ops Man pre 2.6", func() {
 		Describe("DiagnosticReport", func() {
 			It("returns a diagnostic report", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(pre2_6Report)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+						ghttp.RespondWith(http.StatusOK, pre2_6Report),
+					),
+				)
 
 				report, err := service.GetDiagnosticReport()
 				Expect(err).ToNot(HaveOccurred())
-
-				request := client.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.Path).To(Equal("/api/v0/diagnostic_report"))
 
 				Expect(report.InfrastructureType).To(Equal("azure"))
 				Expect(report.Stemcells).To(Equal([]string{"light-bosh-stemcell-3263.8-aws-xen-hvm-ubuntu-trusty-go_agent.tgz"}))
@@ -72,40 +69,35 @@ var _ = Describe("Diagnostic Report", func() {
 			When("an error occurs", func() {
 				When("the server returns a 500", func() {
 					It("returns a DiagnosticReportUnavailable error", func() {
-						client.DoReturns(&http.Response{
-							StatusCode: http.StatusInternalServerError,
-							Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-						}, nil)
+						client.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+								ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+							),
+						)
 
 						_, err := service.GetDiagnosticReport()
 						Expect(err).To(BeAssignableToTypeOf(api.DiagnosticReportUnavailable{}))
 					})
 				})
 
-				When("the resp is nil due to network error", func() {
-					It("returns the error", func() {
-						client.DoReturns(nil, errors.New("some error"))
-						_, err := service.GetDiagnosticReport()
-						Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report: some error"))
-
-					})
-				})
-
 				When("the client fails before the request", func() {
 					It("returns an error", func() {
-						client.DoReturns(&http.Response{}, errors.New("some error"))
+						client.Close()
 
 						_, err := service.GetDiagnosticReport()
-						Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report: some error"))
+						Expect(err).To(MatchError(ContainSubstring("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report")))
 					})
 				})
 
 				When("the server returns a non-2XX status", func() {
 					It("returns an error", func() {
-						client.DoReturns(&http.Response{
-							StatusCode: http.StatusTeapot,
-							Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-						}, nil)
+						client.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+								ghttp.RespondWith(http.StatusTeapot, `{}`),
+							),
+						)
 
 						_, err := service.GetDiagnosticReport()
 						Expect(err).ToNot(MatchError("request failed: unexpected response"))
@@ -114,10 +106,12 @@ var _ = Describe("Diagnostic Report", func() {
 
 				When("invalid json is returned", func() {
 					It("returns an error", func() {
-						client.DoReturns(&http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(`$$$$$`)),
-						}, nil)
+						client.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+								ghttp.RespondWith(http.StatusOK, `%%%`),
+							),
+						)
 
 						_, err := service.GetDiagnosticReport()
 						Expect(err).ToNot(MatchError("invalid json received from server"))
@@ -130,17 +124,15 @@ var _ = Describe("Diagnostic Report", func() {
 	Describe("Ops Man post 2.6", func() {
 		Describe("DiagnosticReport", func() {
 			It("returns a diagnostic report", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(post2_6Report)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+						ghttp.RespondWith(http.StatusOK, post2_6Report),
+					),
+				)
 
 				report, err := service.GetDiagnosticReport()
 				Expect(err).ToNot(HaveOccurred())
-
-				request := client.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.Path).To(Equal("/api/v0/diagnostic_report"))
 
 				Expect(report.InfrastructureType).To(Equal("azure"))
 				Expect(report.AvailableStemcells).To(Equal([]api.Stemcell{
@@ -197,40 +189,35 @@ var _ = Describe("Diagnostic Report", func() {
 			When("an error occurs", func() {
 				When("the server returns a 500", func() {
 					It("returns a DiagnosticReportUnavailable error", func() {
-						client.DoReturns(&http.Response{
-							StatusCode: http.StatusInternalServerError,
-							Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-						}, nil)
+						client.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+								ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+							),
+						)
 
 						_, err := service.GetDiagnosticReport()
 						Expect(err).To(BeAssignableToTypeOf(api.DiagnosticReportUnavailable{}))
 					})
 				})
 
-				When("the resp is nil due to network error", func() {
-					It("returns the error", func() {
-						client.DoReturns(nil, errors.New("some error"))
-						_, err := service.GetDiagnosticReport()
-						Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report: some error"))
-
-					})
-				})
-
 				When("the client fails before the request", func() {
 					It("returns an error", func() {
-						client.DoReturns(&http.Response{}, errors.New("some error"))
+						client.Close()
 
 						_, err := service.GetDiagnosticReport()
-						Expect(err).To(MatchError("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report: some error"))
+						Expect(err).To(MatchError(ContainSubstring("could not make api request to diagnostic_report endpoint: could not send api request to GET /api/v0/diagnostic_report")))
 					})
 				})
 
 				When("the server returns a non-2XX status", func() {
 					It("returns an error", func() {
-						client.DoReturns(&http.Response{
-							StatusCode: http.StatusTeapot,
-							Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-						}, nil)
+						client.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+								ghttp.RespondWith(http.StatusTeapot, `{}`),
+							),
+						)
 
 						_, err := service.GetDiagnosticReport()
 						Expect(err).ToNot(MatchError("request failed: unexpected response"))
@@ -239,10 +226,12 @@ var _ = Describe("Diagnostic Report", func() {
 
 				When("invalid json is returned", func() {
 					It("returns an error", func() {
-						client.DoReturns(&http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(`$$$$$`)),
-						}, nil)
+						client.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+								ghttp.RespondWith(http.StatusOK, `%%%`),
+							),
+						)
 
 						_, err := service.GetDiagnosticReport()
 						Expect(err).ToNot(MatchError("invalid json received from server"))
@@ -254,17 +243,15 @@ var _ = Describe("Diagnostic Report", func() {
 
 	Describe("Full Diagnostic Report", func() {
 		It("returns the full report", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(post2_6Report)),
-			}, nil)
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+					ghttp.RespondWith(http.StatusOK, post2_6Report),
+				),
+			)
 
 			report, err := service.GetDiagnosticReport()
 			Expect(err).ToNot(HaveOccurred())
-
-			request := client.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("GET"))
-			Expect(request.URL.Path).To(Equal("/api/v0/diagnostic_report"))
 
 			Expect(report.FullReport).To(Equal(post2_6Report))
 		})

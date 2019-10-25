@@ -1,52 +1,50 @@
 package api_test
 
 import (
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/api"
+	"net/http"
 )
 
 var _ = Describe("StemcellService", func() {
-	Describe("ListStemcells", func() {
-		var (
-			fakeClient *fakes.HttpClient
-			service    api.Api
-		)
+	var (
+		client  *ghttp.Server
+		service api.Api
+	)
 
-		BeforeEach(func() {
-			fakeClient = &fakes.HttpClient{}
-			service = api.New(api.ApiInput{
-				Client: fakeClient,
-			})
+	BeforeEach(func() {
+		client = ghttp.NewServer()
+
+		service = api.New(api.ApiInput{
+			Client: httpClient{client.URL()},
 		})
+	})
 
+	AfterEach(func() {
+		client.Close()
+	})
+
+	Describe("ListStemcells", func() {
 		It("makes a request to list the stemcells", func() {
-			fakeClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`{
-                  "products": [
-                    {
-                      "guid": "some-guid",
-                      "staged_stemcells": [
-						{"os": "ubuntu-trusty", "version": "1234.5"}
-                      ],
-                      "identifier": "some-product",
-                      "available_stemcells": [
-                        {"os": "ubuntu-trusty", "version": "1234.5"},
-                        {"os": "ubuntu-trusty", "version": "1234.6"}
-                      ],
-                      "required_stemcells": [ {"os": "ubuntu-xenial", "version": "1234.5"} ]
-                    }
-                  ]
-                }`)),
-			}, nil)
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/stemcell_associations"),
+					ghttp.RespondWith(http.StatusOK, `{
+				  		"products": [{
+							  "guid": "some-guid",
+							  "staged_stemcells": [{"os": "ubuntu-trusty", "version": "1234.5"}],
+							  "identifier": "some-product",
+							  "available_stemcells": [
+								{"os": "ubuntu-trusty", "version": "1234.5"},
+								{"os": "ubuntu-trusty", "version": "1234.6"}
+							  ],
+							  "required_stemcells": [{"os": "ubuntu-xenial", "version": "1234.5"}]
+						}]
+					}`),
+				),
+			)
 
 			output, err := service.ListMultiStemcells()
 			Expect(err).ToNot(HaveOccurred())
@@ -69,60 +67,51 @@ var _ = Describe("StemcellService", func() {
 					},
 				},
 			}))
-
-			request := fakeClient.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("GET"))
-			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_associations"))
 		})
 
-		When("an error occurs", func() {
-			When("invalid JSON is returned", func() {
-				It("returns an error", func() {
-					fakeClient.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("{invalidJSON}")),
-					}, nil)
+		When("invalid JSON is returned", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/stemcell_associations"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					_, err := service.ListMultiStemcells()
-					Expect(err).To(MatchError(ContainSubstring("invalid JSON: invalid character 'i' looking for beginning of object key string")))
-				})
+				_, err := service.ListMultiStemcells()
+				Expect(err).To(MatchError(ContainSubstring("invalid JSON: invalid character 'i' looking for beginning of value")))
 			})
-			When("the client errors before the request", func() {
-				It("returns an error", func() {
-					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
+		})
+		When("the client errors before the request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.ListMultiStemcells()
-					Expect(err).To(MatchError("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcell_associations: some client error"))
-				})
+				_, err := service.ListMultiStemcells()
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcell_associations")))
 			})
+		})
 
-			When("the api returns a non-200 status code", func() {
-				It("returns an error", func() {
-					fakeClient.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+		When("the api returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/stemcell_associations"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-					_, err := service.ListMultiStemcells()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.ListMultiStemcells()
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})
 
 	Describe("AssignMultiStemcells", func() {
 		var (
-			fakeClient *fakes.HttpClient
-			service    api.Api
-			input      api.ProductMultiStemcells
+			input api.ProductMultiStemcells
 		)
 
 		BeforeEach(func() {
-			fakeClient = &fakes.HttpClient{}
-			service = api.New(api.ApiInput{
-				Client: fakeClient,
-			})
-
 			input = api.ProductMultiStemcells{
 				Products: []api.ProductMultiStemcell{
 					{
@@ -137,51 +126,46 @@ var _ = Describe("StemcellService", func() {
 		})
 
 		It("makes a request to assign multiple stemcells", func() {
-			fakeClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PATCH", "/api/v0/stemcell_associations"),
+					ghttp.VerifyJSON(`{
+				  		"products": [{
+						  	"guid": "some-guid",
+						  	"staged_stemcells": [
+								 {"os": "ubuntu-trusty", "version": "1234.5"},
+								 {"os": "ubuntu-trusty", "version": "1234.6"}
+						   	]
+						}]
+            		}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
 
 			err := service.AssignMultiStemcell(input)
 			Expect(err).ToNot(HaveOccurred())
-
-			request := fakeClient.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("PATCH"))
-			Expect(request.URL.Path).To(Equal("/api/v0/stemcell_associations"))
-			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(body).To(MatchJSON(`{
-              "products": [
-                {
-                  "guid": "some-guid",
-                  "staged_stemcells": [
-					 {"os": "ubuntu-trusty", "version": "1234.5"},
-					 {"os": "ubuntu-trusty", "version": "1234.6"}
-                   ]
-                }
-              ]
-            }`))
 		})
 
-		When("an error occurs", func() {
-			When("the client errors before the request", func() {
-				It("returns an error", func() {
-					fakeClient.DoReturns(&http.Response{}, errors.New("some client error"))
+		When("the client errors before the request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					err := service.AssignMultiStemcell(input)
-					Expect(err).To(MatchError("could not send api request to PATCH /api/v0/stemcell_associations: some client error"))
-				})
+				err := service.AssignMultiStemcell(input)
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to PATCH /api/v0/stemcell_associations")))
 			})
+		})
 
-			When("the api returns a non-200 status code", func() {
-				It("returns an error", func() {
-					fakeClient.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-					}, nil)
+		When("the api returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PATCH", "/api/v0/stemcell_associations"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-					err := service.AssignMultiStemcell(input)
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				err := service.AssignMultiStemcell(input)
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})

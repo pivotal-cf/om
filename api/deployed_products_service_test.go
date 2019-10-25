@@ -1,55 +1,48 @@
 package api_test
 
 import (
-	"bytes"
-	"errors"
-	"io/ioutil"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/om/api"
 )
 
 var _ = Describe("DeployedProducts", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
 	})
 
-	Describe("GetDeployedProductManifest", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				switch req.URL.Path {
-				case "/api/v0/deployed/products/some-product-guid/manifest":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-							"key-1": {
-								"key-2": "value-1"
-							},
-							"key-3": "value-2",
-							"key-4": 2147483648
-						}`)),
-					}
-				}
-				return resp, nil
-			}
-		})
+	AfterEach(func() {
+		client.Close()
+	})
 
+	Describe("GetDeployedProductManifest", func() {
 		It("returns a manifest of a product", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/manifest"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"key-1": {
+							"key-2": "value-1"
+						},
+						"key-3": "value-2",
+						"key-4": 2147483648
+					}`),
+				),
+			)
+
 			manifest, err := service.GetDeployedProductManifest("some-product-guid")
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(manifest).To(MatchYAML(`---
 key-1:
   key-2: value-1
@@ -58,135 +51,111 @@ key-4: 2147483648
 `))
 		})
 
-		Context("failure cases", func() {
-			When("the request object is invalid", func() {
-				It("returns an error", func() {
-					_, err := service.GetDeployedProductManifest("invalid-guid-%%%")
-					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
-				})
+		When("the request object is invalid", func() {
+			It("returns an error", func() {
+				_, err := service.GetDeployedProductManifest("invalid-guid-%%%")
+				Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 			})
+		})
 
-			When("the client request fails", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
+		When("the client request fails", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.GetDeployedProductManifest("some-product-guid")
-					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: could not send api request to GET /api/v0/deployed/products/some-product-guid/manifest: nope"))
-				})
+				_, err := service.GetDeployedProductManifest("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products manifest endpoint: could not send api request to GET /api/v0/deployed/products/some-product-guid/manifest")))
 			})
+		})
 
-			When("the server returns a non-200 status code", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}, nil)
+		When("the server returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/manifest"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-					_, err := service.GetDeployedProductManifest("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.GetDeployedProductManifest("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the returned JSON is invalid", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("%%%")),
-					}, nil)
+		When("the returned JSON is invalid", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/manifest"),
+						ghttp.RespondWith(http.StatusOK, `%%%`),
+					),
+				)
 
-					_, err := service.GetDeployedProductManifest("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
-				})
+				_, err := service.GetDeployedProductManifest("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 			})
 		})
 	})
 
 	Describe("List", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				resp := &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
-				}
-				switch req.URL.Path {
-				case "/api/v0/deployed/products":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`[{
-							"guid":"some-product-guid",
-							"type":"some-type"
-						},
-						{
-							"guid":"some-other-product-guid",
-							"type":"some-other-type"
-						}]`)),
-					}
-				}
-				return resp, nil
-			}
-		})
-
 		It("retrieves a list of deployed products from the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, `[{
+						"guid":"some-product-guid",
+						"type":"some-type"
+					}, {
+						"guid":"some-other-product-guid",
+						"type":"some-other-type"
+					}]`),
+				),
+			)
+
 			output, err := service.ListDeployedProducts()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
-			Expect(output).To(Equal([]api.DeployedProductOutput{
-				{
-					GUID: "some-product-guid",
-					Type: "some-type",
-				},
-				{
-					GUID: "some-other-product-guid",
-					Type: "some-other-type",
-				},
-			},
-			))
-
-			Expect(client.DoCallCount()).To(Equal(1))
-
-			By("checking for deployed products")
-			avReq := client.DoArgsForCall(0)
-			Expect(avReq.URL.Path).To(Equal("/api/v0/deployed/products"))
+			Expect(output).To(Equal([]api.DeployedProductOutput{{
+				GUID: "some-product-guid",
+				Type: "some-type",
+			}, {
+				GUID: "some-other-product-guid",
+				Type: "some-other-type",
+			}}))
 		})
 
-		Context("failure cases", func() {
-			When("the request fails", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
-				})
+		When("the request fails", func() {
+			It("returns an error", func() {
+				client.Close()
 
-				It("returns an error", func() {
-					_, err := service.ListDeployedProducts()
-					Expect(err).To(MatchError("could not make api request to deployed products endpoint: could not send api request to GET /api/v0/deployed/products: nope"))
-				})
+				_, err := service.ListDeployedProducts()
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to deployed products endpoint: could not send api request to GET /api/v0/deployed/products")))
 			})
+		})
 
-			When("the server returns a non-200 status code", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}, nil)
-				})
+		When("the server returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-				It("returns an error", func() {
-					_, err := service.ListDeployedProducts()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.ListDeployedProducts()
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the server returns invalid JSON", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("%%")),
-					}, nil)
-				})
-
-				It("returns an error", func() {
-					_, err := service.ListDeployedProducts()
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal deployed products response:")))
-				})
+		When("the server returns invalid JSON", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, "%%"),
+					),
+				)
+				_, err := service.ListDeployedProducts()
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal deployed products response:")))
 			})
 		})
 	})

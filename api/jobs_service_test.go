@@ -14,25 +14,25 @@ import (
 
 var _ = Describe("JobsService", func() {
 	var (
-		server  *ghttp.Server
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		server = ghttp.NewServer()
+		client = ghttp.NewServer()
 
 		service = api.New(api.ApiInput{
-			Client: httpClient{server.URL()},
+			Client: httpClient{client.URL()},
 		})
 	})
 
 	AfterEach(func() {
-		server.Close()
+		client.Close()
 	})
 
 	Describe("ListStagedProductJobs", func() {
 		It("returns a map of the jobs", func() {
-			server.AppendHandlers(
+			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 					ghttp.RespondWith(http.StatusOK, `{
@@ -58,11 +58,11 @@ var _ = Describe("JobsService", func() {
 		When("an error occurs", func() {
 			When("the client errors before the request", func() {
 				It("returns an error", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-								server.CloseClientConnections()
+								client.CloseClientConnections()
 							}),
 						),
 					)
@@ -74,7 +74,7 @@ var _ = Describe("JobsService", func() {
 
 			When("the jobs endpoint returns a non-200 status code", func() {
 				It("returns an error", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 							ghttp.RespondWith(http.StatusNotFound, `{}`),
@@ -88,7 +88,7 @@ var _ = Describe("JobsService", func() {
 
 			When("decoding the json fails", func() {
 				It("returns an error", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 							ghttp.RespondWith(http.StatusOK, `bad-json`),
@@ -104,7 +104,7 @@ var _ = Describe("JobsService", func() {
 
 	Describe("GetStagedProductJobResourceConfig", func() {
 		It("fetches the resource config for a given job", func() {
-			server.AppendHandlers(
+			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
 					ghttp.RespondWith(http.StatusOK, `{
@@ -140,11 +140,11 @@ var _ = Describe("JobsService", func() {
 		Context("failure cases", func() {
 			When("the resource config endpoint returns an error", func() {
 				It("returns an error", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
 							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-								server.CloseClientConnections()
+								client.CloseClientConnections()
 							}),
 						),
 					)
@@ -156,7 +156,7 @@ var _ = Describe("JobsService", func() {
 
 			When("the resource config endpoint returns a non-200 status code", func() {
 				It("returns an error", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
 							ghttp.RespondWith(http.StatusNotFound, `{}`),
@@ -170,7 +170,7 @@ var _ = Describe("JobsService", func() {
 
 			When("the resource config returns invalid JSON", func() {
 				It("returns an error", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
 							ghttp.RespondWith(http.StatusOK, `bad-json`),
@@ -186,7 +186,7 @@ var _ = Describe("JobsService", func() {
 
 	Describe("ConfigureJobResourceConfig", func() {
 		It("configures job resources", func() {
-			server.AppendHandlers(
+			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 					ghttp.RespondWith(http.StatusOK, `{
@@ -316,7 +316,7 @@ third-job:
 		})
 
 		DescribeTable("additional_vm_extensions", func(serverExtensions string, configExtensions string, expectatedExtensions string) {
-			server.AppendHandlers(
+			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 					ghttp.RespondWith(http.StatusOK, `{
@@ -379,7 +379,7 @@ some-job:
 
 		When("an error occurs", func() {
 			BeforeEach(func() {
-				server.AppendHandlers(
+				client.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
 						ghttp.RespondWith(http.StatusOK, `{
@@ -405,11 +405,11 @@ some-job:
 
 			When("the client errors before the request", func() {
 				It("returns an error when updating the resource config", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
 							http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-								server.CloseClientConnections()
+								client.CloseClientConnections()
 							}),
 						),
 					)
@@ -431,7 +431,7 @@ some-job:
 
 			When("the client errors before the request", func() {
 				It("returns an error when updating the resource config", func() {
-					server.AppendHandlers(
+					client.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
 							ghttp.RespondWith(http.StatusNotFound, `{}`),
