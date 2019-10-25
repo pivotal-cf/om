@@ -1,114 +1,96 @@
 package api_test
 
 import (
-	"errors"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
+	"net/http"
 )
 
 var _ = Describe("ErrandsService", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		client.Close()
 	})
 
 	Describe("UpdateStagedProductErrands", func() {
 		It("sets state for a product's errands", func() {
-			var path, method string
-			var header http.Header
-			var body io.Reader
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				path = req.URL.Path
-				method = req.Method
-				body = req.Body
-				header = req.Header
-
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{}`)),
-				}, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-id/errands"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"errands": [{
+							"name": "some-errand",
+							"post_deploy": "when-changed",
+							"pre_delete": false
+						}]
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
 
 			err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", false)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
-			Expect(method).To(Equal("PUT"))
-			Expect(header.Get("Content-Type")).To(Equal("application/json"))
-
-			bodyBytes, err := ioutil.ReadAll(body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(string(bodyBytes)).To(MatchJSON(`{
-				"errands": [
-            {
-              "name": "some-errand",
-              "post_deploy": "when-changed",
-              "pre_delete": false
-            }
-					]
-			}`))
 		})
 
-		Context("failure cases", func() {
-			When("ops manager returns a not-OK response code", func() {
-				It("returns an error", func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						return &http.Response{StatusCode: http.StatusTeapot,
-							Body: ioutil.NopCloser(strings.NewReader("I'm a teapot")),
-						}, nil
-					}
+		When("ops manager returns a not-OK response code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-id/errands"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", "false")
-					Expect(err).To(MatchError("request failed: unexpected response:\nHTTP/0.0 418 I'm a teapot\r\n\r\nI'm a teapot"))
-				})
+				err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", "false")
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the product ID cannot be URL encoded", func() {
-				It("returns an error", func() {
-					err := service.UpdateStagedProductErrands("%%%", "some-errand", "true", "false")
-					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
-				})
+		When("the product ID cannot be URL encoded", func() {
+			It("returns an error", func() {
+				err := service.UpdateStagedProductErrands("%%%", "some-errand", "true", "false")
+				Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 			})
+		})
 
-			When("the client cannot make a request", func() {
-				It("returns an error", func() {
-					client.DoReturns(nil, errors.New("client do errored"))
+		When("the client cannot make a request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
-					Expect(err).To(MatchError("failed to set errand state: could not send api request to PUT /api/v0/staged/products/some-product-id/errands: client do errored"))
-				})
+				err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
+				Expect(err).To(MatchError(ContainSubstring("failed to set errand state: could not send api request to PUT /api/v0/staged/products/some-product-id/errands")))
 			})
 		})
 	})
 
 	Describe("ListStagedProductErrands", func() {
 		It("lists errands for a product", func() {
-			var path string
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				path = req.URL.Path
-
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`{
-						"errands": [
-								{"post_deploy":"true","name":"first-errand"},
-								{"post_deploy":"false","name":"second-errand"},
-								{"pre_delete":"true","name":"third-errand"}
-							]
-						}`)),
-				}, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-id/errands"),
+					ghttp.RespondWith(http.StatusOK, `{
+					"errands": [
+							{"post_deploy":"true","name":"first-errand"},
+							{"post_deploy":"false","name":"second-errand"},
+							{"pre_delete":"true","name":"third-errand"}
+						]
+					}`),
+				),
+			)
 
 			output, err := service.ListStagedProductErrands("some-product-id")
 			Expect(err).ToNot(HaveOccurred())
@@ -117,55 +99,51 @@ var _ = Describe("ErrandsService", func() {
 				{Name: "first-errand", PostDeploy: "true"},
 				{Name: "second-errand", PostDeploy: "false"},
 				{Name: "third-errand", PreDelete: "true"},
-			},
-			))
-
-			Expect(path).To(Equal("/api/v0/staged/products/some-product-id/errands"))
+			}))
 		})
 
-		Context("failure cases", func() {
-			When("the product ID cannot be URL encoded", func() {
-				It("returns an error", func() {
-					_, err := service.ListStagedProductErrands("%%%")
-					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
-				})
+		When("the product ID cannot be URL encoded", func() {
+			It("returns an error", func() {
+				_, err := service.ListStagedProductErrands("%%%")
+				Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 			})
+		})
 
-			When("the client cannot make a request", func() {
-				It("returns an error", func() {
-					client.DoReturns(nil, errors.New("client do errored"))
+		When("the client cannot make a request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.ListStagedProductErrands("some-product-id")
-					Expect(err).To(MatchError("failed to list errands: could not send api request to GET /api/v0/staged/products/some-product-id/errands: client do errored"))
-				})
+				_, err := service.ListStagedProductErrands("some-product-id")
+				Expect(err).To(MatchError(ContainSubstring("failed to list errands: could not send api request to GET /api/v0/staged/products/some-product-id/errands")))
 			})
+		})
 
-			When("the response body cannot be parsed", func() {
-				It("returns an error", func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						return &http.Response{StatusCode: http.StatusOK,
-							Body: ioutil.NopCloser(strings.NewReader(`%%%%`)),
-						}, nil
-					}
+		When("the response body cannot be parsed", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-id/errands"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					_, err := service.ListStagedProductErrands("some-product-id")
-					Expect(err).To(MatchError(ContainSubstring("invalid character")))
-				})
+				_, err := service.ListStagedProductErrands("some-product-id")
+				Expect(err).To(MatchError(ContainSubstring("invalid character")))
 			})
+		})
 
-			When("the http call returns an error status code", func() {
-				It("returns an error", func() {
-					client.DoStub = func(request *http.Request) (*http.Response, error) {
-						return &http.Response{
-							StatusCode: http.StatusConflict,
-							Body:       ioutil.NopCloser(strings.NewReader(`Conflict`)),
-						}, nil
-					}
+		When("the http call returns an error status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/future-moon-and-assimilation/errands"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-					_, err := service.ListStagedProductErrands("future-moon-and-assimilation")
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response:\nHTTP/0.0 409 Conflict\r\n\r\nConflict")))
-				})
+				_, err := service.ListStagedProductErrands("future-moon-and-assimilation")
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})

@@ -1,74 +1,60 @@
 package api_test
 
 import (
-	"errors"
-	"io/ioutil"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"strings"
 	"time"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/om/api"
 )
-
-func parseTime(timeString interface{}) *time.Time {
-	if timeString == nil {
-		return nil
-	}
-	timeValue, err := time.Parse(time.RFC3339, timeString.(string))
-
-	if err != nil {
-		Expect(err).ToNot(HaveOccurred())
-	}
-
-	return &timeValue
-}
 
 var _ = Describe("InstallationsService", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		client.Close()
 	})
 
 	Describe("ListInstallations", func() {
 		It("lists the installations on the Ops Manager", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`{
-					"installations": [
-						{
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations"),
+					ghttp.RespondWith(http.StatusOK, `{
+					"installations": [{
 							"user_name": "admin",
 							"finished_at": null,
 							"started_at": "2017-05-24T23:38:37.316Z",
 							"status": "running",
 							"id": 3
-						},
-						{
+						}, {
 							"user_name": "admin",
 							"finished_at": "2017-05-24T23:55:56.106Z",
 							"started_at": "2017-05-24T23:38:37.316Z",
 							"status": "failed",
 							"id": 5
-						},
-						{
+						}, {
 							"user_name": "admin",
 							"finished_at": "2017-05-24T23:55:56.106Z",
 							"started_at": "2017-05-24T23:38:37.316Z",
 							"status": "succeeded",
 							"id": 2
-						}
-					]
-				}`))}, nil)
+						}]
+					}`),
+				),
+			)
 
 			output, err := service.ListInstallations()
 
@@ -96,113 +82,94 @@ var _ = Describe("InstallationsService", func() {
 					FinishedAt: parseTime("2017-05-24T23:55:56.106Z"),
 				},
 			}))
-
-			req := client.DoArgsForCall(0)
-
-			Expect(req.Method).To(Equal("GET"))
-			Expect(req.URL.Path).To(Equal("/api/v0/installations"))
 		})
 	})
 
 	Describe("CreateInstallation", func() {
 		When("deploying all products", func() {
 			It("triggers an installation on an Ops Manager, deploying all products", func() {
-				client.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false", "deploy_products":"all"}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
 
 				output, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
-
-				req := client.DoArgsForCall(2)
-
-				Expect(req.Method).To(Equal("POST"))
-				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
-
-				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":"all"}`))
 			})
 		})
 
 		When("deploying no products", func() {
 			It("triggers an installation on an Ops Manager, deploying no products", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
-				}, nil)
-				client.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false", "deploy_products":"none"}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
 				output, err := service.CreateInstallation(false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
-
-				req := client.DoArgsForCall(2)
-
-				Expect(req.Method).To(Equal("POST"))
-				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
-
-				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":"none"}`))
 			})
 		})
 
 		When("deploying some products", func() {
 			It("triggers an installation on an Ops Manager, deploying some products", func() {
-				client.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(2, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","deploy_products":["guid2"]}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
 
 				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
-
-				req := client.DoArgsForCall(2)
-				Expect(req.Method).To(Equal("POST"))
-				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
-
-				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(body)).To(Equal(`{"ignore_warnings":"false","deploy_products":["guid2"]}`))
 			})
 
 			It("errors when the product does not exist", func() {
-				client.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"} ]`)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}]`),
+					),
+				)
 
 				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).To(HaveOccurred())
@@ -211,18 +178,21 @@ var _ = Describe("InstallationsService", func() {
 
 		When("given the errands", func() {
 			It("sends the errands as a json parameter", func() {
-				client.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(2, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
 
 				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
 					Errands: map[string]api.ProductErrand{
@@ -235,29 +205,24 @@ var _ = Describe("InstallationsService", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
-
-				req := client.DoArgsForCall(2)
-				Expect(req.Method).To(Equal("POST"))
-				Expect(req.URL.Path).To(Equal("/api/v0/installations"))
-
-				body, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(body)).To(MatchJSON(`{"ignore_warnings":"false","deploy_products":["guid2"],"errands":{"guid1":{"run_post_deploy":{"errand1":"default"}}}}`)) // TODO product1-guid
 			})
 
 			It("returns an error if the product guid is not found", func() {
-				client.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-				}, nil)
-				client.DoReturnsOnCall(2, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{"install":{"id":1}}`)),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
 
 				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
 					Errands: map[string]api.ProductErrand{
@@ -272,172 +237,183 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		When("an error occurs", func() {
-			When("the client has an error during the request", func() {
-				It("returns an error", func() {
-					client.DoReturnsOnCall(0, &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-					}, nil)
-					client.DoReturnsOnCall(1, &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-					}, nil)
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
-					}, errors.New("some error"))
-
-					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
-					Expect(err).To(MatchError(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations")))
-				})
-			})
-
-			When("the client returns a non-2XX", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
-					}, nil)
-
-					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
-			})
-
-			When("the json cannot be decoded", func() {
-				It("returns an error", func() {
-					client.DoReturnsOnCall(0, &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-					}, nil)
-					client.DoReturnsOnCall(1, &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader(`[ { "guid": "guid1", "type": "product1"}, { "guid": "guid2", "type": "product2"} ]`)),
-					}, nil)
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("##################")),
-					}, nil)
-
-					_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
-					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
-				})
-			})
-		})
-	})
-
-	Describe("GetInstallation", func() {
-		It("fetches the status of the installation from the Ops Manager", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{"status": "running"}`)),
-			}, nil)
-
-			output, err := service.GetInstallation(3232)
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(output.Status).To(Equal("running"))
-
-			req := client.DoArgsForCall(0)
-
-			Expect(req.Method).To(Equal("GET"))
-			Expect(req.URL.Path).To(Equal("/api/v0/installations/3232"))
-		})
-
-		When("an error occurs", func() {
-			When("the client has an error during the request", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
-					}, errors.New("some error"))
-
-					_, err := service.GetInstallation(3232)
-					Expect(err).To(MatchError("could not make api request to installations status endpoint: could not send api request to GET /api/v0/installations/3232: some error"))
-				})
-			})
-
-			When("the client returns a non-2XX", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(strings.NewReader("")),
-					}, nil)
-
-					_, err := service.GetInstallation(3232)
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
-			})
-
-			When("the json cannot be decoded", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(strings.NewReader("##################")),
-					}, nil)
-
-					_, err := service.GetInstallation(3232)
-					Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
-				})
-			})
-		})
-	})
-
-	Describe("GetInstallationLogs", func() {
-		It("grabs the logs from the currently running installation", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{"logs": "some logs"}`)),
-			}, nil)
-
-			output, err := service.GetInstallationLogs(3232)
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(output.Logs).To(Equal("some logs"))
-
-			req := client.DoArgsForCall(0)
-
-			Expect(req.Method).To(Equal("GET"))
-			Expect(req.URL.Path).To(Equal("/api/v0/installations/3232/logs"))
-		})
-	})
-
-	When("an error occurs", func() {
 		When("the client has an error during the request", func() {
 			It("returns an error", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusInternalServerError,
-					Body:       ioutil.NopCloser(strings.NewReader("")),
-				}, errors.New("some error"))
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+							client.CloseClientConnections()
+						}),
+					),
+				)
 
-				_, err := service.GetInstallationLogs(3232)
-				Expect(err).To(MatchError("could not make api request to installations logs endpoint: could not send api request to GET /api/v0/installations/3232/logs: some error"))
+				_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations")))
 			})
 		})
 
 		When("the client returns a non-2XX", func() {
 			It("returns an error", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusInternalServerError,
-					Body:       ioutil.NopCloser(strings.NewReader("")),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-				_, err := service.GetInstallationLogs(3232)
+				_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 
 		When("the json cannot be decoded", func() {
 			It("returns an error", func() {
-				client.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("##################")),
-				}, nil)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-				_, err := service.GetInstallationLogs(3232)
+				_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 			})
 		})
 	})
+
+	Describe("GetInstallation", func() {
+		It("fetches the status of the installation from the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/3232"),
+					ghttp.RespondWith(http.StatusOK, `{"status": "running"}`),
+				),
+			)
+
+			output, err := service.GetInstallation(3232)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.Status).To(Equal("running"))
+		})
+
+		When("the client has an error during the request", func() {
+			It("returns an error", func() {
+				client.Close()
+
+				_, err := service.GetInstallation(3232)
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to installations status endpoint: could not send api request to GET /api/v0/installations/3232")))
+			})
+		})
+
+		When("the client returns a non-2XX", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/installations/3232"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
+
+				_, err := service.GetInstallation(3232)
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+			})
+		})
+
+		When("the json cannot be decoded", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/installations/3232"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
+
+				_, err := service.GetInstallation(3232)
+				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
+			})
+		})
+	})
+
+	Describe("GetInstallationLogs", func() {
+		It("grabs the logs from the currently running installation", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
+					ghttp.RespondWith(http.StatusOK, `{"logs": "some logs"}`),
+				),
+			)
+
+			output, err := service.GetInstallationLogs(3232)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.Logs).To(Equal("some logs"))
+		})
+	})
+
+	When("the client has an error during the request", func() {
+		It("returns an error", func() {
+			client.Close()
+
+			_, err := service.GetInstallationLogs(3232)
+			Expect(err).To(MatchError(ContainSubstring("could not make api request to installations logs endpoint: could not send api request to GET /api/v0/installations/3232/logs")))
+		})
+	})
+
+	When("the client returns a non-2XX", func() {
+		It("returns an error", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
+					ghttp.RespondWith(http.StatusTeapot, `{}`),
+				),
+			)
+
+			_, err := service.GetInstallationLogs(3232)
+			Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+		})
+	})
+
+	When("the json cannot be decoded", func() {
+		It("returns an error", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
+					ghttp.RespondWith(http.StatusOK, `invalid-json`),
+				),
+			)
+
+			_, err := service.GetInstallationLogs(3232)
+			Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
+		})
+	})
 })
+
+func parseTime(timeString interface{}) *time.Time {
+	if timeString == nil {
+		return nil
+	}
+	timeValue, err := time.Parse(time.RFC3339, timeString.(string))
+
+	if err != nil {
+		Expect(err).ToNot(HaveOccurred())
+	}
+
+	return &timeValue
+}

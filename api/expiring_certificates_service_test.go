@@ -2,57 +2,53 @@ package api_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
-	"strings"
 	"time"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/om/api"
 )
 
 var _ = Describe("Expiring Certificates", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{serverURI: client.URL()},
 		})
+	})
+
+	AfterEach(func() {
+		client.Close()
 	})
 
 	When("getting a list of expiring certificates", func() {
 		It("supports a expiration range and returns a detailed response", func() {
-			client.DoStub = func(request *http.Request) (response *http.Response, e error) {
-				Expect(request.URL.Path).To(Equal("/api/v0/deployed/certificates"))
-				Expect(request.URL.RawQuery).To(Equal("expires_within=3d"))
-
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`
-						{
-						  "certificates": [
-							{
-							  "issuer": "/CN=opsmgr-bosh-dns-tls-ca",
-							  "valid_from": "2018-08-10T21:07:37Z",
-							  "valid_until": "2022-08-09T21:07:37Z",
-							  "configurable": false,
-							  "property_reference": null,
-							  "property_type": null,
-							  "product_guid": null,
-							  "location": "credhub",
-							  "variable_path": "/opsmgr/bosh_dns/tls_ca"
-							}]
-						}
-					`)),
-				}, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/certificates", "expires_within=3d"),
+					ghttp.RespondWith(http.StatusOK, `{
+				  		"certificates": [{
+					 		"issuer": "/CN=opsmgr-bosh-dns-tls-ca",
+					 		"valid_from": "2018-08-10T21:07:37Z",
+					 		"valid_until": "2022-08-09T21:07:37Z",
+					 		"configurable": false,
+					 		"property_reference": null,
+					 		"property_type": null,
+					 		"product_guid": null,
+					 		"location": "credhub",
+					 		"variable_path": "/opsmgr/bosh_dns/tls_ca"
+						}]
+					}`),
+				),
+			)
 
 			expiresWithin := "3d"
 			certs, err := service.ListExpiringCertificates(expiresWithin)
@@ -80,18 +76,12 @@ var _ = Describe("Expiring Certificates", func() {
 	})
 
 	DescribeTable("time durations are passed", func(expiresWithin string, expectedTime string) {
-		client.DoStub = func(request *http.Request) (response *http.Response, e error) {
-			Expect(request.URL.Path).To(Equal("/api/v0/deployed/certificates"))
-			Expect(request.URL.RawQuery).To(Equal(fmt.Sprintf("expires_within=%s", expectedTime)))
-
-			return &http.Response{StatusCode: http.StatusOK,
-				Body: ioutil.NopCloser(strings.NewReader(`
-					{
-					  "certificates": []
-					}
-				`)),
-			}, nil
-		}
+		client.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/deployed/certificates", fmt.Sprintf("expires_within=%s", expectedTime)),
+				ghttp.RespondWith(http.StatusOK, `{"certificates": []}`),
+			),
+		)
 
 		_, err := service.ListExpiringCertificates(expiresWithin)
 		Expect(err).ToNot(HaveOccurred())
@@ -104,9 +94,12 @@ var _ = Describe("Expiring Certificates", func() {
 
 	When("the api returns an error", func() {
 		It("returns the error", func() {
-			client.DoStub = func(request *http.Request) (response *http.Response, e error) {
-				return &http.Response{StatusCode: http.StatusInternalServerError}, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/certificates", "expires_within=3d"),
+					ghttp.RespondWith(http.StatusTeapot, `{}`),
+				),
+			)
 
 			expiresWithin := "3d"
 			_, err := service.ListExpiringCertificates(expiresWithin)
@@ -116,9 +109,7 @@ var _ = Describe("Expiring Certificates", func() {
 
 	When("the HTTP client returns an error", func() {
 		It("returns the error", func() {
-			client.DoStub = func(request *http.Request) (response *http.Response, e error) {
-				return nil, fmt.Errorf("some error")
-			}
+			client.Close()
 
 			expiresWithin := "3d"
 			_, err := service.ListExpiringCertificates(expiresWithin)
@@ -128,12 +119,12 @@ var _ = Describe("Expiring Certificates", func() {
 
 	When("the response can't be unmarshaled", func() {
 		It("returns the error", func() {
-			client.DoStub = func(request *http.Request) (response *http.Response, e error) {
-				return &http.Response{StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(`
-						{"invalid-json'
-					`))}, nil
-			}
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/certificates", "expires_within=3d"),
+					ghttp.RespondWith(http.StatusOK, `invalid-json`),
+				),
+			)
 
 			expiresWithin := "3d"
 			_, err := service.ListExpiringCertificates(expiresWithin)
