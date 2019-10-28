@@ -9,6 +9,7 @@ import (
 
 type ProductMultiStemcells struct {
 	Products []ProductMultiStemcell `json:"products"`
+        StemcellLibrary []StemcellObject `json:"stemcell_library"`
 }
 
 type StemcellObject struct {
