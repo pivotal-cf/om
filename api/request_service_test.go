@@ -1,96 +1,78 @@
 package api_test
 
 import (
-	"errors"
-	"io/ioutil"
+	"github.com/onsi/gomega/ghttp"
 	"net/http"
 	"strings"
 
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/om/api"
 )
 
 var _ = Describe("RequestService", func() {
-	Describe("Curl", func() {
-		var (
-			client  *fakes.HttpClient
-			service api.Api
+	var (
+		client  *ghttp.Server
+		service api.Api
+	)
+
+	BeforeEach(func() {
+		client = ghttp.NewServer()
+
+		service = api.New(api.ApiInput{
+			Client: httpClient{client.URL()},
+		})
+	})
+
+	AfterEach(func() {
+		client.Close()
+	})
+
+	It("makes a request against the api and returns a response", func() {
+		client.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v0/api/endpoint"),
+				ghttp.VerifyContentType("application/json"),
+				ghttp.VerifyBody([]byte("some-request-body")),
+				ghttp.RespondWith(http.StatusTeapot, "", map[string][]string{"Content-Type": {"application/json"}}),
+			),
 		)
 
-		BeforeEach(func() {
-			client = &fakes.HttpClient{}
-			service = api.New(api.ApiInput{
-				Client: client,
-			})
+		output, err := service.Curl(api.RequestServiceCurlInput{
+			Method:  "PUT",
+			Path:    "/api/v0/api/endpoint",
+			Data:    strings.NewReader("some-request-body"),
+			Headers: http.Header{"Content-Type": []string{"application/json"}},
 		})
+		Expect(err).ToNot(HaveOccurred())
 
-		It("makes a request against the api and returns a response", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusTeapot,
-				Header: http.Header{
-					"Content-Type": []string{"application/json"},
-				},
-				Body: ioutil.NopCloser(strings.NewReader("some-response-body")),
-			}, nil)
+		Expect(output.StatusCode).To(Equal(http.StatusTeapot))
+		Expect(output.Headers.Get("Content-Type")).To(Equal("application/json"))
+	})
 
-			output, err := service.Curl(api.RequestServiceCurlInput{
-				Method:  "PUT",
-				Path:    "/api/v0/api/endpoint",
-				Data:    strings.NewReader("some-request-body"),
-				Headers: http.Header{"Content-Type": []string{"application/json"}},
+	When("the request cannot be constructed", func() {
+		It("returns an error", func() {
+			_, err := service.Curl(api.RequestServiceCurlInput{
+				Method: "PUT",
+				Path:   "%%%",
+				Data:   strings.NewReader("some-request-body"),
 			})
-			Expect(err).ToNot(HaveOccurred())
 
-			request := client.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("PUT"))
-			Expect(request.URL.Path).To(Equal("/api/v0/api/endpoint"))
-			Expect(request.Header).To(Equal(http.Header{
-				"Content-Type": []string{"application/json"},
-			}))
-
-			body, err := ioutil.ReadAll(request.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(string(body)).To(Equal("some-request-body"))
-
-			Expect(output.StatusCode).To(Equal(http.StatusTeapot))
-			Expect(output.Headers).To(Equal(http.Header{
-				"Content-Type": []string{"application/json"},
-			}))
-
-			body, err = ioutil.ReadAll(output.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(string(body)).To(Equal("some-response-body"))
+			Expect(err).To(MatchError(ContainSubstring("failed constructing request:")))
 		})
+	})
 
-		Context("failure cases", func() {
-			When("the request cannot be constructed", func() {
-				It("returns an error", func() {
-					_, err := service.Curl(api.RequestServiceCurlInput{
-						Method: "PUT",
-						Path:   "%%%",
-						Data:   strings.NewReader("some-request-body"),
-					})
+	When("the request cannot be made", func() {
+		It("returns an error", func() {
+			client.Close()
 
-					Expect(err).To(MatchError(ContainSubstring("failed constructing request:")))
-				})
+			_, err := service.Curl(api.RequestServiceCurlInput{
+				Method: "PUT",
+				Path:   "/api/v0/api/endpoint",
+				Data:   strings.NewReader("some-request-body"),
 			})
 
-			When("the request cannot be made", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("boom"))
-
-					_, err := service.Curl(api.RequestServiceCurlInput{
-						Method: "PUT",
-						Path:   "/api/v0/api/endpoint",
-						Data:   strings.NewReader("some-request-body"),
-					})
-
-					Expect(err).To(MatchError(ContainSubstring("failed submitting request:")))
-				})
-			})
+			Expect(err).To(MatchError(ContainSubstring("failed submitting request:")))
 		})
 	})
 })

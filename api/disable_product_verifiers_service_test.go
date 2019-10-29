@@ -19,7 +19,14 @@ func (h httpClient) Do(req *http.Request) (*http.Response, error) {
 
 	req.URL.Host = uri.Host
 	req.URL.Scheme = uri.Scheme
-	return http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	return client.Do(req)
 }
 
 var _ = Describe("DisableProductVerifiersService", func() {
