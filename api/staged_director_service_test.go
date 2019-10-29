@@ -19,8 +19,14 @@ var _ = Describe("StagedProducts", func() {
 		server = ghttp.NewServer()
 
 		service = api.New(api.ApiInput{
-			Client: httpClient{server.URL()},
+			Client: httpClient{
+				server.URL(),
+			},
 		})
+	})
+
+	AfterEach(func() {
+		server.Close()
 	})
 
 	Describe("GetDirectorProperties", func() {

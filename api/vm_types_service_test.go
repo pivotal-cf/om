@@ -2,204 +2,251 @@ package api_test
 
 import (
 	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
+	"net/http"
 
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
 )
 
 var _ = Describe("VMTypes", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
+
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{
+				client.URL(),
+			},
 		})
-		client.DoStub = func(req *http.Request) (*http.Response, error) {
-			if req.Method == "GET" {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body: ioutil.NopCloser(strings.NewReader(
-						`{
-					"vm_types": [
-						{
+	})
+
+	AfterEach(func() {
+		client.Close()
+	})
+
+	//BeforeEach(func() {
+	//	client.DoStub = func(req *http.Request) (*http.Response, error) {
+	//		if req.Method == "GET" {
+	//			return &http.Response{
+	//				StatusCode: http.StatusOK,
+	//				Body: ioutil.NopCloser(strings.NewReader(
+	//					`{
+	//				"vm_types": [
+	//					{
+	//					"name": "t2.micro",
+	//					"ram": 1024,
+	//					"cpu": 1,
+	//					"ephemeral_disk": 8192,
+	//					"raw_instance_storage": false,
+	//					"builtin": true
+	//					},
+	//					{
+	//					"name": "t2.small",
+	//					"ram": 2048,
+	//					"cpu": 1,
+	//					"ephemeral_disk": 8192,
+	//					"raw_instance_storage": false,
+	//					"builtin": true
+	//					},
+	//					{
+	//					"name": "t2.medium",
+	//					"ram": 3840,
+	//					"cpu": 1,
+	//					"ephemeral_disk": 32768,
+	//					"raw_instance_storage": true,
+	//					"builtin": true
+	//					},
+	//					{
+	//					"name": "c4.large",
+	//					"ram": 3840,
+	//					"cpu": 2,
+	//					"ephemeral_disk": 32768,
+	//					"raw_instance_storage": false,
+	//					"builtin": true
+	//					}
+	//				]
+	//				}
+	//				`))}, nil
+	//		} else {
+	//			return &http.Response{
+	//				StatusCode: http.StatusOK,
+	//				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
+	//		}
+	//	}
+	//})
+
+	Context("creating a vm type", func() {
+		It("creates a VM Type", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/vm_types"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{ 
+					"vm_types": [{
+						"name": "my-vm-type",
+						"ram": 3840,
+						"cpu": 2,
+						"ephemeral_disk": 32768    
+					}, {
+						"name": "my-vm-type2",
+						"ram": 3842,
+						"cpu": 2,
+						"ephemeral_disk": 32790,
+						"raw_instance_storage": true
+					}] 
+				}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
+
+			err := service.CreateCustomVMTypes(api.CreateVMTypes{
+				VMTypes: []api.CreateVMType{
+					api.CreateVMType{
+						Name:          "my-vm-type",
+						RAM:           3840,
+						CPU:           2,
+						EphemeralDisk: 32768,
+					},
+					api.CreateVMType{Name: "my-vm-type2",
+						RAM:             3842,
+						CPU:             2,
+						EphemeralDisk:   32790,
+						ExtraProperties: map[string]interface{}{"raw_instance_storage": true},
+					},
+				},
+			})
+
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("returns an error when the http status is non-200 for creating vm types", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/vm_types"),
+					ghttp.RespondWith(http.StatusTeapot, `{}`),
+				),
+			)
+
+			err := service.CreateCustomVMTypes(api.CreateVMTypes{
+				VMTypes: []api.CreateVMType{
+					api.CreateVMType{Name: "foo"},
+				},
+			})
+
+			Expect(err).To(MatchError(ContainSubstring("request failed")))
+		})
+
+		It("returns an error when the api endpoint fails", func() {
+			client.Close()
+
+			err := service.CreateCustomVMTypes(api.CreateVMTypes{
+				VMTypes: []api.CreateVMType{
+					api.CreateVMType{Name: "foo"},
+				},
+			})
+
+			Expect(err).To(MatchError(ContainSubstring("could not send api request to PUT /api/v0/vm_types")))
+		})
+	})
+
+	Context("list vm types", func() {
+		It("lists VM Types", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/vm_types"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.RespondWith(http.StatusOK, `{
+					"vm_types": [{
 						"name": "t2.micro",
 						"ram": 1024,
 						"cpu": 1,
 						"ephemeral_disk": 8192,
 						"raw_instance_storage": false,
 						"builtin": true
-						},
-						{
+					}, {
 						"name": "t2.small",
 						"ram": 2048,
 						"cpu": 1,
 						"ephemeral_disk": 8192,
 						"raw_instance_storage": false,
 						"builtin": true
-						},
-						{
+					}, {
 						"name": "t2.medium",
 						"ram": 3840,
 						"cpu": 1,
 						"ephemeral_disk": 32768,
 						"raw_instance_storage": true,
 						"builtin": true
-						},
-						{
+					}, {
 						"name": "c4.large",
 						"ram": 3840,
 						"cpu": 2,
 						"ephemeral_disk": 32768,
 						"raw_instance_storage": false,
 						"builtin": true
-						}
-					]
-					}
-					`))}, nil
-			} else {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
-			}
-		}
-	})
+					}]
+				}`),
+				),
+			)
 
-	It("creates a VM Type", func() {
-		err := service.CreateCustomVMTypes(api.CreateVMTypes{
-			VMTypes: []api.CreateVMType{
-				api.CreateVMType{
-					Name:          "my-vm-type",
-					RAM:           3840,
-					CPU:           2,
-					EphemeralDisk: 32768,
-				},
-				api.CreateVMType{Name: "my-vm-type2",
-					RAM:             3842,
-					CPU:             2,
-					EphemeralDisk:   32790,
-					ExtraProperties: map[string]interface{}{"raw_instance_storage": true},
-				},
-			},
+			vmtypes, err := service.ListVMTypes()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(len(vmtypes)).Should(Equal(4))
+			Expect(vmtypes[0].Name).Should(Equal("t2.micro"))
+			Expect(vmtypes[1].Name).Should(Equal("t2.small"))
 		})
 
-		Expect(err).ToNot(HaveOccurred())
-
-		Expect(client.DoCallCount()).To(Equal(1))
-		req := client.DoArgsForCall(0)
-
-		Expect(req.Method).To(Equal("PUT"))
-		Expect(req.URL.Path).To(Equal("/api/v0/vm_types"))
-		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-		jsonBody, err := ioutil.ReadAll(req.Body)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(jsonBody).To(MatchJSON(`{ 
-		"vm_types": [ 
-			{
-			"name": "my-vm-type",
-			"ram": 3840,
-			"cpu": 2,
-			"ephemeral_disk": 32768    
-			},
-			{
-			"name": "my-vm-type2",
-			"ram": 3842,
-			"cpu": 2,
-			"ephemeral_disk": 32790,
-			"raw_instance_storage": true
-			}
-	  	] 
-	  }`))
-	})
-
-	It("lists VM Types", func() {
-		vmtypes, err := service.ListVMTypes()
-
-		Expect(err).ToNot(HaveOccurred())
-
-		Expect(client.DoCallCount()).To(Equal(1))
-		req := client.DoArgsForCall(0)
-
-		Expect(req.Method).To(Equal("GET"))
-		Expect(req.URL.Path).To(Equal("/api/v0/vm_types"))
-		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-		Expect(len(vmtypes)).Should(Equal(4))
-		Expect(vmtypes[0].Name).Should(Equal("t2.micro"))
-		Expect(vmtypes[1].Name).Should(Equal("t2.small"))
-	})
-
-	It("deletes VM Types", func() {
-		err := service.DeleteCustomVMTypes()
-		Expect(err).ToNot(HaveOccurred())
-
-		Expect(client.DoCallCount()).To(Equal(1))
-		req := client.DoArgsForCall(0)
-
-		Expect(req.Method).To(Equal("DELETE"))
-		Expect(req.URL.Path).To(Equal("/api/v0/vm_types"))
-		Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-	})
-
-	Context("failure cases", func() {
-		It("returns an error when the http status is non-200", func() {
-
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusInternalServerError,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
-
-			err := service.CreateCustomVMTypes(api.CreateVMTypes{
-				VMTypes: []api.CreateVMType{
-					api.CreateVMType{Name: "foo"},
-				},
-			})
-
-			Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
-		})
-		It("returns an error when the http status is non-200 for listing vm extensions", func() {
-
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusInternalServerError,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
-			}, nil)
+		It("returns an error when the http status is non-200 for listing vm types", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/vm_types"),
+					ghttp.RespondWith(http.StatusTeapot, `{}`),
+				),
+			)
 
 			_, err := service.ListVMTypes()
 
-			Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
-		})
-		It("returns an error when the http status is non-200 for deleting vm extensions", func() {
-
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusInternalServerError,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil)
-
-			err := service.DeleteCustomVMTypes()
-			Expect(err).To(MatchError(ContainSubstring("500 Internal Server Error")))
+			Expect(err).To(MatchError(ContainSubstring("request failed")))
 		})
 
 		It("returns an error when the api endpoint fails", func() {
-			client.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, errors.New("api endpoint failed"))
+			client.Close()
 
-			err := service.CreateCustomVMTypes(api.CreateVMTypes{
-				VMTypes: []api.CreateVMType{
-					api.CreateVMType{Name: "foo"},
-				},
-			})
+			_, err := service.ListVMTypes()
+			Expect(err).To(MatchError(ContainSubstring("could not send api request to GET /api/v0/vm_types")))
+		})
+	})
 
-			Expect(err).To(MatchError("could not send api request to PUT /api/v0/vm_types: api endpoint failed"))
+	Context("deleting vm Types", func() {
+		It("deletes VM Types", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/vm_types"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
+
+			err := service.DeleteCustomVMTypes()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("returns an error when the http status is non-200 for deleting vm types", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/vm_types"),
+					ghttp.RespondWith(http.StatusTeapot, `{}`),
+				),
+			)
+
+			err := service.DeleteCustomVMTypes()
+			Expect(err).To(MatchError(ContainSubstring("request failed")))
 		})
 	})
 

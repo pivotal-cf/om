@@ -1,272 +1,184 @@
 package api_test
 
 import (
-	"bytes"
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
-	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/api/fakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/api"
+	"net/http"
 )
 
 var _ = Describe("StagedProducts", func() {
 	var (
-		client  *fakes.HttpClient
+		client  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = &fakes.HttpClient{}
+		client = ghttp.NewServer()
+
 		service = api.New(api.ApiInput{
-			Client: client,
+			Client: httpClient{
+				client.URL(),
+			},
 		})
 	})
 
-	Describe("Stage", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				resp := &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
-				}
-				switch req.URL.Path {
-				case "/api/v0/staged/products":
-					if req.Method == "GET" {
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
-						}
-					}
-				}
-				return resp, nil
-			}
-		})
+	AfterEach(func() {
+		client.Close()
+	})
 
+	Describe("Stage", func() {
 		It("makes a request to stage the product to the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v0/staged/products"),
+					ghttp.VerifyJSON(`{
+						"name": "some-product",
+						"product_version": "some-version"
+					}`),
+					ghttp.RespondWith(http.StatusOK, ``),
+				),
+			)
+
 			err := service.Stage(api.StageProductInput{
 				ProductName:    "some-product",
 				ProductVersion: "some-version",
 			}, "")
 			Expect(err).ToNot(HaveOccurred())
-
-			Expect(client.DoCallCount()).To(Equal(2))
-
-			By("checking for already staged products")
-			checkStReq := client.DoArgsForCall(1)
-			Expect(checkStReq.URL.Path).To(Equal("/api/v0/staged/products"))
-
-			By("posting to the staged products endpoint with the product name and version")
-			stReq := client.DoArgsForCall(1)
-			Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products"))
-			Expect(stReq.Method).To(Equal("POST"))
-			stReqBody, err := ioutil.ReadAll(stReq.Body)
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(stReqBody).To(MatchJSON(`{
-							"name": "some-product",
-							"product_version": "some-version"
-			}`))
 		})
 
 		When("the same type of product is already deployed", func() {
-			BeforeEach(func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					resp := &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
-					}
-					switch req.URL.Path {
-					case "/api/v0/staged/products":
-						if req.Method == "GET" {
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
-							}
-						}
-					}
-
-					return resp, nil
-				}
-			})
-
 			It("makes a request to stage the product to the Ops Manager", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-deployed-guid"),
+						ghttp.VerifyJSON(`{
+							"to_version": "1.1.0"
+						}`),
+						ghttp.RespondWith(http.StatusOK, ``),
+					),
+				)
+
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
 					ProductVersion: "1.1.0",
 				}, "some-deployed-guid")
 				Expect(err).ToNot(HaveOccurred())
-
-				Expect(client.DoCallCount()).To(Equal(2))
-
-				By("posting to the staged products endpoint with the product name and version")
-				stReq := client.DoArgsForCall(1)
-				Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products/some-deployed-guid"))
-				Expect(stReq.Method).To(Equal("PUT"))
-				stReqBody, err := ioutil.ReadAll(stReq.Body)
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(stReqBody).To(MatchJSON(`{
-					"to_version": "1.1.0"
-				}`))
 			})
-
 		})
 
 		When("the same type of product is already staged", func() {
-			BeforeEach(func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					resp := &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
-					}
-					switch req.URL.Path {
-					case "/api/v0/staged/products":
-						if req.Method == "GET" {
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body: ioutil.NopCloser(bytes.NewBufferString(`[
-								{
-									"type":"some-product",
-									"guid": "some-staged-guid"
-								},
-								{
-									"type":"some-other-product",
-									"guid": "some-other-staged-guid"
-								}]`)),
-							}
-						}
-					}
-					return resp, nil
-				}
-			})
-
 			It("makes a request to stage the product to the Ops Manager", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{
+							"type":"some-product",
+							"guid": "some-staged-guid"
+						}, {
+							"type":"some-other-product",
+							"guid": "some-other-staged-guid"
+						}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-staged-guid"),
+						ghttp.VerifyJSON(`{
+							"to_version": "1.1.0"
+						}`),
+						ghttp.RespondWith(http.StatusOK, ``),
+					),
+				)
+
 				err := service.Stage(api.StageProductInput{
 					ProductName:    "some-product",
 					ProductVersion: "1.1.0",
 				}, "")
 				Expect(err).ToNot(HaveOccurred())
-
-				Expect(client.DoCallCount()).To(Equal(2))
-
-				By("checking for already staged products")
-				depReq := client.DoArgsForCall(0)
-				Expect(depReq.URL.Path).To(Equal("/api/v0/staged/products"))
-
-				By("posting to the staged products endpoint with the product name and version")
-				stReq := client.DoArgsForCall(1)
-				Expect(stReq.URL.Path).To(Equal("/api/v0/staged/products/some-staged-guid"))
-				Expect(stReq.Method).To(Equal("PUT"))
-				stReqBody, err := ioutil.ReadAll(stReq.Body)
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(stReqBody).To(MatchJSON(`{
-					"to_version": "1.1.0"
-				}`))
 			})
-
 		})
 
-		When("an error occurs", func() {
-			When("a GET to the staged products endpoint returns an error", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						resp := &http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
-						}
-						if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
-							return nil, fmt.Errorf("some error")
-						}
-						return resp, nil
-					}
-				})
+		When("a GET to the staged products endpoint returns an error", func() {
+			It("returns an error", func() {
+				client.Close()
 
-				It("returns an error", func() {
-					err := service.Stage(api.StageProductInput{
-						ProductName:    "foo",
-						ProductVersion: "bar",
-					}, "")
-					Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error")))
-				})
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "foo",
+					ProductVersion: "bar",
+				}, "")
+				Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products")))
 			})
+		})
 
-			When("a POST/PUT to the staged products endpoint returns an error", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						if req.Method == "GET" {
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
-							}
-						}
-						if req.Method == "POST" && req.URL.Path == "/api/v0/staged/products" {
-							return nil, fmt.Errorf("some error")
-						}
-						return resp, nil
-					}
-				})
+		When("a POST/PUT to the staged products endpoint returns an error", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/staged/products"),
+						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+							client.CloseClientConnections()
+						}),
+					),
+				)
 
-				It("returns an error", func() {
-					err := service.Stage(api.StageProductInput{
-						ProductName:    "foo",
-						ProductVersion: "bar",
-					}, "")
-					Expect(err).To(MatchError("could not make POST api request to staged products endpoint: some error"))
-				})
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "foo",
+					ProductVersion: "bar",
+				}, "")
+				Expect(err).To(MatchError(ContainSubstring("could not make POST api request to staged products endpoint")))
 			})
+		})
 
-			When("a POST/PUT to the staged products endpoint returns a non-200 status code", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						if req.Method == "GET" {
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
-							}
-						}
-						if req.URL.Path == "/api/v0/staged/products" && req.Method == "POST" {
-							return &http.Response{
-								StatusCode: http.StatusInternalServerError,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
-							}, nil
-						}
-						return resp, nil
-					}
-				})
+		When("a POST/PUT to the staged products endpoint returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-				It("returns an error", func() {
-					err := service.Stage(api.StageProductInput{
-						ProductName:    "foo",
-						ProductVersion: "bar",
-					}, "")
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "foo",
+					ProductVersion: "bar",
+				}, "")
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})
 
 	Describe("GetStagedProductJobMaxInFlight", func() {
 		It("makes a requests to retrieve max in flight for all jobs", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var responseBody = ioutil.NopCloser(strings.NewReader(`{
-				"max_in_flight": {
-					"some-third-guid": 1,
-					"some-other-guid": 1,
-					"some-job-guid": "20%",
-					"some-fourth-guid": "default"
-				}}`))
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/product-type1-guid/max_in_flight"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"max_in_flight": {
+							"some-third-guid": 1,
+							"some-other-guid": 1,
+							"some-job-guid": "20%",
+							"some-fourth-guid": "default"
+						}
+					}`),
+				),
+			)
 
-				return &http.Response{StatusCode: http.StatusOK, Body: responseBody}, nil
-			}
 			jobsWithMaxInFlight, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(jobsWithMaxInFlight).To(Equal(map[string]interface{}{
@@ -275,19 +187,17 @@ var _ = Describe("StagedProducts", func() {
 				"some-third-guid":  1.00,
 				"some-fourth-guid": "default",
 			}))
-
-			Expect(client.DoCallCount()).To(Equal(1))
-			request := client.DoArgsForCall(0)
-			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/product-type1-guid/max_in_flight"))
 		})
 
 		When("JSON response body is not valid JSON", func() {
 			It("returns an error", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var responseBody = ioutil.NopCloser(strings.NewReader(`[invalidJSON}`))
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/product-type1-guid/max_in_flight"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					return &http.Response{StatusCode: http.StatusOK, Body: responseBody}, nil
-				}
 				_, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
 				Expect(err).To(HaveOccurred())
 			})
@@ -295,9 +205,13 @@ var _ = Describe("StagedProducts", func() {
 
 		When("the response is not 200 OK", func() {
 			It("returns an error", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					return &http.Response{StatusCode: http.StatusNotFound}, nil
-				}
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/product-type1-guid/max_in_flight"),
+						ghttp.RespondWith(http.StatusTeapot, ``),
+					),
+				)
+
 				_, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
 				Expect(err).To(HaveOccurred())
 			})
@@ -305,9 +219,8 @@ var _ = Describe("StagedProducts", func() {
 
 		When("the request cannot be made", func() {
 			It("returns an error", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					return nil, fmt.Errorf("some error")
-				}
+				client.Close()
+
 				_, err := service.GetStagedProductJobMaxInFlight("product-type1-guid")
 				Expect(err).To(HaveOccurred())
 			})
@@ -316,10 +229,21 @@ var _ = Describe("StagedProducts", func() {
 
 	Describe("UpdateStagedProductJobMaxInFlight", func() {
 		It("makes a requests to set max in flight for all jobs", func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/product-type1-guid/max_in_flight"),
+					ghttp.VerifyJSON(`{
+						"max_in_flight": {
+							"some-third-guid": 1,
+							"some-other-guid": 1,
+							"some-job-guid": "20%",
+							"some-fourth-guid": "default"
+						}
+					}`),
+					ghttp.RespondWith(http.StatusOK, ``),
+				),
+			)
 
-				return &http.Response{StatusCode: http.StatusOK}, nil
-			}
 			err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
 				"some-job-guid":    "20%",
 				"some-other-guid":  1,
@@ -327,20 +251,6 @@ var _ = Describe("StagedProducts", func() {
 				"some-fourth-guid": "default",
 			})
 			Expect(err).ToNot(HaveOccurred())
-
-			Expect(client.DoCallCount()).To(Equal(1))
-			request := client.DoArgsForCall(0)
-			Expect(request.URL.Path).To(Equal("/api/v0/staged/products/product-type1-guid/max_in_flight"))
-			requestBody, err := ioutil.ReadAll(request.Body)
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(requestBody).To(MatchYAML(`{
-				max_in_flight: {
-					some-third-guid: 1,
-					some-other-guid: 1,
-					some-job-guid: "20%",
-					some-fourth-guid: default
-			}}`))
 		})
 
 		When("no jobs are passed", func() {
@@ -348,13 +258,12 @@ var _ = Describe("StagedProducts", func() {
 				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{})
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(client.DoCallCount()).To(Equal(0))
+				Expect(len(client.ReceivedRequests())).To(Equal(0))
 			})
 		})
 
 		When("an invalid value is provided for max_in_flight", func() {
 			It("prints an error indicating the valid formats", func() {
-
 				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
 					"some-job-guid":                   "20%",
 					"some-other-guid":                 1,
@@ -366,15 +275,19 @@ var _ = Describe("StagedProducts", func() {
 				Expect(err).To(MatchError(ContainSubstring(`invalid max_in_flight value provided for job 'the-guid-with-the-invalid-value': 'maximum'
 valid options configurations include percentages ('50%'), counts ('2'), and 'default'`)))
 
-				Expect(client.DoCallCount()).To(Equal(0))
+				Expect(len(client.ReceivedRequests())).To(Equal(0))
 			})
 		})
 
 		When("the response does not return a 200 OK", func() {
 			It("returns an error", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					return &http.Response{StatusCode: http.StatusExpectationFailed}, nil
-				}
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/product-type1-guid/max_in_flight"),
+						ghttp.RespondWith(http.StatusExpectationFailed, ``),
+					),
+				)
+
 				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
 					"some-job-guid":   "20%",
 					"some-other-guid": 1,
@@ -385,9 +298,8 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 
 		When("creating the request fails", func() {
 			It("returns an error", func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					return nil, fmt.Errorf("some error")
-				}
+				client.Close()
+
 				err := service.UpdateStagedProductJobMaxInFlight("product-type1-guid", map[string]interface{}{
 					"some-job-guid":   "20%",
 					"some-other-guid": 1,
@@ -398,283 +310,217 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 	})
 
 	Describe("DeleteStagedProduct", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-
-				switch req.URL.Path {
-				case "/api/v0/staged/products":
-					if req.Method == "GET" {
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
-						}
-					}
-				case "/api/v0/staged/products/some-product-guid":
-					if req.Method == "DELETE" {
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(`{"component": {"guid": "some-product-guid"}}`)),
-						}
-					}
-				}
-				return resp, nil
-			}
-		})
-
 		It("makes a request to unstage the product from the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[{
+						"guid": "some-product-guid",
+						"type": "some-product"
+					}]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/v0/staged/products/some-product-guid"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"component": {
+							"guid": "some-product-guid"
+						}
+					}`),
+				),
+			)
+
 			err := service.DeleteStagedProduct(api.UnstageProductInput{
 				ProductName: "some-product",
 			})
 			Expect(err).ToNot(HaveOccurred())
-
-			Expect(client.DoCallCount()).To(Equal(2))
-
-			By("checking for already staged products")
-			checkStReq := client.DoArgsForCall(0)
-			Expect(checkStReq.URL.Path).To(Equal("/api/v0/staged/products"))
-
-			By("deleting from the set of staged products")
-			deleteReq := client.DoArgsForCall(1)
-			Expect(deleteReq.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid"))
-			Expect(deleteReq.Method).To(Equal("DELETE"))
-			_, err = ioutil.ReadAll(deleteReq.Body)
-			Expect(err).ToNot(HaveOccurred())
 		})
 
 		When("the product is not staged", func() {
-			BeforeEach(func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var resp *http.Response
-					if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-other-product-guid","type":"some-other-product"}]`)),
-						}
-					}
-					return resp, nil
-				}
-			})
-
 			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{
+							"guid": "some-product-guid",
+							"type": "some-product"
+						}]`),
+					),
+				)
+
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
-					ProductName: "some-product",
+					ProductName: "some-other-product",
 				})
-				Expect(err).To(MatchError("product is not staged: some-product"))
+				Expect(err).To(MatchError("product is not staged: some-other-product"))
 			})
 		})
 
 		When("a GET to the staged products endpoint returns an error", func() {
-			BeforeEach(func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					resp := &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(`[]`)),
-					}
-					if req.URL.Path == "/api/v0/staged/products" && req.Method == "GET" {
-						return nil, fmt.Errorf("some error")
-					}
-					return resp, nil
-				}
-			})
-
 			It("returns an error", func() {
+				client.Close()
+
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
-				Expect(err).To(MatchError("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: some error"))
+				Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products")))
 			})
 		})
 
 		When("a DELETE to the staged products endpoint returns an error", func() {
-			BeforeEach(func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var resp *http.Response
-
-					switch req.URL.Path {
-					case "/api/v0/staged/products":
-						if req.Method == "GET" {
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`[{"guid":"some-product-guid","type":"some-product"}]`)),
-							}
-						}
-					case "/api/v0/staged/products/some-product-guid":
-						if req.Method == "DELETE" {
-							return nil, fmt.Errorf("some error")
-						}
-					}
-					return resp, nil
-				}
-			})
-
 			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{
+							"guid": "some-product-guid",
+							"type": "some-product"
+						}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", "/api/v0/staged/products/some-product-guid"),
+						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+							client.CloseClientConnections()
+						}),
+					),
+				)
+
 				err := service.DeleteStagedProduct(api.UnstageProductInput{
 					ProductName: "some-product",
 				})
-				Expect(err).To(MatchError("could not send api request to DELETE /api/v0/staged/products/some-product-guid: some error"))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to DELETE /api/v0/staged/products/some-product-guid")))
 			})
 		})
 	})
 
 	Describe("ListStagedProducts", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				resp := &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewBufferString(``)),
-				}
-				switch req.URL.Path {
-				case "/api/v0/staged/products":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`[{
+		It("retrieves a list of staged products from the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[{
 							"guid":"some-product-guid",
 							"type":"some-type"
-						},
-						{
+						}, {
 							"guid":"some-other-product-guid",
 							"type":"some-other-type"
-						}]`)),
-					}
-				}
-				return resp, nil
-			}
-		})
+						}]`),
+				),
+			)
 
-		It("retrieves a list of staged products from the Ops Manager", func() {
 			output, err := service.ListStagedProducts()
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(output).To(Equal(api.StagedProductsOutput{
-				Products: []api.StagedProduct{
-					{
-						GUID: "some-product-guid",
-						Type: "some-type",
-					},
-					{
-						GUID: "some-other-product-guid",
-						Type: "some-other-type",
-					},
-				},
+				Products: []api.StagedProduct{{
+					GUID: "some-product-guid",
+					Type: "some-type",
+				}, {
+					GUID: "some-other-product-guid",
+					Type: "some-other-type",
+				}},
 			}))
-
-			Expect(client.DoCallCount()).To(Equal(1))
-
-			By("checking for staged products")
-			avReq := client.DoArgsForCall(0)
-			Expect(avReq.URL.Path).To(Equal("/api/v0/staged/products"))
 		})
 
-		Context("failure cases", func() {
-			When("the request fails", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
-				})
+		When("the request fails", func() {
+			It("returns an error", func() {
+				client.Close()
 
-				It("returns an error", func() {
-					_, err := service.ListStagedProducts()
-					Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products: nope")))
-				})
+				_, err := service.ListStagedProducts()
+				Expect(err).To(MatchError(ContainSubstring("could not make request to staged-products endpoint: could not send api request to GET /api/v0/staged/products")))
 			})
+		})
 
-			When("the server returns a non-200 status code", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}, nil)
-				})
+		When("the server returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusTeapot, ``),
+					),
+				)
 
-				It("returns an error", func() {
-					_, err := service.ListStagedProducts()
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.ListStagedProducts()
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the server returns invalid JSON", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("%%")),
-					}, nil)
-				})
+		When("the server returns invalid JSON", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-				It("returns an error", func() {
-					_, err := service.ListStagedProducts()
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
-				})
+				_, err := service.ListStagedProducts()
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response:")))
 			})
 		})
 	})
 
 	Describe("UpdateStagedProductProperties", func() {
 		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				switch req.URL.Path {
-				case "/api/v0/staged/products/some-product-guid/properties":
-					if req.Method == "GET" {
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body: ioutil.NopCloser(bytes.NewBufferString(`{
-  "properties": {
-    "sample": {
-      "type": "string",
-      "configurable": false,
-      "credential": false,
-      "value": "account",
-      "optional": false
-    },
-    "some_collection": {
-      "type": "collection",
-      "configurable": true,
-      "credential": false,
-      "value": [
-        {
-          "guid": {
-            "type": "uuid",
-            "configurable": false,
-            "credential": false,
-            "value": "28bab1d3-4a4b-48d5-8dac-796adf078100",
-            "optional": false
-          },
-          "name": {
-            "type": "string",
-            "configurable": true,
-            "credential": false,
-            "value": "the_name",
-            "optional": false
-          },
-          "some_property": {
-            "type": "boolean",
-            "configurable": true,
-            "credential": false,
-            "value": true,
-            "optional": false
-          }
-        }
-      ],
-      "optional": false
-    },
-  }
-}
-`)),
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"properties": {
+							"sample": {
+								"type": "string",
+								"configurable": false,
+								"credential": false,
+								"value": "account",
+								"optional": false
+							},
+							"some_collection": {
+								"type": "collection",
+								"configurable": true,
+								"credential": false,
+								"value": [{
+									"guid": {
+										"type": "uuid",
+										"configurable": false,
+										"credential": false,
+										"value": "28bab1d3-4a4b-48d5-8dac-796adf078100",
+										"optional": false
+									},
+									"name": {
+										"type": "string",
+										"configurable": true,
+										"credential": false,
+										"value": "the_name",
+										"optional": false
+									},
+									"some_property": {
+										"type": "boolean",
+										"configurable": true,
+										"credential": false,
+										"value": true,
+										"optional": false
+									}
+								}],
+								"optional": false
+							},
 						}
-					} else {
-						resp = &http.Response{
-							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
-						}
-					}
-				default:
-					Fail(fmt.Sprintf("unexpected request to '%s'", req.URL.Path))
-				}
-				return resp, nil
-			}
+					}`),
+				),
+			)
 		})
 
 		It("configures the properties for the given staged product in the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"properties": {
+							"key": "value"
+						}
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
+
 			err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
 				GUID: "some-product-guid",
 				Properties: `{
@@ -682,105 +528,30 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				}`,
 			})
 			Expect(err).ToNot(HaveOccurred())
-
-			By("configuring the product properties")
-			Expect(client.DoCallCount()).To(Equal(2))
-			req := client.DoArgsForCall(1)
-			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
-			Expect(req.Method).To(Equal("PUT"))
-			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-			reqBody, err := ioutil.ReadAll(req.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(reqBody).To(MatchJSON(`{
-				"properties": {
-					"key": "value"
-				}
-			}`))
 		})
+
 		Context("configure product contains collection", func() {
 			It("adds the guid for elements that exist", func() {
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-					"key": "value",
-					"some_collection": {
-						"value": [
-							{
-								"name": "the_name",
-								"some_property": "property_value"
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+							"properties": {
+								"key": "value",
+								"some_collection": {
+									"value": [{
+										"name": "the_name",
+										"some_property": "property_value",
+										"guid": "28bab1d3-4a4b-48d5-8dac-796adf078100"
+									}]
+								}
 							}
-						]
-					}
-				}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
 
-				By("configuring the product properties")
-				Expect(client.DoCallCount()).To(Equal(2))
-				req := client.DoArgsForCall(1)
-				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
-				Expect(req.Method).To(Equal("PUT"))
-				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-				reqBody, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(reqBody).To(MatchJSON(`{
-				"properties": {
-					"key": "value",
-					"some_collection": {
-						"value": [
-							{
-								"name": "the_name",
-								"some_property": "property_value",
-								"guid": "28bab1d3-4a4b-48d5-8dac-796adf078100"
-							}
-						]
-					}
-				}
-			}`))
-			})
-			It("no guid added", func() {
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-					"key": "value",
-					"some_other_collection": {
-						"value": [
-							{
-								"name": "other_name",
-								"some_property": "property_value"
-							}
-						]
-					}
-				}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
-
-				By("configuring the product properties")
-				Expect(client.DoCallCount()).To(Equal(2))
-				req := client.DoArgsForCall(1)
-				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
-				Expect(req.Method).To(Equal("PUT"))
-				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-				reqBody, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(reqBody).To(MatchJSON(`{
-				"properties": {
-					"key": "value",
-					"some_other_collection": {
-						"value": [
-							{
-								"name": "other_name",
-								"some_property": "property_value"
-							}
-						]
-					}
-				}
-			}`))
-			})
-			It("does not contain a name in the collection element", func() {
 				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
 					GUID: "some-product-guid",
 					Properties: `{
@@ -788,6 +559,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 						"some_collection": {
 							"value": [
 								{
+									"name": "the_name",
 									"some_property": "property_value"
 								}
 							]
@@ -795,117 +567,170 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 					}`,
 				})
 				Expect(err).ToNot(HaveOccurred())
+			})
 
-				By("configuring the product properties")
-				Expect(client.DoCallCount()).To(Equal(2))
-				req := client.DoArgsForCall(1)
-				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/properties"))
-				Expect(req.Method).To(Equal("PUT"))
-				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+			It("no guid added", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+							"properties": {
+								"key": "value",
+								"some_other_collection": {
+									"value": [{
+										"name": "other_name",
+										"some_property": "property_value"
+									}]
+								}
+							}
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
 
-				reqBody, err := ioutil.ReadAll(req.Body)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(reqBody).To(MatchJSON(`{
-					"properties": {
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
 						"key": "value",
-						"some_collection": {
+						"some_other_collection": {
 							"value": [
 								{
+									"name": "other_name",
 									"some_property": "property_value"
 								}
 							]
 						}
-					}
-				}`))
+					}`,
+				})
+				Expect(err).ToNot(HaveOccurred())
+			})
 
+			It("does not contain a name in the collection element", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+							"properties": {
+								"key": "value",
+								"some_collection": {
+									"value": [{
+										"some_property": "property_value"
+									}]
+								}
+							}
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
+
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
+							"key": "value",
+							"some_collection": {
+								"value": [
+									{
+										"some_property": "property_value"
+									}
+								]
+							}
+						}`,
+				})
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
-		Context("failure cases", func() {
-			When("the request fails", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
-				})
+		When("the request fails", func() {
+			It("returns an error", func() {
+				client.Close()
 
-				It("returns an error", func() {
-					err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-						GUID:       "foo",
-						Properties: `{}`,
-					})
-					Expect(err).To(MatchError("could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/foo/properties: nope"))
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID:       "foo",
+					Properties: `{}`,
 				})
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/foo/properties")))
 			})
+		})
 
-			When("the server returns a non-200 status code", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}, nil)
-				})
+		When("the server returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.Reset()
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/foo/properties"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-				It("returns an error", func() {
-					err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-						GUID:       "foo",
-						Properties: `{}`,
-					})
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID:       "foo",
+					Properties: `{}`,
 				})
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
 	})
 
 	Describe("GetStagedProductSyslogConfiguration", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				if strings.Contains(req.URL.Path, "some-product-guid") {
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//BeforeEach(func() {
+		//	client.DoStub = func(req *http.Request) (*http.Response, error) {
+		//		var resp *http.Response
+		//		if strings.Contains(req.URL.Path, "some-product-guid") {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusOK,
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//						"syslog_configuration": {
+		//							"enabled": true,
+		//							"address": "example.com"
+		//						}
+		//					}`)),
+		//			}
+		//		} else if strings.Contains(req.URL.Path, "missing-syslog-config") {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusUnprocessableEntity,
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//						"errors": {
+		//						  "syslog": ["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint."]
+		//						}
+		//					}`)),
+		//			}
+		//		} else if strings.Contains(req.URL.Path, "bad-response-code") {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusBadRequest,
+		//				Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+		//			}
+		//		} else {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusOK,
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//						invalid-json
+		//					}`)),
+		//			}
+		//		}
+		//
+		//		return resp, nil
+		//	}
+		//})
+
+		When("syslog configuration is configured for the specified product", func() {
+			It("returns the syslog configuration ", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.RespondWith(http.StatusOK, `{
 							"syslog_configuration": {
 								"enabled": true,
 								"address": "example.com"
 							}
-						}`)),
-					}
-				} else if strings.Contains(req.URL.Path, "missing-syslog-config") {
-					resp = &http.Response{
-						StatusCode: http.StatusUnprocessableEntity,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-  							"errors": {
-  							  "syslog": ["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint."]
-  							}
-						}`)),
-					}
-				} else if strings.Contains(req.URL.Path, "bad-response-code") {
-					resp = &http.Response{
-						StatusCode: http.StatusBadRequest,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}
-				} else {
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-  							invalid-json
-						}`)),
-					}
-				}
+						}`),
+					),
+				)
 
-				return resp, nil
-			}
-		})
-
-		When("syslog configuration is configured for the specified product", func() {
-			It("returns the syslog configuration ", func() {
 				syslogConfig, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
 				Expect(err).ToNot(HaveOccurred())
-
-				Expect(client.DoCallCount()).To(Equal(1))
-				req := client.DoArgsForCall(0)
-				Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/syslog_configuration"))
-				Expect(req.Method).To(Equal("GET"))
-				Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 
 				expectedResult := make(map[string]interface{})
 				expectedResult["enabled"] = true
@@ -916,19 +741,24 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		})
 
 		When("the request fails", func() {
-			BeforeEach(func() {
-				client.DoReturns(&http.Response{}, errors.New("nope"))
-			})
-
 			It("returns an error", func() {
+				client.Close()
+
 				_, err := service.GetStagedProductSyslogConfiguration("some-product-guid")
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(MatchError("could not make api request to staged product syslog_configuration endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/syslog_configuration: nope"))
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product syslog_configuration endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/syslog_configuration")))
 			})
 		})
 
 		When("the server returns a non-200 status code", func() {
 			It("returns nil when the status code is unprocessable (422)", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/missing-syslog-config/syslog_configuration"),
+						ghttp.RespondWith(http.StatusUnprocessableEntity, `{}`),
+					),
+				)
+
 				syslogConfig, err := service.GetStagedProductSyslogConfiguration("missing-syslog-config")
 				Expect(err).ToNot(HaveOccurred())
 
@@ -936,6 +766,13 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 			})
 
 			It("returns an error for any other status code that is non-200", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/bad-response-code/syslog_configuration"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
+
 				_, err := service.GetStagedProductSyslogConfiguration("bad-response-code")
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
@@ -944,7 +781,14 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 
 		When("the response body cannot be decoded", func() {
 			It("returns an error", func() {
-				_, err := service.GetStagedProductSyslogConfiguration("")
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/bad-json/syslog_configuration"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
+
+				_, err := service.GetStagedProductSyslogConfiguration("bad-json")
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged product syslog_configuration response")))
 			})
@@ -952,82 +796,52 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 	})
 
 	Describe("UpdateStagedProductSyslogConfiguration", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				switch req.URL.Path {
-				case "/api/v0/staged/products/some-product-guid/properties":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString(`{}`)),
-					}
-				case "/api/v0/staged/products/some-product-guid/syslog_configuration":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-  							"syslog_configuration": {
-							"enabled": true,
-							"address": "example.com",
-							"port": 514,
-   							"transport_protocol": "tcp"
-  							}
-						}`)),
-					}
-				}
-				return resp, nil
-			}
-		})
-
 		It("configures the syslog for the given staged product in the Ops Manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"syslog_configuration": {
+							"key": "value"
+						}
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+			)
+
 			err := service.UpdateSyslogConfiguration(api.UpdateSyslogConfigurationInput{
 				GUID: "some-product-guid",
 				SyslogConfiguration: `{
-					"key": "value"
-				}`,
+						"key": "value"
+					}`,
 			})
 			Expect(err).ToNot(HaveOccurred())
-
-			By("configuring the syslog properties")
-			Expect(client.DoCallCount()).To(Equal(1))
-			req := client.DoArgsForCall(0)
-			Expect(req.URL.Path).To(Equal("/api/v0/staged/products/some-product-guid/syslog_configuration"))
-			Expect(req.Method).To(Equal("PUT"))
-			Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
-
-			reqBody, err := ioutil.ReadAll(req.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(reqBody).To(MatchJSON(`{
-				"syslog_configuration": {
-					"key": "value"
-				}
-			}`))
 		})
 
 		Context("failure cases", func() {
 			When("the request fails", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
-				})
-
 				It("returns an error", func() {
+					client.Close()
+
 					err := service.UpdateSyslogConfiguration(api.UpdateSyslogConfigurationInput{
 						GUID:                "foo",
 						SyslogConfiguration: `{}`,
 					})
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("could not make api request to staged product syslog_configuration endpoint: could not send api request to PUT /api/v0/staged/products/foo/syslog_configuration: nope"))
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product syslog_configuration endpoint: could not send api request to PUT /api/v0/staged/products/foo/syslog_configuration")))
 				})
 			})
 
 			When("the server returns a non-200 status code", func() {
-				BeforeEach(func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}, nil)
-				})
-
 				It("returns an error", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("PUT", "/api/v0/staged/products/foo/syslog_configuration"),
+							ghttp.RespondWith(http.StatusTeapot, `{}`),
+						),
+					)
+
 					err := service.UpdateSyslogConfiguration(api.UpdateSyslogConfigurationInput{
 						GUID:                "foo",
 						SyslogConfiguration: `{}`,
@@ -1039,29 +853,22 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 	})
 
 	Describe("GetStagedProductManifest", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				switch req.URL.Path {
-				case "/api/v0/staged/products/some-product-guid/manifest":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-							"manifest": {
-								"key-1": {
-									"key-2": "value-1"
-								},
-								"key-3": "value-2",
-								"key-4": 2147483648
-							}
-						}`)),
-					}
-				}
-				return resp, nil
-			}
-		})
-
 		It("returns the manifest for a product", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/manifest"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"manifest": {
+							"key-1": {
+								"key-2": "value-1"
+							},
+							"key-3": "value-2",
+							"key-4": 2147483648
+						}
+					}`),
+				),
+			)
+
 			manifest, err := service.GetStagedProductManifest("some-product-guid")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(manifest).To(MatchYAML(`---
@@ -1072,92 +879,87 @@ key-4: 2147483648
 `))
 		})
 
-		Context("failure cases", func() {
-			When("the request object is invalid", func() {
-				It("returns an error", func() {
-					_, err := service.GetStagedProductManifest("invalid-guid-%%%")
-					Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
-				})
+		When("the request object is invalid", func() {
+			It("returns an error", func() {
+				_, err := service.GetStagedProductManifest("invalid-guid-%%%")
+				Expect(err).To(MatchError(ContainSubstring("invalid URL escape")))
 			})
+		})
 
-			When("the client request fails", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{}, errors.New("nope"))
+		When("the client request fails", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.GetStagedProductManifest("some-product-guid")
-					Expect(err).To(MatchError("could not make api request to staged products manifest endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/manifest: nope"))
-				})
+				_, err := service.GetStagedProductManifest("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to staged products manifest endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/manifest")))
 			})
+		})
 
-			When("the server returns a non-200 status code", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusTeapot,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-					}, nil)
+		When("the server returns a non-200 status code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/manifest"),
+						ghttp.RespondWith(http.StatusTeapot, ``),
+					),
+				)
 
-					_, err := service.GetStagedProductManifest("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+				_, err := service.GetStagedProductManifest("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the returned JSON is invalid", func() {
-				It("returns an error", func() {
-					client.DoReturns(&http.Response{
-						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewBufferString("---some-malformed-json")),
-					}, nil)
+		When("the returned JSON is invalid", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/manifest"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					_, err := service.GetStagedProductManifest("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
-				})
+				_, err := service.GetStagedProductManifest("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 			})
 		})
 	})
 
 	Describe("GetStagedProductProperties", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				switch req.URL.Path {
-				case "/api/v0/staged/products/some-product-guid/properties":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-							"properties": {
-								".properties.some-configurable-property": {
-									"value": "some-value",
-									"configurable": true
-								},
-								".properties.some-non-configurable-property": {
-									"value": "some-value",
-									"configurable": false
-								},
-								".properties.some-secret-property": {
-									"value": {
-										"some-secret-type": "***"
-									},
-									"configurable": true,
-									"credential": true
-								},
-								".properties.some-selector-property": {
-									"value": "Plan 1",
-									"selected_option": "xGB",	
-									"configurable": true
-								},
-								".properties.some-property-with-a-large-number-value": {
-									"value": 2147483648,
-									"configurable": true
-								}
-							}
-						}`)),
-					}
-				}
-				return resp, nil
-			}
-		})
-
 		It("returns the configuration for a product", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"properties": {
+							".properties.some-configurable-property": {
+								"value": "some-value",
+								"configurable": true
+							},
+							".properties.some-non-configurable-property": {
+								"value": "some-value",
+								"configurable": false
+							},
+							".properties.some-secret-property": {
+								"value": {
+									"some-secret-type": "***"
+								},
+								"configurable": true,
+								"credential": true
+							},
+							".properties.some-selector-property": {
+								"value": "Plan 1",
+								"selected_option": "xGB",
+								"configurable": true
+							},
+							".properties.some-property-with-a-large-number-value": {
+								"value": 2147483648,
+								"configurable": true
+							}
+						}
+					}`),
+				),
+			)
+
 			config, err := service.GetStagedProductProperties("some-product-guid")
 			Expect(err).ToNot(HaveOccurred())
 
@@ -1191,96 +993,67 @@ key-4: 2147483648
 			}))
 		})
 
-		Context("failure cases", func() {
-			When("the properties request returns an error", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						switch req.URL.Path {
-						case "/api/v0/staged/products/some-product-guid/properties":
-							return &http.Response{}, errors.New("some-error")
-						}
-						return resp, nil
-					}
-				})
-				It("returns an error", func() {
-					_, err := service.GetStagedProductProperties("some-product-guid")
-					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/properties: some-error`))
-				})
+		When("the properties request returns an error", func() {
+			It("returns an error", func() {
+				client.Close()
+
+				_, err := service.GetStagedProductProperties("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/properties`)))
 			})
+		})
 
-			When("the properties request returns a non 200 error code", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						switch req.URL.Path {
-						case "/api/v0/staged/products/some-product-guid/properties":
-							return &http.Response{
-								StatusCode: http.StatusTeapot,
-								Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-							}, nil
-						}
-						return resp, nil
-					}
-				})
-				It("returns an error", func() {
-					_, err := service.GetStagedProductProperties("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
-				})
+		When("the properties request returns a non 200 error code", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.RespondWith(http.StatusTeapot, ``),
+					),
+				)
+
+				_, err := service.GetStagedProductProperties("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
+		})
 
-			When("the server returns invalid json", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						switch req.URL.Path {
-						case "/api/v0/staged/products/some-product-guid/properties":
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`{{{`)),
-							}
-						}
-						return resp, nil
-					}
-				})
+		When("the server returns invalid json", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-				It("returns an error", func() {
-					_, err := service.GetStagedProductProperties("some-product-guid")
-					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
-				})
+				_, err := service.GetStagedProductProperties("some-product-guid")
+				Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 			})
 		})
 	})
 
 	Describe("GetStagedProductNetworksAndAZs", func() {
-		BeforeEach(func() {
-			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				var resp *http.Response
-				switch req.URL.Path {
-				case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-					resp = &http.Response{
-						StatusCode: http.StatusOK,
-						Body: ioutil.NopCloser(bytes.NewBufferString(`{
-							"networks_and_azs": {
-						  	"singleton_availability_zone": {
-                  "name": "az-one"
-                },
-                "other_availability_zones": [
-                  { "name": "az-two" },
-                  { "name": "az-three" }
-                ],
-                "network": {
-                  "name": "network-one"
-                }
-						  }
-						}`)),
-					}
-				}
-				return resp, nil
-			}
-		})
-
 		It("returns the networks + azs for a product", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"networks_and_azs": {
+							"singleton_availability_zone": {
+								"name": "az-one"
+							},
+							"other_availability_zones": [{
+								"name": "az-two"
+							}, {
+								"name": "az-three"
+							}],
+							"network": {
+								"name": "network-one"
+							}
+						}
+					}`),
+				),
+			)
+
 			config, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(config).To(Equal(map[string]interface{}{
@@ -1298,22 +1071,14 @@ key-4: 2147483648
 		})
 
 		When("there is no network + azs for the give product", func() {
-			BeforeEach(func() {
-				client.DoStub = func(req *http.Request) (*http.Response, error) {
-					var resp *http.Response
-					var err error
-					switch req.URL.Path {
-					case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-						resp = &http.Response{
-							StatusCode: http.StatusNotFound,
-							Body:       ioutil.NopCloser(nil),
-						}
-					}
-					return resp, err
-				}
-			})
-
 			It("returns an empty payload without error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
+						ghttp.RespondWith(http.StatusNotFound, ``),
+					),
+				)
+
 				config, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(config).To(Equal(map[string]interface{}(nil)))
@@ -1322,39 +1087,23 @@ key-4: 2147483648
 
 		Context("failure cases", func() {
 			When("the networks_and_azs request returns an error", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						switch req.URL.Path {
-						case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-							return &http.Response{}, errors.New("some-error")
-						}
-						return resp, nil
-					}
-				})
-
 				It("returns an error", func() {
+					client.Close()
+
 					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
-					Expect(err).To(MatchError(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/networks_and_azs: some-error`))
+					Expect(err).To(MatchError(ContainSubstring(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/networks_and_azs`)))
 				})
 			})
 
 			When("the server returns invalid json", func() {
-				BeforeEach(func() {
-					client.DoStub = func(req *http.Request) (*http.Response, error) {
-						var resp *http.Response
-						switch req.URL.Path {
-						case "/api/v0/staged/products/some-product-guid/networks_and_azs":
-							resp = &http.Response{
-								StatusCode: http.StatusOK,
-								Body:       ioutil.NopCloser(bytes.NewBufferString(`{{{`)),
-							}
-						}
-						return resp, nil
-					}
-				})
-
 				It("returns an error", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
+							ghttp.RespondWith(http.StatusOK, `invalid-json`),
+						),
+					)
+
 					_, err := service.GetStagedProductNetworksAndAZs("some-product-guid")
 					Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 				})
