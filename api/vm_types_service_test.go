@@ -30,57 +30,6 @@ var _ = Describe("VMTypes", func() {
 		client.Close()
 	})
 
-	//BeforeEach(func() {
-	//	client.DoStub = func(req *http.Request) (*http.Response, error) {
-	//		if req.Method == "GET" {
-	//			return &http.Response{
-	//				StatusCode: http.StatusOK,
-	//				Body: ioutil.NopCloser(strings.NewReader(
-	//					`{
-	//				"vm_types": [
-	//					{
-	//					"name": "t2.micro",
-	//					"ram": 1024,
-	//					"cpu": 1,
-	//					"ephemeral_disk": 8192,
-	//					"raw_instance_storage": false,
-	//					"builtin": true
-	//					},
-	//					{
-	//					"name": "t2.small",
-	//					"ram": 2048,
-	//					"cpu": 1,
-	//					"ephemeral_disk": 8192,
-	//					"raw_instance_storage": false,
-	//					"builtin": true
-	//					},
-	//					{
-	//					"name": "t2.medium",
-	//					"ram": 3840,
-	//					"cpu": 1,
-	//					"ephemeral_disk": 32768,
-	//					"raw_instance_storage": true,
-	//					"builtin": true
-	//					},
-	//					{
-	//					"name": "c4.large",
-	//					"ram": 3840,
-	//					"cpu": 2,
-	//					"ephemeral_disk": 32768,
-	//					"raw_instance_storage": false,
-	//					"builtin": true
-	//					}
-	//				]
-	//				}
-	//				`))}, nil
-	//		} else {
-	//			return &http.Response{
-	//				StatusCode: http.StatusOK,
-	//				Body:       ioutil.NopCloser(strings.NewReader(`{}`))}, nil
-	//		}
-	//	}
-	//})
-
 	Context("creating a vm type", func() {
 		It("creates a VM Type", func() {
 			client.AppendHandlers(
