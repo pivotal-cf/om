@@ -810,7 +810,7 @@ var _ = Describe("Director", func() {
 					),
 				)
 
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "one"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "one"}]`), false)
 				Expect(err).ToNot(HaveOccurred())
 			})
 
@@ -836,7 +836,7 @@ var _ = Describe("Director", func() {
 						}`),
 					),
 				)
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
@@ -865,7 +865,7 @@ var _ = Describe("Director", func() {
 						}`),
 					),
 				)
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"},{"name":"new"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing"},{"name":"new"}]`), false)
 				Expect(err).ToNot(HaveOccurred())
 			})
 
@@ -885,7 +885,7 @@ var _ = Describe("Director", func() {
 						),
 					)
 
-					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "new"}]`))
+					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "new"}]`), false)
 					Expect(err).ToNot(HaveOccurred())
 				})
 
@@ -898,7 +898,7 @@ var _ = Describe("Director", func() {
 						),
 					)
 
-					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "config1"}, {"name": "config2"}]`))
+					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "config1"}, {"name": "config2"}]`), false)
 					Expect(err).To(MatchError(ContainSubstring("multiple iaas_configurations are not allowed for your IAAS.")))
 					Expect(err).To(MatchError(ContainSubstring("Supported IAASes include: vsphere and openstack.")))
 				})
@@ -931,16 +931,71 @@ var _ = Describe("Director", func() {
 						),
 					)
 
-					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "other-field": "value"}]`))
+					err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "other-field": "value"}]`), false)
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		})
+
+		When("ignore warnings is set to true", func() {
+			It("ignores warnings when a 207 is returned on the POST", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "some-guid",
+								"name": "existing"
+							}]
+						}`),
+					),
+					ghttp.RespondWith(http.StatusMultiStatus, `{}`),
+				)
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), true)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("ignores warnings when a 207 is returned on the POST", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, ""),
+					),
+					ghttp.RespondWith(http.StatusMultiStatus, `{}`),
+				)
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), true)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
+		When("ignore warnings is set to false", func() {
+			It("returns an error when a 207 is returned on the POST", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "some-guid",
+								"name": "existing"
+							}]
+						}`),
+					),
+					ghttp.RespondWith(http.StatusMultiStatus, `{}`),
+				)
+
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+
 		Context("failure cases", func() {
 			It("returns error if GET to iaas_configurations fails", func() {
 				server.Close()
 
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
 				Expect(err).To(HaveOccurred())
 			})
 
@@ -955,7 +1010,7 @@ var _ = Describe("Director", func() {
 					}),
 				)
 
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
 				Expect(err).To(HaveOccurred())
 			})
 
@@ -975,7 +1030,7 @@ var _ = Describe("Director", func() {
 					}),
 				)
 
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
 				Expect(err).To(MatchError(ContainSubstring("could not send api request to PUT /api/v0/staged/director/iaas_configurations/some-guid")))
 			})
 
@@ -987,7 +1042,7 @@ var _ = Describe("Director", func() {
 					),
 				)
 
-				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`))
+				err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
 				Expect(err).To(MatchError(ContainSubstring("failed to unmarshal JSON response from Ops Manager")))
 			})
 		})

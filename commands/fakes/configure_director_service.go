@@ -149,10 +149,11 @@ type ConfigureDirectorService struct {
 	updateStagedDirectorAvailabilityZonesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpdateStagedDirectorIAASConfigurationsStub        func(api.IAASConfigurationsInput) error
+	UpdateStagedDirectorIAASConfigurationsStub        func(api.IAASConfigurationsInput, bool) error
 	updateStagedDirectorIAASConfigurationsMutex       sync.RWMutex
 	updateStagedDirectorIAASConfigurationsArgsForCall []struct {
 		arg1 api.IAASConfigurationsInput
+		arg2 bool
 	}
 	updateStagedDirectorIAASConfigurationsReturns struct {
 		result1 error
@@ -897,16 +898,17 @@ func (fake *ConfigureDirectorService) UpdateStagedDirectorAvailabilityZonesRetur
 	}{result1}
 }
 
-func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurations(arg1 api.IAASConfigurationsInput) error {
+func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurations(arg1 api.IAASConfigurationsInput, arg2 bool) error {
 	fake.updateStagedDirectorIAASConfigurationsMutex.Lock()
 	ret, specificReturn := fake.updateStagedDirectorIAASConfigurationsReturnsOnCall[len(fake.updateStagedDirectorIAASConfigurationsArgsForCall)]
 	fake.updateStagedDirectorIAASConfigurationsArgsForCall = append(fake.updateStagedDirectorIAASConfigurationsArgsForCall, struct {
 		arg1 api.IAASConfigurationsInput
-	}{arg1})
-	fake.recordInvocation("UpdateStagedDirectorIAASConfigurations", []interface{}{arg1})
+		arg2 bool
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateStagedDirectorIAASConfigurations", []interface{}{arg1, arg2})
 	fake.updateStagedDirectorIAASConfigurationsMutex.Unlock()
 	if fake.UpdateStagedDirectorIAASConfigurationsStub != nil {
-		return fake.UpdateStagedDirectorIAASConfigurationsStub(arg1)
+		return fake.UpdateStagedDirectorIAASConfigurationsStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -921,17 +923,17 @@ func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurationsCall
 	return len(fake.updateStagedDirectorIAASConfigurationsArgsForCall)
 }
 
-func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurationsCalls(stub func(api.IAASConfigurationsInput) error) {
+func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurationsCalls(stub func(api.IAASConfigurationsInput, bool) error) {
 	fake.updateStagedDirectorIAASConfigurationsMutex.Lock()
 	defer fake.updateStagedDirectorIAASConfigurationsMutex.Unlock()
 	fake.UpdateStagedDirectorIAASConfigurationsStub = stub
 }
 
-func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurationsArgsForCall(i int) api.IAASConfigurationsInput {
+func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurationsArgsForCall(i int) (api.IAASConfigurationsInput, bool) {
 	fake.updateStagedDirectorIAASConfigurationsMutex.RLock()
 	defer fake.updateStagedDirectorIAASConfigurationsMutex.RUnlock()
 	argsForCall := fake.updateStagedDirectorIAASConfigurationsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *ConfigureDirectorService) UpdateStagedDirectorIAASConfigurationsReturns(result1 error) {

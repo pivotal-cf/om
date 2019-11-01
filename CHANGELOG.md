@@ -54,6 +54,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   - `--config` with a file always takes precedence
   - `--config -` will read directly from STDIN
   - STDIN provided with no `--config` will use STDIN
+* when using `--ignore-verifier-warnings` with `configure-director` the HTTP Status 207
+  will be ignored when interacting with IAAS endpoints.
 
 ## 4.2.0
 

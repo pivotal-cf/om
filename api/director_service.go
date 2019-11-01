@@ -280,7 +280,7 @@ type IAASConfiguration struct {
 	Fields map[string]interface{} `json:",inline,omitempty" yaml:",inline,omitempty"`
 }
 
-func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfigurationsInput) error {
+func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfigurationsInput, ignoreVerifierWarnings bool) error {
 	iaasConfigurations := []*IAASConfiguration{}
 	err := yaml.Unmarshal(iaasConfig, &iaasConfigurations)
 	if err != nil {
@@ -337,7 +337,7 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 				return a.updateIAASConfigurationInDirectorProperties(iaasConfigurations)
 			}
 
-			if err = validateStatusOK(iaasCreateResp); err != nil {
+			if err = validateStatusOKOrVerificationWarning(iaasCreateResp, ignoreVerifierWarnings); err != nil {
 				return err
 			}
 			continue
@@ -349,7 +349,7 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 		}
 		defer iaasUpdateResp.Body.Close()
 
-		if err = validateStatusOK(iaasUpdateResp); err != nil {
+		if err = validateStatusOKOrVerificationWarning(iaasUpdateResp, ignoreVerifierWarnings); err != nil {
 			return err
 		}
 	}

@@ -598,11 +598,14 @@ vmtypes-configuration:
 			It("configures the director", func() {
 				err := command.Execute([]string{
 					"--config", writeTestConfigFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`),
+					"--ignore-verifier-warnings",
 				})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.UpdateStagedDirectorIAASConfigurationsCallCount()).To(Equal(1))
-				Expect(string(service.UpdateStagedDirectorIAASConfigurationsArgsForCall(0))).To(MatchYAML(`[{guid: some-guid, name: default}]`))
+				output, ignoreWarnings := service.UpdateStagedDirectorIAASConfigurationsArgsForCall(0)
+				Expect(string(output)).To(MatchYAML(`[{guid: some-guid, name: default}]`))
+				Expect(ignoreWarnings).To(BeTrue())
 			})
 
 			Context("failure cases", func() {

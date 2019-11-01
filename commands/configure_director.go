@@ -57,7 +57,7 @@ type configureDirectorService interface {
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	ListStagedVMExtensions() ([]api.VMExtension, error)
 	ListVMTypes() ([]api.VMType, error)
-	UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput) error
+	UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput, bool) error
 	UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput, bool) error
 	UpdateStagedDirectorNetworkAndAZ(api.NetworkAndAZConfiguration) error
 	UpdateStagedDirectorNetworks(api.NetworkInput) error
@@ -275,7 +275,7 @@ func (c ConfigureDirector) updateIAASConfigurations(config *directorConfig) erro
 			return err
 		}
 
-		err = c.service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(configurations))
+		err = c.service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(configurations), c.Options.IgnoreVerifierWarnings)
 
 		if err != nil {
 			return fmt.Errorf("iaas configurations could not be completed: %s", err)
