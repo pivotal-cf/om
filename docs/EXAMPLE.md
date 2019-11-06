@@ -22,7 +22,7 @@ The command will run, waiting for the UAA to start and creating your admin user 
 om \
   --target https://opsman.example.com \
     configure-authentication \
-      --user my-user \
+      --username my-user \
       --password my-password \
       --decryption-passphrase my-passphrase
 ```
@@ -87,7 +87,7 @@ The command expects a fully qualified path to the product file on the local file
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     upload-product \
       --product /absolute/path/to/the/product.tgz
@@ -102,7 +102,7 @@ The command expects a fully qualified path to the stemcell file on the local fil
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     upload-stemcell \
       --stemcell /absolute/path/to/the/stemcell.tgz
@@ -117,7 +117,7 @@ More documentation for the `available-products` command can be found [here](http
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     available-products
 ```
@@ -130,7 +130,7 @@ More documentation for the `stage-product` command can be found [here](https://g
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     stage-product \
       --product-name some-product \
@@ -148,7 +148,7 @@ fetch those details. For example, you can use the following command to get the G
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     curl \
       --path /api/v0/staged/products
@@ -159,7 +159,7 @@ This will return a JSON list of product and their GUIDs. Once you have a GUID, y
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     curl \
       --path /api/v0/staged/products/some-GUID/properties
@@ -170,10 +170,9 @@ With this property information in hand, you can choose how to configure the prod
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     configure-product \
-      --product-name some-product \
       --config product.yml
 ```
 
@@ -226,7 +225,7 @@ a running installation, just run the command as normal and it will reattach to t
 ```shell
 om \
   --target https://opsman.example.com \
-  --user my-user \
+  --username my-user \
   --password my-password \
     apply-changes
 ```
