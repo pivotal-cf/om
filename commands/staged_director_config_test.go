@@ -1,7 +1,6 @@
 package commands_test
 
 import (
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
@@ -1058,18 +1057,6 @@ vmtypes-configuration: {}
 					err := command.Execute([]string{})
 					Expect(err).To(MatchError("some-error"))
 				})
-			})
-		})
-
-		Describe("Usage", func() {
-			It("returns usage information for the command", func() {
-				command := commands.NewStagedDirectorConfig(nil, nil, nil)
-
-				Expect(command.Usage()).To(Equal(jhanda.Usage{
-					Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
-					ShortDescription: "**EXPERIMENTAL** generates a config from a staged director",
-					Flags:            command.Options,
-				}))
 			})
 		})
 	})

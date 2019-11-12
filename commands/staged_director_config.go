@@ -47,14 +47,6 @@ func NewStagedDirectorConfig(service stagedDirectorConfigService, stdout logger,
 	}
 }
 
-func (sdc StagedDirectorConfig) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
-		ShortDescription: "**EXPERIMENTAL** generates a config from a staged director",
-		Flags:            sdc.Options,
-	}
-}
-
 func (sdc StagedDirectorConfig) Execute(args []string) error {
 	if _, err := jhanda.Parse(&sdc.Options, args); err != nil {
 		return fmt.Errorf("could not parse staged-config flags: %s", err)
@@ -286,4 +278,12 @@ func (sdc StagedDirectorConfig) filterSecrets(prefix string, keyName string, val
 	}
 
 	return value, nil
+}
+
+func (sdc StagedDirectorConfig) Usage() jhanda.Usage {
+	return jhanda.Usage{
+		Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
+		ShortDescription: "generates a config from a staged director",
+		Flags:            sdc.Options,
+	}
 }

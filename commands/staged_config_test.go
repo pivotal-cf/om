@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -482,19 +481,6 @@ syslog-properties:
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		Describe("Usage", func() {
-			It("returns usage information for the command", func() {
-
-				command := commands.NewStagedConfig(nil, nil)
-
-				Expect(command.Usage()).To(Equal(jhanda.Usage{
-					Description:      "This command generates a config from a staged product that can be passed in to om configure-product (Note: credentials are not available and will appear as '***')",
-					ShortDescription: "**EXPERIMENTAL** generates a config from a staged product",
-					Flags:            command.Options,
-				}))
 			})
 		})
 	})
