@@ -165,13 +165,14 @@ Commands:
   installations                   list recent installation events
   interpolate                     interpolates variables into a manifest
   pending-changes                 checks for pending changes
-  pre-deploy-check                **EXPERIMENTAL** checks completeness and validity of product configuration
+  pre-deploy-check                checks completeness and validity of product configuration
   product-metadata                prints product metadata
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
+  revert-staged-changes           This command revert the staged changed already on an Ops Manager.
   ssl-certificate                 gets certificate applied to Ops Manager
   stage-product                   stages a given product in the Ops Manager targeted
-  staged-config                   **EXPERIMENTAL** generates a config from a staged product
-  staged-director-config          **EXPERIMENTAL** generates a config from a staged director
+  staged-config                   generates a config from a staged product
+  staged-director-config          generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
   tile-metadata                   **DEPRECATED** prints product metadata. Use product-metadata instead
