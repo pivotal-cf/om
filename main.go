@@ -194,6 +194,7 @@ func main() {
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
 	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api, stdout)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
+	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(api, stdout)
 	commandSet["ssl-certificate"] = commands.NewSSLCertificate(api, presenter)
 	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
 	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
