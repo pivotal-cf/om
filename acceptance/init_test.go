@@ -65,7 +65,7 @@ func runCommand(args ...string) {
 	command := exec.Command(args[0], args[1:]...)
 	configure, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
-	Eventually(configure, "10s").Should(gexec.Exit(0))
+	Eventually(configure, "20s").Should(gexec.Exit(0))
 }
 
 func createTLSServer() *ghttp.Server {
