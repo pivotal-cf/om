@@ -9,7 +9,19 @@ import (
 )
 
 func validateStatusOK(resp *http.Response) error {
-	if resp.StatusCode != http.StatusOK {
+	return validateStatus(resp, http.StatusOK)
+}
+
+func validateStatusOKOrVerificationWarning(resp *http.Response, ignoreVerifierWarnings bool) error {
+	if ignoreVerifierWarnings && resp.StatusCode == http.StatusMultiStatus {
+
+		return nil
+	}
+	return validateStatusOK(resp)
+}
+
+func validateStatus(resp *http.Response, status int) error {
+	if resp.StatusCode != status {
 		var requestURL string
 		if resp.Request != nil {
 			requestURL = fmt.Sprintf(" from %s", resp.Request.URL.Path)
@@ -24,12 +36,4 @@ func validateStatusOK(resp *http.Response) error {
 	}
 
 	return nil
-}
-
-func validateStatusOKOrVerificationWarning(resp *http.Response, ignoreVerifierWarnings bool) error {
-	if ignoreVerifierWarnings && resp.StatusCode == http.StatusMultiStatus {
-
-		return nil
-	}
-	return validateStatusOK(resp)
 }
