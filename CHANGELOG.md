@@ -49,7 +49,19 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ## 4.3.0 - Unreleased
 
-- The same commands you love (`pre-deploy-check`, `staged-config`, and `staged-director-config`)
+### Features
+- We'd like to welcome back the `revert-staged-changes` command.
+  It requires an API endpoint released in Ops Manager versions 2.5.21+, 2.6.13+, or 2.7.2+.
+  This now reverts changes like the the equivalant "Revert" button in the UI.
+  Appropriate messages and warnings will appear from the command of what action has been taken.
+
+  In v3.0.0, we removed `revert-staged-changes` because it had stopped working.
+  (The necessary Ops Manager API wasn't present, so it was trying to automate
+  through the UI - unsuccessfully).
+
+### Bug fixes
+- Maybe not technically a bug, but: 
+  some commands you love (`pre-deploy-check`, `staged-config`, and `staged-director-config`)
   no longer have the EXPERIMENTAL tag.
   Nothing has changed with them, we literally just forgot to remove these ages ago.
 
