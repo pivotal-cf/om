@@ -31,7 +31,7 @@ var _ = Describe("export-installation command", func() {
 				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 					defer GinkgoRecover()
 
-					time.Sleep(1010 * time.Millisecond)
+					time.Sleep(2 * time.Second)
 					_, err := w.Write([]byte("some-installation"))
 					Expect(err).ToNot(HaveOccurred())
 				}),
