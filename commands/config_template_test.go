@@ -210,6 +210,24 @@ var _ = Describe("ConfigTemplate", func() {
 			})
 		})
 
+		When("pivnet and product path args are provided", func() {
+			BeforeEach(func() {
+				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+					f := &fakes.MetadataProvider{}
+					f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
+					return f
+				})
+			})
+			It("returns an error", func() {
+				err := command.Execute([]string{
+					"--output-directory", createOutputDirectory(),
+					"--pivnet-api-token", "b",
+					"--product-path", "c",
+				})
+				Expect(err).To(MatchError(ContainSubstring("please provide either pivnet flags OR product-path")))
+			})
+		})
+
 		When("the cli args arg not provided", func() {
 			BeforeEach(func() {
 				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
@@ -218,9 +236,9 @@ var _ = Describe("ConfigTemplate", func() {
 					return f
 				})
 			})
-			DescribeTable("returns an error", func(required string) {
+			DescribeTable("returns an error", func(required, message string) {
 				args := []string{
-					"--output-directory", "a",
+					"--output-directory", createOutputDirectory(),
 					"--pivnet-api-token", "b",
 					"--pivnet-product-slug", "c",
 					"--product-version", "d",
@@ -231,13 +249,14 @@ var _ = Describe("ConfigTemplate", func() {
 						break
 					}
 				}
+
 				err := command.Execute(args)
-				Expect(err).To(MatchError(fmt.Sprintf("could not parse config-template flags: missing required flag \"%s\"", required)))
+				Expect(err).To(MatchError(ContainSubstring(message)))
 			},
-				Entry("with output-directory", "--output-directory"),
-				Entry("with pivnet-api-token", "--pivnet-api-token"),
-				Entry("with pivnet-product-slug", "--pivnet-product-slug"),
-				Entry("with product-version", "--product-version"),
+				Entry("with output-directory", "--output-directory", `missing required flag "--output-directory"`),
+				Entry("with pivnet-api-token", "--pivnet-api-token", "please provide either pivnet flags OR product-path"),
+				Entry("with pivnet-product-slug", "--pivnet-product-slug", "please provide either pivnet flags OR product-path"),
+				Entry("with product-version", "--product-version", "please provide either pivnet flags OR product-path"),
 			)
 		})
 

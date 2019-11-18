@@ -87,7 +87,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-Expect(err).To(MatchError(ContainSubstring("something bad happened with the director")))
+			Expect(err).To(MatchError(ContainSubstring("something bad happened with the director")))
 		})
 	})
 
@@ -96,7 +96,7 @@ Expect(err).To(MatchError(ContainSubstring("something bad happened with the dire
 			service.ListAllPendingProductChangesReturns([]api.PendingProductChangesOutput{}, errors.New("something bad happened with the product"))
 			command := commands.NewPreDeployCheck(presenter, service, logger)
 			err := command.Execute([]string{})
-Expect(err).To(MatchError(ContainSubstring("something bad happened with the product")))
+			Expect(err).To(MatchError(ContainSubstring("something bad happened with the product")))
 		})
 	})
 
