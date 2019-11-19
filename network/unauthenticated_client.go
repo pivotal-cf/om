@@ -16,7 +16,7 @@ type UnauthenticatedClient struct {
 func NewUnauthenticatedClient(target string, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration) (UnauthenticatedClient, error) {
 	client, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout)
 	if err != nil {
-		return UnauthenticatedClient{}, nil
+		return UnauthenticatedClient{}, err
 	}
 
 	return UnauthenticatedClient{
