@@ -1,0 +1,1 @@
+The `available-products` command will list all available product names and versions on the Ops Manager.

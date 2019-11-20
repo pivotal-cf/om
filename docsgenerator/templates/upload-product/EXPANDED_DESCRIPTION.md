@@ -1,0 +1,2 @@
+The `upload-product` command will upload a product to the Ops Manager.
+After uploading, you can then use the [`stage-product` command](../stage-product/README.md) to add the product to the installation dashboard.

@@ -1,0 +1,1 @@
+The `create-vm-extension` command will create or update an existing vm extension.

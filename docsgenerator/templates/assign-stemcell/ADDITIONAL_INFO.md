@@ -1,0 +1,1 @@
+<!--- Anything in this file will be appended to the final docs/assign-stemcell/README.md file --->

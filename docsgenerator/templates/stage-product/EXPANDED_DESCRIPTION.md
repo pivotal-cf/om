@@ -1,0 +1,1 @@
+The `stage-product` command will add or update a product to the Ops Manager installation dashboard.

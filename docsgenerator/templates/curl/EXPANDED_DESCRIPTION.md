@@ -1,0 +1,1 @@
+The `curl` command will help you make arbitrary API calls against the Ops Manager VM.

@@ -1,0 +1,1 @@
+The `configure-product` command will configure your product properties, network, and resources on the Ops Manager.

@@ -1,0 +1,1 @@
+The `bosh-env` command setup environment variables to target bosh director and/or credhub deployed on bosh director

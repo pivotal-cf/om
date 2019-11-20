@@ -1,0 +1,1 @@
+The `staged-manifest` prints the staged BOSH manifest for a product.

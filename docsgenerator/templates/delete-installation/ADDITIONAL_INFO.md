@@ -1,0 +1,1 @@
+<!--- Anything in this file will be appended to the final docs/delete-installation/README.md file --->

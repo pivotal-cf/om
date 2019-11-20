@@ -1,0 +1,1 @@
+The `deployed-manifest` prints the deployed BOSH manifest for a product.

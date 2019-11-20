@@ -1,0 +1,1 @@
+The `--saml-idp-metadata` and `--saml-bosh-idp-metadata` can be the same.

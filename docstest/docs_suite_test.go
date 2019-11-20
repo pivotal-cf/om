@@ -1,9 +1,7 @@
 package docs_test
 
 import (
-	"fmt"
 	"github.com/onsi/gomega/gexec"
-	"os/exec"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -30,11 +28,3 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 var _ = SynchronizedAfterSuite(func() {}, func() {
 	gexec.CleanupBuildArtifacts()
 })
-
-func runCommand(args ...string) {
-	fmt.Fprintf(GinkgoWriter, "cmd: %s\n", args)
-	command := exec.Command(args[0], args[1:]...)
-	configure, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-	Expect(err).ToNot(HaveOccurred())
-	Eventually(configure, "10s").Should(gexec.Exit(0))
-}
