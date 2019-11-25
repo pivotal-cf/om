@@ -91,19 +91,19 @@ var _ = FDescribe("Diff Service", func() {
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
 							ghttp.RespondWith(http.StatusOK, `[{
-							"type": "some-product",
-							"guid": "some-staged-guid"
-						}]`),
+								"type": "some-product",
+								"guid": "some-staged-guid"
+							}]`),
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
 							ghttp.RespondWith(http.StatusOK, `{
-							"manifest": {
-								"status": "same",
-								"diff": ""
-							},
-							"runtime_configs": []
-						}`),
+								"manifest": {
+									"status": "same",
+									"diff": ""
+								},
+								"runtime_configs": []
+							}`),
 						),
 					)
 
