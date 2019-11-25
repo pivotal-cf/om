@@ -55,7 +55,13 @@ var _ = FDescribe("Diff Service", func() {
 
 				diff, err := service.ProductDiff("some-product")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(diff).To(ContainSubstring("properties:\n+  test: new-value\n-  test: old-value"))
+				Expect(diff).To(Equal(api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "different",
+						Diff: " properties:\n+  test: new-value\n-  test: old-value",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+				}))
 			})
 
 			PIt("returns the diff for the runtime config", func() {
@@ -82,7 +88,13 @@ var _ = FDescribe("Diff Service", func() {
 
 				diff, err := service.ProductDiff("some-product")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(diff).To(ContainSubstring("properties:\n+  test: new-value\n-  test: old-value"))
+				Expect(diff).To(Equal(api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "different",
+						Diff: " properties:\n+  test: new-value\n-  test: old-value",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+				}))
 			})
 
 			When("there is no diff returned for the product manifest", func() {
@@ -109,7 +121,7 @@ var _ = FDescribe("Diff Service", func() {
 
 					diff, err := service.ProductDiff("some-product")
 					Expect(err).NotTo(HaveOccurred())
-					Expect(diff).To(HaveLen(0))
+					Expect(diff.Manifest.Diff).To(HaveLen(0))
 				})
 			})
 
