@@ -85,9 +85,31 @@ var _ = FDescribe("Diff Service", func() {
 				Expect(diff).To(ContainSubstring("properties:\n+  test: new-value\n-  test: old-value"))
 			})
 
-			PWhen("there is no diff returned for the product manifest", func() {
+			When("there is no diff returned for the product manifest", func() {
 				It("succeeds and reports no diff", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{
+							"type": "some-product",
+							"guid": "some-staged-guid"
+						}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
+							ghttp.RespondWith(http.StatusOK, `{
+							"manifest": {
+								"status": "same",
+								"diff": ""
+							},
+							"runtime_configs": []
+						}`),
+						),
+					)
 
+					diff, err := service.ProductDiff("some-product")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(diff).To(HaveLen(0))
 				})
 			})
 
