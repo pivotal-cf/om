@@ -32,7 +32,7 @@ var _ = FDescribe("Diff Service", func() {
 
 	Describe("ProductDiff", func() {
 		When("an existing product is specified", func() {
-			It("returns the diff for the manifest", func() {
+			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -41,6 +41,11 @@ var _ = FDescribe("Diff Service", func() {
 							"guid": "some-staged-guid"
 						}]`),
 					),
+				)
+			})
+
+			It("returns the diff for the manifest", func() {
+				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
 						ghttp.RespondWith(http.StatusOK, `{
@@ -68,13 +73,6 @@ var _ = FDescribe("Diff Service", func() {
 				// Currently just a copy of the above test, pended/not implemented
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[{
-							"type": "some-product",
-							"guid": "some-staged-guid"
-						}]`),
-					),
-					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
 						ghttp.RespondWith(http.StatusOK, `{
 							"manifest": {
@@ -100,13 +98,6 @@ var _ = FDescribe("Diff Service", func() {
 			When("there is no diff returned for the product manifest", func() {
 				It("succeeds and reports no diff", func() {
 					server.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-							ghttp.RespondWith(http.StatusOK, `[{
-								"type": "some-product",
-								"guid": "some-staged-guid"
-							}]`),
-						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
 							ghttp.RespondWith(http.StatusOK, `{
