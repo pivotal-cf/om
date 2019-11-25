@@ -32,7 +32,7 @@ var _ = FDescribe("Diff Service", func() {
 
 	Describe("ProductDiff", func() {
 		When("an existing product is specified", func() {
-			BeforeEach(func() {
+			It("returns the diff for the manifest and runtime configs", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -41,11 +41,6 @@ var _ = FDescribe("Diff Service", func() {
 							"guid": "some-staged-guid"
 						}]`),
 					),
-				)
-			})
-
-			It("returns the diff for the manifest", func() {
-				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
 						ghttp.RespondWith(http.StatusOK, `{
@@ -53,7 +48,15 @@ var _ = FDescribe("Diff Service", func() {
 								"status": "different",
 								"diff": " properties:\n+  test: new-value\n-  test: old-value"
 							},
-							"runtime_configs": []
+							"runtime_configs": [{
+								"name": "a-runtime-config",
+								"status": "different",
+								"diff": " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30"
+							}, {
+								"name": "another-runtime-config",
+								"status": "same",
+								"diff": ""
+							}]
 						}`),
 					),
 				)
@@ -63,63 +66,18 @@ var _ = FDescribe("Diff Service", func() {
 				Expect(diff).To(Equal(api.ProductDiff{
 					Manifest: api.ManifestDiff{
 						Status: "different",
-						Diff: " properties:\n+  test: new-value\n-  test: old-value",
+						Diff:   " properties:\n+  test: new-value\n-  test: old-value",
 					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{},
-				}))
-			})
-
-			PIt("returns the diff for the runtime config", func() {
-				// Currently just a copy of the above test, pended/not implemented
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
-						ghttp.RespondWith(http.StatusOK, `{
-							"manifest": {
-								"status": "different",
-								"diff": " properties:\n+  test: new-value\n-  test: old-value"
-							},
-							"runtime_configs": []
-						}`),
-					),
-				)
-
-				diff, err := service.ProductDiff("some-product")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(diff).To(Equal(api.ProductDiff{
-					Manifest: api.ManifestDiff{
+					RuntimeConfigs: []api.RuntimeConfigsDiff{{
+						Name:   "a-runtime-config",
 						Status: "different",
-						Diff: " properties:\n+  test: new-value\n-  test: old-value",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+						Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+					}, {
+						Name:   "another-runtime-config",
+						Status: "same",
+						Diff:   "",
+					}},
 				}))
-			})
-
-			When("there is no diff returned for the product manifest", func() {
-				It("succeeds and reports no diff", func() {
-					server.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
-							ghttp.RespondWith(http.StatusOK, `{
-								"manifest": {
-									"status": "same",
-									"diff": ""
-								},
-								"runtime_configs": []
-							}`),
-						),
-					)
-
-					diff, err := service.ProductDiff("some-product")
-					Expect(err).NotTo(HaveOccurred())
-					Expect(diff.Manifest.Diff).To(HaveLen(0))
-				})
-			})
-
-			PWhen("there is no diff returned for the runtime config", func() {
-				It("succeeds and reports no diff", func() {
-
-				})
 			})
 		})
 
