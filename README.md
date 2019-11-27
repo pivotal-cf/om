@@ -168,7 +168,7 @@ Commands:
   pre-deploy-check                checks completeness and validity of product configuration
   product-metadata                prints product metadata
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
-  revert-staged-changes           This command revert the staged changed already on an Ops Manager.
+  revert-staged-changes           This command reverts the staged changes already on an Ops Manager.
   ssl-certificate                 gets certificate applied to Ops Manager
   stage-product                   stages a given product in the Ops Manager targeted
   staged-config                   generates a config from a staged product
