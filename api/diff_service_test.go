@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-var _ = FDescribe("Diff Service", func() {
+var _ = Describe("Diff Service", func() {
 	var (
 		server  *ghttp.Server
 		stderr  *fakes.Logger

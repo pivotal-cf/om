@@ -45,7 +45,7 @@ var _ = Describe("revert-staged-changes command", func() {
 
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(ensureHandler.Handlers()).To(HaveLen(0))
-		Eventually(session.Out).Should(gbytes.Say("Changes Reverted."))
+		Eventually(session.Out).Should(gbytes.Say("Changes reverted."))
 	})
 
 	When("there are no changes to revert", func() {

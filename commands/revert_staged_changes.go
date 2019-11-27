@@ -26,7 +26,7 @@ func (r RevertStagedChanges) Execute(_ []string) error {
 	}
 
 	if reverted {
-		r.logger.Printf("Changes Reverted.\n")
+		r.logger.Printf("Changes reverted.\n")
 	} else {
 		r.logger.Printf("No changes to revert.\n")
 	}
@@ -36,7 +36,7 @@ func (r RevertStagedChanges) Execute(_ []string) error {
 
 func (r RevertStagedChanges) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This command revert the staged changed already on an Ops Manager. Useful to ensuring that unintended changes are not applied.",
-		ShortDescription: "This command revert the staged changed already on an Ops Manager.",
+		Description:      "This command reverts the staged changes already on an Ops Manager. Useful for ensuring that unintended changes are not applied.",
+		ShortDescription: "This command reverts the staged changes already on an Ops Manager.",
 	}
 }
