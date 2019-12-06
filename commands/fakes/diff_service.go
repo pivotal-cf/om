@@ -4,28 +4,28 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/api"
 )
 
 type ProductDiffService struct {
-	ProductDiffStub        func(string) (commands.ProductDiff, error)
+	ProductDiffStub        func(string) (api.ProductDiff, error)
 	productDiffMutex       sync.RWMutex
 	productDiffArgsForCall []struct {
 		arg1 string
 	}
 	productDiffReturns struct {
-		result1 commands.ProductDiff
+		result1 api.ProductDiff
 		result2 error
 	}
 	productDiffReturnsOnCall map[int]struct {
-		result1 commands.ProductDiff
+		result1 api.ProductDiff
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductDiffService) ProductDiff(arg1 string) (commands.ProductDiff, error) {
+func (fake *ProductDiffService) ProductDiff(arg1 string) (api.ProductDiff, error) {
 	fake.productDiffMutex.Lock()
 	ret, specificReturn := fake.productDiffReturnsOnCall[len(fake.productDiffArgsForCall)]
 	fake.productDiffArgsForCall = append(fake.productDiffArgsForCall, struct {
@@ -49,7 +49,7 @@ func (fake *ProductDiffService) ProductDiffCallCount() int {
 	return len(fake.productDiffArgsForCall)
 }
 
-func (fake *ProductDiffService) ProductDiffCalls(stub func(string) (commands.ProductDiff, error)) {
+func (fake *ProductDiffService) ProductDiffCalls(stub func(string) (api.ProductDiff, error)) {
 	fake.productDiffMutex.Lock()
 	defer fake.productDiffMutex.Unlock()
 	fake.ProductDiffStub = stub
@@ -62,28 +62,28 @@ func (fake *ProductDiffService) ProductDiffArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *ProductDiffService) ProductDiffReturns(result1 commands.ProductDiff, result2 error) {
+func (fake *ProductDiffService) ProductDiffReturns(result1 api.ProductDiff, result2 error) {
 	fake.productDiffMutex.Lock()
 	defer fake.productDiffMutex.Unlock()
 	fake.ProductDiffStub = nil
 	fake.productDiffReturns = struct {
-		result1 commands.ProductDiff
+		result1 api.ProductDiff
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ProductDiffService) ProductDiffReturnsOnCall(i int, result1 commands.ProductDiff, result2 error) {
+func (fake *ProductDiffService) ProductDiffReturnsOnCall(i int, result1 api.ProductDiff, result2 error) {
 	fake.productDiffMutex.Lock()
 	defer fake.productDiffMutex.Unlock()
 	fake.ProductDiffStub = nil
 	if fake.productDiffReturnsOnCall == nil {
 		fake.productDiffReturnsOnCall = make(map[int]struct {
-			result1 commands.ProductDiff
+			result1 api.ProductDiff
 			result2 error
 		})
 	}
 	fake.productDiffReturnsOnCall[i] = struct {
-		result1 commands.ProductDiff
+		result1 api.ProductDiff
 		result2 error
 	}{result1, result2}
 }
