@@ -32,7 +32,7 @@ var _ = Describe("Diff Service", func() {
 
 	Describe("ProductDiff", func() {
 		When("an existing product is specified", func() {
-			It("returns the cleaned diff for the manifest and runtime configs", func() {
+			It("returns the diff for the manifest and runtime configs", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -66,12 +66,12 @@ var _ = Describe("Diff Service", func() {
 				Expect(diff).To(Equal(api.ProductDiff{
 					Manifest: api.ManifestDiff{
 						Status: "different",
-						Diff:   "properties:\n+  test: new-value\n-  test: old-value",
+						Diff:   " properties:\n+  test: new-value\n-  test: old-value",
 					},
 					RuntimeConfigs: []api.RuntimeConfigsDiff{{
 						Name:   "a-runtime-config",
 						Status: "different",
-						Diff:   "addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+						Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
 					}, {
 						Name:   "another-runtime-config",
 						Status: "same",

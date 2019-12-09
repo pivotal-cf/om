@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"strings"
 )
 
 type ProductDiff struct {
@@ -56,20 +55,5 @@ func (a *Api) ProductDiff(productName string) (ProductDiff, error) {
 		return ProductDiff{}, errors.Wrap(err, fmt.Sprintf("could not unmarshal product diff response: %s", string(body)))
 	}
 
-	return cleanDiff(diff), nil
-}
-
-func cleanDiff(diff ProductDiff) (cleanDiff ProductDiff){
-	runtimeConfigs := diff.RuntimeConfigs
-	for index, config := range runtimeConfigs {
-		runtimeConfigs[index].Diff = strings.TrimSpace(config.Diff)
-	}
-	cleanDiff = ProductDiff{
-		Manifest: ManifestDiff{
-			Status: diff.Manifest.Status,
-			Diff:   strings.TrimSpace(diff.Manifest.Diff),
-		},
-		RuntimeConfigs: runtimeConfigs,
-	}
-	return cleanDiff
+	return diff, nil
 }
