@@ -35,9 +35,30 @@ func (c ProductDiff) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-	c.logger.Printf("Status: %s\n%s", diff.Manifest.Status, diff.Manifest.Diff)
+
+	c.logger.Println("## Product Manifest\n")
+	if diff.Manifest.Status == "same" {
+		c.printRuntimeConfigs(diff)
+		return nil
+	}
+
+	c.logger.Printf("%s\n\n", diff.Manifest.Diff)
+	c.printRuntimeConfigs(diff)
 
 	return nil
+}
+
+func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff) {
+	c.logger.Println("## Runtime Configs\n")
+
+	for _, config := range diff.RuntimeConfigs {
+		if config.Status == "same" {
+			continue
+		}
+
+		c.logger.Printf("### %s\n\n", config.Name)
+		c.logger.Printf("%s\n\n", config.Diff)
+	}
 }
 
 func (c ProductDiff) Usage() jhanda.Usage {

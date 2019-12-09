@@ -8,6 +8,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -32,13 +33,13 @@ var _ = Describe("ProductDiff", func() {
 				api.ProductDiff{
 					Manifest: api.ManifestDiff{
 						Status: "different",
-						Diff:   "properties:\n+  host: example.com\n-  host: localhost",
+						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
 					},
 					RuntimeConfigs: []api.RuntimeConfigsDiff{
 						{
 							Name:   "example-different-runtime-config",
 							Status: "different",
-							Diff:   "addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+							Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
 						},
 						{
 							Name:   "example-same-runtime-config",
@@ -48,7 +49,7 @@ var _ = Describe("ProductDiff", func() {
 						{
 							Name:   "example-also-different-runtime-config",
 							Status: "different",
-							Diff:   "addons:\n - name: another-runtime-config\n   jobs:\n   - name: another-job\n     properties:\n+      timeout: 110\n-      timeout: 31",
+							Diff:   " addons:\n - name: another-runtime-config\n   jobs:\n   - name: another-job\n     properties:\n+      timeout: 110\n-      timeout: 31",
 						},
 					},
 				}, nil)
@@ -65,18 +66,49 @@ var _ = Describe("ProductDiff", func() {
 			err = diff.Execute([]string{"--product", "example-product"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(service.ProductDiffArgsForCall(0)).To(Equal("example-product"))
-			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("Status: different")))
 			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("properties:\n+  host: example.com\n-  host: localhost\n")))
 		})
 
-		PIt("prints the runtime config diffs", func() {
+		It("prints the runtime config diffs", func() {
 			diff := commands.NewProductDiff(service, logger)
 			err = diff.Execute([]string{"--product", "example-product"})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("Status: different")))
-			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("Status: different")))
-			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("Status: same")))
-			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("Status: different")))
+			expectedOutput := `## Product Manifest
+
+ properties:
++  host: example.com
+-  host: localhost
+
+## Runtime Configs
+
+### example-different-runtime-config
+
+ addons:
+ - name: a-runtime-config
+   jobs:
+   - name: a-job
+     properties:
++      timeout: 100
+-      timeout: 30
+
+### example-also-different-runtime-config
+
+ addons:
+ - name: another-runtime-config
+   jobs:
+   - name: another-job
+     properties:
++      timeout: 110
+-      timeout: 31
+`
+			decolorize, err := regexp.Compile(`\x1b[[0-9;]*m`)
+			Expect(err).NotTo(HaveOccurred())
+
+			contents := strings.Split(string(logBuffer.Contents()), "\n")
+			for i := range contents {
+				contents[i] = decolorize.ReplaceAllLiteralString(contents[i], "")
+			}
+			Expect(strings.Join(contents, "\n")).To(ContainSubstring(expectedOutput))
 
 		})
 	})
@@ -93,6 +125,14 @@ var _ = Describe("ProductDiff", func() {
 			Expect(err.Error()).To(ContainSubstring("too many cooks"))
 			Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
 		})
+	})
+	When("there are manifest changes only", func() {
+
+	})
+	When("there are runtime config changes only", func() {
+
+	})
+	When("there are neither manifest or runtime config changes", func() {
 
 	})
 
