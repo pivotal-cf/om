@@ -23,7 +23,7 @@ type RuntimeConfigsDiff struct {
 	Diff   string `json:"diff"`
 }
 
-func (a *Api) ProductDiff(productName string) (ProductDiff, error) {
+func (a Api) ProductDiff(productName string) (ProductDiff, error) {
 	productGUID, err := a.checkStagedProducts(productName)
 	if err != nil {
 		return ProductDiff{}, err

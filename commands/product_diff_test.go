@@ -17,17 +17,19 @@ import (
 var _ = Describe("ProductDiff", func() {
 
 	var (
-		logBuffer = gbytes.NewBuffer()
-		logger    = log.New(logBuffer, "", 0)
+		logBuffer *gbytes.Buffer
+		logger    *log.Logger
 		service   *fakes.ProductDiffService
 		err       error
 	)
 
 	BeforeEach(func() {
 		service = &fakes.ProductDiffService{}
+		logBuffer = gbytes.NewBuffer()
+		logger = log.New(logBuffer, "", 0)
 	})
 
-	When("a valid product is provided", func() {
+	When("a product is provided", func() {
 		When("there are both manifest and runtime config differences", func() {
 			BeforeEach(func() {
 				service.ProductDiffReturns(
@@ -58,7 +60,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("succeeds", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{})
+				err = diff.Execute([]string{"--product", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -142,6 +144,15 @@ var _ = Describe("ProductDiff", func() {
 				Expect(err.Error()).To(ContainSubstring("too many cooks"))
 				Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
 			})
+		})
+	})
+
+	When("no product is provided", func() {
+		It("returns a validation error", func() {
+			diff := commands.NewProductDiff(service, logger)
+			err = diff.Execute([]string{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(`could not parse product-diff flags: missing required flag "--product"`))
 		})
 	})
 })

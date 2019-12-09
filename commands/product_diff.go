@@ -11,7 +11,7 @@ type ProductDiff struct {
 	service productDiffService
 	logger  logger
 	Options struct {
-		Product string `long:"product" short:"p" description:"Product to get diff for"`
+		Product string `long:"product" short:"p" required:"true" description:"Product to get diff for"`
 	}
 }
 
@@ -63,8 +63,8 @@ func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff) {
 
 func (c ProductDiff) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This command displays the bosh manifest diff for a product (Note: property values are redacted and will appear as '***')",
-		ShortDescription: "displays BOSH manifest diff for a product",
+		Description:      "**EXPERIMENTAL** This command displays the bosh manifest diff for a product (Note: secret values are replaced with double-paren variable names)",
+		ShortDescription: "**EXPERIMENTAL** displays BOSH manifest diff for a product",
 		Flags:            c.Options,
 	}
 }
