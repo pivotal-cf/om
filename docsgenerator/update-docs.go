@@ -141,7 +141,7 @@ func generateDocs(omPath string, templatesPath string, docsDir string) error {
 			return err
 		}
 
-		if len(strings.Split(descriptionContents, "\n")) == 1 && descriptionContents == fmt.Sprintf(DescriptionTemplate, commandName)  {
+		if len(strings.Split(descriptionContents, "\n")) == 1 && descriptionContents == fmt.Sprintf(DescriptionTemplate, commandName) {
 			descriptionContents, err = getDescription(omPath, commandName)
 			if err != nil {
 				return err

@@ -116,47 +116,47 @@ var _ = Describe("Credentials", func() {
 			Expect(output.Credential.Value["cert_pem"]).To(Equal("some-cert-pem"))
 		})
 
-			When("the client can't connect to the server", func() {
-				It("returns an error", func() {
-					client.Close()
+		When("the client can't connect to the server", func() {
+			It("returns an error", func() {
+				client.Close()
 
-					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-						DeployedGUID: "invalid-product-guid",
-					})
-					Expect(err).To(MatchError(ContainSubstring("could not make api request")))
+				_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+					DeployedGUID: "invalid-product-guid",
 				})
+				Expect(err).To(MatchError(ContainSubstring("could not make api request")))
 			})
+		})
 
-			When("the server won't fetch credential references", func() {
-				It("returns an error", func() {
-					client.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/api/v0/deployed/products/invalid-product-guid/credentials/"),
-							ghttp.RespondWith(http.StatusInternalServerError, `{}`),
-						),
-					)
+		When("the server won't fetch credential references", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/invalid-product-guid/credentials/"),
+						ghttp.RespondWith(http.StatusInternalServerError, `{}`),
+					),
+				)
 
-					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-						DeployedGUID: "invalid-product-guid",
-					})
-					Expect(err).To(MatchError(ContainSubstring("request failed")))
+				_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+					DeployedGUID: "invalid-product-guid",
 				})
+				Expect(err).To(MatchError(ContainSubstring("request failed")))
 			})
+		})
 
-			When("the response is not JSON", func() {
-				It("returns an error", func() {
-					client.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/"),
-							ghttp.RespondWith(http.StatusOK, `invalid-json`),
-						),
-					)
+		When("the response is not JSON", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-						DeployedGUID: "some-deployed-product-guid",
-					})
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
+				_, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+					DeployedGUID: "some-deployed-product-guid",
 				})
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal")))
+			})
 		})
 	})
 })

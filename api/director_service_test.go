@@ -990,7 +990,6 @@ var _ = Describe("Director", func() {
 			})
 		})
 
-
 		Context("failure cases", func() {
 			It("returns error if GET to iaas_configurations fails", func() {
 				server.Close()

@@ -29,6 +29,5 @@ func (a Api) RevertStagedChanges() (bool, error) {
 		return false, err
 	}
 
-
 	return true, nil
 }

@@ -10,14 +10,14 @@ import (
 
 var _ = Describe("Available Products", func() {
 	var (
-		client         *ghttp.Server
-		service        api.Api
+		client  *ghttp.Server
+		service api.Api
 	)
 
 	BeforeEach(func() {
 		client = ghttp.NewServer()
 		service = api.New(api.ApiInput{
-			Client:         httpClient{serverURI: client.URL()},
+			Client: httpClient{serverURI: client.URL()},
 		})
 	})
 
@@ -231,35 +231,35 @@ var _ = Describe("Available Products", func() {
 			Expect(finderOutput.Product.GUID).To(Equal("some-product-id"))
 		})
 
-			Context("Failed to list staged products", func() {
-				It("returns an error", func() {
-					client.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-							ghttp.RespondWith(http.StatusOK, `invalid-json`),
-						),
-					)
+		Context("Failed to list staged products", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-					_, err := service.GetStagedProductByName("some-product-name")
-					Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response")))
-				})
+				_, err := service.GetStagedProductByName("some-product-name")
+				Expect(err).To(MatchError(ContainSubstring("could not unmarshal staged products response")))
 			})
+		})
 
-			Context("Target product not in staged product list", func() {
-				It("returns an error", func() {
-					client.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-							ghttp.RespondWith(http.StatusOK, `[
+		Context("Target product not in staged product list", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[
 								{"installation_name":"cf-15b22d1810a034ea3aca","guid":"cf-15b22d1810a034ea3aca","type":"cf","product_version":"1.10.0-build.177"},
 								{"installation_name":"p-isolation-segment-0ab7a3616c32a441a115","guid":"p-isolation-segment-0ab7a3616c32a441a115","type":"p-isolation-segment","product_version":"1.10.0-build.31"}
 							]`),
-						),
-					)
+					),
+				)
 
-					_, err := service.GetStagedProductByName("some-product-name")
-					Expect(err).To(MatchError(ContainSubstring("could not find product \"some-product-name\"")))
-				})
+				_, err := service.GetStagedProductByName("some-product-name")
+				Expect(err).To(MatchError(ContainSubstring("could not find product \"some-product-name\"")))
+			})
 		})
 	})
 })
