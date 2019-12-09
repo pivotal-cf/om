@@ -28,52 +28,53 @@ var _ = Describe("ProductDiff", func() {
 	})
 
 	When("a valid product is provided", func() {
-		BeforeEach(func() {
-			service.ProductDiffReturns(
-				api.ProductDiff{
-					Manifest: api.ManifestDiff{
-						Status: "different",
-						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{
-						{
-							Name:   "example-different-runtime-config",
+		When("there are both manifest and runtime config differences", func() {
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
 							Status: "different",
-							Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
 						},
-						{
-							Name:   "example-same-runtime-config",
-							Status: "same",
-							Diff:   "",
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "example-different-runtime-config",
+								Status: "different",
+								Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+							},
+							{
+								Name:   "example-same-runtime-config",
+								Status: "same",
+								Diff:   "",
+							},
+							{
+								Name:   "example-also-different-runtime-config",
+								Status: "different",
+								Diff:   " addons:\n - name: another-runtime-config\n   jobs:\n   - name: another-job\n     properties:\n+      timeout: 110\n-      timeout: 31",
+							},
 						},
-						{
-							Name:   "example-also-different-runtime-config",
-							Status: "different",
-							Diff:   " addons:\n - name: another-runtime-config\n   jobs:\n   - name: another-job\n     properties:\n+      timeout: 110\n-      timeout: 31",
-						},
-					},
-				}, nil)
-		})
+					}, nil)
+			})
 
-		It("succeeds", func() {
-			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
-		})
+			It("succeeds", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+			})
 
-		It("prints the product manifest diff", func() {
-			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{"--product", "example-product"})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(service.ProductDiffArgsForCall(0)).To(Equal("example-product"))
-			Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("properties:\n+  host: example.com\n-  host: localhost\n")))
-		})
+			It("prints the product manifest diff", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(service.ProductDiffArgsForCall(0)).To(Equal("example-product"))
+				Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("properties:\n+  host: example.com\n-  host: localhost\n")))
+			})
 
-		It("prints the runtime config diffs", func() {
-			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{"--product", "example-product"})
-			Expect(err).NotTo(HaveOccurred())
-			expectedOutput := `## Product Manifest
+			It("prints the runtime config diffs", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				expectedOutput := `## Product Manifest
 
  properties:
 +  host: example.com
@@ -101,39 +102,46 @@ var _ = Describe("ProductDiff", func() {
 +      timeout: 110
 -      timeout: 31
 `
-			decolorize, err := regexp.Compile(`\x1b[[0-9;]*m`)
-			Expect(err).NotTo(HaveOccurred())
+				decolorize, err := regexp.Compile(`\x1b[[0-9;]*m`)
+				Expect(err).NotTo(HaveOccurred())
 
-			contents := strings.Split(string(logBuffer.Contents()), "\n")
-			for i := range contents {
-				contents[i] = decolorize.ReplaceAllLiteralString(contents[i], "")
-			}
-			Expect(strings.Join(contents, "\n")).To(ContainSubstring(expectedOutput))
+				contents := strings.Split(string(logBuffer.Contents()), "\n")
+				for i := range contents {
+					contents[i] = decolorize.ReplaceAllLiteralString(contents[i], "")
+				}
+				Expect(strings.Join(contents, "\n")).To(ContainSubstring(expectedOutput))
 
+			})
+		})
+
+		PWhen("there are manifest changes only", func() {
+			It("says there are no runtime config differences and prints manifest diffs", func() {
+			})
+		})
+
+		PWhen("there are runtime config changes only", func() {
+			It("says there are no manifest differences and prints runtime config diffs", func() {
+			})
+		})
+
+		PWhen("there are neither manifest or runtime config changes", func() {
+			It("says there are no manifest differences and no runtime config diffs", func() {
+			})
+		})
+
+		When("there is an error from the diff service", func() {
+			It("returns that error", func() {
+				// setup
+				service.ProductDiffReturns(
+					api.ProductDiff{}, fmt.Errorf("too many cooks"))
+
+				// execute
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "err-product"})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("too many cooks"))
+				Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
+			})
 		})
 	})
-	When("there is an error from the diff service", func() {
-		It("returns that error", func() {
-			// setup
-			service.ProductDiffReturns(
-				api.ProductDiff{}, fmt.Errorf("too many cooks"))
-
-			// execute
-			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{"--product", "err-product"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("too many cooks"))
-			Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
-		})
-	})
-	When("there are manifest changes only", func() {
-
-	})
-	When("there are runtime config changes only", func() {
-
-	})
-	When("there are neither manifest or runtime config changes", func() {
-
-	})
-
 })
