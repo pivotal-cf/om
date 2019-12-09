@@ -51,13 +51,20 @@ func (c ProductDiff) Execute(args []string) error {
 func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff) {
 	c.logger.Println("## Runtime Configs\n")
 
+	noneChanged := true
+
 	for _, config := range diff.RuntimeConfigs {
 		if config.Status == "same" {
 			continue
 		}
 
+		noneChanged = false
 		c.logger.Printf("### %s\n\n", config.Name)
 		c.logger.Printf("%s\n\n", config.Diff)
+	}
+
+	if noneChanged {
+		c.logger.Printf("no changes")
 	}
 }
 

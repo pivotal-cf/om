@@ -116,8 +116,39 @@ var _ = Describe("ProductDiff", func() {
 			})
 		})
 
-		PWhen("there are manifest changes only", func() {
+		When("there are product manifest changes only", func() {
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "different",
+							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "example-different-runtime-config",
+								Status: "same",
+								Diff:   "",
+							},
+							{
+								Name:   "example-same-runtime-config",
+								Status: "same",
+								Diff:   "",
+							},
+							{
+								Name:   "example-also-different-runtime-config",
+								Status: "same",
+								Diff:   "",
+							},
+						},
+					}, nil)
+			})
 			It("says there are no runtime config differences and prints manifest diffs", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
 			})
 		})
 
