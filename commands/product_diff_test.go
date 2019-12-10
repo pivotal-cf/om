@@ -147,13 +147,40 @@ var _ = Describe("ProductDiff", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("host: example.com"))
 				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
 				Expect(logBuffer).To(gbytes.Say("no changes"))
 			})
 		})
 
-		PWhen("there are runtime config changes only", func() {
-			It("says there are no manifest differences and prints runtime config diffs", func() {
+		When("there are runtime config changes only", func() {
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "same",
+							Diff:   "",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "example-different-runtime-config",
+								Status: "different",
+								Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+							},
+						},
+					}, nil)
+			})
+
+			It("says there are no product manifest differences and prints runtime config diffs", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
+				Expect(logBuffer).To(gbytes.Say("timeout: 30"))
+
 			})
 		})
 
