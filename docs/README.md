@@ -50,6 +50,7 @@ on a vSphere Ops Manager.
 | interpolate |  interpolates variables into a manifest
 | pending-changes |  lists pending changes
 | pre-deploy-check |  **EXPERIMENTAL** lists pending changes
+| product-diff |  **EXPERIMENTAL** displays BOSH manifest diff for a product
 | product-metadata |  prints product metadata
 | regenerate-certificates |  deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
 | revert-staged-changes |  reverts staged changes on the Ops Manager targeted
