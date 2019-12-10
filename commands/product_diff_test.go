@@ -212,6 +212,36 @@ var _ = Describe("ProductDiff", func() {
 			})
 		})
 
+		When("the product is an addon tile with no manifest", func() {
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "does_not_exist",
+							Diff:   "",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "example-different-runtime-config",
+								Status: "different",
+								Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 90",
+							},
+						},
+					}, nil)
+			})
+
+			It("says there is no manifest for the product and prints runtime config diffs", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("no manifest for this product"))
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
+				Expect(logBuffer).To(gbytes.Say("timeout: 90"))
+
+			})
+		})
+
 		When("there is an error from the diff service", func() {
 			It("returns that error", func() {
 				// setup

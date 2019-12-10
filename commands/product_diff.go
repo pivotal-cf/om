@@ -37,13 +37,19 @@ func (c ProductDiff) Execute(args []string) error {
 	}
 
 	c.logger.Println("## Product Manifest\n")
-	if diff.Manifest.Status == "same" {
+	switch diff.Manifest.Status {
+	case "same":
 		c.logger.Println("no changes\n")
-		c.printRuntimeConfigs(diff)
-		return nil
+	case "does_not_exist":
+		c.logger.Println("no manifest for this product\n")
+	case "different":
+		c.logger.Printf("%s\n\n", diff.Manifest.Diff)
+	default:
+		c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
 	}
 
-	c.logger.Printf("%s\n\n", diff.Manifest.Diff)
+
+
 	c.printRuntimeConfigs(diff)
 
 	return nil
