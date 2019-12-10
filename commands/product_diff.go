@@ -38,7 +38,7 @@ func (c ProductDiff) Execute(args []string) error {
 
 	c.logger.Println("## Product Manifest\n")
 	if diff.Manifest.Status == "same" {
-		c.logger.Printf("no changes")
+		c.logger.Println("no changes\n")
 		c.printRuntimeConfigs(diff)
 		return nil
 	}
