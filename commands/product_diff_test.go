@@ -184,8 +184,31 @@ var _ = Describe("ProductDiff", func() {
 			})
 		})
 
-		PWhen("there are neither manifest or runtime config changes", func() {
+		When("there are neither manifest or runtime config changes", func() {
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "same",
+							Diff:   "",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "example-different-runtime-config",
+								Status: "same",
+								Diff:   "",
+							},
+						},
+					}, nil)
+			})
 			It("says there are no manifest differences and no runtime config diffs", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
 			})
 		})
 
