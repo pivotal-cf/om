@@ -13,7 +13,7 @@ type ProductDiff struct {
 	service productDiffService
 	logger  logger
 	Options struct {
-		Product string `long:"product" short:"p" required:"true" description:"Product to get diff for"`
+		Product []string `long:"product" short:"p" required:"true" description:"Product to get diff for"`
 	}
 }
 
@@ -33,32 +33,33 @@ func (c ProductDiff) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse product-diff flags: %s", err)
 	}
-	diff, err := c.service.ProductDiff(c.Options.Product)
-	if err != nil {
-		return err
+
+	for _, product := range c.Options.Product {
+
+		diff, err := c.service.ProductDiff(product)
+		if err != nil {
+			return err
+		}
+
+		c.logger.Printf("## Product Manifest for %s\n\n", product)
+		switch diff.Manifest.Status {
+		case "same":
+			c.logger.Println("no changes\n")
+		case "does_not_exist":
+			c.logger.Println("no manifest for this product\n")
+		case "different":
+			c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
+		default:
+			c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
+		}
+		c.printRuntimeConfigs(diff, product)
 	}
-
-	c.logger.Println("## Product Manifest\n")
-	switch diff.Manifest.Status {
-	case "same":
-		c.logger.Println("no changes\n")
-	case "does_not_exist":
-		c.logger.Println("no manifest for this product\n")
-	case "different":
-		c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
-	default:
-		c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
-	}
-
-
-
-	c.printRuntimeConfigs(diff)
 
 	return nil
 }
 
-func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff) {
-	c.logger.Println("## Runtime Configs\n")
+func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff, product string) {
+	c.logger.Printf("## Runtime Configs for %s\n\n", product)
 
 	noneChanged := true
 
