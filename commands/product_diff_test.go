@@ -2,16 +2,14 @@ package commands_test
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/api"
-	"log"
-	"regexp"
-	"strings"
-
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"log"
 )
 
 var _ = Describe("ProductDiff", func() {
@@ -58,21 +56,12 @@ var _ = Describe("ProductDiff", func() {
 					}, nil)
 			})
 
-			It("succeeds", func() {
-				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
-				Expect(err).NotTo(HaveOccurred())
-			})
+			It("prints both", func() {
+				//disable color for just this test;
+				//we don't want to try to assemble this whole example with color
+				color.NoColor = true
+				defer func(){color.NoColor=false}()
 
-			It("prints the product manifest diff", func() {
-				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(service.ProductDiffArgsForCall(0)).To(Equal("example-product"))
-				Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("properties:\n+  host: example.com\n-  host: localhost\n")))
-			})
-
-			It("prints the runtime config diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
@@ -104,16 +93,22 @@ var _ = Describe("ProductDiff", func() {
 +      timeout: 110
 -      timeout: 31
 `
-				decolorize, err := regexp.Compile(`\x1b[[0-9;]*m`)
+				Expect(string(logBuffer.Contents())).To(ContainSubstring(expectedOutput))
+			})
+			It("has colors on the diff", func(){
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 
-				contents := strings.Split(string(logBuffer.Contents()), "\n")
-				for i := range contents {
-					contents[i] = decolorize.ReplaceAllLiteralString(contents[i], "")
-				}
-				Expect(strings.Join(contents, "\n")).To(ContainSubstring(expectedOutput))
+				bufferContents := string(logBuffer.Contents())
 
+				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  host: example.com")))
+				Expect(bufferContents).To(ContainSubstring(color.RedString("-  host: localhost")))
+
+				Expect(bufferContents).To(ContainSubstring(color.GreenString("+      timeout: 110")))
+				Expect(bufferContents).To(ContainSubstring(color.RedString("-      timeout: 31")))
 			})
+
 		})
 
 		When("there are product manifest changes only", func() {

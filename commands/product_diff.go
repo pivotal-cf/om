@@ -2,7 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/pivotal-cf/om/api"
+	"strings"
 
 	"github.com/pivotal-cf/jhanda"
 )
@@ -43,7 +45,7 @@ func (c ProductDiff) Execute(args []string) error {
 	case "does_not_exist":
 		c.logger.Println("no manifest for this product\n")
 	case "different":
-		c.logger.Printf("%s\n\n", diff.Manifest.Diff)
+		c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
 	default:
 		c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
 	}
@@ -67,12 +69,25 @@ func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff) {
 
 		noneChanged = false
 		c.logger.Printf("### %s\n\n", config.Name)
-		c.logger.Printf("%s\n\n", config.Diff)
+		c.logger.Printf("%s\n\n", c.colorize(config.Diff))
 	}
 
 	if noneChanged {
 		c.logger.Printf("no changes")
 	}
+}
+
+func (c ProductDiff) colorize(diff string) string {
+	lines := strings.Split(diff, "\n")
+	for index, line := range lines {
+		if strings.HasPrefix(line, "-") {
+			lines[index] = color.RedString(line)
+		}
+		if strings.HasPrefix(line, "+") {
+			lines[index] = color.GreenString(line)
+		}
+	}
+	return strings.Join(lines, "\n")
 }
 
 func (c ProductDiff) Usage() jhanda.Usage {
