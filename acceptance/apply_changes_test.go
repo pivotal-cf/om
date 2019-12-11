@@ -88,6 +88,72 @@ var _ = Describe("apply-changes command", func() {
 		Expect(session.Out).To(gbytes.Say("call #1"))
 	})
 
+	When("--recreate is enabled", func() {
+		FIt("configures the director to recreate all VMs", func(){
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations"),
+					ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[{
+					"guid": "guid1",
+					"type": "product1"
+				}, {
+					"guid": "guid2",
+					"type": "product2"
+				}]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, `[]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v0/installations"),
+					ghttp.VerifyJSON(`{
+					"ignore_warnings": "false",
+					"deploy_products": "all"
+				}`),
+					ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/42"),
+					ghttp.RespondWith(http.StatusOK, `{"status": "running"}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/42/logs"),
+					ghttp.RespondWith(http.StatusOK, `{ "logs": "call #0\n"}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/42"),
+					ghttp.RespondWith(http.StatusOK, `{"status": "succeeded"}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations/42/logs"),
+					ghttp.RespondWith(http.StatusOK, `{ "logs": "call #0\ncall #1\n"}`),
+				),
+			)
+
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"--recreate",
+				"apply-changes")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session, "5s").Should(gexec.Exit(0))
+
+			Expect(session.Out).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
+			Expect(session.Out).To(gbytes.Say("call #0"))
+			Expect(session.Out).To(gbytes.Say("call #1"))
+		})
+	})
+
 	It("successfully re-attaches to an existing deployment", func() {
 		server.AppendHandlers(
 			ghttp.CombineHandlers(

@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -23,12 +22,6 @@ var _ = Describe("ApplyChanges", func() {
 		pendingService *fakes.PendingChangesService
 		logger         *fakes.Logger
 		writer         *fakes.LogWriter
-		statusOutputs  []api.InstallationsServiceOutput
-		statusErrors   []error
-		logsOutputs    []api.InstallationsServiceOutput
-		logsErrors     []error
-		statusCount    int
-		logsCount      int
 	)
 
 	BeforeEach(func() {
@@ -36,23 +29,6 @@ var _ = Describe("ApplyChanges", func() {
 		pendingService = &fakes.PendingChangesService{}
 		logger = &fakes.Logger{}
 		writer = &fakes.LogWriter{}
-
-		statusCount = 0
-		logsCount = 0
-
-		service.GetInstallationStub = func(id int) (api.InstallationsServiceOutput, error) {
-			output := statusOutputs[statusCount]
-			err := statusErrors[statusCount]
-			statusCount++
-			return output, err
-		}
-
-		service.GetInstallationLogsStub = func(id int) (api.InstallationsServiceOutput, error) {
-			output := logsOutputs[logsCount]
-			err := logsErrors[logsCount]
-			logsCount++
-			return output, err
-		}
 	})
 
 	Describe("Execute", func() {
@@ -61,21 +37,13 @@ var _ = Describe("ApplyChanges", func() {
 			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 			service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
-			statusOutputs = []api.InstallationsServiceOutput{
-				{Status: "running"},
-				{Status: "running"},
-				{Status: "succeeded"},
-			}
+			service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
+			service.GetInstallationReturnsOnCall(1, api.InstallationsServiceOutput{Status: "running"}, nil)
+			service.GetInstallationReturnsOnCall(2, api.InstallationsServiceOutput{Status: "succeeded"}, nil)
 
-			statusErrors = []error{nil, nil, nil}
-
-			logsOutputs = []api.InstallationsServiceOutput{
-				{Logs: "start of logs"},
-				{Logs: "these logs"},
-				{Logs: "some other logs"},
-			}
-
-			logsErrors = []error{nil, nil, nil}
+			service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{Logs: "start of logs"}, nil)
+			service.GetInstallationLogsReturnsOnCall(1, api.InstallationsServiceOutput{Logs: "these logs"}, nil)
+			service.GetInstallationLogsReturnsOnCall(2, api.InstallationsServiceOutput{Logs: "some other logs"}, nil)
 		})
 
 		It("applies changes to the Ops Manager", func() {
@@ -342,17 +310,8 @@ errands: lolololol
 
 		It("handles a failed installation", func() {
 			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-			statusOutputs = []api.InstallationsServiceOutput{
-				{Status: "failed"},
-			}
-
-			statusErrors = []error{nil}
-
-			logsOutputs = []api.InstallationsServiceOutput{
-				{Logs: "start of logs"},
-			}
-
-			logsErrors = []error{nil}
+			service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "failed"}, nil)
+			service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{Logs: "start of logs"}, nil)
 
 			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -399,10 +358,7 @@ errands: lolololol
 			When("getting the installation status has an error", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-
-					statusOutputs = []api.InstallationsServiceOutput{{}}
-
-					statusErrors = []error{errors.New("another error")}
+					service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("another error"))
 
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -414,16 +370,8 @@ errands: lolololol
 			When("there is an error fetching the logs", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-
-					statusOutputs = []api.InstallationsServiceOutput{
-						{Status: "running"},
-					}
-
-					statusErrors = []error{nil}
-
-					logsOutputs = []api.InstallationsServiceOutput{{}}
-
-					logsErrors = []error{errors.New("no")}
+					service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
+					service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("no"))
 
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -435,16 +383,8 @@ errands: lolololol
 			When("there is an error flushing the logs", func() {
 				It("returns an error", func() {
 					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-
-					statusOutputs = []api.InstallationsServiceOutput{
-						{Status: "running"},
-					}
-
-					statusErrors = []error{nil}
-
-					logsOutputs = []api.InstallationsServiceOutput{{Logs: "some logs"}}
-
-					logsErrors = []error{nil}
+					service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
+					service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{Logs: "some logs"}, nil)
 
 					writer.FlushReturns(errors.New("yes"))
 
@@ -454,17 +394,6 @@ errands: lolololol
 					Expect(err).To(MatchError("installation failed to flush logs: yes"))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewApplyChanges(nil, nil, nil, nil, 1)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
-				ShortDescription: "triggers an install on the Ops Manager targeted",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })
