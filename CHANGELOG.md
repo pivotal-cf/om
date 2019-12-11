@@ -54,6 +54,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   It gets the manifest diff for a specified set of products.
   This might be useful as a sanity review before apply-changes;
   see the detailed documentation for details/provisos.
+- `config-template` now includes the option to use a local product file with `--product-path`. 
+  This resolves issue #413.
 
 ## 4.3.0
 
