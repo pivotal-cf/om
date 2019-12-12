@@ -21,6 +21,7 @@ type ApplyChanges struct {
 		Config             string   `short:"c"   long:"config"               description:"path to yml file containing errand configuration (see docs/apply-changes/README.md for format)"`
 		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
 		Reattach           bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
+		RecreateVMs        bool     `long:"recreate-vms" description:"recreate all vms"`
 		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
 		ProductNames       []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
@@ -34,6 +35,7 @@ type applyChangesService interface {
 	Info() (api.Info, error)
 	RunningInstallation() (api.InstallationsServiceOutput, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
+	UpdateStagedDirectorProperties(api.DirectorProperties) error
 }
 
 //counterfeiter:generate -o ./fakes/log_writer.go --fake-name LogWriter . logWriter
@@ -104,6 +106,20 @@ func (ac ApplyChanges) Execute(args []string) error {
 		} else {
 			ac.logger.Printf("found already running installation... not re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
 			return fmt.Errorf("apply changes is already running, use \"--reattach\" to enable reattaching")
+		}
+	}
+
+	//TODO: log that we're configuring recreate in here
+
+	if ac.Options.RecreateVMs {
+		ac.logger.Println("setting director to recreate all VMs")
+		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(`{
+		"director_configuration": {
+			"bosh_recreate_on_next_deploy": true
+		}
+	}`))
+		if err != nil {
+			return fmt.Errorf("could not set director to recreate VMS: %s", err)
 		}
 	}
 

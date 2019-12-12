@@ -3,9 +3,12 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"github.com/onsi/gomega/gbytes"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/pivotal-cf/om/api"
@@ -20,14 +23,16 @@ var _ = Describe("ApplyChanges", func() {
 	var (
 		service        *fakes.ApplyChangesService
 		pendingService *fakes.PendingChangesService
-		logger         *fakes.Logger
+		logger         *log.Logger
+		stderr         *gbytes.Buffer
 		writer         *fakes.LogWriter
 	)
 
 	BeforeEach(func() {
 		service = &fakes.ApplyChangesService{}
 		pendingService = &fakes.PendingChangesService{}
-		logger = &fakes.Logger{}
+		stderr = gbytes.NewBuffer()
+		logger = log.New(stderr, "", 0)
 		writer = &fakes.LogWriter{}
 	})
 
@@ -58,8 +63,7 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
-			format, content := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
+			Expect(stderr).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
 
 			Expect(service.GetInstallationArgsForCall(0)).To(Equal(311))
 			Expect(service.GetInstallationCallCount()).To(Equal(3))
@@ -137,10 +141,8 @@ var _ = Describe("ApplyChanges", func() {
 
 				Expect(service.CreateInstallationCallCount()).To(Equal(0))
 
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation... re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
-				format, content = logger.PrintfArgsForCall(1)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation... re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
+				Expect(stderr).To(gbytes.Say(regexp.QuoteMeta("found already running installation... re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)")))
+				Expect(stderr).To(gbytes.Say(regexp.QuoteMeta("found already running installation... re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)")))
 
 				Expect(service.GetInstallationArgsForCall(0)).To(Equal(200))
 				Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(200))
@@ -164,8 +166,37 @@ var _ = Describe("ApplyChanges", func() {
 
 				Expect(service.CreateInstallationCallCount()).To(Equal(0))
 
-				format, content := logger.PrintfArgsForCall(0)
-				Expect(fmt.Sprintf(format, content...)).To(Equal("found already running installation... not re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)"))
+				Expect(stderr).To(gbytes.Say(regexp.QuoteMeta("found already running installation... not re-attaching (Installation ID: 200, Started: Sat Feb 25 02:31:01 UTC 2017)")))
+			})
+		})
+
+		When("passed the recreate-vms", func() {
+			It("ensures the bosh_recreate_on_next_deploy is set on the director", func() {
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := command.Execute([]string{"--recreate-vms"})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+				Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(`
+					{
+						"director_configuration": {
+							"bosh_recreate_on_next_deploy": true
+						}
+					}
+				`))
+
+				Expect(stderr).To(gbytes.Say("setting director to recreate all VMs"))
+			})
+
+			When("the service returns an error", func() {
+				It("displays that error message", func() {
+					service.UpdateStagedDirectorPropertiesReturns(errors.New("testing"))
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{"--recreate-vms"})
+					Expect(err).To(MatchError(ContainSubstring("testing")))
+				})
 			})
 		})
 
@@ -260,8 +291,7 @@ errands:
 							},
 						}}))
 
-					format, content := logger.PrintfArgsForCall(0)
-					Expect(fmt.Sprintf(format, content...)).To(Equal("attempting to apply changes to the targeted Ops Manager"))
+					Expect(stderr).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
 
 					Expect(service.GetInstallationArgsForCall(0)).To(Equal(311))
 					Expect(service.GetInstallationCallCount()).To(Equal(3))

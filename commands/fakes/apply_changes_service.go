@@ -86,6 +86,17 @@ type ApplyChangesService struct {
 		result1 api.InstallationsServiceOutput
 		result2 error
 	}
+	UpdateStagedDirectorPropertiesStub        func(api.DirectorProperties) error
+	updateStagedDirectorPropertiesMutex       sync.RWMutex
+	updateStagedDirectorPropertiesArgsForCall []struct {
+		arg1 api.DirectorProperties
+	}
+	updateStagedDirectorPropertiesReturns struct {
+		result1 error
+	}
+	updateStagedDirectorPropertiesReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -452,6 +463,66 @@ func (fake *ApplyChangesService) RunningInstallationReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
+func (fake *ApplyChangesService) UpdateStagedDirectorProperties(arg1 api.DirectorProperties) error {
+	fake.updateStagedDirectorPropertiesMutex.Lock()
+	ret, specificReturn := fake.updateStagedDirectorPropertiesReturnsOnCall[len(fake.updateStagedDirectorPropertiesArgsForCall)]
+	fake.updateStagedDirectorPropertiesArgsForCall = append(fake.updateStagedDirectorPropertiesArgsForCall, struct {
+		arg1 api.DirectorProperties
+	}{arg1})
+	fake.recordInvocation("UpdateStagedDirectorProperties", []interface{}{arg1})
+	fake.updateStagedDirectorPropertiesMutex.Unlock()
+	if fake.UpdateStagedDirectorPropertiesStub != nil {
+		return fake.UpdateStagedDirectorPropertiesStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateStagedDirectorPropertiesReturns
+	return fakeReturns.result1
+}
+
+func (fake *ApplyChangesService) UpdateStagedDirectorPropertiesCallCount() int {
+	fake.updateStagedDirectorPropertiesMutex.RLock()
+	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
+	return len(fake.updateStagedDirectorPropertiesArgsForCall)
+}
+
+func (fake *ApplyChangesService) UpdateStagedDirectorPropertiesCalls(stub func(api.DirectorProperties) error) {
+	fake.updateStagedDirectorPropertiesMutex.Lock()
+	defer fake.updateStagedDirectorPropertiesMutex.Unlock()
+	fake.UpdateStagedDirectorPropertiesStub = stub
+}
+
+func (fake *ApplyChangesService) UpdateStagedDirectorPropertiesArgsForCall(i int) api.DirectorProperties {
+	fake.updateStagedDirectorPropertiesMutex.RLock()
+	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
+	argsForCall := fake.updateStagedDirectorPropertiesArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ApplyChangesService) UpdateStagedDirectorPropertiesReturns(result1 error) {
+	fake.updateStagedDirectorPropertiesMutex.Lock()
+	defer fake.updateStagedDirectorPropertiesMutex.Unlock()
+	fake.UpdateStagedDirectorPropertiesStub = nil
+	fake.updateStagedDirectorPropertiesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ApplyChangesService) UpdateStagedDirectorPropertiesReturnsOnCall(i int, result1 error) {
+	fake.updateStagedDirectorPropertiesMutex.Lock()
+	defer fake.updateStagedDirectorPropertiesMutex.Unlock()
+	fake.UpdateStagedDirectorPropertiesStub = nil
+	if fake.updateStagedDirectorPropertiesReturnsOnCall == nil {
+		fake.updateStagedDirectorPropertiesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateStagedDirectorPropertiesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ApplyChangesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -467,6 +538,8 @@ func (fake *ApplyChangesService) Invocations() map[string][][]interface{} {
 	defer fake.listInstallationsMutex.RUnlock()
 	fake.runningInstallationMutex.RLock()
 	defer fake.runningInstallationMutex.RUnlock()
+	fake.updateStagedDirectorPropertiesMutex.RLock()
+	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

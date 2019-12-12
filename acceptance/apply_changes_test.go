@@ -89,11 +89,20 @@ var _ = Describe("apply-changes command", func() {
 	})
 
 	When("--recreate is enabled", func() {
-		FIt("configures the director to recreate all VMs", func(){
+		It("configures the director to recreate all VMs", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/installations"),
 					ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/director/properties"),
+					ghttp.VerifyJSON(`{
+						"director_configuration": {
+							"bosh_recreate_on_next_deploy": true
+						}
+	  				}`),
+					ghttp.RespondWith(http.StatusOK, `{}`),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -140,8 +149,9 @@ var _ = Describe("apply-changes command", func() {
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
-				"--recreate",
-				"apply-changes")
+				"apply-changes",
+				"--recreate-vms",
+			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
