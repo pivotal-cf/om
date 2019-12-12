@@ -147,6 +147,15 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(service.GetInstallationArgsForCall(0)).To(Equal(200))
 				Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(200))
 			})
+
+			When("the recreate-vms flag is also passed", func() {
+				It("errors because this is a conflict", func() {
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{"--reattach", "--recreate-vms"})
+					Expect(err).To(MatchError(ContainSubstring("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")))
+				})
+			})
 		})
 
 		When("not passed reattach", func() {

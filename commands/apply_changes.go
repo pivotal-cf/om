@@ -58,6 +58,10 @@ func (ac ApplyChanges) Execute(args []string) error {
 		return fmt.Errorf("could not parse apply-changes flags: %s", err)
 	}
 
+	if ac.Options.RecreateVMs && ac.Options.Reattach {
+		return fmt.Errorf("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")
+	}
+
 	errands := api.ApplyErrandChanges{}
 
 	if ac.Options.Config != "" {
@@ -108,8 +112,6 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("apply changes is already running, use \"--reattach\" to enable reattaching")
 		}
 	}
-
-	//TODO: log that we're configuring recreate in here
 
 	if ac.Options.RecreateVMs {
 		ac.logger.Println("setting director to recreate all VMs")
