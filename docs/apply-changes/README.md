@@ -33,6 +33,7 @@ Command Arguments:
   --ignore-warnings, -i         bool               ignore issues reported by Ops Manager when applying changes
   --product-name, -n            string (variadic)  name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)
   --reattach                    bool               reattach to an already running apply changes (if available)
+  --recreate-vms                bool               recreate all vms
   --skip-deploy-products, -sdp  bool               skip deploying products when applying changes - just update the director
 
 ```
