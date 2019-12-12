@@ -56,6 +56,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   see the detailed documentation for details/provisos.
 - `config-template` now includes the option to use a local product file with `--product-path`. 
   This resolves issue #413.
+- `apply-changes` can for recreate the VMs that will apply with `--recreate-vms`.
+  This is useful for the [three-Rs of security](https://devopedia.org/three-rs-of-security),
+  to ensure the _repaving_.
 
 ## 4.3.0
 
