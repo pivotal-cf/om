@@ -42,7 +42,7 @@ type DownloadProductOptions struct {
 	ConfigFile string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
 	OutputDir  string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-	VarsFile   []string `long:"vars-file" short:"l"  description:"load variables from a YAML file"`
+	VarsFile   []string `long:"vars-file" short:"l"              description:"load variables from a YAML file"`
 	Vars       []string `long:"var"                              description:"Load variable from the command line. Format: VAR=VAL"`
 
 	PivnetFileGlob      string `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`

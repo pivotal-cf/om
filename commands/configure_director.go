@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pivotal-cf/om/interpolate"
-	"os"
 	"sort"
 	"strings"
 
@@ -18,12 +17,12 @@ type ConfigureDirector struct {
 	service     configureDirectorService
 	logger      logger
 	Options     struct {
-		IgnoreVerifierWarnings bool     `long:"ignore-verifier-warnings" description:"option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER"`
-		ConfigFile             string   `short:"c" long:"config" description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
-		VarsFile               []string `long:"vars-file" description:"Load variables from a YAML file"`
-		VarsEnv                []string `long:"vars-env" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		Vars                   []string `long:"var" short:"v" description:"Load variable from the command line. Format: VAR=VAL"`
-		OpsFile                []string `long:"ops-file" description:"YAML operations file"`
+		IgnoreVerifierWarnings bool     `long:"ignore-verifier-warnings"  description:"option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER"`
+		ConfigFile             string   `short:"c" long:"config"           description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
+		VarsFile               []string `long:"vars-file"                  description:"Load variables from a YAML file"`
+		VarsEnv                []string `long:"vars-env" env:"OM_VARS_ENV" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		Vars                   []string `long:"var" short:"v"              description:"Load variable from the command line. Format: VAR=VAL"`
+		OpsFile                []string `long:"ops-file"                   description:"YAML operations file"`
 	}
 }
 
@@ -149,18 +148,12 @@ func (c ConfigureDirector) Execute(args []string) error {
 }
 
 func (c ConfigureDirector) interpolateConfig() (*directorConfig, error) {
-	varsEnvs := c.Options.VarsEnv
-	if value, ok := os.LookupEnv("OM_VARS_ENV"); ok {
-		// EXPERIMENTAL: don't put this directly in VarsEnv
-		varsEnvs = append(varsEnvs, value)
-	}
-
 	configContents, err := interpolate.Execute(interpolate.Options{
 		TemplateFile:  c.Options.ConfigFile,
 		VarsFiles:     c.Options.VarsFile,
 		EnvironFunc:   c.environFunc,
 		Vars:          c.Options.Vars,
-		VarsEnvs:      varsEnvs,
+		VarsEnvs:      c.Options.VarsEnv,
 		OpsFiles:      c.Options.OpsFile,
 		ExpectAllKeys: true,
 	})

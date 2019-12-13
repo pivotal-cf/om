@@ -60,6 +60,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This is useful for the [three-Rs of security](https://devopedia.org/three-rs-of-security),
   to ensure the _repaving_.
 
+### Bug Fixes
+- The environment variable `OM_VARS_ENV` was not enabled on all commands that allows `--vars-env`.
+
 ## 4.3.0
 
 ### Features

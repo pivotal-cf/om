@@ -15,13 +15,13 @@ type Interpolate struct {
 	logger      logger
 	input       *os.File
 	Options     struct {
-		ConfigFile        string   `long:"config"       short:"c" description:"path for file to be interpolated"`
-		Path              string   `long:"path"                   description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
-		VarsEnv           []string `long:"vars-env"               description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile          []string `long:"vars-file"    short:"l" description:"Load variables from a YAML file"`
-		Vars              []string `long:"var"          short:"v" description:"Load variable from the command line. Format: VAR=VAL"`
-		OpsFile           []string `long:"ops-file"     short:"o" description:"YAML operations files"`
-		SkipMissingParams bool     `long:"skip-missing" short:"s" description:"Allow skipping missing params"`
+		ConfigFile        string   `long:"config"       short:"c"     description:"path for file to be interpolated"`
+		Path              string   `long:"path"                       description:"Extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
+		VarsEnv           []string `long:"vars-env" env:"OM_VARS_ENV" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		VarsFile          []string `long:"vars-file"    short:"l"     description:"Load variables from a YAML file"`
+		Vars              []string `long:"var"          short:"v"     description:"Load variable from the command line. Format: VAR=VAL"`
+		OpsFile           []string `long:"ops-file"     short:"o"     description:"YAML operations files"`
+		SkipMissingParams bool     `long:"skip-missing" short:"s"     description:"Allow skipping missing params"`
 	}
 }
 

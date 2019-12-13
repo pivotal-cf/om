@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pivotal-cf/om/interpolate"
-	"os"
 	"sort"
 	"strings"
 
@@ -22,11 +21,11 @@ type ConfigureProduct struct {
 	logger      logger
 	target      string
 	Options     struct {
-		ConfigFile string   `long:"config"    short:"c" description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
-		VarsFile   []string `long:"vars-file" short:"l" description:"Load variables from a YAML file"`
-		Vars       []string `long:"var" short:"v"       description:"Load variable from the command line. Format: VAR=VAL"`
-		VarsEnv    []string `long:"vars-env" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		OpsFile    []string `long:"ops-file"  short:"o" description:"YAML operations file"`
+		ConfigFile string   `long:"config"    short:"c"        description:"path to yml file containing all config fields (see docs/configure-product/README.md for format)" required:"true"`
+		VarsFile   []string `long:"vars-file" short:"l"        description:"Load variables from a YAML file"`
+		Vars       []string `long:"var" short:"v"              description:"Load variable from the command line. Format: VAR=VAL"`
+		VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		OpsFile    []string `long:"ops-file"  short:"o"        description:"YAML operations file"`
 	}
 }
 
@@ -326,18 +325,12 @@ func (cp *ConfigureProduct) configureErrands(cfg configureProduct, productGUID s
 }
 
 func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configureProduct, error) {
-	varsEnvs := cp.Options.VarsEnv
-	if value, ok := os.LookupEnv("OM_VARS_ENV"); ok {
-		// EXPERIMENTAL: don't put this directly in VarsEnv
-		varsEnvs = append(varsEnvs, value)
-	}
-
 	configContents, err := interpolate.Execute(interpolate.Options{
 		TemplateFile:  cp.Options.ConfigFile,
 		VarsFiles:     cp.Options.VarsFile,
 		Vars:          cp.Options.Vars,
 		EnvironFunc:   cp.environFunc,
-		VarsEnvs:      varsEnvs,
+		VarsEnvs:      cp.Options.VarsEnv,
 		OpsFiles:      cp.Options.OpsFile,
 		ExpectAllKeys: true,
 	})
