@@ -342,6 +342,7 @@ var _ = Describe("ProductDiff", func() {
 				Expect(logBuffer).NotTo(gbytes.Say("## Runtime Configs"))
 			})
 		})
+
 		When("there is an error from the diff service", func() {
 			It("returns that error", func() {
 				// setup
@@ -364,6 +365,15 @@ var _ = Describe("ProductDiff", func() {
 			err = diff.Execute([]string{})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal(`could not parse product-diff flags: missing required flag "--product"`))
+		})
+	})
+
+	PWhen("a provided product cannot be found", func() {
+		It("returns an error that says the product couldn't be found and provides context as to why that might be", func() {
+			diff := commands.NewProductDiff(service, logger)
+			err = diff.Execute([]string{"--product", "deleted-product", "--product", "unchanged-product"})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(`could not find product 'deleted-product'. It may be invalid, not yet be staged, or be marked for deletion."`))
 		})
 	})
 })
