@@ -30,7 +30,7 @@ func (a Api) ProductDiff(productName string) (ProductDiff, error) {
 	}
 
 	if productGUID == "" {
-		return ProductDiff{}, fmt.Errorf(`could not find product "%s"`, productName)
+		return ProductDiff{}, fmt.Errorf(`could not find product "%s": it may be invalid, not yet be staged, or be marked for deletion`, productName)
 	}
 
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/products/%s/diff", productGUID), nil)

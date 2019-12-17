@@ -317,32 +317,6 @@ var _ = Describe("ProductDiff", func() {
 			})
 		})
 
-		PWhen("the product is staged for deletion", func() {
-			// This case is actually a problem;
-			// Products that are staged for deletion give a 404 when you hit their diff endpoint,
-			// and don't show up in the list of staged products at all.
-			// Needs discussion.
-			BeforeEach(func() {
-				service.ProductDiffReturns(
-					api.ProductDiff{
-						Manifest: api.ManifestDiff{
-							Status: "to_be_deleted",
-							Diff:   "",
-						},
-						RuntimeConfigs: []api.RuntimeConfigsDiff{},
-					}, nil)
-			})
-
-			It("says the product will be deleted", func() {
-				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
-				Expect(err).NotTo(HaveOccurred())
-				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
-				Expect(logBuffer).To(gbytes.Say("This product will be deleted; product and runtime diffs are not available."))
-				Expect(logBuffer).NotTo(gbytes.Say("## Runtime Configs"))
-			})
-		})
-
 		When("there is an error from the diff service", func() {
 			It("returns that error", func() {
 				// setup
@@ -353,7 +327,7 @@ var _ = Describe("ProductDiff", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "err-product"})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("too many cooks"))
+				Expect(err.Error()).To(Equal("too many cooks"))
 				Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
 			})
 		})
@@ -365,15 +339,6 @@ var _ = Describe("ProductDiff", func() {
 			err = diff.Execute([]string{})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal(`could not parse product-diff flags: missing required flag "--product"`))
-		})
-	})
-
-	PWhen("a provided product cannot be found", func() {
-		It("returns an error that says the product couldn't be found and provides context as to why that might be", func() {
-			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{"--product", "deleted-product", "--product", "unchanged-product"})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal(`could not find product 'deleted-product'. It may be invalid, not yet be staged, or be marked for deletion."`))
 		})
 	})
 })

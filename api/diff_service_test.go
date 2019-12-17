@@ -91,7 +91,7 @@ var _ = Describe("Diff Service", func() {
 		})
 
 		When("the specified product cannot be found", func() {
-			It("returns an error", func() {
+			It("returns an error suggesting common causes", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -100,7 +100,7 @@ var _ = Describe("Diff Service", func() {
 				)
 
 				_, err := service.ProductDiff("some-product")
-				Expect(err).To(MatchError(`could not find product "some-product"`))
+				Expect(err).To(MatchError(`could not find product "some-product": it may be invalid, not yet be staged, or be marked for deletion`))
 			})
 		})
 

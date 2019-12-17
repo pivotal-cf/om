@@ -34,7 +34,6 @@ func (c ProductDiff) Execute(args []string) error {
 		return fmt.Errorf("could not parse product-diff flags: %s", err)
 	}
 	for _, product := range c.Options.Product {
-
 		diff, err := c.service.ProductDiff(product)
 		if err != nil {
 			return err
