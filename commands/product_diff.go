@@ -33,7 +33,6 @@ func (c ProductDiff) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse product-diff flags: %s", err)
 	}
-
 	for _, product := range c.Options.Product {
 
 		diff, err := c.service.ProductDiff(product)
@@ -42,6 +41,7 @@ func (c ProductDiff) Execute(args []string) error {
 		}
 
 		c.logger.Printf("## Product Manifest for %s\n\n", product)
+
 		switch diff.Manifest.Status {
 		case "same":
 			c.logger.Println("no changes\n")
@@ -49,12 +49,14 @@ func (c ProductDiff) Execute(args []string) error {
 			c.logger.Println("no manifest for this product\n")
 		case "different":
 			c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
+		case "to_be_installed":
+			c.logger.Println("This product is not yet deployed, so the product and runtime diffs are not available.")
+			return nil
 		default:
 			c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
 		}
 		c.printRuntimeConfigs(diff, product)
 	}
-
 	return nil
 }
 
@@ -69,6 +71,7 @@ func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff, product string) {
 		}
 
 		noneChanged = false
+
 		c.logger.Printf("### %s\n\n", config.Name)
 		c.logger.Printf("%s\n\n", c.colorize(config.Diff))
 	}

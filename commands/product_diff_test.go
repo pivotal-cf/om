@@ -27,7 +27,7 @@ var _ = Describe("ProductDiff", func() {
 		logger = log.New(logBuffer, "", 0)
 	})
 
-	When("providing mulitple products", func() {
+	When("providing multiple products", func() {
 		BeforeEach(func() {
 			service.ProductDiffReturnsOnCall(0,
 				api.ProductDiff{
@@ -119,7 +119,7 @@ var _ = Describe("ProductDiff", func() {
 				//disable color for just this test;
 				//we don't want to try to assemble this whole example with color
 				color.NoColor = true
-				defer func(){color.NoColor=false}()
+				defer func() { color.NoColor = false }()
 
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
@@ -154,7 +154,7 @@ var _ = Describe("ProductDiff", func() {
 `
 				Expect(string(logBuffer.Contents())).To(ContainSubstring(expectedOutput))
 			})
-			It("has colors on the diff", func(){
+			It("has colors on the diff", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
@@ -292,10 +292,56 @@ var _ = Describe("ProductDiff", func() {
 				Expect(logBuffer).To(gbytes.Say("no manifest for this product"))
 				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
 				Expect(logBuffer).To(gbytes.Say("timeout: 90"))
-
 			})
 		})
 
+		When("the product is staged for initial installation", func() {
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "to_be_installed",
+							Diff:   "",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{},
+					}, nil)
+			})
+
+			It("says the product will be installed for the first time", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("This product is not yet deployed, so the product and runtime diffs are not available."))
+				Expect(logBuffer).NotTo(gbytes.Say("## Runtime Configs"))
+			})
+		})
+
+		PWhen("the product is staged for deletion", func() {
+			// This case is actually a problem;
+			// Products that are staged for deletion give a 404 when you hit their diff endpoint,
+			// and don't show up in the list of staged products at all.
+			// Needs discussion.
+			BeforeEach(func() {
+				service.ProductDiffReturns(
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "to_be_deleted",
+							Diff:   "",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{},
+					}, nil)
+			})
+
+			It("says the product will be deleted", func() {
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--product", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("This product will be deleted; product and runtime diffs are not available."))
+				Expect(logBuffer).NotTo(gbytes.Say("## Runtime Configs"))
+			})
+		})
 		When("there is an error from the diff service", func() {
 			It("returns that error", func() {
 				// setup
