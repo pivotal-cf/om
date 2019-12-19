@@ -30,6 +30,74 @@ var _ = Describe("Diff Service", func() {
 		server.Close()
 	})
 
+	Describe("DirectorDiff", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/director/diff"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"manifest": {
+							"status": "different",
+							"diff": " properties:\n+  host: example.com\n-  host: localhost"
+						},
+						"cloud_config": {
+							"status": "same",
+							"diff": ""
+						},
+						"runtime_configs": [
+							{
+							"name": "opsmanager_dns_runtime_config",
+							"status": "different",
+							"diff": " addons:\n - name: opsmanager_dns\n   jobs:\n   - name: bosh-dns\n     properties:\n+      timeout: 100\n-      timeout: 30"
+							},
+							{
+							"name": "director_runtime_config",
+							"status": "to_be_deleted",
+							"diff": null
+							}
+						],
+						"cpi_configs": [
+							{
+							"guid": "71706aab76be17f1e06e",
+							"iaas_configuration_name": "default",
+							"status": "to_be_installed",
+							"diff": null
+							}
+						]
+					}`),
+				),
+			)
+		})
+		It("returns the diff for the manifest, cloud config, CPI configs, and runtime configs", func() {
+			diff, err := service.DirectorDiff()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(diff).To(Equal(api.DirectorDiff{
+				Manifest: api.ManifestDiff{
+					Status: "different",
+					Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+				},
+				CloudConfig: api.ManifestDiff{Status: "same", Diff: ""},
+				RuntimeConfigs: []api.RuntimeConfigsDiff{{
+					Name:   "opsmanager_dns_runtime_config",
+					Status: "different",
+					Diff:   " addons:\n - name: opsmanager_dns\n   jobs:\n   - name: bosh-dns\n     properties:\n+      timeout: 100\n-      timeout: 30",
+				}, {
+					Name:   "director_runtime_config",
+					Status: "to_be_deleted",
+					Diff:   "",
+				}},
+				CPIConfigs: []api.CPIConfigsDiff{
+					{
+						GUID:                  "71706aab76be17f1e06e",
+						IAASConfigurationName: "default",
+						Status:                "to_be_installed",
+						Diff:                  "",
+					},
+				},
+			}))
+		})
+	})
+
 	Describe("ProductDiff", func() {
 		When("an existing product is specified", func() {
 			It("returns the diff for the manifest and runtime configs", func() {

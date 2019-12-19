@@ -7,6 +7,13 @@ import (
 	"io/ioutil"
 )
 
+type DirectorDiff struct {
+	Manifest       ManifestDiff         `json:"manifest"`
+	CloudConfig    ManifestDiff         `json:"cloud_config"`
+	RuntimeConfigs []RuntimeConfigsDiff `json:"runtime_configs"`
+	CPIConfigs     []CPIConfigsDiff     `json:"cpi_configs"`
+}
+
 type ProductDiff struct {
 	Manifest       ManifestDiff         `json:"manifest"`
 	RuntimeConfigs []RuntimeConfigsDiff `json:"runtime_configs"`
@@ -21,6 +28,28 @@ type RuntimeConfigsDiff struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
 	Diff   string `json:"diff"`
+}
+
+type CPIConfigsDiff struct {
+	GUID                  string `json:"guid"`
+	IAASConfigurationName string `json:"iaas_configuration_name"`
+	Status                string `json:"status"`
+	Diff                  string `json:"diff"`
+}
+
+func (a Api) DirectorDiff() (diff DirectorDiff, err error) {
+	resp, err := a.sendAPIRequest("GET", "/api/v0/director/diff", nil)
+	if err != nil {
+		return DirectorDiff{}, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return DirectorDiff{}, err
+	}
+
+	json.Unmarshal(body, &diff)
+	return diff, err
 }
 
 func (a Api) ProductDiff(productName string) (ProductDiff, error) {
