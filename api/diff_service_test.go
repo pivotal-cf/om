@@ -96,6 +96,66 @@ var _ = Describe("Diff Service", func() {
 				},
 			}))
 		})
+
+		When("the client has an error during the request when hitting the director diff endpoint", func() {
+			It("returns an error", func() {
+				// This will be called twice; http.Transport retries when connections close unexpectedly
+				server.RouteToHandler("GET", "/api/v0/director/diff",
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						server.CloseClientConnections()
+					}),
+				)
+
+				diff, err := service.DirectorDiff()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not request director diff: could not send api request to GET /api/v0/director/diff"))
+				Expect(diff).To(BeZero())
+			})
+		})
+
+		PWhen("the director diff endpoint returns a non-200 status code", func() {
+			It("returns an error", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{
+							"type": "some-product",
+							"guid": "some-staged-guid"
+						}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
+						ghttp.RespondWith(http.StatusTeapot, ``),
+					),
+				)
+
+				_, err := service.ProductDiff("some-product")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not retrieve product diff: request failed: unexpected response from /api/v0/products/some-staged-guid/diff:\nHTTP/1.1 418 I'm a teapot"))
+			})
+		})
+
+		PWhen("the director diff endpoint returns invalid json", func() {
+			It("returns an error", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{
+							"type": "some-product",
+							"guid": "some-staged-guid"
+						}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
+						ghttp.RespondWith(http.StatusOK, `actuallynotokayblaglegarg`),
+					),
+				)
+
+				_, err := service.ProductDiff("some-product")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not unmarshal product diff response: %s", "actuallynotokayblaglegarg"))
+			})
+		})
 	})
 
 	Describe("ProductDiff", func() {

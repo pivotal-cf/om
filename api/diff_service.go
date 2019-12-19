@@ -40,7 +40,7 @@ type CPIConfigsDiff struct {
 func (a Api) DirectorDiff() (diff DirectorDiff, err error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/director/diff", nil)
 	if err != nil {
-		return DirectorDiff{}, err
+		return DirectorDiff{}, fmt.Errorf("could not request director diff: %s", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
