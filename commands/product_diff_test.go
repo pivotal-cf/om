@@ -27,65 +27,6 @@ var _ = Describe("ProductDiff", func() {
 		logger = log.New(logBuffer, "", 0)
 	})
 
-	When("providing multiple products", func() {
-		BeforeEach(func() {
-			service.ProductDiffReturnsOnCall(0,
-				api.ProductDiff{
-					Manifest: api.ManifestDiff{
-						Status: "different",
-						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{
-						{
-							Name:   "example-different-runtime-config",
-							Status: "different",
-							Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
-						},
-						{
-							Name:   "example-same-runtime-config",
-							Status: "same",
-							Diff:   "",
-						},
-						{
-							Name:   "example-also-different-runtime-config",
-							Status: "different",
-							Diff:   " addons:\n - name: another-runtime-config\n   jobs:\n   - name: another-job\n     properties:\n+      timeout: 110\n-      timeout: 31",
-						},
-					},
-				}, nil)
-			service.ProductDiffReturnsOnCall(1,
-				api.ProductDiff{
-					Manifest: api.ManifestDiff{
-						Status: "same",
-						Diff:   "",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{
-						{
-							Name:   "example-different-runtime-config",
-							Status: "same",
-							Diff:   "",
-						},
-					},
-				}, nil)
-		})
-
-		It("prints both product statuses", func() {
-			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{"--product", "example-product", "--product", "another-product"})
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
-			Expect(logBuffer).To(gbytes.Say("properties:"))
-			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for example-product"))
-			Expect(logBuffer).To(gbytes.Say("example-different-runtime-config"))
-
-			Expect(logBuffer).To(gbytes.Say("## Product Manifest for another-product"))
-			Expect(logBuffer).To(gbytes.Say("no changes"))
-			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for another-product"))
-			Expect(logBuffer).To(gbytes.Say("no changes"))
-		})
-	})
-
 	When("a product is provided", func() {
 		When("there are both manifest and runtime config differences", func() {
 			BeforeEach(func() {
@@ -330,6 +271,65 @@ var _ = Describe("ProductDiff", func() {
 				Expect(err.Error()).To(Equal("too many cooks"))
 				Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
 			})
+		})
+	})
+
+	When("providing multiple products", func() {
+		BeforeEach(func() {
+			service.ProductDiffReturnsOnCall(0,
+				api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "different",
+						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{
+						{
+							Name:   "example-different-runtime-config",
+							Status: "different",
+							Diff:   " addons:\n - name: a-runtime-config\n   jobs:\n   - name: a-job\n     properties:\n+      timeout: 100\n-      timeout: 30",
+						},
+						{
+							Name:   "example-same-runtime-config",
+							Status: "same",
+							Diff:   "",
+						},
+						{
+							Name:   "example-also-different-runtime-config",
+							Status: "different",
+							Diff:   " addons:\n - name: another-runtime-config\n   jobs:\n   - name: another-job\n     properties:\n+      timeout: 110\n-      timeout: 31",
+						},
+					},
+				}, nil)
+			service.ProductDiffReturnsOnCall(1,
+				api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "same",
+						Diff:   "",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{
+						{
+							Name:   "example-different-runtime-config",
+							Status: "same",
+							Diff:   "",
+						},
+					},
+				}, nil)
+		})
+
+		It("prints both product statuses", func() {
+			diff := commands.NewProductDiff(service, logger)
+			err = diff.Execute([]string{"--product", "example-product", "--product", "another-product"})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
+			Expect(logBuffer).To(gbytes.Say("properties:"))
+			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for example-product"))
+			Expect(logBuffer).To(gbytes.Say("example-different-runtime-config"))
+
+			Expect(logBuffer).To(gbytes.Say("## Product Manifest for another-product"))
+			Expect(logBuffer).To(gbytes.Say("no changes"))
+			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for another-product"))
+			Expect(logBuffer).To(gbytes.Say("no changes"))
 		})
 	})
 
