@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/pivotal-cf/om/api"
+	"sort"
 	"strings"
 
 	"github.com/pivotal-cf/jhanda"
@@ -13,13 +14,14 @@ type ProductDiff struct {
 	service productDiffService
 	logger  logger
 	Options struct {
-		Product []string `long:"product" short:"p" required:"true" description:"Product to get diff for"`
+		Product []string `long:"product" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
 	}
 }
 
 //counterfeiter:generate -o ./fakes/diff_service.go --fake-name ProductDiffService . productDiffService
 type productDiffService interface {
 	ProductDiff(productName string) (api.ProductDiff, error)
+	ListStagedProducts() (api.StagedProductsOutput, error)
 }
 
 func NewProductDiff(service productDiffService, logger logger) ProductDiff {
@@ -33,7 +35,25 @@ func (c ProductDiff) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
 		return fmt.Errorf("could not parse product-diff flags: %s", err)
 	}
-	for _, product := range c.Options.Product {
+
+	var diffableProducts []string
+	if len(c.Options.Product) == 0 {
+		stagedProducts, err := c.service.ListStagedProducts()
+		if err != nil{
+			return fmt.Errorf("could not discover staged products to diff: %s", err)
+		}
+
+		for _, product := range stagedProducts.Products {
+			if product.Type != "p-bosh" {
+				diffableProducts = append(diffableProducts, product.Type)
+			}
+		}
+		sort.Strings(diffableProducts)
+	} else {
+		diffableProducts = c.Options.Product
+	}
+
+	for _, product := range diffableProducts {
 		diff, err := c.service.ProductDiff(product)
 		if err != nil {
 			return err
@@ -76,7 +96,7 @@ func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff, product string) {
 	}
 
 	if noneChanged {
-		c.logger.Printf("no changes")
+		c.logger.Println("no changes\n")
 	}
 }
 
@@ -95,8 +115,8 @@ func (c ProductDiff) colorize(diff string) string {
 
 func (c ProductDiff) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "**EXPERIMENTAL** This command displays the bosh manifest diff for a product (Note: secret values are replaced with double-paren variable names)",
-		ShortDescription: "**EXPERIMENTAL** displays BOSH manifest diff for a product",
+		Description:      "**EXPERIMENTAL** This command displays the bosh manifest diff for products (Note: secret values are replaced with double-paren variable names)",
+		ShortDescription: "**EXPERIMENTAL** displays BOSH manifest diff for products",
 		Flags:            c.Options,
 	}
 }

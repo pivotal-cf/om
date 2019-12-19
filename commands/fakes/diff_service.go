@@ -8,6 +8,18 @@ import (
 )
 
 type ProductDiffService struct {
+	ListStagedProductsStub        func() (api.StagedProductsOutput, error)
+	listStagedProductsMutex       sync.RWMutex
+	listStagedProductsArgsForCall []struct {
+	}
+	listStagedProductsReturns struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}
+	listStagedProductsReturnsOnCall map[int]struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}
 	ProductDiffStub        func(string) (api.ProductDiff, error)
 	productDiffMutex       sync.RWMutex
 	productDiffArgsForCall []struct {
@@ -23,6 +35,61 @@ type ProductDiffService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *ProductDiffService) ListStagedProducts() (api.StagedProductsOutput, error) {
+	fake.listStagedProductsMutex.Lock()
+	ret, specificReturn := fake.listStagedProductsReturnsOnCall[len(fake.listStagedProductsArgsForCall)]
+	fake.listStagedProductsArgsForCall = append(fake.listStagedProductsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListStagedProducts", []interface{}{})
+	fake.listStagedProductsMutex.Unlock()
+	if fake.ListStagedProductsStub != nil {
+		return fake.ListStagedProductsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listStagedProductsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *ProductDiffService) ListStagedProductsCallCount() int {
+	fake.listStagedProductsMutex.RLock()
+	defer fake.listStagedProductsMutex.RUnlock()
+	return len(fake.listStagedProductsArgsForCall)
+}
+
+func (fake *ProductDiffService) ListStagedProductsCalls(stub func() (api.StagedProductsOutput, error)) {
+	fake.listStagedProductsMutex.Lock()
+	defer fake.listStagedProductsMutex.Unlock()
+	fake.ListStagedProductsStub = stub
+}
+
+func (fake *ProductDiffService) ListStagedProductsReturns(result1 api.StagedProductsOutput, result2 error) {
+	fake.listStagedProductsMutex.Lock()
+	defer fake.listStagedProductsMutex.Unlock()
+	fake.ListStagedProductsStub = nil
+	fake.listStagedProductsReturns = struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *ProductDiffService) ListStagedProductsReturnsOnCall(i int, result1 api.StagedProductsOutput, result2 error) {
+	fake.listStagedProductsMutex.Lock()
+	defer fake.listStagedProductsMutex.Unlock()
+	fake.ListStagedProductsStub = nil
+	if fake.listStagedProductsReturnsOnCall == nil {
+		fake.listStagedProductsReturnsOnCall = make(map[int]struct {
+			result1 api.StagedProductsOutput
+			result2 error
+		})
+	}
+	fake.listStagedProductsReturnsOnCall[i] = struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *ProductDiffService) ProductDiff(arg1 string) (api.ProductDiff, error) {
@@ -91,6 +158,8 @@ func (fake *ProductDiffService) ProductDiffReturnsOnCall(i int, result1 api.Prod
 func (fake *ProductDiffService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.listStagedProductsMutex.RLock()
+	defer fake.listStagedProductsMutex.RUnlock()
 	fake.productDiffMutex.RLock()
 	defer fake.productDiffMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

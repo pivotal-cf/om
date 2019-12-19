@@ -334,11 +334,70 @@ var _ = Describe("ProductDiff", func() {
 	})
 
 	When("no product is provided", func() {
-		It("returns a validation error", func() {
+		BeforeEach(func() {
+			service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{
+				{
+					GUID: "p-bosh-guid",
+					Type: "p-bosh",
+				},
+				{
+					GUID: "example-product-guid",
+					Type: "example-product",
+				},
+				{
+					GUID: "another-product-guid",
+					Type: "another-product",},
+				},
+			}, nil)
+			service.ProductDiffReturnsOnCall(0,
+				api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "different",
+						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+				}, nil)
+			service.ProductDiffReturnsOnCall(1,
+				api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "different",
+						Diff:   " properties:\n+  host: example.net\n-  host: localhost",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+				}, nil)
+		})
+
+		It("lists all staged products, excluding the director, alphabetically by name", func() {
 			diff := commands.NewProductDiff(service, logger)
 			err = diff.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal(`could not parse product-diff flags: missing required flag "--product"`))
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(string(logBuffer.Contents())).NotTo(ContainSubstring("p-bosh"))
+
+			Expect(logBuffer).To(gbytes.Say("## Product Manifest for another-product"))
+			Expect(logBuffer).To(gbytes.Say("properties:"))
+			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for another-product"))
+			Expect(logBuffer).To(gbytes.Say("no changes"))
+
+
+			Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
+			Expect(logBuffer).To(gbytes.Say("properties:"))
+			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for example-product"))
+			Expect(logBuffer).To(gbytes.Say("no changes"))
+		})
+
+		When("there is an error from the ListStagedProducts method", func() {
+			It("returns that error", func() {
+				// setup
+				service.ListStagedProductsReturns(
+					api.StagedProductsOutput{}, fmt.Errorf("insufficient cooks"))
+
+				// execute
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("could not discover staged products to diff: insufficient cooks"))
+			})
 		})
 	})
 })
