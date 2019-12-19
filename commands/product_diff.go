@@ -20,6 +20,7 @@ type ProductDiff struct {
 
 //counterfeiter:generate -o ./fakes/diff_service.go --fake-name ProductDiffService . productDiffService
 type productDiffService interface {
+	DirectorDiff() (api.DirectorDiff, error)
 	ProductDiff(productName string) (api.ProductDiff, error)
 	ListStagedProducts() (api.StagedProductsOutput, error)
 }

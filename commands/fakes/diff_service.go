@@ -8,6 +8,18 @@ import (
 )
 
 type ProductDiffService struct {
+	DirectorDiffStub        func() (api.DirectorDiff, error)
+	directorDiffMutex       sync.RWMutex
+	directorDiffArgsForCall []struct {
+	}
+	directorDiffReturns struct {
+		result1 api.DirectorDiff
+		result2 error
+	}
+	directorDiffReturnsOnCall map[int]struct {
+		result1 api.DirectorDiff
+		result2 error
+	}
 	ListStagedProductsStub        func() (api.StagedProductsOutput, error)
 	listStagedProductsMutex       sync.RWMutex
 	listStagedProductsArgsForCall []struct {
@@ -35,6 +47,61 @@ type ProductDiffService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *ProductDiffService) DirectorDiff() (api.DirectorDiff, error) {
+	fake.directorDiffMutex.Lock()
+	ret, specificReturn := fake.directorDiffReturnsOnCall[len(fake.directorDiffArgsForCall)]
+	fake.directorDiffArgsForCall = append(fake.directorDiffArgsForCall, struct {
+	}{})
+	fake.recordInvocation("DirectorDiff", []interface{}{})
+	fake.directorDiffMutex.Unlock()
+	if fake.DirectorDiffStub != nil {
+		return fake.DirectorDiffStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.directorDiffReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *ProductDiffService) DirectorDiffCallCount() int {
+	fake.directorDiffMutex.RLock()
+	defer fake.directorDiffMutex.RUnlock()
+	return len(fake.directorDiffArgsForCall)
+}
+
+func (fake *ProductDiffService) DirectorDiffCalls(stub func() (api.DirectorDiff, error)) {
+	fake.directorDiffMutex.Lock()
+	defer fake.directorDiffMutex.Unlock()
+	fake.DirectorDiffStub = stub
+}
+
+func (fake *ProductDiffService) DirectorDiffReturns(result1 api.DirectorDiff, result2 error) {
+	fake.directorDiffMutex.Lock()
+	defer fake.directorDiffMutex.Unlock()
+	fake.DirectorDiffStub = nil
+	fake.directorDiffReturns = struct {
+		result1 api.DirectorDiff
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *ProductDiffService) DirectorDiffReturnsOnCall(i int, result1 api.DirectorDiff, result2 error) {
+	fake.directorDiffMutex.Lock()
+	defer fake.directorDiffMutex.Unlock()
+	fake.DirectorDiffStub = nil
+	if fake.directorDiffReturnsOnCall == nil {
+		fake.directorDiffReturnsOnCall = make(map[int]struct {
+			result1 api.DirectorDiff
+			result2 error
+		})
+	}
+	fake.directorDiffReturnsOnCall[i] = struct {
+		result1 api.DirectorDiff
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *ProductDiffService) ListStagedProducts() (api.StagedProductsOutput, error) {
@@ -158,6 +225,8 @@ func (fake *ProductDiffService) ProductDiffReturnsOnCall(i int, result1 api.Prod
 func (fake *ProductDiffService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.directorDiffMutex.RLock()
+	defer fake.directorDiffMutex.RUnlock()
 	fake.listStagedProductsMutex.RLock()
 	defer fake.listStagedProductsMutex.RUnlock()
 	fake.productDiffMutex.RLock()
