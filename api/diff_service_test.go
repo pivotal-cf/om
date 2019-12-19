@@ -113,47 +113,28 @@ var _ = Describe("Diff Service", func() {
 			})
 		})
 
-		PWhen("the director diff endpoint returns a non-200 status code", func() {
+		When("the director diff endpoint returns a non-200 status code", func() {
 			It("returns an error", func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[{
-							"type": "some-product",
-							"guid": "some-staged-guid"
-						}]`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
-						ghttp.RespondWith(http.StatusTeapot, ``),
-					),
+				server.RouteToHandler("GET", "/api/v0/director/diff",
+					ghttp.RespondWith(http.StatusTeapot, ``),
 				)
 
-				_, err := service.ProductDiff("some-product")
+				diff, err := service.DirectorDiff()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not retrieve product diff: request failed: unexpected response from /api/v0/products/some-staged-guid/diff:\nHTTP/1.1 418 I'm a teapot"))
+				Expect(err.Error()).To(ContainSubstring("could not retrieve director diff: request failed: unexpected response from /api/v0/director/diff:\nHTTP/1.1 418 I'm a teapot"))
+				Expect(diff).To(BeZero())
 			})
 		})
 
-		PWhen("the director diff endpoint returns invalid json", func() {
+		When("the director diff endpoint returns invalid json", func() {
 			It("returns an error", func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[{
-							"type": "some-product",
-							"guid": "some-staged-guid"
-						}]`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/products/some-staged-guid/diff"),
-						ghttp.RespondWith(http.StatusOK, `actuallynotokayblaglegarg`),
-					),
+				server.RouteToHandler("GET", "/api/v0/director/diff",
+					ghttp.RespondWith(http.StatusOK, `ß`),
 				)
 
-				_, err := service.ProductDiff("some-product")
+				_, err := service.DirectorDiff()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not unmarshal product diff response: %s", "actuallynotokayblaglegarg"))
+				Expect(err.Error()).To(ContainSubstring("could not unmarshal director diff response: %s", "ß"))
 			})
 		})
 	})

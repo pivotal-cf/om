@@ -43,13 +43,21 @@ func (a Api) DirectorDiff() (diff DirectorDiff, err error) {
 		return DirectorDiff{}, fmt.Errorf("could not request director diff: %s", err)
 	}
 
+	err = validateStatusOK(resp)
+	if err != nil {
+		return DirectorDiff{}, errors.Wrap(err, "could not retrieve director diff")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return DirectorDiff{}, err
 	}
 
-	json.Unmarshal(body, &diff)
-	return diff, err
+	if err = json.Unmarshal(body, &diff); err != nil {
+		return DirectorDiff{}, errors.Wrap(err, fmt.Sprintf("could not unmarshal director diff response: %s", string(body)))
+	}
+
+	return diff, nil
 }
 
 func (a Api) ProductDiff(productName string) (ProductDiff, error) {
