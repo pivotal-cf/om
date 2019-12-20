@@ -10,6 +10,7 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"log"
+	"regexp"
 )
 
 var _ = Describe("ProductDiff", func() {
@@ -25,6 +26,35 @@ var _ = Describe("ProductDiff", func() {
 		service = &fakes.ProductDiffService{}
 		logBuffer = gbytes.NewBuffer()
 		logger = log.New(logBuffer, "", 0)
+	})
+
+	When("the --director flag is provided", func(){
+		PIt("Prints all the director diffs", func(){
+
+		})
+		FWhen("there is a director manifest diff", func(){
+			BeforeEach(func(){
+				service.DirectorDiffReturns(
+					api.DirectorDiff{
+						Manifest: api.ManifestDiff{
+							Status: "different",
+							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{},
+						CPIConfigs: []api.CPIConfigsDiff{},
+					}, nil)
+
+			})
+			It("prints that diff", func(){
+				diff := commands.NewProductDiff(service, logger)
+				err = diff.Execute([]string{"--director"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Director Manifest"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
+				Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("+  host: example.com")))
+				Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("-  host: localhost")))
+			})
+		})
 	})
 
 	When("a product is provided", func() {
