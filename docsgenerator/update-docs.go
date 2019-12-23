@@ -28,13 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	absOmPath, err := filepath.Abs(omPath)
-	if err != nil {
-		fmt.Printf("failed to get absolute path of the built om binary: %s\n", err)
-		os.Exit(1)
-	}
-
-	gen := generator.NewGenerator(absOmPath, templateDir, docsDir, executor.NewExecutor(omPath))
+	gen := generator.NewGenerator(templateDir, docsDir, executor.NewExecutor(omPath))
 
 	err = gen.GenerateDocs()
 	if err != nil {
