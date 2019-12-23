@@ -14,8 +14,8 @@ type ProductDiff struct {
 	service productDiffService
 	logger  logger
 	Options struct {
-		Product []string `long:"product" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
-		Director bool `long:"director" short:"d" description:"Include director diffs. Can be combined with --product."`
+		Product  []string `long:"product" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
+		Director bool     `long:"director" short:"d" description:"Include director diffs. Can be combined with --product."`
 	}
 }
 
@@ -40,7 +40,7 @@ func (c ProductDiff) Execute(args []string) error {
 
 	var diffableProducts []string
 
-	if (c.Options.Director) {
+	if c.Options.Director {
 		diff, err := c.service.DirectorDiff()
 		if err != nil {
 			panic(err)
@@ -51,7 +51,7 @@ func (c ProductDiff) Execute(args []string) error {
 
 	if len(c.Options.Product) == 0 {
 		stagedProducts, err := c.service.ListStagedProducts()
-		if err != nil{
+		if err != nil {
 			return fmt.Errorf("could not discover staged products to diff: %s", err)
 		}
 

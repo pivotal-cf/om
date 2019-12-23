@@ -28,12 +28,13 @@ var _ = Describe("ProductDiff", func() {
 		logger = log.New(logBuffer, "", 0)
 	})
 
-	When("the --director flag is provided", func(){
-		PIt("Prints all the director diffs", func(){
+	When("the --director flag is provided", func() {
+		PIt("Prints all the director diffs", func() {
 
 		})
-		FWhen("there is a director manifest diff", func(){
-			BeforeEach(func(){
+
+		When("there is a director manifest diff", func() {
+			BeforeEach(func() {
 				service.DirectorDiffReturns(
 					api.DirectorDiff{
 						Manifest: api.ManifestDiff{
@@ -41,11 +42,12 @@ var _ = Describe("ProductDiff", func() {
 							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
 						},
 						RuntimeConfigs: []api.RuntimeConfigsDiff{},
-						CPIConfigs: []api.CPIConfigsDiff{},
+						CPIConfigs:     []api.CPIConfigsDiff{},
 					}, nil)
 
 			})
-			It("prints that diff", func(){
+
+			It("prints that diff", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--director"})
 				Expect(err).NotTo(HaveOccurred())
@@ -376,8 +378,8 @@ var _ = Describe("ProductDiff", func() {
 				},
 				{
 					GUID: "another-product-guid",
-					Type: "another-product",},
-				},
+					Type: "another-product"},
+			},
 			}, nil)
 			service.ProductDiffReturnsOnCall(0,
 				api.ProductDiff{
@@ -408,7 +410,6 @@ var _ = Describe("ProductDiff", func() {
 			Expect(logBuffer).To(gbytes.Say("properties:"))
 			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for another-product"))
 			Expect(logBuffer).To(gbytes.Say("no changes"))
-
 
 			Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
 			Expect(logBuffer).To(gbytes.Say("properties:"))
