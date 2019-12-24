@@ -19,12 +19,14 @@ var _ = Describe("Documentation coverage", func() {
 			commands := getCommandNames()
 			taskDoc := readFile("../docs/README.md")
 
+			var missing []string
 			for _, command := range commands {
-				Expect(taskDoc).To(
-					ContainSubstring(command),
-					fmt.Sprintf("docs/README.md should have %s\n", command),
-				)
+				if !strings.Contains(taskDoc, command) {
+					missing = append(missing, command)
+				}
 			}
+
+			Expect(missing).To(HaveLen(0), fmt.Sprintf("docs/README.md should have: \n%s\n run `go run docsgenerator/update-docs.go` to fix", strings.Join(missing, "\n")))
 		})
 	})
 })
