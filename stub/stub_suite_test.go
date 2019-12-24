@@ -15,7 +15,7 @@ func TestStub(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	var err error
-	pathToMain, err = gexec.Build("github.com/pivotal-cf/stub")
+	pathToMain, err = gexec.Build("github.com/pivotal-cf/om/stub")
 	Expect(err).ToNot(HaveOccurred())
 })
 
