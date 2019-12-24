@@ -24,7 +24,7 @@ func (ex Executor) GetDescription(commandName string) (string, error) {
 	return strings.Split(string(output), "\n")[1], nil
 }
 
-func (ex Executor) GetCommandNames() ([]string, error) {
+func (ex Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
 	output, err := ex.RunOmCommand("--help")
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (ex Executor) GetCommandNames() ([]string, error) {
 	outputLines := strings.Split(string(output), "\n")
 
 	var isCommand bool
-	var commands []string
+	commands := make(map[string]string)
 	for _, commandLine := range outputLines {
 		if strings.Contains(commandLine, "Commands:") && !isCommand {
 			isCommand = true
@@ -42,7 +42,7 @@ func (ex Executor) GetCommandNames() ([]string, error) {
 
 		if isCommand && commandLine != "" {
 			splitCommandLine := strings.Fields(commandLine)
-			commands = append(commands, splitCommandLine[0])
+			commands[splitCommandLine[0]] = strings.Join(splitCommandLine[1:], " ")
 		}
 	}
 

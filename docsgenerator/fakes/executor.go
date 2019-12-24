@@ -19,16 +19,16 @@ type Executor struct {
 		result1 []byte
 		result2 error
 	}
-	GetCommandNamesStub        func() ([]string, error)
-	getCommandNamesMutex       sync.RWMutex
-	getCommandNamesArgsForCall []struct {
+	GetCommandNamesAndDescriptionsStub        func() (map[string]string, error)
+	getCommandNamesAndDescriptionsMutex       sync.RWMutex
+	getCommandNamesAndDescriptionsArgsForCall []struct {
 	}
-	getCommandNamesReturns struct {
-		result1 []string
+	getCommandNamesAndDescriptionsReturns struct {
+		result1 map[string]string
 		result2 error
 	}
-	getCommandNamesReturnsOnCall map[int]struct {
-		result1 []string
+	getCommandNamesAndDescriptionsReturnsOnCall map[int]struct {
+		result1 map[string]string
 		result2 error
 	}
 	GetDescriptionStub        func(string) (string, error)
@@ -124,57 +124,57 @@ func (fake *Executor) GetCommandHelpReturnsOnCall(i int, result1 []byte, result2
 	}{result1, result2}
 }
 
-func (fake *Executor) GetCommandNames() ([]string, error) {
-	fake.getCommandNamesMutex.Lock()
-	ret, specificReturn := fake.getCommandNamesReturnsOnCall[len(fake.getCommandNamesArgsForCall)]
-	fake.getCommandNamesArgsForCall = append(fake.getCommandNamesArgsForCall, struct {
+func (fake *Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
+	fake.getCommandNamesAndDescriptionsMutex.Lock()
+	ret, specificReturn := fake.getCommandNamesAndDescriptionsReturnsOnCall[len(fake.getCommandNamesAndDescriptionsArgsForCall)]
+	fake.getCommandNamesAndDescriptionsArgsForCall = append(fake.getCommandNamesAndDescriptionsArgsForCall, struct {
 	}{})
-	fake.recordInvocation("GetCommandNames", []interface{}{})
-	fake.getCommandNamesMutex.Unlock()
-	if fake.GetCommandNamesStub != nil {
-		return fake.GetCommandNamesStub()
+	fake.recordInvocation("GetCommandNamesAndDescriptions", []interface{}{})
+	fake.getCommandNamesAndDescriptionsMutex.Unlock()
+	if fake.GetCommandNamesAndDescriptionsStub != nil {
+		return fake.GetCommandNamesAndDescriptionsStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getCommandNamesReturns
+	fakeReturns := fake.getCommandNamesAndDescriptionsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *Executor) GetCommandNamesCallCount() int {
-	fake.getCommandNamesMutex.RLock()
-	defer fake.getCommandNamesMutex.RUnlock()
-	return len(fake.getCommandNamesArgsForCall)
+func (fake *Executor) GetCommandNamesAndDescriptionsCallCount() int {
+	fake.getCommandNamesAndDescriptionsMutex.RLock()
+	defer fake.getCommandNamesAndDescriptionsMutex.RUnlock()
+	return len(fake.getCommandNamesAndDescriptionsArgsForCall)
 }
 
-func (fake *Executor) GetCommandNamesCalls(stub func() ([]string, error)) {
-	fake.getCommandNamesMutex.Lock()
-	defer fake.getCommandNamesMutex.Unlock()
-	fake.GetCommandNamesStub = stub
+func (fake *Executor) GetCommandNamesAndDescriptionsCalls(stub func() (map[string]string, error)) {
+	fake.getCommandNamesAndDescriptionsMutex.Lock()
+	defer fake.getCommandNamesAndDescriptionsMutex.Unlock()
+	fake.GetCommandNamesAndDescriptionsStub = stub
 }
 
-func (fake *Executor) GetCommandNamesReturns(result1 []string, result2 error) {
-	fake.getCommandNamesMutex.Lock()
-	defer fake.getCommandNamesMutex.Unlock()
-	fake.GetCommandNamesStub = nil
-	fake.getCommandNamesReturns = struct {
-		result1 []string
+func (fake *Executor) GetCommandNamesAndDescriptionsReturns(result1 map[string]string, result2 error) {
+	fake.getCommandNamesAndDescriptionsMutex.Lock()
+	defer fake.getCommandNamesAndDescriptionsMutex.Unlock()
+	fake.GetCommandNamesAndDescriptionsStub = nil
+	fake.getCommandNamesAndDescriptionsReturns = struct {
+		result1 map[string]string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *Executor) GetCommandNamesReturnsOnCall(i int, result1 []string, result2 error) {
-	fake.getCommandNamesMutex.Lock()
-	defer fake.getCommandNamesMutex.Unlock()
-	fake.GetCommandNamesStub = nil
-	if fake.getCommandNamesReturnsOnCall == nil {
-		fake.getCommandNamesReturnsOnCall = make(map[int]struct {
-			result1 []string
+func (fake *Executor) GetCommandNamesAndDescriptionsReturnsOnCall(i int, result1 map[string]string, result2 error) {
+	fake.getCommandNamesAndDescriptionsMutex.Lock()
+	defer fake.getCommandNamesAndDescriptionsMutex.Unlock()
+	fake.GetCommandNamesAndDescriptionsStub = nil
+	if fake.getCommandNamesAndDescriptionsReturnsOnCall == nil {
+		fake.getCommandNamesAndDescriptionsReturnsOnCall = make(map[int]struct {
+			result1 map[string]string
 			result2 error
 		})
 	}
-	fake.getCommandNamesReturnsOnCall[i] = struct {
-		result1 []string
+	fake.getCommandNamesAndDescriptionsReturnsOnCall[i] = struct {
+		result1 map[string]string
 		result2 error
 	}{result1, result2}
 }
@@ -310,8 +310,8 @@ func (fake *Executor) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.getCommandHelpMutex.RLock()
 	defer fake.getCommandHelpMutex.RUnlock()
-	fake.getCommandNamesMutex.RLock()
-	defer fake.getCommandNamesMutex.RUnlock()
+	fake.getCommandNamesAndDescriptionsMutex.RLock()
+	defer fake.getCommandNamesAndDescriptionsMutex.RUnlock()
 	fake.getDescriptionMutex.RLock()
 	defer fake.getDescriptionMutex.RUnlock()
 	fake.runOmCommandMutex.RLock()

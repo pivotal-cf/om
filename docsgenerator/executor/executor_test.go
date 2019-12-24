@@ -29,12 +29,20 @@ Commands:
   activate-certificate-authority  activates a certificate authority on the Ops Manager
   apply-changes                   triggers an install on the Ops Manager targeted
   assign-multi-stemcell           assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+
+  errands                         list errands for a product
+  interpolate                     interpolates variables into a manifest
 `)
 
 		ex := executor.NewExecutor(pathToStub)
-		output, err := ex.GetCommandNames()
+		output, err := ex.GetCommandNamesAndDescriptions()
 		Expect(err).ToNot(HaveOccurred())
-		Expect(output).To(Equal([]string{"activate-certificate-authority", "apply-changes", "assign-multi-stemcell"}))
+		Expect(output).To(Equal(map[string]string{
+			"activate-certificate-authority": "activates a certificate authority on the Ops Manager",
+			"apply-changes":                  "triggers an install on the Ops Manager targeted",
+			"assign-multi-stemcell":          "assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+",
+			"errands":                        "list errands for a product",
+			"interpolate":                    "interpolates variables into a manifest",
+		}))
 	})
 
 	It("retrieves the command description from om", func() {
