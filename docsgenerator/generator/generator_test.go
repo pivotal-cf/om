@@ -3,14 +3,14 @@ package generator_test
 import (
 	"errors"
 	"fmt"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/docsgenerator/fakes"
 	"github.com/pivotal-cf/om/docsgenerator/generator"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"sort"
 )
 
 var _ = Describe("Generator", func() {
@@ -31,27 +31,50 @@ var _ = Describe("Generator", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
+	AfterEach(func() {
+		err := os.RemoveAll(templatesDir)
+		Expect(err).ToNot(HaveOccurred())
+
+		err = os.RemoveAll(docsDir)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	When("template files exist", func() {
+		const (
+			commandOneAdditional  = "command-one additional"
+			commandTwoAdditional  = "command-two additional"
+			commandOneDescription = "command-one description"
+			commandTwoDescription = "command-two description"
+			readmeBefore          = "before content"
+			readmeAfter           = "after content"
+		)
+
 		BeforeEach(func() {
 			commandOneTemplateDir := filepath.Join(templatesDir, "command-one")
 			err := os.MkdirAll(commandOneTemplateDir, 0755)
 			Expect(err).ToNot(HaveOccurred())
 
-			createFile(commandOneTemplateDir, generator.AdditionalInfoFileName, "command-one additional")
-			createFile(commandOneTemplateDir, generator.DescriptionFileName, "command-one description")
+			createFile(commandOneTemplateDir, generator.AdditionalInfoFileName, commandOneAdditional)
+			createFile(commandOneTemplateDir, generator.DescriptionFileName, commandOneDescription)
 
 			commandTwoTemplateDir := filepath.Join(templatesDir, "command-two")
 			err = os.MkdirAll(commandTwoTemplateDir, 0755)
 			Expect(err).ToNot(HaveOccurred())
 
-			createFile(commandTwoTemplateDir, generator.AdditionalInfoFileName, "command-two additional")
-			createFile(commandTwoTemplateDir, generator.DescriptionFileName, "command-two description")
+			createFile(commandTwoTemplateDir, generator.AdditionalInfoFileName, commandTwoAdditional)
+			createFile(commandTwoTemplateDir, generator.DescriptionFileName, commandTwoDescription)
+
+			createFile(templatesDir, generator.ReadmeBeforeFileName, readmeBefore)
+			createFile(templatesDir, generator.ReadmeAfterFileName, readmeAfter)
 		})
 
 		It("creates a readme for each om command with data from the template files", func() {
-			commandNames := []string{"command-one", "command-two"}
-			ex.GetCommandNamesStub = func() ([]string, error) {
-				return commandNames, nil
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description",
+				"command-two": "command-two description",
+			}
+			ex.GetCommandNamesAndDescriptionsStub = func() (map[string]string, error) {
+				return commandDescriptions, nil
 			}
 
 			ex.GetCommandHelpStub = func(commandName string) ([]byte, error) {
@@ -67,8 +90,16 @@ var _ = Describe("Generator", func() {
 
 			var docsFolderNames []string
 			for _, docsFolder := range docsFolders {
-				docsFolderNames = append(docsFolderNames, docsFolder.Name())
+				if docsFolder.IsDir() {
+					docsFolderNames = append(docsFolderNames, docsFolder.Name())
+				}
 			}
+
+			var commandNames []string
+			for command := range commandDescriptions {
+				commandNames = append(commandNames, command)
+			}
+			sort.Strings(commandNames)
 
 			Expect(docsFolderNames).To(Equal(commandNames))
 
@@ -77,10 +108,79 @@ var _ = Describe("Generator", func() {
 			}
 		})
 
+		It("does not overwrite the template files", func() {
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description",
+				"command-two": "command-two description",
+			}
+			ex.GetCommandNamesAndDescriptionsStub = func() (map[string]string, error) {
+				return commandDescriptions, nil
+			}
+
+			ex.GetCommandHelpStub = func(commandName string) ([]byte, error) {
+				return []byte(fmt.Sprintf("%s help", commandName)), nil
+			}
+
+			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			err := gen.GenerateDocs()
+			Expect(err).ToNot(HaveOccurred())
+
+			checkFileEquals(filepath.Join(templatesDir, "command-one", generator.AdditionalInfoFileName), commandOneAdditional)
+			checkFileEquals(filepath.Join(templatesDir, "command-one", generator.DescriptionFileName), commandOneDescription)
+			checkFileEquals(filepath.Join(templatesDir, "command-two", generator.AdditionalInfoFileName), commandTwoAdditional)
+			checkFileEquals(filepath.Join(templatesDir, "command-two", generator.DescriptionFileName), commandTwoDescription)
+			checkFileEquals(filepath.Join(templatesDir, generator.ReadmeBeforeFileName), readmeBefore)
+			checkFileEquals(filepath.Join(templatesDir, generator.ReadmeAfterFileName), readmeAfter)
+		})
+
+		It("uses the readme templates to create the final readme", func() {
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description om",
+				"command-two": "command-two description om",
+			}
+
+			ex.GetCommandNamesAndDescriptionsStub = func() (strings map[string]string, e error) {
+				return commandDescriptions, nil
+			}
+
+			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			err := gen.GenerateDocs()
+			Expect(err).ToNot(HaveOccurred())
+
+			readmeContent, err := ioutil.ReadFile(filepath.Join(docsDir, generator.ReadmeFileName))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(string(readmeContent)).To(Equal(fmt.Sprintf(
+				generator.ReadmeTemplate,
+				"before content",
+				"| Command | Description |\n| ------------- | ------------- |\n| [command-one](command-one/README.md) | command-one description om |\n| [command-two](command-two/README.md) | command-two description om |",
+				"after content",
+			)))
+		})
+	})
+
+	When("there are no template files for a command", func() {
+		It("creates template files based on the list of commands from om", func() {
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description",
+				"command-two": "command-two description",
+			}
+			ex.GetCommandNamesAndDescriptionsStub = func() (strings map[string]string, e error) {
+				return commandDescriptions, nil
+			}
+
+			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			err := gen.GenerateDocs()
+			Expect(err).ToNot(HaveOccurred())
+
+			checkTemplateFiles(filepath.Join(templatesDir, "command-one"))
+			checkTemplateFiles(filepath.Join(templatesDir, "command-two"))
+		})
+
 		It("uses the description from om for each command missing a template", func() {
 			commandName := "command-missing-template"
-			ex.GetCommandNamesStub = func() ([]string, error) {
-				return []string{commandName}, nil
+			ex.GetCommandNamesAndDescriptionsStub = func() (map[string]string, error) {
+				return map[string]string{commandName: "missing-command"}, nil
 			}
 
 			ex.GetCommandHelpStub = func(commandName string) ([]byte, error) {
@@ -100,28 +200,51 @@ var _ = Describe("Generator", func() {
 
 			var docsFolderNames []string
 			for _, docsFolder := range docsFolders {
-				docsFolderNames = append(docsFolderNames, docsFolder.Name())
+				if docsFolder.IsDir() {
+					docsFolderNames = append(docsFolderNames, docsFolder.Name())
+				}
 			}
 
 			Expect(docsFolderNames).To(Equal([]string{commandName}))
 
 			checkCommandReadmeContent(filepath.Join(docsDir, commandName), false)
 		})
-	})
 
-	When("there are no template files for a command", func() {
-		It("creates template files based on the list of commands from om", func() {
-			commandNames := []string{"command-one", "command-two"}
-			ex.GetCommandNamesStub = func() (strings []string, e error) {
-				return commandNames, nil
+		It("creates template files for the base readme file", func() {
+			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			err := gen.GenerateDocs()
+			Expect(err).ToNot(HaveOccurred())
+
+			checkReadmeTemplateFiles(templatesDir)
+		})
+
+		It("doesn't print the template text in the outputted files", func() {
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description",
+				"command-two": "command-two description",
+			}
+			ex.GetCommandNamesAndDescriptionsStub = func() (strings map[string]string, e error) {
+				return commandDescriptions, nil
+			}
+
+			ex.GetCommandHelpStub = func(commandName string) ([]byte, error) {
+				return []byte(fmt.Sprintf("%s help", commandName)), nil
+			}
+
+			ex.GetDescriptionStub = func(commandName string) (string, error) {
+				return fmt.Sprintf("%s description", commandName), nil
 			}
 
 			gen := generator.NewGenerator(templatesDir, docsDir, ex)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
-			checkTemplateFiles(filepath.Join(templatesDir, "command-one"))
-			checkTemplateFiles(filepath.Join(templatesDir, "command-two"))
+			checkFileDoesNotContain(filepath.Join(docsDir, "command-one", generator.ReadmeFileName), fmt.Sprintf(generator.AdditionalInfoTemplate, "command-one"))
+			checkFileDoesNotContain(filepath.Join(docsDir, "command-one", generator.ReadmeFileName), fmt.Sprintf(generator.DescriptionTemplate, "command-one"))
+			checkFileDoesNotContain(filepath.Join(docsDir, "command-two", generator.ReadmeFileName), fmt.Sprintf(generator.AdditionalInfoTemplate, "command-two"))
+			checkFileDoesNotContain(filepath.Join(docsDir, "command-two", generator.ReadmeFileName), fmt.Sprintf(generator.DescriptionTemplate, "command-two"))
+			checkFileDoesNotContain(filepath.Join(docsDir, generator.ReadmeFileName), generator.ReadmeBeforeTemplate)
+			checkFileDoesNotContain(filepath.Join(docsDir, generator.ReadmeFileName), generator.ReadmeAfterTemplate)
 		})
 	})
 
@@ -131,9 +254,12 @@ var _ = Describe("Generator", func() {
 			err := os.MkdirAll(missingCommandPath, 0755)
 			Expect(err).ToNot(HaveOccurred())
 
-			commandNames := []string{"command-one", "command-two"}
-			ex.GetCommandNamesStub = func() (strings []string, e error) {
-				return commandNames, nil
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description",
+				"command-two": "command-two description",
+			}
+			ex.GetCommandNamesAndDescriptionsStub = func() (strings map[string]string, e error) {
+				return commandDescriptions, nil
 			}
 
 			gen := generator.NewGenerator(templatesDir, docsDir, ex)
@@ -145,8 +271,16 @@ var _ = Describe("Generator", func() {
 
 			var commandFolderNames []string
 			for _, commandFolder := range commandFolders {
-				commandFolderNames = append(commandFolderNames, commandFolder.Name())
+				if commandFolder.IsDir() {
+					commandFolderNames = append(commandFolderNames, commandFolder.Name())
+				}
 			}
+
+			var commandNames []string
+			for command := range commandDescriptions {
+				commandNames = append(commandNames, command)
+			}
+			sort.Strings(commandNames)
 
 			Expect(commandFolderNames).To(Equal(commandNames))
 
@@ -164,9 +298,9 @@ var _ = Describe("Generator", func() {
 		})
 	})
 
-	When("om can't return the command names", func() {
+	When("om can't return the command names and descriptions", func() {
 		It("returns an error", func() {
-			ex.GetCommandNamesStub = func() ([]string, error) {
+			ex.GetCommandNamesAndDescriptionsStub = func() (map[string]string, error) {
 				return nil, errors.New("om commandNames error")
 			}
 
@@ -188,8 +322,8 @@ var _ = Describe("Generator", func() {
 
 	When("om can't return the command description", func() {
 		It("returns an error", func() {
-			ex.GetCommandNamesStub = func() ([]string, error) {
-				return []string{"command-one"}, nil
+			ex.GetCommandNamesAndDescriptionsStub = func() (map[string]string, error) {
+				return map[string]string{"command-one": "command-one description"}, nil
 			}
 
 			ex.GetDescriptionStub = func(commandName string) (string, error) {
@@ -205,8 +339,8 @@ var _ = Describe("Generator", func() {
 
 	When("om can't return the command help", func() {
 		It("returns an error", func() {
-			ex.GetCommandNamesStub = func() ([]string, error) {
-				return []string{"command-one"}, nil
+			ex.GetCommandNamesAndDescriptionsStub = func() (map[string]string, error) {
+				return map[string]string{"command-one": "command-one description"}, nil
 			}
 
 			ex.GetDescriptionStub = func(commandName string) (string, error) {
@@ -234,7 +368,6 @@ func checkCommandReadmeContent(containingDir string, additional bool) {
 	additionalText := ""
 	if additional {
 		additionalText = fmt.Sprintf("%s additional", commandName)
-
 	}
 
 	Expect(string(readmeContent)).To(Equal(fmt.Sprintf(
@@ -257,6 +390,32 @@ func checkTemplateFiles(containingDir string) {
 	additionalInfoContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.AdditionalInfoFileName))
 	Expect(err).ToNot(HaveOccurred())
 	Expect(string(additionalInfoContents)).To(Equal(fmt.Sprintf(generator.AdditionalInfoTemplate, commandName)))
+}
+
+func checkReadmeTemplateFiles(containingDir string) {
+	descriptionContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.ReadmeBeforeFileName))
+	Expect(err).ToNot(HaveOccurred())
+	Expect(string(descriptionContents)).To(Equal(generator.ReadmeBeforeTemplate))
+
+	additionalInfoContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.ReadmeAfterFileName))
+	Expect(err).ToNot(HaveOccurred())
+	Expect(string(additionalInfoContents)).To(Equal(generator.ReadmeAfterTemplate))
+}
+
+func checkFileDoesNotContain(filePath string, lines ...string) {
+	content, err := ioutil.ReadFile(filePath)
+	Expect(err).ToNot(HaveOccurred())
+
+	for _, line := range lines {
+		Expect(string(content)).ToNot(ContainSubstring(line))
+	}
+}
+
+func checkFileEquals(filePath string, expected string) {
+	content, err := ioutil.ReadFile(filePath)
+	Expect(err).ToNot(HaveOccurred())
+
+	Expect(string(content)).To(Equal(expected))
 }
 
 func createFile(dir string, name string, contents string) {
