@@ -28,7 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	gen := generator.NewGenerator(templateDir, docsDir, executor.NewExecutor(omPath))
+	gen := generator.NewGenerator(templateDir, docsDir, executor.NewExecutor(omPath), os.Stdout)
 
 	err = gen.GenerateDocs()
 	if err != nil {

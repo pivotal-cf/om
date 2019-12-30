@@ -81,7 +81,7 @@ var _ = Describe("Generator", func() {
 				return []byte(fmt.Sprintf("%s help", commandName)), nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -121,7 +121,7 @@ var _ = Describe("Generator", func() {
 				return []byte(fmt.Sprintf("%s help", commandName)), nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -143,7 +143,7 @@ var _ = Describe("Generator", func() {
 				return commandDescriptions, nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -169,7 +169,7 @@ var _ = Describe("Generator", func() {
 				return commandDescriptions, nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -191,7 +191,7 @@ var _ = Describe("Generator", func() {
 				return fmt.Sprintf("%s description", commandName), nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -211,7 +211,7 @@ var _ = Describe("Generator", func() {
 		})
 
 		It("creates template files for the base readme file", func() {
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -235,7 +235,7 @@ var _ = Describe("Generator", func() {
 				return fmt.Sprintf("%s description", commandName), nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -262,7 +262,7 @@ var _ = Describe("Generator", func() {
 				return commandDescriptions, nil
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err = gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -289,7 +289,7 @@ var _ = Describe("Generator", func() {
 		})
 
 		It("doesn't remove the base template dir", func() {
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -304,7 +304,7 @@ var _ = Describe("Generator", func() {
 				return nil, errors.New("om commandNames error")
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("om commandNames error"))
@@ -313,7 +313,7 @@ var _ = Describe("Generator", func() {
 
 	When("the templates dir doesn't exist", func() {
 		It("returns an error", func() {
-			gen := generator.NewGenerator("doesnt-exist", docsDir, ex)
+			gen := generator.NewGenerator("doesnt-exist", docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("no such file or directory"))
@@ -330,7 +330,7 @@ var _ = Describe("Generator", func() {
 				return "", errors.New("om description error")
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("om description error"))
@@ -351,7 +351,7 @@ var _ = Describe("Generator", func() {
 				return nil, errors.New("om help error")
 			}
 
-			gen := generator.NewGenerator(templatesDir, docsDir, ex)
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("om help error"))

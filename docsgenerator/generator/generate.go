@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -36,13 +37,15 @@ type Generator struct {
 	templatesDir string
 	docsDir      string
 	executor     executor
+	stdout       io.Writer
 }
 
-func NewGenerator(templatesDir string, docsDir string, executor executor) Generator {
+func NewGenerator(templatesDir string, docsDir string, executor executor, stdout io.Writer, ) Generator {
 	return Generator{
 		templatesDir: templatesDir,
 		docsDir:      docsDir,
 		executor:     executor,
+		stdout:       stdout,
 	}
 }
 
@@ -77,7 +80,7 @@ func (g *Generator) GenerateDocs() error {
 	return nil
 }
 
-func (g *Generator) writeCommandReadme(templateDir string, commandName string) (error) {
+func (g *Generator) writeCommandReadme(templateDir string, commandName string) error {
 	descriptionContents, err := getFileContents(filepath.Join(templateDir, DescriptionFileName))
 	if err != nil {
 		return err
@@ -205,7 +208,7 @@ func (g *Generator) createTemplateDirs(commands map[string]string) error {
 			return err
 		}
 
-		fmt.Printf("Added %s templates at: templates/%s\n", command, command)
+		fmt.Fprintf(g.stdout, "Added %s templates at: templates/%s\n", command, command)
 	}
 
 	for _, templateDir := range templateDirs {
@@ -222,7 +225,7 @@ func (g *Generator) createTemplateDirs(commands map[string]string) error {
 				return err
 			}
 
-			fmt.Printf("Removed templates at: templates/%s\n", filepath.Base(templateDir))
+			fmt.Fprintf(g.stdout, "Removed templates at: templates/%s\n", filepath.Base(templateDir))
 		}
 	}
 
