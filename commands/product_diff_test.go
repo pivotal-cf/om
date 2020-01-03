@@ -363,22 +363,27 @@ var _ = Describe("ProductDiff", func() {
 		})
 	})
 
-	When("no product is provided", func() {
+	When("no product and director is provided", func() {
 		BeforeEach(func() {
-			service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{
-				{
-					GUID: "p-bosh-guid",
-					Type: "p-bosh",
-				},
-				{
-					GUID: "example-product-guid",
-					Type: "example-product",
-				},
-				{
-					GUID: "another-product-guid",
-					Type: "another-product"},
-			},
-			}, nil)
+			service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{{
+				GUID: "p-bosh-guid",
+				Type: "p-bosh",
+			}, {
+				GUID: "example-product-guid",
+				Type: "example-product",
+			}, {
+				GUID: "another-product-guid",
+				Type: "another-product",
+			}}}, nil)
+			service.DirectorDiffReturns(
+				api.DirectorDiff{
+					Manifest: api.ManifestDiff{
+						Status: "different",
+						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+					CPIConfigs:     []api.CPIConfigsDiff{},
+				}, nil)
 			service.ProductDiffReturnsOnCall(0,
 				api.ProductDiff{
 					Manifest: api.ManifestDiff{
@@ -397,12 +402,15 @@ var _ = Describe("ProductDiff", func() {
 				}, nil)
 		})
 
-		It("lists all staged products, excluding the director, alphabetically by name", func() {
+		It("lists all staged products (alphabetically by name) as well as the director", func() {
 			diff := commands.NewProductDiff(service, logger)
 			err = diff.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(string(logBuffer.Contents())).NotTo(ContainSubstring("p-bosh"))
+
+			Expect(logBuffer).To(gbytes.Say("## Director Manifest"))
+			Expect(logBuffer).To(gbytes.Say("properties:"))
 
 			Expect(logBuffer).To(gbytes.Say("## Product Manifest for another-product"))
 			Expect(logBuffer).To(gbytes.Say("properties:"))

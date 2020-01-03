@@ -40,7 +40,9 @@ func (c ProductDiff) Execute(args []string) error {
 
 	var diffableProducts []string
 
-	if c.Options.Director {
+	showDirectorAndProducts := !c.Options.Director && len(c.Options.Product) == 0
+
+	if c.Options.Director || showDirectorAndProducts {
 		diff, err := c.service.DirectorDiff()
 		if err != nil {
 			panic(err)
@@ -49,7 +51,7 @@ func (c ProductDiff) Execute(args []string) error {
 		c.logger.Printf("%s\n\n", diff.Manifest.Diff)
 	}
 
-	if len(c.Options.Product) == 0 {
+	if showDirectorAndProducts {
 		stagedProducts, err := c.service.ListStagedProducts()
 		if err != nil {
 			return fmt.Errorf("could not discover staged products to diff: %s", err)
