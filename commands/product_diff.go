@@ -48,7 +48,7 @@ func (c ProductDiff) Execute(args []string) error {
 			panic(err)
 		}
 		c.logger.Println("## Director Manifest\n")
-		c.logger.Printf("%s\n\n", diff.Manifest.Diff)
+		c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
 	}
 
 	if showDirectorAndProducts {

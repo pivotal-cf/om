@@ -10,11 +10,9 @@ import (
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"log"
-	"regexp"
 )
 
 var _ = Describe("ProductDiff", func() {
-
 	var (
 		logBuffer *gbytes.Buffer
 		logger    *log.Logger
@@ -32,6 +30,7 @@ var _ = Describe("ProductDiff", func() {
 		PIt("Prints all the director diffs", func() {
 
 		})
+
 		When("there is a director manifest diff", func() {
 			BeforeEach(func() {
 				service.DirectorDiffReturns(
@@ -43,16 +42,19 @@ var _ = Describe("ProductDiff", func() {
 						RuntimeConfigs: []api.RuntimeConfigsDiff{},
 						CPIConfigs:     []api.CPIConfigsDiff{},
 					}, nil)
-
 			})
-			It("prints that diff", func() {
+
+			It("prints the diff with colors", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--director"})
 				Expect(err).NotTo(HaveOccurred())
-				Expect(logBuffer).To(gbytes.Say("## Director Manifest"))
-				Expect(logBuffer).To(gbytes.Say("properties:"))
-				Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("+  host: example.com")))
-				Expect(logBuffer).To(gbytes.Say(regexp.QuoteMeta("-  host: localhost")))
+
+				bufferContents := string(logBuffer.Contents())
+
+				Expect(bufferContents).To(ContainSubstring("## Director Manifest"))
+				Expect(bufferContents).To(ContainSubstring("properties:"))
+				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  host: example.com")))
+				Expect(bufferContents).To(ContainSubstring(color.RedString("-  host: localhost")))
 			})
 		})
 	})
@@ -125,6 +127,7 @@ var _ = Describe("ProductDiff", func() {
 `
 				Expect(string(logBuffer.Contents())).To(ContainSubstring(expectedOutput))
 			})
+
 			It("has colors on the diff", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
@@ -138,7 +141,6 @@ var _ = Describe("ProductDiff", func() {
 				Expect(bufferContents).To(ContainSubstring(color.GreenString("+      timeout: 110")))
 				Expect(bufferContents).To(ContainSubstring(color.RedString("-      timeout: 31")))
 			})
-
 		})
 
 		When("there are product manifest changes only", func() {
@@ -168,6 +170,7 @@ var _ = Describe("ProductDiff", func() {
 						},
 					}, nil)
 			})
+
 			It("says there are no runtime config differences and prints manifest diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
@@ -226,6 +229,7 @@ var _ = Describe("ProductDiff", func() {
 						},
 					}, nil)
 			})
+
 			It("says there are no manifest differences and no runtime config diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
 				err = diff.Execute([]string{"--product", "example-product"})
@@ -330,6 +334,7 @@ var _ = Describe("ProductDiff", func() {
 						},
 					},
 				}, nil)
+
 			service.ProductDiffReturnsOnCall(1,
 				api.ProductDiff{
 					Manifest: api.ManifestDiff{
@@ -375,6 +380,7 @@ var _ = Describe("ProductDiff", func() {
 				GUID: "another-product-guid",
 				Type: "another-product",
 			}}}, nil)
+
 			service.DirectorDiffReturns(
 				api.DirectorDiff{
 					Manifest: api.ManifestDiff{
@@ -384,6 +390,7 @@ var _ = Describe("ProductDiff", func() {
 					RuntimeConfigs: []api.RuntimeConfigsDiff{},
 					CPIConfigs:     []api.CPIConfigsDiff{},
 				}, nil)
+
 			service.ProductDiffReturnsOnCall(0,
 				api.ProductDiff{
 					Manifest: api.ManifestDiff{
@@ -392,6 +399,7 @@ var _ = Describe("ProductDiff", func() {
 					},
 					RuntimeConfigs: []api.RuntimeConfigsDiff{},
 				}, nil)
+
 			service.ProductDiffReturnsOnCall(1,
 				api.ProductDiff{
 					Manifest: api.ManifestDiff{
