@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/pivotal-cf/jhanda"
@@ -114,12 +115,22 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	if ac.Options.RecreateVMs {
-		ac.logger.Println("setting director to recreate all VMs")
-		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(`{
-		"director_configuration": {
-			"bosh_recreate_on_next_deploy": true
+		if len(ac.Options.ProductNames) > 0 {
+			ac.logger.Println("setting director to recreate all VMs for the following products:")
+			sort.Strings(ac.Options.ProductNames)
+
+			for _, product := range ac.Options.ProductNames {
+				ac.logger.Printf("- %s", product)
+			}
+		} else {
+			ac.logger.Println("setting director to recreate all VMs")
 		}
-	}`))
+
+		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(`{
+			"director_configuration": {
+				"bosh_recreate_on_next_deploy": true
+			}
+		}`))
 		if err != nil {
 			return fmt.Errorf("could not set director to recreate VMS: %s", err)
 		}

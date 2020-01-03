@@ -198,6 +198,21 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(stderr).To(gbytes.Say("setting director to recreate all VMs"))
 			})
 
+			It("prints out the list of products that will be recreated", func() {
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := command.Execute([]string{
+					"--recreate-vms",
+					"--product-name", "cf",
+					"-n", "example-product",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(stderr).To(gbytes.Say("setting director to recreate all VMs for the following products:"))
+				Expect(stderr).To(gbytes.Say("- cf"))
+				Expect(stderr).To(gbytes.Say("- example-product"))
+			})
+
 			When("the service returns an error", func() {
 				It("displays that error message", func() {
 					service.UpdateStagedDirectorPropertiesReturns(errors.New("testing"))
