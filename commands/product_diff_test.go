@@ -26,11 +26,7 @@ var _ = Describe("ProductDiff", func() {
 		logger = log.New(logBuffer, "", 0)
 	})
 
-	When("the --director flag is provided", func() {
-		PIt("Prints all the director diffs", func() {
-
-		})
-
+	PWhen("the --director flag is provided", func() {
 		When("there is a director manifest diff", func() {
 			BeforeEach(func() {
 				service.DirectorDiffReturns(
@@ -39,8 +35,24 @@ var _ = Describe("ProductDiff", func() {
 							Status: "different",
 							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
 						},
-						RuntimeConfigs: []api.RuntimeConfigsDiff{},
-						CPIConfigs:     []api.CPIConfigsDiff{},
+						CloudConfig: api.ManifestDiff{
+							Status: "same",
+							Diff:   "",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "director_runtime",
+								Status: "different",
+								Diff:   " properties:\n+  property: new-value\n-  property: old-value",
+							},
+						},
+						CPIConfigs: []api.CPIConfigsDiff{
+							{
+								IAASConfigurationName: "default",
+								Status:                "different",
+								Diff:                  ` properties: datacenters: - name: "<redacted>" clusters: + - canada: {}`,
+							},
+						},
 					}, nil)
 			})
 
@@ -55,6 +67,13 @@ var _ = Describe("ProductDiff", func() {
 				Expect(bufferContents).To(ContainSubstring("properties:"))
 				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  host: example.com")))
 				Expect(bufferContents).To(ContainSubstring(color.RedString("-  host: localhost")))
+
+				Expect(bufferContents).To(ContainSubstring("## Director Runtime Configs"))
+				Expect(bufferContents).To(ContainSubstring("### director_runtime"))
+				Expect(bufferContents).To(ContainSubstring("properties:"))
+				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  property: new-value")))
+				Expect(bufferContents).To(ContainSubstring(color.RedString("-  property: old-value")))
+
 			})
 		})
 	})
@@ -103,7 +122,7 @@ var _ = Describe("ProductDiff", func() {
 +  host: example.com
 -  host: localhost
 
-## Runtime Configs for example-product
+## Runtime Configs for example-product 
 
 ### example-different-runtime-config
 
