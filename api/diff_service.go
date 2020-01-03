@@ -37,7 +37,7 @@ type CPIConfigsDiff struct {
 	Diff                  string `json:"diff"`
 }
 
-func (a Api) DirectorDiff() (diff DirectorDiff, err error) {
+func (a Api) DirectorDiff() (DirectorDiff, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/director/diff", nil)
 	if err != nil {
 		return DirectorDiff{}, fmt.Errorf("could not request director diff: %s", err)
@@ -53,6 +53,7 @@ func (a Api) DirectorDiff() (diff DirectorDiff, err error) {
 		return DirectorDiff{}, err
 	}
 
+	var diff DirectorDiff
 	if err = json.Unmarshal(body, &diff); err != nil {
 		return DirectorDiff{}, errors.Wrap(err, fmt.Sprintf("could not unmarshal director diff response: %s", string(body)))
 	}
