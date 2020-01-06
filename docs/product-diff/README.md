@@ -3,12 +3,12 @@
 
 # `om product-diff`
 
-**EXPERIMENTAL** This command displays the bosh manifest diff for products (Note: secret values are replaced with double-paren variable names)
+**EXPERIMENTAL** This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)
 
 ## Command Usage
 ```
 ॐ  product-diff
-**EXPERIMENTAL** This command displays the bosh manifest diff for products (Note: secret values are replaced with double-paren variable names)
+**EXPERIMENTAL** This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)
 
 Usage: om [options] product-diff [<args>]
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
@@ -28,8 +28,8 @@ Usage: om [options] product-diff [<args>]
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
 
 Command Arguments:
-  --director, -d  bool               Include director diffs. Can be combined with --product.
-  --product, -p   string (variadic)  Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown.
+  --director, -d      bool               Include director diffs. Can be combined with --product-name.
+  --product-name, -p  string (variadic)  Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown.
 
 ```
 
@@ -49,12 +49,12 @@ If such a runtime config has been updated
 since the last time the PAS product, `cf`, was deployed,
 _every VM in `cf` will be rolled,_
 but no runtime config diffs will show if you just run
-`om product-diff --product cf`.
+`om product-diff --product-name cf`.
 To work around this, we recommend you include any add-on products
 in your diff command.
 For the above example, that would be:
 ```
-om product-diff --product cf --product p-antivirus
+om product-diff --product-name cf --product-name p-antivirus
 ```
 
 But even this might not tell you what you need to know!

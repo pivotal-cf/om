@@ -14,12 +14,12 @@ If such a runtime config has been updated
 since the last time the PAS product, `cf`, was deployed,
 _every VM in `cf` will be rolled,_
 but no runtime config diffs will show if you just run
-`om product-diff --product cf`.
+`om product-diff --product-name cf`.
 To work around this, we recommend you include any add-on products
 in your diff command.
 For the above example, that would be:
 ```
-om product-diff --product cf --product p-antivirus
+om product-diff --product-name cf --product-name p-antivirus
 ```
 
 But even this might not tell you what you need to know!

@@ -163,8 +163,8 @@ func (c ProductDiff) colorizeDiff(diff string) string {
 
 func (c ProductDiff) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "**EXPERIMENTAL** This command displays the bosh manifest diff for products (Note: secret values are replaced with double-paren variable names)",
-		ShortDescription: "**EXPERIMENTAL** displays BOSH manifest diff for products",
+		Description:      "**EXPERIMENTAL** This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)",
+		ShortDescription: "**EXPERIMENTAL** displays BOSH manifest diff for the director and products",
 		Flags:            c.Options,
 	}
 }
