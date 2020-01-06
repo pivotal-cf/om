@@ -166,7 +166,7 @@ Commands:
   interpolate                     interpolates variables into a manifest
   pending-changes                 checks for pending changes
   pre-deploy-check                checks completeness and validity of product configuration
-  product-diff                    **EXPERIMENTAL** displays BOSH manifest diff for products
+  product-diff                    **EXPERIMENTAL** displays BOSH manifest diff for the director and products
   product-metadata                prints product metadata
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           This command reverts the staged changes already on an Ops Manager.
