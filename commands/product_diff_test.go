@@ -122,7 +122,7 @@ var _ = Describe("ProductDiff", func() {
 +  host: example.com
 -  host: localhost
 
-## Runtime Configs for example-product 
+## Runtime Configs for example-product
 
 ### example-different-runtime-config
 
