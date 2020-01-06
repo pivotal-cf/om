@@ -14,8 +14,8 @@ type ProductDiff struct {
 	service productDiffService
 	logger  logger
 	Options struct {
-		Product  []string `long:"product" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
-		Director bool     `long:"director" short:"d" description:"Include director diffs. Can be combined with --product."`
+		Product  []string `long:"product-name" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
+		Director bool     `long:"director" short:"d" description:"Include director diffs. Can be combined with --product-name."`
 	}
 }
 

@@ -124,7 +124,7 @@ var _ = Describe("ProductDiff", func() {
 				defer func() { color.NoColor = false }()
 
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				expectedOutput := `## Product Manifest for example-product
 
@@ -159,7 +159,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("has colors on the diff", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 
 				bufferContents := string(logBuffer.Contents())
@@ -202,7 +202,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("says there are no runtime config differences and prints manifest diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
 				Expect(logBuffer).To(gbytes.Say("host: example.com"))
@@ -231,7 +231,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("says there are no product manifest differences and prints runtime config diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
 				Expect(logBuffer).To(gbytes.Say("no changes"))
@@ -261,7 +261,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("says there are no manifest differences and no runtime config diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
 				Expect(logBuffer).To(gbytes.Say("no changes"))
@@ -290,7 +290,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("says there is no manifest for the product and prints runtime config diffs", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
 				Expect(logBuffer).To(gbytes.Say("no manifest for this product"))
@@ -313,7 +313,7 @@ var _ = Describe("ProductDiff", func() {
 
 			It("says the product will be installed for the first time", func() {
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "example-product"})
+				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
 				Expect(logBuffer).To(gbytes.Say("This product is not yet deployed, so the product and runtime diffs are not available."))
@@ -329,7 +329,7 @@ var _ = Describe("ProductDiff", func() {
 
 				// execute
 				diff := commands.NewProductDiff(service, logger)
-				err = diff.Execute([]string{"--product", "err-product"})
+				err = diff.Execute([]string{"--product-name", "err-product"})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("too many cooks"))
 				Expect(service.ProductDiffArgsForCall(0)).To(Equal("err-product"))
@@ -382,7 +382,7 @@ var _ = Describe("ProductDiff", func() {
 
 		It("prints both product statuses", func() {
 			diff := commands.NewProductDiff(service, logger)
-			err = diff.Execute([]string{"--product", "example-product", "--product", "another-product"})
+			err = diff.Execute([]string{"--product-name", "example-product", "--product-name", "another-product"})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
