@@ -49,6 +49,8 @@ func (c ProductDiff) Execute(args []string) error {
 		}
 		c.logger.Println("## Director Manifest\n")
 		c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
+		c.logger.Println("## Director Runtime Configs\n")
+		c.printRuntimeConfigs(diff.RuntimeConfigs)
 	}
 
 	if showDirectorAndProducts {
@@ -88,17 +90,16 @@ func (c ProductDiff) Execute(args []string) error {
 		default:
 			c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
 		}
-		c.printRuntimeConfigs(diff, product)
+		c.logger.Printf("## Runtime Configs for %s\n\n", product)
+		c.printRuntimeConfigs(diff.RuntimeConfigs)
 	}
 	return nil
 }
 
-func (c ProductDiff) printRuntimeConfigs(diff api.ProductDiff, product string) {
-	c.logger.Printf("## Runtime Configs for %s\n\n", product)
-
+func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
 	noneChanged := true
 
-	for _, config := range diff.RuntimeConfigs {
+	for _, config := range configs {
 		if config.Status == "same" {
 			continue
 		}

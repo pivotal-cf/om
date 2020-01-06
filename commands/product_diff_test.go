@@ -26,7 +26,7 @@ var _ = Describe("ProductDiff", func() {
 		logger = log.New(logBuffer, "", 0)
 	})
 
-	PWhen("the --director flag is provided", func() {
+	When("the --director flag is provided", func() {
 		When("there is a director manifest diff", func() {
 			BeforeEach(func() {
 				service.DirectorDiffReturns(
