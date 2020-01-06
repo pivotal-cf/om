@@ -3,6 +3,7 @@ package docs_test
 import (
 	"github.com/onsi/gomega/gexec"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -27,6 +28,20 @@ var _ = Describe("Documentation coverage", func() {
 			}
 
 			Expect(missing).To(HaveLen(0), fmt.Sprintf("docs/README.md should have: \n%s\n run `go run docsgenerator/update-docs.go` to fix", strings.Join(missing, "\n")))
+		})
+
+		It("contains a docs readme for each command", func() {
+			commands := getCommandNames()
+			docsPath := filepath.Join("..", "docs")
+
+			var missing []string
+			for _, command := range commands {
+				if _, err := os.Stat(filepath.Join(docsPath, command, "README.md")); err != nil {
+					missing = append(missing, command)
+				}
+			}
+
+			Expect(missing).To(HaveLen(0), fmt.Sprintf("docs should have a readme for each command. Missing readmes for: \n%s\n run `go run docsgenerator/update-docs.go` to fix", strings.Join(missing, "\n")))
 		})
 	})
 })

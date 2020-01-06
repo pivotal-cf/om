@@ -10,23 +10,22 @@ import (
 )
 
 func main() {
-	omPath, err := gexec.Build("../main.go", "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
+	homePath, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("could not determine user home directory: %s", err)
+		os.Exit(1)
+	}
+
+	currentPath := filepath.Join(homePath, "workspace", "om")
+
+	omPath, err := gexec.Build(filepath.Join(currentPath, "main.go"), "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
 	if err != nil {
 		fmt.Printf("could not build binary: %s\n", err)
 		os.Exit(1)
 	}
 
-	templateDir, err := filepath.Abs("templates/")
-	if err != nil {
-		fmt.Printf("failed to get absolute path of templates directory: %s\n", err)
-		os.Exit(1)
-	}
-
-	docsDir, err := filepath.Abs("../docs/")
-	if err != nil {
-		fmt.Printf("failed to get absolute path of docs directory: %s\n", err)
-		os.Exit(1)
-	}
+	templateDir := filepath.Join(currentPath, "docsgenerator", "templates")
+	docsDir := filepath.Join(currentPath, "docs")
 
 	gen := generator.NewGenerator(templateDir, docsDir, executor.NewExecutor(omPath), os.Stdout)
 
