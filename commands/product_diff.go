@@ -48,9 +48,11 @@ func (c ProductDiff) Execute(args []string) error {
 			panic(err)
 		}
 		c.logger.Println("## Director Manifest\n")
-		c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
-		c.logger.Println("## Director Runtime Configs\n")
-		c.printRuntimeConfigs(diff.RuntimeConfigs)
+		notInstalled := c.printManifestDiff(diff.Manifest)
+		if !notInstalled {
+			c.logger.Println("## Director Runtime Configs\n")
+			c.printRuntimeConfigs(diff.RuntimeConfigs)
+		}
 	}
 
 	if showDirectorAndProducts {
@@ -77,23 +79,31 @@ func (c ProductDiff) Execute(args []string) error {
 
 		c.logger.Printf("## Product Manifest for %s\n\n", product)
 
-		switch diff.Manifest.Status {
-		case "same":
-			c.logger.Println("no changes\n")
-		case "does_not_exist":
-			c.logger.Println("no manifest for this product\n")
-		case "different":
-			c.logger.Printf("%s\n\n", c.colorize(diff.Manifest.Diff))
-		case "to_be_installed":
-			c.logger.Println("This product is not yet deployed, so the product and runtime diffs are not available.")
-			return nil
-		default:
-			c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Manifest.Status, diff.Manifest.Diff)
+		notInstalled := c.printManifestDiff(diff.Manifest)
+		if notInstalled {
+			continue
 		}
 		c.logger.Printf("## Runtime Configs for %s\n\n", product)
 		c.printRuntimeConfigs(diff.RuntimeConfigs)
 	}
 	return nil
+}
+
+func (c ProductDiff) printManifestDiff(diff api.ManifestDiff) (bool) {
+	switch diff.Status {
+	case "same":
+		c.logger.Println("no changes\n")
+	case "does_not_exist":
+		c.logger.Println("no manifest for this product\n")
+	case "different":
+		c.logger.Printf("%s\n\n", c.colorizeDiff(diff.Diff))
+	case "to_be_installed":
+		c.logger.Println("This product is not yet deployed, so the product and runtime diffs are not available.")
+		return true
+	default:
+		c.logger.Printf("unrecognized product status: %s\n\n%s\n\n", diff.Status, diff.Diff)
+	}
+	return false
 }
 
 func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
@@ -107,7 +117,7 @@ func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
 		noneChanged = false
 
 		c.logger.Printf("### %s\n\n", config.Name)
-		c.logger.Printf("%s\n\n", c.colorize(config.Diff))
+		c.logger.Printf("%s\n\n", c.colorizeDiff(config.Diff))
 	}
 
 	if noneChanged {
@@ -115,7 +125,7 @@ func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
 	}
 }
 
-func (c ProductDiff) colorize(diff string) string {
+func (c ProductDiff) colorizeDiff(diff string) string {
 	lines := strings.Split(diff, "\n")
 	for index, line := range lines {
 		if strings.HasPrefix(line, "-") {
