@@ -36,8 +36,8 @@ var _ = Describe("ProductDiff", func() {
 							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
 						},
 						CloudConfig: api.ManifestDiff{
-							Status: "same",
-							Diff:   "",
+							Status: "different",
+							Diff:   " properties:\n+  property: new-cloud-value\n-  property: old-cloud-value",
 						},
 						RuntimeConfigs: []api.RuntimeConfigsDiff{
 							{
@@ -48,9 +48,9 @@ var _ = Describe("ProductDiff", func() {
 						},
 						CPIConfigs: []api.CPIConfigsDiff{
 							{
-								IAASConfigurationName: "default",
+								IAASConfigurationName: "director_cpi",
 								Status:                "different",
-								Diff:                  ` properties: datacenters: - name: "<redacted>" clusters: + - canada: {}`,
+								Diff:                  " properties:\n+  property: new-cpi-value\n-  property: old-cpi-value",
 							},
 						},
 					}, nil)
@@ -63,17 +63,27 @@ var _ = Describe("ProductDiff", func() {
 
 				bufferContents := string(logBuffer.Contents())
 
-				Expect(bufferContents).To(ContainSubstring("## Director Manifest"))
-				Expect(bufferContents).To(ContainSubstring("properties:"))
+				Expect(logBuffer).To(gbytes.Say("## Director Manifest"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
 				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  host: example.com")))
 				Expect(bufferContents).To(ContainSubstring(color.RedString("-  host: localhost")))
 
-				Expect(bufferContents).To(ContainSubstring("## Director Runtime Configs"))
-				Expect(bufferContents).To(ContainSubstring("### director_runtime"))
-				Expect(bufferContents).To(ContainSubstring("properties:"))
+				Expect(logBuffer).To(gbytes.Say("## Director Cloud Config"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
+				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  property: new-cloud-value")))
+				Expect(bufferContents).To(ContainSubstring(color.RedString("-  property: old-cloud-value")))
+
+				Expect(logBuffer).To(gbytes.Say("## Director Runtime Configs"))
+				Expect(logBuffer).To(gbytes.Say("### director_runtime"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
 				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  property: new-value")))
 				Expect(bufferContents).To(ContainSubstring(color.RedString("-  property: old-value")))
 
+				Expect(logBuffer).To(gbytes.Say("## Director CPI Configs"))
+				Expect(logBuffer).To(gbytes.Say("### director_cpi"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
+				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  property: new-cpi-value")))
+				Expect(bufferContents).To(ContainSubstring(color.RedString("-  property: old-cpi-value")))
 			})
 		})
 	})

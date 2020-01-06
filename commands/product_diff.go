@@ -50,8 +50,12 @@ func (c ProductDiff) Execute(args []string) error {
 		c.logger.Println("## Director Manifest\n")
 		notInstalled := c.printManifestDiff(diff.Manifest)
 		if !notInstalled {
+			c.logger.Println("## Director Cloud Config\n")
+			c.printManifestDiff(diff.CloudConfig)
 			c.logger.Println("## Director Runtime Configs\n")
 			c.printRuntimeConfigs(diff.RuntimeConfigs)
+			c.logger.Println("## Director CPI Configs\n")
+			c.printCPIConfigs(diff.CPIConfigs)
 		}
 	}
 
@@ -117,6 +121,25 @@ func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
 		noneChanged = false
 
 		c.logger.Printf("### %s\n\n", config.Name)
+		c.logger.Printf("%s\n\n", c.colorizeDiff(config.Diff))
+	}
+
+	if noneChanged {
+		c.logger.Println("no changes\n")
+	}
+}
+
+func (c ProductDiff) printCPIConfigs(configs []api.CPIConfigsDiff) {
+	noneChanged := true
+
+	for _, config := range configs {
+		if config.Status == "same" {
+			continue
+		}
+
+		noneChanged = false
+
+		c.logger.Printf("### %s\n\n", config.IAASConfigurationName)
 		c.logger.Printf("%s\n\n", c.colorizeDiff(config.Diff))
 	}
 
