@@ -248,7 +248,7 @@ var _ = Describe("Generator", func() {
 		})
 	})
 
-	When("there are extra template folders", func() {
+	When("there are extra template folders that are not om commands", func() {
 		It("removes template folders if the command is no longer in om", func() {
 			missingCommandPath := filepath.Join(templatesDir, "missing-command")
 			err := os.MkdirAll(missingCommandPath, 0755)
@@ -294,6 +294,56 @@ var _ = Describe("Generator", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = os.Stat(templatesDir)
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	When("there are extra docs folders that are not om commands", func() {
+		It("removes docs folders if the command is no longer in om", func() {
+			missingCommandPath := filepath.Join(docsDir, "missing-command")
+			err := os.MkdirAll(missingCommandPath, 0755)
+			Expect(err).ToNot(HaveOccurred())
+
+			commandDescriptions := map[string]string{
+				"command-one": "command-one description",
+				"command-two": "command-two description",
+			}
+			ex.GetCommandNamesAndDescriptionsStub = func() (strings map[string]string, e error) {
+				return commandDescriptions, nil
+			}
+
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
+			err = gen.GenerateDocs()
+			Expect(err).ToNot(HaveOccurred())
+
+			commandFolders, err := ioutil.ReadDir(docsDir)
+			Expect(err).ToNot(HaveOccurred())
+
+			var commandFolderNames []string
+			for _, commandFolder := range commandFolders {
+				if commandFolder.IsDir() {
+					commandFolderNames = append(commandFolderNames, commandFolder.Name())
+				}
+			}
+
+			var commandNames []string
+			for command := range commandDescriptions {
+				commandNames = append(commandNames, command)
+			}
+			sort.Strings(commandNames)
+
+			Expect(commandFolderNames).To(Equal(commandNames))
+
+			_, err = os.Stat(missingCommandPath)
+			Expect(err).To(HaveOccurred())
+		})
+
+		It("doesn't remove the base docs dir", func() {
+			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
+			err := gen.GenerateDocs()
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = os.Stat(docsDir)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

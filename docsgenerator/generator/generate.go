@@ -60,7 +60,12 @@ func (g *Generator) GenerateDocs() error {
 		return err
 	}
 
-	templateDirs, err := g.getTemplatesDirectoryContents(true)
+	err = g.cleanupExtraDirs(g.templatesDir, commandDescriptions)
+	if err != nil {
+		return err
+	}
+
+	templateDirs, err := g.getDirectoryContents(g.templatesDir, true)
 	if err != nil {
 		return err
 	}
@@ -75,6 +80,11 @@ func (g *Generator) GenerateDocs() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	err = g.cleanupExtraDirs(g.docsDir, commandDescriptions)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -175,12 +185,7 @@ func emptyIfOnlyTemplate(contents string, template string) string {
 }
 
 func (g *Generator) createTemplateDirs(commands map[string]string) error {
-	templateDirs, err := g.getTemplatesDirectoryContents(true)
-	if err != nil {
-		return err
-	}
-
-	err = g.createReadmeTemplates(map[string]string{
+	err := g.createReadmeTemplates(map[string]string{
 		ReadmeBeforeFileName: ReadmeBeforeTemplate,
 		ReadmeAfterFileName:  ReadmeAfterTemplate,
 	})
@@ -209,24 +214,6 @@ func (g *Generator) createTemplateDirs(commands map[string]string) error {
 		}
 
 		fmt.Fprintf(g.stdout, "Added %s templates at: templates/%s\n", command, command)
-	}
-
-	for _, templateDir := range templateDirs {
-		var commandExists bool
-		for command := range commands {
-			if strings.Contains(templateDir, command) {
-				commandExists = true
-			}
-		}
-
-		if !commandExists {
-			err := os.RemoveAll(templateDir)
-			if err != nil {
-				return err
-			}
-
-			fmt.Fprintf(g.stdout, "Removed templates at: templates/%s\n", filepath.Base(templateDir))
-		}
 	}
 
 	return nil
@@ -288,14 +275,14 @@ func (g *Generator) createCommandTemplates(command string, commandTemplateDir st
 	return nil
 }
 
-func (g *Generator) getTemplatesDirectoryContents(onlyDirectories bool) ([]string, error) {
+func (g *Generator) getDirectoryContents(dir string, onlyDirectories bool) ([]string, error) {
 	var templateDirs []string
-	err := filepath.Walk(g.templatesDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if path == g.templatesDir {
+		if path == dir {
 			return nil
 		}
 
@@ -310,6 +297,33 @@ func (g *Generator) getTemplatesDirectoryContents(onlyDirectories bool) ([]strin
 	}
 
 	return templateDirs, nil
+}
+
+func (g *Generator) cleanupExtraDirs(baseDir string, commandDescriptions map[string]string) error {
+	dirs, err := g.getDirectoryContents(baseDir, true)
+	if err != nil {
+		return err
+	}
+
+	for _, dir := range dirs {
+		var commandExists bool
+		for command := range commandDescriptions {
+			if strings.Contains(dir, command) {
+				commandExists = true
+			}
+		}
+
+		if !commandExists {
+			err := os.RemoveAll(dir)
+			if err != nil {
+				return err
+			}
+
+			fmt.Fprintf(g.stdout, "Removed %s at: %s/%s\n", filepath.Dir(baseDir), filepath.Dir(baseDir), filepath.Base(dir))
+		}
+	}
+
+	return nil
 }
 
 func getFileContents(filepath string) (string, error) {
