@@ -10,8 +10,8 @@ import (
 	"github.com/pivotal-cf/jhanda"
 )
 
-type ProductDiff struct {
-	service productDiffService
+type BoshDiff struct {
+	service boshDiffService
 	logger  logger
 	Options struct {
 		Product  []string `long:"product-name" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
@@ -19,23 +19,23 @@ type ProductDiff struct {
 	}
 }
 
-//counterfeiter:generate -o ./fakes/diff_service.go --fake-name ProductDiffService . productDiffService
-type productDiffService interface {
+//counterfeiter:generate -o ./fakes/diff_service.go --fake-name BoshDiffService . boshDiffService
+type boshDiffService interface {
 	DirectorDiff() (api.DirectorDiff, error)
 	ProductDiff(productName string) (api.ProductDiff, error)
 	ListStagedProducts() (api.StagedProductsOutput, error)
 }
 
-func NewProductDiff(service productDiffService, logger logger) ProductDiff {
-	return ProductDiff{
+func NewBoshDiff(service boshDiffService, logger logger) BoshDiff {
+	return BoshDiff{
 		service: service,
 		logger:  logger,
 	}
 }
 
-func (c ProductDiff) Execute(args []string) error {
+func (c BoshDiff) Execute(args []string) error {
 	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse product-diff flags: %s", err)
+		return fmt.Errorf("could not parse bosh-diff flags: %s", err)
 	}
 
 	var diffableProducts []string
@@ -93,7 +93,7 @@ func (c ProductDiff) Execute(args []string) error {
 	return nil
 }
 
-func (c ProductDiff) printManifestDiff(diff api.ManifestDiff) (bool) {
+func (c BoshDiff) printManifestDiff(diff api.ManifestDiff) (bool) {
 	switch diff.Status {
 	case "same":
 		c.logger.Println("no changes\n")
@@ -110,7 +110,7 @@ func (c ProductDiff) printManifestDiff(diff api.ManifestDiff) (bool) {
 	return false
 }
 
-func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
+func (c BoshDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
 	noneChanged := true
 
 	for _, config := range configs {
@@ -129,7 +129,7 @@ func (c ProductDiff) printRuntimeConfigs(configs []api.RuntimeConfigsDiff) {
 	}
 }
 
-func (c ProductDiff) printCPIConfigs(configs []api.CPIConfigsDiff) {
+func (c BoshDiff) printCPIConfigs(configs []api.CPIConfigsDiff) {
 	noneChanged := true
 
 	for _, config := range configs {
@@ -148,7 +148,7 @@ func (c ProductDiff) printCPIConfigs(configs []api.CPIConfigsDiff) {
 	}
 }
 
-func (c ProductDiff) colorizeDiff(diff string) string {
+func (c BoshDiff) colorizeDiff(diff string) string {
 	lines := strings.Split(diff, "\n")
 	for index, line := range lines {
 		if strings.HasPrefix(line, "-") {
@@ -161,7 +161,7 @@ func (c ProductDiff) colorizeDiff(diff string) string {
 	return strings.Join(lines, "\n")
 }
 
-func (c ProductDiff) Usage() jhanda.Usage {
+func (c BoshDiff) Usage() jhanda.Usage {
 	return jhanda.Usage{
 		Description:      "**EXPERIMENTAL** This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)",
 		ShortDescription: "**EXPERIMENTAL** displays BOSH manifest diff for the director and products",

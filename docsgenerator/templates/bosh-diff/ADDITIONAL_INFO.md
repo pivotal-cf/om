@@ -1,4 +1,4 @@
-<!--- Anything in this file will be appended to the final docs/product-diff/README.md file --->
+<!--- Anything in this file will be appended to the final docs/bosh-diff/README.md file --->
 ## Important Note
 This command is useful for determining the scope of apply changes,
 but it has a limitation it's important to be aware of.
@@ -14,12 +14,12 @@ If such a runtime config has been updated
 since the last time the PAS product, `cf`, was deployed,
 _every VM in `cf` will be rolled,_
 but no runtime config diffs will show if you just run
-`om product-diff --product-name cf`.
+`om bosh-diff --product-name cf`.
 To work around this, we recommend you include any add-on products
 in your diff command.
 For the above example, that would be:
 ```
-om product-diff --product-name cf --product-name p-antivirus
+om bosh-diff --product-name cf --product-name p-antivirus
 ```
 
 But even this might not tell you what you need to know!

@@ -15,6 +15,7 @@ on a vSphere Ops Manager.
 | [assign-multi-stemcell](assign-multi-stemcell/README.md) | assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+ |
 | [assign-stemcell](assign-stemcell/README.md) | assigns an uploaded stemcell to a product in the targeted Ops Manager |
 | [available-products](available-products/README.md) | list available products |
+| [bosh-diff](bosh-diff/README.md) | **EXPERIMENTAL** displays BOSH manifest diff for the director and products |
 | [bosh-env](bosh-env/README.md) | prints bosh environment variables |
 | [certificate-authorities](certificate-authorities/README.md) | lists certificates managed by Ops Manager |
 | [certificate-authority](certificate-authority/README.md) | prints requested certificate authority |
@@ -52,7 +53,6 @@ on a vSphere Ops Manager.
 | [interpolate](interpolate/README.md) | interpolates variables into a manifest |
 | [pending-changes](pending-changes/README.md) | checks for pending changes |
 | [pre-deploy-check](pre-deploy-check/README.md) | checks completeness and validity of product configuration |
-| [product-diff](product-diff/README.md) | **EXPERIMENTAL** displays BOSH manifest diff for the director and products |
 | [product-metadata](product-metadata/README.md) | prints product metadata |
 | [regenerate-certificates](regenerate-certificates/README.md) | deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes |
 | [revert-staged-changes](revert-staged-changes/README.md) | This command reverts the staged changes already on an Ops Manager. |

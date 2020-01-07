@@ -12,16 +12,16 @@ import (
 	"log"
 )
 
-var _ = Describe("ProductDiff", func() {
+var _ = Describe("BoshDiff", func() {
 	var (
 		logBuffer *gbytes.Buffer
 		logger    *log.Logger
-		service   *fakes.ProductDiffService
+		service   *fakes.BoshDiffService
 		err       error
 	)
 
 	BeforeEach(func() {
-		service = &fakes.ProductDiffService{}
+		service = &fakes.BoshDiffService{}
 		logBuffer = gbytes.NewBuffer()
 		logger = log.New(logBuffer, "", 0)
 	})
@@ -57,7 +57,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("prints the diff with colors", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--director"})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -123,7 +123,7 @@ var _ = Describe("ProductDiff", func() {
 				color.NoColor = true
 				defer func() { color.NoColor = false }()
 
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				expectedOutput := `## Product Manifest for example-product
@@ -158,7 +158,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("has colors on the diff", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -201,7 +201,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("says there are no runtime config differences and prints manifest diffs", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
@@ -230,7 +230,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("says there are no product manifest differences and prints runtime config diffs", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
@@ -260,7 +260,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("says there are no manifest differences and no runtime config diffs", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
@@ -289,7 +289,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("says there is no manifest for the product and prints runtime config diffs", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
@@ -312,7 +312,7 @@ var _ = Describe("ProductDiff", func() {
 			})
 
 			It("says the product will be installed for the first time", func() {
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
@@ -328,7 +328,7 @@ var _ = Describe("ProductDiff", func() {
 					api.ProductDiff{}, fmt.Errorf("too many cooks"))
 
 				// execute
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "err-product"})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("too many cooks"))
@@ -381,7 +381,7 @@ var _ = Describe("ProductDiff", func() {
 		})
 
 		It("prints both product statuses", func() {
-			diff := commands.NewProductDiff(service, logger)
+			diff := commands.NewBoshDiff(service, logger)
 			err = diff.Execute([]string{"--product-name", "example-product", "--product-name", "another-product"})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -440,7 +440,7 @@ var _ = Describe("ProductDiff", func() {
 		})
 
 		It("lists all staged products (alphabetically by name) as well as the director", func() {
-			diff := commands.NewProductDiff(service, logger)
+			diff := commands.NewBoshDiff(service, logger)
 			err = diff.Execute([]string{})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -467,7 +467,7 @@ var _ = Describe("ProductDiff", func() {
 					api.StagedProductsOutput{}, fmt.Errorf("insufficient cooks"))
 
 				// execute
-				diff := commands.NewProductDiff(service, logger)
+				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("could not discover staged products to diff: insufficient cooks"))
