@@ -319,7 +319,7 @@ func (g *Generator) cleanupExtraDirs(baseDir string, commandDescriptions map[str
 				return err
 			}
 
-			fmt.Fprintf(g.stdout, "Removed %s at: %s/%s\n", filepath.Dir(baseDir), filepath.Dir(baseDir), filepath.Base(dir))
+			fmt.Fprintf(g.stdout, "Removed %s at: %s/%s\n", filepath.Base(baseDir), filepath.Base(baseDir), filepath.Base(dir))
 		}
 	}
 
