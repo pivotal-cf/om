@@ -129,6 +129,7 @@ Commands:
   assign-multi-stemcell           assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+
   assign-stemcell                 assigns an uploaded stemcell to a product in the targeted Ops Manager
   available-products              list available products
+  bosh-diff                       **EXPERIMENTAL** displays BOSH manifest diff for the director and products
   bosh-env                        prints bosh environment variables
   certificate-authorities         lists certificates managed by Ops Manager
   certificate-authority           prints requested certificate authority
@@ -166,7 +167,6 @@ Commands:
   interpolate                     interpolates variables into a manifest
   pending-changes                 checks for pending changes
   pre-deploy-check                checks completeness and validity of product configuration
-  product-diff                    **EXPERIMENTAL** displays BOSH manifest diff for the director and products
   product-metadata                prints product metadata
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           This command reverts the staged changes already on an Ops Manager.
