@@ -50,13 +50,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 4.4.1
 
 ### Features
-- The experimental command `product-diff` now includes the director diff.
+- The experimental command `product-diff` had been renamed `bosh-diff`
+  and now includes the director diff.
   This includes property, runtime config, cloud config, and CPI config differences.
   When the command is used, it will display the director and all products by default.
   The `--director` flag can be used to show only the director diff.
   The `--product-name` flag can be used to show one or more specific products.
   
-  For example, `om product-diff --director --product-name cf --product-name p-healthwatch`
+  For example, `om bosh-diff --director --product-name cf --product-name p-healthwatch`
   will show the director, Pivotal Application Service, and Pivotal Healthwatch differences.
 
 ## 4.4.0
