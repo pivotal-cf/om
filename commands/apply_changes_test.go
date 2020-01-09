@@ -195,7 +195,28 @@ var _ = Describe("ApplyChanges", func() {
 					}
 				`))
 
-				Expect(stderr).To(gbytes.Say("setting director to recreate all VMs"))
+				Expect(stderr.Contents()).To(ContainSubstring("setting director to recreate all product vms (this will also recreate the director vm if there are changes)"))
+			})
+
+			It("prints out if only the director will be updated", func() {
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := command.Execute([]string{
+					"--recreate-vms",
+					"--skip-deploy-products",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+				Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(`
+					{
+						"director_configuration": {
+							"bosh_recreate_on_next_deploy": true
+						}
+					}
+				`))
+
+				Expect(stderr).To(gbytes.Say("setting director to recreate director vm if there are changes"))
 			})
 
 			It("prints out the list of products that will be recreated", func() {
@@ -211,6 +232,7 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(stderr).To(gbytes.Say("setting director to recreate all VMs for the following products:"))
 				Expect(stderr).To(gbytes.Say("- cf"))
 				Expect(stderr).To(gbytes.Say("- example-product"))
+				Expect(stderr).To(gbytes.Say("this will also recreate the director vm if there are changes"))
 			})
 
 			When("the service returns an error", func() {

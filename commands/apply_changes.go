@@ -77,7 +77,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		}
 	}
 
-	changedProducts := []string{}
+	var changedProducts []string
 	deployProducts := !ac.Options.SkipDeployProducts
 
 	if len(ac.Options.ProductNames) > 0 {
@@ -122,8 +122,11 @@ func (ac ApplyChanges) Execute(args []string) error {
 			for _, product := range ac.Options.ProductNames {
 				ac.logger.Printf("- %s", product)
 			}
+			ac.logger.Println("this will also recreate the director vm if there are changes")
+		} else if ac.Options.SkipDeployProducts {
+			ac.logger.Println("setting director to recreate director vm if there are changes")
 		} else {
-			ac.logger.Println("setting director to recreate all VMs")
+			ac.logger.Println("setting director to recreate all product vms (this will also recreate the director vm if there are changes)")
 		}
 
 		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(`{
