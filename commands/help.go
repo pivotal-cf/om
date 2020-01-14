@@ -13,12 +13,15 @@ import (
 const tmpl = `{{.Title}}
 {{.Description}}
 
-Usage: {{.Usage}}
-{{range .GlobalFlags}}  {{.}}
-{{end}}
+Usage: 
+  {{.Usage}}
+
 {{if .Arguments}}{{.ArgumentsName}}:
 {{range .Arguments}}  {{.}}
 {{end}}{{end}}
+Global Flags:
+{{range .GlobalFlags}}  {{.}}
+{{end}}
 `
 
 type TemplateContext struct {
@@ -100,7 +103,6 @@ func (h Help) buildGlobalContext() TemplateContext {
 	}
 
 	return TemplateContext{
-		Title:         "ॐ",
 		Description:   "om helps you interact with an Ops Manager",
 		Usage:         "om [options] <command> [<args>]",
 		ArgumentsName: "Commands",
@@ -136,10 +138,9 @@ func (h Help) buildCommandContext(command string) (TemplateContext, error) {
 	}
 
 	return TemplateContext{
-		Title:         fmt.Sprintf("ॐ  %s", command),
 		Description:   usage.Description,
 		Usage:         fmt.Sprintf("om [options] %s%s", command, argsPlaceholder),
-		ArgumentsName: "Command Arguments",
+		ArgumentsName: "Flags",
 		Arguments:     flagList,
 	}, nil
 }
