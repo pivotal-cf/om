@@ -138,3 +138,25 @@ for use with Ops Manager 2.5 and after, or you will see this error:
 ```json
 {"errors":["Availability zones cannot find availability zone with name null"]}
 ```
+
+#### Configuring the `syslog-properties` for products that use OpsManager's consistent syslog configuration
+
+Some products provide syslog properties and they can be configured in the `product-properties` section of the config file.
+After OpsManager introduced a [consistent syslog experience](https://docs.pivotal.io/pivotalcf/2-4/pcf-release-notes/opsmanager-rn.html#consistent-syslog),
+some tiles migrated to the common interface such that the properties no longer exist. As such, syslog integration is now configurable through the new top level key `syslog-properties`.
+
+```yaml
+syslog-properties:
+  enabled: true
+  address: some-address
+  port: some-port
+  transport_protocol: tcp
+  tls_enabled: true
+  permitted_peer: some-permitted-peer
+  ssl_ca_certificate: some-certificate
+```
+
+Note: If the tile does not support OpsManager's consistent syslog feature, you may see this error:
+```json
+{"errors":{"syslog_configuration":["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint.\n"]}}
+```
