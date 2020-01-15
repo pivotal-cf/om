@@ -12,35 +12,46 @@ import (
 )
 
 const (
-	GLOBAL_USAGE = `ॐ
+	GLOBAL_USAGE = `
 om helps you interact with an Ops Manager
 
-Usage: om [options] <command> [<args>]
-  --query, -?     asks a question
-  --surprise, -!  gives you a present
+Usage:
+  om [options] <command> [<args>]
 
 Commands:
   bake   bakes you a cake
   clean  cleans up after baking
-`
 
-	COMMAND_USAGE = `ॐ  bake
-This command will help you bake a cake.
-
-Usage: om [options] bake [<args>]
+Global Flags:
   --query, -?     asks a question
   --surprise, -!  gives you a present
+`
 
-Command Arguments:
+	COMMAND_USAGE = `
+This command will help you bake a cake.
+
+Usage:
+  om [options] bake [<args>]
+
+Flags:
   --butter, -b  int (variadic)  sticks of butter
   --flour, -f   int             cups of flour
   --lemon, -l   int             teaspoons of lemon juice
+
+Global Flags:
+  --query, -?     asks a question
+  --surprise, -!  gives you a present
+
 `
 
-	FLAGLESS_USAGE = `ॐ  bake
+	FLAGLESS_USAGE = `
 This command will help you bake a cake.
 
-Usage: om [options] bake
+Usage:
+  om [options] bake
+
+
+Global Flags:
   --query, -?     asks a question
   --surprise, -!  gives you a present
 `
@@ -141,7 +152,6 @@ var _ = Describe("Help", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
-					Expect(output.String()).ToNot(ContainSubstring("Command Arguments"))
 				})
 			})
 
@@ -160,7 +170,6 @@ var _ = Describe("Help", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
-					Expect(output.String()).ToNot(ContainSubstring("Command Arguments"))
 				})
 			})
 		})

@@ -13,7 +13,7 @@ import (
 const tmpl = `{{.Title}}
 {{.Description}}
 
-Usage: 
+Usage:
   {{.Usage}}
 
 {{if .Arguments}}{{.ArgumentsName}}:
