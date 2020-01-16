@@ -7,10 +7,27 @@
 
 ## Command Usage
 ```
-ॐ  config-template
+
 **EXPERIMENTAL** this command generates a product configuration template from a .pivotal file on Pivnet
 
-Usage: om [options] config-template [<args>]
+Usage:
+  om [options] config-template [<args>]
+
+Flags:
+  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
+  --exclude-version        bool               if set, will not output a version-specific directory
+  --output-directory       string (required)  a directory to create templates under. must already exist.
+  --pivnet-api-token       string           
+  --pivnet-disable-ssl     bool               whether to disable ssl validation when contacting the Pivotal Network
+  --pivnet-file-glob, -f   string             a glob to match exactly one file in the pivnet product slug (default: *.pivotal)
+  --pivnet-product-slug    string             the product name in pivnet
+  --product-path           string             path to product file
+  --product-version        string             the version of the product from which to generate a template
+  --var                    string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)  **EXPERIMENTAL** load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)  load variables from a YAML file
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,20 +43,6 @@ Usage: om [options] config-template [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
-  --exclude-version        bool               if set, will not output a version-specific directory
-  --output-directory       string (required)  a directory to create templates under. must already exist.
-  --pivnet-api-token       string           
-  --pivnet-disable-ssl     bool               whether to disable ssl validation when contacting the Pivotal Network
-  --pivnet-file-glob, -f   string             a glob to match exactly one file in the pivnet product slug (default: *.pivotal)
-  --pivnet-product-slug    string             the product name in pivnet
-  --product-path           string             path to product file
-  --product-version        string             the version of the product from which to generate a template
-  --var                    string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  **EXPERIMENTAL** load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l          string (variadic)  load variables from a YAML file
 
 ```
 

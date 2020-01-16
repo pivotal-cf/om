@@ -7,10 +7,18 @@ prints requested certificate authority
 
 ## Command Usage
 ```
-ॐ  certificate-authority
+
 prints requested certificate authority
 
-Usage: om [options] certificate-authority [<args>]
+Usage:
+  om [options] certificate-authority [<args>]
+
+Flags:
+  --cert-pem    bool               Display the cert pem
+  --format, -f  string             Format to print as (options: table,json) (default: table)
+  --id          string (required)  ID of certificate to display
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,11 +34,6 @@ Usage: om [options] certificate-authority [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --cert-pem    bool               Display the cert pem
-  --format, -f  string             Format to print as (options: table,json) (default: table)
-  --id          string (required)  ID of certificate to display
 
 ```
 

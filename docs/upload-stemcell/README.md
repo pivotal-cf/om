@@ -8,10 +8,20 @@ This stemcell will then be available for use by any product specifying that stem
 
 ## Command Usage
 ```
-ॐ  upload-stemcell
+
 This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped
 
-Usage: om [options] upload-stemcell [<args>]
+Usage:
+  om [options] upload-stemcell [<args>]
+
+Flags:
+  --config, -c    string             path to yml file for configuration (keys must match the following command line flags)
+  --floating      string             assigns the stemcell to all compatible products  (default: true)
+  --force, -f     bool               upload stemcell even if it already exists on the target Ops Manager
+  --shasum        string             shasum of the provided product file to be used for validation
+  --stemcell, -s  string (required)  path to stemcell
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -27,13 +37,6 @@ Usage: om [options] upload-stemcell [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c    string             path to yml file for configuration (keys must match the following command line flags)
-  --floating      string             assigns the stemcell to all compatible products  (default: true)
-  --force, -f     bool               upload stemcell even if it already exists on the target Ops Manager
-  --shasum        string             shasum of the provided product file to be used for validation
-  --stemcell, -s  string (required)  path to stemcell
 
 ```
 

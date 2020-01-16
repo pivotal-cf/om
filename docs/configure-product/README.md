@@ -7,10 +7,20 @@ The `configure-product` command will configure your product properties, network,
 
 ## Command Usage
 ```
-ॐ  configure-product
+
 This authenticated command configures a staged product
 
-Usage: om [options] configure-product [<args>]
+Usage:
+  om [options] configure-product [<args>]
+
+Flags:
+  --config, -c             string (required)  path to yml file containing all config fields (see docs/configure-product/README.md for format)
+  --ops-file, -o           string (variadic)  YAML operations file
+  --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)  Load variables from a YAML file
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,13 +36,6 @@ Usage: om [options] configure-product [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c             string (required)  path to yml file containing all config fields (see docs/configure-product/README.md for format)
-  --ops-file, -o           string (variadic)  YAML operations file
-  --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l          string (variadic)  Load variables from a YAML file
 
 ```
 

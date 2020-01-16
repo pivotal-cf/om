@@ -7,10 +7,14 @@ The `delete-unused-products` command will remove any available products that are
 
 ## Command Usage
 ```
-ॐ  delete-unused-products
+
 This command deletes unused products in the targeted Ops Manager
 
-Usage: om [options] delete-unused-products
+Usage:
+  om [options] delete-unused-products
+
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,7 +30,6 @@ Usage: om [options] delete-unused-products
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
 
 ```
 

@@ -7,12 +7,19 @@ The `bosh-env` command setup environment variables to target bosh director and/o
 
 ## Command Usage
 ```
-ॐ  bosh-env
+
 This prints bosh environment variables to target bosh director. You can invoke it directly to see its output, or use it directly with an evaluate-type command:
 On posix system: eval "$(om bosh-env)"
 On powershell: iex $(om bosh-env | Out-String)
 
-Usage: om [options] bosh-env [<args>]
+Usage:
+  om [options] bosh-env [<args>]
+
+Flags:
+  --shell-type           string  Prints for the given shell (posix|powershell)
+  --ssh-private-key, -i  string  Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel.
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -28,10 +35,6 @@ Usage: om [options] bosh-env [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --shell-type           string  Prints for the given shell (posix|powershell)
-  --ssh-private-key, -i  string  Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel.
 
 ```
 

@@ -7,10 +7,17 @@
 
 ## Command Usage
 ```
-ॐ  bosh-diff
+
 **EXPERIMENTAL** This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)
 
-Usage: om [options] bosh-diff [<args>]
+Usage:
+  om [options] bosh-diff [<args>]
+
+Flags:
+  --director, -d      bool               Include director diffs. Can be combined with --product-name.
+  --product-name, -p  string (variadic)  Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown.
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,10 +33,6 @@ Usage: om [options] bosh-diff [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --director, -d      bool               Include director diffs. Can be combined with --product-name.
-  --product-name, -p  string (variadic)  Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown.
 
 ```
 

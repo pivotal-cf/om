@@ -7,10 +7,18 @@ The `staged-director-config` command will export a YAML config file that can be 
 
 ## Command Usage
 ```
-ॐ  staged-director-config
+
 This command generates a config from a staged director that can be passed in to om configure-director
 
-Usage: om [options] staged-director-config [<args>]
+Usage:
+  om [options] staged-director-config [<args>]
+
+Flags:
+  --include-placeholders, -r  bool  Replace obscured credentials to interpolatable placeholders.
+  				    To include credentials hidden by OpsMan, use with "--no-redact"
+  --no-redact                 bool  Redact IaaS values from director configuration
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,11 +34,6 @@ Usage: om [options] staged-director-config [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --include-placeholders, -r  bool  Replace obscured credentials to interpolatable placeholders.
-  				    To include credentials hidden by OpsMan, use with "--no-redact"
-  --no-redact                 bool  Redact IaaS values from director configuration
 
 ```
 

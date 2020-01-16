@@ -7,10 +7,16 @@ This authenticated command retrieves the logs for a given installation.
 
 ## Command Usage
 ```
-ॐ  installation-log
+
 This authenticated command retrieves the logs for a given installation.
 
-Usage: om [options] installation-log [<args>]
+Usage:
+  om [options] installation-log [<args>]
+
+Flags:
+  --id  int (required)  id of the installation to retrieve logs for
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,9 +32,6 @@ Usage: om [options] installation-log [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --id  int (required)  id of the installation to retrieve logs for
 
 ```
 

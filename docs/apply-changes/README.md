@@ -8,10 +8,21 @@ It will then track the installation progress, printing logs as they become avail
 
 ## Command Usage
 ```
-ॐ  apply-changes
+
 This authenticated command kicks off an install of any staged changes on the Ops Manager.
 
-Usage: om [options] apply-changes [<args>]
+Usage:
+  om [options] apply-changes [<args>]
+
+Flags:
+  --config, -c                  string             path to yml file containing errand configuration (see docs/apply-changes/README.md for format)
+  --ignore-warnings, -i         bool               ignore issues reported by Ops Manager when applying changes
+  --product-name, -n            string (variadic)  name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)
+  --reattach                    bool               reattach to an already running apply changes (if available)
+  --recreate-vms                bool               recreate all vms
+  --skip-deploy-products, -sdp  bool               skip deploying products when applying changes - just update the director
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -27,14 +38,6 @@ Usage: om [options] apply-changes [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c                  string             path to yml file containing errand configuration (see docs/apply-changes/README.md for format)
-  --ignore-warnings, -i         bool               ignore issues reported by Ops Manager when applying changes
-  --product-name, -n            string (variadic)  name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)
-  --reattach                    bool               reattach to an already running apply changes (if available)
-  --recreate-vms                bool               recreate all vms
-  --skip-deploy-products, -sdp  bool               skip deploying products when applying changes - just update the director
 
 ```
 

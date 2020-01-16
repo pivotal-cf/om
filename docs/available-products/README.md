@@ -7,10 +7,16 @@ The `available-products` command will list all available product names and versi
 
 ## Command Usage
 ```
-ॐ  available-products
+
 This authenticated command lists all available products.
 
-Usage: om [options] available-products [<args>]
+Usage:
+  om [options] available-products [<args>]
+
+Flags:
+  --format, -f  string  Format to print as (options: table,json) (default: table)
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,9 +32,6 @@ Usage: om [options] available-products [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --format, -f  string  Format to print as (options: table,json) (default: table)
 
 ```
 

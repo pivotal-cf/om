@@ -7,11 +7,19 @@ This command will assign an already uploaded stemcell to a specific product in O
 
 ## Command Usage
 ```
-ॐ  assign-stemcell
+
 This command will assign an already uploaded stemcell to a specific product in Ops Manager.
 It is recommended to use "upload-stemcell --floating=false" before using this command.
 
-Usage: om [options] assign-stemcell [<args>]
+Usage:
+  om [options] assign-stemcell [<args>]
+
+Flags:
+  --config, -c    string             path to yml file for configuration (keys must match the following command line flags)
+  --product, -p   string (required)  name of Ops Manager tile to associate a stemcell to
+  --stemcell, -s  string             associate a particular stemcell version to a tile. (default: latest)
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -27,11 +35,6 @@ Usage: om [options] assign-stemcell [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c    string             path to yml file for configuration (keys must match the following command line flags)
-  --product, -p   string (required)  name of Ops Manager tile to associate a stemcell to
-  --stemcell, -s  string             associate a particular stemcell version to a tile. (default: latest)
 
 ```
 

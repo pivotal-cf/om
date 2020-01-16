@@ -8,10 +8,20 @@ After uploading, you can then use the [`stage-product` command](../stage-product
 
 ## Command Usage
 ```
-ॐ  upload-product
+
 This command attempts to upload a product to the Ops Manager
 
-Usage: om [options] upload-product [<args>]
+Usage:
+  om [options] upload-product [<args>]
+
+Flags:
+  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
+  --polling-interval, -pi  int                interval (in seconds) at which to print status (default: 1)
+  --product, -p            string (required)  path to product
+  --product-version        string             version of the provided product file to be used for validation
+  --shasum                 string             shasum of the provided product file to be used for validation
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -27,13 +37,6 @@ Usage: om [options] upload-product [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
-  --polling-interval, -pi  int                interval (in seconds) at which to print status (default: 1)
-  --product, -p            string (required)  path to product
-  --product-version        string             version of the provided product file to be used for validation
-  --shasum                 string             shasum of the provided product file to be used for validation
 
 ```
 

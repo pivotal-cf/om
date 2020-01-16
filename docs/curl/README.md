@@ -7,10 +7,20 @@ The `curl` command will help you make arbitrary API calls against the Ops Manage
 
 ## Command Usage
 ```
-ॐ  curl
+
 This command issues an authenticated API request as defined in the arguments
 
-Usage: om [options] curl [<args>]
+Usage:
+  om [options] curl [<args>]
+
+Flags:
+  --data, -d     string             api request payload
+  --header, -H   string (variadic)  used to specify custom headers with your command (default: Content-Type: application/json)
+  --path, -p     string (required)  path to api endpoint
+  --request, -x  string             http verb (default: GET)
+  --silent, -s   bool               only write response headers to stderr if response status is 4XX or 5XX
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,13 +36,6 @@ Usage: om [options] curl [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --data, -d     string             api request payload
-  --header, -H   string (variadic)  used to specify custom headers with your command (default: Content-Type: application/json)
-  --path, -p     string (required)  path to api endpoint
-  --request, -x  string             http verb (default: GET)
-  --silent, -s   bool               only write response headers to stderr if response status is 4XX or 5XX
 
 ```
 

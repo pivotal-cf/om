@@ -15,10 +15,21 @@ Once configured, changes will not take affect until the next [`apply-changes`](.
 
 ## Command Usage
 ```
-ॐ  configure-director
+
 This authenticated command configures the director.
 
-Usage: om [options] configure-director [<args>]
+Usage:
+  om [options] configure-director [<args>]
+
+Flags:
+  --config, -c                string (required)  path to yml file containing all config fields (see docs/configure-director/README.md for format)
+  --ignore-verifier-warnings  bool               option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER
+  --ops-file                  string (variadic)  YAML operations file
+  --var, -v                   string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV     string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-file                 string (variadic)  Load variables from a YAML file
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -34,14 +45,6 @@ Usage: om [options] configure-director [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c                string (required)  path to yml file containing all config fields (see docs/configure-director/README.md for format)
-  --ignore-verifier-warnings  bool               option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER
-  --ops-file                  string (variadic)  YAML operations file
-  --var, -v                   string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV     string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
-  --vars-file                 string (variadic)  Load variables from a YAML file
 
 ```
 

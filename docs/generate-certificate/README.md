@@ -7,10 +7,16 @@ This authenticated command generates a new RSA public/private certificate signed
 
 ## Command Usage
 ```
-ॐ  generate-certificate
+
 This authenticated command generates a new RSA public/private certificate signed by Ops Manager’s root CA certificate
 
-Usage: om [options] generate-certificate [<args>]
+Usage:
+  om [options] generate-certificate [<args>]
+
+Flags:
+  --domains, -d  string (required, variadic)  domains to generate certificates, can include wildcard domains. Can be delimited by comma, specified in multiple flags, or both
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,9 +32,6 @@ Usage: om [options] generate-certificate [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --domains, -d  string (required, variadic)  domains to generate certificates, can include wildcard domains. Can be delimited by comma, specified in multiple flags, or both
 
 ```
 

@@ -9,10 +9,29 @@ To set up your Ops Manager with internal authentication instead, use `configure-
 
 ## Command Usage
 ```
-ॐ  configure-saml-authentication
+
 This unauthenticated command helps setup the authentication mechanism for your Ops Manager with SAML.
 
-Usage: om [options] configure-saml-authentication [<args>]
+Usage:
+  om [options] configure-saml-authentication [<args>]
+
+Flags:
+  --config, -c                     string             path to yml file for configuration (keys must match the following command line flags)
+  --decryption-passphrase, -dp     string (required)  passphrase used to encrypt the installation
+  --http-proxy-url                 string             proxy for outbound HTTP network traffic
+  --https-proxy-url                string             proxy for outbound HTTPS network traffic
+  --no-proxy                       string             comma-separated list of hosts that do not go through the proxy
+  --precreated-client-secret       string             create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option
+  --saml-bosh-idp-metadata         string (required)  XML, or URL to XML, for the IDP that BOSH should use
+  --saml-idp-metadata              string (required)  XML, or URL to XML, for the IDP that Ops Manager should use
+  --saml-rbac-admin-group          string (required)  If SAML is specified, please provide the admin group for your SAML
+  --saml-rbac-groups-attribute     string (required)  If SAML is specified, please provide the groups attribute for your SAML
+  --skip-create-bosh-admin-client  bool               create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false.
+  --var                            string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV          string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-file                      string (variadic)  Load variables from a YAML file
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -28,22 +47,6 @@ Usage: om [options] configure-saml-authentication [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --config, -c                     string             path to yml file for configuration (keys must match the following command line flags)
-  --decryption-passphrase, -dp     string (required)  passphrase used to encrypt the installation
-  --http-proxy-url                 string             proxy for outbound HTTP network traffic
-  --https-proxy-url                string             proxy for outbound HTTPS network traffic
-  --no-proxy                       string             comma-separated list of hosts that do not go through the proxy
-  --precreated-client-secret       string             create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option
-  --saml-bosh-idp-metadata         string (required)  XML, or URL to XML, for the IDP that BOSH should use
-  --saml-idp-metadata              string (required)  XML, or URL to XML, for the IDP that Ops Manager should use
-  --saml-rbac-admin-group          string (required)  If SAML is specified, please provide the admin group for your SAML
-  --saml-rbac-groups-attribute     string (required)  If SAML is specified, please provide the groups attribute for your SAML
-  --skip-create-bosh-admin-client  bool               create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false.
-  --var                            string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV          string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file                      string (variadic)  Load variables from a YAML file
 
 ```
 

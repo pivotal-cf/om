@@ -7,10 +7,22 @@ The `create-vm-extension` command will create or update an existing vm extension
 
 ## Command Usage
 ```
-ॐ  create-vm-extension
+
 This creates/updates a VM extension
 
-Usage: om [options] create-vm-extension [<args>]
+Usage:
+  om [options] create-vm-extension [<args>]
+
+Flags:
+  --cloud-properties, -cp  string             cloud properties in JSON format
+  --config, -c             string             path to yml file containing all config fields (see docs/create-vm-extension/README.md for format)
+  --name, -n               string             VM extension name
+  --ops-file, -o           string (variadic)  YAML operations file
+  --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)  Load variables from a YAML file
+
+Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
   --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
   --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
@@ -26,15 +38,6 @@ Usage: om [options] create-vm-extension [<args>]
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
   OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-
-Command Arguments:
-  --cloud-properties, -cp  string             cloud properties in JSON format
-  --config, -c             string             path to yml file containing all config fields (see docs/create-vm-extension/README.md for format)
-  --name, -n               string             VM extension name
-  --ops-file, -o           string (variadic)  YAML operations file
-  --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l          string (variadic)  Load variables from a YAML file
 
 ```
 
