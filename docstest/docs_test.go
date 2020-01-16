@@ -67,15 +67,20 @@ func getCommandNames() []string {
 
 	output := strings.Split(string(session.Out.Contents()), "\n")
 
-	var isCommand bool
+	var inTheCommandZone bool
 	var commands []string
 	for _, commandLine := range output {
-		if strings.Contains(commandLine, "Commands:") && !isCommand {
-			isCommand = true
+		if strings.Contains(commandLine, "Commands:") && !inTheCommandZone {
+			inTheCommandZone = true
 			continue
 		}
 
-		if isCommand && commandLine != "" {
+		if strings.Contains(commandLine, "Global Flags:") {
+			inTheCommandZone = false
+			break
+		}
+
+		if inTheCommandZone && commandLine != "" {
 			splitCommandLine := strings.Fields(commandLine)
 			commands = append(commands, splitCommandLine[0])
 		}

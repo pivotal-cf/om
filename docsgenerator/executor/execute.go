@@ -32,15 +32,20 @@ func (ex Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
 
 	outputLines := strings.Split(string(output), "\n")
 
-	var isCommand bool
+	var inTheCommandZone bool
 	commands := make(map[string]string)
 	for _, commandLine := range outputLines {
-		if strings.Contains(commandLine, "Commands:") && !isCommand {
-			isCommand = true
+		if strings.Contains(commandLine, "Commands:") && !inTheCommandZone {
+			inTheCommandZone = true
 			continue
 		}
 
-		if isCommand && commandLine != "" {
+		if strings.Contains(commandLine, "Global Flags:") {
+			inTheCommandZone = false
+			break
+		}
+
+		if inTheCommandZone && commandLine != "" {
 			splitCommandLine := strings.Fields(commandLine)
 			commands[splitCommandLine[0]] = strings.Join(splitCommandLine[1:], " ")
 		}

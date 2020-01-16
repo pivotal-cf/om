@@ -18,12 +18,12 @@ var _ = Describe("Executor", func() {
 		Expect(string(output)).To(Equal("1.2.3\n"))
 	})
 
-	It("retrieves the command names from om", func() {
-		os.Setenv("STUB_OUTPUT", `ॐ
+	FIt("retrieves the command names from om", func() {
+		os.Setenv("STUB_OUTPUT", `
 om helps you interact with an Ops Manager
 
-Usage: om [options] <command> [<args>]
-  --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
+Usage: 
+  om [options] <command> [<args>]
 
 Commands:
   activate-certificate-authority  activates a certificate authority on the Ops Manager
@@ -31,6 +31,9 @@ Commands:
   assign-multi-stemcell           assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+
   errands                         list errands for a product
   interpolate                     interpolates variables into a manifest
+
+Global Flags:
+  --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
 `)
 
 		ex := executor.NewExecutor(pathToStub)
