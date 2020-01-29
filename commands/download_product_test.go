@@ -70,6 +70,22 @@ var _ = Describe("DownloadProduct", func() {
 
 				commandArgs := []string{
 					"--pivnet-api-token", "token",
+					"--file-glob", "*.pivotal",
+					"--pivnet-product-slug", "elastic-runtime",
+					"--product-version", "2.0.0",
+					"--output-directory", tempDir,
+				}
+
+				err = command.Execute(commandArgs)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("supports the pivnet-file-glob alias for file-glob", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).ToNot(HaveOccurred())
+
+				commandArgs := []string{
+					"--pivnet-api-token", "token",
 					"--pivnet-file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version", "2.0.0",
@@ -98,7 +114,7 @@ var _ = Describe("DownloadProduct", func() {
 
 				commandArgs := []string{
 					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version-regex", `2\..\..*`,
 					"--output-directory", tempDir,
@@ -136,7 +152,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					commandArgs := []string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version-regex", `2\..\..*`,
 						"--output-directory", tempDir,
@@ -163,7 +179,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					commandArgs := []string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version-regex", `2\..\..*`,
 						"--output-directory", tempDir,
@@ -194,7 +210,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					commandArgs := []string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
@@ -224,7 +240,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					commandArgs := []string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
@@ -264,7 +280,7 @@ var _ = Describe("DownloadProduct", func() {
 
 				commandArgs := []string{
 					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version", "2.0.0",
 					"--output-directory", tempDir,
@@ -322,7 +338,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.tgz",
+						"--file-glob", "*.tgz",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
@@ -397,7 +413,7 @@ var _ = Describe("DownloadProduct", func() {
 				It("does not download the file again", func() {
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
@@ -410,7 +426,7 @@ var _ = Describe("DownloadProduct", func() {
 				It("does not panic when downloading the stemcell if file already downloaded", func() {
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--stemcell-iaas", "google",
@@ -427,7 +443,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
@@ -445,7 +461,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
@@ -469,7 +485,7 @@ var _ = Describe("DownloadProduct", func() {
 			When("the config file contains variables", func() {
 				const downloadProductConfigWithVariablesTmpl = `---
 pivnet-api-token: "token"
-pivnet-file-glob: "*.pivotal"
+file-glob: "*.pivotal"
 pivnet-product-slug: ((product-slug))
 product-version: 2.0.0
 output-directory: %s
@@ -571,7 +587,7 @@ output-directory: %s
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "mayhem-crew",
 						"--product-version", `2.0.0`,
 						"--output-directory", tempDir,
@@ -589,7 +605,7 @@ output-directory: %s
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "mayhem-crew",
 						"--product-version", `2.0.0`,
 						"--output-directory", tempDir,
@@ -618,7 +634,7 @@ output-directory: %s
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "mayhem-crew",
 						"--product-version", `2.0.0`,
 						"--output-directory", tempDir,
@@ -635,7 +651,7 @@ output-directory: %s
 
 					err = command.Execute([]string{
 						"--pivnet-api-token", "token",
-						"--pivnet-file-glob", "*.pivotal",
+						"--file-glob", "*.pivotal",
 						"--pivnet-product-slug", "mayhem-crew",
 						"--product-version", `2.0.0`,
 						"--output-directory", tempDir,
@@ -674,7 +690,7 @@ output-directory: %s
 				Expect(err).ToNot(HaveOccurred())
 
 				err = command.Execute([]string{
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "mayhem-crew",
 					"--product-version", `2.0.0`,
 					"--output-directory", tempDir,
@@ -690,7 +706,7 @@ output-directory: %s
 
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version", "2.0.0",
 					"--product-version-regex", ".*",
@@ -707,7 +723,7 @@ output-directory: %s
 
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--output-directory", tempDir,
 				})
@@ -726,7 +742,7 @@ output-directory: %s
 
 				err = command.Execute([]string{
 					"--pivnet-api-token", "token",
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "elastic-runtime",
 					"--product-version", "2.0.0",
 					"--output-directory", tempDir,

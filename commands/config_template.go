@@ -19,16 +19,16 @@ type ConfigTemplate struct {
 		VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
 		Vars       []string `long:"var"                                  description:"Load variable from the command line. Format: VAR=VAL"`
 
-		PivnetApiToken    string `long:"pivnet-api-token"                                                                                                              `
-		PivnetProductSlug string `long:"pivnet-product-slug"            description:"the product name in pivnet"                                                       `
-		ProductVersion    string `long:"product-version"                description:"the version of the product from which to generate a template"                     `
-		PivnetFileGlob    string `long:"pivnet-file-glob"    short:"f"  description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal" `
-		PivnetDisableSSL  bool   `long:"pivnet-disable-ssl"             description:"whether to disable ssl validation when contacting the Pivotal Network"`
+		PivnetApiToken    string `long:"pivnet-api-token"`
+		PivnetProductSlug string `long:"pivnet-product-slug"                          description:"the product name in pivnet"`
+		ProductVersion    string `long:"product-version"                              description:"the version of the product from which to generate a template"`
+		FileGlob          string `long:"file-glob" short:"f" alias:"pivnet-file-glob" description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal"`
+		PivnetDisableSSL  bool   `long:"pivnet-disable-ssl"                           description:"whether to disable ssl validation when contacting the Pivotal Network"`
 
 		ProductPath string `long:"product-path" description:"path to product file"`
 
-		OutputDirectory string `long:"output-directory"               description:"a directory to create templates under. must already exist."                       required:"true"`
-		ExcludeVersion  bool   `long:"exclude-version"                description:"if set, will not output a version-specific directory"`
+		OutputDirectory string `long:"output-directory" description:"a directory to create templates under. must already exist." required:"true"`
+		ExcludeVersion  bool   `long:"exclude-version"  description:"if set, will not output a version-specific directory"`
 	}
 }
 
@@ -44,7 +44,7 @@ var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 		if options.ProductPath != "" {
 			return metadata.NewFileProvider(options.ProductPath)
 		}
-		return metadata.NewPivnetProvider(pivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.PivnetFileGlob, options.PivnetDisableSSL)
+		return metadata.NewPivnetProvider(pivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.FileGlob, options.PivnetDisableSSL)
 	}
 }
 

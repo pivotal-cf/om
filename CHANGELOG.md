@@ -47,6 +47,11 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 4.4.2
+
+### Features
+- To mitigate confusion, the `pivnet-file-glob` param for `download-product` now has an alias of `file-glob`.
+
 ## 4.4.1
 
 ### Features

@@ -64,7 +64,7 @@ var _ = Describe("download-product command", func() {
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
-					"--pivnet-file-glob", "example-product.pivotal",
+					"--file-glob", "example-product.pivotal",
 					"--pivnet-product-slug", "pivnet-example-slug",
 					"--product-version", "1.10.1",
 					"--output-directory", tmpDir,
@@ -96,7 +96,7 @@ var _ = Describe("download-product command", func() {
 
 				By("running the command again, it uses the cache")
 				command = exec.Command(pathToMain, "download-product",
-					"--pivnet-file-glob", "*.pivotal",
+					"--file-glob", "*.pivotal",
 					"--pivnet-product-slug", "pivnet-example-slug",
 					"--product-version", "1.10.1",
 					"--output-directory", tmpDir,

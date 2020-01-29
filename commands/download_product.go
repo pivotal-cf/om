@@ -38,26 +38,26 @@ type ProductDownloader interface {
 }
 
 type DownloadProductOptions struct {
-	Source     string   `long:"source"                short:"s"  description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
-	ConfigFile string   `long:"config"                short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
-	OutputDir  string   `long:"output-directory"      short:"o"  description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-	VarsFile   []string `long:"vars-file" short:"l"              description:"load variables from a YAML file"`
-	Vars       []string `long:"var"                              description:"Load variable from the command line. Format: VAR=VAL"`
+	Source     string   `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
+	ConfigFile string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
+	OutputDir  string   `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)" experimental:"true"`
+	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
+	Vars       []string `long:"var"                                  description:"Load variable from the command line. Format: VAR=VAL"`
 
-	PivnetFileGlob      string `long:"pivnet-file-glob"      short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
-	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"  description:"path to product" required:"true"`
-	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"               description:"whether to disable ssl validation when contacting the Pivotal Network"`
-	PivnetToken         string `long:"pivnet-api-token"      short:"t"  description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
-	ProductVersion      string `long:"product-version"       short:"v"  description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
-	ProductVersionRegex string `long:"product-version-regex" short:"r"  description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
+	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
+	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
+	FileGlob            string `long:"file-glob"             short:"f" alias:"pivnet-file-glob" description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
+	ProductVersion      string `long:"product-version"       short:"v"                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
-	Bucket       string `long:"blobstore-bucket" alias:"s3-bucket,gcs-bucket,azure-container" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath  string `long:"blobstore-product-path" alias:"s3-product-path,gcs-product-path,azure-product-path" description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
+	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
+	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
 	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
 
 	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json" description:"the service account key JSON"`
-	GCSProjectID          string `long:"gcs-project-id" alias:"gcp-project-id" description:"the project id for the bucket's gcp account"`
+	GCSProjectID          string `long:"gcs-project-id"           alias:"gcp-project-id"           description:"the project id for the bucket's gcp account"`
 
 	S3AccessKeyID     string `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
 	S3AuthType        string `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
@@ -68,10 +68,10 @@ type DownloadProductOptions struct {
 	S3EnableV2Signing bool   `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
 
 	AzureStorageAccount string `long:"azure-storage-account" description:"the name of the storage account where the container exists"`
-	AzureKey            string `long:"azure-storage-key" description:"the access key for the storage account"`
+	AzureKey            string `long:"azure-storage-key"     description:"the access key for the storage account"`
 
-	Stemcell     bool   `long:"download-stemcell"                description:"no-op for backwards compatibility"`
-	StemcellIaas string `long:"stemcell-iaas"                    description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
+	Stemcell     bool   `long:"download-stemcell" description:"no-op for backwards compatibility"`
+	StemcellIaas string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'"`
 }
 
 type DownloadProduct struct {
@@ -129,7 +129,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 	productFileName, productFileArtifact, err := c.downloadProductFile(
 		c.Options.PivnetProductSlug,
 		productVersion,
-		c.Options.PivnetFileGlob,
+		c.Options.FileGlob,
 		fmt.Sprintf("[%s,%s]", c.Options.PivnetProductSlug, productVersion),
 	)
 	if err != nil {

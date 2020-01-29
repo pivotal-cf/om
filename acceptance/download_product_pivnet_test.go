@@ -127,7 +127,7 @@ var _ = Describe("download-product command", func() {
 			Expect(err).ToNot(HaveOccurred())
 			command := exec.Command(pathToHTTPSPivnet, "download-product",
 				"--pivnet-api-token", "token",
-				"--pivnet-file-glob", "example-product.pivotal",
+				"--file-glob", "example-product.pivotal",
 				"--pivnet-product-slug", "example-product",
 				"--pivnet-disable-ssl",
 				"--product-version", "1.10.1",

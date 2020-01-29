@@ -276,7 +276,7 @@ var _ = Describe("ConfigTemplate", func() {
 			When("the config file contains variables", func() {
 				const downloadProductConfigWithVariablesTmpl = `---
 pivnet-api-token: "token"
-pivnet-file-glob: "*.pivotal"
+file-glob: "*.pivotal"
 pivnet-product-slug: ((product-slug))
 product-version: 2.0.0
 output-directory: %s

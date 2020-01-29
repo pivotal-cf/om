@@ -18,7 +18,7 @@ var _ = Describe("Executor", func() {
 		Expect(string(output)).To(Equal("1.2.3\n"))
 	})
 
-	FIt("retrieves the command names from om", func() {
+	It("retrieves the command names from om", func() {
 		os.Setenv("STUB_OUTPUT", `
 om helps you interact with an Ops Manager
 
