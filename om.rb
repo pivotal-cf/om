@@ -2,16 +2,16 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "4.4.1"
+  version "4.4.2"
   bottle :unneeded
 
   if OS.mac?
-    url "https://github.com/pivotal-cf/om/releases/download/4.4.1/om-darwin-4.4.1.tar.gz"
-    sha256 "2200764dc6da4f7aaaa95fc130e98e02ebccabab6d47210c7e807ff8f6e76f65"
+    url "https://github.com/pivotal-cf/om/releases/download/4.4.2/om-darwin-4.4.2.tar.gz"
+    sha256 "38497a6048c4ca26fb06fbf43fa9115975b27a4b5435b10dfca3cbd00ba7811e"
   elsif OS.linux?
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/4.4.1/om-linux-4.4.1.tar.gz"
-      sha256 "77d789729d88065425502974897a23b0cc3fc42111947206455392e90bf9ba1b"
+      url "https://github.com/pivotal-cf/om/releases/download/4.4.2/om-linux-4.4.2.tar.gz"
+      sha256 "65efcfd515d38ecd6e4273a5ad953e618758963dc13d363a34aa29b9842bb7d3"
     end
   end
 
