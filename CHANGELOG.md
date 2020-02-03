@@ -51,6 +51,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ### Features
 - To mitigate confusion, the `pivnet-file-glob` param for `download-product` now has an alias of `file-glob`.
+- Included interpolation for the `update-ssl-certificate` command.
+  A _test_ to see if it is valuable to add it to other commands.
 
 ## 4.4.1
 
