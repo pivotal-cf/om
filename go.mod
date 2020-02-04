@@ -24,7 +24,6 @@ require (
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/mock v1.4.0 // indirect
-	github.com/google/btree v1.0.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/graymeta/stow v0.2.4
 	github.com/hashicorp/go-version v1.2.0
