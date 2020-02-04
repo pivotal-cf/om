@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	pivnet "github.com/pivotal-cf/go-pivnet"
+	pivnet "github.com/pivotal-cf/go-pivnet/v4"
 	"github.com/pivotal-cf/om/download_clients"
 )
 

@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet"
-	"github.com/pivotal-cf/go-pivnet/download"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/logger"
-	"github.com/pivotal-cf/go-pivnet/logshim"
+	"github.com/pivotal-cf/go-pivnet/v4"
+	"github.com/pivotal-cf/go-pivnet/v4/download"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v4/logger"
+	"github.com/pivotal-cf/go-pivnet/v4/logshim"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/pivnet-cli/filter"
 	"github.com/pivotal-cf/pivnet-cli/gp"
@@ -20,7 +20,7 @@ import (
 
 //counterfeiter:generate -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
 type PivnetDownloader interface {
-	ReleasesForProductSlug(productSlug string) ([]pivnet.Release, error)
+	ReleasesForProductSlug(string, ...pivnet.QueryParameter) ([]pivnet.Release, error)
 	ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error)
 	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
 	DownloadProductFile(location *download.FileInfo, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error

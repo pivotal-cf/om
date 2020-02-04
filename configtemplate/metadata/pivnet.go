@@ -13,8 +13,8 @@ import (
 	"regexp"
 	"strings"
 
-	pivnetapi "github.com/pivotal-cf/go-pivnet"
-	"github.com/pivotal-cf/go-pivnet/logshim"
+	pivnetapi "github.com/pivotal-cf/go-pivnet/v4"
+	"github.com/pivotal-cf/go-pivnet/v4/logshim"
 	"github.com/pkg/errors"
 	"howett.net/ranger"
 )

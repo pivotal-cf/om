@@ -5,8 +5,8 @@ import (
 	"io"
 	"sync"
 
-	pivnet "github.com/pivotal-cf/go-pivnet"
-	"github.com/pivotal-cf/go-pivnet/download"
+	pivnet "github.com/pivotal-cf/go-pivnet/v4"
+	"github.com/pivotal-cf/go-pivnet/v4/download"
 	"github.com/pivotal-cf/om/download_clients"
 )
 
@@ -68,10 +68,11 @@ type PivnetDownloader struct {
 		result1 pivnet.Release
 		result2 error
 	}
-	ReleasesForProductSlugStub        func(string) ([]pivnet.Release, error)
+	ReleasesForProductSlugStub        func(string, ...pivnet.QueryParameter) ([]pivnet.Release, error)
 	releasesForProductSlugMutex       sync.RWMutex
 	releasesForProductSlugArgsForCall []struct {
 		arg1 string
+		arg2 []pivnet.QueryParameter
 	}
 	releasesForProductSlugReturns struct {
 		result1 []pivnet.Release
@@ -341,16 +342,17 @@ func (fake *PivnetDownloader) ReleaseForVersionReturnsOnCall(i int, result1 pivn
 	}{result1, result2}
 }
 
-func (fake *PivnetDownloader) ReleasesForProductSlug(arg1 string) ([]pivnet.Release, error) {
+func (fake *PivnetDownloader) ReleasesForProductSlug(arg1 string, arg2 ...pivnet.QueryParameter) ([]pivnet.Release, error) {
 	fake.releasesForProductSlugMutex.Lock()
 	ret, specificReturn := fake.releasesForProductSlugReturnsOnCall[len(fake.releasesForProductSlugArgsForCall)]
 	fake.releasesForProductSlugArgsForCall = append(fake.releasesForProductSlugArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("ReleasesForProductSlug", []interface{}{arg1})
+		arg2 []pivnet.QueryParameter
+	}{arg1, arg2})
+	fake.recordInvocation("ReleasesForProductSlug", []interface{}{arg1, arg2})
 	fake.releasesForProductSlugMutex.Unlock()
 	if fake.ReleasesForProductSlugStub != nil {
-		return fake.ReleasesForProductSlugStub(arg1)
+		return fake.ReleasesForProductSlugStub(arg1, arg2...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -365,17 +367,17 @@ func (fake *PivnetDownloader) ReleasesForProductSlugCallCount() int {
 	return len(fake.releasesForProductSlugArgsForCall)
 }
 
-func (fake *PivnetDownloader) ReleasesForProductSlugCalls(stub func(string) ([]pivnet.Release, error)) {
+func (fake *PivnetDownloader) ReleasesForProductSlugCalls(stub func(string, ...pivnet.QueryParameter) ([]pivnet.Release, error)) {
 	fake.releasesForProductSlugMutex.Lock()
 	defer fake.releasesForProductSlugMutex.Unlock()
 	fake.ReleasesForProductSlugStub = stub
 }
 
-func (fake *PivnetDownloader) ReleasesForProductSlugArgsForCall(i int) string {
+func (fake *PivnetDownloader) ReleasesForProductSlugArgsForCall(i int) (string, []pivnet.QueryParameter) {
 	fake.releasesForProductSlugMutex.RLock()
 	defer fake.releasesForProductSlugMutex.RUnlock()
 	argsForCall := fake.releasesForProductSlugArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *PivnetDownloader) ReleasesForProductSlugReturns(result1 []pivnet.Release, result2 error) {
