@@ -47,6 +47,17 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 4.5.0
+
+### Features
+- `interpolate` now supports the dot notation to reference array values.
+  For example,
+
+  ```bash
+  $ echo "person: ((people.1))" | om interpolate -c - -l <(echo "people: [Bob, Susie, Diane]")
+  person: Susie
+  ```
+
 ## 4.4.2
 
 ### Features
