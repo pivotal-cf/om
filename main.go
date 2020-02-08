@@ -205,7 +205,7 @@ func main() {
 	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
 	commandSet["tile-metadata"] = commands.NewDeprecatedProductMetadata(stdout)
 	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
-	commandSet["update-ssl-certificate"] = commands.NewUpdateSSLCertificate(api, stdout)
+	commandSet["update-ssl-certificate"] = commands.NewUpdateSSLCertificate(os.Environ, api, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, api, stdout)
 	commandSet["version"] = commands.NewVersion(version, os.Stdout)

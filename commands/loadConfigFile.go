@@ -2,11 +2,12 @@ package commands
 
 import (
 	"fmt"
+	"reflect"
+	"strconv"
+
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/interpolate"
 	"gopkg.in/yaml.v2"
-	"reflect"
-	"strconv"
 )
 
 // Load the config file, (optionally) load the vars file, vars env as well
