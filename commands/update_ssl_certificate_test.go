@@ -58,7 +58,7 @@ var _ = Describe("UpdateSSLCertificate", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Please allow about 1 min for the new certificate to take effect.\n"))
 		})
 
-		Context("with a config file", func() {
+		Context("with a config file and no vars", func() {
 			var (
 				configFile *os.File
 				err        error
@@ -115,7 +115,7 @@ private-key-pem: some PrivateKey
 			})
 		})
 
-		Context("with a config file", func() {
+		Context("with a config file and vars", func() {
 			var (
 				configFile *os.File
 				varsFile   *os.File
