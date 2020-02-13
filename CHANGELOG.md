@@ -57,13 +57,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   $ echo "person: ((people.1))" | om interpolate -c - -l <(echo "people: [Bob, Susie, Diane]")
   person: Susie
   ```
-
+  
 ## 4.4.2
 
 ### Features
 - To mitigate confusion, the `pivnet-file-glob` param for `download-product` now has an alias of `file-glob`.
-- Included interpolation for the `update-ssl-certificate` command.
-  A _test_ to see if it is valuable to add it to other commands.
+- `update-ssl-certificate` now supports passing `certificate-pem` and `private-key-pem`
+  as `--config` arguments. The command also supports the `--vars-file` flag for interpolation.
+  This closes issue [#463](https://github.com/pivotal-cf/om/issues/463).
 
 ## 4.4.1
 
@@ -86,7 +87,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This might be useful as a sanity review before apply-changes;
   see the detailed documentation for details/provisos.
 - `config-template` now includes the option to use a local product file with `--product-path`. 
-  This resolves issue #413.
+  This resolves issue [#413](https://github.com/pivotal-cf/om/issues/413).
 - `apply-changes` can for recreate the VMs that will apply with `--recreate-vms`.
   This is useful for the [three-Rs of security](https://devopedia.org/three-rs-of-security),
   to ensure the _repaving_.
