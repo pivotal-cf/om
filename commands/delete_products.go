@@ -45,8 +45,8 @@ func (dp DeleteProduct) Execute(args []string) error {
 
 func (dp DeleteProduct) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This command deletes the named product from the targeted Ops Manager",
-		ShortDescription: "deletes a product from the Ops Manager",
+		Description:      "This command deletes the specified unused product from the targeted Ops Manager",
+		ShortDescription: "deletes an unused product from the Ops Manager",
 		Flags:            dp.Options,
 	}
 }

@@ -72,8 +72,8 @@ var _ = Describe("DeleteProduct", func() {
 		It("returns the usage", func() {
 			usage := command.Usage()
 			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This command deletes the named product from the targeted Ops Manager",
-				ShortDescription: "deletes a product from the Ops Manager",
+				Description:      "This command deletes the specified unused product from the targeted Ops Manager",
+				ShortDescription: "deletes an unused product from the Ops Manager",
 				Flags:            command.Options,
 			}))
 		})
