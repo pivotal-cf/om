@@ -3,12 +3,12 @@
 
 # `om delete-product`
 
-This command deletes the named product from the targeted Ops Manager
+This command deletes the specified unused product from the targeted Ops Manager
 
 ## Command Usage
 ```
 
-This command deletes the named product from the targeted Ops Manager
+This command deletes the specified unused product from the targeted Ops Manager
 
 Usage:
   om [options] delete-product [<args>]

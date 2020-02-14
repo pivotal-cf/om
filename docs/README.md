@@ -32,7 +32,7 @@ on a vSphere Ops Manager.
 | [curl](curl/README.md) | issues an authenticated API request |
 | [delete-certificate-authority](delete-certificate-authority/README.md) | deletes a certificate authority on the Ops Manager |
 | [delete-installation](delete-installation/README.md) | deletes all the products on the Ops Manager targeted |
-| [delete-product](delete-product/README.md) | deletes a product from the Ops Manager |
+| [delete-product](delete-product/README.md) | deletes an unused product from the Ops Manager |
 | [delete-ssl-certificate](delete-ssl-certificate/README.md) | deletes certificate applied to Ops Manager |
 | [delete-unused-products](delete-unused-products/README.md) | deletes unused products on the Ops Manager targeted |
 | [deployed-manifest](deployed-manifest/README.md) | prints the deployed manifest for a product |

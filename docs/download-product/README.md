@@ -24,6 +24,8 @@ Flags:
     (aliases: --s3-stemcell-path, --gcs-stemcell-path, --azure-stemcell-path)
   --config, -c                 string             path to yml file for configuration (keys must match the following command line flags)
   --download-stemcell          bool               no-op for backwards compatibility
+  --file-glob, -f              string (required)  glob to match files within Pivotal Network product to be downloaded.
+    (aliases: --pivnet-file-glob)
   --gcs-project-id             string             the project id for the bucket's gcp account
     (aliases: --gcp-project-id)
   --gcs-service-account-json   string             the service account key JSON
@@ -31,7 +33,6 @@ Flags:
   --output-directory, -o       string (required)  directory path to which the file will be outputted. File Name will be preserved from Pivotal Network
   --pivnet-api-token, -t       string             API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet.
   --pivnet-disable-ssl         bool               whether to disable ssl validation when contacting the Pivotal Network
-  --pivnet-file-glob, -f       string (required)  glob to match files within Pivotal Network product to be downloaded.
   --pivnet-product-slug, -p    string (required)  path to product
   --product-version, -v        string             version of the product-slug to download files from. Incompatible with --product-version-regex flag.
   --product-version-regex, -r  string             regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag.

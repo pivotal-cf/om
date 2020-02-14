@@ -16,10 +16,11 @@ Usage:
 Flags:
   --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
   --exclude-version        bool               if set, will not output a version-specific directory
+  --file-glob, -f          string             a glob to match exactly one file in the pivnet product slug (default: *.pivotal)
+    (aliases: --pivnet-file-glob)
   --output-directory       string (required)  a directory to create templates under. must already exist.
   --pivnet-api-token       string           
   --pivnet-disable-ssl     bool               whether to disable ssl validation when contacting the Pivotal Network
-  --pivnet-file-glob, -f   string             a glob to match exactly one file in the pivnet product slug (default: *.pivotal)
   --pivnet-product-slug    string             the product name in pivnet
   --product-path           string             path to product file
   --product-version        string             the version of the product from which to generate a template
