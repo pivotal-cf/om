@@ -275,7 +275,7 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, prod
 
 func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemcellVersion string) error {
 	assignStemcellFileName := "assign-stemcell.yml"
-	c.stderr.Printf("Writing a assign stemcll artifact to %s", assignStemcellFileName)
+	c.stderr.Printf("Writing a assign stemcell artifact to %s", assignStemcellFileName)
 	metadata, err := getProductMetadata(productFileName)
 	if err != nil {
 		return fmt.Errorf("cannot parse product metadata: %s", err)
