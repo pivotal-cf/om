@@ -19,13 +19,7 @@ var _ = Describe("configure-authentication command", func() {
 
 	BeforeEach(func() {
 		server = createTLSServer()
-	})
 
-	AfterEach(func() {
-		server.Close()
-	})
-
-	It("configures the admin user account on OpsManager", func() {
 		server.AppendHandlers(
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/login/ensure_availability"),
@@ -66,7 +60,13 @@ var _ = Describe("configure-authentication command", func() {
 				ghttp.RespondWith(http.StatusFound, "", map[string][]string{"Location": {"/auth/cloudfoundry"}}),
 			),
 		)
+	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
+	It("configures the admin user account on OpsManager", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL(),
 			"--skip-ssl-validation",
@@ -78,6 +78,32 @@ var _ = Describe("configure-authentication command", func() {
 			"--https-proxy-url", "http://https-proxy.com",
 			"--no-proxy", "10.10.10.10,11.11.11.11",
 		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session, "5s").Should(gexec.Exit(0))
+
+		Expect(session.Out).To(gbytes.Say("configuring internal userstore..."))
+		Expect(session.Out).To(gbytes.Say("waiting for configuration to complete..."))
+		Expect(session.Out).To(gbytes.Say("configuration complete"))
+	})
+
+	It("supports environment variables for username, password, and decryption-passphrase", func() {
+		command := exec.Command(pathToMain,
+			"--target", server.URL(),
+			"--skip-ssl-validation",
+			"configure-authentication",
+			"--http-proxy-url", "http://http-proxy.com",
+			"--https-proxy-url", "http://https-proxy.com",
+			"--no-proxy", "10.10.10.10,11.11.11.11",
+		)
+
+		command.Env = append(command.Env, []string{
+			"OM_USERNAME=username",
+			"OM_PASSWORD=password",
+			"OM_DECRYPTION_PASSPHRASE=passphrase",
+		}...)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
