@@ -53,6 +53,11 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `configure-authentication` now supports
   the `OM_DECRYPTION_PASSPHRASE` environment variable.
 
+### Bug Fixes
+- `configure-director` now correctly handles when you don't name your iaas_configuration `default` on vSphere.
+  Previously, naming a configuration anything other than `default` would result in an extra, empty `default` configuration.
+  This closes issue [#469](https://github.com/pivotal-cf/om/issues/469).
+
 ## 4.5.0
 
 ### Features
