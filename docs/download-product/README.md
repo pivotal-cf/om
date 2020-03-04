@@ -44,7 +44,7 @@ Flags:
   --s3-region-name             string             bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'
   --s3-secret-access-key       string             secret key for the s3 compatible blobstore
   --source, -s                 string             enables download from external sources when set to [s3|gcs|azure|pivnet] (default: pivnet)
-  --stemcell-iaas              string             download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'
+  --stemcell-iaas              string             download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet
   --var                        string (variadic)  Load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV      string (variadic)  **EXPERIMENTAL** load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l              string (variadic)  load variables from a YAML file
