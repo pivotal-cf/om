@@ -153,15 +153,27 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not get information about stemcell: %s", err)
 	}
 
-	stemcellFileName, _, err := c.downloadProductFile(
-		stemcell.Slug(),
-		stemcell.Version(),
-		fmt.Sprintf("*%s*", c.Options.StemcellIaas),
-		fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcell.Version()),
-	)
+	stemcellGlobs := []string{
+		fmt.Sprintf("light*bosh*%s*", c.Options.StemcellIaas),
+		fmt.Sprintf("bosh*%s*", c.Options.StemcellIaas),
+	}
+
+	stemcellFileName, err := "", nil
+	for _, stemcellGlob := range stemcellGlobs {
+		stemcellFileName, _, err = c.downloadProductFile(
+			stemcell.Slug(),
+			stemcell.Version(),
+			stemcellGlob,
+			fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcell.Version()),
+		)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		return fmt.Errorf("could not download stemcell: %s\nNo stemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option", err, c.Options.StemcellIaas)
 	}
+
 
 	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
 	if err != nil {

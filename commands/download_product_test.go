@@ -371,6 +371,7 @@ var _ = Describe("DownloadProduct", func() {
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, nil, errors.New("some error"))
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(2, nil, errors.New("some error"))
 
 					sa := &fakes.StemcellArtifacter{}
 					sa.SlugReturns("stemcells-ubuntu-xenial")
@@ -396,6 +397,46 @@ var _ = Describe("DownloadProduct", func() {
 
 					err = command.Execute(commandArgs)
 					Expect(err).To(MatchError(ContainSubstring("No stemcell identified for IaaS \"unknown-iaas\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option")))
+				})
+			})
+
+			When("providing a valid iaas", func() {
+				It("downloads the corresponding light or heavy stemcell", func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						createTempZipFile(file)
+						return nil
+					}
+
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, nil, errors.New("some-error"))
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(2, &fakes.FileArtifacter{}, nil)
+
+					sa := &fakes.StemcellArtifacter{}
+					sa.SlugReturns("stemcells-ubuntu-xenial")
+					sa.VersionReturns("97.190")
+					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--file-glob", "*.tgz",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-iaas", "aws",
+					})
+
+					Expect(err).ToNot(HaveOccurred())
+					_, _ , glob := fakeProductDownloader.GetLatestProductFileArgsForCall(1)
+					Expect(glob).To(Equal("light*bosh*aws*"))
+
+					_, _ , glob = fakeProductDownloader.GetLatestProductFileArgsForCall(2)
+					Expect(glob).To(Equal("bosh*aws*"))
 				})
 			})
 		})
