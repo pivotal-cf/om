@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -254,58 +255,59 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		When("the stemcell-iaas flag is set", func() {
-			BeforeEach(func() {
-				fa := &fakes.FileArtifacter{}
-				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
-				fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+			When("the product has an associated stemcell", func() {
+				BeforeEach(func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
-				fa = &fakes.FileArtifacter{}
-				fa.NameReturns("/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")
-				fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, fa, nil)
+					fa = &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, fa, nil)
 
-				sa := &fakes.StemcellArtifacter{}
-				sa.SlugReturns("stemcells-ubuntu-xenial")
-				sa.VersionReturns("97.190")
-				fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
-			})
+					sa := &fakes.StemcellArtifacter{}
+					sa.SlugReturns("stemcells-ubuntu-xenial")
+					sa.VersionReturns("97.190")
+					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+				})
 
-			It("grabs the latest stemcell for the product that matches the glob", func() {
-				tempDir, err := ioutil.TempDir("", "om-tests-")
-				Expect(err).ToNot(HaveOccurred())
+				It("grabs the latest stemcell for the product that matches the glob", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
 
-				fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
-					createTempZipFile(file)
-					return nil
-				}
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						createTempZipFile(file)
+						return nil
+					}
 
-				commandArgs := []string{
-					"--pivnet-api-token", "token",
-					"--file-glob", "*.pivotal",
-					"--pivnet-product-slug", "elastic-runtime",
-					"--product-version", "2.0.0",
-					"--output-directory", tempDir,
-					"--stemcell-iaas", "google",
-				}
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-iaas", "google",
+					}
 
-				err = command.Execute(commandArgs)
-				Expect(err).ToNot(HaveOccurred())
+					err = command.Execute(commandArgs)
+					Expect(err).ToNot(HaveOccurred())
 
-				Expect(fakeProductDownloader.GetLatestStemcellForProductCallCount()).To(Equal(1))
-				Expect(fakeProductDownloader.GetLatestProductFileCallCount()).To(Equal(2))
-				Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(2))
-				Expect(fakeProductDownloader.GetAllProductVersionsCallCount()).To(Equal(0))
+					Expect(fakeProductDownloader.GetLatestStemcellForProductCallCount()).To(Equal(1))
+					Expect(fakeProductDownloader.GetLatestProductFileCallCount()).To(Equal(2))
+					Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(2))
+					Expect(fakeProductDownloader.GetAllProductVersionsCallCount()).To(Equal(0))
 
-				fa, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(1)
-				Expect(fa.Name()).To(Equal("/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz"))
-				Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz.partial")))
+					fa, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(1)
+					Expect(fa.Name()).To(Equal("/some-account/some-bucket/light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz"))
+					Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz.partial")))
 
-				fileName := path.Join(tempDir, "download-file.json")
-				fileContent, err := ioutil.ReadFile(fileName)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(fileName).To(BeAnExistingFile())
-				downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
-				downloadedStemcellFilePath := path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")
-				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
+					fileName := path.Join(tempDir, "download-file.json")
+					fileContent, err := ioutil.ReadFile(fileName)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(fileName).To(BeAnExistingFile())
+					downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
+					downloadedStemcellFilePath := path.Join(tempDir, "light-bosh-stemcell-97.19-google-kvm-ubuntu-xenial-go_agent.tgz")
+					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`
 							{
 								"product_path": "%s",
 								"product_slug": "elastic-runtime",
@@ -314,18 +316,19 @@ var _ = Describe("DownloadProduct", func() {
 								"stemcell_version": "97.190"
 							}`, downloadedFilePath, downloadedStemcellFilePath)))
 
-				fileName = path.Join(tempDir, "assign-stemcell.yml")
-				fileContent, err = ioutil.ReadFile(fileName)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(fileName).To(BeAnExistingFile())
-				Expect(string(fileContent)).To(MatchJSON(`
+					fileName = path.Join(tempDir, "assign-stemcell.yml")
+					fileContent, err = ioutil.ReadFile(fileName)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(fileName).To(BeAnExistingFile())
+					Expect(string(fileContent)).To(MatchJSON(`
 							{
 								"product": "fake-tile",
 								"stemcell": "97.190"
 							}`))
+				})
 			})
 
-			Context("and the product is not a tile", func() {
+			When("the product is not a tile", func() {
 				BeforeEach(func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.tgz")
@@ -359,6 +362,40 @@ var _ = Describe("DownloadProduct", func() {
 								"product_version": "2.0.0"
 							}`, downloadedFilePath)))
 					Expect(buffer).Should(gbytes.Say("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
+				})
+			})
+
+			When("the a stemcell cannot be downloaded", func() {
+				It("returns an error message", func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, nil, errors.New("some error"))
+
+					sa := &fakes.StemcellArtifacter{}
+					sa.SlugReturns("stemcells-ubuntu-xenial")
+					sa.VersionReturns("97.190")
+					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						createTempZipFile(file)
+						return nil
+					}
+
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-iaas", "unknown-iaas",
+					}
+
+					err = command.Execute(commandArgs)
+					Expect(err).To(MatchError(ContainSubstring("No stemcell identified for IaaS \"unknown-iaas\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option")))
 				})
 			})
 		})

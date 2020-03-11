@@ -93,7 +93,7 @@ func (c BoshDiff) Execute(args []string) error {
 	return nil
 }
 
-func (c BoshDiff) printManifestDiff(diff api.ManifestDiff) (bool) {
+func (c BoshDiff) printManifestDiff(diff api.ManifestDiff) bool {
 	switch diff.Status {
 	case "same":
 		c.logger.Println("no changes\n")
