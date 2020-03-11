@@ -152,7 +152,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 				It("returns an error", func() {
 					client, _ := network.NewUnauthenticatedClient("%%%", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					_, err := client.Do(&http.Request{})
-					Expect(err).To(MatchError("could not parse target url: parse //%%%: invalid URL escape \"%%%\""))
+					Expect(err).To(MatchError("could not parse target url: parse \"//%%%\": invalid URL escape \"%%%\""))
 				})
 			})
 

@@ -102,7 +102,7 @@ var _ = Describe("export-installation command", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, 3).Should(gexec.Exit(1))
-			Eventually(session.Err, 3).Should(gbytes.Say(`.*request canceled \(Client\.Timeout exceeded while awaiting headers\)`))
+			Eventually(session.Err, 3).Should(gbytes.Say(`Client.Timeout exceeded while awaiting headers`))
 		})
 	})
 })

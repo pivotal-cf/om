@@ -34,7 +34,8 @@ func NewOAuthClient(
 	clientID, clientSecret string,
 	insecureSkipVerify bool,
 	caCert string,
-	connectTimeout time.Duration, requestTimeout time.Duration,
+	connectTimeout time.Duration,
+	requestTimeout time.Duration,
 ) (OAuthClient, error) {
 	conf := &oauth2.Config{
 		ClientID:     "opsman",

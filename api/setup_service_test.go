@@ -205,7 +205,7 @@ var _ = Describe("Setup", func() {
 				)
 
 				_, err := service.EnsureAvailability(api.EnsureAvailabilityInput{})
-				Expect(err).To(MatchError(ContainSubstring("parse %%%%%%: invalid URL escape \"%%%\"")))
+				Expect(err).To(MatchError(ContainSubstring(`parse "%%%%%%": invalid URL escape "%%%"`)))
 			})
 		})
 	})
