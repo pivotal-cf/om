@@ -57,6 +57,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `configure-director` now correctly handles when you don't name your iaas_configuration `default` on vSphere.
   Previously, naming a configuration anything other than `default` would result in an extra, empty `default` configuration.
   This closes issue [#469](https://github.com/pivotal-cf/om/issues/469).
+- Downloading a stemcell associated with a product will try to download the light or heavy stemcell.
+  If anyone has experienced the recent issue with `download-product`
+  and the AWS heavy stemcell,
+  this will resolve your issue.
+  Please remove any custom globbing that might've been added to circumvent this issue.
+  For example, `stemcall-iaas: light*aws` should just be `stemcell-iaas: aws` now. 
 
 ## 4.5.0
 
