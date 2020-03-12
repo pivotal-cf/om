@@ -46,6 +46,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Note the additional space before the `export` command.
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`. 
+
+## 3.2.3
+
+### Bug Fixes
+- Downloading a stemcell associated with a product will try to download the light or heavy stemcell. 
+  If anyone has experienced the recent issue with download-product and the AWS heavy stemcell, 
+  this will resolve your issue. Please remove any custom globbing that might've been added to 
+  circumvent this issue. For example, `stemcall-iaas: light*aws` should just be `stemcell-iaas: aws` now. 
   
 ## 3.2.2
 
