@@ -1,5 +1,7 @@
 module github.com/pivotal-cf/om
 
+go 1.14
+
 require (
 	cloud.google.com/go v0.54.0 // indirect
 	cloud.google.com/go/storage v1.6.0
@@ -46,5 +48,3 @@ require (
 	gopkg.in/yaml.v2 v2.2.8
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
-
-go 1.13
