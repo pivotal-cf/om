@@ -4,7 +4,7 @@ require (
 	cloud.google.com/go v0.38.0
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/aws/aws-sdk-go v1.20.13 // indirect
+	github.com/aws/aws-sdk-go v1.29.23 // indirect
 	github.com/bmatcuk/doublestar v1.1.3 // indirect
 	github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 // indirect
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
@@ -35,11 +35,9 @@ require (
 	github.com/pivotal-cf/jhanda v0.0.0-20181025233525-e6aa09a032df
 	github.com/pivotal-cf/pivnet-cli v0.0.61-0.20190821183005-daab44f7da93
 	github.com/pivotal/uilive v0.0.0-20181204013807-921d4ab784bd
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil v2.18.12+incompatible // indirect
-	github.com/stretchr/testify v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 // indirect
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/tools v0.0.0-20190821162956-65e3620a7ae7 // indirect
 	google.golang.org/api v0.7.0 // indirect
@@ -52,3 +50,5 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
+
+go 1.13
