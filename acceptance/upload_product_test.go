@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 )
 
 var _ = Describe("upload-product command", func() {
@@ -157,59 +156,4 @@ name: some-product`)
 		})
 	})
 
-	When("the server returns EOF during upload", func() {
-		var uploadCallCount int
-
-		BeforeEach(func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v0/available_products"),
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						uploadCallCount++
-
-						server.CloseClientConnections()
-						time.Sleep(1 * time.Second)
-						return
-					}),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/available_products"),
-					ghttp.RespondWith(http.StatusOK, `[]`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v0/available_products"),
-					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-						uploadCallCount++
-
-						err := req.ParseMultipartForm(100)
-						Expect(err).ToNot(HaveOccurred())
-
-						requestFileName := req.MultipartForm.File["product[file]"][0].Filename
-						Expect(requestFileName).To(Equal(filepath.Base(productFile.Name())))
-
-						_, err = w.Write([]byte(`{}`))
-						Expect(err).ToNot(HaveOccurred())
-					}),
-				),
-			)
-		})
-
-		It("retries the upload", func() {
-			command := exec.Command(pathToMain,
-				"--target", server.URL(),
-				"--username", "some-username",
-				"--password", "some-password",
-				"--skip-ssl-validation",
-				"upload-product",
-				"--product", productFile.Name(),
-			)
-
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			Eventually(session, 5).Should(gexec.Exit(0))
-
-			Expect(uploadCallCount).To(Equal(2))
-		})
-	})
 })

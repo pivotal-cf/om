@@ -227,56 +227,5 @@ var _ = Describe("upload-stemcell command", func() {
 				Eventually(session.Err).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
-
-		When("the server returns EOF during upload", func() {
-			var uploadCallCount int
-
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/v0/stemcells"),
-						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-							uploadCallCount++
-
-							server.CloseClientConnections()
-							time.Sleep(1 * time.Second)
-							return
-						}),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/v0/stemcells"),
-						http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-							uploadCallCount++
-
-							err := req.ParseMultipartForm(100)
-							Expect(err).ToNot(HaveOccurred())
-
-							stemcellName = req.MultipartForm.File["stemcell[file]"][0].Filename
-
-							_, err = w.Write([]byte(`{}`))
-							Expect(err).ToNot(HaveOccurred())
-						}),
-					),
-				)
-			})
-
-			It("retries the upload", func() {
-				command := exec.Command(pathToMain,
-					"--target", server.URL(),
-					"--username", "some-username",
-					"--password", "some-password",
-					"--skip-ssl-validation",
-					"upload-stemcell",
-					"--stemcell", createStemcell("stemcell.tgz"),
-				)
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
-
-				Eventually(session, 5).Should(gexec.Exit(0))
-
-				Expect(uploadCallCount).To(Equal(2))
-			})
-		})
 	})
 })
