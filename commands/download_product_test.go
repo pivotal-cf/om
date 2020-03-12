@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -339,6 +340,40 @@ var _ = Describe("DownloadProduct", func() {
 								"product_version": "2.0.0"
 							}`, downloadedFilePath)))
 					Expect(buffer).Should(gbytes.Say("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell."))
+				})
+			})
+
+			When("the a stemcell cannot be downloaded", func() {
+				It("returns an error message", func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, nil, errors.New("some error"))
+
+					sa := &fakes.StemcellArtifacter{}
+					sa.SlugReturns("stemcells-ubuntu-xenial")
+					sa.VersionReturns("97.190")
+					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						createTempZipFile(file)
+						return nil
+					}
+
+					commandArgs := []string{
+						"--pivnet-api-token", "token",
+						"--pivnet-file-glob", "*.pivotal",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-iaas", "unknown-iaas",
+					}
+
+					err = command.Execute(commandArgs)
+					Expect(err).To(MatchError(ContainSubstring("No stemcell identified for IaaS \"unknown-iaas\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option")))
 				})
 			})
 		})

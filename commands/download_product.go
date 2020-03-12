@@ -153,7 +153,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcell.Version()),
 	)
 	if err != nil {
-		return fmt.Errorf("could not download stemcell: %s", err)
+		return fmt.Errorf("could not download stemcell: %s\nNo stemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option", err, c.Options.StemcellIaas)
 	}
 
 	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
