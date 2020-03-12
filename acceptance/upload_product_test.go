@@ -65,7 +65,6 @@ var _ = Describe("upload-product command", func() {
 		productFile   *os.File
 		server        *httptest.Server
 		uploadHandler func(http.ResponseWriter, *http.Request)
-		snip          chan struct{}
 	)
 
 	BeforeEach(func() {
@@ -188,55 +187,6 @@ name: some-product`)
 
 				Eventually(session, 5).Should(gexec.Exit(1))
 				Eventually(session.Err, 5).Should(gbytes.Say(`no such file or directory`))
-			})
-		})
-
-		When("the server returns EOF during upload", func() {
-			BeforeEach(func() {
-				snip = make(chan struct{})
-				uploadCallCount := 0
-				uploadHandler = func(w http.ResponseWriter, req *http.Request) {
-					uploadCallCount++
-
-					if uploadCallCount == 1 {
-						close(snip)
-						return
-					} else {
-						err := req.ParseMultipartForm(100)
-						if err != nil {
-							http.Error(w, fmt.Sprintf("failed to parse request body: %s", err), http.StatusInternalServerError)
-							return
-						}
-
-						product = req.MultipartForm.File["product[file]"][0].Filename
-						_, err = w.Write([]byte("{}"))
-						Expect(err).ToNot(HaveOccurred())
-					}
-				}
-			})
-
-			JustBeforeEach(func() {
-				go func() {
-					<-snip
-
-					server.CloseClientConnections()
-				}()
-			})
-
-			It("retries the upload", func() {
-				command := exec.Command(pathToMain,
-					"--target", server.URL,
-					"--username", "some-username",
-					"--password", "some-password",
-					"--skip-ssl-validation",
-					"upload-product",
-					"--product", productFile.Name(),
-				)
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(session, 5).Should(gexec.Exit(0))
 			})
 		})
 	})

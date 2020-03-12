@@ -258,57 +258,5 @@ var _ = Describe("upload-stemcell command", func() {
 				Eventually(session.Err).Should(gbytes.Say(`no such file or directory`))
 			})
 		})
-
-		When("the server returns EOF during upload", func() {
-			var (
-				snip   chan struct{}
-				server *httptest.Server
-			)
-
-			BeforeEach(func() {
-				snip = make(chan struct{})
-				uploadCallCount := 0
-				server = setupServerWithUploadHandler(func(w http.ResponseWriter, req *http.Request) {
-					uploadCallCount++
-
-					if uploadCallCount == 1 {
-						close(snip)
-						return
-					} else {
-						err := req.ParseMultipartForm(100)
-						if err != nil {
-							panic(err)
-						}
-
-						_, err = w.Write([]byte("{}"))
-						Expect(err).ToNot(HaveOccurred())
-					}
-				})
-			})
-
-			JustBeforeEach(func() {
-				go func() {
-					<-snip
-
-					server.CloseClientConnections()
-				}()
-			})
-
-			It("retries the upload", func() {
-				command := exec.Command(pathToMain,
-					"--target", server.URL,
-					"--username", "some-username",
-					"--password", "some-password",
-					"--skip-ssl-validation",
-					"upload-stemcell",
-					"--stemcell", createStemcell("stemcell.tgz"),
-				)
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(session, 5).Should(gexec.Exit(0))
-			})
-		})
 	})
 })
