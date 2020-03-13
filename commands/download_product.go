@@ -182,7 +182,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		if c.Options.StemcellHeavy {
 			isHeavy = "heavy "
 		}
-		return fmt.Errorf("could not download stemcell: %s\nNo %sstemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option", err, isHeavy, c.Options.StemcellIaas)
+		return fmt.Errorf("could not download stemcell: %s\nNo %sstemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option.", err, isHeavy, c.Options.StemcellIaas)
 	}
 
 	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
