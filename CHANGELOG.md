@@ -63,6 +63,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   this will resolve your issue.
   Please remove any custom globbing that might've been added to circumvent this issue.
   For example, `stemcall-iaas: light*aws` should just be `stemcell-iaas: aws` now. 
+- Heavy stemcells could not be downloaded. 
+  Support has now been added.
+  Force download of the heavy stemcell (if available) with the `--stemcell-heavy` flag.
 
 ## 4.5.0
 
