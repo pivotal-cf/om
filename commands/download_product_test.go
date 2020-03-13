@@ -400,7 +400,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 			})
 
-			When("providing a valid iaas", func() {
+			When("the --stemcell-heavy flag is not provided", func() {
 				It("downloads the corresponding light or heavy stemcell", func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
@@ -432,11 +432,101 @@ var _ = Describe("DownloadProduct", func() {
 					})
 
 					Expect(err).ToNot(HaveOccurred())
-					_, _ , glob := fakeProductDownloader.GetLatestProductFileArgsForCall(1)
+					Expect(fakeProductDownloader.GetLatestProductFileCallCount()).To(Equal(3))
+					_, _, glob := fakeProductDownloader.GetLatestProductFileArgsForCall(1)
 					Expect(glob).To(Equal("light*bosh*aws*"))
 
-					_, _ , glob = fakeProductDownloader.GetLatestProductFileArgsForCall(2)
+					_, _, glob = fakeProductDownloader.GetLatestProductFileArgsForCall(2)
 					Expect(glob).To(Equal("bosh*aws*"))
+				})
+			})
+
+			When("providing the --stemcell-heavy flag", func() {
+				It("downloads the corresponding light or heavy stemcell", func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						createTempZipFile(file)
+						return nil
+					}
+
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, &fakes.FileArtifacter{}, nil)
+
+					sa := &fakes.StemcellArtifacter{}
+					sa.SlugReturns("stemcells-ubuntu-xenial")
+					sa.VersionReturns("97.190")
+					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--file-glob", "*.tgz",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-iaas", "aws",
+						"--stemcell-heavy",
+					})
+
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(fakeProductDownloader.GetLatestProductFileCallCount()).To(Equal(2))
+					_, _, glob := fakeProductDownloader.GetLatestProductFileArgsForCall(1)
+					Expect(glob).To(Equal("bosh*aws*"))
+				})
+
+				It("fails if --stemcell-heavy flag is provided but --stemcell-iaas is not", func() {
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--file-glob", "*.tgz",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-heavy",
+					})
+
+					Expect(err).To(MatchError(ContainSubstring("--stemcell-heavy requires --stemcell-iaas to be defined")))
+				})
+
+				It("fails is --stemcell-heavy is provided but the heavy stemcell does not exist", func() {
+					fa := &fakes.FileArtifacter{}
+					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
+
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						createTempZipFile(file)
+						return nil
+					}
+
+					fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, nil, errors.New("no stemcell"))
+
+					sa := &fakes.StemcellArtifacter{}
+					sa.SlugReturns("stemcells-ubuntu-xenial")
+					sa.VersionReturns("97.190")
+					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
+
+					tempDir, err := ioutil.TempDir("", "om-tests-")
+					Expect(err).ToNot(HaveOccurred())
+
+					err = command.Execute([]string{
+						"--pivnet-api-token", "token",
+						"--file-glob", "*.tgz",
+						"--pivnet-product-slug", "elastic-runtime",
+						"--product-version", "2.0.0",
+						"--output-directory", tempDir,
+						"--stemcell-iaas", "aws",
+						"--stemcell-heavy",
+					})
+
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("No heavy stemcell identified for IaaS \"aws\" on Pivotal Network"))
 				})
 			})
 		})

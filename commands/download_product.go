@@ -72,6 +72,7 @@ type DownloadProductOptions struct {
 
 	DeprecatedStemcell bool   `long:"download-stemcell" description:"**DEPRECATED**: no-op for backwards compatibility"`
 	StemcellIaas       string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
+	StemcellHeavy      bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`
 }
 
 type DownloadProduct struct {
@@ -158,6 +159,12 @@ func (c *DownloadProduct) Execute(args []string) error {
 		fmt.Sprintf("bosh*%s*", c.Options.StemcellIaas),
 	}
 
+	if c.Options.StemcellHeavy {
+		stemcellGlobs = []string{
+			fmt.Sprintf("bosh*%s*", c.Options.StemcellIaas),
+		}
+	}
+
 	stemcellFileName, err := "", nil
 	for _, stemcellGlob := range stemcellGlobs {
 		stemcellFileName, _, err = c.downloadProductFile(
@@ -171,9 +178,12 @@ func (c *DownloadProduct) Execute(args []string) error {
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("could not download stemcell: %s\nNo stemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option", err, c.Options.StemcellIaas)
+		isHeavy := ""
+		if c.Options.StemcellHeavy {
+			isHeavy = "heavy "
+		}
+		return fmt.Errorf("could not download stemcell: %s\nNo %sstemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option", err, isHeavy, c.Options.StemcellIaas)
 	}
-
 
 	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
 	if err != nil {
@@ -247,8 +257,13 @@ func (c *DownloadProduct) validate() error {
 	if c.Options.ProductVersionRegex == "" && c.Options.ProductVersion == "" {
 		return fmt.Errorf("no version information provided; please provide either --product-version or --product-version-regex")
 	}
+
 	if c.Options.PivnetToken == "" && c.Options.Source == "pivnet" {
 		return fmt.Errorf(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
+	}
+
+	if c.Options.StemcellHeavy == true && c.Options.StemcellIaas == "" {
+		return fmt.Errorf("--stemcell-heavy requires --stemcell-iaas to be defined")
 	}
 
 	return nil
