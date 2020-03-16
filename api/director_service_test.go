@@ -917,10 +917,6 @@ var _ = Describe("Director", func() {
 						}`),
                     ),
                     ghttp.CombineHandlers(
-                        ghttp.VerifyRequest("DELETE", "/api/v0/staged/director/iaas_configurations/some-guid"),
-                        ghttp.RespondWith(http.StatusNoContent, `{}`),
-                    ),
-                    ghttp.CombineHandlers(
                         ghttp.VerifyRequest("POST", "/api/v0/staged/director/iaas_configurations"),
                         ghttp.VerifyJSON(`{
 							"iaas_configuration": {
@@ -930,14 +926,8 @@ var _ = Describe("Director", func() {
 						}`),
                     ),
                     ghttp.CombineHandlers(
-                        ghttp.VerifyRequest("PUT", "/api/v0/staged/director/iaas_configurations/some-guid"),
-                        ghttp.VerifyJSON(`{
-							"iaas_configuration": {
-							"name": "something-else",
-							"guid": "some-guid",
-							"vsphere": "something"
-							}
-						}`),
+                        ghttp.VerifyRequest("DELETE", "/api/v0/staged/director/iaas_configurations/some-guid"),
+                        ghttp.RespondWith(http.StatusNoContent, `{}`),
                     ),
                 )
 
@@ -995,6 +985,15 @@ var _ = Describe("Director", func() {
 						}`),
                     ),
                     ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("POST", "/api/v0/staged/director/iaas_configurations"),
+                        ghttp.VerifyJSON(`{
+							"iaas_configuration": {
+								"name": "something-else",
+								"vsphere": "something"
+							}
+						}`),
+                    ),
+                    ghttp.CombineHandlers(
                         ghttp.VerifyRequest("DELETE", "/api/v0/staged/director/iaas_configurations/some-guid"),
                         http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
                             server.CloseClientConnections()
@@ -1017,6 +1016,15 @@ var _ = Describe("Director", func() {
 								"name": "default",
 								"vcenter_host": null,
 							}]
+						}`),
+                    ),
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("POST", "/api/v0/staged/director/iaas_configurations"),
+                        ghttp.VerifyJSON(`{
+							"iaas_configuration": {
+								"name": "something-else",
+								"vsphere": "something"
+							}
 						}`),
                     ),
                     ghttp.CombineHandlers(
@@ -1083,37 +1091,6 @@ var _ = Describe("Director", func() {
                 err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "existing", "vsphere": "something"}]`), false)
                 Expect(err).To(MatchError(ContainSubstring("failed to unmarshal JSON response from Ops Manager")))
             })
-
-        })
-
-        When("IAASConfigurations DELETE endpoint is not implemented", func() {
-            It("allows later logic to handle non-implementation of the multi-iaas API", func() {
-                server.AppendHandlers(
-                    ghttp.CombineHandlers(
-                        ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
-                        ghttp.RespondWith(http.StatusOK, `{
-							"iaas_configurations": [{
-								"guid": "some-guid",
-								"name": "default",
-								"vcenter_host": null,
-							}]
-						}`),
-                    ),
-                    ghttp.CombineHandlers(
-                        ghttp.VerifyRequest("DELETE", "/api/v0/staged/director/iaas_configurations/some-guid"),
-                        ghttp.RespondWith(http.StatusNotImplemented, ""),
-                    ),
-                    ghttp.CombineHandlers(
-                        ghttp.VerifyRequest("POST", "/api/v0/staged/director/iaas_configurations"),
-                        ghttp.RespondWith(http.StatusNotImplemented, ""),
-                    ),
-                )
-
-                err := service.UpdateStagedDirectorIAASConfigurations(api.IAASConfigurationsInput(`[{"name": "something-else", "vsphere": "something"}, {"name": "another", "vsphere": "another"}]`), false)
-                Expect(err).To(HaveOccurred())
-                Expect(err).To(MatchError(ContainSubstring("multiple iaas_configurations are not allowed for your IAAS.")))
-                Expect(err).To(MatchError(ContainSubstring("Supported IAASes include: vsphere and openstack.")))
-            })
         })
 
         When("IAASConfigurations POST endpoint is not implemented", func() {
@@ -1139,10 +1116,10 @@ var _ = Describe("Director", func() {
                     ghttp.CombineHandlers(
                         ghttp.VerifyRequest("PUT", "/api/v0/staged/director/properties"),
                         ghttp.VerifyJSON(`{
-								"iaas_configuration": {
-									"name": "new"
-								}
-							}`),
+                            "iaas_configuration": {
+                                "name": "new"
+                            }
+                        }`),
                     ),
                 )
 
@@ -1160,21 +1137,21 @@ var _ = Describe("Director", func() {
                     ghttp.CombineHandlers(
                         ghttp.VerifyRequest("GET", "/api/v0/staged/director/properties"),
                         ghttp.RespondWith(http.StatusOK, `{
-								"iaas_configuration": {
-									"guid": "some-guid",
-									"name": "existing"
-								}
-							}`),
+                            "iaas_configuration": {
+                                "guid": "some-guid",
+                                "name": "existing"
+                            }
+                        }`),
                     ),
                     ghttp.CombineHandlers(
                         ghttp.VerifyRequest("PUT", "/api/v0/staged/director/properties"),
                         ghttp.VerifyJSON(`{
-								"iaas_configuration": {
-									"name": "existing",
-									"guid": "some-guid",
-									"other-field": "value"
-								}
-							}`),
+                            "iaas_configuration": {
+                                "name": "existing",
+                                "guid": "some-guid",
+                                "other-field": "value"
+                            }
+                        }`),
                     ),
                 )
 

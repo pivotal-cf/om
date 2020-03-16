@@ -318,13 +318,6 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
         }
     }
 
-    if !hasDefault {
-        err = a.deleteExtraneousDefaultIaaSConfig(existingIAASes)
-        if err != nil {
-            return err
-        }
-    }
-
     for _, config := range iaasConfigurations {
         decoratedConfig, err := yaml.Marshal(map[string]interface{}{
             "iaas_configuration": config,
@@ -362,6 +355,13 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
         defer iaasUpdateResp.Body.Close()
 
         if err = validateStatusOKOrVerificationWarning(iaasUpdateResp, ignoreVerifierWarnings); err != nil {
+            return err
+        }
+    }
+
+    if !hasDefault {
+        err = a.deleteExtraneousDefaultIaaSConfig(existingIAASes)
+        if err != nil {
             return err
         }
     }
