@@ -162,6 +162,26 @@ var _ = Describe("Execute", func() {
 		})
 	})
 
+	When("vars are specified", func() {
+		It("supports loading individual vars", func() {
+			contents, err := interpolate.Execute(interpolate.Options{
+				TemplateFile: writeFile(`{name: ((username))}`),
+				Vars:    []string{`username=Bob`},
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(contents).To(MatchYAML(`name: Bob`))
+		})
+
+		It("returns an error if a var does not have '='", func() {
+			_, err := interpolate.Execute(interpolate.Options{
+				TemplateFile: writeFile(`{name: ((username))}`),
+				Vars:    []string{`username`},
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Expected variable to be key-value pair. eg. key=value"))
+		})
+	})
+
 	When("ops files are specified", func() {
 		It("supports ops file modifications", func() {
 			contents, err := interpolate.Execute(interpolate.Options{

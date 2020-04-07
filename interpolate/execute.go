@@ -88,7 +88,10 @@ func Execute(o Options) ([]byte, error) {
 		}
 	}
 
-	readCommandLineVars(o.Vars, staticVars)
+	err = readCommandLineVars(o.Vars, staticVars)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, path := range o.OpsFiles {
 		var opDefs []patch.OpDefinition
@@ -125,9 +128,13 @@ func Execute(o Options) ([]byte, error) {
 	return bytes, nil
 }
 
-func readCommandLineVars(vars []string, staticVars template.StaticVariables) {
+func readCommandLineVars(vars []string, staticVars template.StaticVariables) error {
 	for _, singleVar := range vars {
 		splitVar := strings.Split(singleVar, "=")
+		if len(splitVar) != 2 {
+			return fmt.Errorf("Expected variable to be key-value pair. eg. key=value")
+		}
+
 
 		valInt, err := strconv.Atoi(splitVar[1])
 		if err == nil {
@@ -143,6 +150,7 @@ func readCommandLineVars(vars []string, staticVars template.StaticVariables) {
 
 		staticVars[splitVar[0]] = splitVar[1]
 	}
+	return nil
 }
 
 func readYAMLFile(path string, dataType interface{}) error {
