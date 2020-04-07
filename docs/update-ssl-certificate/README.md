@@ -17,9 +17,9 @@ Flags:
   --certificate-pem        string (required)  certificate text
   --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
   --private-key-pem        string (required)  private key text
-  --var                    string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV  string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file              string (variadic)  Load variables from a YAML file
+  --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

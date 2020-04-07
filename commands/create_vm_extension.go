@@ -23,9 +23,9 @@ type CreateVMExtension struct {
 	Options     struct {
 		Name            string   `long:"name"               short:"n"   description:"VM extension name"`
 		ConfigFile      string   `long:"config"             short:"c"   description:"path to yml file containing all config fields (see docs/create-vm-extension/README.md for format)"`
-		VarsFile        []string `long:"vars-file"          short:"l"   description:"Load variables from a YAML file"`
-		VarsEnv         []string `long:"vars-env" env:"OM_VARS_ENV"     description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		Vars            []string `long:"var"                short:"v"   description:"Load variable from the command line. Format: VAR=VAL"`
+		VarsFile        []string `long:"vars-file"          short:"l"   description:"load variables from a YAML file"`
+		VarsEnv         []string `long:"vars-env" env:"OM_VARS_ENV"     description:"load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		Vars            []string `long:"var"                short:"v"   description:"load variable from the command line. Format: VAR=VAL"`
 		OpsFile         []string `long:"ops-file"           short:"o"   description:"YAML operations file"`
 		CloudProperties string   `long:"cloud-properties"   short:"cp"  description:"cloud properties in JSON format"`
 	}

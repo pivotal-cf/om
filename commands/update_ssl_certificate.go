@@ -16,8 +16,8 @@ type UpdateSSLCertificate struct {
 		PrivateKey string   `long:"private-key-pem" required:"true" description:"private key text"`
 		ConfigFile string   `long:"config"                short:"c"                    description:"path to yml file for configuration (keys must match the following command line flags)"`
 		VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true"     description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile   []string `long:"vars-file"                                          description:"Load variables from a YAML file"`
-		Vars       []string `long:"var"                                                description:"Load variable from the command line. Format: VAR=VAL"`
+		VarsFile   []string `long:"vars-file"             short:"l"                    description:"load variables from a YAML file"`
+		Vars       []string `long:"var"                   short:"v"                    description:"load variable from the command line. Format: VAR=VAL"`
 	}
 }
 

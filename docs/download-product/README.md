@@ -23,7 +23,7 @@ Flags:
   --blobstore-stemcell-path    string             specify the lookup path where the s3|gcs|azure stemcell artifacts are stored
     (aliases: --s3-stemcell-path, --gcs-stemcell-path, --azure-stemcell-path)
   --config, -c                 string             path to yml file for configuration (keys must match the following command line flags)
-  --download-stemcell          bool               no-op for backwards compatibility
+  --download-stemcell          bool               **DEPRECATED**: no-op for backwards compatibility
   --file-glob, -f              string (required)  glob to match files within Pivotal Network product to be downloaded.
     (aliases: --pivnet-file-glob)
   --gcs-project-id             string             the project id for the bucket's gcp account
@@ -44,8 +44,9 @@ Flags:
   --s3-region-name             string             bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'
   --s3-secret-access-key       string             secret key for the s3 compatible blobstore
   --source, -s                 string             enables download from external sources when set to [s3|gcs|azure|pivnet] (default: pivnet)
+  --stemcell-heavy             bool               force the downloading of a heavy stemcell, will fail if non exists
   --stemcell-iaas              string             download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet
-  --var                        string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --var                        string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV      string (variadic)  **EXPERIMENTAL** load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l              string (variadic)  load variables from a YAML file
 

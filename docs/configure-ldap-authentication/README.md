@@ -32,9 +32,9 @@ Flags:
   --skip-create-bosh-admin-client  bool               by default, this command creates a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. This flag skips that.
   --user-search-base               string (required)  a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'
   --user-search-filter             string (required)  search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'
-  --var                            string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --var, -v                        string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV          string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file                      string (variadic)  Load variables from a YAML file
+  --vars-file, -l                  string (variadic)  load variables from a YAML file
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

@@ -16,9 +16,9 @@ Usage:
 Flags:
   --config, -c             string (required)  path to yml file containing all config fields (see docs/configure-product/README.md for format)
   --ops-file, -o           string (variadic)  YAML operations file
-  --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  Load variables from environment variables (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l          string (variadic)  Load variables from a YAML file
+  --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

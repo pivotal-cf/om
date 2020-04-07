@@ -17,12 +17,12 @@ type ConfigureDirector struct {
 	service     configureDirectorService
 	logger      logger
 	Options     struct {
-		IgnoreVerifierWarnings bool     `long:"ignore-verifier-warnings"  description:"option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER"`
-		ConfigFile             string   `short:"c" long:"config"           description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
-		VarsFile               []string `long:"vars-file"                  description:"Load variables from a YAML file"`
-		VarsEnv                []string `long:"vars-env" env:"OM_VARS_ENV" description:"Load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		Vars                   []string `long:"var" short:"v"              description:"Load variable from the command line. Format: VAR=VAL"`
-		OpsFile                []string `long:"ops-file"                   description:"YAML operations file"`
+		IgnoreVerifierWarnings bool     `long:"ignore-verifier-warnings"    description:"option to ignore verifier warnings. NOT RECOMMENDED UNLESS DISABLED IN OPS MANAGER"`
+		ConfigFile             string   `long:"config"    short:"c"         description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
+		VarsFile               []string `long:"vars-file" short:"l"         description:"load variables from a YAML file"`
+		VarsEnv                []string `long:"vars-env"  env:"OM_VARS_ENV" description:"load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		Vars                   []string `long:"var"       short:"v"         description:"load variable from the command line. Format: VAR=VAL"`
+		OpsFile                []string `long:"ops-file"                    description:"YAML operations file"`
 	}
 }
 

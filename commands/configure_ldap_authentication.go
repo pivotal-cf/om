@@ -31,8 +31,8 @@ type ConfigureLDAPAuthentication struct {
 		SkipCreateBoshAdminClient bool     `long:"skip-create-bosh-admin-client"                    description:"by default, this command creates a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. This flag skips that."`
 		PrecreatedClientSecret    string   `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
 		VarsEnv                   []string `long:"vars-env" env:"OM_VARS_ENV" experimental:"true"   description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile                  []string `long:"vars-file"                                        description:"Load variables from a YAML file"`
-		Vars                      []string `long:"var"                                              description:"Load variable from the command line. Format: VAR=VAL"`
+		VarsFile                  []string `long:"vars-file"             short:"l"                  description:"load variables from a YAML file"`
+		Vars                      []string `long:"var"                   short:"v"                  description:"load variable from the command line. Format: VAR=VAL"`
 	}
 }
 

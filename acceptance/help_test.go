@@ -115,7 +115,7 @@ Flags:
   --password, -p, OM_PASSWORD                             string (required)  admin password
   --precreated-client-secret                              string             create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option
   --username, -u, OM_USERNAME                             string (required)  admin username
-  --var                                                   string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --var, -v                                               string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV                                 string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file                                             string (variadic)  Load variables from a YAML file
+  --vars-file, -l                                         string (variadic)  load variables from a YAML file
 `+ GLOBAL_USAGE_FLAGS

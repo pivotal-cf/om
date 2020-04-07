@@ -24,7 +24,7 @@ Flags:
   --pivnet-product-slug    string             the product name in pivnet
   --product-path           string             path to product file
   --product-version        string             the version of the product from which to generate a template
-  --var                    string (variadic)  Load variable from the command line. Format: VAR=VAL
+  --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV  string (variadic)  **EXPERIMENTAL** load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l          string (variadic)  load variables from a YAML file
 

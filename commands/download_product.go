@@ -43,7 +43,7 @@ type DownloadProductOptions struct {
 	OutputDir  string   `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)" experimental:"true"`
 	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
-	Vars       []string `long:"var"                                  description:"Load variable from the command line. Format: VAR=VAL"`
+	Vars       []string `long:"var"                                  description:"load variable from the command line. Format: VAR=VAL"`
 
 	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
 	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
