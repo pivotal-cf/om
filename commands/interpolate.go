@@ -2,12 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/interpolate"
+	"io/ioutil"
+	"os"
 )
 
 type Interpolate struct {
@@ -85,8 +83,7 @@ func (c Interpolate) Execute(args []string) error {
 		Path:          c.Options.Path,
 	})
 	if err != nil {
-		splitErr := strings.Split(err.Error(), ": ")
-		return fmt.Errorf("%s:\n%s", splitErr[0], splitErr[1])
+		return err
 	}
 
 	c.logger.Println(string(bytes))
