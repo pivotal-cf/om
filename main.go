@@ -227,12 +227,16 @@ func setEnvFileProperties(global *options) error {
 		return fmt.Errorf("env file does not exist: %s", err)
 	}
 
-	contents, err := interpolate.Execute(interpolate.Options{
+	interpolateOptions := interpolate.Options{
 		TemplateFile:  global.Env,
 		EnvironFunc:   os.Environ,
-		VarsEnvs:      []string{global.VarsEnv},
 		ExpectAllKeys: false,
-	})
+	}
+	if global.VarsEnv != "" {
+		interpolateOptions.VarsEnvs = []string{global.VarsEnv}
+	}
+
+	contents, err := interpolate.Execute(interpolateOptions)
 	if err != nil {
 		return err
 	}

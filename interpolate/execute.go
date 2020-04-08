@@ -1,16 +1,11 @@
 package interpolate
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
 	"github.com/cloudfoundry/bosh-cli/director/template"
 	"github.com/cppforlife/go-patch/patch"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 type Options struct {
@@ -31,68 +26,51 @@ func Execute(o Options) ([]byte, error) {
 	}
 
 	tpl := template.NewTemplate(contents)
+
+	// the following was taken from bosh cli
+	// https://github.com/cloudfoundry/bosh-cli/blob/9c1c210c83673a780e3787a91f444541755e6585/cmd/opts/var_flags.go
+	// we cannot use it directly because of the use of `jhanda`
 	staticVars := template.StaticVariables{}
-	ops := patch.Ops{}
 
-	for _, varsEnv := range o.VarsEnvs {
-		for _, envVar := range o.EnvironFunc() {
-
-			pieces := strings.SplitN(envVar, "=", 2)
-			if len(pieces) != 2 {
-				return []byte{}, errors.New("Expected environment variable to be key-value pair")
-			}
-
-			if !strings.HasPrefix(pieces[0], varsEnv+"_") {
-				continue
-			}
-
-			v := pieces[1]
-			var val interface{}
-			err = yaml.Unmarshal([]byte(v), &val)
-			if err != nil {
-				return []byte{}, fmt.Errorf("Could not deserialize YAML from environment variable %q", pieces[0])
-			}
-
-			// The environment variable value is treated as YAML, but multi-line strings
-			// are line folded, replacing newlines with spaces. If we detect that input value is of
-			// type "string" we call yaml.Marshal to ensure characters are escaped properly.
-			if fmt.Sprintf("%T", val) == "string" {
-				b, _ := yaml.Marshal(v) // err should never occur
-
-				// Don't double quote in the case of an integer that's being used as a string
-				// For example, without this regex, a literal string number \"500\"
-				// will get unmarshalled as '"500"'
-				re := regexp.MustCompile(`^'"\d+"'`)
-				if re.Match(b) {
-					b = bytes.ReplaceAll(b, []byte(`'`), []byte(""))
-				}
-
-				err = yaml.Unmarshal(b, &val)
-				if err != nil {
-					return []byte{}, fmt.Errorf("Could not deserialize string from environment variable %q", pieces[0])
-				}
-			}
-
-			staticVars[strings.TrimPrefix(pieces[0], varsEnv+"_")] = val
-		}
-	}
-
-	for _, path := range o.VarsFiles {
-		var fileVars template.StaticVariables
-		err = readYAMLFile(path, &fileVars)
+	for _, v := range o.VarsEnvs {
+		varsEnvArg := &template.VarsEnvArg{EnvironFunc: o.EnvironFunc}
+		err := varsEnvArg.UnmarshalFlag(v)
 		if err != nil {
 			return nil, err
 		}
-		for k, v := range fileVars {
+
+		for k, v := range varsEnvArg.Vars {
 			staticVars[k] = v
 		}
 	}
 
-	err = readCommandLineVars(o.Vars, staticVars)
+	for _, v := range o.VarsFiles {
+		varFilesArg := &template.VarsFileArg{}
+		err := varFilesArg.UnmarshalFlag(v)
+		if err != nil {
+			return nil, err
+		}
+
+		for k, v := range varFilesArg.Vars {
+			staticVars[k] = v
+		}
+	}
+
+	for _, v := range o.Vars {
+		varArg := &template.VarKV{}
+		err := varArg.UnmarshalFlag(v)
+		if err != nil {
+			return nil, err
+		}
+
+		staticVars[varArg.Name] = varArg.Value
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
+	ops := patch.Ops{}
 	for _, path := range o.OpsFiles {
 		var opDefs []patch.OpDefinition
 		err = readYAMLFile(path, &opDefs)
@@ -126,31 +104,6 @@ func Execute(o Options) ([]byte, error) {
 	}
 
 	return bytes, nil
-}
-
-func readCommandLineVars(vars []string, staticVars template.StaticVariables) error {
-	for _, singleVar := range vars {
-		splitVar := strings.Split(singleVar, "=")
-		if len(splitVar) != 2 {
-			return fmt.Errorf("Expected variable to be key-value pair. eg. key=value")
-		}
-
-
-		valInt, err := strconv.Atoi(splitVar[1])
-		if err == nil {
-			staticVars[splitVar[0]] = valInt
-			continue
-		}
-
-		valBool, err := strconv.ParseBool(splitVar[1])
-		if err == nil {
-			staticVars[splitVar[0]] = valBool
-			continue
-		}
-
-		staticVars[splitVar[0]] = splitVar[1]
-	}
-	return nil
 }
 
 func readYAMLFile(path string, dataType interface{}) error {
