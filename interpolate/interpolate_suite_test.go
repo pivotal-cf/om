@@ -91,7 +91,7 @@ var _ = Describe("Execute", func() {
 			Expect(contents).To(MatchYAML(`age: "123"`))
 		})
 
-		PIt("handles multiline environment variables", func() {
+		It("handles multiline environment variables", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((name))}`),
 				VarsEnvs:     []string{"PREFIX"},
@@ -166,16 +166,34 @@ var _ = Describe("Execute", func() {
 		It("supports loading individual vars", func() {
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((username))}`),
-				Vars:    []string{`username=Bob`},
+				Vars:         []string{`username=Bob`},
 			})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Bob`))
 		})
 
+		It("supports YAML in vars", func() {
+			contents, err := interpolate.Execute(interpolate.Options{
+				TemplateFile: writeFile(`{name: ((username))}`),
+				Vars:         []string{`username={foo: bar}`},
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(contents).To(MatchYAML(`name: {foo: bar}`))
+		})
+
+		It("handles multiline variables", func() {
+			contents, err := interpolate.Execute(interpolate.Options{
+				TemplateFile: writeFile(`{name: ((name))}`),
+				Vars:         []string{"name=some\nmulti\nline\nvalue"},
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(contents).To(MatchYAML(`name: "some\nmulti\nline\nvalue"`))
+		})
+
 		It("returns an error if a var does not have '='", func() {
 			_, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(`{name: ((username))}`),
-				Vars:    []string{`username`},
+				Vars:         []string{`username`},
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Expected var 'username' to be in format 'name=value'"))

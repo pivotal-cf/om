@@ -206,7 +206,8 @@ name: moe
 `))
 			})
 
-			PIt("handles multi-line environment variables such as certificates", func() {
+
+			It("handles multi-line environment variables such as certificates", func() {
 				yamlFile := createFile("---\nname: ((multi_line_value))")
 				defer yamlFile.Close()
 

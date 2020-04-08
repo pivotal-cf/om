@@ -6,6 +6,7 @@ import (
 	"github.com/cppforlife/go-patch/patch"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"strings"
 )
 
 type Options struct {
@@ -32,15 +33,19 @@ func Execute(o Options) ([]byte, error) {
 	// we cannot use it directly because of the use of `jhanda`
 	staticVars := template.StaticVariables{}
 
-	for _, v := range o.VarsEnvs {
+	for _, prefix := range o.VarsEnvs {
 		varsEnvArg := &template.VarsEnvArg{EnvironFunc: o.EnvironFunc}
-		err := varsEnvArg.UnmarshalFlag(v)
+		err := varsEnvArg.UnmarshalFlag(prefix)
 		if err != nil {
 			return nil, err
 		}
 
 		for k, v := range varsEnvArg.Vars {
-			staticVars[k] = v
+			staticVars[k] = maintainMultilineStringForEnvVar(
+				o.EnvironFunc,
+				fmt.Sprintf("%s_%s", prefix, k),
+				v,
+			)
 		}
 	}
 
@@ -63,17 +68,13 @@ func Execute(o Options) ([]byte, error) {
 			return nil, err
 		}
 
-		staticVars[varArg.Name] = varArg.Value
-	}
-
-	if err != nil {
-		return nil, err
+		staticVars[varArg.Name] = maintainMultilineString(v, varArg.Value)
 	}
 
 	ops := patch.Ops{}
 	for _, path := range o.OpsFiles {
 		var opDefs []patch.OpDefinition
-		err = readYAMLFile(path, &opDefs)
+		err := readYAMLFile(path, &opDefs)
 		if err != nil {
 			return nil, err
 		}
@@ -104,6 +105,29 @@ func Execute(o Options) ([]byte, error) {
 	}
 
 	return bytes, nil
+}
+
+func maintainMultilineStringForEnvVar(environFunc func() []string, key string, v interface{}) interface{} {
+	if _, ok := v.(string); ok {
+		for _, env := range environFunc() {
+			if !strings.HasPrefix(env, fmt.Sprintf("%s=", key)) {
+				continue
+			}
+
+			return maintainMultilineString(env, v)
+		}
+	}
+
+	return v
+}
+
+func maintainMultilineString(v string, new interface{}) interface{} {
+	pieces := strings.SplitN(v, "=", 2)
+	if _, ok := new.(string); ok && strings.Trim(pieces[1], `'"`) == pieces[1] {
+		return pieces[1]
+	}
+
+	return new
 }
 
 func readYAMLFile(path string, dataType interface{}) error {
