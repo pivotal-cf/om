@@ -47,6 +47,29 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 4.6.1
+
+### Bug Fixes
+- Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
+
+  For example,
+  
+  ```bash
+  # with a variable
+  $ om interpolate -c <(echo "person: ((person))") -v person="{foo: bar}"
+  person:
+    foo: bar
+  # with an env var
+  $ PREFIX_person="{foo: bar}" om interpolate -c <(echo "person: ((person))") --vars-env PREFIX
+  person:
+    foo: bar
+  ```
+  
+  We did maintain,
+  when using environment variables or var (`-v`),
+  a multiline string needs to be maintained.
+  The `bosh` does not support this.
+
 ## 4.6.0
 
 ### Features
