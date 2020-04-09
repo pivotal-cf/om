@@ -68,7 +68,7 @@ func (t ProductMetadata) Usage() jhanda.Usage {
 	}
 
 	if t.deprecatedCommandName {
-		usage.Description = fmt.Sprintf("*** DEPRECATED *** use 'product-metadata' instead\n%s", usage.Description)
+		usage.Description = fmt.Sprintf("***DEPRECATED*** use 'product-metadata' instead\n%s", usage.Description)
 		usage.ShortDescription = fmt.Sprintf("**DEPRECATED** %s. Use product-metadata instead", usage.ShortDescription)
 	}
 

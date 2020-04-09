@@ -52,8 +52,8 @@ func (c UpdateSSLCertificate) Execute(args []string) error {
 
 func (c UpdateSSLCertificate) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key",
-		ShortDescription: "updates the SSL Certificate on the Ops Manager",
+		Description:      "***DEPRECATED*** This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key. Use configure-opsman instead",
+		ShortDescription: "**DEPRECATED** updates the SSL Certificate on the Ops Manager. Use configure-opsman instead",
 		Flags:            c.Options,
 	}
 }

@@ -148,7 +148,7 @@ product_version: 1.2.3
 		It("returns the usage information for the tile-metadata command", func() {
 			command = commands.NewDeprecatedProductMetadata(stdout)
 			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "*** DEPRECATED *** use 'product-metadata' instead\nThis command prints metadata about the given product",
+				Description:      "***DEPRECATED*** use 'product-metadata' instead\nThis command prints metadata about the given product",
 				ShortDescription: "**DEPRECATED** prints product metadata. Use product-metadata instead",
 				Flags:            command.Options,
 			}))

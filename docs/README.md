@@ -65,7 +65,7 @@ on a vSphere Ops Manager.
 | [staged-products](staged-products/README.md) | lists staged products |
 | [tile-metadata](tile-metadata/README.md) | **DEPRECATED** prints product metadata. Use product-metadata instead |
 | [unstage-product](unstage-product/README.md) | unstages a given product from the Ops Manager targeted |
-| [update-ssl-certificate](update-ssl-certificate/README.md) | updates the SSL Certificate on the Ops Manager |
+| [update-ssl-certificate](update-ssl-certificate/README.md) | **DEPRECATED** updates the SSL Certificate on the Ops Manager. Use configure-opsman instead |
 | [upload-product](upload-product/README.md) | uploads a given product to the Ops Manager targeted |
 | [upload-stemcell](upload-stemcell/README.md) | uploads a given stemcell to the Ops Manager targeted |
 | [version](version/README.md) | prints the om release version |

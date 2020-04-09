@@ -3,12 +3,12 @@
 
 # `om tile-metadata`
 
-*** DEPRECATED *** use 'product-metadata' instead
+***DEPRECATED*** use 'product-metadata' instead
 
 ## Command Usage
 ```
 
-*** DEPRECATED *** use 'product-metadata' instead
+***DEPRECATED*** use 'product-metadata' instead
 This command prints metadata about the given product
 
 Usage:

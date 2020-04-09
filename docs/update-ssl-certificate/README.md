@@ -3,12 +3,12 @@
 
 # `om update-ssl-certificate`
 
-This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key
+***DEPRECATED*** This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key. Use configure-opsman instead
 
 ## Command Usage
 ```
 
-This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key
+***DEPRECATED*** This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key. Use configure-opsman instead
 
 Usage:
   om [options] update-ssl-certificate [<args>]
