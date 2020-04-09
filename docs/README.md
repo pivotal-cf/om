@@ -23,6 +23,7 @@ on a vSphere Ops Manager.
 | [configure-authentication](configure-authentication/README.md) | configures Ops Manager with an internal userstore and admin user account |
 | [configure-director](configure-director/README.md) | configures the director |
 | [configure-ldap-authentication](configure-ldap-authentication/README.md) | configures Ops Manager with LDAP authentication |
+| [configure-opsman](configure-opsman/README.md) | configures values present on the Ops Manager settings page |
 | [configure-product](configure-product/README.md) | configures a staged product |
 | [configure-saml-authentication](configure-saml-authentication/README.md) | configures Ops Manager with SAML authentication |
 | [create-certificate-authority](create-certificate-authority/README.md) | creates a certificate authority on the Ops Manager |

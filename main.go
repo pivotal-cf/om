@@ -164,6 +164,7 @@ func main() {
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(os.Environ, api, stdout)
 	commandSet["configure-director"] = commands.NewConfigureDirector(os.Environ, api, stdout)
 	commandSet["configure-ldap-authentication"] = commands.NewConfigureLDAPAuthentication(os.Environ, api, stdout)
+	commandSet["configure-opsman"] = commands.NewConfigureOpsman(os.Environ, api, stderr)
 	commandSet["configure-product"] = commands.NewConfigureProduct(os.Environ, api, global.Target, stdout)
 	commandSet["configure-saml-authentication"] = commands.NewConfigureSAMLAuthentication(os.Environ, api, stdout)
 	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(api, presenter)
