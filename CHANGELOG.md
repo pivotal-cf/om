@@ -47,7 +47,15 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 4.6.1
+## 4.7.0
+
+### Features
+- `configure-opsman` command has been added. 
+  This command _currently_ only supports updating the SSL Certificate
+  on the Ops Manager Settings Page.
+  This functionality is duplicated in `update-ssl-certificate`,
+  but `configure-opsman` will be extended to support more endpoints from the Settings page.
+  For config example, see the [docs](https://github.com/pivotal-cf/om/tree/master/docs/configure-opsman) for the command.
 
 ### Bug Fixes
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
@@ -69,6 +77,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   when using environment variables or var (`-v`),
   a multiline string needs to be maintained.
   The `bosh` does not support this.
+
+### Deprecation Notices
+- `update-ssl-certificate` has been deprecated in favor of `configure-opsman`.
+  This was done to allow extensibility for other endpoints on the Settings page.
+  Please note that `configure-opsman` requires a config file, and does not accept
+  `certificate-pem` or `private-key-pem` as command line arguments. 
+  For config example, see the [docs](https://github.com/pivotal-cf/om/tree/master/docs/configure-opsman) for the command.
 
 ## 4.6.0
 
