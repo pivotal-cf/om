@@ -27,10 +27,7 @@ var _ = Describe("Executor", func() {
 		)
 		BeforeEach(func() {
 			gen = &generator.Executor{}
-			fileData, err := ioutil.ReadFile("./fixtures/p_healthwatch.yml")
-			Expect(err).ToNot(HaveOccurred())
-			metadata, err = generator.NewMetadata(fileData)
-			Expect(err).ToNot(HaveOccurred())
+			metadata = getMetadata("fixtures/p_healthwatch.yml")
 		})
 
 		It("Should create output template with network properties", func() {
