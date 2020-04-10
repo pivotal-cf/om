@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/pkg/errors"
@@ -126,6 +127,10 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 	defer resp.Body.Close()
 
 	if err = validateStatusOK(resp); err != nil {
+		if resp.StatusCode == http.StatusUnprocessableEntity {
+			err = fmt.Errorf("%s\n%s", err.Error(), "Tip: In Ops Manager 2.6 or newer, you can use `om pre-deploy-check` to get a complete list of failed verifiers and om commands to disable them.")
+		}
+
 		return InstallationsServiceOutput{}, err
 	}
 

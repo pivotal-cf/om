@@ -261,7 +261,43 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		When("the client returns a non-2XX", func() {
+		When("the client returns a 422", func() {
+			It("returns an explanation of how to run pre-deploy-check", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","deploy_products":["guid2"]}`),
+						ghttp.RespondWith(http.StatusUnprocessableEntity, `{
+							"errors": ["'Some IAAS Error', type: SomeVerifier""],
+							"deployment_errors": {
+								"products": [{
+							  		"identifier": "guid2",
+							  		"verifiers": [{
+								 	 	"type": "SomeVerifier",
+										"errors": ["'Some IAAS Error', type: SomeVerifier"],
+								 	 	"ignorable": true
+									}]
+								}]
+							}
+						}`),
+					),
+				)
+
+				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer, you can use `om pre-deploy-check` to get a complete list of failed verifiers and om commands to disable them.")))
+			})
+		})
+
+		When("the client returns a non-2XX or 422", func() {
 			It("returns an error", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
