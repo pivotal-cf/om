@@ -26,7 +26,6 @@ func NewExecutor(metadataBytes []byte, baseDirectory string, doNotIncludeProduct
 }
 
 func (e *Executor) Generate() error {
-
 	metadata, err := NewMetadata(e.metdataBytes)
 	if err != nil {
 		return err
@@ -228,5 +227,4 @@ func (e *Executor) writeYamlFile(targetFile string, dataType interface{}) error 
 	} else {
 		return ioutil.WriteFile(targetFile, nil, 0755)
 	}
-
 }

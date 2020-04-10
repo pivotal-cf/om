@@ -24,10 +24,8 @@ func SelectorBlueprintsBySelectValue(optionTemplates []OptionTemplate, selector 
 }
 
 func selectorMetadataByFunc(optionTemplates []OptionTemplate, selector string, matchFunc func(optionTemplate OptionTemplate) string) []PropertyBlueprint {
-	var options []string
 	for _, optionTemplate := range optionTemplates {
 		match := matchFunc(optionTemplate)
-		options = append(options, match)
 
 		if strings.EqualFold(selector, match) {
 			return optionTemplate.PropertyBlueprints

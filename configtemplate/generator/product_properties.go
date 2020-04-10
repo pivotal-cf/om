@@ -79,7 +79,7 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 			defaultSelector := propertyMetadata.DefaultSelectorPath(property.Reference)
 			for _, selector := range property.SelectorPropertyInputs {
 				if strings.EqualFold(defaultSelector, selector.Reference) {
-					selectorMetadata := SelectorOptionsBlueprints(propertyMetadata.OptionTemplates, fmt.Sprintf("%s", propertyMetadata.DefaultSelector()))
+					selectorMetadata := SelectorOptionsBlueprints(propertyMetadata.OptionTemplates, propertyMetadata.DefaultSelector())
 					for _, metadata := range selectorMetadata {
 						if metadata.IsConfigurable() {
 							selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, metadata.Name)
@@ -117,7 +117,7 @@ func GetRequiredPropertyVars(metadata *Metadata) (map[string]interface{}, error)
 					continue
 				}
 
-				selectorOptionBlueprints := SelectorOptionsBlueprints(propertyBlueprint.OptionTemplates, fmt.Sprintf("%s", propertyBlueprint.DefaultSelector()))
+				selectorOptionBlueprints := SelectorOptionsBlueprints(propertyBlueprint.OptionTemplates, propertyBlueprint.DefaultSelector())
 				for _, selectorOptionBlueprint := range selectorOptionBlueprints {
 					if selectorOptionBlueprint.IsConfigurable() && selectorOptionBlueprint.IsRequired() && !selectorOptionBlueprint.IsMultiSelect() {
 						selectorProperty := fmt.Sprintf("%s.%s", selector.Reference, selectorOptionBlueprint.Name)

@@ -95,7 +95,7 @@ var _ = Describe("Resource Config", func() {
 					{
 						Name:                "job1",
 						InstanceDefinition:  generator.InstanceDefinition{Configurable: true, Default: 1},
-						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+						ResourceDefinitions: []generator.ResourceDefinition{{Name: "persistent_disk", Configurable: false}},
 					},
 				},
 			}
@@ -109,7 +109,7 @@ var _ = Describe("Resource Config", func() {
 					{
 						Name:                "job1",
 						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
-						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+						ResourceDefinitions: []generator.ResourceDefinition{{Name: "persistent_disk", Configurable: false}},
 					},
 				},
 			}
@@ -123,7 +123,7 @@ var _ = Describe("Resource Config", func() {
 					{
 						Name:                "job1",
 						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
-						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: true}},
+						ResourceDefinitions: []generator.ResourceDefinition{{Name: "persistent_disk", Configurable: true}},
 					},
 				},
 			}
@@ -137,7 +137,7 @@ var _ = Describe("Resource Config", func() {
 					{
 						Name:                "job1",
 						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
-						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+						ResourceDefinitions: []generator.ResourceDefinition{{Name: "persistent_disk", Configurable: false}},
 					},
 				},
 			}
@@ -151,7 +151,7 @@ var _ = Describe("Resource Config", func() {
 					{
 						Name:                "job1",
 						InstanceDefinition:  generator.InstanceDefinition{Configurable: false, Default: 1},
-						ResourceDefinitions: []generator.ResourceDefinition{generator.ResourceDefinition{Name: "persistent_disk", Configurable: false}},
+						ResourceDefinitions: []generator.ResourceDefinition{{Name: "persistent_disk", Configurable: false}},
 					},
 				},
 			}

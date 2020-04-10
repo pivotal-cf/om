@@ -22,13 +22,13 @@ func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{
 		for key, value := range defaultMap {
 			keyAsString := key.(string)
 			if value != nil {
-				switch value.(type) {
+				switch v := value.(type) {
 				case string:
-					arrayProperties[keyAsString] = SimpleString(value.(string))
+					arrayProperties[keyAsString] = SimpleString(v)
 				case bool:
-					arrayProperties[keyAsString] = SimpleBoolean(value.(bool))
+					arrayProperties[keyAsString] = SimpleBoolean(v)
 				case int:
-					arrayProperties[keyAsString] = SimpleInteger(value.(int))
+					arrayProperties[keyAsString] = SimpleInteger(v)
 
 				default:
 					return nil, fmt.Errorf("value %v is not known", reflect.TypeOf(value))

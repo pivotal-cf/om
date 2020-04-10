@@ -94,7 +94,6 @@ func (p *PropertyBlueprint) PropertyType(propertyName string) PropertyValue {
 		default:
 			return nil
 		}
-
 	}
 	if p.IsCertificate() {
 		return &CertificateValueHolder{

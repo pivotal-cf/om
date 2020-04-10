@@ -11,21 +11,21 @@ var _ = Describe("Errand Config", func() {
 		It("populates the errand state with the correct pre / post deployment state", func() {
 			metadata := &generator.Metadata{
 				PostDeployErrands: []generator.ErrandMetadata{
-					generator.ErrandMetadata{
+					{
 						Name: "post-1",
 					},
-					generator.ErrandMetadata{
+					{
 						Name: "post-2",
 					},
 				},
 				PreDeleteErrands: []generator.ErrandMetadata{
-					generator.ErrandMetadata{
+					{
 						Name: "post-1",
 					},
-					generator.ErrandMetadata{
+					{
 						Name: "pre-1",
 					},
-					generator.ErrandMetadata{
+					{
 						Name: "pre-2",
 					},
 				},

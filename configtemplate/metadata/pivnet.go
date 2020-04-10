@@ -20,7 +20,6 @@ import (
 )
 
 func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Provider {
-
 	logWriter := os.Stderr
 	logger := log.New(logWriter, "", log.LstdFlags)
 	config := pivnetapi.ClientConfig{
@@ -58,7 +57,6 @@ type PivnetProvider struct {
 }
 
 func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
-
 	releases, err := p.client.Releases.List(p.slug)
 	if err != nil {
 		return nil, err
@@ -72,7 +70,6 @@ func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
 			}
 
 			return p.downloadFiles(productFiles, release.ID)
-
 		}
 	}
 
@@ -88,11 +85,7 @@ func (p *PivnetProvider) downloadFiles(
 	productFiles []pivnetapi.ProductFile,
 	releaseID int,
 ) ([]byte, error) {
-
-	filtered := productFiles
-
-	var err error
-	filtered, err = productFileKeysByGlobs(productFiles, p.glob)
+	filtered, err := productFileKeysByGlobs(productFiles, p.glob)
 	if err != nil {
 		return nil, err
 	}
@@ -143,11 +136,13 @@ func (p *PivnetProvider) downloadFiles(
 			if err != nil {
 				return nil, err
 			}
-			io.ReadFull(rc, data)
+			_, err = io.ReadFull(rc, data)
+			if err != nil {
+				return nil, err
+			}
 			rc.Close()
 			return data, nil
 		}
-
 	}
 	return nil, fmt.Errorf("no metadata found")
 }
@@ -156,7 +151,6 @@ func productFileKeysByGlobs(
 	productFiles []pivnetapi.ProductFile,
 	pattern string,
 ) ([]pivnetapi.ProductFile, error) {
-
 	filtered := []pivnetapi.ProductFile{}
 
 	for _, p := range productFiles {
