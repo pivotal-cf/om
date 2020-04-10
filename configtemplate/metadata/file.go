@@ -17,6 +17,8 @@ type FileProvider struct {
 	pathToPivotalFile string
 }
 
+var metadataRegexp = regexp.MustCompile("metadata/.*\\.yml")
+
 func (f *FileProvider) MetadataBytes() ([]byte, error) {
 	zipReader, err := zip.OpenReader(f.pathToPivotalFile)
 	if err != nil {
@@ -26,7 +28,6 @@ func (f *FileProvider) MetadataBytes() ([]byte, error) {
 	defer zipReader.Close()
 
 	for _, file := range zipReader.File {
-		metadataRegexp := regexp.MustCompile("metadata/.*\\.yml")
 		matched := metadataRegexp.MatchString(file.Name)
 
 		if matched {
