@@ -1,9 +1,12 @@
 package generator_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
+	"sort"
 
 	"gopkg.in/yaml.v2"
 
@@ -27,7 +30,7 @@ var _ = Describe("Executor", func() {
 		)
 		BeforeEach(func() {
 			gen = &generator.Executor{}
-			metadata = getMetadata("fixtures/p_healthwatch.yml")
+			metadata = getMetadata("fixtures/metadata/p_healthwatch.yml")
 		})
 
 		It("Should create output template with network properties", func() {
@@ -57,103 +60,29 @@ var _ = Describe("Executor", func() {
 			testGen = path.Join(pwd, "_testGen")
 			tmpPath = path.Join(testGen, "templates")
 		)
-		BeforeEach(func() {
 
-		})
 		AfterEach(func() {
 			err := os.RemoveAll(testGen)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should generate files for p-healthwatch", func() {
-			metadataBytes, err := getFileBytes("./fixtures/p_healthwatch.yml")
+		It("generates files for all the fixutres", func() {
+			fixtures, err := filepath.Glob("./fixtures/metadata/*.yml")
 			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
+
+			sort.Strings(fixtures)
+
+			for _, fixtureFilename := range fixtures {
+				metadataBytes, err := getFileBytes(fixtureFilename)
+				Expect(err).ToNot(HaveOccurred())
+				gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
+				err = gen.Generate()
+				Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("expected %s to be a valid fixture", fixtureFilename))
+			}
 		})
 
-		It("Should generate files for pas", func() {
-			metadataBytes, err := getFileBytes("./fixtures/pas.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for pas 2.2", func() {
-			metadataBytes, err := getFileBytes("./fixtures/pas_2_2.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for mysql_v2", func() {
-			metadataBytes, err := getFileBytes("./fixtures/mysql_v2.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for scs", func() {
-			metadataBytes, err := getFileBytes("./fixtures/scs.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for srt", func() {
-			metadataBytes, err := getFileBytes("./fixtures/srt.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, true, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should generate files for push notifications", func() {
-			metadataBytes, err := getFileBytes("./fixtures/p_push_notifications.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should generate files for pivotal cloud cache", func() {
-			metadataBytes, err := getFileBytes("./fixtures/cloudcache.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for rabbitmq", func() {
-			metadataBytes, err := getFileBytes("./fixtures/rabbit-mq.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for rabbitmq 1.4", func() {
-			metadataBytes, err := getFileBytes("./fixtures/rabbit-mq-1.4.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for redis", func() {
-			metadataBytes, err := getFileBytes("./fixtures/p-redis.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-		It("Should generate files for apigee", func() {
-			metadataBytes, err := getFileBytes("./fixtures/apigee.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
 		It("Should generate files for pks", func() {
-			metadataBytes, err := getFileBytes("./fixtures/pks.yml")
+			metadataBytes, err := getFileBytes("./fixtures/metadata/pks.yml")
 			Expect(err).ToNot(HaveOccurred())
 			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
 			err = gen.Generate()
@@ -163,8 +92,9 @@ var _ = Describe("Executor", func() {
 			Expect(template.NetworkProperties).ToNot(BeNil())
 			Expect(template.ResourceConfig).ToNot(BeNil())
 		})
+
 		It("Should generate files for nsx-t", func() {
-			metadataBytes, err := getFileBytes("./fixtures/nsx-t.yml")
+			metadataBytes, err := getFileBytes("./fixtures/metadata/nsx-t.yml")
 			Expect(err).ToNot(HaveOccurred())
 			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
 			err = gen.Generate()
@@ -173,22 +103,6 @@ var _ = Describe("Executor", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(template.NetworkProperties).Should(BeNil())
 			Expect(template.ResourceConfig).Should(BeNil())
-		})
-
-		It("Should generate files for aws-services", func() {
-			metadataBytes, err := getFileBytes("./fixtures/aws-services.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should generate files for a9s postgres", func() {
-			metadataBytes, err := getFileBytes("./fixtures/a9s_postgres.yml")
-			Expect(err).ToNot(HaveOccurred())
-			gen = generator.NewExecutor(metadataBytes, tmpPath, false, true)
-			err = gen.Generate()
-			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 })
