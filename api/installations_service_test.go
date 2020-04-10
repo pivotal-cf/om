@@ -365,42 +365,42 @@ var _ = Describe("InstallationsService", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(output.Logs).To(Equal("some logs"))
 		})
-	})
 
-	When("the client has an error during the request", func() {
-		It("returns an error", func() {
-			client.Close()
+		When("the client returns a non-2XX", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
+						ghttp.RespondWith(http.StatusTeapot, `{}`),
+					),
+				)
 
-			_, err := service.GetInstallationLogs(3232)
-			Expect(err).To(MatchError(ContainSubstring("could not make api request to installations logs endpoint: could not send api request to GET /api/v0/installations/3232/logs")))
+				_, err := service.GetInstallationLogs(3232)
+				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+			})
 		})
-	})
 
-	When("the client returns a non-2XX", func() {
-		It("returns an error", func() {
-			client.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
-					ghttp.RespondWith(http.StatusTeapot, `{}`),
-				),
-			)
+		When("the client has an error during the request", func() {
+			It("returns an error", func() {
+				client.Close()
 
-			_, err := service.GetInstallationLogs(3232)
-			Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+				_, err := service.GetInstallationLogs(3232)
+				Expect(err).To(MatchError(ContainSubstring("could not make api request to installations logs endpoint: could not send api request to GET /api/v0/installations/3232/logs")))
+			})
 		})
-	})
 
-	When("the json cannot be decoded", func() {
-		It("returns an error", func() {
-			client.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
-					ghttp.RespondWith(http.StatusOK, `invalid-json`),
-				),
-			)
+		When("the json cannot be decoded", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/installations/3232/logs"),
+						ghttp.RespondWith(http.StatusOK, `invalid-json`),
+					),
+				)
 
-			_, err := service.GetInstallationLogs(3232)
-			Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
+				_, err := service.GetInstallationLogs(3232)
+				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
+			})
 		})
 	})
 })
