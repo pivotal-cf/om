@@ -8,7 +8,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -229,17 +228,6 @@ pkey: some PrivateKey
 					Expect(err).To(MatchError("could not parse update-ssl-certificate flags: missing required flag \"--private-key-pem\""))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command updates the SSL Certificate on the Ops Manager with the given cert and key",
-				ShortDescription: "updates the SSL Certificate on the Ops Manager",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

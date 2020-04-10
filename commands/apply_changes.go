@@ -20,7 +20,7 @@ type ApplyChanges struct {
 	waitDuration   time.Duration
 	Options        struct {
 		Config             string   `short:"c"   long:"config"               description:"path to yml file containing errand configuration (see docs/apply-changes/README.md for format)"`
-		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"ignore issues reported by Ops Manager when applying changes"`
+		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"For convenience. Use other commands to disable particular verifiers if they are inappropriate."`
 		Reattach           bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
 		RecreateVMs        bool     `long:"recreate-vms" description:"recreate all vms"`
 		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`

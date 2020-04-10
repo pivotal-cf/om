@@ -16,7 +16,7 @@ Usage:
 
 Flags:
   --config, -c                  string             path to yml file containing errand configuration (see docs/apply-changes/README.md for format)
-  --ignore-warnings, -i         bool               ignore issues reported by Ops Manager when applying changes
+  --ignore-warnings, -i         bool               For convenience. Use other commands to disable particular verifiers if they are inappropriate.
   --product-name, -n            string (variadic)  name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)
   --reattach                    bool               reattach to an already running apply changes (if available)
   --recreate-vms                bool               recreate all vms
