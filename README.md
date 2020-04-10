@@ -165,7 +165,7 @@ Commands:
   staged-products                 lists staged products
   tile-metadata                   **DEPRECATED** prints product metadata. Use product-metadata instead
   unstage-product                 unstages a given product from the Ops Manager targeted
-  update-ssl-certificate          updates the SSL Certificate on the Ops Manager
+  update-ssl-certificate          **DEPRECATED** updates the SSL Certificate on the Ops Manager. Use configure-opsman instead.
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted
   version                         prints the om release version
