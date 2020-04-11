@@ -90,32 +90,18 @@ func (e *Executor) Generate() error {
 
 	resourceVars := CreateResourceVars(metadata)
 
-	if len(resourceVars) > 0 {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "resource-vars.yml"), resourceVars); err != nil {
-			return err
-		}
-	} else {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "resource-vars.yml"), nil); err != nil {
-			return err
-		}
+	if err = e.writeYamlFile(path.Join(targetDirectory, "resource-vars.yml"), resourceVars); err != nil {
+		return err
 	}
 
-	if e.includeErrands {
-		errandVars := CreateErrandVars(metadata)
+	var errandVars map[string]interface{}
 
-		if len(errandVars) > 0 {
-			if err = e.writeYamlFile(path.Join(targetDirectory, "errand-vars.yml"), errandVars); err != nil {
-				return err
-			}
-		} else {
-			if err = e.writeYamlFile(path.Join(targetDirectory, "errand-vars.yml"), nil); err != nil {
-				return err
-			}
-		}
-	} else {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "errand-vars.yml"), nil); err != nil {
-			return err
-		}
+	if e.includeErrands {
+		errandVars = CreateErrandVars(metadata)
+	}
+
+	if err = e.writeYamlFile(path.Join(targetDirectory, "errand-vars.yml"), errandVars); err != nil {
+		return err
 	}
 
 	resourceOpsFiles, err := CreateResourceOpsFiles(metadata)
@@ -136,28 +122,16 @@ func (e *Executor) Generate() error {
 		return err
 	}
 
-	if len(productPropertyVars) > 0 {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "default-vars.yml"), productPropertyVars); err != nil {
-			return err
-		}
-	} else {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "default-vars.yml"), nil); err != nil {
-			return err
-		}
+	if err = e.writeYamlFile(path.Join(targetDirectory, "default-vars.yml"), productPropertyVars); err != nil {
+		return err
 	}
 
 	requiredVars, err := GetRequiredPropertyVars(metadata)
 	if err != nil {
 		return err
 	}
-	if len(requiredVars) > 0 {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "required-vars.yml"), requiredVars); err != nil {
-			return err
-		}
-	} else {
-		if err = e.writeYamlFile(path.Join(targetDirectory, "required-vars.yml"), nil); err != nil {
-			return err
-		}
+	if err = e.writeYamlFile(path.Join(targetDirectory, "required-vars.yml"), requiredVars); err != nil {
+		return err
 	}
 
 	productPropertyOpsFiles, err := CreateProductPropertiesFeaturesOpsFiles(metadata)
