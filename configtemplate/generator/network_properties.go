@@ -15,6 +15,7 @@ type Name struct {
 //counterfeiter:generate -o ./fakes/metadata.go --fake-name FakeMetadata . metadata
 type metadata interface {
 	UsesServiceNetwork() bool
+	UsesOpsManagerSyslogProperties() bool
 }
 
 func CreateNetworkProperties(metadata metadata) *NetworkProperties {

@@ -6,6 +6,16 @@ import (
 )
 
 type FakeMetadata struct {
+	UsesOpsManagerSyslogPropertiesStub        func() bool
+	usesOpsManagerSyslogPropertiesMutex       sync.RWMutex
+	usesOpsManagerSyslogPropertiesArgsForCall []struct {
+	}
+	usesOpsManagerSyslogPropertiesReturns struct {
+		result1 bool
+	}
+	usesOpsManagerSyslogPropertiesReturnsOnCall map[int]struct {
+		result1 bool
+	}
 	UsesServiceNetworkStub        func() bool
 	usesServiceNetworkMutex       sync.RWMutex
 	usesServiceNetworkArgsForCall []struct {
@@ -18,6 +28,58 @@ type FakeMetadata struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeMetadata) UsesOpsManagerSyslogProperties() bool {
+	fake.usesOpsManagerSyslogPropertiesMutex.Lock()
+	ret, specificReturn := fake.usesOpsManagerSyslogPropertiesReturnsOnCall[len(fake.usesOpsManagerSyslogPropertiesArgsForCall)]
+	fake.usesOpsManagerSyslogPropertiesArgsForCall = append(fake.usesOpsManagerSyslogPropertiesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("UsesOpsManagerSyslogProperties", []interface{}{})
+	fake.usesOpsManagerSyslogPropertiesMutex.Unlock()
+	if fake.UsesOpsManagerSyslogPropertiesStub != nil {
+		return fake.UsesOpsManagerSyslogPropertiesStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.usesOpsManagerSyslogPropertiesReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeMetadata) UsesOpsManagerSyslogPropertiesCallCount() int {
+	fake.usesOpsManagerSyslogPropertiesMutex.RLock()
+	defer fake.usesOpsManagerSyslogPropertiesMutex.RUnlock()
+	return len(fake.usesOpsManagerSyslogPropertiesArgsForCall)
+}
+
+func (fake *FakeMetadata) UsesOpsManagerSyslogPropertiesCalls(stub func() bool) {
+	fake.usesOpsManagerSyslogPropertiesMutex.Lock()
+	defer fake.usesOpsManagerSyslogPropertiesMutex.Unlock()
+	fake.UsesOpsManagerSyslogPropertiesStub = stub
+}
+
+func (fake *FakeMetadata) UsesOpsManagerSyslogPropertiesReturns(result1 bool) {
+	fake.usesOpsManagerSyslogPropertiesMutex.Lock()
+	defer fake.usesOpsManagerSyslogPropertiesMutex.Unlock()
+	fake.UsesOpsManagerSyslogPropertiesStub = nil
+	fake.usesOpsManagerSyslogPropertiesReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeMetadata) UsesOpsManagerSyslogPropertiesReturnsOnCall(i int, result1 bool) {
+	fake.usesOpsManagerSyslogPropertiesMutex.Lock()
+	defer fake.usesOpsManagerSyslogPropertiesMutex.Unlock()
+	fake.UsesOpsManagerSyslogPropertiesStub = nil
+	if fake.usesOpsManagerSyslogPropertiesReturnsOnCall == nil {
+		fake.usesOpsManagerSyslogPropertiesReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.usesOpsManagerSyslogPropertiesReturnsOnCall[i] = struct {
+		result1 bool
+	}{result1}
 }
 
 func (fake *FakeMetadata) UsesServiceNetwork() bool {
@@ -75,6 +137,8 @@ func (fake *FakeMetadata) UsesServiceNetworkReturnsOnCall(i int, result1 bool) {
 func (fake *FakeMetadata) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.usesOpsManagerSyslogPropertiesMutex.RLock()
+	defer fake.usesOpsManagerSyslogPropertiesMutex.RUnlock()
 	fake.usesServiceNetworkMutex.RLock()
 	defer fake.usesServiceNetworkMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

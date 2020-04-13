@@ -20,6 +20,7 @@ type Metadata struct {
 	Name               string              `yaml:"name"`
 	Version            string              `yaml:"product_version"`
 	FormTypes          []FormType          `yaml:"form_types"`
+	OpsManagerSyslog   bool                `yaml:"opsmanager_syslog"`
 	PropertyBlueprints []PropertyBlueprint `yaml:"property_blueprints"`
 	JobTypes           []JobType           `yaml:"job_types"`
 	PostDeployErrands  []ErrandMetadata    `yaml:"post_deploy_errands"`
@@ -113,4 +114,8 @@ func (m *Metadata) PropertyInputs() []PropertyInput {
 		propertyInputs = append(propertyInputs, form.PropertyInputs...)
 	}
 	return propertyInputs
+}
+
+func (m *Metadata) UsesOpsManagerSyslogProperties() bool {
+	return m.OpsManagerSyslog
 }

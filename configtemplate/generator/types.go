@@ -5,6 +5,7 @@ type Template struct {
 	NetworkProperties *NetworkProperties       `yaml:"network-properties"`
 	ProductProperties map[string]PropertyValue `yaml:"product-properties"`
 	ResourceConfig    map[string]Resource      `yaml:"resource-config,omitempty"`
+	SyslogProperties  *SyslogProperties        `yaml:"syslog-properties,omitempty"`
 	ErrandConfig      map[string]Errand        `yaml:"errand-config,omitempty"`
 }
 

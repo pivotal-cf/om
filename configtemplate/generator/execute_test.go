@@ -52,6 +52,21 @@ var _ = Describe("Executor", func() {
 			Expect(template).ToNot(BeNil())
 			Expect(template.ResourceConfig).ToNot(BeNil())
 		})
+		It("Should not create output template with syslog config properties", func() {
+			template, err := gen.CreateTemplate(metadata)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(template).ToNot(BeNil())
+			Expect(template.SyslogProperties).To(BeNil())
+		})
+	})
+
+	It("Adds syslog section if supported", func() {
+		gen := &generator.Executor{}
+		metadata := getMetadata("fixtures/metadata/p-spring-cloud-services.yml")
+		template, err := gen.CreateTemplate(metadata)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(template).ToNot(BeNil())
+		Expect(template.SyslogProperties).ToNot(BeNil())
 	})
 
 	Context("Generate", func() {

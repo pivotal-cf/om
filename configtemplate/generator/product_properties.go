@@ -90,6 +90,19 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 			}
 		}
 	}
+
+	if metadata.UsesOpsManagerSyslogProperties() {
+		vars["syslog_enabled"] = false
+		vars["syslog_address"] = nil
+		vars["syslog_port"] = nil
+		vars["syslog_transport_protocol"] = "tcp"
+		vars["syslog_tls_enabled"] = false
+		vars["syslog_permitted_peer"] = false
+		vars["syslog_ssl_ca_certificate"] = nil
+		vars["syslog_queue_size"] = 100000
+		vars["syslog_forward_debug_logs"] = false
+		vars["syslog_custom_rsyslog_configuration"] = ""
+	}
 	return vars, nil
 }
 

@@ -169,6 +169,11 @@ func (e *Executor) CreateTemplate(metadata *Metadata) (*Template, error) {
 		template.NetworkProperties = CreateNetworkProperties(metadata)
 		template.ResourceConfig = CreateResourceConfig(metadata)
 	}
+
+	if metadata.UsesOpsManagerSyslogProperties() {
+		template.SyslogProperties = CreateSyslogProperties(metadata)
+	}
+
 	productProperties, err := GetAllProductProperties(metadata)
 	if err != nil {
 		return nil, err
