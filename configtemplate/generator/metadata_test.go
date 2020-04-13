@@ -43,7 +43,7 @@ var _ = Describe("Metadata", func() {
 			metadata := getMetadata("fixtures/metadata/p_healthwatch.yml")
 			property, err := metadata.GetPropertyBlueprint(".healthwatch-forwarder.foundation_name")
 			Expect(err).ToNot(HaveOccurred())
-			//Expect(property).ToNot(BeNil())
+			Expect(property).ToNot(BeNil())
 			Expect(property.Name).Should(Equal("foundation_name"))
 		})
 	})
