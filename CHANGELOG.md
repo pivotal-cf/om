@@ -60,6 +60,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   In the tile metadata, this property is turned on with the `opsmanager_syslog: true` field.
   Tiles with this property enabled will now add the section to `product.yml` 
   and create defaults in `default-vars.yml`.
+- Added shorthand flag consistency to multiple commands.
+  `--vars-file` shorthand is `-l` and `--var` shorthand is `-v`
 
 ### Bug Fixes
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
