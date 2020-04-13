@@ -56,6 +56,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This functionality is duplicated in `update-ssl-certificate`,
   but `configure-opsman` will be extended to support more endpoints from the Settings page.
   For config example, see the [docs](https://github.com/pivotal-cf/om/tree/master/docs/configure-opsman) for the command.
+- **EXPERIMENTAL** `config-template` now supports ops manager syslog in tiles.
+  In the tile metadata, this property is turned on with the `opsmanager_syslog: true` field.
+  Tiles with this property enabled will now add the section to `product.yml` 
+  and create defaults in `default-vars.yml`.
 
 ### Bug Fixes
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
@@ -144,7 +148,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   It gets the manifest diff for a specified set of products.
   This might be useful as a sanity review before apply-changes;
   see the detailed documentation for details/provisos.
-- `config-template` now includes the option to use a local product file with `--product-path`. 
+- **EXPERIMENTAL** `config-template` now includes the option to use a local product file with `--product-path`.
   This resolves issue [#413](https://github.com/pivotal-cf/om/issues/413).
 - `apply-changes` can for recreate the VMs that will apply with `--recreate-vms`.
   This is useful for the [three-Rs of security](https://devopedia.org/three-rs-of-security),
@@ -184,7 +188,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 4.2.0
 
 ### Features
-- `config-template` now includes `max-in-flight` for all resources. (PR: @jghiloni)
+- **EXPERIMENTAL** `config-template` now includes `max-in-flight` for all resources. (PR: @jghiloni)
 - When using `configure-product` and `configure-director`,
   the `additional_vm_extensions` for a resource will have the following behaviour:
   * If not set in config file, the value from Ops Manager will be persisted.
@@ -192,7 +196,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   * If defined in the file with a value (`["web_lb"]`), these values will be set on Ops Manager.
 - `configure-authentication`, `configure-ldap-authentication`, and `configure-saml-authentication`
   now support the `--var`, `--vars-file`, and `--vars-env` flags. 
-- `config-template` now supports the `--config`, `--var`, `--vars-file`, and `--vars-env` flags.
+- **EXPERIMENTAL** `config-template` now supports the `--config`, `--var`, `--vars-file`, and `--vars-env` flags.
   (PR: @jghiloni)
 
 ## 4.1.0
@@ -267,7 +271,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   and specify whether applying all changes or applying changes to a particular product.  
   
 ### Features
-- `config-template` now accepts `--pivnet-file-glob` instead of `--product-file-glob`.
+- **EXPERIMENTAL** `config-template` now accepts `--pivnet-file-glob` instead of `--product-file-glob`.
   This is to create consistency with the `download-product` command's naming conventions.
   (PR: @poligraph)
 ## 3.2.2
@@ -322,20 +326,20 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This was done to increase naming consistency.
   Both commands currently exist and do exactly the same thing.
   (PR: @jghiloni)
-- `config-template` now supports the `--exclude-version` flag.
+- **EXPERIMENTAL** `config-template` now supports the `--exclude-version` flag.
   If provided, the command will exclude the version directory in the `--output-directory` tree.
   The contents will with or without the flag will remain the same.
   Please note including the `--exclude-version` flag
   will make it more difficult to track changes between versions
   unless using a version control system (such as git).
   (PR: @jghiloni)
-- `config-template` supports `--pivnet-disable-ssl` to skip SSL validation.
+- **EXPERIMENTAL** `config-template` supports `--pivnet-disable-ssl` to skip SSL validation.
 - When interacting with an OpsManager, that OpsManager may have a custom CA cert.
   In the global options `--ca-cert` has been added to allow the usage of that custom CA cert.
   The value of `--ca-cert` can be a file or command line string.
   
 ### Bug Fix
-- When using `config-template` or `download-product`,
+- When using `config-template` (**EXPERIMENTAL**) or `download-product`,
   the `--pivnet-skip-ssl` is honored when capturing the token. 
 
 ### Deprecation Notices
@@ -349,12 +353,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Features
 
 - TLS v1.2 is the minimum version supported when connecting to an Ops Manager
-- `config-template` now will provide required-vars in addition to default-vars.
-- `config-template` will define vars with an `_` instead of a `/`.
+- **EXPERIMENTAL** `config-template` now will provide required-vars in addition to default-vars.
+- **EXPERIMENTAL** `config-template` will define vars with an `_` instead of a `/`.
   This is an aesthetically motivated change.
   Ops files are denoted with `/`,
   so changing the vars separators to `_` makes this easier to differentiate.
-- `config-template` output `product-default-vars.yml` has been changed to `default-vars.yml`
+- **EXPERIMENTAL** `config-template` output `product-default-vars.yml` has been changed to `default-vars.yml`
 - `staged-config` includes the property `max_in_flight` will be included
   in the `resource-config` section of a job.
 - `configure-product` can set the property `max_in_flight`
@@ -437,7 +441,7 @@ Was a release to make sure that `brew upgrade` works.
   Now vm types will be applied then resources, so that resource can use the vm type.
 - When using `bosh-env`, a check is done to ensure the SSH private key exists.
   If does not the command will exit 1.
-- `config-template` will enforce the default value for a property to always be `configurable: false`.
+- **EXPERIMENTAL** `config-template` will enforce the default value for a property to always be `configurable: false`.
   This is inline with the OpsManager behaviour.
   
 ### Breaking Change
@@ -622,7 +626,7 @@ Was a release to make sure that `brew upgrade` works.
 * There's now a shell-completion script;
   see the readme for details.
 * We have totally replaced the code and behavior
-  of the _experimental_ `config-template` command.
+  of the **EXPERIMENTAL** `config-template` command.
   It now contains the bones of the [tile-config-generator](https://github.com/pivotalservices/tile-config-generator).
   We expect to further refine
   (and make breaking changes to) this command in future releases.
@@ -851,7 +855,7 @@ don't have a minor version (e.g. version 97)
 ## 0.42.0
 
 ### Breaking changes:
-* `config-template` & `staged-config` & `staged-director-config`: pluralize `--include-placeholders` flag
+* `config-template` (**EXPERIMENTAL**) & `staged-config` & `staged-director-config`: pluralize `--include-placeholders` flag
 * `import-installation`: removed `decryption-passphrase` from the arguments. Global `decryption-passphrase` flag is required when using this command
 
 ### Bug Fixes
