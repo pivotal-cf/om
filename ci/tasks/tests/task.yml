@@ -6,6 +6,13 @@ image_resource:
     tag: testing
 inputs:
 - name: om
+params:
+  OM_GCP_SERVICE_ACCOUNT_KEY: ((gcp.service_account))
+  OM_GCP_PROJECT_ID: ((gcp.project_id))
+  OM_AZURE_STORAGE_ACCOUNT: ((azure.storage.account))
+  OM_AZURE_STORAGE_KEY: ((azure.storage.key))
+  OM_AZURE_CONTAINER_NAME: ((azure.storage.container))
+  OM_PIVNET_TOKEN: ((pivnet_token))
 run:
   path: "/bin/bash"
   args:
