@@ -6,7 +6,8 @@ type envGetter struct {
 }
 
 // EnvGetter defines fetching environment variables
-//go:generate counterfeiter -o ./fakes/env_getter.go --fake-name EnvGetter . EnvGetter
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate -o ./fakes/env_getter.go --fake-name EnvGetter . EnvGetter
 type EnvGetter interface {
 	Get(name string) string
 }

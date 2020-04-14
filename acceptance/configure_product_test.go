@@ -313,21 +313,6 @@ const nsxResourceConfigJSON = `
   }
 }`
 
-const resourceConfigJSON = `
-{
-	"some-job": {
-		"instances": 1,
-		"persistent_disk": { "size_mb": "20480" },
-		"instance_type": { "id": "m1.medium" },
-		"additional_vm_extensions": ["some-vm-extension", "some-other-vm-extension"]
-	},
-	"some-other-job": {
-		"instances": "automatic",
-		"persistent_disk": { "size_mb": "20480" },
-		"instance_type": { "id": "m1.medium" }
-	}
-}`
-
 const configFileContents = `---
 product-name: cf
 product-properties:

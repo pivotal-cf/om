@@ -879,16 +879,6 @@ const resourceConfig = `{
   }
 }`
 
-const automaticResourceConfig = `{
-  "some-job": {
-    "instances": "automatic",
-    "persistent_disk": { "size_mb": "20480" },
-    "instance_type": { "id": "m1.medium" },
-    "internet_connected": true,
-    "elb_names": ["some-lb"]
-  }
-}`
-
 const productPropertiesWithVariableTemplate = `---
 product-name: cf
 product-properties:

@@ -36,7 +36,7 @@ type configureOpsmanService interface {
 	UpdateSSLCertificate(api.SSLCertificateInput) error
 }
 
-func NewConfigureOpsman(environFunc func() []string, service updateSSLCertificateService, logger logger) ConfigureOpsman {
+func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) ConfigureOpsman {
 	return ConfigureOpsman{
 		environFunc: environFunc,
 		service:     service,
