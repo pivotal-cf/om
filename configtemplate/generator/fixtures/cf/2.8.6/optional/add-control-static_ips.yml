@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.control.static_ips?
+  value:
+    value: ((control_static_ips))

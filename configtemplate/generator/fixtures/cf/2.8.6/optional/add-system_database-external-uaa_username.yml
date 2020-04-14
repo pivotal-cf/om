@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.system_database.external.uaa_username?
+  value:
+    value: ((system_database_external_uaa_username))

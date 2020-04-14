@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/mysql_monitor?/internet_connected?
+  value: ((mysql_monitor_internet_connected))

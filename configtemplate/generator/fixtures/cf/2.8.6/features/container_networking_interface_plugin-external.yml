@@ -1,0 +1,19 @@
+- type: replace
+  path: /product-properties/.properties.container_networking_interface_plugin?
+  value:
+    value: external
+    selected_option: external
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.network_mtu?
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.network_cidr?
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.vtep_port?
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.iptables_denied_logs_per_sec?
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.iptables_accepted_udp_logs_per_sec?
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.enable_log_traffic?
+- type: remove
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.enable_policy_enforcement?

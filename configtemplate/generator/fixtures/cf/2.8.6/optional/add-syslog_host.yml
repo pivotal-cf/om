@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.syslog_host?
+  value:
+    value: ((syslog_host))

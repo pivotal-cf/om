@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.router_headers_remove_if_specified?
+  value:
+    value:
+    - name: ((router_headers_remove_if_specified_0_name))

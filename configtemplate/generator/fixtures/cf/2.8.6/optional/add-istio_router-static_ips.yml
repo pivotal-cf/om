@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.istio_router.static_ips?
+  value:
+    value: ((istio_router_static_ips))

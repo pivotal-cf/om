@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.saml.sso_xml?
+  value:
+    value: ((uaa_saml_sso_xml))

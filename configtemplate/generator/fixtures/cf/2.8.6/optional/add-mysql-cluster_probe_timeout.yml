@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.mysql.cluster_probe_timeout?
+  value:
+    value: ((mysql_cluster_probe_timeout))

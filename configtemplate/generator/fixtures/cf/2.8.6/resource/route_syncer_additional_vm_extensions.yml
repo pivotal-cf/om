@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/route_syncer?/additional_vm_extensions?
+  value: ((route_syncer_additional_vm_extensions))

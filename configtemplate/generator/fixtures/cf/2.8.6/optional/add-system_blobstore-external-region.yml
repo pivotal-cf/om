@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.region?
+  value:
+    value: ((system_blobstore_external_region))

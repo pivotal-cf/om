@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/istio_router?/nsx_security_groups?
+  value: ((istio_router_nsx_security_groups))

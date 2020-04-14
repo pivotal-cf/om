@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.router.static_ips?
+  value:
+    value: ((router_static_ips))

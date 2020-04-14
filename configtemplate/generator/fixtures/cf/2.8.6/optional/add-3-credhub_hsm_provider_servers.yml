@@ -1,0 +1,16 @@
+- type: replace
+  path: /product-properties/.properties.credhub_hsm_provider_servers?
+  value:
+    value:
+    - certificate: ((credhub_hsm_provider_servers_0_certificate))
+      host_address: ((credhub_hsm_provider_servers_0_host_address))
+      partition_serial_number: ((credhub_hsm_provider_servers_0_partition_serial_number))
+      port: ((credhub_hsm_provider_servers_0_port))
+    - certificate: ((credhub_hsm_provider_servers_1_certificate))
+      host_address: ((credhub_hsm_provider_servers_1_host_address))
+      partition_serial_number: ((credhub_hsm_provider_servers_1_partition_serial_number))
+      port: ((credhub_hsm_provider_servers_1_port))
+    - certificate: ((credhub_hsm_provider_servers_2_certificate))
+      host_address: ((credhub_hsm_provider_servers_2_host_address))
+      partition_serial_number: ((credhub_hsm_provider_servers_2_partition_serial_number))
+      port: ((credhub_hsm_provider_servers_2_port))

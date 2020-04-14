@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/tcp_router?/internet_connected?
+  value: ((tcp_router_internet_connected))

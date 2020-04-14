@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.push_apps_manager_footer_text?
+  value:
+    value: ((push_apps_manager_footer_text))

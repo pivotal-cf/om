@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.saml.last_name_attribute?
+  value:
+    value: ((uaa_saml_last_name_attribute))

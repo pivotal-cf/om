@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.routing_log_client_ips?
+  value:
+    value: disable_all_log_client_ips
+    selected_option: disable_all_log_client_ips

@@ -1,0 +1,41 @@
+- type: replace
+  path: /product-properties/.properties.system_blobstore?
+  value:
+    value: external
+    selected_option: external
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.endpoint?
+  value:
+    value: ((system_blobstore_external_endpoint))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.buildpacks_bucket?
+  value:
+    value: ((system_blobstore_external_buildpacks_bucket))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.droplets_bucket?
+  value:
+    value: ((system_blobstore_external_droplets_bucket))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.packages_bucket?
+  value:
+    value: ((system_blobstore_external_packages_bucket))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.resources_bucket?
+  value:
+    value: ((system_blobstore_external_resources_bucket))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.iam_instance_profile_authentication?
+  value:
+    value: ((system_blobstore_external_iam_instance_profile_authentication))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.signature_version?
+  value:
+    value: ((system_blobstore_external_signature_version))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.encryption?
+  value:
+    value: ((system_blobstore_external_encryption))
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.versioning?
+  value:
+    value: ((system_blobstore_external_versioning))

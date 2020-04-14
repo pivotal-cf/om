@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.diego_cell.insecure_docker_registry_list?
+  value:
+    value: ((diego_cell_insecure_docker_registry_list))

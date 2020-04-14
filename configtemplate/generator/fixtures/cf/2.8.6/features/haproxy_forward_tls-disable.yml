@@ -1,0 +1,7 @@
+- type: replace
+  path: /product-properties/.properties.haproxy_forward_tls?
+  value:
+    value: disable
+    selected_option: disable
+- type: remove
+  path: /product-properties/.properties.haproxy_forward_tls.enable.backend_ca?

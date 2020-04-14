@@ -251,3 +251,37 @@ var _ = Describe("config-template command", func() {
 		})
 	})
 })
+
+var _ = Describe("config-template output", func() {
+	It("checks for changes with a previous output of SRT tile", func() {
+		pivnetToken := os.Getenv("OM_PIVNET_TOKEN")
+		if pivnetToken == "" {
+			Skip("OM_PIVNET_TOKEN not specified")
+		}
+
+		outputDir, err := ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+
+		command := exec.Command("go", "run", "../main.go",
+			"config-template",
+			"--output-directory", outputDir,
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.8.6",
+			"--pivnet-api-token", pivnetToken,
+			"--file-glob", "*srt*",
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(session, "10s").Should(gexec.Exit(0))
+
+		command = exec.Command("git", "diff",
+			filepath.Join(outputDir, "cf"),
+			"../configtemplate/generator/fixtures/cf",
+		)
+
+		session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(session, "10s").Should(gexec.Exit(0))
+	})
+})

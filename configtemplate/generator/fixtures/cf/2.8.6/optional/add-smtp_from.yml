@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.smtp_from?
+  value:
+    value: ((smtp_from))

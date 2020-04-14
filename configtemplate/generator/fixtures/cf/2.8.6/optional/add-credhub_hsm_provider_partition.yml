@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.credhub_hsm_provider_partition?
+  value:
+    value: ((credhub_hsm_provider_partition))

@@ -1,0 +1,7 @@
+- type: replace
+  path: /product-properties/.properties.garden_disk_cleanup?
+  value:
+    value: routine
+    selected_option: routine
+- type: remove
+  path: /product-properties/.properties.garden_disk_cleanup.reserved.reserved_space_for_other_jobs_in_mb?

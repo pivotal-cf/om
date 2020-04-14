@@ -1,0 +1,13 @@
+- type: replace
+  path: /product-properties/.properties.tcp_routing?
+  value:
+    value: enable
+    selected_option: enable
+- type: replace
+  path: /product-properties/.properties.tcp_routing.enable.reservable_ports?
+  value:
+    value: ((tcp_routing_enable_reservable_ports))
+- type: replace
+  path: /product-properties/.properties.tcp_routing.enable.request_timeout_in_seconds?
+  value:
+    value: ((tcp_routing_enable_request_timeout_in_seconds))

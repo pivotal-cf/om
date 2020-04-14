@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/blobstore?/nsx_security_groups?
+  value: ((blobstore_nsx_security_groups))

@@ -1,0 +1,28 @@
+- type: replace
+  path: /product-properties/.properties.credhub_internal_provider_keys?
+  value:
+    value:
+    - key:
+        secret: ((credhub_internal_provider_keys_0_key))
+      name: ((credhub_internal_provider_keys_0_name))
+      primary: ((credhub_internal_provider_keys_0_primary))
+    - key:
+        secret: ((credhub_internal_provider_keys_1_key))
+      name: ((credhub_internal_provider_keys_1_name))
+      primary: ((credhub_internal_provider_keys_1_primary))
+    - key:
+        secret: ((credhub_internal_provider_keys_2_key))
+      name: ((credhub_internal_provider_keys_2_name))
+      primary: ((credhub_internal_provider_keys_2_primary))
+    - key:
+        secret: ((credhub_internal_provider_keys_3_key))
+      name: ((credhub_internal_provider_keys_3_name))
+      primary: ((credhub_internal_provider_keys_3_primary))
+    - key:
+        secret: ((credhub_internal_provider_keys_4_key))
+      name: ((credhub_internal_provider_keys_4_name))
+      primary: ((credhub_internal_provider_keys_4_primary))
+    - key:
+        secret: ((credhub_internal_provider_keys_5_key))
+      name: ((credhub_internal_provider_keys_5_name))
+      primary: ((credhub_internal_provider_keys_5_primary))

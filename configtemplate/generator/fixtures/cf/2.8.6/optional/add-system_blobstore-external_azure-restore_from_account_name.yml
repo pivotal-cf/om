@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external_azure.restore_from_account_name?
+  value:
+    value: ((system_blobstore_external_azure_restore_from_account_name))

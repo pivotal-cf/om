@@ -1,0 +1,6 @@
+- type: replace
+  path: /product-properties/.properties.credhub_hsm_provider_client_certificate?
+  value:
+    value:
+      cert_pem: ((credhub_hsm_provider_client_certificate_certificate))
+      private_key_pem: ((credhub_hsm_provider_client_certificate_privatekey))

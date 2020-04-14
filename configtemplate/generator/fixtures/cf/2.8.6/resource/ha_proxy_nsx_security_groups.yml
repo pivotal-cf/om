@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/ha_proxy?/nsx_security_groups?
+  value: ((ha_proxy_nsx_security_groups))

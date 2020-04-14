@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.route_integrity?
+  value:
+    value: mutual_tls_verify
+    selected_option: mutual_tls_verify

@@ -1,0 +1,7 @@
+- type: replace
+  path: /product-properties/.properties.credhub_kms_providers?
+  value:
+    value:
+    - endpoint: ((credhub_kms_providers_0_endpoint))
+      instance_name: ((credhub_kms_providers_0_instance_name))
+      primary: ((credhub_kms_providers_0_primary))

@@ -1,0 +1,9 @@
+- type: replace
+  path: /product-properties/.properties.route_services?
+  value:
+    value: disable
+    selected_option: disable
+- type: remove
+  path: /product-properties/.properties.route_services.enable.ignore_ssl_cert_verification?
+- type: remove
+  path: /product-properties/.properties.route_services.enable.internal_lookup?

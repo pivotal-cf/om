@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.diego_cell.executor_memory_capacity?
+  value:
+    value: ((diego_cell_executor_memory_capacity))

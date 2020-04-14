@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.syslog_agent_aggregate_drains?
+  value:
+    value: ((syslog_agent_aggregate_drains))

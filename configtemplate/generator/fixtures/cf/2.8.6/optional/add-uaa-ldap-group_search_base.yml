@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.ldap.group_search_base?
+  value:
+    value: ((uaa_ldap_group_search_base))

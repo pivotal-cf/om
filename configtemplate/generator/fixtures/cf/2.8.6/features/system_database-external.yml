@@ -1,0 +1,112 @@
+- type: replace
+  path: /product-properties/.properties.system_database?
+  value:
+    value: external
+    selected_option: external
+- type: replace
+  path: /product-properties/.properties.system_database.external.host?
+  value:
+    value: ((system_database_external_host))
+- type: replace
+  path: /product-properties/.properties.system_database.external.port?
+  value:
+    value: ((system_database_external_port))
+- type: replace
+  path: /product-properties/.properties.system_database.external.account_username?
+  value:
+    value: ((system_database_external_account_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.account_password?
+  value:
+    value:
+      secret: ((system_database_external_account_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.app_usage_service_username?
+  value:
+    value: ((system_database_external_app_usage_service_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.app_usage_service_password?
+  value:
+    value:
+      secret: ((system_database_external_app_usage_service_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.autoscale_username?
+  value:
+    value: ((system_database_external_autoscale_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.autoscale_password?
+  value:
+    value:
+      secret: ((system_database_external_autoscale_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.ccdb_username?
+  value:
+    value: ((system_database_external_ccdb_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.ccdb_password?
+  value:
+    value:
+      secret: ((system_database_external_ccdb_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.diego_username?
+  value:
+    value: ((system_database_external_diego_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.diego_password?
+  value:
+    value:
+      secret: ((system_database_external_diego_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.locket_username?
+  value:
+    value: ((system_database_external_locket_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.locket_password?
+  value:
+    value:
+      secret: ((system_database_external_locket_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.networkpolicyserver_username?
+  value:
+    value: ((system_database_external_networkpolicyserver_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.networkpolicyserver_password?
+  value:
+    value:
+      secret: ((system_database_external_networkpolicyserver_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.nfsvolume_username?
+  value:
+    value: ((system_database_external_nfsvolume_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.nfsvolume_password?
+  value:
+    value:
+      secret: ((system_database_external_nfsvolume_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.notifications_username?
+  value:
+    value: ((system_database_external_notifications_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.notifications_password?
+  value:
+    value:
+      secret: ((system_database_external_notifications_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.routing_username?
+  value:
+    value: ((system_database_external_routing_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.routing_password?
+  value:
+    value:
+      secret: ((system_database_external_routing_password))
+- type: replace
+  path: /product-properties/.properties.system_database.external.silk_username?
+  value:
+    value: ((system_database_external_silk_username))
+- type: replace
+  path: /product-properties/.properties.system_database.external.silk_password?
+  value:
+    value:
+      secret: ((system_database_external_silk_password))

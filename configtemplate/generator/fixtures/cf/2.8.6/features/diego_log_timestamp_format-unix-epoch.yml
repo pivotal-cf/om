@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.diego_log_timestamp_format?
+  value:
+    value: unix-epoch
+    selected_option: unix-epoch

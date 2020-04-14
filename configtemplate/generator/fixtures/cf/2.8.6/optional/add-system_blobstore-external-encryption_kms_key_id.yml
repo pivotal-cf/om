@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external.encryption_kms_key_id?
+  value:
+    value: ((system_blobstore_external_encryption_kms_key_id))

@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.routing_custom_ca_certificates?
+  value:
+    value: ((routing_custom_ca_certificates))

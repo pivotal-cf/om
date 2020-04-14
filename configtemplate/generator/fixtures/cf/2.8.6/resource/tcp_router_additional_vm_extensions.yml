@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/tcp_router?/additional_vm_extensions?
+  value: ((tcp_router_additional_vm_extensions))

@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa_database.external.ca_cert?
+  value:
+    value: ((uaa_database_external_ca_cert))

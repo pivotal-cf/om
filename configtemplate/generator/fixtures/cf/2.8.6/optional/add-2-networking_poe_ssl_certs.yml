@@ -1,0 +1,12 @@
+- type: replace
+  path: /product-properties/.properties.networking_poe_ssl_certs?
+  value:
+    value:
+    - certificate:
+        cert_pem: ((networking_poe_ssl_certs_0_certificate))
+        private_key_pem: ((networking_poe_ssl_certs_0_privatekey))
+      name: ((networking_poe_ssl_certs_0_name))
+    - certificate:
+        cert_pem: ((networking_poe_ssl_certs_1_certificate))
+        private_key_pem: ((networking_poe_ssl_certs_1_privatekey))
+      name: ((networking_poe_ssl_certs_1_name))

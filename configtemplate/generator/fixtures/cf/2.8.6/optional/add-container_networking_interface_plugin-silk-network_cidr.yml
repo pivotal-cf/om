@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.container_networking_interface_plugin.silk.network_cidr?
+  value:
+    value: ((container_networking_interface_plugin_silk_network_cidr))

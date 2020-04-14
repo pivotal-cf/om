@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/database?/additional_vm_extensions?
+  value: ((database_additional_vm_extensions))

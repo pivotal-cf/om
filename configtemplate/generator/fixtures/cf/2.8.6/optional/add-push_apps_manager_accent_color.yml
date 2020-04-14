@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.push_apps_manager_accent_color?
+  value:
+    value: ((push_apps_manager_accent_color))

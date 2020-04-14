@@ -1,0 +1,6 @@
+- type: replace
+  path: /product-properties/.properties.credhub_hsm_provider_encryption_keys?
+  value:
+    value:
+    - name: ((credhub_hsm_provider_encryption_keys_0_name))
+      primary: ((credhub_hsm_provider_encryption_keys_0_primary))

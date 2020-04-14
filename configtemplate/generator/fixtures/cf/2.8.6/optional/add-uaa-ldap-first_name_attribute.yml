@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.ldap.first_name_attribute?
+  value:
+    value: ((uaa_ldap_first_name_attribute))

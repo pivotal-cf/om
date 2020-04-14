@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/backup_restore?/additional_vm_extensions?
+  value: ((backup_restore_additional_vm_extensions))

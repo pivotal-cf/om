@@ -1,0 +1,8 @@
+- type: replace
+  path: /product-properties/.properties.cloud_controller_encryption_keys?
+  value:
+    value:
+    - encryption_key:
+        secret: ((cloud_controller_encryption_keys_0_encryption_key))
+      label: ((cloud_controller_encryption_keys_0_label))
+      primary: ((cloud_controller_encryption_keys_0_primary))

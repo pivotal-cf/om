@@ -1,0 +1,39 @@
+- type: replace
+  path: /product-properties/.properties.uaa?
+  value:
+    value: saml
+    selected_option: saml
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_min_length?
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_min_uppercase?
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_min_lowercase?
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_min_numeric?
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_min_special?
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_expires_after_months?
+- type: remove
+  path: /product-properties/.properties.uaa.internal.password_max_retry?
+- type: replace
+  path: /product-properties/.properties.uaa.saml.sso_name?
+  value:
+    value: ((uaa_saml_sso_name))
+- type: replace
+  path: /product-properties/.properties.uaa.saml.display_name?
+  value:
+    value: ((uaa_saml_display_name))
+- type: replace
+  path: /product-properties/.properties.uaa.saml.name_id_format?
+  value:
+    value: ((uaa_saml_name_id_format))
+- type: replace
+  path: /product-properties/.properties.uaa.saml.sign_auth_requests?
+  value:
+    value: ((uaa_saml_sign_auth_requests))
+- type: replace
+  path: /product-properties/.properties.uaa.saml.require_signed_assertions?
+  value:
+    value: ((uaa_saml_require_signed_assertions))

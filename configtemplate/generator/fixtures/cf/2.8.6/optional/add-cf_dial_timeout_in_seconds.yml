@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.cf_dial_timeout_in_seconds?
+  value:
+    value: ((cf_dial_timeout_in_seconds))

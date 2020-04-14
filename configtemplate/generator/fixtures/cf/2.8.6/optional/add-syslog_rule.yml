@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.syslog_rule?
+  value:
+    value: ((syslog_rule))

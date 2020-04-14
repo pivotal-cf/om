@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.logger_endpoint_port?
+  value:
+    value: ((logger_endpoint_port))

@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.cloud_controller.encrypt_key?
+  value:
+    value:
+      secret: ((cloud_controller_encrypt_key))

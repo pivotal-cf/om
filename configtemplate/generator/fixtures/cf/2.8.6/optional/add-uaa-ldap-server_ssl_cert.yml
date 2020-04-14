@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.ldap.server_ssl_cert?
+  value:
+    value: ((uaa_ldap_server_ssl_cert))

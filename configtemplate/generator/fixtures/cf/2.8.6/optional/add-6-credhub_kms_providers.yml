@@ -1,0 +1,22 @@
+- type: replace
+  path: /product-properties/.properties.credhub_kms_providers?
+  value:
+    value:
+    - endpoint: ((credhub_kms_providers_0_endpoint))
+      instance_name: ((credhub_kms_providers_0_instance_name))
+      primary: ((credhub_kms_providers_0_primary))
+    - endpoint: ((credhub_kms_providers_1_endpoint))
+      instance_name: ((credhub_kms_providers_1_instance_name))
+      primary: ((credhub_kms_providers_1_primary))
+    - endpoint: ((credhub_kms_providers_2_endpoint))
+      instance_name: ((credhub_kms_providers_2_instance_name))
+      primary: ((credhub_kms_providers_2_primary))
+    - endpoint: ((credhub_kms_providers_3_endpoint))
+      instance_name: ((credhub_kms_providers_3_instance_name))
+      primary: ((credhub_kms_providers_3_primary))
+    - endpoint: ((credhub_kms_providers_4_endpoint))
+      instance_name: ((credhub_kms_providers_4_instance_name))
+      primary: ((credhub_kms_providers_4_primary))
+    - endpoint: ((credhub_kms_providers_5_endpoint))
+      instance_name: ((credhub_kms_providers_5_instance_name))
+      primary: ((credhub_kms_providers_5_primary))

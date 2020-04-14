@@ -1,0 +1,30 @@
+- type: replace
+  path: /product-properties/.properties.credhub_database?
+  value:
+    value: external
+    selected_option: external
+- type: replace
+  path: /product-properties/.properties.credhub_database.external.host?
+  value:
+    value: ((credhub_database_external_host))
+- type: replace
+  path: /product-properties/.properties.credhub_database.external.port?
+  value:
+    value: ((credhub_database_external_port))
+- type: replace
+  path: /product-properties/.properties.credhub_database.external.username?
+  value:
+    value: ((credhub_database_external_username))
+- type: replace
+  path: /product-properties/.properties.credhub_database.external.password?
+  value:
+    value:
+      secret: ((credhub_database_external_password))
+- type: replace
+  path: /product-properties/.properties.credhub_database.external.tls_ca?
+  value:
+    value: ((credhub_database_external_tls_ca))
+- type: replace
+  path: /product-properties/.properties.credhub_database.external.disable_hostname_verification?
+  value:
+    value: ((credhub_database_external_disable_hostname_verification))

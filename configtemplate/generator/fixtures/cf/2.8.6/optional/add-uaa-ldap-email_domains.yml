@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.ldap.email_domains?
+  value:
+    value: ((uaa_ldap_email_domains))

@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.routing_log_client_ips?
+  value:
+    value: disable_x_forwarded_for
+    selected_option: disable_x_forwarded_for

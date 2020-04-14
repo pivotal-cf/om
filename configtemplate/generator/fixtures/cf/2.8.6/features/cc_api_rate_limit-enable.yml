@@ -1,0 +1,13 @@
+- type: replace
+  path: /product-properties/.properties.cc_api_rate_limit?
+  value:
+    value: enable
+    selected_option: enable
+- type: replace
+  path: /product-properties/.properties.cc_api_rate_limit.enable.general_limit?
+  value:
+    value: ((cc_api_rate_limit_enable_general_limit))
+- type: replace
+  path: /product-properties/.properties.cc_api_rate_limit.enable.unauthenticated_limit?
+  value:
+    value: ((cc_api_rate_limit_enable_unauthenticated_limit))

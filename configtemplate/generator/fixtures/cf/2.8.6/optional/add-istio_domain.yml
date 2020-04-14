@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.istio_domain?
+  value:
+    value: ((istio_domain))

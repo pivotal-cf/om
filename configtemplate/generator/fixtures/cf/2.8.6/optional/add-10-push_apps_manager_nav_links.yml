@@ -1,0 +1,24 @@
+- type: replace
+  path: /product-properties/.properties.push_apps_manager_nav_links?
+  value:
+    value:
+    - href: ((push_apps_manager_nav_links_0_href))
+      name: ((push_apps_manager_nav_links_0_name))
+    - href: ((push_apps_manager_nav_links_1_href))
+      name: ((push_apps_manager_nav_links_1_name))
+    - href: ((push_apps_manager_nav_links_2_href))
+      name: ((push_apps_manager_nav_links_2_name))
+    - href: ((push_apps_manager_nav_links_3_href))
+      name: ((push_apps_manager_nav_links_3_name))
+    - href: ((push_apps_manager_nav_links_4_href))
+      name: ((push_apps_manager_nav_links_4_name))
+    - href: ((push_apps_manager_nav_links_5_href))
+      name: ((push_apps_manager_nav_links_5_name))
+    - href: ((push_apps_manager_nav_links_6_href))
+      name: ((push_apps_manager_nav_links_6_name))
+    - href: ((push_apps_manager_nav_links_7_href))
+      name: ((push_apps_manager_nav_links_7_name))
+    - href: ((push_apps_manager_nav_links_8_href))
+      name: ((push_apps_manager_nav_links_8_name))
+    - href: ((push_apps_manager_nav_links_9_href))
+      name: ((push_apps_manager_nav_links_9_name))

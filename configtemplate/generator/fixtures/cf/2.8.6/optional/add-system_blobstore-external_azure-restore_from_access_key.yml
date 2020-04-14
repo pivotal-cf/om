@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.system_blobstore.external_azure.restore_from_access_key?
+  value:
+    value:
+      secret: ((system_blobstore_external_azure_restore_from_access_key))

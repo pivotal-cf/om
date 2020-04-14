@@ -1,0 +1,7 @@
+- type: replace
+  path: /product-properties/.properties.mysql_activity_logging?
+  value:
+    value: disable
+    selected_option: disable
+- type: remove
+  path: /product-properties/.properties.mysql_activity_logging.enable.audit_logging_events?

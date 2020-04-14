@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.routing_minimum_tls_version?
+  value:
+    value: tls_v1_1
+    selected_option: tls_v1_1

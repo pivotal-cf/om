@@ -1,0 +1,17 @@
+- type: replace
+  path: /product-properties/.properties.nfs_volume_driver?
+  value:
+    value: disable
+    selected_option: disable
+- type: remove
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_service_account_user?
+- type: remove
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_service_account_password?
+- type: remove
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_server_host?
+- type: remove
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_server_port?
+- type: remove
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_user_fqdn?
+- type: remove
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_ca_cert?

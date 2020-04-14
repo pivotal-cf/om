@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.saml.email_domains?
+  value:
+    value: ((uaa_saml_email_domains))

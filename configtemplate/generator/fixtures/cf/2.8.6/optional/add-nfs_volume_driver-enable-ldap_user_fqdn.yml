@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.nfs_volume_driver.enable.ldap_user_fqdn?
+  value:
+    value: ((nfs_volume_driver_enable_ldap_user_fqdn))

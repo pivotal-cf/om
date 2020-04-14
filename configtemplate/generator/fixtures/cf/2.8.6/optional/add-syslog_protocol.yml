@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.syslog_protocol?
+  value:
+    value: ((syslog_protocol))

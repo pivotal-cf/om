@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.ha_proxy.internal_only_domains?
+  value:
+    value: ((ha_proxy_internal_only_domains))

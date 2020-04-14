@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.ha_proxy.static_ips?
+  value:
+    value: ((ha_proxy_static_ips))

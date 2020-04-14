@@ -1,0 +1,22 @@
+- type: replace
+  path: /product-properties/.properties.uaa_database?
+  value:
+    value: external
+    selected_option: external
+- type: replace
+  path: /product-properties/.properties.uaa_database.external.host?
+  value:
+    value: ((uaa_database_external_host))
+- type: replace
+  path: /product-properties/.properties.uaa_database.external.port?
+  value:
+    value: ((uaa_database_external_port))
+- type: replace
+  path: /product-properties/.properties.uaa_database.external.uaa_username?
+  value:
+    value: ((uaa_database_external_uaa_username))
+- type: replace
+  path: /product-properties/.properties.uaa_database.external.uaa_password?
+  value:
+    value:
+      secret: ((uaa_database_external_uaa_password))

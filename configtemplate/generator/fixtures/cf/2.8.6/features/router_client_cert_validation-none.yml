@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.router_client_cert_validation?
+  value:
+    value: none
+    selected_option: none

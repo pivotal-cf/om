@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.routing_tls_termination?
+  value:
+    value: ha_proxy
+    selected_option: ha_proxy

@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/tcp_router?/nsx_security_groups?
+  value: ((tcp_router_nsx_security_groups))

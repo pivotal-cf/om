@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.saml_entity_id_override?
+  value:
+    value: ((saml_entity_id_override))

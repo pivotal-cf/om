@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/mysql_monitor?/elb_names?
+  value: ((mysql_monitor_elb_names))

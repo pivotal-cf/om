@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.ha_proxy.trusted_domain_cidrs?
+  value:
+    value: ((ha_proxy_trusted_domain_cidrs))

@@ -1,0 +1,5 @@
+- type: replace
+  path: /product-properties/.properties.system_blobstore_backup_level?
+  value:
+    value: skip_droplets_packages
+    selected_option: skip_droplets_packages

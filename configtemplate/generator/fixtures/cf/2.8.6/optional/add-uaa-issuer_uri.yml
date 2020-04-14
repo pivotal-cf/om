@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.uaa.issuer_uri?
+  value:
+    value: ((uaa_issuer_uri))

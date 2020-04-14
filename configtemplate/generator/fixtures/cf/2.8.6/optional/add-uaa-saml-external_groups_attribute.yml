@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.uaa.saml.external_groups_attribute?
+  value:
+    value: ((uaa_saml_external_groups_attribute))
