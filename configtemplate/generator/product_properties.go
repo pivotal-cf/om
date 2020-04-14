@@ -195,7 +195,7 @@ func CreateOpsFileName(propertyKey string) string {
 	return opsFileName
 }
 
-func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]Ops, error) {
+func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata, sizeOfCollections int) (map[string][]Ops, error) {
 	opsFiles := make(map[string][]Ops)
 	for _, property := range metadata.PropertyInputs() {
 		propertyKey := strings.Replace(property.Reference, ".", "", 1)
@@ -237,7 +237,8 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata) (map[string][]O
 					if propertyMetadata.IsRequired() {
 						x = 2
 					}
-					for i := x; i <= 10; i++ {
+
+					for i := x; i <= sizeOfCollections; i++ {
 						opsFiles[fmt.Sprintf("add-%d-%s", i, opsFileName)] = []Ops{
 							{
 								Type:  "replace",

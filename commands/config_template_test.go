@@ -173,6 +173,63 @@ var _ = Describe("ConfigTemplate", func() {
 				})
 			})
 		})
+
+		When("the product has a collection", func() {
+			BeforeEach(func() {
+				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+					f := &fakes.MetadataProvider{}
+					f.MetadataBytesReturns([]byte(`---
+name: example-product
+product_version: "1.1.1"
+form_types:
+- property_inputs:
+  - reference: .properties.some_property
+property_blueprints:
+- type: collection
+  optional: true
+  name: some_property
+  configurable: true
+  property_blueprints:
+  - name: name
+    type: string
+`), nil)
+					return f
+				})
+			})
+
+			It("outputs 10 ops-files by default", func() {
+				tempDir := createOutputDirectory()
+
+				err := command.Execute([]string{
+					"--output-directory", tempDir,
+					"--pivnet-api-token", "b",
+					"--pivnet-product-slug", "c",
+					"--product-version", "d",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				matches, err := filepath.Glob(filepath.Join(tempDir, "example-product", "1.1.1", "optional", "*.yml"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(matches).To(HaveLen(10))
+			})
+
+			It("outputs N ops-files when specifying --size-of-collections", func() {
+				tempDir := createOutputDirectory()
+
+				err := command.Execute([]string{
+					"--output-directory", tempDir,
+					"--pivnet-api-token", "b",
+					"--pivnet-product-slug", "c",
+					"--product-version", "d",
+					"--size-of-collections", "3",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				matches, err := filepath.Glob(filepath.Join(tempDir, "example-product", "1.1.1", "optional", "*.yml"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(matches).To(HaveLen(3))
+			})
+		})
 	})
 
 	Describe("Usage", func() {

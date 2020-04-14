@@ -27,8 +27,9 @@ type ConfigTemplate struct {
 
 		ProductPath string `long:"product-path" description:"path to product file"`
 
-		OutputDirectory string `long:"output-directory" description:"a directory to create templates under. must already exist." required:"true"`
-		ExcludeVersion  bool   `long:"exclude-version"  description:"if set, will not output a version-specific directory"`
+		OutputDirectory   string `long:"output-directory" description:"a directory to create templates under. must already exist." required:"true"`
+		ExcludeVersion    bool   `long:"exclude-version"  description:"if set, will not output a version-specific directory"`
+		SizeOfCollections int    `long:"size-of-collections" default:"10"`
 	}
 }
 
@@ -90,6 +91,7 @@ func (c *ConfigTemplate) Execute(args []string) error {
 		c.Options.OutputDirectory,
 		c.Options.ExcludeVersion,
 		true,
+		c.Options.SizeOfCollections,
 	).Generate()
 }
 

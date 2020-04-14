@@ -62,6 +62,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   and create defaults in `default-vars.yml`.
 - Added shorthand flag consistency to multiple commands.
   `--vars-file` shorthand is `-l` and `--var` shorthand is `-v`
+- **EXPERIMENTAL** `config-template` can specify the number of collection ops files using `--size-of-collections`.
+  Some use cases required that collections generate more ops-file for usage.
+  The default value is still `10`.
 
 ### Bug Fixes
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
