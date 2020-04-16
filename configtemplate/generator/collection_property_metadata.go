@@ -37,7 +37,15 @@ func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{
 		}
 		for _, subProperty := range subProperties {
 			if _, ok := arrayProperties[subProperty.Name]; !ok {
-				arrayProperties[subProperty.Name] = SimpleString(fmt.Sprintf("((%s_%s))", propertyName, subProperty.Name))
+				if subProperty.IsSecret() {
+					arrayProperties[subProperty.Name] = &SecretValue{
+						Value: fmt.Sprintf("((%s_%s))", propertyName, subProperty.Name),
+					}
+				} else if subProperty.IsCertificate() {
+					arrayProperties[subProperty.Name] = NewCertificateValue(propertyName)
+				} else {
+					arrayProperties[subProperty.Name] = SimpleString(fmt.Sprintf("((%s_%s))", propertyName, subProperty.Name))
+				}
 			}
 		}
 		collectionProperties = append(collectionProperties, arrayProperties)

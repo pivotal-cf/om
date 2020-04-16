@@ -1,0 +1,49 @@
+- type: replace
+  path: /product-properties/.properties.maven_repositories?
+  value:
+    value:
+    - key: ((maven_repositories_0_key))
+      password:
+        secret: ((maven_repositories_0_password))
+      url: ((maven_repositories_0_url))
+      username: ((maven_repositories_0_username))
+    - key: ((maven_repositories_1_key))
+      password:
+        secret: ((maven_repositories_1_password))
+      url: ((maven_repositories_1_url))
+      username: ((maven_repositories_1_username))
+    - key: ((maven_repositories_2_key))
+      password:
+        secret: ((maven_repositories_2_password))
+      url: ((maven_repositories_2_url))
+      username: ((maven_repositories_2_username))
+    - key: ((maven_repositories_3_key))
+      password:
+        secret: ((maven_repositories_3_password))
+      url: ((maven_repositories_3_url))
+      username: ((maven_repositories_3_username))
+    - key: ((maven_repositories_4_key))
+      password:
+        secret: ((maven_repositories_4_password))
+      url: ((maven_repositories_4_url))
+      username: ((maven_repositories_4_username))
+    - key: ((maven_repositories_5_key))
+      password:
+        secret: ((maven_repositories_5_password))
+      url: ((maven_repositories_5_url))
+      username: ((maven_repositories_5_username))
+    - key: ((maven_repositories_6_key))
+      password:
+        secret: ((maven_repositories_6_password))
+      url: ((maven_repositories_6_url))
+      username: ((maven_repositories_6_username))
+    - key: ((maven_repositories_7_key))
+      password:
+        secret: ((maven_repositories_7_password))
+      url: ((maven_repositories_7_url))
+      username: ((maven_repositories_7_username))
+    - key: ((maven_repositories_8_key))
+      password:
+        secret: ((maven_repositories_8_password))
+      url: ((maven_repositories_8_url))
+      username: ((maven_repositories_8_username))

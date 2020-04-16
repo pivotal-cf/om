@@ -435,6 +435,19 @@ property_blueprints:
         artist: Ops Manatee
         explicit: true
         genre: edm
+  - name: example_required_cert_collection
+    type: collection
+    optional: false
+    configurable: true
+    default:
+    - key: some-key
+      url: https://some-url
+    label: Cert Collection
+    property_blueprints:
+    - configurable: true
+      label: my awesome label for certificate
+      name: some-certificate
+      type: cert
   - name: example_cert_collection
     type: collection
     configurable: true

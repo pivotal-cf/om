@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/deploy-all?/nsx_security_groups?
+  value: ((deploy-all_nsx_security_groups))

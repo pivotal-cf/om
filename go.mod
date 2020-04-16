@@ -19,6 +19,7 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/golang/protobuf v1.4.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/graymeta/stow v0.2.5
 	github.com/hashicorp/go-version v1.2.0
@@ -37,7 +38,9 @@ require (
 	github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd
 	github.com/pkg/errors v0.9.1
 	github.com/sclevine/spec v1.4.0 // indirect
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	google.golang.org/api v0.20.0
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20200311144346-b662892dd51b // indirect

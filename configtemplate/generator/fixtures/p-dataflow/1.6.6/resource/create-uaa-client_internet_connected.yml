@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/create-uaa-client?/internet_connected?
+  value: ((create-uaa-client_internet_connected))

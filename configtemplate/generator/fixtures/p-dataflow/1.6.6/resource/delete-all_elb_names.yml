@@ -1,0 +1,3 @@
+- type: replace
+  path: /resource-config?/delete-all?/elb_names?
+  value: ((delete-all_elb_names))

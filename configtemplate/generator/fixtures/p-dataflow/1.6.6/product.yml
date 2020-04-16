@@ -1,0 +1,64 @@
+product-name: p-dataflow
+network-properties:
+  network:
+    name: ((network_name))
+  other_availability_zones:
+  - name: ((singleton_availability_zone))
+  singleton_availability_zone:
+    name: ((singleton_availability_zone))
+product-properties:
+  .properties.custom_buildpack:
+    value: ((custom_buildpack))
+  .properties.dataflow_db_plan:
+    value: ((dataflow_db_plan))
+  .properties.dataflow_db_service:
+    value: ((dataflow_db_service))
+  .properties.dataflow_disable_public_internet:
+    value: ((dataflow_disable_public_internet))
+  .properties.dataflow_messaging_plan:
+    value: ((dataflow_messaging_plan))
+  .properties.dataflow_messaging_service:
+    value: ((dataflow_messaging_service))
+  .properties.db_service_name:
+    value: ((db_service_name))
+  .properties.db_service_plan:
+    value: ((db_service_plan))
+  .properties.maven_repositories:
+    value:
+    - key: spring
+      password:
+        secret: ((maven_repositories_0_password))
+      url: https://repo.spring.io/libs-release
+      username: ((maven_repositories_0_username))
+  .properties.p_dataflow_enable_global_access_to_plans:
+    value: ((p_dataflow_enable_global_access_to_plans))
+  .properties.skipper_db_plan:
+    value: ((skipper_db_plan))
+  .properties.skipper_db_service:
+    value: ((skipper_db_service))
+resource-config:
+  create-uaa-client:
+    instance_type:
+      id: ((create-uaa-client_instance_type))
+    max_in_flight: ((create-uaa-client_max_in_flight))
+  delete-all:
+    instance_type:
+      id: ((delete-all_instance_type))
+    max_in_flight: ((delete-all_max_in_flight))
+  deploy-all:
+    instance_type:
+      id: ((deploy-all_instance_type))
+    max_in_flight: ((deploy-all_max_in_flight))
+  run-tests:
+    instance_type:
+      id: ((run-tests_instance_type))
+    max_in_flight: ((run-tests_max_in_flight))
+errand-config:
+  create-uaa-client:
+    post-deploy-state: ((create-uaa-client_post_deploy_state))
+  delete-all:
+    pre-delete-state: ((delete-all_pre_delete_state))
+  deploy-all:
+    post-deploy-state: ((deploy-all_post_deploy_state))
+  run-tests:
+    post-deploy-state: ((run-tests_post_deploy_state))

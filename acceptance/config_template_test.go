@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/onsi/gomega/ghttp"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 )
@@ -112,6 +114,42 @@ var _ = Describe("config-template command", func() {
 
 			productDir := filepath.Join(outputDir, "example-product", "1.0-build.0")
 			Expect(productDir).To(BeADirectory())
+		})
+
+		PWhen("the metadata contains a required collection that contains a cert", func() {
+			It("renders the cert fields appropriately in the product.yml", func() {
+				outputDir, err := ioutil.TempDir("", "")
+				Expect(err).ToNot(HaveOccurred())
+
+				productSlug, metadataName, productVersion := "example-product", "example-product", "1.0-build.0"
+
+				command := exec.Command(pathToMain,
+					"config-template",
+					"--output-directory", outputDir,
+					"--pivnet-product-slug", productSlug,
+					"--product-version", productVersion,
+					"--pivnet-api-token", "token",
+					"--pivnet-disable-ssl",
+				)
+				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session, "10s").Should(gexec.Exit(0))
+
+				productYMLFile := filepath.Join(outputDir, metadataName, productVersion, "product.yml")
+				Expect(productYMLFile).To(BeAnExistingFile())
+
+				productYMLBytes, err := ioutil.ReadFile(productYMLFile)
+				Expect(err).ToNot(HaveOccurred())
+
+				var unmarshalledYML interface{}
+				err = yaml.Unmarshal(productYMLBytes, &unmarshalledYML)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(unmarshalledYML).To(MatchYAML("true: false"))
+			})
 		})
 	})
 
@@ -253,7 +291,7 @@ var _ = Describe("config-template command", func() {
 })
 
 var _ = Describe("config-template output", func() {
-	It("checks for changes with a previous output of SRT tile", func() {
+	DescribeTable("has the same output as historically cached", func(pivnetSlug, version, glob, metadataName string) {
 		pivnetToken := os.Getenv("OM_PIVNET_TOKEN")
 		if pivnetToken == "" {
 			Skip("OM_PIVNET_TOKEN not specified")
@@ -265,23 +303,26 @@ var _ = Describe("config-template output", func() {
 		command := exec.Command("go", "run", "../main.go",
 			"config-template",
 			"--output-directory", outputDir,
-			"--pivnet-product-slug", "elastic-runtime",
-			"--product-version", "2.8.6",
+			"--pivnet-product-slug", pivnetSlug,
+			"--product-version", version,
 			"--pivnet-api-token", pivnetToken,
-			"--file-glob", "*srt*",
+			"--file-glob", fmt.Sprintf("%s", glob),
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
-		Eventually(session, "10s").Should(gexec.Exit(0))
+		Eventually(session, "20s", "2s").Should(gexec.Exit(0))
 
 		command = exec.Command("git", "diff",
-			filepath.Join(outputDir, "cf"),
-			"../configtemplate/generator/fixtures/cf",
+			filepath.Join(outputDir, metadataName),
+			filepath.Join("../configtemplate/generator/fixtures", metadataName),
 		)
 
 		session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
-		Eventually(session, "10s").Should(gexec.Exit(0))
-	})
+		Eventually(session, "10s", "2s").Should(gexec.Exit(0))
+	},
+		Entry("SRT - for broad coverage", "elastic-runtime", "2.8.6", "*srt*", "cf"),
+		Entry("Spring data - for required secret collections", "p-dataflow", "1.6.6", "*.pivotal", "p-dataflow"),
+	)
 })

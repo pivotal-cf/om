@@ -1,0 +1,8 @@
+create-uaa-client_instance_type: automatic
+create-uaa-client_max_in_flight: default
+delete-all_instance_type: automatic
+delete-all_max_in_flight: default
+deploy-all_instance_type: automatic
+deploy-all_max_in_flight: default
+run-tests_instance_type: automatic
+run-tests_max_in_flight: default

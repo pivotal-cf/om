@@ -70,6 +70,7 @@ func (p *PropertyBlueprint) PropertyType(propertyName string) PropertyValue {
 			return nil
 		}
 	}
+
 	if p.IsMultiSelect() {
 		if len(p.Options) == 1 {
 			return &MultiSelectorValue{
@@ -95,11 +96,13 @@ func (p *PropertyBlueprint) PropertyType(propertyName string) PropertyValue {
 			return nil
 		}
 	}
+
 	if p.IsCertificate() {
 		return &CertificateValueHolder{
 			Value: NewCertificateValue(propertyName),
 		}
 	}
+
 	if p.IsSecret() {
 		return &SecretValueHolder{
 			Value: &SecretValue{

@@ -1,0 +1,14 @@
+- type: replace
+  path: /product-properties/.properties.maven_repositories?
+  value:
+    value:
+    - key: ((maven_repositories_0_key))
+      password:
+        secret: ((maven_repositories_0_password))
+      url: ((maven_repositories_0_url))
+      username: ((maven_repositories_0_username))
+    - key: ((maven_repositories_1_key))
+      password:
+        secret: ((maven_repositories_1_password))
+      url: ((maven_repositories_1_url))
+      username: ((maven_repositories_1_username))
