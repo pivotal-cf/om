@@ -137,6 +137,29 @@ form_types:
       - reference: .web_server.example_disk_type_dropdown
         label: Example disk type dropdown
         description: 'The larger the disk the more cookies we store'
+  - name: example_required_cert_collection_form
+    label: 'Required Collection Example'
+    description: 'A required collection example form'
+    property_inputs:
+    - reference: .properties.example_required_cert_collection
+      label: 'Required Collection Example'
+      decription: 'collections cert'
+      property_inputs:
+        - reference: required_collection_cert
+          label: 'Certificate'
+          description: 'Put your cert here'
+  - name: required collection with secret
+    description: required collection with secret
+    label: Required Secret Collection
+    property_inputs:
+    - description: required secret collection
+      label: required secret collection
+      property_inputs:
+      - description: The password for required secret collection.
+        label: The password for required secret collection.
+        reference: password
+      reference: .properties.required_secret_collection
+
   - name: example_collections_form
     label: 'Collection example'
     description: 'A collection example form'
@@ -439,15 +462,24 @@ property_blueprints:
     type: collection
     optional: false
     configurable: true
-    default:
-    - key: some-key
-      url: https://some-url
-    label: Cert Collection
+    label: Required Cert Collection
     property_blueprints:
     - configurable: true
       label: my awesome label for certificate
-      name: some-certificate
-      type: cert
+      name: required_collection_cert
+      type: rsa_cert_credentials
+      optional: false
+  - name: required_secret_collection
+    type: collection
+    optional: false
+    configurable: true
+    label: Required Secret Cert Collection
+    property_blueprints:
+      - configurable: true
+        label: The password used for required cert collection
+        name: password
+        optional: true
+        type: secret
   - name: example_cert_collection
     type: collection
     configurable: true

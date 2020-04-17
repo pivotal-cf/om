@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/onsi/gomega/ghttp"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -116,7 +115,7 @@ var _ = Describe("config-template command", func() {
 			Expect(productDir).To(BeADirectory())
 		})
 
-		PWhen("the metadata contains a required collection that contains a cert", func() {
+		When("the metadata contains a required collection that contains a cert", func() {
 			It("renders the cert fields appropriately in the product.yml", func() {
 				outputDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
@@ -144,13 +143,53 @@ var _ = Describe("config-template command", func() {
 				productYMLBytes, err := ioutil.ReadFile(productYMLFile)
 				Expect(err).ToNot(HaveOccurred())
 
-				var unmarshalledYML interface{}
-				err = yaml.Unmarshal(productYMLBytes, &unmarshalledYML)
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(unmarshalledYML).To(MatchYAML("true: false"))
+				expectedYAML := `.properties.example_required_cert_collection:
+    value:
+    - required_collection_cert:
+        cert_pem: ((example_required_cert_collection_0_certificate))
+        private_key_pem: ((example_required_cert_collection_0_privatekey))
+`
+				Expect(string(productYMLBytes)).To(ContainSubstring(expectedYAML))
 			})
 		})
+
+		When("the metadata contains a required collection that contains a cert", func() {
+			It("renders the cert fields appropriately in the product.yml", func() {
+				outputDir, err := ioutil.TempDir("", "")
+				Expect(err).ToNot(HaveOccurred())
+
+				productSlug, metadataName, productVersion := "example-product", "example-product", "1.0-build.0"
+
+				command := exec.Command(pathToMain,
+					"config-template",
+					"--output-directory", outputDir,
+					"--pivnet-product-slug", productSlug,
+					"--product-version", productVersion,
+					"--pivnet-api-token", "token",
+					"--pivnet-disable-ssl",
+				)
+				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session, "10s").Should(gexec.Exit(0))
+
+				productYMLFile := filepath.Join(outputDir, metadataName, productVersion, "product.yml")
+				Expect(productYMLFile).To(BeAnExistingFile())
+
+				productYMLBytes, err := ioutil.ReadFile(productYMLFile)
+				Expect(err).ToNot(HaveOccurred())
+
+				expectedYAML := `.properties.required_secret_collection:
+    value:
+    - password:
+        secret: ((required_secret_collection_0_password))
+`
+				Expect(string(productYMLBytes)).To(ContainSubstring(expectedYAML))
+			})
+		})
+
 	})
 
 	When("there is more than one .pivotal file for a product version", func() {
