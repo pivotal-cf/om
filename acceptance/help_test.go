@@ -118,4 +118,4 @@ Flags:
   --var, -v                                               string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV                                 string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l                                         string (variadic)  load variables from a YAML file
-`+ GLOBAL_USAGE_FLAGS
+` + GLOBAL_USAGE_FLAGS

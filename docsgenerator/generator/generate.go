@@ -40,7 +40,7 @@ type Generator struct {
 	stdout       io.Writer
 }
 
-func NewGenerator(templatesDir string, docsDir string, executor executor, stdout io.Writer, ) Generator {
+func NewGenerator(templatesDir string, docsDir string, executor executor, stdout io.Writer) Generator {
 	return Generator{
 		templatesDir: templatesDir,
 		docsDir:      docsDir,

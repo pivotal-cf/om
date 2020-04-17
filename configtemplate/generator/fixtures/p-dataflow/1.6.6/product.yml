@@ -39,20 +39,20 @@ product-properties:
 resource-config:
   create-uaa-client:
     instance_type:
-      id: ((create-uaa-client_instance_type))
-    max_in_flight: ((create-uaa-client_max_in_flight))
+      id: ((resource-var-create-uaa-client_instance_type))
+    max_in_flight: ((resource-var-create-uaa-client_max_in_flight))
   delete-all:
     instance_type:
-      id: ((delete-all_instance_type))
-    max_in_flight: ((delete-all_max_in_flight))
+      id: ((resource-var-delete-all_instance_type))
+    max_in_flight: ((resource-var-delete-all_max_in_flight))
   deploy-all:
     instance_type:
-      id: ((deploy-all_instance_type))
-    max_in_flight: ((deploy-all_max_in_flight))
+      id: ((resource-var-deploy-all_instance_type))
+    max_in_flight: ((resource-var-deploy-all_max_in_flight))
   run-tests:
     instance_type:
-      id: ((run-tests_instance_type))
-    max_in_flight: ((run-tests_max_in_flight))
+      id: ((resource-var-run-tests_instance_type))
+    max_in_flight: ((resource-var-run-tests_max_in_flight))
 errand-config:
   create-uaa-client:
     post-deploy-state: ((create-uaa-client_post_deploy_state))

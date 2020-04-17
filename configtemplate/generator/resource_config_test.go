@@ -9,16 +9,16 @@ import (
 )
 
 var withPersistentDisk = `instance_type:
-  id: ((myjob_instance_type))
-instances: ((myjob_instances))
+  id: ((resource-var-myjob_instance_type))
+instances: ((resource-var-myjob_instances))
 persistent_disk:
-  size_mb: ((myjob_persistent_disk_size))
-max_in_flight: ((myjob_max_in_flight))`
+  size_mb: ((resource-var-myjob_persistent_disk_size))
+max_in_flight: ((resource-var-myjob_max_in_flight))`
 
 var withoutPersistentDisk = `instance_type:
-  id: ((myjob_instance_type))
-instances: ((myjob_instances))
-max_in_flight: ((myjob_max_in_flight))`
+  id: ((resource-var-myjob_instance_type))
+instances: ((resource-var-myjob_instances))
+max_in_flight: ((resource-var-myjob_max_in_flight))`
 
 var _ = Describe("Resource Config", func() {
 	Context("CreateResourceConfig", func() {
@@ -100,7 +100,7 @@ var _ = Describe("Resource Config", func() {
 				},
 			}
 			vars := generator.CreateResourceVars(metadata)
-			Expect(vars).To(HaveKey("job1_instances"))
+			Expect(vars).To(HaveKey("resource-var-job1_instances"))
 		})
 
 		It("Should not include instances when not configurable", func() {
@@ -114,7 +114,7 @@ var _ = Describe("Resource Config", func() {
 				},
 			}
 			vars := generator.CreateResourceVars(metadata)
-			Expect(vars).ToNot(HaveKey("job1_instances"))
+			Expect(vars).ToNot(HaveKey("resource-var-job1_instances"))
 		})
 
 		It("Should include a disk variable with persistent disk", func() {
@@ -128,7 +128,7 @@ var _ = Describe("Resource Config", func() {
 				},
 			}
 			vars := generator.CreateResourceVars(metadata)
-			Expect(vars).To(HaveKey("job1_persistent_disk_size"))
+			Expect(vars).To(HaveKey("resource-var-job1_persistent_disk_size"))
 		})
 
 		It("Should not include a disk variable without persistent disk", func() {
@@ -142,7 +142,7 @@ var _ = Describe("Resource Config", func() {
 				},
 			}
 			vars := generator.CreateResourceVars(metadata)
-			Expect(vars).ToNot(HaveKey("job1_persistent_disk_size"))
+			Expect(vars).ToNot(HaveKey("resource-var-job1_persistent_disk_size"))
 		})
 
 		It("Should include max_in_flight", func() {
@@ -156,7 +156,7 @@ var _ = Describe("Resource Config", func() {
 				},
 			}
 			vars := generator.CreateResourceVars(metadata)
-			Expect(vars).To(HaveKey("job1_max_in_flight"))
+			Expect(vars).To(HaveKey("resource-var-job1_max_in_flight"))
 		})
 	})
 })

@@ -189,7 +189,6 @@ var _ = Describe("config-template command", func() {
 				Expect(string(productYMLBytes)).To(ContainSubstring(expectedYAML))
 			})
 		})
-
 	})
 
 	When("there is more than one .pivotal file for a product version", func() {

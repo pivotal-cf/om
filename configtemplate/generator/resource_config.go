@@ -39,17 +39,17 @@ func CreateResourceConfig(metadata *Metadata) map[string]Resource {
 func CreateResource(jobName string, job jobtype) Resource {
 	resource := Resource{}
 	if job.InstanceDefinitionConfigurable() {
-		resource.Instances = fmt.Sprintf("((%s_instances))", jobName)
+		resource.Instances = fmt.Sprintf("((resource-var-%s_instances))", jobName)
 	}
 	resource.InstanceType = InstanceType{
-		ID: fmt.Sprintf("((%s_instance_type))", jobName),
+		ID: fmt.Sprintf("((resource-var-%s_instance_type))", jobName),
 	}
 	if job.HasPersistentDisk() {
 		resource.PersistentDisk = &PersistentDisk{
-			Size: fmt.Sprintf("((%s_persistent_disk_size))", jobName),
+			Size: fmt.Sprintf("((resource-var-%s_persistent_disk_size))", jobName),
 		}
 	}
-	resource.MaxInFlight = fmt.Sprintf("((%s_max_in_flight))", jobName)
+	resource.MaxInFlight = fmt.Sprintf("((resource-var-%s_max_in_flight))", jobName)
 
 	return resource
 }
@@ -66,14 +66,14 @@ func CreateResourceVars(metadata *Metadata) map[string]interface{} {
 
 func AddResourceVars(jobName string, job jobtype, vars map[string]interface{}) {
 	if job.InstanceDefinitionConfigurable() {
-		vars[fmt.Sprintf("%s_instances", jobName)] = "automatic"
+		vars[fmt.Sprintf("resource-var-%s_instances", jobName)] = "automatic"
 	}
-	vars[fmt.Sprintf("%s_instance_type", jobName)] = "automatic"
+	vars[fmt.Sprintf("resource-var-%s_instance_type", jobName)] = "automatic"
 
 	if job.HasPersistentDisk() {
-		vars[fmt.Sprintf("%s_persistent_disk_size", jobName)] = "automatic"
+		vars[fmt.Sprintf("resource-var-%s_persistent_disk_size", jobName)] = "automatic"
 	}
-	vars[fmt.Sprintf("%s_max_in_flight", jobName)] = "default"
+	vars[fmt.Sprintf("resource-var-%s_max_in_flight", jobName)] = "default"
 }
 
 func determineJobName(jobName string) string {
@@ -95,28 +95,28 @@ func AddResourceOpsFiles(jobName string, job jobtype, opsFiles map[string][]Ops)
 		{
 			Type:  "replace",
 			Path:  fmt.Sprintf("/resource-config?/%s?/elb_names?", jobName),
-			Value: StringOpsValue(fmt.Sprintf("((%s_elb_names))", jobName)),
+			Value: StringOpsValue(fmt.Sprintf("((resource-var-%s_elb_names))", jobName)),
 		},
 	}
 	opsFiles[fmt.Sprintf("%s_internet_connected", jobName)] = []Ops{
 		{
 			Type:  "replace",
 			Path:  fmt.Sprintf("/resource-config?/%s?/internet_connected?", jobName),
-			Value: StringOpsValue(fmt.Sprintf("((%s_internet_connected))", jobName)),
+			Value: StringOpsValue(fmt.Sprintf("((resource-var-%s_internet_connected))", jobName)),
 		},
 	}
 	opsFiles[fmt.Sprintf("%s_additional_vm_extensions", jobName)] = []Ops{
 		{
 			Type:  "replace",
 			Path:  fmt.Sprintf("/resource-config?/%s?/additional_vm_extensions?", jobName),
-			Value: StringOpsValue(fmt.Sprintf("((%s_additional_vm_extensions))", jobName)),
+			Value: StringOpsValue(fmt.Sprintf("((resource-var-%s_additional_vm_extensions))", jobName)),
 		},
 	}
 	opsFiles[fmt.Sprintf("%s_nsx_security_groups", jobName)] = []Ops{
 		{
 			Type:  "replace",
 			Path:  fmt.Sprintf("/resource-config?/%s?/nsx_security_groups?", jobName),
-			Value: StringOpsValue(fmt.Sprintf("((%s_nsx_security_groups))", jobName)),
+			Value: StringOpsValue(fmt.Sprintf("((resource-var-%s_nsx_security_groups))", jobName)),
 		},
 	}
 }

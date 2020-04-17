@@ -115,6 +115,15 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   (storing the value as a JSON object)
   you will need to update the credential in Credhub
   to not be a JSON object.
+- `config-template` generated `resource-vars.yml`
+  that had the potential to conflict with property names
+  (spring cloud dataflow had a configurable property called `max_in_flight`
+  which is also a resource config property).
+  `config-template` now prepends **all** resource-vars with `resource-var-`.
+  This prevents this entire class of conflicts.
+  If using `config-template` to update vars/ops-files/etc,
+  check your resource var names in any files vars may be drawn from.
+  This resolves om issue [#484](https://github.com/pivotal-cf/om/issues/484).
 
 ### Deprecation Notices
 - `update-ssl-certificate` has been deprecated in favor of `configure-opsman`.

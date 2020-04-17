@@ -317,70 +317,70 @@ product-properties:
 resource-config:
   backup_restore:
     instance_type:
-      id: ((backup_restore_instance_type))
-    instances: ((backup_restore_instances))
+      id: ((resource-var-backup_restore_instance_type))
+    instances: ((resource-var-backup_restore_instances))
     persistent_disk:
-      size_mb: ((backup_restore_persistent_disk_size))
-    max_in_flight: ((backup_restore_max_in_flight))
+      size_mb: ((resource-var-backup_restore_persistent_disk_size))
+    max_in_flight: ((resource-var-backup_restore_max_in_flight))
   blobstore:
     instance_type:
-      id: ((blobstore_instance_type))
-    instances: ((blobstore_instances))
+      id: ((resource-var-blobstore_instance_type))
+    instances: ((resource-var-blobstore_instances))
     persistent_disk:
-      size_mb: ((blobstore_persistent_disk_size))
-    max_in_flight: ((blobstore_max_in_flight))
+      size_mb: ((resource-var-blobstore_persistent_disk_size))
+    max_in_flight: ((resource-var-blobstore_max_in_flight))
   compute:
     instance_type:
-      id: ((compute_instance_type))
-    instances: ((compute_instances))
-    max_in_flight: ((compute_max_in_flight))
+      id: ((resource-var-compute_instance_type))
+    instances: ((resource-var-compute_instances))
+    max_in_flight: ((resource-var-compute_max_in_flight))
   control:
     instance_type:
-      id: ((control_instance_type))
-    instances: ((control_instances))
-    max_in_flight: ((control_max_in_flight))
+      id: ((resource-var-control_instance_type))
+    instances: ((resource-var-control_instances))
+    max_in_flight: ((resource-var-control_max_in_flight))
   database:
     instance_type:
-      id: ((database_instance_type))
-    instances: ((database_instances))
+      id: ((resource-var-database_instance_type))
+    instances: ((resource-var-database_instances))
     persistent_disk:
-      size_mb: ((database_persistent_disk_size))
-    max_in_flight: ((database_max_in_flight))
+      size_mb: ((resource-var-database_persistent_disk_size))
+    max_in_flight: ((resource-var-database_max_in_flight))
   ha_proxy:
     instance_type:
-      id: ((ha_proxy_instance_type))
-    instances: ((ha_proxy_instances))
-    max_in_flight: ((ha_proxy_max_in_flight))
+      id: ((resource-var-ha_proxy_instance_type))
+    instances: ((resource-var-ha_proxy_instances))
+    max_in_flight: ((resource-var-ha_proxy_max_in_flight))
   istio_control:
     instance_type:
-      id: ((istio_control_instance_type))
-    instances: ((istio_control_instances))
-    max_in_flight: ((istio_control_max_in_flight))
+      id: ((resource-var-istio_control_instance_type))
+    instances: ((resource-var-istio_control_instances))
+    max_in_flight: ((resource-var-istio_control_max_in_flight))
   istio_router:
     instance_type:
-      id: ((istio_router_instance_type))
-    instances: ((istio_router_instances))
-    max_in_flight: ((istio_router_max_in_flight))
+      id: ((resource-var-istio_router_instance_type))
+    instances: ((resource-var-istio_router_instances))
+    max_in_flight: ((resource-var-istio_router_max_in_flight))
   mysql_monitor:
     instance_type:
-      id: ((mysql_monitor_instance_type))
-    instances: ((mysql_monitor_instances))
-    max_in_flight: ((mysql_monitor_max_in_flight))
+      id: ((resource-var-mysql_monitor_instance_type))
+    instances: ((resource-var-mysql_monitor_instances))
+    max_in_flight: ((resource-var-mysql_monitor_max_in_flight))
   route_syncer:
     instance_type:
-      id: ((route_syncer_instance_type))
-    instances: ((route_syncer_instances))
-    max_in_flight: ((route_syncer_max_in_flight))
+      id: ((resource-var-route_syncer_instance_type))
+    instances: ((resource-var-route_syncer_instances))
+    max_in_flight: ((resource-var-route_syncer_max_in_flight))
   router:
     instance_type:
-      id: ((router_instance_type))
-    instances: ((router_instances))
-    max_in_flight: ((router_max_in_flight))
+      id: ((resource-var-router_instance_type))
+    instances: ((resource-var-router_instances))
+    max_in_flight: ((resource-var-router_max_in_flight))
   tcp_router:
     instance_type:
-      id: ((tcp_router_instance_type))
-    instances: ((tcp_router_instances))
-    max_in_flight: ((tcp_router_max_in_flight))
+      id: ((resource-var-tcp_router_instance_type))
+    instances: ((resource-var-tcp_router_instances))
+    max_in_flight: ((resource-var-tcp_router_max_in_flight))
 errand-config:
   deploy-autoscaler:
     post-deploy-state: ((deploy-autoscaler_post_deploy_state))
