@@ -87,6 +87,35 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   a multiline string needs to be maintained.
   The `bosh` does not support this.
 
+### Breaking Changes for Experimental Features
+- `config-template` Bug Fix: Required collections now parametrize correctly in `product.yml`.
+  In the [om issue](https://github.com/pivotal-cf/om/issues/483)
+  for `p-dataflow`, the following was _incorrectly_ returned:
+  ```
+  .properties.maven_repositories:
+    value:
+    - key: spring
+      password: ((password))
+      url: https://repo.spring.io/libs-release
+      username: username
+  ```
+
+  `config-template` now returns the following correct subsection in `product.yml`:
+  ```
+  .properties.maven_repositories:
+    value:
+    - key: spring
+      password:
+        secret: ((password))
+      url: https://repo.spring.io/libs-release
+      username: username
+  ```
+
+  **if you have used the workaround described in the issue**
+  (storing the value as a JSON object)
+  you will need to update the credential in Credhub
+  to not be a JSON object.
+
 ### Deprecation Notices
 - `update-ssl-certificate` has been deprecated in favor of `configure-opsman`.
   This was done to allow extensibility for other endpoints on the Settings page.
