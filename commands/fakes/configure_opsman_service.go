@@ -8,6 +8,17 @@ import (
 )
 
 type ConfigureOpsmanService struct {
+	UpdatePivnetTokenStub        func(string) error
+	updatePivnetTokenMutex       sync.RWMutex
+	updatePivnetTokenArgsForCall []struct {
+		arg1 string
+	}
+	updatePivnetTokenReturns struct {
+		result1 error
+	}
+	updatePivnetTokenReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdateSSLCertificateStub        func(api.SSLCertificateInput) error
 	updateSSLCertificateMutex       sync.RWMutex
 	updateSSLCertificateArgsForCall []struct {
@@ -21,6 +32,66 @@ type ConfigureOpsmanService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *ConfigureOpsmanService) UpdatePivnetToken(arg1 string) error {
+	fake.updatePivnetTokenMutex.Lock()
+	ret, specificReturn := fake.updatePivnetTokenReturnsOnCall[len(fake.updatePivnetTokenArgsForCall)]
+	fake.updatePivnetTokenArgsForCall = append(fake.updatePivnetTokenArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("UpdatePivnetToken", []interface{}{arg1})
+	fake.updatePivnetTokenMutex.Unlock()
+	if fake.UpdatePivnetTokenStub != nil {
+		return fake.UpdatePivnetTokenStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updatePivnetTokenReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureOpsmanService) UpdatePivnetTokenCallCount() int {
+	fake.updatePivnetTokenMutex.RLock()
+	defer fake.updatePivnetTokenMutex.RUnlock()
+	return len(fake.updatePivnetTokenArgsForCall)
+}
+
+func (fake *ConfigureOpsmanService) UpdatePivnetTokenCalls(stub func(string) error) {
+	fake.updatePivnetTokenMutex.Lock()
+	defer fake.updatePivnetTokenMutex.Unlock()
+	fake.UpdatePivnetTokenStub = stub
+}
+
+func (fake *ConfigureOpsmanService) UpdatePivnetTokenArgsForCall(i int) string {
+	fake.updatePivnetTokenMutex.RLock()
+	defer fake.updatePivnetTokenMutex.RUnlock()
+	argsForCall := fake.updatePivnetTokenArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureOpsmanService) UpdatePivnetTokenReturns(result1 error) {
+	fake.updatePivnetTokenMutex.Lock()
+	defer fake.updatePivnetTokenMutex.Unlock()
+	fake.UpdatePivnetTokenStub = nil
+	fake.updatePivnetTokenReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureOpsmanService) UpdatePivnetTokenReturnsOnCall(i int, result1 error) {
+	fake.updatePivnetTokenMutex.Lock()
+	defer fake.updatePivnetTokenMutex.Unlock()
+	fake.UpdatePivnetTokenStub = nil
+	if fake.updatePivnetTokenReturnsOnCall == nil {
+		fake.updatePivnetTokenReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updatePivnetTokenReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *ConfigureOpsmanService) UpdateSSLCertificate(arg1 api.SSLCertificateInput) error {
@@ -86,6 +157,8 @@ func (fake *ConfigureOpsmanService) UpdateSSLCertificateReturnsOnCall(i int, res
 func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.updatePivnetTokenMutex.RLock()
+	defer fake.updatePivnetTokenMutex.RUnlock()
 	fake.updateSSLCertificateMutex.RLock()
 	defer fake.updateSSLCertificateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

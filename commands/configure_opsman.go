@@ -11,7 +11,7 @@ import (
 )
 
 type ConfigureOpsman struct {
-	service     updateSSLCertificateService
+	service     configureOpsmanService
 	logger      logger
 	environFunc func() []string
 	Options     struct {
@@ -28,12 +28,16 @@ type opsmanConfig struct {
 		Certificate string `yaml:"certificate"`
 		PrivateKey  string `yaml:"private_key"`
 	} `yaml:"ssl-certificate"`
+	PivotalNetwork *struct {
+		Token string `yaml:"api_token"`
+	} `yaml:"pivotal-network-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
 //counterfeiter:generate -o ./fakes/configure_opsman_service.go --fake-name ConfigureOpsmanService . configureOpsmanService
 type configureOpsmanService interface {
 	UpdateSSLCertificate(api.SSLCertificateInput) error
+	UpdatePivnetToken(token string) error
 }
 
 func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) ConfigureOpsman {
@@ -67,6 +71,15 @@ func (c ConfigureOpsman) Execute(args []string) error {
 		}
 		c.logger.Printf("Successfully applied custom SSL Certificate.\n")
 		c.logger.Printf("Please allow about 1 min for the new certificate to take effect.\n")
+	}
+
+	if config.PivotalNetwork != nil {
+		c.logger.Printf("Updating Pivnet Token...\n")
+		err = c.service.UpdatePivnetToken(config.PivotalNetwork.Token)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully applied Pivnet Token.\n")
 	}
 	return nil
 }
@@ -119,7 +132,10 @@ func (c ConfigureOpsman) validate(config *opsmanConfig) error {
 
 func (c ConfigureOpsman) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command configures settings available on the \"Settings\" page in the Ops Manager UI",
+		Description: "This authenticated command " +
+			"configures settings available on the \"Settings\" page " +
+			"in the Ops Manager UI. For an example config, " +
+			"reference the docs directory for this command.",
 		ShortDescription: "configures values present on the Ops Manager settings page",
 		Flags:            c.Options,
 	}
