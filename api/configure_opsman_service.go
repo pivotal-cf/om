@@ -21,6 +21,12 @@ type SSLCertificate struct {
 	Certificate string `json:"certificate"`
 }
 
+type RBACSettings struct {
+	SAMLAdminGroup      string `json:"rbac_saml_admin_group,omitempty"`
+	SAMLGroupsAttribute string `json:"rbac_saml_groups_attribute,omitempty"`
+	LDAPAdminGroupName  string `json:"ldap_rbac_admin_group_name,omitempty"`
+}
+
 func (a Api) UpdateSSLCertificate(certBody SSLCertificateInput) error {
 	body, err := json.Marshal(certBody)
 	if err != nil {
@@ -101,6 +107,33 @@ func (a Api) UpdatePivnetToken(token string) error {
 			`{ "pivotal_network_settings": { "api_token": "%s" }}`,
 			token,
 		)),
+	)
+	if err != nil {
+		return err // not tested
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a Api) EnableRBAC(rbacSettings RBACSettings) error {
+	settingsBytes, err := json.Marshal(rbacSettings)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(
+		"PUT",
+		"/api/v0/settings/rbac",
+		bytes.NewReader(settingsBytes),
 	)
 	if err != nil {
 		return err // not tested

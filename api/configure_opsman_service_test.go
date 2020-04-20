@@ -158,4 +158,63 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			})
 		})
 	})
+
+	Describe("EnableRBAC", func() {
+		It("enables RBAC on the ops manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/rbac"),
+					ghttp.RespondWith(http.StatusOK, `{
+					  "success": true
+					}`),
+					ghttp.VerifyJSON(`{
+                      "rbac_saml_admin_group": "example_group_name", 
+                      "rbac_saml_groups_attribute": "example_attribute_name", 
+                      "ldap_rbac_admin_group_name": "cn=opsmgradmins"
+					}`),
+				),
+			)
+
+			err := service.EnableRBAC(api.RBACSettings{
+				SAMLAdminGroup:      "example_group_name",
+				SAMLGroupsAttribute: "example_attribute_name",
+				LDAPAdminGroupName:  "cn=opsmgradmins",
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("omits empty fields", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/rbac"),
+					ghttp.RespondWith(http.StatusOK, `{
+					  "success": true
+					}`),
+					ghttp.VerifyJSON(`{}`),
+				),
+			)
+
+			err := service.EnableRBAC(api.RBACSettings{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		When("the api returns an error", func() {
+			It("returns the error to the user", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/settings/rbac"),
+						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					),
+				)
+
+				err := service.EnableRBAC(api.RBACSettings{
+					SAMLAdminGroup:      "example_group_name",
+					SAMLGroupsAttribute: "example_attribute_name",
+					LDAPAdminGroupName:  "cn=opsmgradmins",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("500 Internal Server Error"))
+			})
+		})
+	})
 })
