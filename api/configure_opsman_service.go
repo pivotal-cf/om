@@ -3,7 +3,9 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 type SSLCertificateInput struct {
@@ -74,6 +76,32 @@ func (a Api) GetSSLCertificate() (SSLCertificateOutput, error) {
 
 func (a Api) DeleteSSLCertificate() error {
 	req, err := http.NewRequest("DELETE", "/api/v0/settings/ssl_certificate", nil)
+	if err != nil {
+		return err // not tested
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a Api) UpdatePivnetToken(token string) error {
+	req, err := http.NewRequest(
+		"PUT",
+		"/api/v0/settings/pivotal_network_settings",
+		strings.NewReader(fmt.Sprintf(
+			`{ "pivotal_network_settings": { "api_token": "%s" }}`,
+			token,
+		)),
+	)
 	if err != nil {
 		return err // not tested
 	}
