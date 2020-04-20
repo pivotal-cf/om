@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -31,6 +32,11 @@ type opsmanConfig struct {
 	PivotalNetwork *struct {
 		Token string `yaml:"api_token"`
 	} `yaml:"pivotal-network-settings"`
+	RBACSettings *struct {
+		LDAPAdminGroupName  string `yaml:"ldap_rbac_admin_group_name"`
+		SAMLAdminGroup      string `yaml:"rbac_saml_admin_group"`
+		SAMLGroupsAttribute string `yaml:"rbac_saml_groups_attribute"`
+	} `yaml:"rbac-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
@@ -38,6 +44,7 @@ type opsmanConfig struct {
 type configureOpsmanService interface {
 	UpdateSSLCertificate(api.SSLCertificateInput) error
 	UpdatePivnetToken(token string) error
+	EnableRBAC(rbacSettings api.RBACSettings) error
 }
 
 func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) ConfigureOpsman {
@@ -80,6 +87,20 @@ func (c ConfigureOpsman) Execute(args []string) error {
 			return err
 		}
 		c.logger.Printf("Successfully applied Pivnet Token.\n")
+	}
+
+	if config.RBACSettings != nil {
+		c.logger.Printf("Updating RBAC Settings...\n")
+		payload := api.RBACSettings{
+			SAMLAdminGroup:      config.RBACSettings.SAMLAdminGroup,
+			SAMLGroupsAttribute: config.RBACSettings.SAMLGroupsAttribute,
+			LDAPAdminGroupName:  config.RBACSettings.LDAPAdminGroupName,
+		}
+		err = c.service.EnableRBAC(payload)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully applied RBAC Settings.\n")
 	}
 	return nil
 }
@@ -126,6 +147,14 @@ func (c ConfigureOpsman) validate(config *opsmanConfig) error {
 	if len(invalidFields) > 0 {
 		sort.Strings(invalidFields)
 		return fmt.Errorf("unrecognized top level key(s) in config file:\n%s", strings.Join(invalidFields, "\n"))
+	}
+
+	if config.RBACSettings != nil {
+		if config.RBACSettings.SAMLGroupsAttribute != "" &&
+			config.RBACSettings.SAMLAdminGroup != "" &&
+			config.RBACSettings.LDAPAdminGroupName != "" {
+			return errors.New("can only set SAML or LDAP. Check the config file and use only the appropriate values.\nFor example config values, see the docs directory for documentation.")
+		}
 	}
 	return nil
 }

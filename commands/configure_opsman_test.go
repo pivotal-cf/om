@@ -63,6 +63,69 @@ pivotal-network-settings:
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
 		})
 
+		It("enables rbac settings for ldap", func() {
+			rbacConfig := `
+rbac-settings:
+  ldap_rbac_admin_group_name: some-ldap-group
+`
+			configFileName := writeTestConfigFile(rbacConfig)
+
+			err := command.Execute([]string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(1))
+			Expect(fakeService.EnableRBACArgsForCall(0)).To(Equal(api.RBACSettings{
+				LDAPAdminGroupName: "some-ldap-group",
+			}))
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+		})
+
+		It("enables rbac settings for saml", func() {
+			rbacConfig := `
+rbac-settings:
+  rbac_saml_admin_group: some-saml-group
+  rbac_saml_groups_attribute: some-saml-attribute
+`
+			configFileName := writeTestConfigFile(rbacConfig)
+
+			err := command.Execute([]string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(1))
+			Expect(fakeService.EnableRBACArgsForCall(0)).To(Equal(api.RBACSettings{
+				SAMLAdminGroup:      "some-saml-group",
+				SAMLGroupsAttribute: "some-saml-attribute",
+			}))
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+		})
+
+		It("returns an error if both ldap and saml keys provided", func() {
+			rbacConfig := `
+rbac-settings:
+  rbac_saml_admin_group: some-saml-group
+  rbac_saml_groups_attribute: some-saml-attribute
+  ldap_rbac_admin_group_name: some-ldap-group
+`
+			configFileName := writeTestConfigFile(rbacConfig)
+
+			err := command.Execute([]string{
+				"--config", configFileName,
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("can only set SAML or LDAP. Check the config file and use only the appropriate values."))
+			Expect(err.Error()).To(ContainSubstring("For example config values, see the docs directory for documentation."))
+
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+		})
+
 		It("errors when no config file is provided", func() {
 			err := command.Execute([]string{})
 			Expect(err).To(HaveOccurred())

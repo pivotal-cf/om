@@ -8,6 +8,17 @@ import (
 )
 
 type ConfigureOpsmanService struct {
+	EnableRBACStub        func(api.RBACSettings) error
+	enableRBACMutex       sync.RWMutex
+	enableRBACArgsForCall []struct {
+		arg1 api.RBACSettings
+	}
+	enableRBACReturns struct {
+		result1 error
+	}
+	enableRBACReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdatePivnetTokenStub        func(string) error
 	updatePivnetTokenMutex       sync.RWMutex
 	updatePivnetTokenArgsForCall []struct {
@@ -32,6 +43,66 @@ type ConfigureOpsmanService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *ConfigureOpsmanService) EnableRBAC(arg1 api.RBACSettings) error {
+	fake.enableRBACMutex.Lock()
+	ret, specificReturn := fake.enableRBACReturnsOnCall[len(fake.enableRBACArgsForCall)]
+	fake.enableRBACArgsForCall = append(fake.enableRBACArgsForCall, struct {
+		arg1 api.RBACSettings
+	}{arg1})
+	fake.recordInvocation("EnableRBAC", []interface{}{arg1})
+	fake.enableRBACMutex.Unlock()
+	if fake.EnableRBACStub != nil {
+		return fake.EnableRBACStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.enableRBACReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureOpsmanService) EnableRBACCallCount() int {
+	fake.enableRBACMutex.RLock()
+	defer fake.enableRBACMutex.RUnlock()
+	return len(fake.enableRBACArgsForCall)
+}
+
+func (fake *ConfigureOpsmanService) EnableRBACCalls(stub func(api.RBACSettings) error) {
+	fake.enableRBACMutex.Lock()
+	defer fake.enableRBACMutex.Unlock()
+	fake.EnableRBACStub = stub
+}
+
+func (fake *ConfigureOpsmanService) EnableRBACArgsForCall(i int) api.RBACSettings {
+	fake.enableRBACMutex.RLock()
+	defer fake.enableRBACMutex.RUnlock()
+	argsForCall := fake.enableRBACArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureOpsmanService) EnableRBACReturns(result1 error) {
+	fake.enableRBACMutex.Lock()
+	defer fake.enableRBACMutex.Unlock()
+	fake.EnableRBACStub = nil
+	fake.enableRBACReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureOpsmanService) EnableRBACReturnsOnCall(i int, result1 error) {
+	fake.enableRBACMutex.Lock()
+	defer fake.enableRBACMutex.Unlock()
+	fake.EnableRBACStub = nil
+	if fake.enableRBACReturnsOnCall == nil {
+		fake.enableRBACReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.enableRBACReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *ConfigureOpsmanService) UpdatePivnetToken(arg1 string) error {
@@ -157,6 +228,8 @@ func (fake *ConfigureOpsmanService) UpdateSSLCertificateReturnsOnCall(i int, res
 func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.enableRBACMutex.RLock()
+	defer fake.enableRBACMutex.RUnlock()
 	fake.updatePivnetTokenMutex.RLock()
 	defer fake.updatePivnetTokenMutex.RUnlock()
 	fake.updateSSLCertificateMutex.RLock()
