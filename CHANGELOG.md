@@ -54,8 +54,11 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This command _currently_ only supports updating the SSL Certificate
   on the Ops Manager Settings Page.
   This functionality is duplicated in `update-ssl-certificate`,
-  but `configure-opsman` will be extended to support more endpoints from the Settings page.
+  but `configure-opsman` supports more endpoints.
   For config example, see the [docs](https://github.com/pivotal-cf/om/tree/master/docs/configure-opsman) for the command.
+  Supported top-level-keys:
+    - `ssl-certificate`
+    - `pivotal-network-settings`
 - **EXPERIMENTAL** `config-template` now supports ops manager syslog in tiles.
   In the tile metadata, this property is turned on with the `opsmanager_syslog: true` field.
   Tiles with this property enabled will now add the section to `product.yml` 

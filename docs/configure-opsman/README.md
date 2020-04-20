@@ -3,12 +3,12 @@
 
 # `om configure-opsman`
 
-This authenticated command configures settings available on the "Settings" page in the Ops Manager UI
+This authenticated command configures settings available on the "Settings" page in the Ops Manager UI. For an example config, reference the docs directory for this command.
 
 ## Command Usage
 ```
 
-This authenticated command configures settings available on the "Settings" page in the Ops Manager UI
+This authenticated command configures settings available on the "Settings" page in the Ops Manager UI. For an example config, reference the docs directory for this command.
 
 Usage:
   om [options] configure-opsman [<args>]
