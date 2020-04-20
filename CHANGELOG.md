@@ -59,6 +59,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Supported top-level-keys:
     - `ssl-certificate`
     - `pivotal-network-settings`
+    - `rbac-settings`
 - **EXPERIMENTAL** `config-template` now supports ops manager syslog in tiles.
   In the tile metadata, this property is turned on with the `opsmanager_syslog: true` field.
   Tiles with this property enabled will now add the section to `product.yml` 
