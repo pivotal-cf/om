@@ -132,7 +132,7 @@ func (c ConfigureOpsman) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
-		c.logger.Printf("Successfully applied Banner.\n")
+		c.logger.Printf("Successfully applied Syslog.\n")
 	}
 	return nil
 }
