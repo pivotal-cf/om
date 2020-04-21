@@ -67,6 +67,8 @@ ssl-certificate:
 				PrivateKeyPem: "some-private-key",
 			}))
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 		})
 
 		It("updates the pivnet token when given the proper keys", func() {
@@ -84,6 +86,8 @@ pivotal-network-settings:
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(1))
 			Expect(fakeService.UpdatePivnetTokenArgsForCall(0)).To(Equal("some-token"))
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 		})
 
 		It("enables rbac settings for ldap", func() {
@@ -102,8 +106,9 @@ rbac-settings:
 			Expect(fakeService.EnableRBACArgsForCall(0)).To(Equal(api.RBACSettings{
 				LDAPAdminGroupName: "some-ldap-group",
 			}))
-			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
 		})
 
 		It("enables rbac settings for saml", func() {
@@ -126,6 +131,7 @@ rbac-settings:
 			}))
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
 		})
 
 		It("returns an error if both ldap and saml keys provided", func() {
@@ -147,6 +153,7 @@ rbac-settings:
 			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
 		})
 
 		It("errors when no config file is provided", func() {
@@ -158,10 +165,10 @@ rbac-settings:
 		})
 
 		It("returns an error when there is an unrecognized top-level key", func() {
-			sslCertConfig := `
+			invalidConfig := `
 invalid-key: 1
 `
-			configFileName := writeTestConfigFile(sslCertConfig)
+			configFileName := writeTestConfigFile(invalidConfig)
 
 			err := command.Execute([]string{
 				"--config", configFileName,
@@ -170,14 +177,17 @@ invalid-key: 1
 			Expect(err.Error()).To(ContainSubstring("unrecognized top level key(s) in config file:\ninvalid-key"))
 
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 		})
 
 		It("returns a nicer error if multiple unrecognized keys", func() {
-			sslCertConfig := `
+			invalidConfig := `
 invalid-key-one: 1
 invalid-key-two: 2
 `
-			configFileName := writeTestConfigFile(sslCertConfig)
+			configFileName := writeTestConfigFile(invalidConfig)
 
 			err := command.Execute([]string{
 				"--config", configFileName,
@@ -186,42 +196,54 @@ invalid-key-two: 2
 			Expect(err.Error()).To(ContainSubstring("unrecognized top level key(s) in config file:\ninvalid-key-one\ninvalid-key-two"))
 
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 		})
 
 		It("does not error when top-level key is opsman-configuration", func() {
-			sslCertConfig := `
+			opsmanConfiguration := `
 opsman-configuration: 1
 `
-			configFileName := writeTestConfigFile(sslCertConfig)
+			configFileName := writeTestConfigFile(opsmanConfiguration)
 
 			err := command.Execute([]string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
+
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 		})
 
 		It("returns an error if interpolation fails", func() {
-			sslCertConfig := `opsman-configuration: ((missing-var))`
-			configFileName := writeTestConfigFile(sslCertConfig)
+			uninterpolatedConfig := `opsman-configuration: ((missing-var))`
+			configFileName := writeTestConfigFile(uninterpolatedConfig)
 
 			err := command.Execute([]string{
 				"--config", configFileName,
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Expected to find variables: missing-var"))
+
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
 		})
 
 		Describe("api failures", func() {
 			It("returns an error when ssl cert api fails", func() {
 				fakeService.UpdateSSLCertificateReturns(errors.New("some error"))
 
-				sslCertConfig := `
+				config := `
 ssl-certificate:
   certificate: some-cert-pem
   private_key: some-private-key
 `
-				configFileName := writeTestConfigFile(sslCertConfig)
+				configFileName := writeTestConfigFile(config)
 
 				err := command.Execute([]string{
 					"--config", configFileName,
@@ -239,11 +261,11 @@ ssl-certificate:
 			It("returns an error when pivnet token api fails", func() {
 				fakeService.UpdatePivnetTokenReturns(errors.New("some error"))
 
-				sslCertConfig := `
+				config := `
 pivotal-network-settings:
   api_token: some-token
 `
-				configFileName := writeTestConfigFile(sslCertConfig)
+				configFileName := writeTestConfigFile(config)
 
 				err := command.Execute([]string{
 					"--config", configFileName,
@@ -252,6 +274,44 @@ pivotal-network-settings:
 				Expect(err.Error()).To(ContainSubstring("some error"))
 
 				Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(1))
+			})
+
+			It("returns an error when banner api fails", func() {
+				fakeService.UpdateBannerReturns(errors.New("some error"))
+
+				config := `
+banner-settings:
+  ui_banner_contents: example UI banner
+  ssh_banner_contents: example SSH banner
+`
+				configFileName := writeTestConfigFile(config)
+
+				err := command.Execute([]string{
+					"--config", configFileName,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some error"))
+
+				Expect(fakeService.UpdateBannerCallCount()).To(Equal(1))
+			})
+
+			It("returns an error when rbac api fails", func() {
+				fakeService.EnableRBACReturns(errors.New("some error"))
+
+				config := `
+rbac-settings:
+  rbac_saml_admin_group: some-saml-group
+  rbac_saml_groups_attribute: some-saml-attribute
+`
+				configFileName := writeTestConfigFile(config)
+
+				err := command.Execute([]string{
+					"--config", configFileName,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some error"))
+
+				Expect(fakeService.EnableRBACCallCount()).To(Equal(1))
 			})
 		})
 
