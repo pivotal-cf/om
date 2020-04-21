@@ -36,15 +36,15 @@ type PivnetSettings struct {
 }
 
 type SyslogSettings struct {
-	Enabled string `json:"enabled,omitempty" yaml:"enabled"`
-	Address string `json:"address,omitempty" yaml:"address"`
-	Port string `json:"port,omitempty" yaml:"port"`
-	TransportProtocol string `json:"transport_protocol,omitempty" yaml:"transport_protocol"`
-	TLSEnabled string `json:"tls_enabled,omitempty" yaml:"tls_enabled"`
-	PermittedPeer string `json:"permitted_peer,omitempty" yaml:"permitted_peer"`
-	SSLCACertificate string `json:"ssl_ca_certificate,omitempty" yaml:"ssl_ca_certificate"`
-	QueueSize string `json:"queue_size,omitempty" yaml:"queue_size"`
-	ForwardDebugLogs string `json:"forward_debug_logs,omitempty" yaml:"forward_debug_logs"`
+	Enabled             string `json:"enabled,omitempty" yaml:"enabled"`
+	Address             string `json:"address,omitempty" yaml:"address"`
+	Port                string `json:"port,omitempty" yaml:"port"`
+	TransportProtocol   string `json:"transport_protocol,omitempty" yaml:"transport_protocol"`
+	TLSEnabled          string `json:"tls_enabled,omitempty" yaml:"tls_enabled"`
+	PermittedPeer       string `json:"permitted_peer,omitempty" yaml:"permitted_peer"`
+	SSLCACertificate    string `json:"ssl_ca_certificate,omitempty" yaml:"ssl_ca_certificate"`
+	QueueSize           string `json:"queue_size,omitempty" yaml:"queue_size"`
+	ForwardDebugLogs    string `json:"forward_debug_logs,omitempty" yaml:"forward_debug_logs"`
 	CustomRsyslogConfig string `json:"custom_rsyslog_configuration,omitempty" yaml:"custom_rsyslog_configuration"`
 }
 
@@ -151,7 +151,7 @@ func (a Api) UpdateSyslogSettings(syslogSettings SyslogSettings) error {
 func (a Api) updateSettings(body *strings.Reader, endpoint string) error {
 
 	apiPath := fmt.Sprintf("/api/v0/settings/%s", endpoint)
-	req, err := http.NewRequest("PUT", apiPath , body)
+	req, err := http.NewRequest("PUT", apiPath, body)
 	if err != nil {
 		return err // not tested
 	}

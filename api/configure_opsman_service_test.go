@@ -285,15 +285,15 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			)
 
 			err := service.UpdateSyslogSettings(api.SyslogSettings{
-				Enabled:  "true",
-				Address: "1.2.3.4",
-				Port: "999",
-				TransportProtocol: "tcp",
-				TLSEnabled: "true",
-				PermittedPeer: "*.example.com",
-				SSLCACertificate: "some-cert",
-				QueueSize: "100000",
-				ForwardDebugLogs: "true",
+				Enabled:             "true",
+				Address:             "1.2.3.4",
+				Port:                "999",
+				TransportProtocol:   "tcp",
+				TLSEnabled:          "true",
+				PermittedPeer:       "*.example.com",
+				SSLCACertificate:    "some-cert",
+				QueueSize:           "100000",
+				ForwardDebugLogs:    "true",
 				CustomRsyslogConfig: "some-message",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -322,15 +322,15 @@ var _ = Describe("ConfigureOpsmanService", func() {
 				)
 
 				err := service.UpdateSyslogSettings(api.SyslogSettings{
-					Enabled:  "true",
-					Address: "1.2.3.4",
-					Port: "999",
-					TransportProtocol: "tcp",
-					TLSEnabled: "true",
-					PermittedPeer: "*.example.com",
-					SSLCACertificate: "some-cert",
-					QueueSize: "100000",
-					ForwardDebugLogs: "true",
+					Enabled:             "true",
+					Address:             "1.2.3.4",
+					Port:                "999",
+					TransportProtocol:   "tcp",
+					TLSEnabled:          "true",
+					PermittedPeer:       "*.example.com",
+					SSLCACertificate:    "some-cert",
+					QueueSize:           "100000",
+					ForwardDebugLogs:    "true",
 					CustomRsyslogConfig: "some-message",
 				})
 				Expect(err).To(HaveOccurred())
