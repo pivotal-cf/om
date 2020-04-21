@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -47,30 +46,6 @@ type SyslogSettings struct {
 	QueueSize string `json:"queue_size,omitempty" yaml:"queue_size"`
 	ForwardDebugLogs string `json:"forward_debug_logs,omitempty" yaml:"forward_debug_logs"`
 	CustomRsyslogConfig string `json:"custom_rsyslog_configuration,omitempty" yaml:"custom_rsyslog_configuration"`
-}
-
-func (a Api) UpdateSSLCertificate(certBody SSLCertificateSettings) error {
-	body, err := json.Marshal(certBody)
-	if err != nil {
-		return err // not tested
-	}
-
-	req, err := http.NewRequest("PUT", "/api/v0/settings/ssl_certificate", bytes.NewReader(body))
-	if err != nil {
-		return err // not tested
-	}
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := a.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if err = validateStatusOK(resp); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (a Api) GetSSLCertificate() (SSLCertificateOutput, error) {
@@ -121,94 +96,62 @@ func (a Api) DeleteSSLCertificate() error {
 	return nil
 }
 
-func (a Api) UpdatePivnetToken(pivnetSettings PivnetSettings) error {
-	body, err := json.Marshal(pivnetSettings)
-	if err != nil {
-		return err
-	}
-
-	payload := strings.NewReader(fmt.Sprintf(
-		`{ "pivotal_network_settings": %s}`, body))
-
-	req, err := http.NewRequest("PUT", "/api/v0/settings/pivotal_network_settings", payload)
+func (a Api) UpdateSSLCertificate(certBody SSLCertificateSettings) error {
+	payload, err := json.Marshal(certBody)
 	if err != nil {
 		return err // not tested
 	}
-	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := a.client.Do(req)
+	body := strings.NewReader(string(payload))
+	return a.updateSettings(body, "ssl_certificate")
+}
+
+func (a Api) UpdatePivnetToken(pivnetSettings PivnetSettings) error {
+	payload, err := json.Marshal(pivnetSettings)
 	if err != nil {
-		return err
+		return err // not tested
 	}
 
-	if err = validateStatusOK(resp); err != nil {
-		return err
-	}
-
-	return nil
+	body := strings.NewReader(fmt.Sprintf(
+		`{ "pivotal_network_settings": %s}`, payload))
+	return a.updateSettings(body, "pivotal_network_settings")
 }
 
 func (a Api) EnableRBAC(rbacSettings RBACSettings) error {
-	settingsBytes, err := json.Marshal(rbacSettings)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest(
-		"PUT",
-		"/api/v0/settings/rbac",
-		bytes.NewReader(settingsBytes),
-	)
+	payload, err := json.Marshal(rbacSettings)
 	if err != nil {
 		return err // not tested
 	}
-	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := a.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if err = validateStatusOK(resp); err != nil {
-		return err
-	}
-
-	return nil
+	body := strings.NewReader(string(payload))
+	return a.updateSettings(body, "rbac")
 }
 
 func (a Api) UpdateBanner(bannerSettings BannerSettings) error {
-	body, err := json.Marshal(bannerSettings)
+	payload, err := json.Marshal(bannerSettings)
 	if err != nil {
 		return err // not tested
 	}
 
-	req, err := http.NewRequest("PUT", "/api/v0/settings/banner", bytes.NewReader(body))
-	if err != nil {
-		return err // not tested
-	}
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := a.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if err = validateStatusOK(resp); err != nil {
-		return err
-	}
-
-	return nil
+	body := strings.NewReader(string(payload))
+	return a.updateSettings(body, "banner")
 }
 
 func (a Api) UpdateSyslogSettings(syslogSettings SyslogSettings) error {
-	body, err := json.Marshal(syslogSettings)
+	payload, err := json.Marshal(syslogSettings)
 	if err != nil {
 		return err // not tested
 	}
 
-	payload := strings.NewReader(fmt.Sprintf(
-		`{ "syslog": %s}`, body))
+	body := strings.NewReader(fmt.Sprintf(
+		`{ "syslog": %s}`, payload))
+	return a.updateSettings(body, "syslog")
+}
 
-	req, err := http.NewRequest("PUT", "/api/v0/settings/syslog", payload)
+func (a Api) updateSettings(body *strings.Reader, endpoint string) error {
+
+	apiPath := fmt.Sprintf("/api/v0/settings/%s", endpoint)
+	req, err := http.NewRequest("PUT", apiPath , body)
 	if err != nil {
 		return err // not tested
 	}
