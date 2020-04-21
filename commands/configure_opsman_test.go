@@ -25,6 +25,29 @@ var _ = Describe("ConfigureOpsman", func() {
 	})
 
 	Describe("Execute", func() {
+		It("updates the custom banners when given the proper keys", func() {
+			bannerConfig := `
+banner-settings:
+  ui_banner_contents: example UI banner
+  ssh_banner_contents: example SSH banner
+`
+			configFileName := writeTestConfigFile(bannerConfig)
+
+			err := command.Execute([]string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateBannerArgsForCall(0)).To(Equal(api.BannerSettings{
+				UIBanner:  "example UI banner",
+				SSHBanner: "example SSH banner",
+			}))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
+		})
+
 		It("updates the ssl certificate when given the proper keys", func() {
 			sslCertConfig := `
 ssl-certificate:

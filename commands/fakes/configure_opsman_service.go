@@ -19,6 +19,17 @@ type ConfigureOpsmanService struct {
 	enableRBACReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateBannerStub        func(api.BannerSettings) error
+	updateBannerMutex       sync.RWMutex
+	updateBannerArgsForCall []struct {
+		arg1 api.BannerSettings
+	}
+	updateBannerReturns struct {
+		result1 error
+	}
+	updateBannerReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdatePivnetTokenStub        func(string) error
 	updatePivnetTokenMutex       sync.RWMutex
 	updatePivnetTokenArgsForCall []struct {
@@ -101,6 +112,66 @@ func (fake *ConfigureOpsmanService) EnableRBACReturnsOnCall(i int, result1 error
 		})
 	}
 	fake.enableRBACReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureOpsmanService) UpdateBanner(arg1 api.BannerSettings) error {
+	fake.updateBannerMutex.Lock()
+	ret, specificReturn := fake.updateBannerReturnsOnCall[len(fake.updateBannerArgsForCall)]
+	fake.updateBannerArgsForCall = append(fake.updateBannerArgsForCall, struct {
+		arg1 api.BannerSettings
+	}{arg1})
+	fake.recordInvocation("UpdateBanner", []interface{}{arg1})
+	fake.updateBannerMutex.Unlock()
+	if fake.UpdateBannerStub != nil {
+		return fake.UpdateBannerStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateBannerReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureOpsmanService) UpdateBannerCallCount() int {
+	fake.updateBannerMutex.RLock()
+	defer fake.updateBannerMutex.RUnlock()
+	return len(fake.updateBannerArgsForCall)
+}
+
+func (fake *ConfigureOpsmanService) UpdateBannerCalls(stub func(api.BannerSettings) error) {
+	fake.updateBannerMutex.Lock()
+	defer fake.updateBannerMutex.Unlock()
+	fake.UpdateBannerStub = stub
+}
+
+func (fake *ConfigureOpsmanService) UpdateBannerArgsForCall(i int) api.BannerSettings {
+	fake.updateBannerMutex.RLock()
+	defer fake.updateBannerMutex.RUnlock()
+	argsForCall := fake.updateBannerArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureOpsmanService) UpdateBannerReturns(result1 error) {
+	fake.updateBannerMutex.Lock()
+	defer fake.updateBannerMutex.Unlock()
+	fake.UpdateBannerStub = nil
+	fake.updateBannerReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureOpsmanService) UpdateBannerReturnsOnCall(i int, result1 error) {
+	fake.updateBannerMutex.Lock()
+	defer fake.updateBannerMutex.Unlock()
+	fake.UpdateBannerStub = nil
+	if fake.updateBannerReturnsOnCall == nil {
+		fake.updateBannerReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateBannerReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -230,6 +301,8 @@ func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.enableRBACMutex.RLock()
 	defer fake.enableRBACMutex.RUnlock()
+	fake.updateBannerMutex.RLock()
+	defer fake.updateBannerMutex.RUnlock()
 	fake.updatePivnetTokenMutex.RLock()
 	defer fake.updatePivnetTokenMutex.RUnlock()
 	fake.updateSSLCertificateMutex.RLock()

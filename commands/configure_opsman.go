@@ -37,11 +37,16 @@ type opsmanConfig struct {
 		SAMLAdminGroup      string `yaml:"rbac_saml_admin_group"`
 		SAMLGroupsAttribute string `yaml:"rbac_saml_groups_attribute"`
 	} `yaml:"rbac-settings"`
+	BannerSettings *struct {
+		UIBanner  string `yaml:"ui_banner_contents"`
+		SSHBanner string `yaml:"ssh_banner_contents"`
+	} `yaml:"banner-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
 //counterfeiter:generate -o ./fakes/configure_opsman_service.go --fake-name ConfigureOpsmanService . configureOpsmanService
 type configureOpsmanService interface {
+	UpdateBanner(settings api.BannerSettings) error
 	UpdateSSLCertificate(api.SSLCertificateInput) error
 	UpdatePivnetToken(token string) error
 	EnableRBAC(rbacSettings api.RBACSettings) error
@@ -101,6 +106,19 @@ func (c ConfigureOpsman) Execute(args []string) error {
 			return err
 		}
 		c.logger.Printf("Successfully applied RBAC Settings.\n")
+	}
+
+	if config.BannerSettings != nil {
+		c.logger.Printf("Updating Banner...\n")
+		payload := api.BannerSettings{
+			UIBanner:  config.BannerSettings.UIBanner,
+			SSHBanner: config.BannerSettings.SSHBanner,
+		}
+		err = c.service.UpdateBanner(payload)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully applied Banner.\n")
 	}
 	return nil
 }
