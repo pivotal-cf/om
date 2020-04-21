@@ -295,6 +295,19 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("omits empty fields", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/syslog"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{"syslog": {}}`),
+				),
+			)
+
+			err := service.UpdateSyslogSettings(api.SyslogSettings{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		When("the api returns an error", func() {
 			It("returns the error to the user", func() {
 				client.AppendHandlers(

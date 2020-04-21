@@ -33,16 +33,16 @@ type BannerSettings struct {
 }
 
 type SyslogSettings struct {
-	Enabled string `json:"enabled" yaml:"enabled"`
-	Address string `json:"address" yaml:"address"`
-	Port string `json:"port" yaml:"port"`
-	TransportProtocol string `json:"transport_protocol" yaml:"transport_protocol"`
-	TLSEnabled string `json:"tls_enabled" yaml:"tls_enabled"`
-	PermittedPeer string `json:"permitted_peer" yaml:"permitted_peer"`
-	SSLCACertificate string `json:"ssl_ca_certificate" yaml:"ssl_ca_certificate"`
-	QueueSize string `json:"queue_size" yaml:"queue_size"`
-	ForwardDebugLogs string `json:"forward_debug_logs" yaml:"forward_debug_logs"`
-	CustomRsyslogConfig string `json:"custom_rsyslog_configuration" yaml:"custom_rsyslog_configuration"`
+	Enabled string `json:"enabled,omitempty" yaml:"enabled"`
+	Address string `json:"address,omitempty" yaml:"address"`
+	Port string `json:"port,omitempty" yaml:"port"`
+	TransportProtocol string `json:"transport_protocol,omitempty" yaml:"transport_protocol"`
+	TLSEnabled string `json:"tls_enabled,omitempty" yaml:"tls_enabled"`
+	PermittedPeer string `json:"permitted_peer,omitempty" yaml:"permitted_peer"`
+	SSLCACertificate string `json:"ssl_ca_certificate,omitempty" yaml:"ssl_ca_certificate"`
+	QueueSize string `json:"queue_size,omitempty" yaml:"queue_size"`
+	ForwardDebugLogs string `json:"forward_debug_logs,omitempty" yaml:"forward_debug_logs"`
+	CustomRsyslogConfig string `json:"custom_rsyslog_configuration,omitempty" yaml:"custom_rsyslog_configuration"`
 }
 
 func (a Api) UpdateSSLCertificate(certBody SSLCertificateInput) error {
