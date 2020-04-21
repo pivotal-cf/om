@@ -72,6 +72,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - **EXPERIMENTAL** `config-template` can specify the number of collection ops files using `--size-of-collections`.
   Some use cases required that collections generate more ops-file for usage.
   The default value is still `10`.
+- `config-template` has been updated to include placeholders for
+  `network_name`, `singleton_availability_zone`, and `service_network_name`
+  in `required-vars.yml` when appropriate.
 
 ### Bug Fixes
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
