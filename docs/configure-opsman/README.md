@@ -62,6 +62,16 @@ ssl-certificate:
     ----BEGIN RSA PRIVATE KEY-----
     private-key
     -----END RSA PRIVATE KEY-----
+pivotal-network-settings:
+  api_token: your-pivnet-token
+banner-settings:
+  ui_banner_contents: UI Banner Contents
+  ssh_banner_contents: SSH Banner Contents
+rbac-settings: # if your RBAC is SAML, use these settings
+  rbac_saml_admin_group: example_group_name
+  rbac_saml_groups_attribute: example_attribute_name
+#rbac-settings: # if your RBAC is LDAP, replace the above
+#  ldap_rbac_admin_group_name: cn=opsmgradmins,ou=groups,dc=mycompany,dc=com
 opsman-configuration:
   aws:
     ...
