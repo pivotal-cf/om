@@ -256,4 +256,69 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			})
 		})
 	})
+
+	Describe("UpdateSyslogSettings", func() {
+		It("Updates the syslog settings in ops manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/syslog"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{
+					  "syslog": {
+						"enabled": "true",
+						"address": "1.2.3.4",
+						"port": "999",
+						"transport_protocol": "tcp",
+						"tls_enabled": "true",
+						"permitted_peer": "*.example.com",
+						"ssl_ca_certificate": "some-cert",
+						"queue_size": "100000",
+						"forward_debug_logs": "true",
+						"custom_rsyslog_configuration": "some-message"
+					  }
+					}`),
+				),
+			)
+
+			err := service.UpdateSyslogSettings(api.SyslogSettings{
+				Enabled:  "true",
+				Address: "1.2.3.4",
+				Port: "999",
+				TransportProtocol: "tcp",
+				TLSEnabled: "true",
+				PermittedPeer: "*.example.com",
+				SSLCACertificate: "some-cert",
+				QueueSize: "100000",
+				ForwardDebugLogs: "true",
+				CustomRsyslogConfig: "some-message",
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		When("the api returns an error", func() {
+			It("returns the error to the user", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/settings/syslog"),
+						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					),
+				)
+
+				err := service.UpdateSyslogSettings(api.SyslogSettings{
+					Enabled:  "true",
+					Address: "1.2.3.4",
+					Port: "999",
+					TransportProtocol: "tcp",
+					TLSEnabled: "true",
+					PermittedPeer: "*.example.com",
+					SSLCACertificate: "some-cert",
+					QueueSize: "100000",
+					ForwardDebugLogs: "true",
+					CustomRsyslogConfig: "some-message",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("500 Internal Server Error"))
+			})
+		})
+	})
 })
