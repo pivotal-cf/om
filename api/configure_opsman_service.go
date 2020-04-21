@@ -9,8 +9,8 @@ import (
 )
 
 type SSLCertificateInput struct {
-	CertPem       string `json:"certificate"`
-	PrivateKeyPem string `json:"private_key"`
+	CertPem       string `json:"certificate" yaml:"certificate"`
+	PrivateKeyPem string `json:"private_key" yaml:"private_key"`
 }
 
 type SSLCertificateOutput struct {

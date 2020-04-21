@@ -26,23 +26,19 @@ type ConfigureOpsman struct {
 
 type opsmanConfig struct {
 	SSLCertificate *struct {
-		Certificate string `yaml:"certificate"`
-		PrivateKey  string `yaml:"private_key"`
+		Settings api.SSLCertificateInput `yaml:",inline"`
 	} `yaml:"ssl-certificate"`
 	PivotalNetwork *struct {
-		Token string `yaml:"api_token"`
+		Settings api.PivnetSettings `yaml:",inline"`
 	} `yaml:"pivotal-network-settings"`
-	RBACSettings *struct {
-		LDAPAdminGroupName  string `yaml:"ldap_rbac_admin_group_name"`
-		SAMLAdminGroup      string `yaml:"rbac_saml_admin_group"`
-		SAMLGroupsAttribute string `yaml:"rbac_saml_groups_attribute"`
+	RBAC *struct {
+		Settings api.RBACSettings `yaml:",inline"`
 	} `yaml:"rbac-settings"`
-	BannerSettings *struct {
-		UIBanner  string `yaml:"ui_banner_contents"`
-		SSHBanner string `yaml:"ssh_banner_contents"`
+	Banner *struct {
+		Settings api.BannerSettings `yaml:",inline"`
 	} `yaml:"banner-settings"`
 	Syslog *struct {
-		SyslogSettings api.SyslogSettings `yaml:",inline"`
+		Settings api.SyslogSettings `yaml:",inline"`
 	} `yaml:"syslog-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
@@ -51,7 +47,7 @@ type opsmanConfig struct {
 type configureOpsmanService interface {
 	UpdateBanner(settings api.BannerSettings) error
 	UpdateSSLCertificate(api.SSLCertificateInput) error
-	UpdatePivnetToken(token string) error
+	UpdatePivnetToken(settings api.PivnetSettings) error
 	EnableRBAC(rbacSettings api.RBACSettings) error
 	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error
 }
@@ -91,34 +87,25 @@ func (c ConfigureOpsman) Execute(args []string) error {
 
 	if config.PivotalNetwork != nil {
 		c.logger.Printf("Updating Pivnet Token...\n")
-		err = c.service.UpdatePivnetToken(config.PivotalNetwork.Token)
+		err = c.service.UpdatePivnetToken(config.PivotalNetwork.Settings)
 		if err != nil {
 			return err
 		}
 		c.logger.Printf("Successfully applied Pivnet Token.\n")
 	}
 
-	if config.RBACSettings != nil {
+	if config.RBAC != nil {
 		c.logger.Printf("Updating RBAC Settings...\n")
-		payload := api.RBACSettings{
-			SAMLAdminGroup:      config.RBACSettings.SAMLAdminGroup,
-			SAMLGroupsAttribute: config.RBACSettings.SAMLGroupsAttribute,
-			LDAPAdminGroupName:  config.RBACSettings.LDAPAdminGroupName,
-		}
-		err = c.service.EnableRBAC(payload)
+		err = c.service.EnableRBAC(config.RBAC.Settings)
 		if err != nil {
 			return err
 		}
 		c.logger.Printf("Successfully applied RBAC Settings.\n")
 	}
 
-	if config.BannerSettings != nil {
+	if config.Banner != nil {
 		c.logger.Printf("Updating Banner...\n")
-		payload := api.BannerSettings{
-			UIBanner:  config.BannerSettings.UIBanner,
-			SSHBanner: config.BannerSettings.SSHBanner,
-		}
-		err = c.service.UpdateBanner(payload)
+		err = c.service.UpdateBanner(config.Banner.Settings)
 		if err != nil {
 			return err
 		}
@@ -127,7 +114,7 @@ func (c ConfigureOpsman) Execute(args []string) error {
 
 	if config.Syslog != nil {
 		c.logger.Printf("Updating Syslog...\n")
-		payload := config.Syslog.SyslogSettings
+		payload := config.Syslog.Settings
 		err = c.service.UpdateSyslogSettings(payload)
 		if err != nil {
 			return err
@@ -138,10 +125,7 @@ func (c ConfigureOpsman) Execute(args []string) error {
 }
 
 func (c ConfigureOpsman) updateSSLCertificate(config *opsmanConfig) error {
-	return c.service.UpdateSSLCertificate(api.SSLCertificateInput{
-		CertPem:       config.SSLCertificate.Certificate,
-		PrivateKeyPem: config.SSLCertificate.PrivateKey,
-	})
+	return c.service.UpdateSSLCertificate(config.SSLCertificate.Settings)
 }
 
 func (c ConfigureOpsman) interpolateConfig() (*opsmanConfig, error) {
@@ -181,10 +165,10 @@ func (c ConfigureOpsman) validate(config *opsmanConfig) error {
 		return fmt.Errorf("unrecognized top level key(s) in config file:\n%s", strings.Join(invalidFields, "\n"))
 	}
 
-	if config.RBACSettings != nil {
-		if config.RBACSettings.SAMLGroupsAttribute != "" &&
-			config.RBACSettings.SAMLAdminGroup != "" &&
-			config.RBACSettings.LDAPAdminGroupName != "" {
+	if config.RBAC != nil {
+		if config.RBAC.Settings.SAMLGroupsAttribute != "" &&
+			config.RBAC.Settings.SAMLAdminGroup != "" &&
+			config.RBAC.Settings.LDAPAdminGroupName != "" {
 			return errors.New("can only set SAML or LDAP. Check the config file and use only the appropriate values.\nFor example config values, see the docs directory for documentation.")
 		}
 	}

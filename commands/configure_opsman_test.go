@@ -84,7 +84,9 @@ pivotal-network-settings:
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(1))
-			Expect(fakeService.UpdatePivnetTokenArgsForCall(0)).To(Equal("some-token"))
+			Expect(fakeService.UpdatePivnetTokenArgsForCall(0)).To(Equal(api.PivnetSettings{
+				APIToken: "some-token",
+			}))
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
 			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
 			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
