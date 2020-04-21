@@ -41,6 +41,9 @@ type opsmanConfig struct {
 		UIBanner  string `yaml:"ui_banner_contents"`
 		SSHBanner string `yaml:"ssh_banner_contents"`
 	} `yaml:"banner-settings"`
+	Syslog *struct {
+		SyslogSettings api.SyslogSettings `yaml:",inline"`
+	} `yaml:"syslog-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
@@ -50,6 +53,7 @@ type configureOpsmanService interface {
 	UpdateSSLCertificate(api.SSLCertificateInput) error
 	UpdatePivnetToken(token string) error
 	EnableRBAC(rbacSettings api.RBACSettings) error
+	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error
 }
 
 func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) ConfigureOpsman {
@@ -115,6 +119,16 @@ func (c ConfigureOpsman) Execute(args []string) error {
 			SSHBanner: config.BannerSettings.SSHBanner,
 		}
 		err = c.service.UpdateBanner(payload)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully applied Banner.\n")
+	}
+
+	if config.Syslog != nil {
+		c.logger.Printf("Updating Syslog...\n")
+		payload := config.Syslog.SyslogSettings
+		err = c.service.UpdateSyslogSettings(payload)
 		if err != nil {
 			return err
 		}

@@ -134,6 +134,47 @@ rbac-settings:
 			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
 		})
 
+		It("updates syslog settings when given the proper keys", func() {
+			syslogConfig := `
+syslog-settings:
+  enabled: true
+  address: 1.2.3.4
+  port: 999
+  transport_protocol: tcp
+  tls_enabled: true
+  permitted_peer: "*.example.com"
+  ssl_ca_certificate: some-cert
+  queue_size: 100000
+  forward_debug_logs: true
+  custom_rsyslog_configuration: some-message
+`
+			configFileName := writeTestConfigFile(syslogConfig)
+
+			err := command.Execute([]string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateSyslogSettingsArgsForCall(0)).To(Equal(api.SyslogSettings{
+				Enabled:             "true",
+				Address:             "1.2.3.4",
+				Port:                "999",
+				TransportProtocol:   "tcp",
+				TLSEnabled:          "true",
+				PermittedPeer:       "*.example.com",
+				SSLCACertificate:    "some-cert",
+				QueueSize:           "100000",
+				ForwardDebugLogs:    "true",
+				CustomRsyslogConfig: "some-message",
+			}))
+
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+		})
+
 		It("returns an error if both ldap and saml keys provided", func() {
 			rbacConfig := `
 rbac-settings:
@@ -313,6 +354,34 @@ rbac-settings:
 
 				Expect(fakeService.EnableRBACCallCount()).To(Equal(1))
 			})
+
+			It("returns an error when syslog api fails", func() {
+				fakeService.UpdateSyslogSettingsReturns(errors.New("some error"))
+
+				config := `
+syslog-settings:
+  enabled: true
+  address: 1.2.3.4
+  port: 999
+  transport_protocol: tcp
+  tls_enabled: true
+  permitted_peer: "*.example.com"
+  ssl_ca_certificate: some-cert
+  queue_size: 100000
+  forward_debug_logs: true
+  custom_rsyslog_configuration: some-message
+`
+				configFileName := writeTestConfigFile(config)
+
+				err := command.Execute([]string{
+					"--config", configFileName,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some error"))
+
+				Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(1))
+			})
+
 		})
 
 		Describe("Usage", func() {

@@ -52,6 +52,17 @@ type ConfigureOpsmanService struct {
 	updateSSLCertificateReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateSyslogSettingsStub        func(api.SyslogSettings) error
+	updateSyslogSettingsMutex       sync.RWMutex
+	updateSyslogSettingsArgsForCall []struct {
+		arg1 api.SyslogSettings
+	}
+	updateSyslogSettingsReturns struct {
+		result1 error
+	}
+	updateSyslogSettingsReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -296,6 +307,66 @@ func (fake *ConfigureOpsmanService) UpdateSSLCertificateReturnsOnCall(i int, res
 	}{result1}
 }
 
+func (fake *ConfigureOpsmanService) UpdateSyslogSettings(arg1 api.SyslogSettings) error {
+	fake.updateSyslogSettingsMutex.Lock()
+	ret, specificReturn := fake.updateSyslogSettingsReturnsOnCall[len(fake.updateSyslogSettingsArgsForCall)]
+	fake.updateSyslogSettingsArgsForCall = append(fake.updateSyslogSettingsArgsForCall, struct {
+		arg1 api.SyslogSettings
+	}{arg1})
+	fake.recordInvocation("UpdateSyslogSettings", []interface{}{arg1})
+	fake.updateSyslogSettingsMutex.Unlock()
+	if fake.UpdateSyslogSettingsStub != nil {
+		return fake.UpdateSyslogSettingsStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateSyslogSettingsReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureOpsmanService) UpdateSyslogSettingsCallCount() int {
+	fake.updateSyslogSettingsMutex.RLock()
+	defer fake.updateSyslogSettingsMutex.RUnlock()
+	return len(fake.updateSyslogSettingsArgsForCall)
+}
+
+func (fake *ConfigureOpsmanService) UpdateSyslogSettingsCalls(stub func(api.SyslogSettings) error) {
+	fake.updateSyslogSettingsMutex.Lock()
+	defer fake.updateSyslogSettingsMutex.Unlock()
+	fake.UpdateSyslogSettingsStub = stub
+}
+
+func (fake *ConfigureOpsmanService) UpdateSyslogSettingsArgsForCall(i int) api.SyslogSettings {
+	fake.updateSyslogSettingsMutex.RLock()
+	defer fake.updateSyslogSettingsMutex.RUnlock()
+	argsForCall := fake.updateSyslogSettingsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureOpsmanService) UpdateSyslogSettingsReturns(result1 error) {
+	fake.updateSyslogSettingsMutex.Lock()
+	defer fake.updateSyslogSettingsMutex.Unlock()
+	fake.UpdateSyslogSettingsStub = nil
+	fake.updateSyslogSettingsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureOpsmanService) UpdateSyslogSettingsReturnsOnCall(i int, result1 error) {
+	fake.updateSyslogSettingsMutex.Lock()
+	defer fake.updateSyslogSettingsMutex.Unlock()
+	fake.UpdateSyslogSettingsStub = nil
+	if fake.updateSyslogSettingsReturnsOnCall == nil {
+		fake.updateSyslogSettingsReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateSyslogSettingsReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -307,6 +378,8 @@ func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	defer fake.updatePivnetTokenMutex.RUnlock()
 	fake.updateSSLCertificateMutex.RLock()
 	defer fake.updateSSLCertificateMutex.RUnlock()
+	fake.updateSyslogSettingsMutex.RLock()
+	defer fake.updateSyslogSettingsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
