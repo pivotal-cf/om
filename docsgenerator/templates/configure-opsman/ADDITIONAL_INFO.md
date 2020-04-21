@@ -26,6 +26,20 @@ pivotal-network-settings:
 banner-settings:
   ui_banner_contents: UI Banner Contents
   ssh_banner_contents: SSH Banner Contents
+syslog-settings:
+  enabled: true
+  address: 1.2.3.4
+  port: 999
+  transport_protocol: tcp
+  tls_enabled: true
+  permitted_peer: "*.example.com"
+  ssl_ca_certificate: |
+    -----BEGIN CERTIFICATE-----
+    certificate
+    -----END CERTIFICATE-----
+  queue_size: 100000
+  forward_debug_logs: false
+  custom_rsyslog_configuration: if $message contains 'test' then stop
 rbac-settings: # if your RBAC is SAML, use these settings
   rbac_saml_admin_group: example_group_name
   rbac_saml_groups_attribute: example_attribute_name
