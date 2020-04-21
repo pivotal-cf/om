@@ -217,4 +217,43 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			})
 		})
 	})
+
+	Describe("UpdateBanner", func() {
+		It("Updates the banner in ops manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/banner"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{
+					  "ui_banner_contents": "banner contents in UI",
+					  "ssh_banner_contents": "banner contents in SSH"
+					}`),
+				),
+			)
+
+			err := service.UpdateBanner(api.BannerSettings{
+				UIBanner:  "banner contents in UI",
+				SSHBanner: "banner contents in SSH",
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		When("the api returns an error", func() {
+			It("returns the error to the user", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/settings/banner"),
+						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					),
+				)
+
+				err := service.UpdateBanner(api.BannerSettings{
+					UIBanner:  "banner contents in UI",
+					SSHBanner: "banner contents in SSH",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("500 Internal Server Error"))
+			})
+		})
+	})
 })

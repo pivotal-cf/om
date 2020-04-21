@@ -27,6 +27,11 @@ type RBACSettings struct {
 	LDAPAdminGroupName  string `json:"ldap_rbac_admin_group_name,omitempty"`
 }
 
+type BannerSettings struct {
+	UIBanner  string `json:"ui_banner_contents"`
+	SSHBanner string `json:"ssh_banner_contents"`
+}
+
 func (a Api) UpdateSSLCertificate(certBody SSLCertificateInput) error {
 	body, err := json.Marshal(certBody)
 	if err != nil {
@@ -135,6 +140,30 @@ func (a Api) EnableRBAC(rbacSettings RBACSettings) error {
 		"/api/v0/settings/rbac",
 		bytes.NewReader(settingsBytes),
 	)
+	if err != nil {
+		return err // not tested
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a Api) UpdateBanner(bannerSettings BannerSettings) error {
+	body, err := json.Marshal(bannerSettings)
+	if err != nil {
+		return err // not tested
+	}
+
+	req, err := http.NewRequest("PUT", "/api/v0/settings/banner", bytes.NewReader(body))
 	if err != nil {
 		return err // not tested
 	}
