@@ -35,7 +35,7 @@ var _ = Describe("UpdateSSLCertificate", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(1))
-			Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateInput{
+			Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateSettings{
 				CertPem:       "some CertPem",
 				PrivateKeyPem: "some PrivateKey",
 			}))
@@ -91,7 +91,7 @@ private-key-pem: some PrivateKey
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(1))
-				Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateInput{
+				Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateSettings{
 					CertPem:       "some CertPem",
 					PrivateKeyPem: "some PrivateKey",
 				}))
@@ -167,7 +167,7 @@ pkey: some PrivateKey
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(1))
-				Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateInput{
+				Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateSettings{
 					CertPem:       "some CertPem",
 					PrivateKeyPem: "some PrivateKey",
 				}))

@@ -62,7 +62,7 @@ ssl-certificate:
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(1))
-			Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateInput{
+			Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateSettings{
 				CertPem:       "some-cert-pem",
 				PrivateKeyPem: "some-private-key",
 			}))
@@ -295,7 +295,7 @@ ssl-certificate:
 				Expect(err.Error()).To(ContainSubstring("some error"))
 
 				Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(1))
-				Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateInput{
+				Expect(fakeService.UpdateSSLCertificateArgsForCall(0)).To(Equal(api.SSLCertificateSettings{
 					CertPem:       "some-cert-pem",
 					PrivateKeyPem: "some-private-key",
 				}))

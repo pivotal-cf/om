@@ -23,7 +23,7 @@ type UpdateSSLCertificate struct {
 
 //counterfeiter:generate -o ./fakes/update_ssl_certificate_service.go --fake-name UpdateSSLCertificateService . updateSSLCertificateService
 type updateSSLCertificateService interface {
-	UpdateSSLCertificate(api.SSLCertificateInput) error
+	UpdateSSLCertificate(api.SSLCertificateSettings) error
 }
 
 func NewUpdateSSLCertificate(environFunc func() []string, service updateSSLCertificateService, logger logger) UpdateSSLCertificate {
@@ -36,7 +36,7 @@ func (c UpdateSSLCertificate) Execute(args []string) error {
 		return fmt.Errorf("could not parse update-ssl-certificate flags: %s", err)
 	}
 
-	err = c.service.UpdateSSLCertificate(api.SSLCertificateInput{
+	err = c.service.UpdateSSLCertificate(api.SSLCertificateSettings{
 		CertPem:       c.Options.CertPem,
 		PrivateKeyPem: c.Options.PrivateKey,
 	})

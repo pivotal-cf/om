@@ -26,7 +26,7 @@ type ConfigureOpsman struct {
 
 type opsmanConfig struct {
 	SSLCertificate *struct {
-		Settings api.SSLCertificateInput `yaml:",inline"`
+		Settings api.SSLCertificateSettings `yaml:",inline"`
 	} `yaml:"ssl-certificate"`
 	PivotalNetwork *struct {
 		Settings api.PivnetSettings `yaml:",inline"`
@@ -46,7 +46,7 @@ type opsmanConfig struct {
 //counterfeiter:generate -o ./fakes/configure_opsman_service.go --fake-name ConfigureOpsmanService . configureOpsmanService
 type configureOpsmanService interface {
 	UpdateBanner(settings api.BannerSettings) error
-	UpdateSSLCertificate(api.SSLCertificateInput) error
+	UpdateSSLCertificate(api.SSLCertificateSettings) error
 	UpdatePivnetToken(settings api.PivnetSettings) error
 	EnableRBAC(rbacSettings api.RBACSettings) error
 	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error

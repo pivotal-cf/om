@@ -33,7 +33,9 @@ var _ = Describe("ConfigureOpsmanService", func() {
 				),
 			)
 
-			err := service.UpdatePivnetToken("some-api-token")
+			err := service.UpdatePivnetToken(api.PivnetSettings{
+				APIToken: "some-api-token",
+			})
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -46,7 +48,9 @@ var _ = Describe("ConfigureOpsmanService", func() {
 					),
 				)
 
-				err := service.UpdatePivnetToken("some-api-token")
+				err := service.UpdatePivnetToken(api.PivnetSettings{
+					APIToken: "some-api-token",
+				})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("500 Internal Server Error"))
 			})
@@ -68,7 +72,7 @@ var _ = Describe("ConfigureOpsmanService", func() {
 				),
 			)
 
-			certInput := api.SSLCertificateInput{
+			certInput := api.SSLCertificateSettings{
 				CertPem:       "some-cert",
 				PrivateKeyPem: "some-key",
 			}
@@ -85,7 +89,7 @@ var _ = Describe("ConfigureOpsmanService", func() {
 					),
 				)
 
-				certInput := api.SSLCertificateInput{
+				certInput := api.SSLCertificateSettings{
 					CertPem:       "some-cert",
 					PrivateKeyPem: "some-key",
 				}

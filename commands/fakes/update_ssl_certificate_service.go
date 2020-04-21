@@ -8,10 +8,10 @@ import (
 )
 
 type UpdateSSLCertificateService struct {
-	UpdateSSLCertificateStub        func(api.SSLCertificateInput) error
+	UpdateSSLCertificateStub        func(api.SSLCertificateSettings) error
 	updateSSLCertificateMutex       sync.RWMutex
 	updateSSLCertificateArgsForCall []struct {
-		arg1 api.SSLCertificateInput
+		arg1 api.SSLCertificateSettings
 	}
 	updateSSLCertificateReturns struct {
 		result1 error
@@ -23,11 +23,11 @@ type UpdateSSLCertificateService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *UpdateSSLCertificateService) UpdateSSLCertificate(arg1 api.SSLCertificateInput) error {
+func (fake *UpdateSSLCertificateService) UpdateSSLCertificate(arg1 api.SSLCertificateSettings) error {
 	fake.updateSSLCertificateMutex.Lock()
 	ret, specificReturn := fake.updateSSLCertificateReturnsOnCall[len(fake.updateSSLCertificateArgsForCall)]
 	fake.updateSSLCertificateArgsForCall = append(fake.updateSSLCertificateArgsForCall, struct {
-		arg1 api.SSLCertificateInput
+		arg1 api.SSLCertificateSettings
 	}{arg1})
 	fake.recordInvocation("UpdateSSLCertificate", []interface{}{arg1})
 	fake.updateSSLCertificateMutex.Unlock()
@@ -47,13 +47,13 @@ func (fake *UpdateSSLCertificateService) UpdateSSLCertificateCallCount() int {
 	return len(fake.updateSSLCertificateArgsForCall)
 }
 
-func (fake *UpdateSSLCertificateService) UpdateSSLCertificateCalls(stub func(api.SSLCertificateInput) error) {
+func (fake *UpdateSSLCertificateService) UpdateSSLCertificateCalls(stub func(api.SSLCertificateSettings) error) {
 	fake.updateSSLCertificateMutex.Lock()
 	defer fake.updateSSLCertificateMutex.Unlock()
 	fake.UpdateSSLCertificateStub = stub
 }
 
-func (fake *UpdateSSLCertificateService) UpdateSSLCertificateArgsForCall(i int) api.SSLCertificateInput {
+func (fake *UpdateSSLCertificateService) UpdateSSLCertificateArgsForCall(i int) api.SSLCertificateSettings {
 	fake.updateSSLCertificateMutex.RLock()
 	defer fake.updateSSLCertificateMutex.RUnlock()
 	argsForCall := fake.updateSSLCertificateArgsForCall[i]

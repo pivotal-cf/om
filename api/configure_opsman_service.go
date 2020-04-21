@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type SSLCertificateInput struct {
+type SSLCertificateSettings struct {
 	CertPem       string `json:"certificate" yaml:"certificate"`
 	PrivateKeyPem string `json:"private_key" yaml:"private_key"`
 }
@@ -22,14 +22,18 @@ type SSLCertificate struct {
 }
 
 type RBACSettings struct {
-	SAMLAdminGroup      string `json:"rbac_saml_admin_group,omitempty"`
-	SAMLGroupsAttribute string `json:"rbac_saml_groups_attribute,omitempty"`
-	LDAPAdminGroupName  string `json:"ldap_rbac_admin_group_name,omitempty"`
+	SAMLAdminGroup      string `json:"rbac_saml_admin_group,omitempty" yaml:"rbac_saml_admin_group"`
+	SAMLGroupsAttribute string `json:"rbac_saml_groups_attribute,omitempty" yaml:"rbac_saml_groups_attribute"`
+	LDAPAdminGroupName  string `json:"ldap_rbac_admin_group_name,omitempty" yaml:"ldap_rbac_admin_group_name"`
 }
 
 type BannerSettings struct {
-	UIBanner  string `json:"ui_banner_contents"`
-	SSHBanner string `json:"ssh_banner_contents"`
+	UIBanner  string `json:"ui_banner_contents" yaml:"ui_banner_contents"`
+	SSHBanner string `json:"ssh_banner_contents" yaml:"ssh_banner_contents"`
+}
+
+type PivnetSettings struct {
+	APIToken string `json:"api_token" yaml:"api_token"`
 }
 
 type SyslogSettings struct {
@@ -45,7 +49,7 @@ type SyslogSettings struct {
 	CustomRsyslogConfig string `json:"custom_rsyslog_configuration,omitempty" yaml:"custom_rsyslog_configuration"`
 }
 
-func (a Api) UpdateSSLCertificate(certBody SSLCertificateInput) error {
+func (a Api) UpdateSSLCertificate(certBody SSLCertificateSettings) error {
 	body, err := json.Marshal(certBody)
 	if err != nil {
 		return err // not tested
@@ -117,15 +121,16 @@ func (a Api) DeleteSSLCertificate() error {
 	return nil
 }
 
-func (a Api) UpdatePivnetToken(token string) error {
-	req, err := http.NewRequest(
-		"PUT",
-		"/api/v0/settings/pivotal_network_settings",
-		strings.NewReader(fmt.Sprintf(
-			`{ "pivotal_network_settings": { "api_token": "%s" }}`,
-			token,
-		)),
-	)
+func (a Api) UpdatePivnetToken(pivnetSettings PivnetSettings) error {
+	body, err := json.Marshal(pivnetSettings)
+	if err != nil {
+		return err
+	}
+
+	payload := strings.NewReader(fmt.Sprintf(
+		`{ "pivotal_network_settings": %s}`, body))
+
+	req, err := http.NewRequest("PUT", "/api/v0/settings/pivotal_network_settings", payload)
 	if err != nil {
 		return err // not tested
 	}
