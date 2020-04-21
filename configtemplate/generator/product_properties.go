@@ -103,6 +103,7 @@ func GetDefaultPropertyVars(metadata *Metadata) (map[string]interface{}, error) 
 		vars["syslog_forward_debug_logs"] = false
 		vars["syslog_custom_rsyslog_configuration"] = ""
 	}
+
 	return vars, nil
 }
 
@@ -143,6 +144,16 @@ func GetRequiredPropertyVars(metadata *Metadata) (map[string]interface{}, error)
 
 		addPropertyToVars(property.Reference, propertyBlueprint, false, vars)
 	}
+
+	if len(metadata.JobTypes) > 0 {
+		vars["network_name"] = ""
+		vars["singleton_availability_zone"] = ""
+
+		if metadata.UsesServiceNetwork() {
+			vars["service_network_name"] = ""
+		}
+	}
+
 	return vars, nil
 }
 

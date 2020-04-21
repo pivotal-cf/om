@@ -62,6 +62,9 @@ var _ = Describe("Product PropertyInputs", func() {
 			expected := map[string]interface{}{
 				"healthwatch-forwarder_health_check_az": "",
 				"opsman_enable_url":                     "",
+				"network_name":                          "",
+				"singleton_availability_zone":           "",
+				"service_network_name":                  "",
 			}
 
 			metadata := getMetadata("../fixtures/metadata/p_healthwatch.yml")

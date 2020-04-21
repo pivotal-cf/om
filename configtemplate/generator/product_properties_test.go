@@ -662,6 +662,45 @@ var _ = Describe("Product Properties", func() {
 			})
 		})
 
+		When("network configuration exists", func() {
+			It("adds network properties", func() {
+				metadata := &generator.Metadata{
+					JobTypes: []generator.JobType{{
+						Name: "",
+					}},
+				}
+				requiredVars, err := generator.GetRequiredPropertyVars(metadata)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(requiredVars).To(HaveLen(2))
+				Expect(requiredVars).To(HaveKey("network_name"))
+				Expect(requiredVars).To(HaveKeyWithValue("network_name", ""))
+				Expect(requiredVars).To(HaveKey("singleton_availability_zone"))
+				Expect(requiredVars).To(HaveKeyWithValue("singleton_availability_zone", ""))
+			})
+
+			When("the service network is in use", func() {
+				It("adds the service_network_name property", func() {
+					metadata := &generator.Metadata{
+						JobTypes: []generator.JobType{{
+							PropertyBlueprint: []generator.PropertyBlueprint{{
+								Type: "service_network_az_single_select",
+							}},
+						}},
+					}
+					requiredVars, err := generator.GetRequiredPropertyVars(metadata)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(requiredVars).To(HaveLen(3))
+					Expect(requiredVars).To(HaveKey("network_name"))
+					Expect(requiredVars).To(HaveKeyWithValue("network_name", ""))
+					Expect(requiredVars).To(HaveKey("singleton_availability_zone"))
+					Expect(requiredVars).To(HaveKeyWithValue("singleton_availability_zone", ""))
+					Expect(requiredVars).To(HaveKey("service_network_name"))
+					Expect(requiredVars).To(HaveKeyWithValue("service_network_name", ""))
+				})
+			})
+		})
+
 		When("there is a bool property without a default", func() {
 			It("does not add it", func() {
 				metadata := &generator.Metadata{
