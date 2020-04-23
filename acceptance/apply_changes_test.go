@@ -96,6 +96,14 @@ var _ = Describe("apply-changes command", func() {
 					ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),
 				),
 				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/info"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"info": {
+							"version": "2.1-build.79"
+						}
+					}`),
+				),
+				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("PUT", "/api/v0/staged/director/properties"),
 					ghttp.VerifyJSON(`{
 						"director_configuration": {

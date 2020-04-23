@@ -38,7 +38,8 @@ var _ = Describe("ApplyChanges", func() {
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			service.InfoReturns(api.Info{Version: "2.2-build243"}, nil)
+			// 2.9 due to apply changes recreate only working on 2.9+
+			service.InfoReturns(api.Info{Version: "2.9"}, nil)
 			service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 			service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
@@ -180,7 +181,7 @@ var _ = Describe("ApplyChanges", func() {
 		})
 
 		When("passed the recreate-vms", func() {
-			It("ensures the bosh_recreate_on_next_deploy is set on the director", func() {
+			It("ensures all vms are recreated", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{"--recreate-vms"})
@@ -190,15 +191,16 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(`
 					{
 						"director_configuration": {
-							"bosh_recreate_on_next_deploy": true
+							"bosh_recreate_on_next_deploy": true,
+							"bosh_director_recreate_on_next_deploy": true
 						}
 					}
 				`))
 
-				Expect(stderr.Contents()).To(ContainSubstring("setting director to recreate all product vms (this will also recreate the director vm if there are changes)"))
+				Expect(stderr.Contents()).To(ContainSubstring("setting director to recreate all vms (available in Ops Manager 2.9+)"))
 			})
 
-			It("prints out if only the director will be updated", func() {
+			It("ensures only the director is recreated", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{
@@ -211,15 +213,15 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(`
 					{
 						"director_configuration": {
-							"bosh_recreate_on_next_deploy": true
+							"bosh_director_recreate_on_next_deploy": true
 						}
 					}
 				`))
 
-				Expect(stderr).To(gbytes.Say("setting director to recreate director vm if there are changes"))
+				Expect(stderr).To(gbytes.Say(`setting director to recreate director vm \(available in Ops Manager 2\.9\+\)`))
 			})
 
-			It("prints out the list of products that will be recreated", func() {
+			It("ensures only products are updated", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := command.Execute([]string{
@@ -229,10 +231,48 @@ var _ = Describe("ApplyChanges", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
+				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+				Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(`
+					{
+						"director_configuration": {
+							"bosh_recreate_on_next_deploy": true
+						}
+					}
+				`))
+
 				Expect(stderr).To(gbytes.Say("setting director to recreate all VMs for the following products:"))
 				Expect(stderr).To(gbytes.Say("- cf"))
 				Expect(stderr).To(gbytes.Say("- example-product"))
 				Expect(stderr).To(gbytes.Say("this will also recreate the director vm if there are changes"))
+			})
+
+			When("on a version less than 2.9", func() {
+				It("ensures only products are updated", func() {
+					service.InfoReturns(api.Info{Version: "2.6.0"}, nil)
+
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := command.Execute([]string{
+						"--recreate-vms",
+						"--product-name", "cf",
+						"-n", "example-product",
+					})
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
+					Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(`
+						{
+							"director_configuration": {
+								"bosh_recreate_on_next_deploy": true
+							}
+						}
+					`))
+
+					Expect(stderr).To(gbytes.Say("setting director to recreate all VMs for the following products:"))
+					Expect(stderr).To(gbytes.Say("- cf"))
+					Expect(stderr).To(gbytes.Say("- example-product"))
+					Expect(stderr).To(gbytes.Say("this will also recreate the director vm if there are changes"))
+				})
 			})
 
 			When("the service returns an error", func() {

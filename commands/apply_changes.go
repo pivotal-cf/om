@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
@@ -115,6 +116,13 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	if ac.Options.RecreateVMs {
+		var config struct {
+			DirectorConfiguration struct {
+				DirectorRecreate bool `json:"bosh_director_recreate_on_next_deploy,omitempty"`
+				ProductRecreate  bool `json:"bosh_recreate_on_next_deploy,omitempty"`
+			} `json:"director_configuration"`
+		}
+
 		if len(ac.Options.ProductNames) > 0 {
 			ac.logger.Println("setting director to recreate all VMs for the following products:")
 			sort.Strings(ac.Options.ProductNames)
@@ -123,17 +131,33 @@ func (ac ApplyChanges) Execute(args []string) error {
 				ac.logger.Printf("- %s", product)
 			}
 			ac.logger.Println("this will also recreate the director vm if there are changes")
+			config.DirectorConfiguration.ProductRecreate = true
 		} else if ac.Options.SkipDeployProducts {
-			ac.logger.Println("setting director to recreate director vm if there are changes")
+			ac.logger.Println("setting director to recreate director vm (available in Ops Manager 2.9+)")
+			config.DirectorConfiguration.DirectorRecreate = true
 		} else {
-			ac.logger.Println("setting director to recreate all product vms (this will also recreate the director vm if there are changes)")
+			ac.logger.Println("setting director to recreate all vms (available in Ops Manager 2.9+)")
+			config.DirectorConfiguration.ProductRecreate = true
+			config.DirectorConfiguration.DirectorRecreate = true
 		}
 
-		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(`{
-			"director_configuration": {
-				"bosh_recreate_on_next_deploy": true
-			}
-		}`))
+		info, err := ac.service.Info()
+		if err != nil {
+			return err
+		}
+
+		versionAtLeast29, err := info.VersionAtLeast(2, 9)
+		if err != nil {
+			return err
+		}
+
+		if !versionAtLeast29 {
+			config.DirectorConfiguration.ProductRecreate = true
+			config.DirectorConfiguration.DirectorRecreate = false
+		}
+
+		payload, _ := json.Marshal(config)
+		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(string(payload)))
 		if err != nil {
 			return fmt.Errorf("could not set director to recreate VMS: %s", err)
 		}
