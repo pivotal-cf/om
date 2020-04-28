@@ -75,6 +75,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `config-template` has been updated to include placeholders for
   `network_name`, `singleton_availability_zone`, and `service_network_name`
   in `required-vars.yml` when appropriate.
+- When using `apply-changes --recreate`, Ops Manager will recreate director VM on OM 2.9+
+  If a product name is passed (`apply-changes --product-name <product> --recreate`),
+  only the product VMs will be recreated. 
+  When using `apply-changes --recreate --skip-deploy-products`,
+  only the director VM will be recreated.
+  This resolves issue [#468](https://github.com/pivotal-cf/om/issues/468)
 
 ### Bug Fixes
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
