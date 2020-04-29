@@ -72,6 +72,7 @@ type DownloadProductOptions struct {
 
 	DeprecatedStemcell bool   `long:"download-stemcell" description:"**DEPRECATED**: no-op for backwards compatibility"`
 	StemcellIaas       string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
+	StemcellVersion    string `long:"stemcell-version" description:"the version number of the stemcell to download (ie 458.61)"`
 	StemcellHeavy      bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`
 }
 
@@ -165,13 +166,18 @@ func (c *DownloadProduct) Execute(args []string) error {
 		}
 	}
 
+	stemcellVersion := stemcell.Version()
+	if c.Options.StemcellVersion != "" {
+		stemcellVersion = c.Options.StemcellVersion
+	}
+
 	stemcellFileName, err := "", nil
 	for _, stemcellGlob := range stemcellGlobs {
 		stemcellFileName, _, err = c.downloadProductFile(
 			stemcell.Slug(),
-			stemcell.Version(),
+			stemcellVersion,
 			stemcellGlob,
-			fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcell.Version()),
+			fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcellVersion),
 		)
 		if err == nil {
 			break
@@ -185,12 +191,12 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return fmt.Errorf("could not download stemcell: %s\nNo %sstemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option.", err, isHeavy, c.Options.StemcellIaas)
 	}
 
-	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcell.Version())
+	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcellVersion)
 	if err != nil {
 		return err
 	}
 
-	return c.writeAssignStemcellInput(productFileName, stemcell.Version())
+	return c.writeAssignStemcellInput(productFileName, stemcellVersion)
 }
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
@@ -264,6 +270,9 @@ func (c *DownloadProduct) validate() error {
 
 	if c.Options.StemcellHeavy == true && c.Options.StemcellIaas == "" {
 		return fmt.Errorf("--stemcell-heavy requires --stemcell-iaas to be defined")
+	}
+	if c.Options.StemcellVersion != "" && c.Options.StemcellIaas == "" {
+		return fmt.Errorf("--stemcell-version requires --stemcell-iaas to be defined")
 	}
 
 	return nil
