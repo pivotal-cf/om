@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -229,24 +228,6 @@ property_blueprints:
 				Expect(err).ToNot(HaveOccurred())
 				Expect(matches).To(HaveLen(3))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		BeforeEach(func() {
-			command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
-				f := &fakes.MetadataProvider{}
-				f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-				return f
-			})
-		})
-
-		It("returns usage information for the command", func() {
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "**EXPERIMENTAL** this command generates a product configuration template from a .pivotal file on Pivnet",
-				ShortDescription: "**EXPERIMENTAL** generates a config template from a Pivnet product",
-				Flags:            command.Options,
-			}))
 		})
 	})
 

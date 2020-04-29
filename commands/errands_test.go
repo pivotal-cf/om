@@ -3,7 +3,6 @@ package commands_test
 import (
 	"errors"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -112,17 +111,6 @@ var _ = Describe("Errands", func() {
 					Expect(err).To(MatchError("could not parse errands flags: missing required flag \"--product-name\""))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewErrands(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command lists all errands for a product.",
-				ShortDescription: "list errands for a product",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

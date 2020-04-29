@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 
@@ -70,17 +69,6 @@ var _ = Describe("ExportInstallation", func() {
 				err := command.Execute([]string{"--output-file", "/some/path"})
 				Expect(err).To(MatchError("failed to export installation: some error"))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewExportInstallation(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command will export the current installation of the target Ops Manager.",
-				ShortDescription: "exports the installation of the target Ops Manager",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

@@ -3,7 +3,6 @@ package commands_test
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -81,18 +80,6 @@ var _ = Describe("SslCertificate", func() {
 				err := sslCertificate.Execute([]string{})
 				Expect(err).To(MatchError("could not get custom certificate"))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage", func() {
-			usage := sslCertificate.Usage()
-
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command gets certificate applied to Ops Manager",
-				ShortDescription: "gets certificate applied to Ops Manager",
-				Flags:            usage.Flags,
-			}))
 		})
 	})
 })

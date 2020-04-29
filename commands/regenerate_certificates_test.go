@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -32,16 +31,6 @@ var _ = Describe("RegenerateCertificates", func() {
 			Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
 			format, content := fakeLogger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Certificates regenerated.\n"))
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
-				ShortDescription: "deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
-			}))
 		})
 	})
 })

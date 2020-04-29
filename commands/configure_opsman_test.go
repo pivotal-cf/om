@@ -4,7 +4,6 @@ import (
 	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -382,18 +381,6 @@ syslog-settings:
 				Expect(err.Error()).To(ContainSubstring("some error"))
 
 				Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(1))
-			})
-
-		})
-
-		Describe("Usage", func() {
-			It("returns usage info", func() {
-				usage := command.Usage()
-				Expect(usage).To(Equal(jhanda.Usage{
-					Description:      "This authenticated command configures settings available on the \"Settings\" page in the Ops Manager UI. For an example config, reference the docs directory for this command.",
-					ShortDescription: "configures values present on the Ops Manager settings page",
-					Flags:            command.Options,
-				}))
 			})
 		})
 	})

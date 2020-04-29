@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -408,17 +407,6 @@ var _ = Describe("ImportInstallation", func() {
 				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("failed to import installation: some installation error"))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewImportInstallation(nil, nil, "", nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
-				ShortDescription: "imports a given installation to the Ops Manager targeted",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

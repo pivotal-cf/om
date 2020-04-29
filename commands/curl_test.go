@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -272,17 +271,6 @@ var _ = Describe("Curl", func() {
 					Expect(err).To(MatchError("server responded with an error"))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns the usage information for the curl command", func() {
-			command := commands.NewCurl(nil, nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command issues an authenticated API request as defined in the arguments",
-				ShortDescription: "issues an authenticated API request",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

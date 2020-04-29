@@ -2,7 +2,6 @@ package commands_test
 
 import (
 	"errors"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"io/ioutil"
@@ -163,17 +162,6 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 		It("returns an error if there is no --type provided", func() {
 			err := command.Execute([]string{})
 			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewDisableDirectorVerifiers(nil, nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command disables director verifiers",
-				ShortDescription: "disables director verifiers",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

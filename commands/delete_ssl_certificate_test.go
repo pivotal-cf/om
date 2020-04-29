@@ -6,7 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -53,17 +52,6 @@ var _ = Describe("DeleteSSLCertificate", func() {
 					Expect(err).To(MatchError("could not parse delete-ssl-certificate flags: flag provided but not defined: -badflag"))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command deletes a custom certificate applied to Ops Manager and reverts to the auto-generated cert",
-				ShortDescription: "deletes certificate applied to Ops Manager",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

@@ -9,7 +9,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -241,17 +240,6 @@ var _ = Describe("CreateVMExtension", func() {
 				})
 			})
 
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewCreateVMExtension(nil, nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This creates/updates a VM extension",
-				ShortDescription: "creates/updates a VM extension",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

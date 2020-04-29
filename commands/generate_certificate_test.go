@@ -7,7 +7,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -82,17 +81,6 @@ var _ = Describe("GenerateCertificate", func() {
 				format, content := fakeLogger.PrintfArgsForCall(0)
 				Expect(fmt.Sprintf(format, content...)).To(Equal(`["*.apps.example.com,*.sys.example.com,opsmanager.example.com,*.login.sys.example.com,*.uaa.sys.example.com"]`))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command generates a new RSA public/private certificate signed by Ops Manager’s root CA certificate",
-				ShortDescription: "generates a new certificate signed by Ops Manager's root CA",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

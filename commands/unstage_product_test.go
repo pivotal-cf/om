@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -72,16 +71,5 @@ var _ = Describe("UnstageProduct", func() {
 			})
 		})
 
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewUnstageProduct(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command attempts to unstage a product from the Ops Manager",
-				ShortDescription: "unstages a given product from the Ops Manager targeted",
-				Flags:            command.Options,
-			}))
-		})
 	})
 })

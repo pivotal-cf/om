@@ -3,7 +3,6 @@ package commands_test
 import (
 	"errors"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -82,17 +81,6 @@ key: value
 				})
 				Expect(err).To(MatchError(ContainSubstring("failed to fetch product manifest: product manifest failed")))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command prints the staged manifest for a product",
-				ShortDescription: "prints the staged manifest for a product",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

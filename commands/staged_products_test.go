@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -81,17 +80,6 @@ var _ = Describe("StagedProducts", func() {
 					Expect(err).To(MatchError("could not parse staged-products flags: flag provided but not defined: -unknown-flag"))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewStagedProducts(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command lists all staged products.",
-				ShortDescription: "lists staged products",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

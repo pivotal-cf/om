@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -77,17 +76,6 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 				err := command.Execute([]string{})
 				Expect(err).To(MatchError("failed to generate certificate"))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command generates a certificate authority on the Ops Manager",
-				ShortDescription: "generates a certificate authority on the Opsman",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

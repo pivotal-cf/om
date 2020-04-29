@@ -4,7 +4,6 @@ import (
 	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -58,17 +57,6 @@ var _ = Describe("DiagnosticReport", func() {
 				err := command.Execute([]string{"--unknown-flag"})
 				Expect(err).To(MatchError("could not parse diagnostic-report flags: flag provided but not defined: -unknown-flag"))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewDiagnosticReport(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "retrieve a diagnostic report with general information about the state of your Ops Manager.",
-				ShortDescription: "reports current state of your Ops Manager",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -82,17 +81,6 @@ var _ = Describe("DeployedProducts", func() {
 					Expect(err).To(MatchError("failed to retrieve deployed products beep boop"))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewDeployedProducts(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command lists all deployed products.",
-				ShortDescription: "lists deployed products",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

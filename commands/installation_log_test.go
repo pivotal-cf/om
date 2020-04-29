@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -65,17 +64,6 @@ var _ = Describe("InstallationLog", func() {
 					Expect(err).To(MatchError("failed to retrieve installation log"))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewInstallationLog(nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command retrieves the logs for a given installation.",
-				ShortDescription: "output installation logs",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

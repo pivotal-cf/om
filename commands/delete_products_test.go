@@ -3,7 +3,6 @@ package commands_test
 import (
 	"errors"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -65,17 +64,6 @@ var _ = Describe("DeleteProduct", func() {
 					Expect(err).To(MatchError("could not parse delete-product flags: missing required flag \"--product-version\""))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns the usage", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This command deletes the specified unused product from the targeted Ops Manager",
-				ShortDescription: "deletes an unused product from the Ops Manager",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

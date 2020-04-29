@@ -174,16 +174,6 @@ var _ = Describe("Help", func() {
 			})
 		})
 	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			help := commands.NewHelp(nil, "", jhanda.CommandSet{})
-			Expect(help.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This command prints helpful usage information.",
-				ShortDescription: "prints this usage information",
-			}))
-		})
-	})
 })
 
 type fakeCommand struct {

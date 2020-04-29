@@ -3,7 +3,6 @@ package commands_test
 import (
 	"errors"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -214,17 +213,6 @@ var _ = Describe("Credentials", func() {
 					Expect(err).To(MatchError(ContainSubstring(`credential field "missing-field" not found`)))
 				})
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage information for the command", func() {
-			command := commands.NewCredentials(nil, nil, nil)
-			Expect(command.Usage()).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command fetches credentials for deployed products.",
-				ShortDescription: "fetch credentials for a deployed product",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })

@@ -3,7 +3,6 @@ package commands_test
 import (
 	"errors"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -90,17 +89,6 @@ key: value
 				})
 				Expect(err).To(MatchError(ContainSubstring("manifest could not be retrieved")))
 			})
-		})
-	})
-
-	Describe("Usage", func() {
-		It("returns usage info", func() {
-			usage := command.Usage()
-			Expect(usage).To(Equal(jhanda.Usage{
-				Description:      "This authenticated command prints the deployed manifest for a product",
-				ShortDescription: "prints the deployed manifest for a product",
-				Flags:            command.Options,
-			}))
 		})
 	})
 })
