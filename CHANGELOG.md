@@ -47,6 +47,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 4.8.0
+
+### Features
+- `download-product` now supports defining a custom `stemcell-version` in the config file.
+  This flag is `--stemcell-version`, and requires `--stemcell-iaas` to be set.
+  If `--stemcell-version` is not set, but `stemcell-iaas` is set,
+  the command will download the latest stemcell for the product.
+
 ## 4.7.0
 
 ### Features
