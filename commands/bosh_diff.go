@@ -2,10 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/pivotal-cf/om/api"
 	"sort"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/pivotal-cf/om/api"
 
 	"github.com/pivotal-cf/jhanda"
 )
@@ -16,6 +17,7 @@ type BoshDiff struct {
 	Options struct {
 		Product  []string `long:"product-name" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
 		Director bool     `long:"director" short:"d" description:"Include director diffs. Can be combined with --product-name."`
+		Check    bool     `long:"check" description:"Exit 1 if there are any differences. Useful for validating that Ops Manager is in a clean state."`
 	}
 }
 
@@ -39,6 +41,7 @@ func (c BoshDiff) Execute(args []string) error {
 	}
 
 	var diffableProducts []string
+	thereAreDiffs := false
 
 	showDirectorAndProducts := !c.Options.Director && len(c.Options.Product) == 0
 
@@ -47,6 +50,7 @@ func (c BoshDiff) Execute(args []string) error {
 		if err != nil {
 			panic(err)
 		}
+		thereAreDiffs = thereAreDiffs || (diff.Manifest.Status != "same")
 		c.logger.Println("## Director Manifest\n")
 		notInstalled := c.printManifestDiff(diff.Manifest)
 		if !notInstalled {
@@ -81,6 +85,7 @@ func (c BoshDiff) Execute(args []string) error {
 			return err
 		}
 
+		thereAreDiffs = thereAreDiffs || (diff.Manifest.Status != "same")
 		c.logger.Printf("## Product Manifest for %s\n\n", product)
 
 		notInstalled := c.printManifestDiff(diff.Manifest)
@@ -90,6 +95,11 @@ func (c BoshDiff) Execute(args []string) error {
 		c.logger.Printf("## Runtime Configs for %s\n\n", product)
 		c.printRuntimeConfigs(diff.RuntimeConfigs)
 	}
+
+	if c.Options.Check && thereAreDiffs {
+		return fmt.Errorf("Differences exist between the staged and deployed versions of the requested products")
+	}
+
 	return nil
 }
 

@@ -2,6 +2,8 @@ package commands_test
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/fatih/color"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -9,7 +11,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"log"
 )
 
 var _ = Describe("BoshDiff", func() {
@@ -84,6 +85,12 @@ var _ = Describe("BoshDiff", func() {
 				Expect(logBuffer).To(gbytes.Say("properties:"))
 				Expect(bufferContents).To(ContainSubstring(color.GreenString("+  property: new-cpi-value")))
 				Expect(bufferContents).To(ContainSubstring(color.RedString("-  property: old-cpi-value")))
+			})
+
+			It("Errors if --check is enabled", func() {
+				diff := commands.NewBoshDiff(service, logger)
+				err = diff.Execute([]string{"--director", "--check"})
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})
@@ -262,6 +269,16 @@ var _ = Describe("BoshDiff", func() {
 			It("says there are no manifest differences and no runtime config diffs", func() {
 				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--product-name", "example-product"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
+			})
+
+			It("does not error if --check is passed", func() {
+				diff := commands.NewBoshDiff(service, logger)
+				err = diff.Execute([]string{"--product-name", "example-product", "--check"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(logBuffer).To(gbytes.Say("## Product Manifest"))
 				Expect(logBuffer).To(gbytes.Say("no changes"))
