@@ -41,7 +41,7 @@ func (c BoshDiff) Execute(args []string) error {
 	}
 
 	var diffableProducts []string
-	thereAreDiffs := false
+	var thereAreDiffs bool
 
 	showDirectorAndProducts := !c.Options.Director && len(c.Options.Product) == 0
 
@@ -50,7 +50,7 @@ func (c BoshDiff) Execute(args []string) error {
 		if err != nil {
 			panic(err)
 		}
-		thereAreDiffs = thereAreDiffs || (diff.Manifest.Status != "same")
+		thereAreDiffs = diff.Manifest.Status != "same"
 		c.logger.Println("## Director Manifest\n")
 		notInstalled := c.printManifestDiff(diff.Manifest)
 		if !notInstalled {
@@ -85,7 +85,7 @@ func (c BoshDiff) Execute(args []string) error {
 			return err
 		}
 
-		thereAreDiffs = thereAreDiffs || (diff.Manifest.Status != "same")
+		thereAreDiffs = diff.Manifest.Status != "same"
 		c.logger.Printf("## Product Manifest for %s\n\n", product)
 
 		notInstalled := c.printManifestDiff(diff.Manifest)
