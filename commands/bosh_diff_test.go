@@ -91,6 +91,7 @@ var _ = Describe("BoshDiff", func() {
 				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{"--director", "--check"})
 				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Differences exist between the staged and deployed versions of the requested products"))
 			})
 		})
 	})
