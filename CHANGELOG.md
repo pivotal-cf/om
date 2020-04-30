@@ -54,6 +54,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This flag is `--stemcell-version`, and requires `--stemcell-iaas` to be set.
   If `--stemcell-version` is not set, but `stemcell-iaas` is set,
   the command will download the latest stemcell for the product.
+- `bosh-diff` now supports the `--check` flag. 
+  If set, the command will fail if there are differences returned.
+  This resolves issue [#488](https://github.com/pivotal-cf/om/issues/488)]
 
 ## 4.7.0
 
