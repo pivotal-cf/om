@@ -57,6 +57,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `bosh-diff` now supports the `--check` flag. 
   If set, the command will fail if there are differences returned.
   This resolves issue [#488](https://github.com/pivotal-cf/om/issues/488)]
+- `stage-product` now accepts a config file to define command line args.
+  This matches patterns for automation available in other commands.
 
 ## 4.7.0
 

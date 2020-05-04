@@ -11,8 +11,9 @@ type StageProduct struct {
 	logger  logger
 	service stageProductService
 	Options struct {
-		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
-		Version string `long:"product-version" short:"v" required:"true" description:"version of product"`
+		ConfigFile string `long:"config"          short:"c"                 description:"path to yml file for configuration (keys must match the following command line flags)"`
+		Product    string `long:"product-name"    short:"p" required:"true" description:"name of product"`
+		Version    string `long:"product-version" short:"v" required:"true" description:"version of product"`
 	}
 }
 
@@ -33,11 +34,12 @@ func NewStageProduct(service stageProductService, logger logger) StageProduct {
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	if _, err := jhanda.Parse(&sp.Options, args); err != nil {
+	err := loadConfigFile(args, &sp.Options, nil)
+	if err != nil {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}
 
-	err := checkRunningInstallation(sp.service.ListInstallations)
+	err = checkRunningInstallation(sp.service.ListInstallations)
 	if err != nil {
 		return err
 	}
