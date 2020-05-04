@@ -415,76 +415,192 @@ var _ = Describe("BoshDiff", func() {
 		})
 	})
 
-	When("no product and director is provided", func() {
-		BeforeEach(func() {
-			service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{{
-				GUID: "p-bosh-guid",
-				Type: "p-bosh",
-			}, {
-				GUID: "example-product-guid",
-				Type: "example-product",
-			}, {
-				GUID: "another-product-guid",
-				Type: "another-product",
-			}}}, nil)
+	When("specific --product and --director are not provided", func() {
+		When("There are changes to the director and product", func() {
+			BeforeEach(func() {
+				service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{{
+					GUID: "p-bosh-guid",
+					Type: "p-bosh",
+				}, {
+					GUID: "example-product-guid",
+					Type: "example-product",
+				}, {
+					GUID: "another-product-guid",
+					Type: "another-product",
+				}}}, nil)
 
-			service.DirectorDiffReturns(
-				api.DirectorDiff{
-					Manifest: api.ManifestDiff{
-						Status: "different",
-						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{},
-					CPIConfigs:     []api.CPIConfigsDiff{},
-				}, nil)
+				service.DirectorDiffReturns(
+					api.DirectorDiff{
+						Manifest: api.ManifestDiff{
+							Status: "different",
+							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{},
+						CPIConfigs:     []api.CPIConfigsDiff{},
+					}, nil)
 
-			service.ProductDiffReturnsOnCall(0,
-				api.ProductDiff{
-					Manifest: api.ManifestDiff{
-						Status: "different",
-						Diff:   " properties:\n+  host: example.com\n-  host: localhost",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{},
-				}, nil)
+				service.ProductDiffReturnsOnCall(0,
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "different",
+							Diff:   " properties:\n+  host: example.com\n-  host: localhost",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{},
+					}, nil)
 
-			service.ProductDiffReturnsOnCall(1,
-				api.ProductDiff{
-					Manifest: api.ManifestDiff{
-						Status: "different",
-						Diff:   " properties:\n+  host: example.net\n-  host: localhost",
-					},
-					RuntimeConfigs: []api.RuntimeConfigsDiff{},
-				}, nil)
+				service.ProductDiffReturnsOnCall(1,
+					api.ProductDiff{
+						Manifest: api.ManifestDiff{
+							Status: "different",
+							Diff:   " properties:\n+  host: example.net\n-  host: localhost",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{},
+					}, nil)
+			})
+
+			It("lists all staged products (alphabetically by name) as well as the director", func() {
+				diff := commands.NewBoshDiff(service, logger)
+				err = diff.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(string(logBuffer.Contents())).NotTo(ContainSubstring("p-bosh"))
+
+				Expect(logBuffer).To(gbytes.Say("## Director Manifest"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
+
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest for another-product"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs for another-product"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
+
+				Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
+				Expect(logBuffer).To(gbytes.Say("properties:"))
+				Expect(logBuffer).To(gbytes.Say("## Runtime Configs for example-product"))
+				Expect(logBuffer).To(gbytes.Say("no changes"))
+			})
 		})
 
-		It("lists all staged products (alphabetically by name) as well as the director", func() {
-			diff := commands.NewBoshDiff(service, logger)
-			err = diff.Execute([]string{})
-			Expect(err).NotTo(HaveOccurred())
+		When("there are changes to the director but not the product", func() {
+			BeforeEach(func() {
+				service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{{
+					GUID: "p-bosh-guid",
+					Type: "p-bosh",
+				}, {
+					GUID: "example-product-guid",
+					Type: "example-product",
+				}, {
+					GUID: "another-product-guid",
+					Type: "another-product",
+				}}}, nil)
+				
+				service.DirectorDiffReturns(
+					api.DirectorDiff{
+						Manifest: api.ManifestDiff{
+							Status: "different",
+							Diff:   " instance_groups:\n - name: bosh\n   properties:\n     hm:\n+      tsdb_enabled: \"<redacted>\"\n+      tsdb:\n+        address: \"<redacted>\"\n+        port: \"<redacted>\"",
+						},
+						CloudConfig: api.ManifestDiff{
+							Status: "different",
+							Diff:   " properties:\n+  property: new-cloud-value\n-  property: old-cloud-value",
+						},
+						RuntimeConfigs: []api.RuntimeConfigsDiff{
+							{
+								Name:   "director_runtime",
+								Status: "different",
+								Diff:   " properties:\n+  property: new-value\n-  property: old-value",
+							},
+						},
+						CPIConfigs: []api.CPIConfigsDiff{
+							{
+								IAASConfigurationName: "director_cpi",
+								Status:                "different",
+								Diff:                  " properties:\n+  property: new-cpi-value\n-  property: old-cpi-value",
+							},
+						},
+					}, nil)
+				service.ProductDiffReturns(api.ProductDiff{
+					Manifest: api.ManifestDiff{
+						Status: "same",
+						Diff:   "",
+					},
+					RuntimeConfigs: []api.RuntimeConfigsDiff{},
+				}, nil)
+			})
 
-			Expect(string(logBuffer.Contents())).NotTo(ContainSubstring("p-bosh"))
+			It("--check prints runtime and manifest configs for the director and the product and exits with 1", func() {
+				//disable color for just this test;
+				//we don't want to try to assemble this whole example with color
+				color.NoColor = true
+				defer func() { color.NoColor = false }()
 
-			Expect(logBuffer).To(gbytes.Say("## Director Manifest"))
-			Expect(logBuffer).To(gbytes.Say("properties:"))
+				diff := commands.NewBoshDiff(service, logger)
+				err = diff.Execute([]string{"--check"})
 
-			Expect(logBuffer).To(gbytes.Say("## Product Manifest for another-product"))
-			Expect(logBuffer).To(gbytes.Say("properties:"))
-			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for another-product"))
-			Expect(logBuffer).To(gbytes.Say("no changes"))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Differences exist between the staged and deployed versions of the requested products"))
+				expectedOutput := `## Director Manifest
 
-			Expect(logBuffer).To(gbytes.Say("## Product Manifest for example-product"))
-			Expect(logBuffer).To(gbytes.Say("properties:"))
-			Expect(logBuffer).To(gbytes.Say("## Runtime Configs for example-product"))
-			Expect(logBuffer).To(gbytes.Say("no changes"))
+ instance_groups:
+ - name: bosh
+   properties:
+     hm:
++      tsdb_enabled: "<redacted>"
++      tsdb:
++        address: "<redacted>"
++        port: "<redacted>"
+
+## Director Cloud Config
+
+ properties:
++  property: new-cloud-value
+-  property: old-cloud-value
+
+## Director Runtime Configs
+
+### director_runtime
+
+ properties:
++  property: new-value
+-  property: old-value
+
+## Director CPI Configs
+
+### director_cpi
+
+ properties:
++  property: new-cpi-value
+-  property: old-cpi-value
+`
+				Expect(string(logBuffer.Contents())).To(ContainSubstring(expectedOutput))
+			})
+		})
+
+		When("there is an error from the DirectorDiff method", func() {
+			It("returns that error", func() {
+				service.ListStagedProductsReturns(api.StagedProductsOutput{Products: []api.StagedProduct{{
+					GUID: "p-bosh-guid",
+					Type: "p-bosh",
+				}, {
+					GUID: "example-product-guid",
+					Type: "example-product",
+				}, {
+					GUID: "another-product-guid",
+					Type: "another-product",
+				}}}, nil)
+				service.DirectorDiffReturns(api.DirectorDiff{}, fmt.Errorf("insufficient cooks"))
+
+				diff := commands.NewBoshDiff(service, logger)
+				err = diff.Execute([]string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("could not discover the director diff: insufficient cooks"))
+			})
 		})
 
 		When("there is an error from the ListStagedProducts method", func() {
 			It("returns that error", func() {
-				// setup
 				service.ListStagedProductsReturns(
 					api.StagedProductsOutput{}, fmt.Errorf("insufficient cooks"))
 
-				// execute
 				diff := commands.NewBoshDiff(service, logger)
 				err = diff.Execute([]string{""})
 				Expect(err).To(HaveOccurred())

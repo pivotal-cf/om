@@ -48,7 +48,7 @@ func (c BoshDiff) Execute(args []string) error {
 	if c.Options.Director || showDirectorAndProducts {
 		diff, err := c.service.DirectorDiff()
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("could not discover the director diff: %s", err)
 		}
 		thereAreDiffs = diff.Manifest.Status != "same"
 		c.logger.Println("## Director Manifest\n")
@@ -85,7 +85,7 @@ func (c BoshDiff) Execute(args []string) error {
 			return err
 		}
 
-		thereAreDiffs = diff.Manifest.Status != "same"
+		thereAreDiffs = thereAreDiffs || (diff.Manifest.Status != "same")
 		c.logger.Printf("## Product Manifest for %s\n\n", product)
 
 		notInstalled := c.printManifestDiff(diff.Manifest)
