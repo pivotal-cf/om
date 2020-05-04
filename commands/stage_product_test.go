@@ -147,102 +147,99 @@ var _ = Describe("StageProduct", func() {
 		})
 	})
 
-	Context("failure cases", func() {
-		When("an unknown flag is provided", func() {
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-				err := command.Execute([]string{"--badflag"})
-				Expect(err).To(MatchError("could not parse stage-product flags: flag provided but not defined: -badflag"))
-			})
+	When("an unknown flag is provided", func() {
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+			err := command.Execute([]string{"--badflag"})
+			Expect(err).To(MatchError("could not parse stage-product flags: flag provided but not defined: -badflag"))
+		})
+	})
+
+	When("the product-name flag is not provided", func() {
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+			err := command.Execute([]string{"--product-version", "1.0"})
+			Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-name\""))
+		})
+	})
+
+	When("the product-version flag is not provided", func() {
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+			err := command.Execute([]string{"--product-name", "some-product"})
+			Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-version\""))
+		})
+	})
+
+	When("the product is not available", func() {
+		BeforeEach(func() {
+			fakeService.CheckProductAvailabilityReturns(false, nil)
 		})
 
-		When("the product-name flag is not provided", func() {
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-				err := command.Execute([]string{"--product-version", "1.0"})
-				Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-name\""))
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--product-version", "some-version",
 			})
+			Expect(err).To(MatchError(ContainSubstring("failed to stage product: cannot find product")))
+		})
+	})
+
+	When("the product availability cannot be determined", func() {
+		BeforeEach(func() {
+			fakeService.CheckProductAvailabilityReturns(false, errors.New("failed to check availability"))
 		})
 
-		When("the product-version flag is not provided", func() {
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-				err := command.Execute([]string{"--product-name", "some-product"})
-				Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-version\""))
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--product-version", "some-version",
 			})
+			Expect(err).To(MatchError(ContainSubstring("failed to stage product: cannot check availability")))
+		})
+	})
+
+	When("the product cannot be staged", func() {
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+			fakeService.CheckProductAvailabilityReturns(true, nil)
+			fakeService.StageReturns(errors.New("some product error"))
+
+			err := command.Execute([]string{"--product-name", "some-product", "--product-version", "some-version"})
+			Expect(err).To(MatchError("failed to stage product: some product error"))
+		})
+	})
+
+	When("the diagnostic report cannot be fetched", func() {
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+			fakeService.CheckProductAvailabilityReturns(true, nil)
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("bad diagnostic report"))
+
+			err := command.Execute([]string{"--product-name", "some-product", "--product-version", "some-version"})
+			Expect(err).To(MatchError("failed to stage product: bad diagnostic report"))
+		})
+	})
+
+	When("the deployed products cannot be fetched", func() {
+		BeforeEach(func() {
+			fakeService.ListDeployedProductsReturns(
+				[]api.DeployedProductOutput{},
+				errors.New("could not fetch deployed products"))
 		})
 
-		When("the product is not available", func() {
-			BeforeEach(func() {
-				fakeService.CheckProductAvailabilityReturns(false, nil)
-			})
+		It("returns an error", func() {
+			command := commands.NewStageProduct(fakeService, logger)
 
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-					"--product-version", "some-version",
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to stage product: cannot find product")))
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--product-version", "some-version",
 			})
+			Expect(err).To(MatchError(ContainSubstring("failed to stage product: could not fetch deployed products")))
 		})
-
-		When("the product availability cannot be determined", func() {
-			BeforeEach(func() {
-				fakeService.CheckProductAvailabilityReturns(false, errors.New("failed to check availability"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-					"--product-version", "some-version",
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to stage product: cannot check availability")))
-			})
-		})
-
-		When("the product cannot be staged", func() {
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-				fakeService.CheckProductAvailabilityReturns(true, nil)
-				fakeService.StageReturns(errors.New("some product error"))
-
-				err := command.Execute([]string{"--product-name", "some-product", "--product-version", "some-version"})
-				Expect(err).To(MatchError("failed to stage product: some product error"))
-			})
-		})
-
-		When("the diagnostic report cannot be fetched", func() {
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-				fakeService.CheckProductAvailabilityReturns(true, nil)
-				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("bad diagnostic report"))
-
-				err := command.Execute([]string{"--product-name", "some-product", "--product-version", "some-version"})
-				Expect(err).To(MatchError("failed to stage product: bad diagnostic report"))
-			})
-		})
-
-		When("the deployed products cannot be fetched", func() {
-			BeforeEach(func() {
-				fakeService.ListDeployedProductsReturns(
-					[]api.DeployedProductOutput{},
-					errors.New("could not fetch deployed products"))
-			})
-
-			It("returns an error", func() {
-				command := commands.NewStageProduct(fakeService, logger)
-
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-					"--product-version", "some-version",
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to stage product: could not fetch deployed products")))
-			})
-		})
-
 	})
 })
