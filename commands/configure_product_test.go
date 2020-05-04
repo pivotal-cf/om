@@ -582,6 +582,32 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
+		When("product-version is provided in the config", func() {
+			BeforeEach(func() {
+				config = fmt.Sprintf(`{
+					"product-name": "cf", 
+					"product-properties": %s,
+					"product-version": 1.2.3
+				}`, productProperties)
+			})
+			
+			It("does not return an error", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+				service.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+						{GUID: "not-the-guid-you-are-looking-for", Type: "something-else"},
+					},
+				}, nil)
+
+				err := client.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
 		When("an error occurs", func() {
 			BeforeEach(func() {
 				config = `{"product-name": "cf"}`

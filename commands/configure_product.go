@@ -354,11 +354,18 @@ func (cp ConfigureProduct) validateConfig(cfg configureProduct) error {
 	if len(cfg.Field) > 0 {
 		var unrecognizedKeys []string
 		for key := range cfg.Field {
+			if key == "product-version" {
+				continue
+			}
+
 			unrecognizedKeys = append(unrecognizedKeys, key)
 		}
-		sort.Strings(unrecognizedKeys)
 
-		return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
+		sort.Strings(unrecognizedKeys)
+		if len(unrecognizedKeys) > 0 {
+			sort.Strings(unrecognizedKeys)
+			return fmt.Errorf("the config file contains unrecognized keys: %s", strings.Join(unrecognizedKeys, ", "))
+		}
 	}
 	return nil
 }
