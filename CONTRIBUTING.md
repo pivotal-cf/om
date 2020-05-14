@@ -86,6 +86,17 @@ Counterfeiter needs to be pinned to commit `f7bde7cbdb1288611466a0d715b1bbc95651
 
 To generate fakes for all files in a directory, run `go generate ./...`
 
+## Documentation
+
+Much of `om`'s documentation is automatically generated.
+If you make any changes to any of the task flags, or need to elaborate on how to use a new feature,
+be sure to run [`docsgenerator`](https://github.com/pivotal-cf/om/tree/master/docsgenerator) 
+before submitting your PR.
+
+
+NOTE: With any significant change in behavior to `om` that should be noted in
+the next release's release notes, you should also add a note to [CHANGELOG.md](./CHANGELOG.md).
+
 ## Contibuting your changes
 
 1. When you have a set of changes to contribute back to `om`, create a pull
