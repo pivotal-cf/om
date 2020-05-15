@@ -110,6 +110,26 @@ var _ = Describe("global flags", func() {
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
 	})
+
+	It("takes precedence over env file", func() {
+		server := testServer(true)
+
+		command := exec.Command(pathToMain,
+			"--env", writeFile(`target: incorrect-server-url`),
+			"--username", "some-env-provided-username",
+			"--password", "some-env-provided-password",
+			"--target", server.URL,
+			"--skip-ssl-validation",
+			"curl",
+			"-p", "/api/v0/available_products",
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+		Expect(string(session.Out.Contents())).To(MatchJSON(`[ { "name": "p-bosh", "product_version": "999.99" } ]`))
+	})
 })
 
 func writeFile(contents string) string {
