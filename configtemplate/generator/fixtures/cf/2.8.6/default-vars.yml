@@ -62,8 +62,7 @@ mysql_proxy_startup_delay: 0
 mysql_remote_admin_access: false
 networkpolicyserver_database_max_open_connections: 200
 networkpolicyserverinternal_database_max_open_connections: 200
-nfs_server_blobstore_internal_access_rules: allow 10.0.0.0/8;,allow 172.16.0.0/12;,allow
-  192.168.0.0/16;
+nfs_server_blobstore_internal_access_rules: allow 10.0.0.0/8;,allow 172.16.0.0/12;,allow 192.168.0.0/16;
 push_apps_manager_app_poll_interval: 10
 push_apps_manager_currency_lookup: '{ "usd": "$", "eur": "€" }'
 push_apps_manager_display_plan_prices: false
