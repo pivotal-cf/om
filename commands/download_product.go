@@ -70,7 +70,6 @@ type DownloadProductOptions struct {
 	AzureStorageAccount string `long:"azure-storage-account" description:"the name of the storage account where the container exists"`
 	AzureKey            string `long:"azure-storage-key"     description:"the access key for the storage account"`
 
-	DeprecatedStemcell bool   `long:"download-stemcell" description:"**DEPRECATED**: no-op for backwards compatibility"`
 	StemcellIaas       string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
 	StemcellVersion    string `long:"stemcell-version" description:"the version number of the stemcell to download (ie 458.61)"`
 	StemcellHeavy      bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`

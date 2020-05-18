@@ -19,20 +19,14 @@ type ProductMetadata struct {
 		ProductName    bool   `long:"product-name"  description:"show product name"`
 		ProductVersion bool   `long:"product-version"  description:"show product version"`
 	}
-
-	deprecatedCommandName bool
 }
 
 func NewProductMetadata(stdout logger) ProductMetadata {
-	return newProductMetadata(stdout, false)
+	return newProductMetadata(stdout)
 }
 
-func NewDeprecatedProductMetadata(stdout logger) ProductMetadata {
-	return newProductMetadata(stdout, true)
-}
-
-func newProductMetadata(stdout logger, deprecated bool) ProductMetadata {
-	return ProductMetadata{stdout: stdout, deprecatedCommandName: deprecated}
+func newProductMetadata(stdout logger) ProductMetadata {
+	return ProductMetadata{stdout: stdout}
 }
 
 func (t ProductMetadata) Execute(args []string) error {
@@ -65,11 +59,6 @@ func (t ProductMetadata) Usage() jhanda.Usage {
 		Description:      "This command prints metadata about the given product",
 		ShortDescription: "prints product metadata",
 		Flags:            t.Options,
-	}
-
-	if t.deprecatedCommandName {
-		usage.Description = fmt.Sprintf("***DEPRECATED*** use 'product-metadata' instead\n%s", usage.Description)
-		usage.ShortDescription = fmt.Sprintf("**DEPRECATED** %s. Use product-metadata instead", usage.ShortDescription)
 	}
 
 	return usage

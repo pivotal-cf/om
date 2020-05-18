@@ -47,6 +47,16 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 5.0.0
+
+### Breaking Changes
+- Removed deprecated `tile-metadata` command.
+  Please use `product-metadata` command.
+- Removed deprecated `update-ssl-certificate` command.
+  Please use `configure-opsman` command.
+- Removed depreated `--download-stemcell` flag from `download-product`.
+  If the `--stemcell-iaas` is defined, it will always download the stemcell, and has done so, for a long time.
+
 ## 4.8.0
 
 ### Features
