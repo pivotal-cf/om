@@ -33,6 +33,7 @@ run:
         -p \
         -race \
         -succinct \
+        -nodes 5 \
         -randomizeAllSpecs \
         -randomizeSuites \
         .
