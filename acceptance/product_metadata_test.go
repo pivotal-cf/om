@@ -1,0 +1,69 @@
+package acceptance
+
+import (
+	"archive/zip"
+	"io/ioutil"
+	"os"
+
+	"os/exec"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
+)
+
+var _ = Describe("product-metadata command", func() {
+	var (
+		productFile *os.File
+	)
+
+	BeforeEach(func() {
+		var err error
+		productFile, err = ioutil.TempFile("", "fake-tile")
+		Expect(err).ToNot(HaveOccurred())
+		z := zip.NewWriter(productFile)
+
+		f, err := z.Create("metadata/fake-tile.yml")
+		Expect(err).ToNot(HaveOccurred())
+
+		_, err = f.Write([]byte(`
+name: fake-tile
+product_version: 1.2.3
+`))
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(z.Close()).To(Succeed())
+	})
+
+	AfterEach(func() {
+		Expect(os.RemoveAll(productFile.Name())).To(Succeed())
+	})
+
+	It("shows product name from tile metadata file", func() {
+		command := exec.Command(pathToMain,
+			"product-metadata",
+			"-p", productFile.Name(),
+			"--product-name",
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+		Expect(session.Out.Contents()).To(ContainSubstring("fake-tile"))
+	})
+
+	It("shows product version from tile metadata file", func() {
+		command := exec.Command(pathToMain,
+			"product-metadata",
+			"-p", productFile.Name(),
+			"--product-version",
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session).Should(gexec.Exit(0))
+		Expect(session.Out.Contents()).To(ContainSubstring("1.2.3"))
+	})
+})

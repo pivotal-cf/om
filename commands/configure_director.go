@@ -208,7 +208,7 @@ vmextensions-configuration: {}
 They'll need to be moved to the new 'properties-configuration', with their dashes turn to underscore.
 For example, 'director-configuration' becomes 'director_configuration'.
 
-The new configration file will look like.
+The new configuration file will look like.
 
 az-configuration: {}
 network-assignment: {}
