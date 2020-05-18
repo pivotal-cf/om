@@ -57,6 +57,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - Removed depreated `--download-stemcell` flag from `download-product`.
   If the `--stemcell-iaas` is defined, it will always download the stemcell, and has done so, for a long time.
 
+### Features
+- Everything marked as `**EXPERIMENTAL**` has been promoted to officially supported.
+  - `bosh-diff` command
+  - `config-template` command
+  - `OM_VARS_ENV` global flag
+  - `OM_VARS_ENV` flag under `configure-*-authentication` commands
+
 ## 4.8.0
 
 ### Features

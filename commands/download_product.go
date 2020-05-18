@@ -41,7 +41,7 @@ type DownloadProductOptions struct {
 	Source     string   `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
 	ConfigFile string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
 	OutputDir  string   `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)" experimental:"true"`
+	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
 	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
 	Vars       []string `long:"var"                                  description:"load variable from the command line. Format: VAR=VAL"`
 

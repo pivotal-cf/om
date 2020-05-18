@@ -15,7 +15,7 @@ type ConfigTemplate struct {
 	buildProvider buildProvider
 	Options       struct {
 		ConfigFile string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
-		VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)" experimental:"true"`
+		VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
 		VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
 		Vars       []string `long:"var"                        short:"v" description:"Load variable from the command line. Format: VAR=VAL"`
 
@@ -101,8 +101,8 @@ func (c *ConfigTemplate) newMetadataSource() (metadataSource MetadataProvider) {
 
 func (c *ConfigTemplate) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "**EXPERIMENTAL** this command generates a product configuration template from a .pivotal file on Pivnet",
-		ShortDescription: "**EXPERIMENTAL** generates a config template from a Pivnet product",
+		Description:      "this command generates a product configuration template from a .pivotal file on Pivnet",
+		ShortDescription: "generates a config template from a Pivnet product",
 		Flags:            c.Options,
 	}
 }
