@@ -99,11 +99,13 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 
 	errandsPayload := map[string]ProductErrand{}
 
-	for productName, errandConfig := range errands.Errands {
-		if productGUID, ok := productGuidMapping[productName]; ok {
+	if len(productNames) > 0 { errands.Errands = a.removeErrandsWithoutProductNameFlag(errands.Errands, productNames)}
+
+	for errandProductName, errandConfig := range errands.Errands {
+		if productGUID, ok := productGuidMapping[errandProductName]; ok {
 			errandsPayload[productGUID] = errandConfig
 		} else {
-			return InstallationsServiceOutput{}, fmt.Errorf("failed to fetch product GUID for product: %s", productName)
+			return InstallationsServiceOutput{}, fmt.Errorf("failed to configure errands for product '%s': could not find product on Ops Manager", errandProductName)
 		}
 	}
 
@@ -189,4 +191,23 @@ func (a Api) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
 	}
 
 	return InstallationsServiceOutput{Logs: output.Logs}, nil
+}
+
+func (a *Api) removeErrandsWithoutProductNameFlag(errands map[string]ProductErrand, productFlags []string) map[string]ProductErrand {
+	for productName := range errands {
+		shouldDelete := true
+		for _, flaggedProductName := range productFlags {
+			if productName == flaggedProductName {
+				shouldDelete = false
+			}
+		}
+
+		if shouldDelete {
+			a.logger.Println(fmt.Sprintf("skipping errand configuration for '%v' since it was not provided as a productName flag", productName))
+
+			delete(errands, productName)
+		}
+	}
+
+	return errands
 }

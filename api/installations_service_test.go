@@ -1,7 +1,9 @@
 package api_test
 
 import (
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
+	"log"
 	"net/http"
 	"time"
 
@@ -14,12 +16,19 @@ var _ = Describe("InstallationsService", func() {
 	var (
 		client  *ghttp.Server
 		service api.Api
+		stdout  *gbytes.Buffer
+		logger  *log.Logger
 	)
 
 	BeforeEach(func() {
+		stdout = gbytes.NewBuffer()
+		logger = log.New(stdout, "", 0)
+
 		client = ghttp.NewServer()
+
 		service = api.New(api.ApiInput{
 			Client: httpClient{serverURI: client.URL()},
+			Logger: logger,
 		})
 	})
 
@@ -176,64 +185,129 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		When("given the errands", func() {
-			It("sends the errands as a json parameter", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/v0/installations"),
-						ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
-						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
-					),
-				)
+		FWhen("given the errands", func() {
+			When("product names are passed", func() {
+				It("sends the errands as a json parameter", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid1"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+						),
+					)
 
-				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
-					Errands: map[string]api.ProductErrand{
-						"product1": {
-							RunPostDeploy: map[string]interface{}{
-								"errand1": "default",
+					output, err := service.CreateInstallation(false, true, []string{"product1"}, api.ApplyErrandChanges{
+						Errands: map[string]api.ProductErrand{
+							"product1": {
+								RunPostDeploy: map[string]interface{}{
+									"errand1": "default",
+								},
 							},
 						},
-					},
+					})
+					Expect(err).ToNot(HaveOccurred())
+					Expect(output.ID).To(Equal(1))
 				})
-				Expect(err).ToNot(HaveOccurred())
-				Expect(output.ID).To(Equal(1))
+
+				It("returns an error if the product name is not found", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}, {"guid": "guid3", "type": "product3"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}, {"guid": "guid3", "type": "product3"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"]}`),
+							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
+						Errands: map[string]api.ProductErrand{
+							"product3": {
+								RunPostDeploy: map[string]interface{}{
+									"errand1": "default",
+								},
+							},
+						},
+					})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(stdout).To(gbytes.Say("skipping errand configuration for 'product3' since it was not provided as a productName flag"))
+				})
 			})
+			When("product names are not passed", func() {
+				It("sends the errands as a json parameter if the product exists on the ops manager", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": "all", "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+						),
+					)
 
-			It("returns an error if the product guid is not found", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/v0/installations"),
-						ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
-						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
-					),
-				)
-
-				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
-					Errands: map[string]api.ProductErrand{
-						"product3": {
-							RunPostDeploy: map[string]interface{}{
-								"errand1": "default",
+					output, err := service.CreateInstallation(false, true, []string{}, api.ApplyErrandChanges{
+						Errands: map[string]api.ProductErrand{
+							"product1": {
+								RunPostDeploy: map[string]interface{}{
+									"errand1": "default",
+								},
 							},
 						},
-					},
+					})
+					Expect(err).ToNot(HaveOccurred())
+					Expect(output.ID).To(Equal(1))
 				})
-				Expect(err).To(MatchError("failed to fetch product GUID for product: product3"))
+
+				It("errors if the product does not exist on the ops manager", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, []string{}, api.ApplyErrandChanges{
+						Errands: map[string]api.ProductErrand{
+							"product1": {
+								RunPostDeploy: map[string]interface{}{
+									"errand1": "default",
+								},
+							},
+						},
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(ContainSubstring("failed to configure errands for product 'product1': could not find product on Ops Manager")))
+				})
 			})
 		})
 

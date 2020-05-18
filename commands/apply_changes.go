@@ -79,8 +79,6 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	var changedProducts []string
-	deployProducts := !ac.Options.SkipDeployProducts
-
 	if len(ac.Options.ProductNames) > 0 {
 		if ac.Options.SkipDeployProducts {
 			return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
@@ -92,7 +90,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 		if ok, _ := info.VersionAtLeast(2, 2); !ok {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
 		}
-		changedProducts = append(changedProducts, ac.Options.ProductNames...)
+		changedProducts = ac.Options.ProductNames
 	}
 
 	installation, err := ac.service.RunningInstallation()
@@ -164,7 +162,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, deployProducts, changedProducts, errands)
+	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, changedProducts, errands)
 	if err != nil {
 		return fmt.Errorf("installation failed to trigger: %s", err)
 	}
