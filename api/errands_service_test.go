@@ -46,6 +46,41 @@ var _ = Describe("ErrandsService", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		When("a provided errand does not exist for the product", func() {
+			FIt("returns a list of available errands for the product", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-id/errands"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"errands": [
+								{"post_deploy":"true","name":"first-errand"},
+								{"post_deploy":"false","name":"second-errand"},
+								{"pre_delete":"true","name":"third-errand"}
+							]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-id/errands"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+						"errands": [{
+							"name": "some-errand",
+							"post_deploy": "when-changed",
+							"pre_delete": false
+						}]
+					}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
+
+				err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "when-changed", false)
+				Expect(err).To(MatchError(ContainSubstring("failed to set errand state: provided errands were not in list of available errands: errands available are:")))
+				Expect(err).To(MatchError(ContainSubstring("first-errand")))
+				Expect(err).To(MatchError(ContainSubstring("second-errand")))
+				Expect(err).To(MatchError(ContainSubstring("third-errand")))
+			})
+		})
+
 		When("ops manager returns a not-OK response code", func() {
 			It("returns an error", func() {
 				client.AppendHandlers(

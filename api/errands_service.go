@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 type Errand struct {
@@ -16,6 +17,15 @@ type ErrandsListOutput struct {
 	Errands []Errand `json:"errands"`
 }
 
+func (e *ErrandsListOutput) toString() string {
+	var output []string
+	for _, errand := range e.Errands {
+		output = append(output, errand.Name)
+	}
+
+	return strings.Join(output, "\n")
+}
+
 func (a Api) UpdateStagedProductErrands(productID string, errandName string, postDeployState interface{}, preDeleteState interface{}) error {
 	errandsListOutput := ErrandsListOutput{
 		Errands: []Errand{
@@ -26,9 +36,29 @@ func (a Api) UpdateStagedProductErrands(productID string, errandName string, pos
 			},
 		},
 	}
+
 	payload, err := json.Marshal(errandsListOutput)
 	if err != nil {
 		return err // not tested
+	}
+
+	opsmanErrands, err := a.ListStagedProductErrands(productID)
+	if err != nil {
+		return err
+	}
+
+	for _, errand := range errandsListOutput.Errands {
+		var errandMatch bool
+		for _, opsmanErrand := range opsmanErrands.Errands {
+			if errand.Name == opsmanErrand.Name {
+				errandMatch = true
+				break
+			}
+		}
+
+		if !errandMatch {
+			return fmt.Errorf("failed to set errand state: provided errands were not in list of available errands: errands available are:\n%s", opsmanErrands.toString())
+		}
 	}
 
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
