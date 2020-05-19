@@ -58,7 +58,7 @@ var _ = Describe("StageProduct", func() {
 		format, v = logger.PrintfArgsForCall(1)
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished staging"))
 	})
-	
+
 	When("--config is provided", func() {
 		It("stages a product", func() {
 			config := `---
@@ -68,7 +68,7 @@ product-version: some-version`
 			configFile, err := ioutil.TempFile("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())
 			defer configFile.Close()
-			
+
 			fakeService.CheckProductAvailabilityReturns(true, nil)
 
 			command := commands.NewStageProduct(fakeService, logger)

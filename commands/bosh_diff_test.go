@@ -492,7 +492,7 @@ var _ = Describe("BoshDiff", func() {
 					GUID: "another-product-guid",
 					Type: "another-product",
 				}}}, nil)
-				
+
 				service.DirectorDiffReturns(
 					api.DirectorDiff{
 						Manifest: api.ManifestDiff{

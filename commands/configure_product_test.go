@@ -590,7 +590,7 @@ var _ = Describe("ConfigureProduct", func() {
 					"product-version": 1.2.3
 				}`, productProperties)
 			})
-			
+
 			It("does not return an error", func() {
 				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 

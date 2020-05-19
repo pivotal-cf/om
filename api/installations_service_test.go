@@ -185,7 +185,7 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
-		FWhen("given the errands", func() {
+		When("given the errands", func() {
 			When("product names are passed", func() {
 				It("sends the errands as a json parameter", func() {
 					client.AppendHandlers(

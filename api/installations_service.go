@@ -99,7 +99,9 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 
 	errandsPayload := map[string]ProductErrand{}
 
-	if len(productNames) > 0 { errands.Errands = a.removeErrandsWithoutProductNameFlag(errands.Errands, productNames)}
+	if len(productNames) > 0 {
+		errands.Errands = a.removeErrandsWithoutProductNameFlag(errands.Errands, productNames)
+	}
 
 	for errandProductName, errandConfig := range errands.Errands {
 		if productGUID, ok := productGuidMapping[errandProductName]; ok {
