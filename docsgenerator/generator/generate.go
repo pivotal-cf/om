@@ -52,39 +52,39 @@ func NewGenerator(templatesDir string, docsDir string, executor executor, stdout
 func (g *Generator) GenerateDocs() error {
 	commandDescriptions, err := g.executor.GetCommandNamesAndDescriptions()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get commands: %s", err)
 	}
 
 	err = g.createTemplateDirs(commandDescriptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create template dirs: %s", err)
 	}
 
 	err = g.cleanupExtraDirs(g.templatesDir, commandDescriptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not clean up template dirs: %s", err)
 	}
 
 	templateDirs, err := g.getDirectoryContents(g.templatesDir, true)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not generate directory contents: %s", err)
 	}
 
 	err = g.writeReadme(commandDescriptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not write readme: %s", err)
 	}
 
 	for _, templateDir := range templateDirs {
 		err = g.writeCommandReadme(templateDir, filepath.Base(templateDir))
 		if err != nil {
-			return err
+			return fmt.Errorf("could not write template dir %s: %s", templateDir, err)
 		}
 	}
 
 	err = g.cleanupExtraDirs(g.docsDir, commandDescriptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not clean up docs dirs: %s", err)
 	}
 
 	return nil

@@ -15,11 +15,11 @@ on a vSphere Ops Manager.
 | [assign-multi-stemcell](assign-multi-stemcell/README.md) | assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+ |
 | [assign-stemcell](assign-stemcell/README.md) | assigns an uploaded stemcell to a product in the targeted Ops Manager |
 | [available-products](available-products/README.md) | list available products |
-| [bosh-diff](bosh-diff/README.md) | **EXPERIMENTAL** displays BOSH manifest diff for the director and products |
+| [bosh-diff](bosh-diff/README.md) | displays BOSH manifest diff for the director and products |
 | [bosh-env](bosh-env/README.md) | prints bosh environment variables |
 | [certificate-authorities](certificate-authorities/README.md) | lists certificates managed by Ops Manager |
 | [certificate-authority](certificate-authority/README.md) | prints requested certificate authority |
-| [config-template](config-template/README.md) | **EXPERIMENTAL** generates a config template from a Pivnet product |
+| [config-template](config-template/README.md) | generates a config template from a Pivnet product |
 | [configure-authentication](configure-authentication/README.md) | configures Ops Manager with an internal userstore and admin user account |
 | [configure-director](configure-director/README.md) | configures the director |
 | [configure-ldap-authentication](configure-ldap-authentication/README.md) | configures Ops Manager with LDAP authentication |
@@ -63,9 +63,7 @@ on a vSphere Ops Manager.
 | [staged-director-config](staged-director-config/README.md) | generates a config from a staged director |
 | [staged-manifest](staged-manifest/README.md) | prints the staged manifest for a product |
 | [staged-products](staged-products/README.md) | lists staged products |
-| [tile-metadata](tile-metadata/README.md) | **DEPRECATED** prints product metadata. Use product-metadata instead |
 | [unstage-product](unstage-product/README.md) | unstages a given product from the Ops Manager targeted |
-| [update-ssl-certificate](update-ssl-certificate/README.md) | **DEPRECATED** updates the SSL Certificate on the Ops Manager. Use configure-opsman instead. |
 | [upload-product](upload-product/README.md) | uploads a given product to the Ops Manager targeted |
 | [upload-stemcell](upload-stemcell/README.md) | uploads a given stemcell to the Ops Manager targeted |
 | [version](version/README.md) | prints the om release version |

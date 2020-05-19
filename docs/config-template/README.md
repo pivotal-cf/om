@@ -3,12 +3,12 @@
 
 # `om config-template`
 
-**EXPERIMENTAL** this command generates a product configuration template from a .pivotal file on Pivnet
+this command generates a product configuration template from a .pivotal file on Pivnet
 
 ## Command Usage
 ```
 
-**EXPERIMENTAL** this command generates a product configuration template from a .pivotal file on Pivnet
+this command generates a product configuration template from a .pivotal file on Pivnet
 
 Usage:
   om [options] config-template [<args>]
@@ -26,7 +26,7 @@ Flags:
   --product-version        string             the version of the product from which to generate a template
   --size-of-collections    int               (default: 10)
   --var, -v                string (variadic)  Load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  **EXPERIMENTAL** load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:
@@ -44,7 +44,7 @@ Global Flags:
   --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
 
 ```
 

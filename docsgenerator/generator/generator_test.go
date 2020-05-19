@@ -357,7 +357,7 @@ var _ = Describe("Generator", func() {
 			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("om commandNames error"))
+			Expect(err).To(MatchError(ContainSubstring("om commandNames error")))
 		})
 	})
 
@@ -383,7 +383,7 @@ var _ = Describe("Generator", func() {
 			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("om description error"))
+			Expect(err).To(MatchError(ContainSubstring("om description error")))
 		})
 	})
 
@@ -404,7 +404,7 @@ var _ = Describe("Generator", func() {
 			gen := generator.NewGenerator(templatesDir, docsDir, ex, GinkgoWriter)
 			err := gen.GenerateDocs()
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("om help error"))
+			Expect(err).To(MatchError(ContainSubstring("om help error")))
 		})
 	})
 })

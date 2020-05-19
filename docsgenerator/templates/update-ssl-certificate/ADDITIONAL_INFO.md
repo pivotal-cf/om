@@ -1,1 +1,0 @@
-<!--- Anything in this file will be appended to the final docs/update-ssl-certificate/README.md file --->

@@ -28,7 +28,7 @@ Flags:
   --saml-rbac-groups-attribute     string (required)  If SAML is specified, please provide the groups attribute for your SAML
   --skip-create-bosh-admin-client  bool               create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false.
   --var, -v                        string (variadic)  load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV          string (variadic)  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-env, OM_VARS_ENV          string (variadic)  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l                  string (variadic)  load variables from a YAML file
 
 Global Flags:
@@ -46,7 +46,7 @@ Global Flags:
   --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
 
 ```
 

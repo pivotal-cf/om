@@ -14,6 +14,7 @@ Usage:
   om [options] stage-product [<args>]
 
 Flags:
+  --config, -c           string             path to yml file for configuration (keys must match the following command line flags)
   --product-name, -p     string (required)  name of product
   --product-version, -v  string (required)  version of product
 
@@ -32,7 +33,7 @@ Global Flags:
   --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
 
 ```
 
