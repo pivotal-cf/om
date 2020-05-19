@@ -64,6 +64,23 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   - `OM_VARS_ENV` global flag
   - `OM_VARS_ENV` flag under `configure-*-authentication` commands
 
+### Bug Fixes
+- `apply-changes --product-name <product> --config config.yml` with errands defined in `config.yml` 
+  that were not in the `product-name` list would fail.
+  An explicit breakdown of how these flags interact:
+  
+  - `apply-changes` with the `product-name` flag(s) defined
+    - `--config config.yml` with different products defined than provided in the `product-name` list:
+      - Succeeds with a warning message, but does not apply the errand, if a product exists in the `config.yml` file, but was not passed in the `product-name` list.
+      - Fails if any products in the `product-name` list also exist in the `config.yml` but do not exist on Ops Manager as staged/installed.
+    - `--config config.yml` has no product defined: succeeds.
+    - `--config config.yml` with same products defined as provided in the `product-name` list: succeeds.
+  - `apply-chages` with NO `product-name` flag(s) defined
+    - `--config config.yml` with different products defined than what exists in Ops Manager: failure.
+      - If applying changes to all products, the products in `config.yml` _must be_ staged/installed.
+    - `--config config.yml` has no product defined: succeeds.
+    - `--config config.yml` with same products defined as what exists in Ops Manager (does not need to include all staged/installed products): succeeds.
+
 ## 4.8.0
 
 ### Features
