@@ -206,7 +206,7 @@ func CreateOpsFileName(propertyKey string) string {
 	return opsFileName
 }
 
-func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata, sizeOfCollections int) (map[string][]Ops, error) {
+func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata, sizeOfCollections int, userSetSizeOfCollections bool) (map[string][]Ops, error) {
 	opsFiles := make(map[string][]Ops)
 	for _, property := range metadata.PropertyInputs() {
 		propertyKey := strings.Replace(property.Reference, ".", "", 1)
@@ -249,13 +249,23 @@ func CreateProductPropertiesOptionalOpsFiles(metadata *Metadata, sizeOfCollectio
 						x = 2
 					}
 
-					for i := x; i <= sizeOfCollections; i++ {
-						opsFiles[fmt.Sprintf("add-%d-%s", i, opsFileName)] = []Ops{
+					if userSetSizeOfCollections {
+						opsFiles[fmt.Sprintf("add-%s", opsFileName)] = []Ops{
 							{
 								Type:  "replace",
 								Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
-								Value: collectionOpsFile(i, propertyKey, propertyMetadata.PropertyBlueprints),
+								Value: collectionOpsFile(sizeOfCollections, propertyKey, propertyMetadata.PropertyBlueprints),
 							},
+						}
+					} else {
+						for i := x; i <= sizeOfCollections; i++ {
+							opsFiles[fmt.Sprintf("add-%d-%s", i, opsFileName)] = []Ops{
+								{
+									Type:  "replace",
+									Path:  fmt.Sprintf("/product-properties/%s?", property.Reference),
+									Value: collectionOpsFile(i, propertyKey, propertyMetadata.PropertyBlueprints),
+								},
+							}
 						}
 					}
 				} else if !propertyMetadata.IsRequired() {

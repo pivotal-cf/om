@@ -80,6 +80,13 @@ func (c *ConfigTemplate) Execute(args []string) error {
 		return err
 	}
 
+	var userSetSizeOfCollections bool
+	for _, arg := range args {
+		if arg == "--size-of-collections" {
+			userSetSizeOfCollections = true
+		}
+	}
+
 	metadataSource := c.newMetadataSource()
 	metadataBytes, err := metadataSource.MetadataBytes()
 	if err != nil {
@@ -92,6 +99,7 @@ func (c *ConfigTemplate) Execute(args []string) error {
 		c.Options.ExcludeVersion,
 		true,
 		c.Options.SizeOfCollections,
+		userSetSizeOfCollections,
 	).Generate()
 }
 

@@ -212,7 +212,7 @@ property_blueprints:
 				Expect(matches).To(HaveLen(10))
 			})
 
-			It("outputs N ops-files when specifying --size-of-collections", func() {
+			It("outputs 1 ops-file per collection when specifying --size-of-collections", func() {
 				tempDir := createOutputDirectory()
 
 				err := command.Execute([]string{
@@ -224,9 +224,22 @@ property_blueprints:
 				})
 				Expect(err).ToNot(HaveOccurred())
 
+				expectedContents := `- type: replace
+  path: /product-properties/.properties.some_property?
+  value:
+    value:
+    - name: ((some_property_0_name))
+    - name: ((some_property_1_name))
+    - name: ((some_property_2_name))
+`
+
+
 				matches, err := filepath.Glob(filepath.Join(tempDir, "example-product", "1.1.1", "optional", "*.yml"))
 				Expect(err).ToNot(HaveOccurred())
-				Expect(matches).To(HaveLen(3))
+				Expect(matches).To(HaveLen(1))
+				contents, err := ioutil.ReadFile(matches[0])
+				Expect(err).ToNot(HaveOccurred())
+				Expect(string(contents)).To(MatchYAML(expectedContents))
 			})
 		})
 	})

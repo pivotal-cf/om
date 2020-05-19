@@ -90,7 +90,7 @@ var _ = Describe("Executor", func() {
 			for _, fixtureFilename := range fixtures {
 				metadataBytes, err := getFileBytes(fixtureFilename)
 				Expect(err).ToNot(HaveOccurred())
-				gen := generator.NewExecutor(metadataBytes, tmpPath, false, true, 10)
+				gen := generator.NewExecutor(metadataBytes, tmpPath, false, true, 10, false)
 				err = gen.Generate()
 				Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("expected %s to be a valid fixture", fixtureFilename))
 			}
@@ -101,7 +101,7 @@ var _ = Describe("Executor", func() {
 
 			metadataBytes, err := getFileBytes("./fixtures/metadata/pks.yml")
 			Expect(err).ToNot(HaveOccurred())
-			gen := generator.NewExecutor(metadataBytes, tmpPath, false, true, 10)
+			gen := generator.NewExecutor(metadataBytes, tmpPath, false, true, 10, false)
 			err = gen.Generate()
 			Expect(err).ToNot(HaveOccurred())
 

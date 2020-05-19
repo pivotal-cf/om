@@ -63,6 +63,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   - `config-template` command
   - `OM_VARS_ENV` global flag
   - `OM_VARS_ENV` flag under `configure-*-authentication` commands
+- The `config-template` command
+  will now generate one ops file for each collection
+  when the `--size-of-collections` flag is provided.
+  The number of elements in each of those ops files
+  is now based on that flag rather than having an ops file
+  for each number up to the `--size-of-collections` value.
+  The default behaviour of `config-template`
+  without the `--size-of-collections` flag remains unchanged.
 
 ### Bug Fixes
 - `apply-changes --product-name <product> --config config.yml` with errands defined in `config.yml` 

@@ -15,15 +15,17 @@ type Executor struct {
 	doNotIncludeProductVersion bool
 	includeErrands             bool
 	sizeOfCollections          int
+	userSetSizeOfCollections   bool
 }
 
-func NewExecutor(metadataBytes []byte, baseDirectory string, doNotIncludeProductVersion, includeErrands bool, sizeOfCollections int) *Executor {
+func NewExecutor(metadataBytes []byte, baseDirectory string, doNotIncludeProductVersion, includeErrands bool, sizeOfCollections int, userSetSizeOfCollections bool) *Executor {
 	return &Executor{
 		metdataBytes:               metadataBytes,
 		baseDirectory:              baseDirectory,
 		doNotIncludeProductVersion: doNotIncludeProductVersion,
 		includeErrands:             includeErrands,
 		sizeOfCollections:          sizeOfCollections,
+		userSetSizeOfCollections:   userSetSizeOfCollections,
 	}
 }
 
@@ -149,7 +151,7 @@ func (e *Executor) Generate() error {
 		}
 	}
 
-	productPropertyOptionalOpsFiles, err := CreateProductPropertiesOptionalOpsFiles(metadata, e.sizeOfCollections)
+	productPropertyOptionalOpsFiles, err := CreateProductPropertiesOptionalOpsFiles(metadata, e.sizeOfCollections, e.userSetSizeOfCollections)
 	if err != nil {
 		return err
 	}
