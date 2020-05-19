@@ -47,7 +47,7 @@ var _ = Describe("ErrandsService", func() {
 		})
 
 		When("a provided errand does not exist for the product", func() {
-			FIt("returns a list of available errands for the product", func() {
+			It("returns a list of available errands for the product", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-id/errands"),

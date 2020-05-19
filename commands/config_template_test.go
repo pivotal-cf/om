@@ -233,7 +233,6 @@ property_blueprints:
     - name: ((some_property_2_name))
 `
 
-
 				matches, err := filepath.Glob(filepath.Join(tempDir, "example-product", "1.1.1", "optional", "*.yml"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(matches).To(HaveLen(1))
