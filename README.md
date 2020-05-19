@@ -115,11 +115,11 @@ Commands:
   assign-multi-stemcell           assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+
   assign-stemcell                 assigns an uploaded stemcell to a product in the targeted Ops Manager
   available-products              list available products
-  bosh-diff                       **EXPERIMENTAL** displays BOSH manifest diff for the director and products
+  bosh-diff                       displays BOSH manifest diff for the director and products
   bosh-env                        prints bosh environment variables
   certificate-authorities         lists certificates managed by Ops Manager
   certificate-authority           prints requested certificate authority
-  config-template                 **EXPERIMENTAL** generates a config template from a Pivnet product
+  config-template                 generates a config template from a Pivnet product
   configure-authentication        configures Ops Manager with an internal userstore and admin user account
   configure-director              configures the director
   configure-ldap-authentication   configures Ops Manager with LDAP authentication
@@ -163,9 +163,7 @@ Commands:
   staged-director-config          generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
   staged-products                 lists staged products
-  tile-metadata                   **DEPRECATED** prints product metadata. Use product-metadata instead
   unstage-product                 unstages a given product from the Ops Manager targeted
-  update-ssl-certificate          **DEPRECATED** updates the SSL Certificate on the Ops Manager. Use configure-opsman instead.
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted
   version                         prints the om release version
@@ -185,6 +183,6 @@ Global Flags:
   --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
   --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
   --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  **EXPERIMENTAL** load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
 
 ```
