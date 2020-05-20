@@ -86,7 +86,7 @@ func (c Interpolate) Execute(args []string) error {
 		return err
 	}
 
-	c.logger.Println(string(bytes))
+	c.logger.Print(string(bytes))
 
 	return nil
 }

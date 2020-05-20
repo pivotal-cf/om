@@ -88,7 +88,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
       - If applying changes to all products, the products in `config.yml` _must be_ staged/installed.
     - `--config config.yml` has no product defined: succeeds.
     - `--config config.yml` with same products defined as what exists in Ops Manager (does not need to include all staged/installed products): succeeds.
-
+- `interpolate` will no longer append a newline to end of the output
 ## 4.8.0
 
 ### Features

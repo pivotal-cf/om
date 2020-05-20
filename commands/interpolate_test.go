@@ -94,7 +94,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
 
@@ -121,7 +121,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
 
@@ -139,7 +139,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: new world"))
 			})
 		})
@@ -154,7 +154,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
 
@@ -168,7 +168,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world\nworld: hello"))
 			})
 
@@ -183,7 +183,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: otherWorld\nworld: hello"))
 			})
 		})
@@ -200,7 +200,7 @@ var _ = Describe("Interpolate", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML(`foo: bar
 hello: world`))
 			})
@@ -219,7 +219,7 @@ hello: world`))
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML(`b`))
 			})
 		})
@@ -235,7 +235,7 @@ hello: world`))
 					})
 					Expect(err).ToNot(HaveOccurred())
 
-					content := logger.PrintlnArgsForCall(0)
+					content := logger.PrintArgsForCall(0)
 					Expect(content[0].(string)).To(MatchYAML(templateWithParameters))
 				})
 			})
@@ -262,7 +262,7 @@ hello: world`))
 			It("uses stdin", func() {
 				err := command.Execute([]string{})
 				Expect(err).ToNot(HaveOccurred())
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: from standard input"))
 			})
 		})
@@ -271,7 +271,7 @@ hello: world`))
 			It("uses stdin", func() {
 				err := command.Execute([]string{"--config", "-"})
 				Expect(err).ToNot(HaveOccurred())
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: from standard input"))
 			})
 		})
@@ -285,7 +285,7 @@ hello: world`))
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				content := logger.PrintlnArgsForCall(0)
+				content := logger.PrintArgsForCall(0)
 				Expect(content[0].(string)).To(MatchYAML("hello: world"))
 			})
 		})
