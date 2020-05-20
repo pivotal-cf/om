@@ -29,6 +29,14 @@ var _ = Describe("ErrandsService", func() {
 		It("sets state for a product's errands", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-id/errands"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"errands": [{
+							"name": "some-errand"
+						}]
+					}`),
+				),
+				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-id/errands"),
 					ghttp.VerifyContentType("application/json"),
 					ghttp.VerifyJSON(`{
@@ -85,7 +93,7 @@ var _ = Describe("ErrandsService", func() {
 			It("returns an error", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-id/errands"),
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-id/errands"),
 						ghttp.RespondWith(http.StatusTeapot, `{}`),
 					),
 				)
@@ -107,7 +115,7 @@ var _ = Describe("ErrandsService", func() {
 				client.Close()
 
 				err := service.UpdateStagedProductErrands("some-product-id", "some-errand", "true", "false")
-				Expect(err).To(MatchError(ContainSubstring("failed to set errand state: could not send api request to PUT /api/v0/staged/products/some-product-id/errands")))
+				Expect(err).To(MatchError(ContainSubstring("could not send api request to GET /api/v0/staged/products/some-product-id/errands")))
 			})
 		})
 	})
