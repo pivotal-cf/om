@@ -16,7 +16,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	currentPath := filepath.Join(homePath, "workspace", "pivotal", "om")
+	currentPath := filepath.Join(homePath, "workspace", "om")
 
 	omPath, err := gexec.Build(filepath.Join(currentPath, "main.go"), "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
 	if err != nil {
