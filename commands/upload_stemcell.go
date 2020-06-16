@@ -21,7 +21,7 @@ type UploadStemcell struct {
 	service   uploadStemcellService
 	Options   struct {
 		ConfigFile string `long:"config"   short:"c"                 description:"path to yml file for configuration (keys must match the following command line flags)"`
-		Stemcell   string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
+		Stemcell   string `long:"stemcell" short:"s" required:"true" description:"path to stemcell (NOTE: use absolute path)"`
 		Force      bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
 		Floating   string `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
 		Shasum     string `long:"shasum"                             description:"shasum of the provided product file to be used for validation"`

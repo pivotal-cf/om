@@ -19,7 +19,7 @@ Flags:
   --floating      string             assigns the stemcell to all compatible products  (default: true)
   --force, -f     bool               upload stemcell even if it already exists on the target Ops Manager
   --shasum        string             shasum of the provided product file to be used for validation
-  --stemcell, -s  string (required)  path to stemcell
+  --stemcell, -s  string (required)  path to stemcell (NOTE: use absolute path)
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
