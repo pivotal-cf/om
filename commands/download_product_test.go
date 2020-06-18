@@ -264,6 +264,33 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 				})
 
+				PWhen("the --stemcell-output-dir flag is passed", func(){
+					var commandArgs []string
+					BeforeEach(func(){
+						tempDir, err := ioutil.TempDir("", "om-tests-")
+						Expect(err).ToNot(HaveOccurred())
+
+						fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+							createTempZipFile(file)
+							return nil
+						}
+
+						commandArgs = []string{
+							"--pivnet-api-token", "token",
+							"--file-glob", "*.pivotal",
+							"--pivnet-product-slug", "elastic-runtime",
+							"--product-version", "2.0.0",
+							"--output-directory", tempDir,
+							"--stemcell-iaas", "google",
+						}
+					})
+
+					It("downloads the stemcell to the specified directory", func(){
+						err = command.Execute(commandArgs)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+
 				It("grabs the latest stemcell for the product that matches the glob", func() {
 					tempDir, err := ioutil.TempDir("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
@@ -413,7 +440,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 			})
 
-			When("the a stemcell cannot be downloaded", func() {
+			When("the stemcell cannot be downloaded", func() {
 				It("returns an error message", func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
