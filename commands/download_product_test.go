@@ -23,7 +23,6 @@ var _ = Describe("DownloadProduct", func() {
 		command     *commands.DownloadProduct
 		environFunc func() []string
 		err         error
-		//file                  *os.File
 		fakeProductDownloader *fakes.ProductDownloader
 		buffer                *gbytes.Buffer
 	)
@@ -48,11 +47,6 @@ var _ = Describe("DownloadProduct", func() {
 			log.New(buffer, "", 0),
 			buffer,
 		)
-	})
-
-	AfterEach(func() {
-		//err := os.Remove(file.Name())
-		//Expect(err).ToNot(HaveOccurred())
 	})
 
 	When("the flags are set correctly", func() {
