@@ -256,6 +256,10 @@ github.com/pivotal-cf/go-pivnet/v4 v4.0.4 h1:qjVpJ9fM6pRsBeBpxumzhfuSC84iF/+Gogf
 github.com/pivotal-cf/go-pivnet/v4 v4.0.4/go.mod h1:Oeom+lR9SwTfshcxHZ3UbYVAFPXtIlryCX28PhbsQ/M=
 github.com/pivotal-cf/jhanda v0.0.0-20191113141013-9cb1997202c0 h1:WPhEbhXWHlWg/V9KMfczQ6vW0ss5o793X28U3B721CU=
 github.com/pivotal-cf/jhanda v0.0.0-20191113141013-9cb1997202c0/go.mod h1:UXciri1Yqno0IdXxEzwMF91nnwYMPoN95goHWxVtWq8=
+github.com/pivotal-cf/jhanda v0.0.0-20200619195448-72e2bfefa251 h1:xJroBGGDGqPo7OQhKL9LKP3AlN2QyDIoEVWz6VPWSkE=
+github.com/pivotal-cf/jhanda v0.0.0-20200619195448-72e2bfefa251/go.mod h1:UXciri1Yqno0IdXxEzwMF91nnwYMPoN95goHWxVtWq8=
+github.com/pivotal-cf/jhanda v0.0.0-20200619200603-9654cf132c02 h1:lB9gSLXT7dY+qy3D/n107A24ku+9gpL1SdzbWS+xDEo=
+github.com/pivotal-cf/jhanda v0.0.0-20200619200603-9654cf132c02/go.mod h1:UXciri1Yqno0IdXxEzwMF91nnwYMPoN95goHWxVtWq8=
 github.com/pivotal-cf/pivnet-cli v1.0.3 h1:itIJ1iWJZKbuIaifr5NHypOo8rhz11G3xMmqCWN4ro4=
 github.com/pivotal-cf/pivnet-cli v1.0.3/go.mod h1:Fq/eZE7xEGF01L3pHfOovpO+zNNJWdcE7BqtYKVU0SM=
 github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd h1:KRN5ZOqeY3MHImYOEVHOVis//2OfRDjsbTSf7f2PmcI=

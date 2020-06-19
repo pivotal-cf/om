@@ -32,16 +32,6 @@ var _ = Describe("config-template command", func() {
 			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
-			var fakePivnetMetadataResponse []byte
-
-			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
-			defer fixtureMetadata.Close()
-
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = fixtureMetadata.Read(fakePivnetMetadataResponse)
-			Expect(err).ToNot(HaveOccurred())
-
 			server = ghttp.NewTLSServer()
 			server.AppendHandlers(
 				ghttp.CombineHandlers(

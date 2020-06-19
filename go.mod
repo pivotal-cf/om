@@ -34,7 +34,7 @@ require (
 	github.com/onsi/gomega v1.10.0
 	github.com/pivotal-cf/go-pivnet v1.0.3
 	github.com/pivotal-cf/go-pivnet/v4 v4.0.4
-	github.com/pivotal-cf/jhanda v0.0.0-20191113141013-9cb1997202c0
+	github.com/pivotal-cf/jhanda v0.0.0-20200619200603-9654cf132c02
 	github.com/pivotal-cf/pivnet-cli v1.0.3
 	github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd
 	github.com/pkg/errors v0.9.1
