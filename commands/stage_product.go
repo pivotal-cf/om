@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -11,9 +12,10 @@ type StageProduct struct {
 	logger  logger
 	service stageProductService
 	Options struct {
-		ConfigFile string `long:"config"          short:"c"                 description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
+
 		Product    string `long:"product-name"    short:"p" required:"true" description:"name of product"`
-		Version    string `long:"product-version" short:"v" required:"true" description:"version of product"`
+		Version    string `long:"product-version"           required:"true" description:"version of product"`
 	}
 }
 
@@ -34,7 +36,7 @@ func NewStageProduct(service stageProductService, logger logger) StageProduct {
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	err := loadConfigFile(args, &sp.Options, nil)
+	err := loadConfigFile(args, &sp.Options, os.Environ)
 	if err != nil {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}

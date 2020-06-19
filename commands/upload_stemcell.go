@@ -20,11 +20,12 @@ type UploadStemcell struct {
 	logger    logger
 	service   uploadStemcellService
 	Options   struct {
-		ConfigFile string `long:"config"   short:"c"                 description:"path to yml file for configuration (keys must match the following command line flags)"`
-		Stemcell   string `long:"stemcell" short:"s" required:"true" description:"path to stemcell (NOTE: use absolute path)"`
-		Force      bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
-		Floating   string `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
-		Shasum     string `long:"shasum"                             description:"shasum of the provided product file to be used for validation"`
+		interpolateConfigFileOptions
+
+		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
+		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`
+		Floating string `long:"floating" default:"true"            description:"assigns the stemcell to all compatible products "`
+		Shasum   string `long:"shasum"                             description:"shasum of the provided product file to be used for validation"`
 	}
 }
 
@@ -60,7 +61,7 @@ func (us UploadStemcell) Usage() jhanda.Usage {
 }
 
 func (us UploadStemcell) Execute(args []string) error {
-	err := loadConfigFile(args, &us.Options, nil)
+	err := loadConfigFile(args, &us.Options, os.Environ)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
 	}

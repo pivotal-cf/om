@@ -13,7 +13,8 @@ type ConfigureSAMLAuthentication struct {
 	logger      logger
 	environFunc func() []string
 	Options     struct {
-		ConfigFile                string   `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
+
 		DecryptionPassphrase      string   `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
 		HTTPProxyURL              string   `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
 		HTTPSProxyURL             string   `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
@@ -24,9 +25,6 @@ type ConfigureSAMLAuthentication struct {
 		RBACGroupsAttribute       string   `long:"saml-rbac-groups-attribute"       required:"true" description:"If SAML is specified, please provide the groups attribute for your SAML"`
 		SkipCreateBoshAdminClient bool     `long:"skip-create-bosh-admin-client"                    description:"create a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. Default is false."`
 		PrecreatedClientSecret    string   `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm, whose secret will be the value provided to this option"`
-		VarsEnv                   []string `long:"vars-env" env:"OM_VARS_ENV"                       description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile                  []string `long:"vars-file"             short:"l"                  description:"load variables from a YAML file"`
-		Vars                      []string `long:"var"                   short:"v"                  description:"load variable from the command line. Format: VAR=VAL"`
 	}
 }
 

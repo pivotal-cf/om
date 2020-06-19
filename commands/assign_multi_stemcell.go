@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"os"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ type AssignMultiStemcell struct {
 	logger  logger
 	service assignMultiStemcellService
 	Options struct {
-		ConfigFile  string   `long:"config"   short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
 		ProductName string   `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
 		Stemcells   []string `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile (ie 'ubuntu-trusty:123.4')" required:"true"`
 	}
@@ -41,7 +42,7 @@ func (as AssignMultiStemcell) Usage() jhanda.Usage {
 }
 
 func (as AssignMultiStemcell) Execute(args []string) error {
-	err := loadConfigFile(args, &as.Options, nil)
+	err := loadConfigFile(args, &as.Options, os.Environ)
 	if err != nil {
 		return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
 	}

@@ -12,7 +12,8 @@ type ConfigureLDAPAuthentication struct {
 	logger      logger
 	environFunc func() []string
 	Options     struct {
-		ConfigFile                string   `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
+
 		DecryptionPassphrase      string   `long:"decryption-passphrase" short:"dp" required:"true" description:"passphrase used to encrypt the installation"`
 		HTTPProxyURL              string   `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`
 		HTTPSProxyURL             string   `long:"https-proxy-url"                                  description:"proxy for outbound HTTPS network traffic"`
@@ -30,9 +31,6 @@ type ConfigureLDAPAuthentication struct {
 		UserSearchFilter          string   `long:"user-search-filter"               required:"true" description:"search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'"`
 		SkipCreateBoshAdminClient bool     `long:"skip-create-bosh-admin-client"                    description:"by default, this command creates a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. This flag skips that."`
 		PrecreatedClientSecret    string   `long:"precreated-client-secret"                         description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
-		VarsEnv                   []string `long:"vars-env" env:"OM_VARS_ENV"                       description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile                  []string `long:"vars-file"             short:"l"                  description:"load variables from a YAML file"`
-		Vars                      []string `long:"var"                   short:"v"                  description:"load variable from the command line. Format: VAR=VAL"`
 	}
 }
 

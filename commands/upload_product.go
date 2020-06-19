@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
@@ -17,7 +18,8 @@ type UploadProduct struct {
 	logger    logger
 	service   uploadProductService
 	Options   struct {
-		ConfigFile      string `long:"config"           short:"c"   description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
+
 		Product         string `long:"product"          short:"p"   description:"path to product" required:"true"`
 		PollingInterval int    `long:"polling-interval" short:"pi"  description:"interval (in seconds) at which to print status" default:"1"`
 		Shasum          string `long:"shasum"                       description:"shasum of the provided product file to be used for validation"`
@@ -55,7 +57,7 @@ func (up UploadProduct) Usage() jhanda.Usage {
 }
 
 func (up UploadProduct) Execute(args []string) error {
-	err := loadConfigFile(args, &up.Options, nil)
+	err := loadConfigFile(args, &up.Options, os.Environ)
 	if err != nil {
 		return fmt.Errorf("could not parse upload-product flags: %s", err)
 	}

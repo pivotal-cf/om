@@ -43,19 +43,16 @@ type PivnetOptions struct {
 	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
 	PivnetHost          string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
 	FileGlob            string `long:"file-glob"             short:"f" alias:"pivnet-file-glob" description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
-	ProductVersion      string `long:"product-version"       short:"v"                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 }
 
 type DownloadProductOptions struct {
-	Source            string   `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
-	ConfigFile        string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
-	OutputDir         string   `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	Source    string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
+	OutputDir string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	StemcellOutputDir string   `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
-	VarsEnv           []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-	VarsFile          []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
-	Vars              []string `long:"var"                                  description:"load variable from the command line. Format: VAR=VAL"`
 
+	interpolateConfigFileOptions
 	PivnetOptions
 
 	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`

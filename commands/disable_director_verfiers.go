@@ -6,6 +6,7 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
+	"os"
 )
 
 type DisableDirectorVerifiers struct {
@@ -13,7 +14,8 @@ type DisableDirectorVerifiers struct {
 	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
-		ConfigFile    string   `long:"config"   short:"c"  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
+
 		VerifierTypes []string `long:"type" short:"t"  description:"verifier types to disable" required:"true"`
 	}
 }
@@ -33,7 +35,7 @@ func NewDisableDirectorVerifiers(presenter presenters.FormattedPresenter, servic
 }
 
 func (dv DisableDirectorVerifiers) Execute(args []string) error {
-	err := loadConfigFile(args, &dv.Options, nil)
+	err := loadConfigFile(args, &dv.Options, os.Environ)
 	if err != nil {
 		return fmt.Errorf("could not parse disable-director-verifiers flags: %s", err)
 	}

@@ -18,7 +18,8 @@ type ImportInstallation struct {
 	service    importInstallationService
 	passphrase string
 	Options    struct {
-		ConfigFile      string `long:"config"                short:"c"                  description:"path to yml file for configuration (keys must match the following command line flags)"`
+		interpolateConfigFileOptions
+
 		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
 		PollingInterval int    `long:"polling-interval"      short:"pi"                 description:"interval (in seconds) to check OpsManager availability" default:"10"`
 	}
@@ -129,7 +130,7 @@ func (ii *ImportInstallation) validate(args []string) error {
 		return fmt.Errorf("the global decryption-passphrase argument is required for this command")
 	}
 
-	err := loadConfigFile(args, &ii.Options, nil)
+	err := loadConfigFile(args, &ii.Options, os.Environ)
 	if err != nil {
 		return fmt.Errorf("could not parse import-installation flags: %s", err)
 	}

@@ -8,16 +8,27 @@ import (
 	"os"
 )
 
+type interpolateOptions struct {
+	ConfigFile        string   `long:"config"       short:"c"     description:"path for file to be interpolated"`
+	VarsEnv           []string `long:"vars-env" env:"OM_VARS_ENV" description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+	VarsFile          []string `long:"vars-file"    short:"l"     description:"load variables from a YAML file"`
+	Vars              []string `long:"var"          short:"v"     description:"load variable from the command line. Format: VAR=VAL"`
+}
+
+type interpolateConfigFileOptions struct {
+	ConfigFile string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
+	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
+	Vars       []string `long:"var"                        short:"v" description:"load variable from the command line. Format: VAR=VAL"`
+}
+
 type Interpolate struct {
 	environFunc func() []string
 	logger      logger
 	input       *os.File
 	Options     struct {
-		ConfigFile        string   `long:"config"       short:"c"     description:"path for file to be interpolated"`
+		interpolateOptions
 		Path              string   `long:"path"                       description:"extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed."`
-		VarsEnv           []string `long:"vars-env" env:"OM_VARS_ENV" description:"load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		VarsFile          []string `long:"vars-file"    short:"l"     description:"load variables from a YAML file"`
-		Vars              []string `long:"var"          short:"v"     description:"load variable from the command line. Format: VAR=VAL"`
 		OpsFile           []string `long:"ops-file"     short:"o"     description:"YAML operations files"`
 		SkipMissingParams bool     `long:"skip-missing" short:"s"     description:"allow skipping missing params"`
 	}

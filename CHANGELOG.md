@@ -47,6 +47,19 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.0.0
+
+### Features
+- With some code refactoring,
+  we've introduced support for `--vars`, `--vars-file`, and `--vars-env`
+  into places it was missing before.
+
+
+### Breaking Changes
+- With some code refactoring,
+  we removed the short form of `-v` for `--product-version`
+  found in `download-product` and `stage-product`.
+
 ## 5.0.0
 
 ### Breaking Changes
