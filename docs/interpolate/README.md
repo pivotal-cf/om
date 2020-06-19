@@ -24,7 +24,7 @@ Flags:
   --path                   string             extract specified value out of the interpolated file (e.g.: /private_key). The rest of the file will not be printed.
   --skip-missing, -s       bool               allow skipping missing params
   --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:

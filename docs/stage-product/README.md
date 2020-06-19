@@ -14,9 +14,12 @@ Usage:
   om [options] stage-product [<args>]
 
 Flags:
-  --config, -c           string             path to yml file for configuration (keys must match the following command line flags)
-  --product-name, -p     string (required)  name of product
-  --product-version, -v  string (required)  version of product
+  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
+  --product-name, -p       string (required)  name of product
+  --product-version        string (required)  version of product
+  --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

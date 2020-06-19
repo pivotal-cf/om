@@ -15,11 +15,11 @@ Usage:
 
 Flags:
   --cloud-properties, -cp  string             cloud properties in JSON format
-  --config, -c             string             path to yml file containing all config fields (see docs/create-vm-extension/README.md for format)
+  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
   --name, -n               string             VM extension name
   --ops-file, -o           string (variadic)  YAML operations file
   --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables (e.g.: 'MY' to load MY_var=value)
+  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:

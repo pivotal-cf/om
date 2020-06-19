@@ -15,9 +15,12 @@ Usage:
   om [options] assign-multi-stemcell [<args>]
 
 Flags:
-  --config, -c    string                       path to yml file for configuration (keys must match the following command line flags)
-  --product, -p   string (required)            name of Ops Manager tile to associate a stemcell to
-  --stemcell, -s  string (required, variadic)  associate a particular stemcell version to a tile (ie 'ubuntu-trusty:123.4')
+  --config, -c             string                       path to yml file for configuration (keys must match the following command line flags)
+  --product, -p            string (required)            name of Ops Manager tile to associate a stemcell to
+  --stemcell, -s           string (required, variadic)  associate a particular stemcell version to a tile (ie 'ubuntu-trusty:123.4')
+  --var, -v                string (variadic)            load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)            load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)            load variables from a YAML file
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

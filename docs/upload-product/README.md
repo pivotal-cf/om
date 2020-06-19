@@ -20,6 +20,9 @@ Flags:
   --product, -p            string (required)  path to product
   --product-version        string             version of the provided product file to be used for validation
   --shasum                 string             shasum of the provided product file to be used for validation
+  --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
+  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
+  --vars-file, -l          string (variadic)  load variables from a YAML file
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
