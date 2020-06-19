@@ -25,7 +25,6 @@ import (
 var _ = Describe("download-product command", func() {
 	When("downloading from Pivnet", func() {
 		var server *ghttp.Server
-		var pathToHTTPSPivnet string
 
 		AfterEach(func() {
 			server.Close()
@@ -48,9 +47,6 @@ var _ = Describe("download-product command", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			server = ghttp.NewTLSServer()
-			pathToHTTPSPivnet, err = gexec.Build("github.com/pivotal-cf/om",
-				"--ldflags", fmt.Sprintf("-X github.com/pivotal-cf/om/download_clients.pivnetHost=%s", server.URL()))
-			Expect(err).ToNot(HaveOccurred())
 
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -125,11 +121,12 @@ var _ = Describe("download-product command", func() {
 		It("downloads the product", func() {
 			tmpDir, err := ioutil.TempDir("", "")
 			Expect(err).ToNot(HaveOccurred())
-			command := exec.Command(pathToHTTPSPivnet, "download-product",
+			command := exec.Command(pathToMain, "download-product",
 				"--pivnet-api-token", "token",
 				"--file-glob", "example-product.pivotal",
 				"--pivnet-product-slug", "example-product",
 				"--pivnet-disable-ssl",
+				"--pivnet-host", server.URL(),
 				"--product-version", "1.10.1",
 				"--output-directory", tmpDir,
 			)

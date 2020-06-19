@@ -35,16 +35,7 @@ type PivnetFilter interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var pivnetHost = pivnet.DefaultHost
-
-func NewPivnetClient(
-	logger pivnetlog.Logger,
-	progressWriter io.Writer,
-	factory PivnetFactory,
-	token string,
-	filter PivnetFilter,
-	skipSSL bool,
-) *pivnetClient {
+func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string, filter PivnetFilter, skipSSL bool, pivnetHost string, ) *pivnetClient {
 	downloader := factory(
 		pivnet.NewAccessTokenOrLegacyToken(
 			token, pivnetHost, skipSSL, userAgent),
@@ -253,14 +244,7 @@ func init() {
 		)
 		pivnetFilter := filter.NewFilter(logger)
 
-		return NewPivnetClient(
-			logger,
-			progressWriter,
-			DefaultPivnetFactory,
-			c.PivnetToken,
-			pivnetFilter,
-			c.PivnetDisableSSL,
-		), nil
+		return NewPivnetClient(logger, progressWriter, DefaultPivnetFactory, c.PivnetToken, pivnetFilter, c.PivnetDisableSSL, c.PivnetHost), nil
 	}
 
 	commands.RegisterProductClient("pivnet", initializer)
