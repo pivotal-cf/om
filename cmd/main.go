@@ -151,6 +151,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	commandSet["bosh-env"] = commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory)
 	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
 	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
+	commandSet["check-product-uploaded"] = commands.NewCheckProductUploaded(api)
 	commandSet["config-template"] = commands.NewConfigTemplate(commands.DefaultProvider())
 	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(os.Environ, api, stdout)
 	commandSet["configure-director"] = commands.NewConfigureDirector(os.Environ, api, stdout)
