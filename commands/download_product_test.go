@@ -4,25 +4,26 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/commands"
-	"github.com/pivotal-cf/om/commands/fakes"
-	"github.com/pivotal-cf/om/validator"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/validator"
 )
 
 var _ = Describe("DownloadProduct", func() {
 	var (
-		command     *commands.DownloadProduct
-		environFunc func() []string
-		err         error
+		command               *commands.DownloadProduct
+		environFunc           func() []string
+		err                   error
 		fakeProductDownloader *fakes.ProductDownloader
 		buffer                *gbytes.Buffer
 	)
@@ -264,33 +265,6 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 				})
 
-				PWhen("the --stemcell-output-dir flag is passed", func(){
-					var commandArgs []string
-					BeforeEach(func(){
-						tempDir, err := ioutil.TempDir("", "om-tests-")
-						Expect(err).ToNot(HaveOccurred())
-
-						fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
-							createTempZipFile(file)
-							return nil
-						}
-
-						commandArgs = []string{
-							"--pivnet-api-token", "token",
-							"--file-glob", "*.pivotal",
-							"--pivnet-product-slug", "elastic-runtime",
-							"--product-version", "2.0.0",
-							"--output-directory", tempDir,
-							"--stemcell-iaas", "google",
-						}
-					})
-
-					It("downloads the stemcell to the specified directory", func(){
-						err = command.Execute(commandArgs)
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
 				It("grabs the latest stemcell for the product that matches the glob", func() {
 					tempDir, err := ioutil.TempDir("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
@@ -345,6 +319,46 @@ var _ = Describe("DownloadProduct", func() {
 								"product": "fake-tile",
 								"stemcell": "97.190"
 							}`))
+				})
+
+				When("the --stemcell-output-dir flag is passed", func() {
+					var (
+						commandArgs  []string
+						tempDir      string
+						otherTempDir string
+					)
+					BeforeEach(func() {
+						tempDir, err = ioutil.TempDir("", "om-tests-output-dir-")
+						Expect(err).ToNot(HaveOccurred())
+
+						otherTempDir, err = ioutil.TempDir("", "om-tests-stemcell-output-dir-")
+						Expect(err).ToNot(HaveOccurred())
+
+						fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+							createTempZipFile(file)
+							return nil
+						}
+
+						commandArgs = []string{
+							"--pivnet-api-token", "token",
+							"--file-glob", "*.pivotal",
+							"--pivnet-product-slug", "elastic-runtime",
+							"--product-version", "2.0.0",
+							"--output-directory", tempDir,
+							"--stemcell-output-directory", otherTempDir,
+							"--stemcell-iaas", "google",
+						}
+					})
+
+					It("downloads the product and stemcell to their specified directories", func() {
+						err = command.Execute(commandArgs)
+						Expect(err).ToNot(HaveOccurred())
+
+						downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
+						downloadedStemcellFilePath := path.Join(otherTempDir, "stemcell.tgz")
+						Expect(downloadedFilePath).To(BeAnExistingFile())
+						Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
+					})
 				})
 
 				When("the --stemcell-version flag is passed", func() {

@@ -38,12 +38,13 @@ type ProductDownloader interface {
 }
 
 type DownloadProductOptions struct {
-	Source     string   `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
-	ConfigFile string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
-	OutputDir  string   `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
-	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
-	Vars       []string `long:"var"                                  description:"load variable from the command line. Format: VAR=VAL"`
+	Source            string   `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
+	ConfigFile        string   `long:"config"                     short:"c" description:"path to yml file for configuration (keys must match the following command line flags)"`
+	OutputDir         string   `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	StemcellOutputDir string   `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
+	VarsEnv           []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
+	VarsFile          []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
+	Vars              []string `long:"var"                                  description:"load variable from the command line. Format: VAR=VAL"`
 
 	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
 	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
@@ -132,6 +133,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		productVersion,
 		c.Options.FileGlob,
 		fmt.Sprintf("[%s,%s]", c.Options.PivnetProductSlug, productVersion),
+		c.Options.OutputDir,
 	)
 	if err != nil {
 		return fmt.Errorf("could not download product: %s", err)
@@ -171,12 +173,22 @@ func (c *DownloadProduct) Execute(args []string) error {
 	}
 
 	stemcellFileName, err := "", nil
+
+	var stemcellOutputDirectory string
+
+	if c.Options.StemcellOutputDir != "" {
+		stemcellOutputDirectory = c.Options.StemcellOutputDir
+	} else {
+		stemcellOutputDirectory = c.Options.OutputDir
+	}
+
 	for _, stemcellGlob := range stemcellGlobs {
 		stemcellFileName, _, err = c.downloadProductFile(
 			stemcell.Slug(),
 			stemcellVersion,
 			stemcellGlob,
 			fmt.Sprintf("[%s,%s]", stemcell.Slug(), stemcellVersion),
+			stemcellOutputDirectory,
 		)
 		if err == nil {
 			break
@@ -338,7 +350,7 @@ func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemce
 	return nil
 }
 
-func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string) (string, FileArtifacter, error) {
+func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string, outputDir string) (string, FileArtifacter, error) {
 	fileArtifact, err := c.downloadClient.GetLatestProductFile(slug, version, glob)
 	if err != nil {
 		return "", nil, err
@@ -346,9 +358,9 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 	var productFilePath string
 	if c.Options.Source != "pivnet" || c.Options.Bucket == "" {
-		productFilePath = filepath.Join(c.Options.OutputDir, filepath.Base(fileArtifact.Name()))
+		productFilePath = filepath.Join(outputDir, filepath.Base(fileArtifact.Name()))
 	} else {
-		productFilePath = filepath.Join(c.Options.OutputDir, prefixPath+filepath.Base(fileArtifact.Name()))
+		productFilePath = filepath.Join(outputDir, prefixPath+filepath.Base(fileArtifact.Name()))
 	}
 
 	c.stderr.Printf("attempting to download the file %s from source %s", fileArtifact.Name(), c.downloadClient.Name())
