@@ -2,9 +2,6 @@ package metadata
 
 import (
 	"archive/zip"
-	"errors"
-	"io/ioutil"
-	"regexp"
 )
 
 func NewFileProvider(pathToPivotalFile string) Provider {
@@ -17,8 +14,6 @@ type FileProvider struct {
 	pathToPivotalFile string
 }
 
-var metadataRegexp = regexp.MustCompile(`metadata/.*\.yml`)
-
 func (f *FileProvider) MetadataBytes() ([]byte, error) {
 	zipReader, err := zip.OpenReader(f.pathToPivotalFile)
 	if err != nil {
@@ -27,17 +22,5 @@ func (f *FileProvider) MetadataBytes() ([]byte, error) {
 
 	defer zipReader.Close()
 
-	for _, file := range zipReader.File {
-		matched := metadataRegexp.MatchString(file.Name)
-
-		if matched {
-			metadataFile, _ := file.Open()
-			contents, err := ioutil.ReadAll(metadataFile)
-			if err != nil {
-				return nil, err
-			}
-			return contents, nil
-		}
-	}
-	return nil, errors.New("no metadata file was found in provided .pivotal")
+	return ExtractMetadataFromZip(&zipReader.Reader)
 }

@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	pivnetapi "github.com/pivotal-cf/go-pivnet/v4"
@@ -128,23 +127,7 @@ func (p *PivnetProvider) downloadFiles(
 		return nil, errors.Wrap(err, "error with New Zip Reader")
 	}
 
-	var matcher = regexp.MustCompile(`metadata/(.*)yml`)
-	for _, file := range zipreader.File {
-		if matcher.MatchString(file.Name) {
-			data := make([]byte, file.UncompressedSize64)
-			rc, err := file.Open()
-			if err != nil {
-				return nil, err
-			}
-			_, err = io.ReadFull(rc, data)
-			if err != nil {
-				return nil, err
-			}
-			rc.Close()
-			return data, nil
-		}
-	}
-	return nil, fmt.Errorf("no metadata found")
+	return ExtractMetadataFromZip(zipreader)
 }
 
 func productFileKeysByGlobs(
