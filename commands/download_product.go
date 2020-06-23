@@ -3,15 +3,13 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pivotal-cf/om/versions"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
-	"sort"
 	"strings"
 
-	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/validator"
 )
@@ -214,33 +212,13 @@ func (c *DownloadProduct) Execute(args []string) error {
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
 	if c.Options.ProductVersionRegex != "" {
-		re, err := regexp.Compile(c.Options.ProductVersionRegex)
-		if err != nil {
-			return "", fmt.Errorf("could not compile regex '%s': %s", c.Options.ProductVersionRegex, err)
-		}
-
 		productVersions, err := c.downloadClient.GetAllProductVersions(c.Options.PivnetProductSlug)
 		if err != nil {
 			return "", err
 		}
 
-		var versions version.Collection
-		for _, productVersion := range productVersions {
-			if !re.MatchString(productVersion) {
-				continue
-			}
-
-			v, err := version.NewVersion(productVersion)
-			if err != nil {
-				c.stderr.Printf(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
-				continue
-			}
-			versions = append(versions, v)
-		}
-
-		sort.Sort(versions)
-
-		if len(versions) == 0 {
+		foundVersion, err := versions.FindLatestVersion(productVersions, c.Options.ProductVersionRegex, c.stderr)
+		if err != nil {
 			existingVersions := strings.Join(productVersions, ", ")
 			if existingVersions == "" {
 				existingVersions = "none"
@@ -248,7 +226,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 			return "", fmt.Errorf("no valid versions found for product '%s' and product version regex '%s'\nexisting versions: %s", c.Options.PivnetProductSlug, c.Options.ProductVersionRegex, existingVersions)
 		}
 
-		return versions[len(versions)-1].Original(), nil
+		return foundVersion, nil
 	}
 	return c.Options.ProductVersion, nil
 }
