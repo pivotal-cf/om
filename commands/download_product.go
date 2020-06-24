@@ -125,17 +125,31 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
 
-	c.stderr.Printf("Downloading stemcell")
-
 	nameParts := strings.Split(productFileName, ".")
 	if nameParts[len(nameParts)-1] != "pivotal" {
 		c.stderr.Printf("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell.")
 		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
 
+	stemcellVersion, stemcellFileName, err := c.downloadStemcell(productFileName, productVersion, productFileArtifact)
+	if err != nil {
+		return err
+	}
+
+	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcellVersion)
+	if err != nil {
+		return err
+	}
+
+	return c.writeAssignStemcellInput(productFileName, stemcellVersion)
+}
+
+func (c *DownloadProduct) downloadStemcell(productFileName string, productVersion string, productFileArtifact download_clients.FileArtifacter) (string, string, error) {
+	c.stderr.Printf("Downloading stemcell")
+
 	stemcell, err := c.downloadClient.GetLatestStemcellForProduct(productFileArtifact, productFileName)
 	if err != nil {
-		return fmt.Errorf("could not get information about stemcell: %s", err)
+		return "", "", fmt.Errorf("could not get information about stemcell: %s", err)
 	}
 
 	stemcellGlobs := []string{
@@ -181,15 +195,9 @@ func (c *DownloadProduct) Execute(args []string) error {
 		if c.Options.StemcellHeavy {
 			isHeavy = "heavy "
 		}
-		return fmt.Errorf("could not download stemcell: %s\nNo %sstemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option.", err, isHeavy, c.Options.StemcellIaas)
+		return "", "", fmt.Errorf("could not download stemcell: %s\nNo %sstemcell identified for IaaS \"%s\" on Pivotal Network. Correct the `stemcell-iaas` option to match the IaaS portion of the stemcell filename, or remove the option.", err, isHeavy, c.Options.StemcellIaas)
 	}
-
-	err = c.writeDownloadProductOutput(productFileName, productVersion, stemcellFileName, stemcellVersion)
-	if err != nil {
-		return err
-	}
-
-	return c.writeAssignStemcellInput(productFileName, stemcellVersion)
+	return stemcellVersion, stemcellFileName, nil
 }
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
