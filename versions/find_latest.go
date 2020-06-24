@@ -8,7 +8,7 @@ import (
 	"sort"
 )
 
-func FindLatestVersion(productVersions []string, regex string, stderr *log.Logger) (string ,error) {
+func FindLatestVersionFromRegex(productVersions []string, regex string, stderr *log.Logger) (string ,error) {
 	re, err := regexp.Compile(regex)
 	if err != nil {
 		return "", fmt.Errorf("could not compile regex '%s': %s", regex, err)

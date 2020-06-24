@@ -199,7 +199,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 			return "", err
 		}
 
-		foundVersion, err := versions.FindLatestVersion(productVersions, c.Options.ProductVersionRegex, c.stderr)
+		foundVersion, err := versions.FindLatestVersionFromRegex(productVersions, c.Options.ProductVersionRegex, c.stderr)
 		if err != nil {
 			existingVersions := strings.Join(productVersions, ", ")
 			if existingVersions == "" {
