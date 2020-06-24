@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/graymeta/stow"
 	"github.com/graymeta/stow/s3"
-	"github.com/pivotal-cf/om/commands"
 	"gopkg.in/go-playground/validator.v9"
 	"io"
-	"log"
 	"strconv"
 )
 
@@ -73,30 +71,4 @@ func validateAccessKeyAuthType(config S3Configuration) error {
 	}
 
 	return nil
-}
-
-func init() {
-	initializer := func(
-		c commands.DownloadProductOptions,
-		progressWriter io.Writer,
-		_ *log.Logger,
-		_ *log.Logger,
-	) (commands.ProductDownloader, error) {
-		config := S3Configuration{
-			Bucket:          c.Bucket,
-			AccessKeyID:     c.S3AccessKeyID,
-			AuthType:        c.S3AuthType,
-			SecretAccessKey: c.S3SecretAccessKey,
-			RegionName:      c.S3RegionName,
-			Endpoint:        c.S3Endpoint,
-			DisableSSL:      c.S3DisableSSL,
-			EnableV2Signing: c.S3EnableV2Signing,
-			ProductPath:     c.ProductPath,
-			StemcellPath:    c.StemcellPath,
-		}
-
-		return NewS3Client(wrapStow{}, config, progressWriter)
-	}
-
-	commands.RegisterProductClient("s3", initializer)
 }

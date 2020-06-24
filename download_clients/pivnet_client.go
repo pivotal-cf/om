@@ -3,7 +3,6 @@ package download_clients
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"strconv"
@@ -12,9 +11,6 @@ import (
 	"github.com/pivotal-cf/go-pivnet/v4"
 	"github.com/pivotal-cf/go-pivnet/v4/download"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/v4/logger"
-	"github.com/pivotal-cf/go-pivnet/v4/logshim"
-	"github.com/pivotal-cf/om/commands"
-	"github.com/pivotal-cf/pivnet-cli/filter"
 	"github.com/pivotal-cf/pivnet-cli/gp"
 )
 
@@ -35,7 +31,7 @@ type PivnetFilter interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-func NewPivnetClient(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string, filter PivnetFilter, skipSSL bool, pivnetHost string, ) *pivnetClient {
+var NewPivnetClient= func(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string, filter PivnetFilter, skipSSL bool, pivnetHost string, ) ProductDownloader {
 	downloader := factory(
 		pivnet.NewAccessTokenOrLegacyToken(
 			token, pivnetHost, skipSSL, userAgent),
@@ -76,7 +72,7 @@ func (p *pivnetClient) Name() string {
 	return "pivnet"
 }
 
-func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (commands.FileArtifacter, error) {
+func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArtifacter, error) {
 	// 1. Check the release for given version / slug
 	release, err := p.downloader.ReleaseForVersion(slug, version)
 	if err != nil {
@@ -107,7 +103,7 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (command
 	}, nil
 }
 
-func (p *pivnetClient) DownloadProductToFile(fa commands.FileArtifacter, file *os.File) error {
+func (p *pivnetClient) DownloadProductToFile(fa FileArtifacter, file *os.File) error {
 	fileArtifact := fa.(*PivnetFileArtifact)
 	fileInfo, err := download.NewFileInfo(file)
 	if err != nil {
@@ -120,7 +116,7 @@ func (p *pivnetClient) DownloadProductToFile(fa commands.FileArtifacter, file *o
 	return nil
 }
 
-func (p *pivnetClient) GetLatestStemcellForProduct(fa commands.FileArtifacter, _ string) (commands.StemcellArtifacter, error) {
+func (p *pivnetClient) GetLatestStemcellForProduct(fa FileArtifacter, _ string) (StemcellArtifacter, error) {
 	fileArtifact := fa.(*PivnetFileArtifact)
 	dependencies, err := p.downloader.ReleaseDependencies(fileArtifact.slug, fileArtifact.releaseID)
 	if err != nil {
@@ -228,25 +224,4 @@ func stemcellVersionPartsFromString(version string) (int, int, error) {
 
 func DefaultPivnetFactory(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
 	return gp.NewClient(ts, config, logger)
-}
-
-func init() {
-	initializer := func(
-		c commands.DownloadProductOptions,
-		progressWriter io.Writer,
-		stdout *log.Logger,
-		stderr *log.Logger,
-	) (commands.ProductDownloader, error) {
-		logger := logshim.NewLogShim(
-			stdout,
-			stderr,
-			false,
-		)
-		pivnetFilter := filter.NewFilter(logger)
-
-		return NewPivnetClient(logger, progressWriter, DefaultPivnetFactory, c.PivnetToken, pivnetFilter, c.PivnetDisableSSL, c.PivnetHost), nil
-	}
-
-	commands.RegisterProductClient("pivnet", initializer)
-	commands.RegisterProductClient("", initializer)
 }

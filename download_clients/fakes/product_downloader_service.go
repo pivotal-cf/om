@@ -5,14 +5,14 @@ import (
 	"os"
 	"sync"
 
-	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 type ProductDownloader struct {
-	DownloadProductToFileStub        func(commands.FileArtifacter, *os.File) error
+	DownloadProductToFileStub        func(download_clients.FileArtifacter, *os.File) error
 	downloadProductToFileMutex       sync.RWMutex
 	downloadProductToFileArgsForCall []struct {
-		arg1 commands.FileArtifacter
+		arg1 download_clients.FileArtifacter
 		arg2 *os.File
 	}
 	downloadProductToFileReturns struct {
@@ -34,7 +34,7 @@ type ProductDownloader struct {
 		result1 []string
 		result2 error
 	}
-	GetLatestProductFileStub        func(string, string, string) (commands.FileArtifacter, error)
+	GetLatestProductFileStub        func(string, string, string) (download_clients.FileArtifacter, error)
 	getLatestProductFileMutex       sync.RWMutex
 	getLatestProductFileArgsForCall []struct {
 		arg1 string
@@ -42,25 +42,25 @@ type ProductDownloader struct {
 		arg3 string
 	}
 	getLatestProductFileReturns struct {
-		result1 commands.FileArtifacter
+		result1 download_clients.FileArtifacter
 		result2 error
 	}
 	getLatestProductFileReturnsOnCall map[int]struct {
-		result1 commands.FileArtifacter
+		result1 download_clients.FileArtifacter
 		result2 error
 	}
-	GetLatestStemcellForProductStub        func(commands.FileArtifacter, string) (commands.StemcellArtifacter, error)
+	GetLatestStemcellForProductStub        func(download_clients.FileArtifacter, string) (download_clients.StemcellArtifacter, error)
 	getLatestStemcellForProductMutex       sync.RWMutex
 	getLatestStemcellForProductArgsForCall []struct {
-		arg1 commands.FileArtifacter
+		arg1 download_clients.FileArtifacter
 		arg2 string
 	}
 	getLatestStemcellForProductReturns struct {
-		result1 commands.StemcellArtifacter
+		result1 download_clients.StemcellArtifacter
 		result2 error
 	}
 	getLatestStemcellForProductReturnsOnCall map[int]struct {
-		result1 commands.StemcellArtifacter
+		result1 download_clients.StemcellArtifacter
 		result2 error
 	}
 	NameStub        func() string
@@ -77,11 +77,11 @@ type ProductDownloader struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ProductDownloader) DownloadProductToFile(arg1 commands.FileArtifacter, arg2 *os.File) error {
+func (fake *ProductDownloader) DownloadProductToFile(arg1 download_clients.FileArtifacter, arg2 *os.File) error {
 	fake.downloadProductToFileMutex.Lock()
 	ret, specificReturn := fake.downloadProductToFileReturnsOnCall[len(fake.downloadProductToFileArgsForCall)]
 	fake.downloadProductToFileArgsForCall = append(fake.downloadProductToFileArgsForCall, struct {
-		arg1 commands.FileArtifacter
+		arg1 download_clients.FileArtifacter
 		arg2 *os.File
 	}{arg1, arg2})
 	fake.recordInvocation("DownloadProductToFile", []interface{}{arg1, arg2})
@@ -102,13 +102,13 @@ func (fake *ProductDownloader) DownloadProductToFileCallCount() int {
 	return len(fake.downloadProductToFileArgsForCall)
 }
 
-func (fake *ProductDownloader) DownloadProductToFileCalls(stub func(commands.FileArtifacter, *os.File) error) {
+func (fake *ProductDownloader) DownloadProductToFileCalls(stub func(download_clients.FileArtifacter, *os.File) error) {
 	fake.downloadProductToFileMutex.Lock()
 	defer fake.downloadProductToFileMutex.Unlock()
 	fake.DownloadProductToFileStub = stub
 }
 
-func (fake *ProductDownloader) DownloadProductToFileArgsForCall(i int) (commands.FileArtifacter, *os.File) {
+func (fake *ProductDownloader) DownloadProductToFileArgsForCall(i int) (download_clients.FileArtifacter, *os.File) {
 	fake.downloadProductToFileMutex.RLock()
 	defer fake.downloadProductToFileMutex.RUnlock()
 	argsForCall := fake.downloadProductToFileArgsForCall[i]
@@ -201,7 +201,7 @@ func (fake *ProductDownloader) GetAllProductVersionsReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
-func (fake *ProductDownloader) GetLatestProductFile(arg1 string, arg2 string, arg3 string) (commands.FileArtifacter, error) {
+func (fake *ProductDownloader) GetLatestProductFile(arg1 string, arg2 string, arg3 string) (download_clients.FileArtifacter, error) {
 	fake.getLatestProductFileMutex.Lock()
 	ret, specificReturn := fake.getLatestProductFileReturnsOnCall[len(fake.getLatestProductFileArgsForCall)]
 	fake.getLatestProductFileArgsForCall = append(fake.getLatestProductFileArgsForCall, struct {
@@ -227,7 +227,7 @@ func (fake *ProductDownloader) GetLatestProductFileCallCount() int {
 	return len(fake.getLatestProductFileArgsForCall)
 }
 
-func (fake *ProductDownloader) GetLatestProductFileCalls(stub func(string, string, string) (commands.FileArtifacter, error)) {
+func (fake *ProductDownloader) GetLatestProductFileCalls(stub func(string, string, string) (download_clients.FileArtifacter, error)) {
 	fake.getLatestProductFileMutex.Lock()
 	defer fake.getLatestProductFileMutex.Unlock()
 	fake.GetLatestProductFileStub = stub
@@ -240,37 +240,37 @@ func (fake *ProductDownloader) GetLatestProductFileArgsForCall(i int) (string, s
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *ProductDownloader) GetLatestProductFileReturns(result1 commands.FileArtifacter, result2 error) {
+func (fake *ProductDownloader) GetLatestProductFileReturns(result1 download_clients.FileArtifacter, result2 error) {
 	fake.getLatestProductFileMutex.Lock()
 	defer fake.getLatestProductFileMutex.Unlock()
 	fake.GetLatestProductFileStub = nil
 	fake.getLatestProductFileReturns = struct {
-		result1 commands.FileArtifacter
+		result1 download_clients.FileArtifacter
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ProductDownloader) GetLatestProductFileReturnsOnCall(i int, result1 commands.FileArtifacter, result2 error) {
+func (fake *ProductDownloader) GetLatestProductFileReturnsOnCall(i int, result1 download_clients.FileArtifacter, result2 error) {
 	fake.getLatestProductFileMutex.Lock()
 	defer fake.getLatestProductFileMutex.Unlock()
 	fake.GetLatestProductFileStub = nil
 	if fake.getLatestProductFileReturnsOnCall == nil {
 		fake.getLatestProductFileReturnsOnCall = make(map[int]struct {
-			result1 commands.FileArtifacter
+			result1 download_clients.FileArtifacter
 			result2 error
 		})
 	}
 	fake.getLatestProductFileReturnsOnCall[i] = struct {
-		result1 commands.FileArtifacter
+		result1 download_clients.FileArtifacter
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProduct(arg1 commands.FileArtifacter, arg2 string) (commands.StemcellArtifacter, error) {
+func (fake *ProductDownloader) GetLatestStemcellForProduct(arg1 download_clients.FileArtifacter, arg2 string) (download_clients.StemcellArtifacter, error) {
 	fake.getLatestStemcellForProductMutex.Lock()
 	ret, specificReturn := fake.getLatestStemcellForProductReturnsOnCall[len(fake.getLatestStemcellForProductArgsForCall)]
 	fake.getLatestStemcellForProductArgsForCall = append(fake.getLatestStemcellForProductArgsForCall, struct {
-		arg1 commands.FileArtifacter
+		arg1 download_clients.FileArtifacter
 		arg2 string
 	}{arg1, arg2})
 	fake.recordInvocation("GetLatestStemcellForProduct", []interface{}{arg1, arg2})
@@ -291,41 +291,41 @@ func (fake *ProductDownloader) GetLatestStemcellForProductCallCount() int {
 	return len(fake.getLatestStemcellForProductArgsForCall)
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProductCalls(stub func(commands.FileArtifacter, string) (commands.StemcellArtifacter, error)) {
+func (fake *ProductDownloader) GetLatestStemcellForProductCalls(stub func(download_clients.FileArtifacter, string) (download_clients.StemcellArtifacter, error)) {
 	fake.getLatestStemcellForProductMutex.Lock()
 	defer fake.getLatestStemcellForProductMutex.Unlock()
 	fake.GetLatestStemcellForProductStub = stub
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProductArgsForCall(i int) (commands.FileArtifacter, string) {
+func (fake *ProductDownloader) GetLatestStemcellForProductArgsForCall(i int) (download_clients.FileArtifacter, string) {
 	fake.getLatestStemcellForProductMutex.RLock()
 	defer fake.getLatestStemcellForProductMutex.RUnlock()
 	argsForCall := fake.getLatestStemcellForProductArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProductReturns(result1 commands.StemcellArtifacter, result2 error) {
+func (fake *ProductDownloader) GetLatestStemcellForProductReturns(result1 download_clients.StemcellArtifacter, result2 error) {
 	fake.getLatestStemcellForProductMutex.Lock()
 	defer fake.getLatestStemcellForProductMutex.Unlock()
 	fake.GetLatestStemcellForProductStub = nil
 	fake.getLatestStemcellForProductReturns = struct {
-		result1 commands.StemcellArtifacter
+		result1 download_clients.StemcellArtifacter
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProductReturnsOnCall(i int, result1 commands.StemcellArtifacter, result2 error) {
+func (fake *ProductDownloader) GetLatestStemcellForProductReturnsOnCall(i int, result1 download_clients.StemcellArtifacter, result2 error) {
 	fake.getLatestStemcellForProductMutex.Lock()
 	defer fake.getLatestStemcellForProductMutex.Unlock()
 	fake.GetLatestStemcellForProductStub = nil
 	if fake.getLatestStemcellForProductReturnsOnCall == nil {
 		fake.getLatestStemcellForProductReturnsOnCall = make(map[int]struct {
-			result1 commands.StemcellArtifacter
+			result1 download_clients.StemcellArtifacter
 			result2 error
 		})
 	}
 	fake.getLatestStemcellForProductReturnsOnCall[i] = struct {
-		result1 commands.StemcellArtifacter
+		result1 download_clients.StemcellArtifacter
 		result2 error
 	}{result1, result2}
 }
@@ -414,4 +414,4 @@ func (fake *ProductDownloader) recordInvocation(key string, args []interface{}) 
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.ProductDownloader = new(ProductDownloader)
+var _ download_clients.ProductDownloader = new(ProductDownloader)

@@ -3,7 +3,10 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pivotal-cf/go-pivnet/v4/logshim"
+	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/versions"
+	"github.com/pivotal-cf/pivnet-cli/filter"
 	"io"
 	"log"
 	"os"
@@ -13,27 +16,6 @@ import (
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/validator"
 )
-
-//counterfeiter:generate -o ./fakes/file_artifacter.go --fake-name FileArtifacter . FileArtifacter
-type FileArtifacter interface {
-	Name() string
-	SHA256() string
-}
-
-//counterfeiter:generate -o ./fakes/stemcell_artifacter.go --fake-name StemcellArtifacter . StemcellArtifacter
-type StemcellArtifacter interface {
-	Slug() string
-	Version() string
-}
-
-//counterfeiter:generate -o ./fakes/product_downloader_service.go --fake-name ProductDownloader . ProductDownloader
-type ProductDownloader interface {
-	Name() string
-	GetAllProductVersions(slug string) ([]string, error)
-	GetLatestProductFile(slug, version, glob string) (FileArtifacter, error)
-	DownloadProductToFile(fa FileArtifacter, file *os.File) error
-	GetLatestStemcellForProduct(fa FileArtifacter, downloadedProductFileName string) (StemcellArtifacter, error)
-}
 
 type PivnetOptions struct {
 	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
@@ -46,9 +28,9 @@ type PivnetOptions struct {
 }
 
 type DownloadProductOptions struct {
-	Source    string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
-	OutputDir string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-	StemcellOutputDir string   `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
+	Source            string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
+	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
 
 	interpolateConfigFileOptions
 	PivnetOptions
@@ -81,7 +63,7 @@ type DownloadProduct struct {
 	progressWriter io.Writer
 	stderr         *log.Logger
 	stdout         *log.Logger
-	downloadClient ProductDownloader
+	downloadClient download_clients.ProductDownloader
 	Options        DownloadProductOptions
 }
 
@@ -232,17 +214,12 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 }
 
 func (c *DownloadProduct) createClient() error {
-	plugin, ok := plugins[c.Options.Source]
-	if !ok {
+	plugin, err := newDownloadClientFromSource(c.Options, c.progressWriter, c.stdout, c.stderr)
+	if err != nil {
 		return fmt.Errorf("could not find valid source for '%s'", c.Options.Source)
 	}
 
-	value, err := plugin(c.Options, c.progressWriter, c.stdout, c.stderr)
-	if err != nil {
-		return err
-	}
-
-	c.downloadClient = value
+	c.downloadClient = plugin
 	return nil
 }
 
@@ -330,7 +307,7 @@ func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemce
 	return nil
 }
 
-func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string, outputDir string) (string, FileArtifacter, error) {
+func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string, outputDir string) (string, download_clients.FileArtifacter, error) {
 	fileArtifact, err := c.downloadClient.GetLatestProductFile(slug, version, glob)
 	if err != nil {
 		return "", nil, err
@@ -423,10 +400,69 @@ type ProductClientRegistration func(
 	progressWriter io.Writer,
 	stdout *log.Logger,
 	stderr *log.Logger,
-) (ProductDownloader, error)
+) (download_clients.ProductDownloader, error)
 
-var plugins = make(map[string]ProductClientRegistration)
+func newDownloadClientFromSource(c DownloadProductOptions,
+	progressWriter io.Writer,
+	stdout *log.Logger,
+	stderr *log.Logger,
+) (download_clients.ProductDownloader, error) {
+	switch c.Source {
+	case "azure":
+		return download_clients.NewAzureClient(
+			download_clients.StowWrapper{},
+			download_clients.AzureConfiguration{
+				Container:      c.Bucket,
+				StorageAccount: c.AzureStorageAccount,
+				Key:            c.AzureKey,
+				ProductPath:    c.ProductPath,
+				StemcellPath:   c.StemcellPath,
+			},
+			progressWriter)
+	case "gcs":
+		return download_clients.NewGCSClient(
+			download_clients.StowWrapper{},
+			download_clients.GCSConfiguration{
+				Bucket:             c.Bucket,
+				ProjectID:          c.GCSProjectID,
+				ServiceAccountJSON: c.GCSServiceAccountJSON,
+				ProductPath:        c.ProductPath,
+				StemcellPath:       c.StemcellPath,
+			},
+			progressWriter)
+	case "s3":
+		return download_clients.NewS3Client(
+			download_clients.StowWrapper{},
+			download_clients.S3Configuration{
+				Bucket:          c.Bucket,
+				AccessKeyID:     c.S3AccessKeyID,
+				AuthType:        c.S3AuthType,
+				SecretAccessKey: c.S3SecretAccessKey,
+				RegionName:      c.S3RegionName,
+				Endpoint:        c.S3Endpoint,
+				DisableSSL:      c.S3DisableSSL,
+				EnableV2Signing: c.S3EnableV2Signing,
+				ProductPath:     c.ProductPath,
+				StemcellPath:    c.StemcellPath,
+			},
+			progressWriter)
+	case "pivnet", "":
+		logger := logshim.NewLogShim(
+			stdout,
+			stderr,
+			false,
+		)
 
-func RegisterProductClient(name string, f ProductClientRegistration) {
-	plugins[name] = f
+		return download_clients.NewPivnetClient(
+			logger,
+			progressWriter,
+			download_clients.DefaultPivnetFactory,
+			c.PivnetToken,
+			filter.NewFilter(logger),
+			c.PivnetDisableSSL,
+			c.PivnetHost,
+		), nil
+	}
+
+	return nil, fmt.Errorf("could not find a plugin")
 }

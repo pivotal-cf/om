@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
+	"github.com/pivotal-cf/go-pivnet/v4/logger"
+	"github.com/pivotal-cf/om/download_clients"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,7 +17,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/commands"
-	"github.com/pivotal-cf/om/commands/fakes"
+	"github.com/pivotal-cf/om/download_clients/fakes"
 	"github.com/pivotal-cf/om/validator"
 )
 
@@ -35,12 +37,9 @@ var _ = Describe("DownloadProduct", func() {
 	})
 
 	JustBeforeEach(func() {
-		commands.RegisterProductClient("pivnet", func(c commands.DownloadProductOptions, progressWriter io.Writer, stdout *log.Logger, stderr *log.Logger) (downloader commands.ProductDownloader, e error) {
-			return fakeProductDownloader, nil
-		})
-		commands.RegisterProductClient("s3", func(c commands.DownloadProductOptions, progressWriter io.Writer, stdout *log.Logger, stderr *log.Logger) (downloader commands.ProductDownloader, e error) {
-			return fakeProductDownloader, nil
-		})
+		download_clients.NewPivnetClient = func(logger logger.Logger, progressWriter io.Writer, factory download_clients.PivnetFactory, token string, filter download_clients.PivnetFilter, skipSSL bool, pivnetHost string) download_clients.ProductDownloader {
+			return fakeProductDownloader
+		}
 		buffer = gbytes.NewBuffer()
 		command = commands.NewDownloadProduct(
 			environFunc,
@@ -194,7 +193,7 @@ var _ = Describe("DownloadProduct", func() {
 					fa.SHA256Returns("d1b2a59fbea7e20077af9f91b27e95e865061b270be03ff539ab3b73587882e8")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
 					}
 				})
@@ -224,7 +223,7 @@ var _ = Describe("DownloadProduct", func() {
 					fa.SHA256Returns("asdfasdf")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
 					}
 				})
@@ -269,7 +268,7 @@ var _ = Describe("DownloadProduct", func() {
 					tempDir, err := ioutil.TempDir("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						createTempZipFile(file)
 						return nil
 					}
@@ -334,7 +333,7 @@ var _ = Describe("DownloadProduct", func() {
 						otherTempDir, err = ioutil.TempDir("", "om-tests-stemcell-output-dir-")
 						Expect(err).ToNot(HaveOccurred())
 
-						fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 							createTempZipFile(file)
 							return nil
 						}
@@ -366,7 +365,7 @@ var _ = Describe("DownloadProduct", func() {
 						tempDir, err := ioutil.TempDir("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
-						fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+						fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 							createTempZipFile(file)
 							return nil
 						}
@@ -470,7 +469,7 @@ var _ = Describe("DownloadProduct", func() {
 					tempDir, err := ioutil.TempDir("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						createTempZipFile(file)
 						return nil
 					}
@@ -495,7 +494,7 @@ var _ = Describe("DownloadProduct", func() {
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						createTempZipFile(file)
 						return nil
 					}
@@ -536,7 +535,7 @@ var _ = Describe("DownloadProduct", func() {
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						createTempZipFile(file)
 						return nil
 					}
@@ -589,7 +588,7 @@ var _ = Describe("DownloadProduct", func() {
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
-					fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 						createTempZipFile(file)
 						return nil
 					}
@@ -643,7 +642,7 @@ var _ = Describe("DownloadProduct", func() {
 				sa.VersionReturns("97.19")
 				fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
-				fakeProductDownloader.DownloadProductToFileStub = func(artifacter commands.FileArtifacter, file *os.File) error {
+				fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
 					createTempZipFile(file)
 					return nil
 				}

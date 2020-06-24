@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/graymeta/stow"
-	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/progress"
 	"gopkg.in/yaml.v2"
 	"io"
@@ -27,13 +26,13 @@ type Stower interface {
 	Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error
 }
 
-type wrapStow struct{}
+type StowWrapper struct{}
 
-func (d wrapStow) Dial(kind string, config StowConfiger) (stow.Location, error) {
+func (d StowWrapper) Dial(kind string, config StowConfiger) (stow.Location, error) {
 	location, err := stow.Dial(kind, config)
 	return location, err
 }
-func (d wrapStow) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
+func (d StowWrapper) Walk(container stow.Container, prefix string, pageSize int, fn stow.WalkFunc) error {
 	return stow.Walk(container, prefix, pageSize, fn)
 }
 
@@ -151,7 +150,7 @@ func (s *stowClient) getContainer() (stow.Container, error) {
 	return container, nil
 }
 
-func (s stowClient) GetLatestProductFile(slug, version, glob string) (commands.FileArtifacter, error) {
+func (s stowClient) GetLatestProductFile(slug, version, glob string) (FileArtifacter, error) {
 	files, err := s.listFiles()
 	if err != nil {
 		return nil, err
@@ -203,7 +202,7 @@ func (s stowClient) GetLatestProductFile(slug, version, glob string) (commands.F
 	return &stowFileArtifact{name: globMatchedFilepaths[0]}, nil
 }
 
-func (s stowClient) DownloadProductToFile(fa commands.FileArtifacter, destinationFile *os.File) error {
+func (s stowClient) DownloadProductToFile(fa FileArtifacter, destinationFile *os.File) error {
 	blobReader, size, err := s.initializeBlobReader(fa.Name())
 	if err != nil {
 		return err
@@ -253,7 +252,7 @@ func (s stowClient) streamBufferToFile(destinationFile *os.File, wrappedBlobRead
 	return err
 }
 
-func (s stowClient) GetLatestStemcellForProduct(_ commands.FileArtifacter, downloadedProductFileName string) (commands.StemcellArtifacter, error) {
+func (s stowClient) GetLatestStemcellForProduct(_ FileArtifacter, downloadedProductFileName string) (StemcellArtifacter, error) {
 	definedStemcell, err := stemcellFromProduct(downloadedProductFileName)
 	if err != nil {
 		return nil, err

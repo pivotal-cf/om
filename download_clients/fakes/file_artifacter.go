@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/pivotal-cf/om/commands"
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 type FileArtifacter struct {
@@ -162,4 +162,4 @@ func (fake *FileArtifacter) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.FileArtifacter = new(FileArtifacter)
+var _ download_clients.FileArtifacter = new(FileArtifacter)
