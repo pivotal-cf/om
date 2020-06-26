@@ -4,14 +4,15 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet/v4/logger"
-	"github.com/pivotal-cf/om/download_clients"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/pivotal-cf/go-pivnet/v4/logger"
+	"github.com/pivotal-cf/om/download_clients"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -943,9 +944,9 @@ output-directory: %s
 		})
 	})
 
-	When("directory flags are provided pointing to directories that don't exist", func(){
+	When("directory flags are provided pointing to directories that don't exist", func() {
 
-		It("errors, printing both the flag and the filepath in question", func(){
+		It("errors, printing both the flag and the filepath in question", func() {
 			err := command.Execute([]string{
 				"--pivnet-api-token", "token",
 				"--file-glob", "*.pivotal",
@@ -959,8 +960,34 @@ output-directory: %s
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`--output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
 		})
-
 	})
+
+	When("directory flags are provided pointing to non-directory files", func() {
+		var existingNonDirFile *os.File
+
+		BeforeEach(func() {
+			existingNonDirFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("errors, printing both the flag and the filepath in question", func() {
+			err := command.Execute([]string{
+				"--pivnet-api-token", "token",
+				"--file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--stemcell-output-directory", "/invalid/dir/noexist",
+				"--stemcell-iaas", "aws",
+				"--output-directory", existingNonDirFile.Name(),
+			})
+
+			expectedOutput := fmt.Sprintf("--output-directory %q is not a directory", existingNonDirFile.Name())
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(expectedOutput))
+		})
+	})
+
 	When("an unknown flag is provided", func() {
 		It("returns an error", func() {
 			err = command.Execute([]string{"--badflag"})

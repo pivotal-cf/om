@@ -3,15 +3,16 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet/v4/logshim"
-	"github.com/pivotal-cf/om/download_clients"
-	"github.com/pivotal-cf/om/versions"
-	"github.com/pivotal-cf/pivnet-cli/filter"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pivotal-cf/go-pivnet/v4/logshim"
+	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/versions"
+	"github.com/pivotal-cf/pivnet-cli/filter"
 
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/validator"
@@ -251,10 +252,14 @@ func (c *DownloadProduct) validate() error {
 		return fmt.Errorf("--stemcell-version requires --stemcell-iaas to be defined")
 	}
 
-	_, err := os.Open(c.Options.OutputDir)
+	file, err := os.Open(c.Options.OutputDir)
 	if err != nil {
 		return fmt.Errorf("--output-directory %q does not exist: %w", c.Options.OutputDir, err)
-		}
+	}
+	fi, _ := file.Stat()
+	if !fi.IsDir() {
+		return fmt.Errorf("--output-directory %q is not a directory", c.Options.OutputDir)
+	}
 
 	return nil
 }
