@@ -251,6 +251,11 @@ func (c *DownloadProduct) validate() error {
 		return fmt.Errorf("--stemcell-version requires --stemcell-iaas to be defined")
 	}
 
+	_, err := os.Open(c.Options.OutputDir)
+	if err != nil {
+		return fmt.Errorf("--output-directory %q does not exist: %w", c.Options.OutputDir, err)
+		}
+
 	return nil
 }
 
