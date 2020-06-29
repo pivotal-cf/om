@@ -21,10 +21,7 @@ func DetermineProductVersion(
 	versioner productVersioner,
 	stderr *log.Logger,
 ) (string, error) {
-	productVersions, err := versioner.GetAllProductVersions(slug)
-	if err != nil {
-		return "", err
-	}
+	productVersions, productVersionError := versioner.GetAllProductVersions(slug)
 
 	existingVersions := strings.Join(productVersions, ", ")
 	if existingVersions == "" {
@@ -34,7 +31,11 @@ func DetermineProductVersion(
 	if versionRegex != "" {
 		foundVersion, err := findLatestVersionFromRegex(productVersions, versionRegex, stderr)
 		if err != nil {
-			return "", fmt.Errorf("no valid versions found for product %q and product version regex %q\nexisting versions: %s\n%w", slug, versionRegex, existingVersions, err)
+			msg := fmt.Errorf("no valid versions found for product %q and product version regex %q\nexisting versions: %s", slug, versionRegex, existingVersions)
+			if productVersionError != nil {
+				msg = fmt.Errorf("%w: %s", productVersionError, msg)
+			}
+			return "", fmt.Errorf("%w: %s", err, msg)
 		}
 		return foundVersion, nil
 	}
@@ -46,7 +47,12 @@ func DetermineProductVersion(
 			}
 		}
 	}
-	return "", fmt.Errorf("no valid versions found for product %q and product version %q\nexisting versions: %s", slug, exactVersion, existingVersions)
+
+	msg := fmt.Errorf("no valid versions found for product %q and product version %q\nexisting versions: %s", slug, exactVersion, existingVersions)
+	if productVersionError != nil {
+		msg = fmt.Errorf("%w: %s", productVersionError, msg)
+	}
+	return "", msg
 }
 
 func findLatestVersionFromRegex(productVersions []string, regex string, stderr *log.Logger) (string ,error) {
