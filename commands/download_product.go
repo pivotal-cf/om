@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -61,6 +63,7 @@ type DownloadProductOptions struct {
 	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
 	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
 	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
+	CacheCleanup bool   `long:"cache-cleanup" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir"`
 
 	AzureOptions
 	GCSOptions
@@ -362,6 +365,20 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 			return productFilePath, fileArtifact, nil
 		} else {
 			c.stderr.Printf("%s already exists, sha sum does not match, re-downloading", productFilePath)
+		}
+	}
+
+	if c.Options.CacheCleanup {
+		outputDirContents, err := ioutil.ReadDir(outputDir)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, file := range outputDirContents {
+			filepath := path.Join(outputDir, file.Name())
+			if filepath != productFilePath {
+				os.Remove(filepath)
+			}
 		}
 	}
 
