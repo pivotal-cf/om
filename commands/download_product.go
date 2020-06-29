@@ -28,21 +28,12 @@ type PivnetOptions struct {
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 }
 
-type DownloadProductOptions struct {
-	Source            string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
-	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
-	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
-
-	interpolateConfigFileOptions
-	PivnetOptions
-
-	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
-	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
-
+type GCSOptions struct {
 	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json" description:"the service account key JSON"`
 	GCSProjectID          string `long:"gcs-project-id"           alias:"gcp-project-id"           description:"the project id for the bucket's gcp account"`
+}
 
+type S3Options struct {
 	S3AccessKeyID     string `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
 	S3AuthType        string `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
 	S3SecretAccessKey string `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
@@ -50,13 +41,34 @@ type DownloadProductOptions struct {
 	S3Endpoint        string `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
 	S3DisableSSL      bool   `long:"s3-disable-ssl"                   description:"whether to disable ssl validation when contacting the s3 compatible blobstore"`
 	S3EnableV2Signing bool   `long:"s3-enable-v2-signing"             description:"whether to use v2 signing with your s3 compatible blobstore. (if you don't know what this is, leave blank, or set to 'false')"`
+}
 
+type AzureOptions struct {
 	AzureStorageAccount string `long:"azure-storage-account" description:"the name of the storage account where the container exists"`
 	AzureKey            string `long:"azure-storage-key"     description:"the access key for the storage account"`
+}
 
+type StemcellOptions struct {
 	StemcellIaas    string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
 	StemcellVersion string `long:"stemcell-version" description:"the version number of the stemcell to download (ie 458.61)"`
 	StemcellHeavy   bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`
+}
+
+type DownloadProductOptions struct {
+	Source            string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
+	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
+	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
+
+	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
+	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
+	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
+
+	AzureOptions
+	GCSOptions
+	interpolateConfigFileOptions
+	PivnetOptions
+	S3Options
+	StemcellOptions
 }
 
 type DownloadProduct struct {
