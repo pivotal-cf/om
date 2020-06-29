@@ -199,7 +199,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
 	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
 	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, api, stdout)
-	commandSet["version"] = commands.NewVersion(version, os.Stdout)
+	commandSet["version"] = commands.NewVersion(version, sout)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {

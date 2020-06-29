@@ -2,10 +2,9 @@ package acceptance
 
 import (
 	"fmt"
-	"os/exec"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/pivotal-cf/om/cmd"
 	"time"
-
-	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,47 +12,37 @@ import (
 
 var _ = Describe("version command", func() {
 	var version string
-	var pathToVersionedMain string
+	var buffer *gbytes.Buffer
 
 	BeforeEach(func() {
 		version = fmt.Sprintf("v0.0.0-dev.%d", time.Now().Unix())
-
-		var err error
-		pathToVersionedMain, err = gexec.Build("github.com/pivotal-cf/om",
-			"--ldflags", fmt.Sprintf("-X main.version=%s -X main.applySleepDurationString=1ms", version))
-		Expect(err).ToNot(HaveOccurred())
+		buffer = gbytes.NewBuffer()
 	})
 
 	When("given the -v short flag", func() {
 		It("returns the binary version", func() {
-			command := exec.Command(pathToVersionedMain, "-v")
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			err := cmd.Main(buffer, buffer, version, "1ms", []string{"om", "-v"})
 			Expect(err).ToNot(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
+			Expect(buffer).To(gbytes.Say(fmt.Sprintf("%s\n", version)))
 		})
 	})
 
 	When("given the --version long flag", func() {
 		It("returns the binary version", func() {
-			command := exec.Command(pathToVersionedMain, "--version")
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			err := cmd.Main(buffer, buffer, version, "1ms", []string{"om", "--version"})
 			Expect(err).ToNot(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
+			Expect(buffer).To(gbytes.Say(fmt.Sprintf("%s\n", version)))
 		})
 	})
 
 	When("given the version command", func() {
 		It("returns the binary version", func() {
-			command := exec.Command(pathToVersionedMain, "version")
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			err := cmd.Main(buffer, buffer, version, "1ms", []string{"om", "version"})
 			Expect(err).ToNot(HaveOccurred())
 
-			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out.Contents()).To(ContainSubstring(fmt.Sprintf("%s\n", version)))
+			Expect(buffer).To(gbytes.Say(fmt.Sprintf("%s\n", version)))
 		})
 	})
 })
