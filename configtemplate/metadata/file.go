@@ -17,7 +17,7 @@ type FileProvider struct {
 
 func (f *FileProvider) MetadataBytes() ([]byte, error) {
 	metadataExtractor := extractor.MetadataExtractor{}
-	metadata, err := metadataExtractor.ExtractMetadata(f.pathToPivotalFile)
+	metadata, err := metadataExtractor.ExtractFromFile(f.pathToPivotalFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not extract metadata from %q: %s", f.pathToPivotalFile, err)
 	}

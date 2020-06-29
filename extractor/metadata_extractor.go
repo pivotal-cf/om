@@ -23,7 +23,7 @@ type Metadata struct {
 	Raw []byte
 }
 
-func (me MetadataExtractor) ExtractMetadata(productPath string) (Metadata, error) {
+func (me MetadataExtractor) ExtractFromFile(productPath string) (Metadata, error) {
 	zipReader, err := zip.OpenReader(productPath)
 	if err != nil {
 		return Metadata{}, err

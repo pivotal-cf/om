@@ -36,7 +36,7 @@ type uploadProductService interface {
 
 //counterfeiter:generate -o ./fakes/metadata_extractor.go --fake-name MetadataExtractor . metadataExtractor
 type metadataExtractor interface {
-	ExtractMetadata(string) (extractor.Metadata, error)
+	ExtractFromFile(string) (extractor.Metadata, error)
 }
 
 func NewUploadProduct(multipart multipart, metadataExtractor metadataExtractor, service uploadProductService, logger logger) UploadProduct {
@@ -77,7 +77,7 @@ func (up UploadProduct) Execute(args []string) error {
 		up.logger.Printf("expected shasum matches product shasum.")
 	}
 
-	metadata, err := up.metadataExtractor.ExtractMetadata(up.Options.Product)
+	metadata, err := up.metadataExtractor.ExtractFromFile(up.Options.Product)
 	if err != nil {
 		return fmt.Errorf("failed to extract product metadata: %s", err)
 	}

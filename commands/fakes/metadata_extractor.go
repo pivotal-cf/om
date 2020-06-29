@@ -8,16 +8,16 @@ import (
 )
 
 type MetadataExtractor struct {
-	ExtractMetadataStub        func(string) (extractor.Metadata, error)
-	extractMetadataMutex       sync.RWMutex
-	extractMetadataArgsForCall []struct {
+	ExtractFromFileStub        func(string) (extractor.Metadata, error)
+	extractFromFileMutex       sync.RWMutex
+	extractFromFileArgsForCall []struct {
 		arg1 string
 	}
-	extractMetadataReturns struct {
+	extractFromFileReturns struct {
 		result1 extractor.Metadata
 		result2 error
 	}
-	extractMetadataReturnsOnCall map[int]struct {
+	extractFromFileReturnsOnCall map[int]struct {
 		result1 extractor.Metadata
 		result2 error
 	}
@@ -25,64 +25,64 @@ type MetadataExtractor struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *MetadataExtractor) ExtractMetadata(arg1 string) (extractor.Metadata, error) {
-	fake.extractMetadataMutex.Lock()
-	ret, specificReturn := fake.extractMetadataReturnsOnCall[len(fake.extractMetadataArgsForCall)]
-	fake.extractMetadataArgsForCall = append(fake.extractMetadataArgsForCall, struct {
+func (fake *MetadataExtractor) ExtractFromFile(arg1 string) (extractor.Metadata, error) {
+	fake.extractFromFileMutex.Lock()
+	ret, specificReturn := fake.extractFromFileReturnsOnCall[len(fake.extractFromFileArgsForCall)]
+	fake.extractFromFileArgsForCall = append(fake.extractFromFileArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("ExtractMetadata", []interface{}{arg1})
-	fake.extractMetadataMutex.Unlock()
-	if fake.ExtractMetadataStub != nil {
-		return fake.ExtractMetadataStub(arg1)
+	fake.recordInvocation("ExtractFromFile", []interface{}{arg1})
+	fake.extractFromFileMutex.Unlock()
+	if fake.ExtractFromFileStub != nil {
+		return fake.ExtractFromFileStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.extractMetadataReturns
+	fakeReturns := fake.extractFromFileReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *MetadataExtractor) ExtractMetadataCallCount() int {
-	fake.extractMetadataMutex.RLock()
-	defer fake.extractMetadataMutex.RUnlock()
-	return len(fake.extractMetadataArgsForCall)
+func (fake *MetadataExtractor) ExtractFromFileCallCount() int {
+	fake.extractFromFileMutex.RLock()
+	defer fake.extractFromFileMutex.RUnlock()
+	return len(fake.extractFromFileArgsForCall)
 }
 
-func (fake *MetadataExtractor) ExtractMetadataCalls(stub func(string) (extractor.Metadata, error)) {
-	fake.extractMetadataMutex.Lock()
-	defer fake.extractMetadataMutex.Unlock()
-	fake.ExtractMetadataStub = stub
+func (fake *MetadataExtractor) ExtractFromFileCalls(stub func(string) (extractor.Metadata, error)) {
+	fake.extractFromFileMutex.Lock()
+	defer fake.extractFromFileMutex.Unlock()
+	fake.ExtractFromFileStub = stub
 }
 
-func (fake *MetadataExtractor) ExtractMetadataArgsForCall(i int) string {
-	fake.extractMetadataMutex.RLock()
-	defer fake.extractMetadataMutex.RUnlock()
-	argsForCall := fake.extractMetadataArgsForCall[i]
+func (fake *MetadataExtractor) ExtractFromFileArgsForCall(i int) string {
+	fake.extractFromFileMutex.RLock()
+	defer fake.extractFromFileMutex.RUnlock()
+	argsForCall := fake.extractFromFileArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *MetadataExtractor) ExtractMetadataReturns(result1 extractor.Metadata, result2 error) {
-	fake.extractMetadataMutex.Lock()
-	defer fake.extractMetadataMutex.Unlock()
-	fake.ExtractMetadataStub = nil
-	fake.extractMetadataReturns = struct {
+func (fake *MetadataExtractor) ExtractFromFileReturns(result1 extractor.Metadata, result2 error) {
+	fake.extractFromFileMutex.Lock()
+	defer fake.extractFromFileMutex.Unlock()
+	fake.ExtractFromFileStub = nil
+	fake.extractFromFileReturns = struct {
 		result1 extractor.Metadata
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *MetadataExtractor) ExtractMetadataReturnsOnCall(i int, result1 extractor.Metadata, result2 error) {
-	fake.extractMetadataMutex.Lock()
-	defer fake.extractMetadataMutex.Unlock()
-	fake.ExtractMetadataStub = nil
-	if fake.extractMetadataReturnsOnCall == nil {
-		fake.extractMetadataReturnsOnCall = make(map[int]struct {
+func (fake *MetadataExtractor) ExtractFromFileReturnsOnCall(i int, result1 extractor.Metadata, result2 error) {
+	fake.extractFromFileMutex.Lock()
+	defer fake.extractFromFileMutex.Unlock()
+	fake.ExtractFromFileStub = nil
+	if fake.extractFromFileReturnsOnCall == nil {
+		fake.extractFromFileReturnsOnCall = make(map[int]struct {
 			result1 extractor.Metadata
 			result2 error
 		})
 	}
-	fake.extractMetadataReturnsOnCall[i] = struct {
+	fake.extractFromFileReturnsOnCall[i] = struct {
 		result1 extractor.Metadata
 		result2 error
 	}{result1, result2}
@@ -91,8 +91,8 @@ func (fake *MetadataExtractor) ExtractMetadataReturnsOnCall(i int, result1 extra
 func (fake *MetadataExtractor) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.extractMetadataMutex.RLock()
-	defer fake.extractMetadataMutex.RUnlock()
+	fake.extractFromFileMutex.RLock()
+	defer fake.extractFromFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

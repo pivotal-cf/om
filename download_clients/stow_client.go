@@ -292,7 +292,7 @@ func (s stowClient) GetLatestStemcellForProduct(_ FileArtifacter, downloadedProd
 
 func stemcellFromProduct(filename string) (*stemcell, error) {
 	metadataExtractor := extractor.MetadataExtractor{}
-	metadata, err := metadataExtractor.ExtractMetadata(filename)
+	metadata, err := metadataExtractor.ExtractFromFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile %q: %s", filename, err)
 	}

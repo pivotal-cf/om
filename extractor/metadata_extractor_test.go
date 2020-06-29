@@ -65,9 +65,9 @@ var _ = Describe("MetadataExtractor", func() {
 		os.Remove(productFile.Name())
 	})
 
-	Describe("ExtractMetadata", func() {
+	Describe("ExtractFromFile", func() {
 		It("Extracts the product name and version from the given pivotal file", func() {
-			metadata, err := metadataExtractor.ExtractMetadata(productFile.Name())
+			metadata, err := metadataExtractor.ExtractFromFile(productFile.Name())
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(metadata.Name).To(Equal("some-product"))
@@ -81,7 +81,7 @@ var _ = Describe("MetadataExtractor", func() {
 		When("an error occurs", func() {
 			When("the product tarball does not exist", func() {
 				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractMetadata("fake-file")
+					_, err := metadataExtractor.ExtractFromFile("fake-file")
 					Expect(err).To(MatchError(ContainSubstring("no such file or directory")))
 				})
 			})
@@ -97,7 +97,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractMetadata(badProductFile.Name())
+					_, err := metadataExtractor.ExtractFromFile(badProductFile.Name())
 					Expect(err).To(MatchError("no metadata file was found in provided .pivotal"))
 				})
 			})
@@ -114,7 +114,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractMetadata(badProductFile.Name())
+					_, err := metadataExtractor.ExtractFromFile(badProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("could not extract product metadata: yaml: could not find expected directive name")))
 				})
 			})
@@ -131,7 +131,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractMetadata(badProductFile.Name())
+					_, err := metadataExtractor.ExtractFromFile(badProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("could not extract product metadata: could not find product details in metadata file")))
 				})
 			})
@@ -148,7 +148,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractMetadata(wrongProductFile.Name())
+					_, err := metadataExtractor.ExtractFromFile(wrongProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})
@@ -164,7 +164,7 @@ var _ = Describe("MetadataExtractor", func() {
 				})
 
 				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractMetadata(nestedProductFile.Name())
+					_, err := metadataExtractor.ExtractFromFile(nestedProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})
