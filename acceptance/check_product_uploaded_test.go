@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var _ = Describe("CheckProductUploaded", func() {
+var _ = XDescribe("CheckProductUploaded", func() {
 	var (
 		pivnetServer              *ghttp.Server
 		opsmanServer              *ghttp.Server

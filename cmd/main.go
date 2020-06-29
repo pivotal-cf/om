@@ -136,7 +136,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 
 	form := formcontent.NewForm()
 
-	metadataExtractor := extractor.MetadataExtractor{}
+	metadataExtractor := extractor.NewMetadataExtractor()
 
 	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
 	envRendererFactory := renderers.NewFactory(renderers.NewEnvGetter())

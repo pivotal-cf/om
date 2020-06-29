@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/extractor/fakes"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -57,13 +58,13 @@ func createProductFile(metadataFilePath, contents string) *os.File {
 
 var _ = Describe("MetadataExtractor", func() {
 	var (
-		metadataExtractor extractor.MetadataExtractor
+		metadataExtractor *extractor.MetadataExtractor
 		productFile       *os.File
 	)
 
 	BeforeEach(func() {
 		productFile = createProductFile("metadata/some-product.yml", validYAML)
-		metadataExtractor = extractor.MetadataExtractor{}
+		metadataExtractor = extractor.NewMetadataExtractor()
 	})
 
 	AfterEach(func() {
@@ -94,6 +95,16 @@ var _ = Describe("MetadataExtractor", func() {
 			)
 			return server, fmt.Sprintf("%s/some/file/product.pivotal", server.URL())
 		}
+
+		It("allows a custom HTTP client", func() {
+			client := &fakes.HttpClient{}
+			client.DoReturns(nil, fmt.Errorf("some error"))
+
+			metadataExtractor = extractor.NewMetadataExtractor(extractor.WithHTTPClient(client))
+			_, err := metadataExtractor.ExtractFromURL("https://example.com")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("some error")))
+		})
 
 		It("Extracts the product name and version from the given pivotal file", func() {
 			server, url := setupServer(productFile.Name())

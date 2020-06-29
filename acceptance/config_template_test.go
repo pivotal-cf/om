@@ -47,32 +47,38 @@ var _ = Describe("config-template command", func() {
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files"),
-					ghttp.RespondWith(http.StatusOK, `{
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
   "product_files": [
   {
     "id": 1,
     "aws_object_key": "product.pivotal",
     "_links": {
       "download": {
-        "href": "http://example.com/api/v2/products/product-24/releases/32/product_files/21/download"
+        "href": "%s/api/v2/products/product-24/releases/32/product_files/21/download"
       }
     }
   }
 ]
-}`),
+}`, server.URL())),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/v2/products/example-product/releases/24/pivnet_resource_eula_acceptance"),
 					ghttp.RespondWith(http.StatusOK, ""),
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("HEAD", "/api/v2/products/product-24/releases/32/product_files/21/download"),
+					ghttp.VerifyRequest("POST", "/api/v2/products/product-24/releases/32/product_files/21/download"),
+					ghttp.RespondWith(http.StatusFound, "", map[string][]string{
+						"Location": {fmt.Sprintf("%s/download_file/product.pivotal", server.URL())},
+					}),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("HEAD", "/download_file/product.pivotal"),
 					func(w http.ResponseWriter, r *http.Request) {
 						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
 					},
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/product-24/releases/32/product_files/21/download"),
+					ghttp.VerifyRequest("GET", "/download_file/product.pivotal"),
 					func(w http.ResponseWriter, r *http.Request) {
 						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
 					},
@@ -213,14 +219,14 @@ var _ = Describe("config-template command", func() {
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/another-example-product/releases/14/product_files"),
-					ghttp.RespondWith(http.StatusOK, `{
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
   "product_files": [
   {
     "id": 1,
     "aws_object_key": "product.pivotal",
     "_links": {
       "download": {
-        "href": "http://example.com/api/v2/products/product-14/releases/14/product_files/1/download"
+        "href": "%s/api/v2/products/product-14/releases/14/product_files/1/download"
       }
     }
   },
@@ -229,41 +235,36 @@ var _ = Describe("config-template command", func() {
     "aws_object_key": "product-lite.pivotal",
     "_links": {
       "download": {
-        "href": "http://example.com/api/v2/products/product-14/releases/14/product_files/2/download"
+        "href": "%s/api/v2/products/product-14/releases/14/product_files/2/download"
       }
     }
   }
 ]
-}`),
+}`, server.URL(), server.URL())),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/v2/products/another-example-product/releases/14/pivnet_resource_eula_acceptance"),
 					ghttp.RespondWith(http.StatusOK, ""),
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("HEAD", "/api/v2/products/product-14/releases/14/product_files/1/download"),
+					ghttp.VerifyRequest("POST", "/api/v2/products/product-14/releases/14/product_files/1/download"),
+					ghttp.RespondWith(http.StatusFound, "", map[string][]string{
+						"Location": {fmt.Sprintf("%s/download_file/product.pivotal", server.URL())},
+					}),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("HEAD", "/download_file/product.pivotal"),
 					func(w http.ResponseWriter, r *http.Request) {
 						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
 					},
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/product-14/releases/14/product_files/1/download"),
+					ghttp.VerifyRequest("GET", "/download_file/product.pivotal"),
 					func(w http.ResponseWriter, r *http.Request) {
 						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
 					},
 				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("HEAD", "/api/v2/products/product-14/releases/14/product_files/2/download"),
-					func(w http.ResponseWriter, r *http.Request) {
-						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
-					},
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/product-14/releases/14/product_files/2/download"),
-					func(w http.ResponseWriter, r *http.Request) {
-						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
-					},
-				),
+
 			)
 		})
 		Context("and the user has not provided a product file glob", func() {

@@ -1,12 +1,10 @@
 package metadata
 
 import (
-	"archive/zip"
 	"fmt"
+	"github.com/pivotal-cf/om/extractor"
 	"io"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -14,8 +12,6 @@ import (
 
 	pivnetapi "github.com/pivotal-cf/go-pivnet/v4"
 	"github.com/pivotal-cf/go-pivnet/v4/logshim"
-	"github.com/pkg/errors"
-	"howett.net/ranger"
 )
 
 func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Provider {
@@ -29,30 +25,24 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 	ts := pivnetapi.NewAccessTokenOrLegacyToken(token, config.Host, skipSSL, config.UserAgent)
 	ls := logshim.NewLogShim(logger, logger, false)
 	client := pivnetapi.NewClient(ts, config, ls)
-	pivnetAuthClient := AuthenticatedPivnetClient{
-		TokenService: ts,
-		ClientConfig: config,
-		HTTPClient:   client.HTTP,
-	}
+
 	return &PivnetProvider{
-		client:           client,
-		pivnetAuthClient: pivnetAuthClient,
-		progressWriter:   os.Stderr,
-		logger:           ls,
-		slug:             slug,
-		version:          version,
-		glob:             glob,
+		client:         client,
+		progressWriter: os.Stderr,
+		logger:         ls,
+		slug:           slug,
+		version:        version,
+		glob:           glob,
 	}
 }
 
 type PivnetProvider struct {
-	client           pivnetapi.Client
-	pivnetAuthClient AuthenticatedPivnetClient
-	progressWriter   io.Writer
-	logger           *logshim.LogShim
-	slug             string
-	version          string
-	glob             string
+	client         pivnetapi.Client
+	progressWriter io.Writer
+	logger         *logshim.LogShim
+	slug           string
+	version        string
+	glob           string
 }
 
 func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
@@ -111,23 +101,19 @@ func (p *PivnetProvider) downloadFiles(
 		return nil, err
 	}
 
-	url, _ := url.Parse(downloadLink)
-
-	r := &ranger.HTTPRanger{URL: url, Client: p.pivnetAuthClient}
-	reader, err := ranger.NewReader(r)
+	fetcher := pivnetapi.NewProductFileLinkFetcher(downloadLink, p.client)
+	followedLink, err := fetcher.NewDownloadLink()
 	if err != nil {
-		return nil, errors.Wrap(err, "error with New Reader")
-	}
-	length, err := reader.Length()
-	if err != nil {
-		return nil, errors.Wrap(err, "error with reader length")
-	}
-	zipreader, err := zip.NewReader(reader, length)
-	if err != nil {
-		return nil, errors.Wrap(err, "error with New Zip Reader")
+		return nil, err
 	}
 
-	return ExtractMetadataFromZip(zipreader)
+	metadataExtractor := extractor.NewMetadataExtractor(extractor.WithHTTPClient(p.client.HTTP))
+	metadata, err := metadataExtractor.ExtractFromURL(followedLink)
+	if err != nil {
+		return nil, fmt.Errorf("could not extract metadata from %q: %s", followedLink, err)
+	}
+
+	return metadata.Raw, nil
 }
 
 func productFileKeysByGlobs(
@@ -155,43 +141,4 @@ func productFileKeysByGlobs(
 	}
 
 	return filtered, nil
-}
-
-type AuthenticatedPivnetClient struct {
-	ClientConfig pivnetapi.ClientConfig
-	TokenService pivnetapi.AccessTokenService
-	HTTPClient   *http.Client
-}
-
-func (a AuthenticatedPivnetClient) Do(req *http.Request) (*http.Response, error) {
-	token, err := a.TokenService.AccessToken()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get access token: %v", err)
-	}
-	header, err := pivnetapi.AuthorizationHeader(token)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get authorization header: %v", err)
-	}
-	req.Header.Add("Authorization", header)
-	req.Header.Add("User-Agent", a.ClientConfig.UserAgent)
-	resp, err := a.HTTPClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to perform http request: %v", err)
-	}
-	resp.Header.Add("Content-Type", "application/multipart")
-	return resp, err
-}
-func (a AuthenticatedPivnetClient) Get(url string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	return a.Do(req)
-}
-func (a AuthenticatedPivnetClient) Head(url string) (*http.Response, error) {
-	req, err := http.NewRequest("HEAD", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	return a.Do(req)
 }

@@ -9,11 +9,9 @@ import (
 	"regexp"
 )
 
-type MetadataExtractor struct{}
-
 var metadataRegexp = regexp.MustCompile(`^(\.\/)?metadata/.*\.yml`)
 
-func (me MetadataExtractor) ExtractFromFile(productPath string) (Metadata, error) {
+func (me *MetadataExtractor) ExtractFromFile(productPath string) (Metadata, error) {
 	zipReader, err := zip.OpenReader(productPath)
 	if err != nil {
 		return Metadata{}, err
