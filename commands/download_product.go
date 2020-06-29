@@ -11,7 +11,6 @@ import (
 
 	"github.com/pivotal-cf/go-pivnet/v4/logshim"
 	"github.com/pivotal-cf/om/download_clients"
-	"github.com/pivotal-cf/om/versions"
 	"github.com/pivotal-cf/pivnet-cli/filter"
 
 	"github.com/pivotal-cf/jhanda"
@@ -214,24 +213,13 @@ func (c *DownloadProduct) downloadStemcell(productFileName string, productVersio
 }
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
-	if c.Options.ProductVersionRegex != "" {
-		productVersions, err := c.downloadClient.GetAllProductVersions(c.Options.PivnetProductSlug)
-		if err != nil {
-			return "", err
-		}
-
-		foundVersion, err := versions.FindLatestVersionFromRegex(productVersions, c.Options.ProductVersionRegex, c.stderr)
-		if err != nil {
-			existingVersions := strings.Join(productVersions, ", ")
-			if existingVersions == "" {
-				existingVersions = "none"
-			}
-			return "", fmt.Errorf("no valid versions found for product '%s' and product version regex '%s'\nexisting versions: %s", c.Options.PivnetProductSlug, c.Options.ProductVersionRegex, existingVersions)
-		}
-
-		return foundVersion, nil
-	}
-	return c.Options.ProductVersion, nil
+	return download_clients.DetermineProductVersion(
+		c.Options.PivnetProductSlug,
+		c.Options.ProductVersion,
+		c.Options.ProductVersionRegex,
+		c.downloadClient,
+		c.stderr,
+	)
 }
 
 func (c *DownloadProduct) createClient() error {

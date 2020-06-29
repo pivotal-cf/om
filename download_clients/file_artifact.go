@@ -28,16 +28,3 @@ func (f stowFileArtifact) Name() string {
 func (f stowFileArtifact) SHA256() string {
 	return f.sha256
 }
-
-type stemcell struct {
-	slug    string
-	version string
-}
-
-func (s stemcell) Slug() string {
-	return s.slug
-}
-
-func (s stemcell) Version() string {
-	return s.version
-}

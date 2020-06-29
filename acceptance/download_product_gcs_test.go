@@ -205,7 +205,7 @@ var _ = Describe("download-product command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
-				Expect(session.Err).To(gbytes.Say(`no product files with expected prefix \[example-product,1.10.1\] found. Please ensure the file you're trying to download was initially persisted from Pivotal Network net using an appropriately configured download-product command`))
+				Expect(session.Err).To(gbytes.Say(`no valid versions found for product "example-product" and product version "1.10.1"`))
 			})
 		})
 

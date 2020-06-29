@@ -61,24 +61,35 @@ var _ = Describe("download-product command", func() {
 }`),
 				),
 				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases"),
+					ghttp.RespondWith(http.StatusOK, `{
+  "releases": [
+    {
+      "id": 24,
+      "version": "1.10.1"
+    }
+  ]
+}`),
+				),
+				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24"),
 					ghttp.RespondWith(http.StatusOK, `{"id":24}`),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files"),
 					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
-  "product_files": [
-  {
-    "id": 1,
-    "aws_object_key": "example-product.pivotal",
-    "_links": {
-      "download": {
-        "href": "%s/api/v2/products/example-product/releases/32/product_files/21/download"
-      }
-    }
-  }
-]
-}`, server.URL())),
+					 "product_files": [
+					 {
+					   "id": 1,
+					   "aws_object_key": "example-product.pivotal",
+					   "_links": {
+					     "download": {
+					       "href": "%s/api/v2/products/example-product/releases/32/product_files/21/download"
+					     }
+					   }
+					 }
+					]
+					}`, server.URL())),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/file_groups"),
@@ -87,15 +98,15 @@ var _ = Describe("download-product command", func() {
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files/1"),
 					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
-"product_file": {
-    "id": 1,
-	"_links": {
-		"download": {
-			"href":"%s/api/v2/products/example-product/releases/24/product_files/1/download"
-		}
-	}
-}
-}`, server.URL())),
+					"product_file": {
+					   "id": 1,
+						"_links": {
+							"download": {
+								"href":"%s/api/v2/products/example-product/releases/24/product_files/1/download"
+							}
+						}
+					}
+					}`, server.URL())),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/v2/products/example-product/releases/24/product_files/1/download"),

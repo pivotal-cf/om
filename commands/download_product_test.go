@@ -34,6 +34,7 @@ var _ = Describe("DownloadProduct", func() {
 	BeforeEach(func() {
 
 		fakeProductDownloader = &fakes.ProductDownloader{}
+		fakeProductDownloader.GetAllProductVersionsReturns([]string{"2.0.0"}, nil)
 		environFunc = func() []string { return nil }
 	})
 
@@ -181,7 +182,7 @@ var _ = Describe("DownloadProduct", func() {
 					}
 
 					err = command.Execute(commandArgs)
-					Expect(err).To(MatchError("no valid versions found for product 'elastic-runtime' and product version regex '2\\..\\..*'\nexisting versions: 3.1.2"))
+					Expect(err).To(MatchError(ContainSubstring("no valid versions found for product \"elastic-runtime\"")))
 				})
 			})
 		})
@@ -289,7 +290,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(fakeProductDownloader.GetLatestStemcellForProductCallCount()).To(Equal(1))
 					Expect(fakeProductDownloader.GetLatestProductFileCallCount()).To(Equal(2))
 					Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(2))
-					Expect(fakeProductDownloader.GetAllProductVersionsCallCount()).To(Equal(0))
+					Expect(fakeProductDownloader.GetAllProductVersionsCallCount()).To(Equal(1))
 
 					fa, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(1)
 					Expect(fa.Name()).To(Equal("stemcell.tgz"))
