@@ -32,7 +32,7 @@ func createProductFile(metadataFilePath, contents string) *os.File {
 	productWriter, err := zipper.CreateHeader(&zip.FileHeader{
 		Name:               metadataFilePath,
 		UncompressedSize64: uint64(stat.Size()),
-		ModifiedTime:       uint16(stat.ModTime().Unix()),
+		Modified:           stat.ModTime(),
 	})
 	Expect(err).ToNot(HaveOccurred())
 
