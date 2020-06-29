@@ -1,7 +1,8 @@
 package metadata
 
 import (
-	"archive/zip"
+	"fmt"
+	"github.com/pivotal-cf/om/extractor"
 )
 
 func NewFileProvider(pathToPivotalFile string) Provider {
@@ -15,12 +16,11 @@ type FileProvider struct {
 }
 
 func (f *FileProvider) MetadataBytes() ([]byte, error) {
-	zipReader, err := zip.OpenReader(f.pathToPivotalFile)
+	metadataExtractor := extractor.MetadataExtractor{}
+	metadata, err := metadataExtractor.ExtractMetadata(f.pathToPivotalFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not extract metadata from %q: %s", f.pathToPivotalFile, err)
 	}
 
-	defer zipReader.Close()
-
-	return ExtractMetadataFromZip(&zipReader.Reader)
+	return metadata.Raw, nil
 }
