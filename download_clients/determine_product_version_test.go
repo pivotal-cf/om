@@ -4,8 +4,10 @@ import (
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
+	"log"
 )
 
 var _ = Describe("DetermineProductVersion", func() {
@@ -60,6 +62,22 @@ var _ = Describe("DetermineProductVersion", func() {
 			Expect(version).To(Equal("2.2.2"))
 		})
 
+		When("providing an invalid regex", func() {
+			It("returns an error", func() {
+				versioner := &fakes.ProductVersioner{}
+				versioner.GetAllProductVersionsReturns([]string{"1.2.1"}, nil)
+
+				_, err := download_clients.DetermineProductVersion(
+					"product",
+					"",
+					`[a--z]`,
+					versioner,
+					nil,
+				)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError(ContainSubstring("could not compile regex")))
+			})
+		})
 		When("no versions match the regex", func() {
 			It("returns the latest version for a product", func() {
 				versioner := &fakes.ProductVersioner{}
@@ -78,7 +96,7 @@ var _ = Describe("DetermineProductVersion", func() {
 		})
 
 		When("there are no versions", func() {
-			It("returns the latest version for a product", func() {
+			It("returns there are no version", func() {
 				versioner := &fakes.ProductVersioner{}
 				versioner.GetAllProductVersionsReturns([]string{}, nil)
 
@@ -91,6 +109,26 @@ var _ = Describe("DetermineProductVersion", func() {
 				)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(MatchError(ContainSubstring("existing versions: none")))
+				Expect(err).To(MatchError(ContainSubstring("no available version found")))
+			})
+		})
+
+		When("semver cannot be parsed from the version", func() {
+			It("prints a warning", func() {
+				versioner := &fakes.ProductVersioner{}
+				versioner.GetAllProductVersionsReturns([]string{"2.2.1 Blah", "2.2.2"}, nil)
+
+				buffer := gbytes.NewBuffer()
+				logger := log.New(buffer, "", 0)
+				_, err := download_clients.DetermineProductVersion(
+					"product",
+					"",
+					`2\.2\..*`,
+					versioner,
+					logger,
+				)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(buffer).To(gbytes.Say(`could not parse semver version from: 2.2.1 Blah`))
 			})
 		})
 
