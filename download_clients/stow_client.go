@@ -1,12 +1,10 @@
 package download_clients
 
 import (
-	"archive/zip"
-	"bytes"
 	"fmt"
 	"github.com/graymeta/stow"
+	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/progress"
-	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 	"path/filepath"
@@ -292,61 +290,23 @@ func (s stowClient) GetLatestStemcellForProduct(_ FileArtifacter, downloadedProd
 	}, nil
 }
 
-type stemcellMetadata struct {
-	Metadata internalStemcellMetadata `yaml:"stemcell_criteria"`
-}
-
-type internalStemcellMetadata struct {
-	Os                   string `yaml:"os"`
-	Version              string `yaml:"version"`
-	PatchSecurityUpdates string `yaml:"enable_patch_security_updates"`
-}
-
 func stemcellFromProduct(filename string) (*stemcell, error) {
-	// Open a zip archive for reading.
-	tileZipReader, err := zip.OpenReader(filename)
+	metadataExtractor := extractor.MetadataExtractor{}
+	metadata, err := metadataExtractor.ExtractMetadata(filename)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse tile. Ensure that downloaded file is a valid pivotal tile: %s", err)
+		return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile %q: %s", filename, err)
 	}
 
-	defer tileZipReader.Close()
-
-	metadataRegex := regexp.MustCompile(`^metadata/.*\.yml`)
-
-	for _, file := range tileZipReader.File {
-		// check if the file matches the name for application portfolio xml
-
-		if metadataRegex.MatchString(file.Name) {
-			metadataReadCloser, err := file.Open()
-			if err != nil {
-				return nil, err
-			}
-
-			metadataBuffer := new(bytes.Buffer)
-			_, err = metadataBuffer.ReadFrom(metadataReadCloser)
-			if err != nil {
-				return nil, err
-			}
-
-			metadata := stemcellMetadata{}
-			err = yaml.Unmarshal(metadataBuffer.Bytes(), &metadata)
-			if err != nil {
-				return nil, err
-			}
-
-			stemcellNameToPivnetProductName := map[string]string{
-				"ubuntu-xenial": "stemcells-ubuntu-xenial",
-				"ubuntu-trusty": "stemcells",
-				"windows2016":   "stemcells-windows-server",
-				"windows1803":   "stemcells-windows-server",
-				"windows2019":   "stemcells-windows-server",
-			}
-
-			return &stemcell{
-				slug:    stemcellNameToPivnetProductName[metadata.Metadata.Os],
-				version: metadata.Metadata.Version,
-			}, nil
-		}
+	stemcellNameToPivnetProductName := map[string]string{
+		"ubuntu-xenial": "stemcells-ubuntu-xenial",
+		"ubuntu-trusty": "stemcells",
+		"windows2016":   "stemcells-windows-server",
+		"windows1803":   "stemcells-windows-server",
+		"windows2019":   "stemcells-windows-server",
 	}
-	return nil, fmt.Errorf("could not find the appropriate stemcell associated with the tile: %s", filename)
+
+	return &stemcell{
+		slug:    stemcellNameToPivnetProductName[metadata.StemcellCriteria.OS],
+		version: metadata.StemcellCriteria.Version,
+	}, nil
 }

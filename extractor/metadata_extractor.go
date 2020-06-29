@@ -13,9 +13,14 @@ import (
 type MetadataExtractor struct{}
 
 type Metadata struct {
-	Name    string
-	Version string `yaml:"product_version"`
-	Raw     []byte
+	Name             string
+	Version          string `yaml:"product_version"`
+	StemcellCriteria struct {
+		OS                   string `yaml:"os"`
+		Version              string `yaml:"version"`
+		PatchSecurityUpdates bool `yaml:"enable_patch_security_updates"`
+	} `yaml:"stemcell_criteria"`
+	Raw []byte
 }
 
 func (me MetadataExtractor) ExtractMetadata(productPath string) (Metadata, error) {

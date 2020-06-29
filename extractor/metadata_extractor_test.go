@@ -16,7 +16,12 @@ const (
 	validYAML = `
 ---
 product_version: 1.8.14
-name: some-product`
+name: some-product
+stemcell_criteria:
+  os: ubuntu-trusty
+  enable_patch_security_updates: true
+  version: "3586"
+`
 )
 
 func createProductFile(metadataFilePath, contents string) *os.File {
@@ -67,6 +72,9 @@ var _ = Describe("MetadataExtractor", func() {
 
 			Expect(metadata.Name).To(Equal("some-product"))
 			Expect(metadata.Version).To(Equal("1.8.14"))
+			Expect(metadata.StemcellCriteria.OS).To(Equal("ubuntu-trusty"))
+			Expect(metadata.StemcellCriteria.Version).To(Equal("3586"))
+			Expect(metadata.StemcellCriteria.PatchSecurityUpdates).To(BeTrue())
 			Expect(metadata.Raw).To(MatchYAML(validYAML))
 		})
 
