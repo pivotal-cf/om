@@ -946,43 +946,93 @@ output-directory: %s
 	})
 
 	When("directory flags are provided pointing to directories that don't exist", func() {
+		var (
+			nonexistingDir string
+			validDirectory string
+			err            error
+		)
 
-		It("errors, printing both the flag and the filepath in question", func() {
+		BeforeEach(func() {
+			nonexistingDir = "/invalid/dir/noexist"
+			validDirectory, err = ioutil.TempDir("", "")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("errors, printing both --output-dir and the filepath in question", func() {
 			err := command.Execute([]string{
 				"--pivnet-api-token", "token",
 				"--file-glob", "*.pivotal",
 				"--pivnet-product-slug", "elastic-runtime",
 				"--product-version", "2.0.0",
-				"--stemcell-output-directory", "/invalid/dir/noexist",
+				"--stemcell-output-directory", validDirectory,
 				"--stemcell-iaas", "aws",
-				"--output-directory", "/invalid/dir/noexist",
+				"--output-directory", nonexistingDir,
 			})
 
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`--output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
 		})
-	})
 
-	When("directory flags are provided pointing to non-directory files", func() {
-		var existingNonDirFile *os.File
-
-		BeforeEach(func() {
-			existingNonDirFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("errors, printing both the flag and the filepath in question", func() {
+		It("errors, printing both --stemcell-output-dir and the filepath in question", func() {
 			err := command.Execute([]string{
 				"--pivnet-api-token", "token",
 				"--file-glob", "*.pivotal",
 				"--pivnet-product-slug", "elastic-runtime",
 				"--product-version", "2.0.0",
-				"--stemcell-output-directory", "/invalid/dir/noexist",
+				"--stemcell-output-directory", nonexistingDir,
+				"--stemcell-iaas", "aws",
+				"--output-directory", validDirectory,
+			})
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`--stemcell-output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
+		})
+	})
+
+	When("directory flags are provided pointing to non-directory files", func() {
+		var (
+			existingNonDirFile *os.File
+			validDirectory     string
+			err                error
+		)
+
+		BeforeEach(func() {
+			existingNonDirFile, err = ioutil.TempFile("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			validDirectory, err = ioutil.TempDir("", "")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("errors, printing both --output-directory and the filepath in question", func() {
+			err = command.Execute([]string{
+				"--pivnet-api-token", "token",
+				"--file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--stemcell-output-directory", validDirectory,
 				"--stemcell-iaas", "aws",
 				"--output-directory", existingNonDirFile.Name(),
 			})
 
 			expectedOutput := fmt.Sprintf("--output-directory %q is not a directory", existingNonDirFile.Name())
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(expectedOutput))
+		})
+
+		It("errors, printing both --stemcell-output-directory and the filepath in question", func() {
+			err = command.Execute([]string{
+				"--pivnet-api-token", "token",
+				"--file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--stemcell-output-directory", existingNonDirFile.Name(),
+				"--stemcell-iaas", "aws",
+				"--output-directory", validDirectory,
+			})
+
+			expectedOutput := fmt.Sprintf("--stemcell-output-directory %q is not a directory", existingNonDirFile.Name())
 
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(expectedOutput))

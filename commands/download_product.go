@@ -261,6 +261,16 @@ func (c *DownloadProduct) validate() error {
 		return fmt.Errorf("--output-directory %q is not a directory", c.Options.OutputDir)
 	}
 
+	if c.Options.StemcellOutputDir != "" {
+		file, err = os.Open(c.Options.StemcellOutputDir)
+		if err != nil {
+			return fmt.Errorf("--stemcell-output-directory %q does not exist: %w", c.Options.StemcellOutputDir, err)
+		}
+		fi, _ = file.Stat()
+		if !fi.IsDir() {
+			return fmt.Errorf("--stemcell-output-directory %q is not a directory", c.Options.StemcellOutputDir)
+		}
+	}
 	return nil
 }
 
