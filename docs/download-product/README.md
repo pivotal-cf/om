@@ -22,6 +22,7 @@ Flags:
     (aliases: --s3-product-path, --gcs-product-path, --azure-product-path)
   --blobstore-stemcell-path        string             specify the lookup path where the s3|gcs|azure stemcell artifacts are stored
     (aliases: --s3-stemcell-path, --gcs-stemcell-path, --azure-stemcell-path)
+  --cache-cleanup                  bool               Delete everything except the latest artifact in output-dir and stemcell-output-dir
   --config, -c                     string             path to yml file for configuration (keys must match the following command line flags)
   --file-glob, -f                  string (required)  glob to match files within Pivotal Network product to be downloaded.
     (aliases: --pivnet-file-glob)
