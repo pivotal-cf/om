@@ -10,15 +10,13 @@ import (
 )
 
 func main() {
-	homePath, err := os.UserHomeDir()
+	currentPath, err := os.Getwd()
 	if err != nil {
-		fmt.Printf("could not determine user home directory: %s", err)
+		fmt.Printf("could not determine working directory: %s", err)
 		os.Exit(1)
 	}
 
-	currentPath := filepath.Join(homePath, "workspace", "om")
-
-	omPath, err := gexec.Build(filepath.Join(currentPath, "main.go"), "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
+	omPath, err := gexec.Build("github.com/pivotal-cf/om", "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
 	if err != nil {
 		fmt.Printf("could not build binary: %s\n", err)
 		os.Exit(1)
