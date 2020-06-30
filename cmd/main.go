@@ -89,7 +89,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
-	var unauthenticatedClient, authedClient, authedCookieClient, unauthenticatedProgressClient, authedProgressClient httpClient
+	var unauthenticatedClient, authedClient, unauthenticatedProgressClient, authedProgressClient httpClient
 	unauthenticatedClient, err = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 	if err != nil {
 		return err
@@ -105,11 +105,6 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		authedClient = network.NewDecryptClient(authedClient, unauthenticatedClient, global.DecryptionPassphrase, os.Stderr)
 	}
 
-	authedCookieClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, "", connectTimeout, requestTimeout)
-	if err != nil {
-		return err
-	}
-
 	liveWriter := uilive.New()
 	liveWriter.Out = os.Stderr
 	unauthenticatedProgressClient = network.NewProgressClient(unauthenticatedClient, progress.NewBar(), liveWriter)
@@ -119,7 +114,6 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stderr)
 		unauthenticatedProgressClient = network.NewTraceClient(unauthenticatedProgressClient, os.Stderr)
 		authedClient = network.NewTraceClient(authedClient, os.Stderr)
-		authedCookieClient = network.NewTraceClient(authedCookieClient, os.Stderr)
 		authedProgressClient = network.NewTraceClient(authedProgressClient, os.Stderr)
 	}
 
