@@ -11,11 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet/v5/logshim"
-	"github.com/pivotal-cf/om/download_clients"
-	"github.com/pivotal-cf/pivnet-cli/filter"
-
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/validator"
 )
 
@@ -492,18 +489,12 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 			},
 			progressWriter)
 	case "pivnet", "":
-		logger := logshim.NewLogShim(
+		return download_clients.NewPivnetClient(
 			stdout,
 			stderr,
-			false,
-		)
-
-		return download_clients.NewPivnetClient(
-			logger,
 			progressWriter,
 			download_clients.DefaultPivnetFactory,
 			c.PivnetToken,
-			filter.NewFilter(logger),
 			c.PivnetDisableSSL,
 			c.PivnetHost,
 		), nil

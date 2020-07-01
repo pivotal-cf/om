@@ -2,7 +2,10 @@ package download_clients
 
 import (
 	"fmt"
+	"github.com/pivotal-cf/go-pivnet/v5/logshim"
+	"github.com/pivotal-cf/pivnet-cli/filter"
 	"io"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -23,27 +26,31 @@ type PivnetDownloader interface {
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
 }
 
-//counterfeiter:generate -o ./fakes/pivnet_filter_service.go --fake-name PivnetFilter . PivnetFilter
-type PivnetFilter interface {
-	ReleasesByVersion(releases []pivnet.Release, version string) ([]pivnet.Release, error)
-	ProductFileKeysByGlobs(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error)
-}
-
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var NewPivnetClient= func(logger pivnetlog.Logger, progressWriter io.Writer, factory PivnetFactory, token string, filter PivnetFilter, skipSSL bool, pivnetHost string, ) ProductDownloader {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
+	logger := logshim.NewLogShim(
+		stdout,
+		stderr,
+		false,
+	)
+
 	downloader := factory(
 		pivnet.NewAccessTokenOrLegacyToken(
-			token, pivnetHost, skipSSL, userAgent),
+			token,
+			pivnetHost,
+			skipSSL,
+			userAgent),
 		pivnet.ClientConfig{
 			Host:              pivnetHost,
 			UserAgent:         userAgent,
 			SkipSSLValidation: skipSSL,
 		},
-		logger)
+		logger,
+	)
 
 	return &pivnetClient{
-		filter:         filter,
+		filter:         filter.NewFilter(logger),
 		progressWriter: progressWriter,
 		downloader:     downloader,
 	}
@@ -51,8 +58,8 @@ var NewPivnetClient= func(logger pivnetlog.Logger, progressWriter io.Writer, fac
 
 type pivnetClient struct {
 	downloader     PivnetDownloader
-	filter         PivnetFilter
 	progressWriter io.Writer
+	filter         *filter.Filter
 }
 
 func (p *pivnetClient) GetAllProductVersions(slug string) ([]string, error) {
@@ -95,8 +102,8 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 	}
 
 	return &PivnetFileArtifact{
-		releaseID:     release.ID,
-		slug:          slug,
+		releaseID:   release.ID,
+		slug:        slug,
 		productFile: productFiles[0],
 	}, nil
 }

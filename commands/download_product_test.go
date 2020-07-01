@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/pivotal-cf/go-pivnet/v5/logger"
 	"github.com/pivotal-cf/om/download_clients"
 
 	. "github.com/onsi/ginkgo"
@@ -39,7 +38,7 @@ var _ = Describe("DownloadProduct", func() {
 	})
 
 	JustBeforeEach(func() {
-		download_clients.NewPivnetClient = func(logger logger.Logger, progressWriter io.Writer, factory download_clients.PivnetFactory, token string, filter download_clients.PivnetFilter, skipSSL bool, pivnetHost string) download_clients.ProductDownloader {
+		download_clients.NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, factory download_clients.PivnetFactory, token string, skipSSL bool, pivnetHost string) download_clients.ProductDownloader {
 			return fakeProductDownloader
 		}
 		buffer = gbytes.NewBuffer()
