@@ -270,7 +270,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						createTempZipFile(file)
+						createProductPivotalFile(file)
 						return nil
 					}
 
@@ -323,19 +323,19 @@ var _ = Describe("DownloadProduct", func() {
 
 				When("the --stemcell-output-dir flag is passed", func() {
 					var (
-						commandArgs  []string
-						tempDir      string
-						otherTempDir string
+						commandArgs       []string
+						productOutputDir  string
+						stemcellOutputDir string
 					)
 					BeforeEach(func() {
-						tempDir, err = ioutil.TempDir("", "om-tests-output-dir-")
+						productOutputDir, err = ioutil.TempDir("", "om-tests-output-dir-")
 						Expect(err).ToNot(HaveOccurred())
 
-						otherTempDir, err = ioutil.TempDir("", "om-tests-stemcell-output-dir-")
+						stemcellOutputDir, err = ioutil.TempDir("", "om-tests-stemcell-output-dir-")
 						Expect(err).ToNot(HaveOccurred())
 
 						fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-							createTempZipFile(file)
+							createProductPivotalFile(file)
 							return nil
 						}
 
@@ -344,8 +344,8 @@ var _ = Describe("DownloadProduct", func() {
 							"--file-glob", "*.pivotal",
 							"--pivnet-product-slug", "elastic-runtime",
 							"--product-version", "2.0.0",
-							"--output-directory", tempDir,
-							"--stemcell-output-directory", otherTempDir,
+							"--output-directory", productOutputDir,
+							"--stemcell-output-directory", stemcellOutputDir,
 							"--stemcell-iaas", "google",
 						}
 					})
@@ -354,32 +354,57 @@ var _ = Describe("DownloadProduct", func() {
 						err = command.Execute(commandArgs)
 						Expect(err).ToNot(HaveOccurred())
 
-						downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
-						downloadedStemcellFilePath := path.Join(otherTempDir, "stemcell.tgz")
+						downloadedFilePath := path.Join(productOutputDir, "cf-2.0-build.1.pivotal")
+						downloadedStemcellFilePath := path.Join(stemcellOutputDir, "stemcell.tgz")
 						Expect(downloadedFilePath).To(BeAnExistingFile())
 						Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
 					})
 
 					When("--cache-cleanup is passed along with both output-dir flags", func() {
-						It("leaves the output directories containing only the latest files", func() {
-							tempProduct, err := ioutil.TempFile(tempDir, "")
+						tempFile := func(dir, pattern string) string {
+							file, err := ioutil.TempFile(dir, pattern)
 							Expect(err).ToNot(HaveOccurred())
+							return file.Name()
+						}
 
-							tempStemcell, err := ioutil.TempFile(tempDir, "")
-							Expect(err).ToNot(HaveOccurred())
+						It("only deletes files that match the glob of the product and stemcell(s)", func() {
+							alreadyDownloadedProduct := tempFile(productOutputDir, "product*.pivotal")
+							alreadyDownloadedLightStemcell := tempFile(stemcellOutputDir, "light-bosh-google-*.tgz")
+							unknownFileWeDontOwn := tempFile(productOutputDir, "no-delete")
 
 							commandArgs = append(commandArgs, "--cache-cleanup")
 
 							err = command.Execute(commandArgs)
 							Expect(err).ToNot(HaveOccurred())
 
-							downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
-							downloadedStemcellFilePath := path.Join(otherTempDir, "stemcell.tgz")
+							downloadedFilePath := path.Join(productOutputDir, "cf-2.0-build.1.pivotal")
+							downloadedStemcellFilePath := path.Join(stemcellOutputDir, "stemcell.tgz")
 							Expect(downloadedFilePath).To(BeAnExistingFile())
 							Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
 
-							Expect(tempProduct.Name()).ToNot(BeAnExistingFile())
-							Expect(tempStemcell.Name()).ToNot(BeAnExistingFile())
+							Expect(alreadyDownloadedProduct).ToNot(BeAnExistingFile())
+							Expect(alreadyDownloadedLightStemcell).ToNot(BeAnExistingFile())
+							Expect(unknownFileWeDontOwn).To(BeAnExistingFile())
+						})
+
+						When("the product has already been downloaded and cached", func() {
+							It("only deletes previous versions of the product", func() {
+								previousDownloadedProduct := tempFile(productOutputDir, "cf-2.0-build.*.pivotal")
+								downloadedFilePath := path.Join(productOutputDir, "cf-2.0-build.1.pivotal")
+								downloadedFile, err := os.Create(downloadedFilePath)
+								Expect(err).ToNot(HaveOccurred())
+								createProductPivotalFile(downloadedFile)
+
+								commandArgs = append(commandArgs, "--cache-cleanup")
+								err = command.Execute(commandArgs)
+								Expect(err).ToNot(HaveOccurred())
+
+								downloadedStemcellFilePath := path.Join(stemcellOutputDir, "stemcell.tgz")
+								Expect(downloadedFilePath).To(BeAnExistingFile())
+								Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
+
+								Expect(previousDownloadedProduct).ToNot(BeAnExistingFile())
+							})
 						})
 					})
 				})
@@ -390,7 +415,7 @@ var _ = Describe("DownloadProduct", func() {
 						Expect(err).ToNot(HaveOccurred())
 
 						fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-							createTempZipFile(file)
+							createProductPivotalFile(file)
 							return nil
 						}
 
@@ -494,7 +519,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						createTempZipFile(file)
+						createProductPivotalFile(file)
 						return nil
 					}
 
@@ -519,7 +544,7 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						createTempZipFile(file)
+						createProductPivotalFile(file)
 						return nil
 					}
 
@@ -560,7 +585,7 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						createTempZipFile(file)
+						createProductPivotalFile(file)
 						return nil
 					}
 
@@ -613,7 +638,7 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						createTempZipFile(file)
+						createProductPivotalFile(file)
 						return nil
 					}
 
@@ -667,7 +692,7 @@ var _ = Describe("DownloadProduct", func() {
 				fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
 				fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-					createTempZipFile(file)
+					createProductPivotalFile(file)
 					return nil
 				}
 			}
@@ -676,7 +701,7 @@ var _ = Describe("DownloadProduct", func() {
 				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
 				file, err := os.Create(filePath)
 				Expect(err).ToNot(HaveOccurred())
-				createTempZipFile(file)
+				createProductPivotalFile(file)
 				return filePath
 			}
 
@@ -1146,7 +1171,7 @@ output-directory: %s
 	})
 })
 
-func createTempZipFile(file *os.File) {
+func createProductPivotalFile(file *os.File) {
 	var err error
 	defer file.Close()
 

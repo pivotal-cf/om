@@ -359,25 +359,14 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	if exist {
 		if ok, _ := c.shasumMatches(productFilePath, fileArtifact.SHA256()); ok {
 			c.stderr.Printf("%s already exists, skip downloading", productFilePath)
+			c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
 			return productFilePath, fileArtifact, nil
 		} else {
 			c.stderr.Printf("%s already exists, sha sum does not match, re-downloading", productFilePath)
 		}
 	}
 
-	if c.Options.CacheCleanup {
-		outputDirContents, err := ioutil.ReadDir(outputDir)
-		if err != nil {
-			panic(err)
-		}
-
-		for _, file := range outputDirContents {
-			filepath := path.Join(outputDir, file.Name())
-			if filepath != productFilePath {
-				os.Remove(filepath)
-			}
-		}
-	}
+	c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
 
 	partialProductFilePath := productFilePath + ".partial"
 	// create a new file to download
@@ -407,6 +396,24 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 	_ = os.Rename(partialProductFilePath, productFilePath)
 	return productFilePath, fileArtifact, nil
+}
+
+func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string) {
+	if c.Options.CacheCleanup {
+		outputDirContents, err := ioutil.ReadDir(outputDir)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, file := range outputDirContents {
+			dirFilePath := path.Join(outputDir, file.Name())
+			if matchGlob, _ := filepath.Match(glob, file.Name()); matchGlob {
+				if dirFilePath != productFilePath {
+					os.Remove(dirFilePath)
+				}
+			}
+		}
+	}
 }
 
 func (c *DownloadProduct) shasumMatches(path, exepectedSum string) (bool, string) {
