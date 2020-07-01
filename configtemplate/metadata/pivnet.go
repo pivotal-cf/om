@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	pivnetapi "github.com/pivotal-cf/go-pivnet/v4"
-	"github.com/pivotal-cf/go-pivnet/v4/logshim"
+	pivnetapi "github.com/pivotal-cf/go-pivnet/v5"
+	"github.com/pivotal-cf/go-pivnet/v5/logshim"
 )
 
 func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Provider {

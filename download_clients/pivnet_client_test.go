@@ -7,9 +7,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/go-pivnet/v4"
-	log "github.com/pivotal-cf/go-pivnet/v4/logger"
-	"github.com/pivotal-cf/go-pivnet/v4/logger/loggerfakes"
+	"github.com/pivotal-cf/go-pivnet/v5"
+	log "github.com/pivotal-cf/go-pivnet/v5/logger"
+	"github.com/pivotal-cf/go-pivnet/v5/logger/loggerfakes"
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
 )

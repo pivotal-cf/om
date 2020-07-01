@@ -11,7 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/pivotal-cf/go-pivnet/v4/logger"
+	"github.com/pivotal-cf/go-pivnet/v5/logger"
 	"github.com/pivotal-cf/om/download_clients"
 
 	. "github.com/onsi/ginkgo"

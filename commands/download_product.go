@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet/v4/logshim"
+	"github.com/pivotal-cf/go-pivnet/v5/logshim"
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/pivnet-cli/filter"
 

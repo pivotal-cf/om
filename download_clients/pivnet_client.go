@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet/v4"
-	"github.com/pivotal-cf/go-pivnet/v4/download"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/v4/logger"
+	"github.com/pivotal-cf/go-pivnet/v5"
+	"github.com/pivotal-cf/go-pivnet/v5/download"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v5/logger"
 	"github.com/pivotal-cf/pivnet-cli/gp"
 )
 

@@ -133,7 +133,7 @@ var _ = Describe("download-product command", func() {
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
-				Expect(session.Err).To(gbytes.Say(`could not reach provided endpoint and bucket `))
+				Expect(session.Err).To(gbytes.Say(`specified bucket does not exist`))
 			})
 		})
 

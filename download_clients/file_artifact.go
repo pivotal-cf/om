@@ -1,6 +1,6 @@
 package download_clients
 
-import "github.com/pivotal-cf/go-pivnet/v4"
+import "github.com/pivotal-cf/go-pivnet/v5"
 
 type PivnetFileArtifact struct {
 	slug          string
