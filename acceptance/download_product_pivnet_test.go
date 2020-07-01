@@ -81,6 +81,7 @@ var _ = Describe("download-product command", func() {
 					 "product_files": [
 					 {
 					   "id": 1,
+
 					   "aws_object_key": "example-product.pivotal",
 					   "_links": {
 					     "download": {

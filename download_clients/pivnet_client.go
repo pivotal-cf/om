@@ -95,11 +95,9 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 	}
 
 	return &PivnetFileArtifact{
-		name:          productFiles[0].AWSObjectKey,
-		sha256:        productFiles[0].SHA256,
 		releaseID:     release.ID,
 		slug:          slug,
-		productFileID: productFiles[0].ID,
+		productFile: productFiles[0],
 	}, nil
 }
 
@@ -109,7 +107,7 @@ func (p *pivnetClient) DownloadProductToFile(fa FileArtifacter, file *os.File) e
 	if err != nil {
 		return fmt.Errorf("could not create fileInfo for download product file %s: %s", fileArtifact.slug, err.Error())
 	}
-	err = p.downloader.DownloadProductFile(fileInfo, fileArtifact.slug, fileArtifact.releaseID, fileArtifact.productFileID, p.progressWriter)
+	err = p.downloader.DownloadProductFile(fileInfo, fileArtifact.slug, fileArtifact.releaseID, fileArtifact.productFile.ID, p.progressWriter)
 	if err != nil {
 		return fmt.Errorf("could not download product file %s: %s", fileArtifact.slug, err)
 	}

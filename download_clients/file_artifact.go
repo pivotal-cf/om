@@ -1,19 +1,19 @@
 package download_clients
 
+import "github.com/pivotal-cf/go-pivnet/v4"
+
 type PivnetFileArtifact struct {
-	name          string
-	sha256        string
 	slug          string
 	releaseID     int
-	productFileID int
+	productFile   pivnet.ProductFile
 }
 
 func (f PivnetFileArtifact) Name() string {
-	return f.name
+	return f.productFile.AWSObjectKey
 }
 
 func (f PivnetFileArtifact) SHA256() string {
-	return f.sha256
+	return f.productFile.SHA256
 }
 
 type stowFileArtifact struct {
