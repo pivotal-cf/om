@@ -60,7 +60,7 @@ type DownloadProductOptions struct {
 	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
 	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
 	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
-	CacheCleanup bool   `long:"cache-cleanup" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir"`
+	CacheCleanup string `env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
 
 	AzureOptions
 	GCSOptions
@@ -359,14 +359,22 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	if exist {
 		if ok, _ := c.shasumMatches(productFilePath, fileArtifact.SHA256()); ok {
 			c.stderr.Printf("%s already exists, skip downloading", productFilePath)
-			c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+
+			err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+			if err != nil {
+				return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
+			}
+
 			return productFilePath, fileArtifact, nil
 		} else {
 			c.stderr.Printf("%s already exists, sha sum does not match, re-downloading", productFilePath)
 		}
 	}
 
-	c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+	err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
+	}
 
 	partialProductFilePath := productFilePath + ".partial"
 	// create a new file to download
@@ -398,22 +406,24 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	return productFilePath, fileArtifact, nil
 }
 
-func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string) {
-	if c.Options.CacheCleanup {
+func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string) error {
+	if c.Options.CacheCleanup == "I acknowledge this will delete files in the output directories" {
 		outputDirContents, err := ioutil.ReadDir(outputDir)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		for _, file := range outputDirContents {
 			dirFilePath := path.Join(outputDir, file.Name())
 			if matchGlob, _ := filepath.Match(glob, file.Name()); matchGlob {
 				if dirFilePath != productFilePath {
-					os.Remove(dirFilePath)
+					_ = os.Remove(dirFilePath)
 				}
 			}
 		}
 	}
+
+	return nil
 }
 
 func (c *DownloadProduct) shasumMatches(path, exepectedSum string) (bool, string) {

@@ -31,7 +31,6 @@ var _ = Describe("DownloadProduct", func() {
 	)
 
 	BeforeEach(func() {
-
 		fakeProductDownloader = &fakes.ProductDownloader{}
 		fakeProductDownloader.GetAllProductVersionsReturns([]string{"2.0.0"}, nil)
 		environFunc = func() []string { return nil }
@@ -327,6 +326,13 @@ var _ = Describe("DownloadProduct", func() {
 						productOutputDir  string
 						stemcellOutputDir string
 					)
+
+					tempFile := func(dir, pattern string) string {
+						file, err := ioutil.TempFile(dir, pattern)
+						Expect(err).ToNot(HaveOccurred())
+						return file.Name()
+					}
+
 					BeforeEach(func() {
 						productOutputDir, err = ioutil.TempDir("", "om-tests-output-dir-")
 						Expect(err).ToNot(HaveOccurred())
@@ -360,19 +366,47 @@ var _ = Describe("DownloadProduct", func() {
 						Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
 					})
 
-					When("--cache-cleanup is passed along with both output-dir flags", func() {
-						tempFile := func(dir, pattern string) string {
-							file, err := ioutil.TempFile(dir, pattern)
+					When("CACHE_CLEANUP is an invalid value", func() {
+						BeforeEach(func() {
+							os.Setenv("CACHE_CLEANUP", "invalid")
+						})
+
+						AfterEach(func() {
+							os.Unsetenv("CACHE_CLEANUP")
+						})
+
+						It("does not cleanup the cache", func() {
+							alreadyDownloadedProduct := tempFile(productOutputDir, "product*.pivotal")
+							alreadyDownloadedLightStemcell := tempFile(stemcellOutputDir, "light-bosh-google-*.tgz")
+							unknownFileWeDontOwn := tempFile(productOutputDir, "no-delete")
+
+							err = command.Execute(commandArgs)
 							Expect(err).ToNot(HaveOccurred())
-							return file.Name()
-						}
+
+							downloadedFilePath := path.Join(productOutputDir, "cf-2.0-build.1.pivotal")
+							downloadedStemcellFilePath := path.Join(stemcellOutputDir, "stemcell.tgz")
+							Expect(downloadedFilePath).To(BeAnExistingFile())
+							Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
+
+							Expect(alreadyDownloadedProduct).To(BeAnExistingFile())
+							Expect(alreadyDownloadedLightStemcell).To(BeAnExistingFile())
+							Expect(unknownFileWeDontOwn).To(BeAnExistingFile())
+						})
+					})
+
+					When("CACHE_CLEANUP='I acknowledge this will delete files in the output directories' is passed along with both output-dir flags", func() {
+						BeforeEach(func() {
+							os.Setenv("CACHE_CLEANUP", "I acknowledge this will delete files in the output directories")
+						})
+
+						AfterEach(func() {
+							os.Unsetenv("CACHE_CLEANUP")
+						})
 
 						It("only deletes files that match the glob of the product and stemcell(s)", func() {
 							alreadyDownloadedProduct := tempFile(productOutputDir, "product*.pivotal")
 							alreadyDownloadedLightStemcell := tempFile(stemcellOutputDir, "light-bosh-google-*.tgz")
 							unknownFileWeDontOwn := tempFile(productOutputDir, "no-delete")
-
-							commandArgs = append(commandArgs, "--cache-cleanup")
 
 							err = command.Execute(commandArgs)
 							Expect(err).ToNot(HaveOccurred())
@@ -395,7 +429,6 @@ var _ = Describe("DownloadProduct", func() {
 								Expect(err).ToNot(HaveOccurred())
 								createProductPivotalFile(downloadedFile)
 
-								commandArgs = append(commandArgs, "--cache-cleanup")
 								err = command.Execute(commandArgs)
 								Expect(err).ToNot(HaveOccurred())
 
@@ -713,6 +746,12 @@ var _ = Describe("DownloadProduct", func() {
 					sum, err := validator.Checksum(filePath)
 					Expect(err).ToNot(HaveOccurred())
 					setupForProductAPI(sum)
+
+					os.Setenv("CACHE_CLEANUP", "I acknowledge this will delete files in the output directories")
+				})
+
+				AfterEach(func() {
+					os.Unsetenv("CACHE_CLEANUP")
 				})
 
 				It("does not download the file again, even with cache cleanup", func() {
@@ -722,7 +761,6 @@ var _ = Describe("DownloadProduct", func() {
 						"--pivnet-product-slug", "elastic-runtime",
 						"--product-version", "2.0.0",
 						"--output-directory", tempDir,
-						"--cache-cleanup",
 					})
 					Expect(err).ToNot(HaveOccurred())
 					Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))

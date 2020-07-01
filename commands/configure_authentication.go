@@ -22,13 +22,13 @@ type ConfigureAuthentication struct {
 	Options     struct {
 		interpolateConfigFileOptions
 
-		Username               string   `long:"username"              short:"u"  env:"OM_USERNAME"              description:"admin username" required:"true"`
-		Password               string   `long:"password"              short:"p"  env:"OM_PASSWORD"              description:"admin password" required:"true"`
-		DecryptionPassphrase   string   `long:"decryption-passphrase" short:"dp" env:"OM_DECRYPTION_PASSPHRASE" description:"passphrase used to encrypt the installation" required:"true"`
-		HTTPProxyURL           string   `long:"http-proxy-url"                                                  description:"proxy for outbound HTTP network traffic"`
-		HTTPSProxyURL          string   `long:"https-proxy-url"                                                 description:"proxy for outbound HTTPS network traffic"`
-		NoProxy                string   `long:"no-proxy"                                                        description:"comma-separated list of hosts that do not go through the proxy"`
-		PrecreatedClientSecret string   `long:"precreated-client-secret"                                        description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
+		Username               string `long:"username"              short:"u"  env:"OM_USERNAME"              description:"admin username" required:"true"`
+		Password               string `long:"password"              short:"p"  env:"OM_PASSWORD"              description:"admin password" required:"true"`
+		DecryptionPassphrase   string `long:"decryption-passphrase" short:"dp" env:"OM_DECRYPTION_PASSPHRASE" description:"passphrase used to encrypt the installation" required:"true"`
+		HTTPProxyURL           string `long:"http-proxy-url"                                                  description:"proxy for outbound HTTP network traffic"`
+		HTTPSProxyURL          string `long:"https-proxy-url"                                                 description:"proxy for outbound HTTPS network traffic"`
+		NoProxy                string `long:"no-proxy"                                                        description:"comma-separated list of hosts that do not go through the proxy"`
+		PrecreatedClientSecret string `long:"precreated-client-secret"                                        description:"create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option"`
 	}
 }
 

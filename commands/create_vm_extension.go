@@ -21,7 +21,7 @@ type CreateVMExtension struct {
 	service     createVMExtensionService
 	logger      logger
 	Options     struct {
-		Name            string   `long:"name"               short:"n"   description:"VM extension name"`
+		Name string `long:"name"               short:"n"   description:"VM extension name"`
 
 		interpolateConfigFileOptions
 		OpsFile         []string `long:"ops-file"           short:"o"   description:"YAML operations file"`

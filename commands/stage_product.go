@@ -14,8 +14,8 @@ type StageProduct struct {
 	Options struct {
 		interpolateConfigFileOptions
 
-		Product    string `long:"product-name"    short:"p" required:"true" description:"name of product"`
-		Version    string `long:"product-version"           required:"true" description:"version of product"`
+		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
+		Version string `long:"product-version"           required:"true" description:"version of product"`
 	}
 }
 
