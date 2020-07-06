@@ -28,7 +28,7 @@ type PivnetDownloader interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
@@ -50,16 +50,16 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, progressWrite
 	)
 
 	return &pivnetClient{
-		filter:         filter.NewFilter(logger),
-		progressWriter: progressWriter,
-		downloader:     downloader,
+		filter:     filter.NewFilter(logger),
+		downloader: downloader,
+		stderr:     stderr,
 	}
 }
 
 type pivnetClient struct {
-	downloader     PivnetDownloader
-	progressWriter io.Writer
-	filter         *filter.Filter
+	downloader PivnetDownloader
+	filter     *filter.Filter
+	stderr     *log.Logger
 }
 
 func (p *pivnetClient) GetAllProductVersions(slug string) ([]string, error) {
@@ -114,7 +114,7 @@ func (p *pivnetClient) DownloadProductToFile(fa FileArtifacter, file *os.File) e
 	if err != nil {
 		return fmt.Errorf("could not create fileInfo for download product file %s: %s", fileArtifact.slug, err.Error())
 	}
-	err = p.downloader.DownloadProductFile(fileInfo, fileArtifact.slug, fileArtifact.releaseID, fileArtifact.productFile.ID, p.progressWriter)
+	err = p.downloader.DownloadProductFile(fileInfo, fileArtifact.slug, fileArtifact.releaseID, fileArtifact.productFile.ID, p.stderr.Writer())
 	if err != nil {
 		return fmt.Errorf("could not download product file %s: %s", fileArtifact.slug, err)
 	}

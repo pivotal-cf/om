@@ -5,7 +5,7 @@ import (
 	"github.com/graymeta/stow"
 	"github.com/graymeta/stow/s3"
 	"gopkg.in/go-playground/validator.v9"
-	"io"
+	"log"
 	"strconv"
 )
 
@@ -22,7 +22,7 @@ type S3Configuration struct {
 	AuthType        string
 }
 
-func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer) (stowClient, error) {
+func NewS3Client(stower Stower, config S3Configuration, stderr *log.Logger) (stowClient, error) {
 	validate := validator.New()
 	err := validate.Struct(config)
 	if err != nil {
@@ -50,15 +50,7 @@ func NewS3Client(stower Stower, config S3Configuration, progressWriter io.Writer
 		s3.ConfigAuthType:    config.AuthType,
 	}
 
-	return NewStowClient(
-		stower,
-		config.Bucket,
-		stowConfig,
-		progressWriter,
-		config.ProductPath,
-		config.StemcellPath,
-		"s3",
-	), nil
+	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "s3", config.Bucket, ), nil
 }
 
 func validateAccessKeyAuthType(config S3Configuration) error {

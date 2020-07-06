@@ -11,9 +11,7 @@ import (
 	"github.com/pivotal-cf/om/interpolate"
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/presenters"
-	"github.com/pivotal-cf/om/progress"
 	"github.com/pivotal-cf/om/renderers"
-	"github.com/pivotal/uilive"
 	"gopkg.in/yaml.v2"
 	"io"
 	"log"
@@ -105,10 +103,8 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		authedClient = network.NewDecryptClient(authedClient, unauthenticatedClient, global.DecryptionPassphrase, os.Stderr)
 	}
 
-	liveWriter := uilive.New()
-	liveWriter.Out = os.Stderr
-	unauthenticatedProgressClient = network.NewProgressClient(unauthenticatedClient, progress.NewBar(), liveWriter)
-	authedProgressClient = network.NewProgressClient(authedClient, progress.NewBar(), liveWriter)
+	unauthenticatedProgressClient = network.NewProgressClient(unauthenticatedClient, os.Stderr)
+	authedProgressClient = network.NewProgressClient(authedClient, os.Stderr)
 
 	if global.Trace {
 		unauthenticatedClient = network.NewTraceClient(unauthenticatedClient, os.Stderr)

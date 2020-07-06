@@ -44,7 +44,7 @@ var _ = Describe("PivnetClient", func() {
 				return fakePivnetDownloader
 			}
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			versions, err := client.GetAllProductVersions("slug-name")
 			Expect(err).ToNot(HaveOccurred())
 
@@ -74,7 +74,7 @@ var _ = Describe("PivnetClient", func() {
 				createProductFile("anotherslug"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			artifact, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).ToNot(HaveOccurred())
 
@@ -86,7 +86,7 @@ var _ = Describe("PivnetClient", func() {
 		It("returns an error if it could not find the release for the given slug and version pair", func() {
 			fakePivnetDownloader.ReleaseForVersionReturns(createRelease(""), errors.New("some error"))
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).To(MatchError(ContainSubstring("could not fetch the release for someslug")))
 		})
@@ -95,7 +95,7 @@ var _ = Describe("PivnetClient", func() {
 			fakePivnetDownloader.ReleaseForVersionReturns(createRelease("1.0.0"), nil)
 			fakePivnetDownloader.ProductFilesForReleaseReturns([]pivnet.ProductFile{}, errors.New("some error"))
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).To(MatchError(ContainSubstring("could not fetch the product files for someslug")))
 		})
@@ -107,7 +107,7 @@ var _ = Describe("PivnetClient", func() {
 				createProductFile("anotherslug"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*[")
 			Expect(err).To(MatchError(ContainSubstring("could not glob product files:")))
 		})
@@ -119,7 +119,7 @@ var _ = Describe("PivnetClient", func() {
 				createProductFile("anotherslug"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).To(MatchError(ContainSubstring("for product version 1.0.0: the glob '*.zip' matches no file")))
 		})
@@ -131,7 +131,7 @@ var _ = Describe("PivnetClient", func() {
 				createProductFile("anotherslug.zip"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).To(MatchError(ContainSubstring("the glob '*.zip' matches multiple files.")))
 		})
@@ -155,7 +155,7 @@ var _ = Describe("PivnetClient", func() {
 			tmpFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), tmpFile)
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -165,7 +165,7 @@ var _ = Describe("PivnetClient", func() {
 			tmpFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), tmpFile)
 			Expect(err).To(MatchError(ContainSubstring("could not download product file")))
 		})
@@ -190,7 +190,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "1.0", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
@@ -202,7 +202,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "1", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
@@ -216,7 +216,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "5.10", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
@@ -230,7 +230,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "1.2", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
@@ -244,7 +244,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "97.9", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
@@ -254,7 +254,7 @@ var _ = Describe("PivnetClient", func() {
 		It("returns an error if no stemcell is available for product", func() {
 			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{}, errors.New("stemcell not found"))
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).To(MatchError(ContainSubstring("could not fetch stemcell dependency for")))
 		})
@@ -264,7 +264,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "1.0.0", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency")))
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "1.0.0"))))
@@ -275,7 +275,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "abc1.0", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "abc1.0"))))
 		})
@@ -285,7 +285,7 @@ var _ = Describe("PivnetClient", func() {
 				createReleaseDependency(789, "1.0def", "someslug.stemcells"),
 			}, nil)
 
-			client := download_clients.NewPivnetClient(stdout, stderr, nil, fakePivnetFactory, "", true, "")
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "1.0def"))))
 		})

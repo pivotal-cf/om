@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -37,7 +36,7 @@ var _ = Describe("DownloadProduct", func() {
 	})
 
 	JustBeforeEach(func() {
-		download_clients.NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, factory download_clients.PivnetFactory, token string, skipSSL bool, pivnetHost string) download_clients.ProductDownloader {
+		download_clients.NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory download_clients.PivnetFactory, token string, skipSSL bool, pivnetHost string) download_clients.ProductDownloader {
 			return fakeProductDownloader
 		}
 		buffer = gbytes.NewBuffer()

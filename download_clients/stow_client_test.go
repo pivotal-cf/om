@@ -6,6 +6,7 @@ import (
 	"github.com/graymeta/stow"
 	"github.com/pivotal-cf/om/download_clients"
 	"io/ioutil"
+	"log"
 	"os"
 
 	. "github.com/onsi/ginkgo"
@@ -17,6 +18,12 @@ import (
 // this file should test the interface methods.
 
 var _ = Describe("stowClient", func() {
+	var stderr *log.Logger
+
+	BeforeEach(func() {
+		stderr = log.New(GinkgoWriter, "", 0)
+	})
+
 	Describe("GetAllProductVersions", func() {
 		When("there are multiple files of the same 'version', differing by beta version", func() {
 			var (
@@ -35,7 +42,7 @@ var _ = Describe("stowClient", func() {
 			})
 
 			It("reports all versions, including the beta versions", func() {
-				client := download_clients.NewStowClient(stower, "", nil, nil, "", "", "")
+				client := download_clients.NewStowClient(stower, nil, nil, "", "", "", "")
 
 				versions, err := client.GetAllProductVersions("product-slug")
 				Expect(err).ToNot(HaveOccurred())
@@ -63,7 +70,7 @@ var _ = Describe("stowClient", func() {
 			}
 
 			stower = newMockStower(itemsList)
-			client := download_clients.NewStowClient(stower, "", nil, nil, productPath, "", "")
+			client := download_clients.NewStowClient(stower, nil, nil, productPath, "", "", "")
 
 			versions, err := client.GetAllProductVersions("product-slug")
 			Expect(err).ToNot(HaveOccurred())
@@ -94,7 +101,7 @@ var _ = Describe("stowClient", func() {
 				}
 			})
 			It("returns an error, containing endpoint information, saying S3 could not be reached", func() {
-				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
+				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 				_, err := client.GetAllProductVersions("someslug")
 				Expect(err).To(MatchError(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType")))
@@ -114,7 +121,7 @@ var _ = Describe("stowClient", func() {
 			})
 
 			It("gives an error message indicating the key and value that were not matched", func() {
-				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
+				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 				_, err := client.GetAllProductVersions("someslug")
 				Expect(err).To(MatchError(ContainSubstring("no files matching pivnet-product-slug someslug found")))
@@ -130,7 +137,7 @@ var _ = Describe("stowClient", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
@@ -144,7 +151,7 @@ var _ = Describe("stowClient", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "pcf-vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
@@ -159,7 +166,7 @@ var _ = Describe("stowClient", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			_, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
 			Expect(err).To(MatchError(ContainSubstring("the glob '*vsphere*ova' matches multiple files. Write your glob to match exactly one of the following")))
@@ -173,7 +180,7 @@ var _ = Describe("stowClient", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, "", "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			_, err := client.GetLatestProductFile("product-slug", "1.1.1", "*.zip")
 			Expect(err).To(MatchError(ContainSubstring("the glob '*.zip' matches no file")))
@@ -188,7 +195,7 @@ var _ = Describe("stowClient", func() {
 			}
 
 			stower := newMockStower(itemsList)
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, nil, productPath, "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, productPath, "", "", "bucket")
 
 			fileArtifact, err := client.GetLatestProductFile("product-slug", "1.1.1", "*vsphere*ova")
 			Expect(err).ToNot(HaveOccurred())
@@ -230,7 +237,7 @@ var _ = Describe("stowClient", func() {
 				itemsList: []mockItem{item},
 			}
 
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "")
+			client := download_clients.NewStowClient(stower, stderr, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
@@ -254,7 +261,7 @@ var _ = Describe("stowClient", func() {
 			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), file)
 			Expect(err).To(MatchError(ContainSubstring("could not reach provided endpoint and bucket 'endpoint/bucket': expected element type <Error> but have StowErrorType")))
@@ -270,7 +277,7 @@ var _ = Describe("stowClient", func() {
 				itemsList: []mockItem{item},
 			}
 
-			client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "")
+			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 			err := client.DownloadProductToFile(createPivnetFileArtifact(), file)
 			Expect(err).To(HaveOccurred())
@@ -295,7 +302,7 @@ var _ = Describe("stowClient", func() {
 					},
 				}
 
-				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", stemcellPath, "")
+				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", stemcellPath, "", "bucket")
 
 				stemcell, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
 				Expect(err).ToNot(HaveOccurred())
@@ -324,14 +331,14 @@ var _ = Describe("stowClient", func() {
 					itemsList: []mockItem{},
 				}
 
-				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "")
+				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
 				Expect(err).To(MatchError("versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: bad-version"))
 			})
 
 			It("errors when the product file does not have stemcell information", func() {
-				client := download_clients.NewStowClient(nil, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "")
+				client := download_clients.NewStowClient(nil, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
 				_, err := client.GetLatestStemcellForProduct(nil, "./fixtures/example-product.yml")
 				Expect(err).To(HaveOccurred())
@@ -348,7 +355,7 @@ var _ = Describe("stowClient", func() {
 					itemsList: []mockItem{},
 				}
 
-				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "blobstore")
+				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "blobstore", "bucket")
 
 				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
 				Expect(err).To(MatchError("could not find stemcells on blobstore: bucket 'bucket' contains no files"))
@@ -369,7 +376,7 @@ var _ = Describe("stowClient", func() {
 					},
 				}
 
-				client := download_clients.NewStowClient(stower, "bucket", stow.ConfigMap{"endpoint": "endpoint"}, GinkgoWriter, "", "", "blobstore")
+				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "blobstore", "bucket")
 
 				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
 				Expect(err).To(MatchError("no versions could be found equal to or greater than 97.28"))

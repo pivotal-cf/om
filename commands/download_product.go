@@ -477,7 +477,8 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 				ProductPath:    c.ProductPath,
 				StemcellPath:   c.StemcellPath,
 			},
-			progressWriter)
+			stderr,
+		)
 	case "gcs":
 		return download_clients.NewGCSClient(
 			download_clients.StowWrapper{},
@@ -488,7 +489,8 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 				ProductPath:        c.ProductPath,
 				StemcellPath:       c.StemcellPath,
 			},
-			progressWriter)
+			stderr,
+		)
 	case "s3":
 		return download_clients.NewS3Client(
 			download_clients.StowWrapper{},
@@ -504,12 +506,12 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 				ProductPath:     c.ProductPath,
 				StemcellPath:    c.StemcellPath,
 			},
-			progressWriter)
+			stderr,
+		)
 	case "pivnet", "":
 		return download_clients.NewPivnetClient(
 			stdout,
 			stderr,
-			progressWriter,
 			download_clients.DefaultPivnetFactory,
 			c.PivnetToken,
 			c.PivnetDisableSSL,

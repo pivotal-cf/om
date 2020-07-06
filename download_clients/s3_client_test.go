@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/download_clients"
+	"log"
 	"net/url"
 	"strings"
 
@@ -17,6 +18,12 @@ import (
 )
 
 var _ = Describe("S3Client", func() {
+	var stderr *log.Logger
+
+	BeforeEach(func() {
+		stderr = log.New(GinkgoWriter, "", 0)
+	})
+
 	Describe("GetAllProductVersions", func() {
 		When("configuring s3", func() {
 			It("can support v2 signing", func() {
@@ -33,7 +40,7 @@ var _ = Describe("S3Client", func() {
 					EnableV2Signing: true,
 				}
 
-				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, stderr)
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = client.GetAllProductVersions("product-slug")
@@ -50,7 +57,7 @@ var _ = Describe("S3Client", func() {
 		DescribeTable("required property validation", func(param string) {
 			stower := &mockStower{}
 			config := download_clients.S3Configuration{}
-			_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+			_, err := download_clients.NewS3Client(stower, config, stderr)
 			Expect(err).To(MatchError(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param)))
 		},
 			Entry("requires Bucket", "Bucket"),
@@ -66,7 +73,7 @@ var _ = Describe("S3Client", func() {
 				Endpoint:        "endpoint",
 			}
 			stower := &mockStower{itemsList: []mockItem{}}
-			client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+			client, err := download_clients.NewS3Client(stower, config, stderr)
 			Expect(err).ToNot(HaveOccurred())
 
 			retrievedDisableSSLValue, retrievedValuePresence := client.Config.Config("disable_ssl")
@@ -88,7 +95,7 @@ var _ = Describe("S3Client", func() {
 					Endpoint:        "endpoint",
 				}
 				stower := &mockStower{itemsList: []mockItem{}}
-				_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+				_, err := download_clients.NewS3Client(stower, config, stderr)
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
@@ -107,7 +114,7 @@ var _ = Describe("S3Client", func() {
 
 			It("passes the auth_type down to stow", func() {
 				stower := &mockStower{itemsList: []mockItem{}}
-				client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+				client, err := download_clients.NewS3Client(stower, config, stderr)
 				Expect(err).ToNot(HaveOccurred())
 
 				retrievedAuthTypeValue, retrievedValuePresence := client.Config.Config("auth_type")
@@ -125,7 +132,7 @@ var _ = Describe("S3Client", func() {
 
 				It("does not raise a validation error", func() {
 					stower := &mockStower{itemsList: []mockItem{}}
-					_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+					_, err := download_clients.NewS3Client(stower, config, stderr)
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})
@@ -139,7 +146,7 @@ var _ = Describe("S3Client", func() {
 
 				It("raises a validation error", func() {
 					stower := &mockStower{itemsList: []mockItem{}}
-					_, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+					_, err := download_clients.NewS3Client(stower, config, stderr)
 					Expect(err).To(HaveOccurred())
 				})
 			})
@@ -160,7 +167,7 @@ var _ = Describe("S3Client", func() {
 			Endpoint:        "endpoint",
 		}
 
-		client, err := download_clients.NewS3Client(stower, config, GinkgoWriter)
+		client, err := download_clients.NewS3Client(stower, config, stderr)
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = client.GetAllProductVersions("product-slug")

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"github.com/graymeta/stow"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/pivotal-cf/om/progress"
+	"gopkg.in/cheggaaa/pb.v1"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -35,24 +36,24 @@ func (d StowWrapper) Walk(container stow.Container, prefix string, pageSize int,
 }
 
 type stowClient struct {
-	stower         Stower
-	bucket         string
-	Config         stow.Config
-	progressWriter io.Writer
-	productPath    string
-	stemcellPath   string
-	kind           string
+	stower       Stower
+	bucket       string
+	Config       stow.Config
+	productPath  string
+	stemcellPath string
+	kind         string
+	stderr       *log.Logger
 }
 
-func NewStowClient(stower Stower, bucket string, config stow.ConfigMap, progressWriter io.Writer, productPath string, stemcellPath string, kind string) stowClient {
+func NewStowClient(stower Stower, stderr *log.Logger, config stow.ConfigMap, productPath string, stemcellPath string, kind string, bucket string) stowClient {
 	return stowClient{
-		stower:         stower,
-		bucket:         bucket,
-		Config:         config,
-		progressWriter: progressWriter,
-		productPath:    productPath,
-		stemcellPath:   stemcellPath,
-		kind:           kind,
+		stower:       stower,
+		bucket:       bucket,
+		Config:       config,
+		productPath:  productPath,
+		stemcellPath: stemcellPath,
+		kind:         kind,
+		stderr:       stderr,
 	}
 }
 
@@ -235,12 +236,12 @@ func (s *stowClient) initializeBlobReader(filename string) (blobToRead io.ReadCl
 	return blobToRead, fileSize, err
 }
 
-func (s stowClient) startProgressBar(size int64, item io.Reader) (progressBar *progress.Bar, reader io.Reader) {
-	progressBar = progress.NewBar()
+func (s stowClient) startProgressBar(size int64, item io.Reader) (*pb.ProgressBar, io.Reader) {
+	progressBar := pb.New64(0)
+	progressBar.Output = s.stderr.Writer()
+	progressBar.SetUnits(pb.U_BYTES)
 	progressBar.SetTotal64(size)
-	progressBar.SetOutput(s.progressWriter)
-	reader = progressBar.NewProxyReader(item)
-	_, _ = s.progressWriter.Write([]byte("Downloading product from s..."))
+	reader := progressBar.NewProxyReader(item)
 	progressBar.Start()
 	return progressBar, reader
 }

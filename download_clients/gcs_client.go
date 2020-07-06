@@ -5,7 +5,7 @@ import (
 	"github.com/graymeta/stow/google"
 	storage "google.golang.org/api/storage/v1beta2"
 	"gopkg.in/go-playground/validator.v9"
-	"io"
+	"log"
 )
 
 type GCSConfiguration struct {
@@ -16,7 +16,7 @@ type GCSConfiguration struct {
 	StemcellPath       string
 }
 
-func NewGCSClient(stower Stower, config GCSConfiguration, progressWriter io.Writer) (stowClient, error) {
+func NewGCSClient(stower Stower, config GCSConfiguration, stderr *log.Logger) (stowClient, error) {
 	validate := validator.New()
 	err := validate.Struct(config)
 	if err != nil {
@@ -29,13 +29,5 @@ func NewGCSClient(stower Stower, config GCSConfiguration, progressWriter io.Writ
 		google.ConfigScopes:    storage.DevstorageReadOnlyScope,
 	}
 
-	return NewStowClient(
-		stower,
-		config.Bucket,
-		stowConfig,
-		progressWriter,
-		config.ProductPath,
-		config.StemcellPath,
-		"google",
-	), nil
+	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "google", config.Bucket, ), nil
 }

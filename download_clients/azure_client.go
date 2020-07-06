@@ -4,7 +4,7 @@ import (
 	"github.com/graymeta/stow"
 	"github.com/graymeta/stow/azure"
 	"gopkg.in/go-playground/validator.v9"
-	"io"
+	"log"
 )
 
 type AzureConfiguration struct {
@@ -15,7 +15,7 @@ type AzureConfiguration struct {
 	StemcellPath   string
 }
 
-func NewAzureClient(stower Stower, config AzureConfiguration, progressWriter io.Writer) (stowClient, error) {
+func NewAzureClient(stower Stower, config AzureConfiguration, stderr *log.Logger) (stowClient, error) {
 	validate := validator.New()
 	err := validate.Struct(config)
 	if err != nil {
@@ -27,13 +27,5 @@ func NewAzureClient(stower Stower, config AzureConfiguration, progressWriter io.
 		azure.ConfigKey:     config.Key,
 	}
 
-	return NewStowClient(
-		stower,
-		config.Container,
-		stowConfig,
-		progressWriter,
-		config.ProductPath,
-		config.StemcellPath,
-		"azure",
-	), nil
+	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "azure", config.Container, ), nil
 }
