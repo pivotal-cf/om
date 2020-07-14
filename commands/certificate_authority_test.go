@@ -100,6 +100,42 @@ var _ = Describe("Certificate Authority", func() {
 			})
 		})
 
+		When("there is only one CA and the id flag is not present", func() {
+			It("requests CAs from the server and prints to a table", func() {
+				certificateAuthorities := []api.CA{
+					{
+						GUID:      "some-guid",
+						Issuer:    "Pivotal",
+						CreatedOn: "2017-01-09",
+						ExpiresOn: "2021-01-09",
+						Active:    true,
+						CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
+					},
+				}
+
+				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
+					api.CertificateAuthoritiesOutput{CAs: certificateAuthorities},
+					nil,
+				)
+				err := certificateAuthority.Execute([]string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
+
+				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
+				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("table"))
+				Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
+				Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(api.CA{
+					GUID:      "some-guid",
+					Issuer:    "Pivotal",
+					CreatedOn: "2017-01-09",
+					ExpiresOn: "2021-01-09",
+					Active:    true,
+					CertPEM:   "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
+				}))
+			})
+		})
+
 		Context("failure cases", func() {
 			When("the args cannot parsed", func() {
 				It("returns an error", func() {
@@ -131,10 +167,9 @@ var _ = Describe("Certificate Authority", func() {
 			When("the --id flag is missing", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{})
-					Expect(err).To(MatchError(`could not parse certificate-authority flags: missing required flag "--id"`))
+					Expect(err).To(MatchError(`--id is required when there are multiple CAs, and there are 2`))
 				})
 			})
-
 			When("the request certificate authority is not found", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{
