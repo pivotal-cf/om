@@ -167,7 +167,7 @@ var _ = Describe("Certificate Authority", func() {
 			When("the --id flag is missing", func() {
 				It("returns an error", func() {
 					err := certificateAuthority.Execute([]string{})
-					Expect(err).To(MatchError(`--id is required when there are multiple CAs, and there are 2`))
+					Expect(err).To(MatchError("More than one certificate authority found. Please use --id flag to specify. IDs can be found using the certificate-authorities command"))
 				})
 			})
 			When("the request certificate authority is not found", func() {
