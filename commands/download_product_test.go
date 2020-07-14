@@ -420,9 +420,14 @@ var _ = Describe("DownloadProduct", func() {
 							Expect(unknownFileWeDontOwn).To(BeAnExistingFile())
 						})
 
-						When("the product has already been downloaded and cached", func() {
+						When("the product and stemcell have already been downloaded and cached", func() {
 							It("only deletes previous versions of the product", func() {
+								fa := &fakes.FileArtifacter{}
+								fa.NameReturns("light-bosh-google-2-stemcell.tgz")
+								fakeProductDownloader.GetLatestProductFileReturnsOnCall(1, fa, nil)
+
 								previousDownloadedProduct := tempFile(productOutputDir, "cf-2.0-build.*.pivotal")
+								previousDownloadedStemcell := tempFile(stemcellOutputDir, "light-bosh-google-1-stemcell*.tgz")
 								downloadedFilePath := path.Join(productOutputDir, "cf-2.0-build.1.pivotal")
 								downloadedFile, err := os.Create(downloadedFilePath)
 								Expect(err).ToNot(HaveOccurred())
@@ -431,11 +436,12 @@ var _ = Describe("DownloadProduct", func() {
 								err = command.Execute(commandArgs)
 								Expect(err).ToNot(HaveOccurred())
 
-								downloadedStemcellFilePath := path.Join(stemcellOutputDir, "stemcell.tgz")
+								downloadedStemcellFilePath := path.Join(stemcellOutputDir, "light-bosh-google-2-stemcell.tgz")
 								Expect(downloadedFilePath).To(BeAnExistingFile())
 								Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
 
 								Expect(previousDownloadedProduct).ToNot(BeAnExistingFile())
+								Expect(previousDownloadedStemcell).ToNot(BeAnExistingFile())
 							})
 						})
 					})
