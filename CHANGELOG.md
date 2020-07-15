@@ -69,6 +69,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
    This env var will also clean up all old stemcells
    from the `output-directory` (or `stemcell-directory` if defined)
    if `--stemcell-iaas` is provided.
+- `certificate-authority` no longer requires `--id`
+  if there is only one certificate authority on the targeted Ops Manager.
+  This resolves PR [#501](https://github.com/pivotal-cf/om/pull/501/)
 
 ### Breaking Changes
 - With some code refactoring,
