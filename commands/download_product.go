@@ -357,18 +357,14 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 
 	if exist {
-		if ok, _ := c.shasumMatches(productFilePath, fileArtifact.SHA256()); ok {
-			c.stderr.Printf("%s already exists, skip downloading", productFilePath)
+		c.stderr.Printf("%s already exists, skip downloading", productFilePath)
 
-			err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
-			if err != nil {
-				return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
-			}
-
-			return productFilePath, fileArtifact, nil
-		} else {
-			c.stderr.Printf("%s already exists, sha sum does not match, re-downloading", productFilePath)
+		err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+		if err != nil {
+			return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
 		}
+
+		return productFilePath, fileArtifact, nil
 	}
 
 	err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)

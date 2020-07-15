@@ -17,7 +17,6 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/download_clients/fakes"
-	"github.com/pivotal-cf/om/validator"
 )
 
 var _ = Describe("DownloadProduct", func() {
@@ -429,6 +428,7 @@ var _ = Describe("DownloadProduct", func() {
 								previousDownloadedProduct := tempFile(productOutputDir, "cf-2.0-build.*.pivotal")
 								previousDownloadedStemcell := tempFile(stemcellOutputDir, "light-bosh-google-1-stemcell*.tgz")
 								downloadedFilePath := path.Join(productOutputDir, "cf-2.0-build.1.pivotal")
+								downloadedStemcellFilePath := path.Join(stemcellOutputDir, "light-bosh-google-2-stemcell.tgz")
 								downloadedFile, err := os.Create(downloadedFilePath)
 								Expect(err).ToNot(HaveOccurred())
 								createProductPivotalFile(downloadedFile)
@@ -436,7 +436,6 @@ var _ = Describe("DownloadProduct", func() {
 								err = command.Execute(commandArgs)
 								Expect(err).ToNot(HaveOccurred())
 
-								downloadedStemcellFilePath := path.Join(stemcellOutputDir, "light-bosh-google-2-stemcell.tgz")
 								Expect(downloadedFilePath).To(BeAnExistingFile())
 								Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
 
@@ -706,18 +705,15 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		When("the file is already downloaded", func() {
+		When("the product is already downloaded", func() {
 			var tempDir string
 
 			BeforeEach(func() {
 				tempDir, err = ioutil.TempDir("", "om-tests-")
 				Expect(err).ToNot(HaveOccurred())
-			})
 
-			setupForProductAPI := func(shaSum string) {
 				fa := &fakes.FileArtifacter{}
 				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
-				fa.SHA256Returns(shaSum)
 				fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 				fa = &fakes.FileArtifacter{}
@@ -733,106 +729,53 @@ var _ = Describe("DownloadProduct", func() {
 					createProductPivotalFile(file)
 					return nil
 				}
-			}
 
-			createFilePath := func() string {
 				filePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
 				file, err := os.Create(filePath)
 				Expect(err).ToNot(HaveOccurred())
 				createProductPivotalFile(file)
-				return filePath
-			}
-
-			When("a sha sum is provided by the downloader", func() {
-				BeforeEach(func() {
-					filePath := createFilePath()
-
-					validator := validator.NewSHA256Calculator()
-					sum, err := validator.Checksum(filePath)
-					Expect(err).ToNot(HaveOccurred())
-					setupForProductAPI(sum)
-
-					os.Setenv("CACHE_CLEANUP", "I acknowledge this will delete files in the output directories")
-				})
-
-				AfterEach(func() {
-					os.Unsetenv("CACHE_CLEANUP")
-				})
-
-				It("does not download the file again, even with cache cleanup", func() {
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "elastic-runtime",
-						"--product-version", "2.0.0",
-						"--output-directory", tempDir,
-					})
-					Expect(err).ToNot(HaveOccurred())
-					Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
-					Expect(buffer).Should(gbytes.Say("already exists, skip downloading"))
-				})
-
-				It("does not panic when downloading the stemcell if file already downloaded", func() {
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "elastic-runtime",
-						"--product-version", "2.0.0",
-						"--stemcell-iaas", "google",
-						"--output-directory", tempDir,
-					})
-					Expect(err).ToNot(HaveOccurred())
-				})
 			})
 
-			When("no sha sum is provided by downloader", func() {
-				It("does not re-download the product", func() {
-					createFilePath()
-					setupForProductAPI("")
-
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "elastic-runtime",
-						"--product-version", "2.0.0",
-						"--output-directory", tempDir,
-					})
-					Expect(err).ToNot(HaveOccurred())
-					Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
-					Expect(buffer).Should(gbytes.Say("already exists, skip downloading"))
-				})
+		It("does not re-download the product", func() {
+			err = command.Execute([]string{
+				"--pivnet-api-token", "token",
+				"--file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--output-directory", tempDir,
 			})
-
-			When("the sha is invalid", func() {
-				It("downloads it, again", func() {
-					createFilePath()
-					setupForProductAPI("20a9668171397bf4ea9487835e28e9ca090f3b04d1d0461f8d3b752a3e0daf30")
-
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "elastic-runtime",
-						"--product-version", "2.0.0",
-						"--output-directory", tempDir,
-					})
-					Expect(err).ToNot(HaveOccurred())
-				})
-			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
+			Expect(buffer).Should(gbytes.Say("already exists, skip downloading"))
 		})
 
-		When("the --config flag is passed", func() {
-			BeforeEach(func() {
-				fa := &fakes.FileArtifacter{}
-				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
-				fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
+		It("still downloads the stemcell if not already downloaded", func() {
+			err = command.Execute([]string{
+				"--pivnet-api-token", "token",
+				"--file-glob", "*.pivotal",
+				"--pivnet-product-slug", "elastic-runtime",
+				"--product-version", "2.0.0",
+				"--stemcell-iaas", "google",
+				"--output-directory", tempDir,
 			})
-			var (
-				configFile *os.File
-				err        error
-			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(1))
+		})
+	})
 
-			When("the config file contains variables", func() {
-				const downloadProductConfigWithVariablesTmpl = `---
+	When("the --config flag is passed", func() {
+		BeforeEach(func() {
+			fa := &fakes.FileArtifacter{}
+			fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+			fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
+		})
+		var (
+			configFile *os.File
+			err        error
+		)
+
+		When("the config file contains variables", func() {
+			const downloadProductConfigWithVariablesTmpl = `---
 pivnet-api-token: "token"
 file-glob: "*.pivotal"
 pivnet-product-slug: ((product-slug))
@@ -840,378 +783,378 @@ product-version: 2.0.0
 output-directory: %s
 `
 
+			BeforeEach(func() {
+				configFile, err = ioutil.TempFile("", "")
+				Expect(err).ToNot(HaveOccurred())
+
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
+				Expect(err).ToNot(HaveOccurred())
+
+				err = configFile.Close()
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				err = os.RemoveAll(configFile.Name())
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("returns an error if missing variables", func() {
+				err = command.Execute([]string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
+			})
+
+			Context("passed in a vars-file", func() {
+				var varsFile *os.File
+
 				BeforeEach(func() {
-					configFile, err = ioutil.TempFile("", "")
+					varsFile, err = ioutil.TempFile("", "")
 					Expect(err).ToNot(HaveOccurred())
 
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
 					Expect(err).ToNot(HaveOccurred())
 
-					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
-					Expect(err).ToNot(HaveOccurred())
-
-					err = configFile.Close()
+					err = varsFile.Close()
 					Expect(err).ToNot(HaveOccurred())
 				})
 
 				AfterEach(func() {
-					err = os.RemoveAll(configFile.Name())
+					err = os.RemoveAll(varsFile.Name())
 					Expect(err).ToNot(HaveOccurred())
 				})
 
-				It("returns an error if missing variables", func() {
+				It("can interpolate variables into the configuration", func() {
 					err = command.Execute([]string{
 						"--config", configFile.Name(),
+						"--vars-file", varsFile.Name(),
 					})
-					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
-				})
-
-				Context("passed in a vars-file", func() {
-					var varsFile *os.File
-
-					BeforeEach(func() {
-						varsFile, err = ioutil.TempFile("", "")
-						Expect(err).ToNot(HaveOccurred())
-
-						_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
-						Expect(err).ToNot(HaveOccurred())
-
-						err = varsFile.Close()
-						Expect(err).ToNot(HaveOccurred())
-					})
-
-					AfterEach(func() {
-						err = os.RemoveAll(varsFile.Name())
-						Expect(err).ToNot(HaveOccurred())
-					})
-
-					It("can interpolate variables into the configuration", func() {
-						err = command.Execute([]string{
-							"--config", configFile.Name(),
-							"--vars-file", varsFile.Name(),
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
-				Context("given vars", func() {
-					It("can interpolate variables into the configuration", func() {
-						err = command.Execute([]string{
-							"--config", configFile.Name(),
-							"--var", "product-slug=elastic-runtime",
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
-				Context("passed as environment variables", func() {
-					BeforeEach(func() {
-						environFunc = func() []string {
-							return []string{"OM_VAR_product-slug='sea-slug'"}
-						}
-					})
-
-					It("can interpolate variables into the configuration", func() {
-						err = command.Execute([]string{
-							"--config", configFile.Name(),
-							"--vars-env", "OM_VAR",
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
-		})
 
-		Describe("managing and reporting the filename written to the filesystem", func() {
-			When("S3 configuration is provided and source is not set", func() {
+			Context("given vars", func() {
+				It("can interpolate variables into the configuration", func() {
+					err = command.Execute([]string{
+						"--config", configFile.Name(),
+						"--var", "product-slug=elastic-runtime",
+					})
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
+			Context("passed as environment variables", func() {
 				BeforeEach(func() {
-					fa := &fakes.FileArtifacter{}
-					fa.NameReturns("/some-account/some-bucket/my-great-product.pivotal")
-					fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
+					environFunc = func() []string {
+						return []string{"OM_VAR_product-slug='sea-slug'"}
+					}
 				})
 
-				It("prefixes the filename with a bracketed slug and version", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
-
+				It("can interpolate variables into the configuration", func() {
 					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "mayhem-crew",
-						"--product-version", `2.0.0`,
-						"--output-directory", tempDir,
-						"--s3-bucket", "there once was a man from a",
+						"--config", configFile.Name(),
+						"--vars-env", "OM_VAR",
 					})
 					Expect(err).ToNot(HaveOccurred())
-
-					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-					Expect(prefixedFileName).To(BeAnExistingFile())
-				})
-
-				It("writes the prefixed filename to the download-file.json", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "mayhem-crew",
-						"--product-version", `2.0.0`,
-						"--output-directory", tempDir,
-						"--s3-bucket", "there once was a man from a",
-					})
-					Expect(err).ToNot(HaveOccurred())
-
-					downloadReportFileName := path.Join(tempDir, "download-file.json")
-					fileContent, err := ioutil.ReadFile(downloadReportFileName)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(downloadReportFileName).To(BeAnExistingFile())
-					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
-					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, prefixedFileName)))
-				})
-			})
-
-			When("S3 configuration is not provided and source is not set", func() {
-				BeforeEach(func() {
-					fa := &fakes.FileArtifacter{}
-					fa.NameReturns("/some-account/some-bucket/my-great-product.pivotal")
-					fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
-				})
-				It("doesn't prefix", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "mayhem-crew",
-						"--product-version", `2.0.0`,
-						"--output-directory", tempDir,
-					})
-					Expect(err).ToNot(HaveOccurred())
-
-					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
-					Expect(unPrefixedFileName).To(BeAnExistingFile())
-				})
-
-				It("writes the unprefixed filename to the download-file.json", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
-
-					err = command.Execute([]string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "mayhem-crew",
-						"--product-version", `2.0.0`,
-						"--output-directory", tempDir,
-					})
-					Expect(err).ToNot(HaveOccurred())
-
-					downloadReportFileName := path.Join(tempDir, "download-file.json")
-					fileContent, err := ioutil.ReadFile(downloadReportFileName)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(downloadReportFileName).To(BeAnExistingFile())
-					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
-					Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, unPrefixedFileName)))
 				})
 			})
 		})
 	})
 
-	When("--stemcell-version flag is provided, but --stemcell-iaas is missing", func() {
-		It("returns an error", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--output-directory", tempDir,
-				"--stemcell-version", "100.0",
-			})
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError(ContainSubstring("--stemcell-version requires --stemcell-iaas to be defined")))
-		})
-	})
-
-	When("directory flags are provided pointing to directories that don't exist", func() {
-		var (
-			nonexistingDir string
-			validDirectory string
-			err            error
-		)
-
-		BeforeEach(func() {
-			nonexistingDir = "/invalid/dir/noexist"
-			validDirectory, err = ioutil.TempDir("", "")
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("errors, printing both --output-dir and the filepath in question", func() {
-			err := command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--stemcell-output-directory", validDirectory,
-				"--stemcell-iaas", "aws",
-				"--output-directory", nonexistingDir,
+	Describe("managing and reporting the filename written to the filesystem", func() {
+		When("S3 configuration is provided and source is not set", func() {
+			BeforeEach(func() {
+				fa := &fakes.FileArtifacter{}
+				fa.NameReturns("/some-account/some-bucket/my-great-product.pivotal")
+				fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
 			})
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`--output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
-		})
+			It("prefixes the filename with a bracketed slug and version", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).ToNot(HaveOccurred())
 
-		It("errors, printing both --stemcell-output-dir and the filepath in question", func() {
-			err := command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--stemcell-output-directory", nonexistingDir,
-				"--stemcell-iaas", "aws",
-				"--output-directory", validDirectory,
+				err = command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--file-glob", "*.pivotal",
+					"--pivnet-product-slug", "mayhem-crew",
+					"--product-version", `2.0.0`,
+					"--output-directory", tempDir,
+					"--s3-bucket", "there once was a man from a",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+				Expect(prefixedFileName).To(BeAnExistingFile())
 			})
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`--stemcell-output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
+			It("writes the prefixed filename to the download-file.json", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).ToNot(HaveOccurred())
+
+				err = command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--file-glob", "*.pivotal",
+					"--pivnet-product-slug", "mayhem-crew",
+					"--product-version", `2.0.0`,
+					"--output-directory", tempDir,
+					"--s3-bucket", "there once was a man from a",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				downloadReportFileName := path.Join(tempDir, "download-file.json")
+				fileContent, err := ioutil.ReadFile(downloadReportFileName)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(downloadReportFileName).To(BeAnExistingFile())
+				prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, prefixedFileName)))
+			})
 		})
-	})
 
-	When("directory flags are provided pointing to non-directory files", func() {
-		var (
-			existingNonDirFile *os.File
-			validDirectory     string
-			err                error
-		)
+		When("S3 configuration is not provided and source is not set", func() {
+			BeforeEach(func() {
+				fa := &fakes.FileArtifacter{}
+				fa.NameReturns("/some-account/some-bucket/my-great-product.pivotal")
+				fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
+			})
+			It("doesn't prefix", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).ToNot(HaveOccurred())
 
-		BeforeEach(func() {
-			existingNonDirFile, err = ioutil.TempFile("", "")
-			Expect(err).NotTo(HaveOccurred())
+				err = command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--file-glob", "*.pivotal",
+					"--pivnet-product-slug", "mayhem-crew",
+					"--product-version", `2.0.0`,
+					"--output-directory", tempDir,
+				})
+				Expect(err).ToNot(HaveOccurred())
 
-			validDirectory, err = ioutil.TempDir("", "")
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("errors, printing both --output-directory and the filepath in question", func() {
-			err = command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--stemcell-output-directory", validDirectory,
-				"--stemcell-iaas", "aws",
-				"--output-directory", existingNonDirFile.Name(),
+				unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
+				Expect(unPrefixedFileName).To(BeAnExistingFile())
 			})
 
-			expectedOutput := fmt.Sprintf("--output-directory %q is not a directory", existingNonDirFile.Name())
+			It("writes the unprefixed filename to the download-file.json", func() {
+				tempDir, err := ioutil.TempDir("", "om-tests-")
+				Expect(err).ToNot(HaveOccurred())
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(expectedOutput))
-		})
+				err = command.Execute([]string{
+					"--pivnet-api-token", "token",
+					"--file-glob", "*.pivotal",
+					"--pivnet-product-slug", "mayhem-crew",
+					"--product-version", `2.0.0`,
+					"--output-directory", tempDir,
+				})
+				Expect(err).ToNot(HaveOccurred())
 
-		It("errors, printing both --stemcell-output-directory and the filepath in question", func() {
-			err = command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--stemcell-output-directory", existingNonDirFile.Name(),
-				"--stemcell-iaas", "aws",
-				"--output-directory", validDirectory,
+				downloadReportFileName := path.Join(tempDir, "download-file.json")
+				fileContent, err := ioutil.ReadFile(downloadReportFileName)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(downloadReportFileName).To(BeAnExistingFile())
+				unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
+				Expect(string(fileContent)).To(MatchJSON(fmt.Sprintf(`{"product_path": "%s", "product_slug": "mayhem-crew", "product_version": "2.0.0" }`, unPrefixedFileName)))
 			})
-
-			expectedOutput := fmt.Sprintf("--stemcell-output-directory %q is not a directory", existingNonDirFile.Name())
-
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(expectedOutput))
 		})
 	})
+})
 
-	When("an unknown flag is provided", func() {
-		It("returns an error", func() {
-			err = command.Execute([]string{"--badflag"})
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("could not parse download-product flags: flag provided but not defined: -badflag"))
+When("--stemcell-version flag is provided, but --stemcell-iaas is missing", func () {
+	It("returns an error", func() {
+		tempDir, err := ioutil.TempDir("", "om-tests-")
+		Expect(err).ToNot(HaveOccurred())
+
+		err = command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--output-directory", tempDir,
+			"--stemcell-version", "100.0",
 		})
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(MatchError(ContainSubstring("--stemcell-version requires --stemcell-iaas to be defined")))
+	})
+})
+
+When("directory flags are provided pointing to directories that don't exist", func () {
+	var (
+		nonexistingDir string
+		validDirectory string
+		err            error
+	)
+
+	BeforeEach(func() {
+		nonexistingDir = "/invalid/dir/noexist"
+		validDirectory, err = ioutil.TempDir("", "")
+		Expect(err).NotTo(HaveOccurred())
 	})
 
-	When("a required flag is not provided", func() {
-		It("returns an error", func() {
-			err = command.Execute([]string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--output-directory\""))
+	It("errors, printing both --output-dir and the filepath in question", func() {
+		err := command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--stemcell-output-directory", validDirectory,
+			"--stemcell-iaas", "aws",
+			"--output-directory", nonexistingDir,
 		})
+
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(`--output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
 	})
 
-	When("pivnet-api-token is missing while no source is set", func() {
-		It("returns an error", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "mayhem-crew",
-				"--product-version", `2.0.0`,
-				"--output-directory", tempDir,
-			})
-			Expect(err).To(MatchError(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`))
+	It("errors, printing both --stemcell-output-dir and the filepath in question", func() {
+		err := command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--stemcell-output-directory", nonexistingDir,
+			"--stemcell-iaas", "aws",
+			"--output-directory", validDirectory,
 		})
+
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(`--stemcell-output-directory "/invalid/dir/noexist" does not exist: open /invalid/dir/noexist: no such file or directory`))
+	})
+})
+
+When("directory flags are provided pointing to non-directory files", func () {
+	var (
+		existingNonDirFile *os.File
+		validDirectory     string
+		err                error
+	)
+
+	BeforeEach(func() {
+		existingNonDirFile, err = ioutil.TempFile("", "")
+		Expect(err).NotTo(HaveOccurred())
+
+		validDirectory, err = ioutil.TempDir("", "")
+		Expect(err).NotTo(HaveOccurred())
 	})
 
-	When("both product-version and product-version-regex are set", func() {
-		It("fails with an error saying that the user must pick one or the other", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--product-version-regex", ".*",
-				"--output-directory", tempDir,
-			})
-			Expect(err).To(MatchError(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other")))
+	It("errors, printing both --output-directory and the filepath in question", func() {
+		err = command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--stemcell-output-directory", validDirectory,
+			"--stemcell-iaas", "aws",
+			"--output-directory", existingNonDirFile.Name(),
 		})
+
+		expectedOutput := fmt.Sprintf("--output-directory %q is not a directory", existingNonDirFile.Name())
+
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(expectedOutput))
 	})
 
-	When("neither product-version nor product-version-regex are set", func() {
-		It("fails with an error saying that the user must provide one or the other", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--output-directory", tempDir,
-			})
-			Expect(err).To(MatchError(ContainSubstring("no version information provided; please provide either --product-version or --product-version-regex")))
+	It("errors, printing both --stemcell-output-directory and the filepath in question", func() {
+		err = command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--stemcell-output-directory", existingNonDirFile.Name(),
+			"--stemcell-iaas", "aws",
+			"--output-directory", validDirectory,
 		})
+
+		expectedOutput := fmt.Sprintf("--stemcell-output-directory %q is not a directory", existingNonDirFile.Name())
+
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(expectedOutput))
+	})
+})
+
+When("an unknown flag is provided", func () {
+	It("returns an error", func() {
+		err = command.Execute([]string{"--badflag"})
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(MatchError("could not parse download-product flags: flag provided but not defined: -badflag"))
+	})
+})
+
+When("a required flag is not provided", func () {
+	It("returns an error", func() {
+		err = command.Execute([]string{})
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--output-directory\""))
+	})
+})
+
+When("pivnet-api-token is missing while no source is set", func () {
+	It("returns an error", func() {
+		tempDir, err := ioutil.TempDir("", "om-tests-")
+		Expect(err).ToNot(HaveOccurred())
+
+		err = command.Execute([]string{
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "mayhem-crew",
+			"--product-version", `2.0.0`,
+			"--output-directory", tempDir,
+		})
+		Expect(err).To(MatchError(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`))
+	})
+})
+
+When("both product-version and product-version-regex are set", func () {
+	It("fails with an error saying that the user must pick one or the other", func() {
+		tempDir, err := ioutil.TempDir("", "om-tests-")
+		Expect(err).ToNot(HaveOccurred())
+
+		err = command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--product-version-regex", ".*",
+			"--output-directory", tempDir,
+		})
+		Expect(err).To(MatchError(ContainSubstring("cannot use both --product-version and --product-version-regex; please choose one or the other")))
+	})
+})
+
+When("neither product-version nor product-version-regex are set", func () {
+	It("fails with an error saying that the user must provide one or the other", func() {
+		tempDir, err := ioutil.TempDir("", "om-tests-")
+		Expect(err).ToNot(HaveOccurred())
+
+		err = command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--output-directory", tempDir,
+		})
+		Expect(err).To(MatchError(ContainSubstring("no version information provided; please provide either --product-version or --product-version-regex")))
+	})
+})
+
+When("the release specified is not available", func () {
+	BeforeEach(func() {
+		fakeProductDownloader.GetLatestProductFileReturns(nil, fmt.Errorf("some-error"))
 	})
 
-	When("the release specified is not available", func() {
-		BeforeEach(func() {
-			fakeProductDownloader.GetLatestProductFileReturns(nil, fmt.Errorf("some-error"))
-		})
+	It("returns an error", func() {
+		tempDir, err := ioutil.TempDir("", "om-tests-")
+		Expect(err).ToNot(HaveOccurred())
 
-		It("returns an error", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{
-				"--pivnet-api-token", "token",
-				"--file-glob", "*.pivotal",
-				"--pivnet-product-slug", "elastic-runtime",
-				"--product-version", "2.0.0",
-				"--output-directory", tempDir,
-			})
-			Expect(err).To(MatchError(ContainSubstring("could not download product: some-error")))
+		err = command.Execute([]string{
+			"--pivnet-api-token", "token",
+			"--file-glob", "*.pivotal",
+			"--pivnet-product-slug", "elastic-runtime",
+			"--product-version", "2.0.0",
+			"--output-directory", tempDir,
 		})
+		Expect(err).To(MatchError(ContainSubstring("could not download product: some-error")))
 	})
+})
 })
 
 func createProductPivotalFile(file *os.File) {
