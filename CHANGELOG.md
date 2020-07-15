@@ -53,7 +53,22 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - With some code refactoring,
   we've introduced support for `--vars`, `--vars-file`, and `--vars-env`
   into places it was missing before.
-
+- `download-product` can now provide a separate `--stemcell-output-directory`
+  for the downloaded stemcell to exist after downloading.
+  This was added to take advantage of Concourse 5.0+'s ability
+  to overlap the cache in the output.
+- [`download-product`] To allow `pas-windows` to count as a cache hit
+  even after winfs has been injected,
+  the shasum check on the cache has been removed.
+  `download-product` will still check the shasum
+  after the product has been downloaded from Tanzu Network
+ - [`download-product`] A new env var, `CACHE_CLEANUP` has been added.
+   When `CACHE_CLEANUP='I acknowledge this will delete files in the output directories'`
+   it will delete all products that do not match the slug and version
+   in the output directory so the local (or Concourse) cache can remain clean.
+   This env var will also clean up all old stemcells
+   from the `output-directory` (or `stemcell-directory` if defined)
+   if `--stemcell-iaas` is provided.
 
 ### Breaking Changes
 - With some code refactoring,
@@ -331,7 +346,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ### Features
 - `download-product` supports GCS (Google Cloud Storage)
-  for Pivnet download artifacts.
+  for Tanzu Network download artifacts.
   
   An example config,
   
@@ -351,7 +366,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   from the `some-bucket` bucket from the GCS account.
   
 - `download-product` supports Azure Storage.
-  for Pivnet download artifacts.
+  for Tanzu Network download artifacts.
   
   ```yaml
   pivnet-file-glob: "*.tgz"
@@ -652,7 +667,7 @@ Was a release to make sure that `brew upgrade` works.
 * the file outputted by `download-product`
   will now use the `product-name` as defined 
   in the downloaded-product, 
-  _not_ from the Pivnet slug.
+  _not_ from the Tanzu Network slug.
   This fixes a mismatch between the two
   as documented in issue [#351](https://github.com/pivotal-cf/om/issues/351)
 * `bosh-env` will now set `BOSH_ALL_PROXY` without a trailing slash
