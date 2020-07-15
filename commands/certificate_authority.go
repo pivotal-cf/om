@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -43,7 +44,7 @@ func (c CertificateAuthority) Execute(args []string) error {
 		displayCA = cas.CAs[0]
 	} else {
 		if len(cas.CAs) > 1 && c.Options.ID == "" {
-			return fmt.Errorf("More than one certificate authority found. Please use --id flag to specify. IDs can be found using the certificate-authorities command")
+			return errors.New("More than one certificate authority found. Please use --id flag to specify. IDs can be found using the certificate-authorities command")
 		}
 		for _, ca := range cas.CAs {
 			if ca.GUID == c.Options.ID {
