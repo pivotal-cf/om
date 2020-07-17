@@ -5,9 +5,22 @@ import (
 	"sync"
 
 	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/extractor"
 )
 
 type FileArtifacter struct {
+	MetadataStub        func() (extractor.Metadata, error)
+	metadataMutex       sync.RWMutex
+	metadataArgsForCall []struct {
+	}
+	metadataReturns struct {
+		result1 extractor.Metadata
+		result2 error
+	}
+	metadataReturnsOnCall map[int]struct {
+		result1 extractor.Metadata
+		result2 error
+	}
 	NameStub        func() string
 	nameMutex       sync.RWMutex
 	nameArgsForCall []struct {
@@ -30,6 +43,61 @@ type FileArtifacter struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FileArtifacter) Metadata() (extractor.Metadata, error) {
+	fake.metadataMutex.Lock()
+	ret, specificReturn := fake.metadataReturnsOnCall[len(fake.metadataArgsForCall)]
+	fake.metadataArgsForCall = append(fake.metadataArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Metadata", []interface{}{})
+	fake.metadataMutex.Unlock()
+	if fake.MetadataStub != nil {
+		return fake.MetadataStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.metadataReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FileArtifacter) MetadataCallCount() int {
+	fake.metadataMutex.RLock()
+	defer fake.metadataMutex.RUnlock()
+	return len(fake.metadataArgsForCall)
+}
+
+func (fake *FileArtifacter) MetadataCalls(stub func() (extractor.Metadata, error)) {
+	fake.metadataMutex.Lock()
+	defer fake.metadataMutex.Unlock()
+	fake.MetadataStub = stub
+}
+
+func (fake *FileArtifacter) MetadataReturns(result1 extractor.Metadata, result2 error) {
+	fake.metadataMutex.Lock()
+	defer fake.metadataMutex.Unlock()
+	fake.MetadataStub = nil
+	fake.metadataReturns = struct {
+		result1 extractor.Metadata
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FileArtifacter) MetadataReturnsOnCall(i int, result1 extractor.Metadata, result2 error) {
+	fake.metadataMutex.Lock()
+	defer fake.metadataMutex.Unlock()
+	fake.MetadataStub = nil
+	if fake.metadataReturnsOnCall == nil {
+		fake.metadataReturnsOnCall = make(map[int]struct {
+			result1 extractor.Metadata
+			result2 error
+		})
+	}
+	fake.metadataReturnsOnCall[i] = struct {
+		result1 extractor.Metadata
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FileArtifacter) Name() string {
@@ -139,6 +207,8 @@ func (fake *FileArtifacter) SHA256ReturnsOnCall(i int, result1 string) {
 func (fake *FileArtifacter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.metadataMutex.RLock()
+	defer fake.metadataMutex.RUnlock()
 	fake.nameMutex.RLock()
 	defer fake.nameMutex.RUnlock()
 	fake.sHA256Mutex.RLock()

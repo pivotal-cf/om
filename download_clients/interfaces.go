@@ -1,11 +1,15 @@
 package download_clients
 
-import "os"
+import (
+	"github.com/pivotal-cf/om/extractor"
+	"os"
+)
 
 //counterfeiter:generate -o ./fakes/file_artifacter.go --fake-name FileArtifacter . FileArtifacter
 type FileArtifacter interface {
 	Name() string
 	SHA256() string
+	Metadata() (extractor.Metadata, error)
 }
 
 //counterfeiter:generate -o ./fakes/stemcell_artifacter.go --fake-name StemcellArtifacter . StemcellArtifacter

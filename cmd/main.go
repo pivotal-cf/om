@@ -164,7 +164,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	commandSet["diagnostic-report"] = commands.NewDiagnosticReport(presenter, api)
 	commandSet["disable-director-verifiers"] = commands.NewDisableDirectorVerifiers(presenter, api, stdout)
 	commandSet["disable-product-verifiers"] = commands.NewDisableProductVerifiers(presenter, api, stdout)
-	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr)
+	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr, api)
 	commandSet["errands"] = commands.NewErrands(presenter, api)
 	commandSet["expiring-certificates"] = commands.NewExpiringCertificates(api, stdout)
 	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)

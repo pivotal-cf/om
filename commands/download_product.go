@@ -61,6 +61,7 @@ type DownloadProductOptions struct {
 	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
 	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
 	CacheCleanup string `env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
+	CheckAlreadyUploaded bool `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
 
 	AzureOptions
 	GCSOptions
@@ -75,21 +76,23 @@ type DownloadProduct struct {
 	progressWriter io.Writer
 	stderr         *log.Logger
 	stdout         *log.Logger
+	service        downloadProductService
 	downloadClient download_clients.ProductDownloader
 	Options        DownloadProductOptions
 }
 
-func NewDownloadProduct(
-	environFunc func() []string,
-	stdout *log.Logger,
-	stderr *log.Logger,
-	progressWriter io.Writer,
-) *DownloadProduct {
+//counterfeiter:generate -o ./fakes/download_product_service.go --fake-name DownloadProductService . downloadProductService
+type downloadProductService interface {
+	CheckProductAvailability(string, string) (bool, error)
+}
+
+func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, downloadProductService downloadProductService, ) *DownloadProduct {
 	return &DownloadProduct{
 		environFunc:    environFunc,
 		stderr:         stderr,
 		stdout:         stdout,
 		progressWriter: progressWriter,
+		service: downloadProductService,
 	}
 }
 
@@ -356,6 +359,25 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		return productFilePath, nil, err
 	}
 
+	if c.Options.CheckAlreadyUploaded {
+		c.stderr.Printf("checking if product already available on Ops Manager...")
+		metadata, err := fileArtifact.Metadata()
+		if err != nil {
+			return  "", nil, fmt.Errorf("could not extract metadata from product: %w", err)
+		}
+
+		found, err := c.service.CheckProductAvailability(metadata.Name, metadata.Version)
+		if err != nil {
+			return "", nil, fmt.Errorf("could not check Ops Manager for product: %w", err)
+		}
+
+		if found {
+			c.stderr.Println("product found. Skipping download.")
+			return productFilePath, fileArtifact, nil
+		}
+		c.stderr.Println("product not found. Continuing download...")
+	}
+
 	if exist {
 		c.stderr.Printf("%s already exists, skip downloading", productFilePath)
 
@@ -391,8 +413,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 			fileArtifact.SHA256(),
 			c.downloadClient.Name(),
 			calculatedSum,
-			productFilePath,
-		)
+			productFilePath)
 		c.stderr.Print(e)
 		_ = os.Remove(partialProductFilePath)
 		return productFilePath, fileArtifact, fmt.Errorf(e)

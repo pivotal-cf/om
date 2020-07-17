@@ -1,11 +1,15 @@
 package download_clients_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"github.com/onsi/gomega/ghttp"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/v5/logger"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,6 +17,100 @@ import (
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
 )
+
+var _ = Describe("Grabbing Metadata", func() {
+	When("a pivotal file", func() {
+		It("returns the metadata", func() {
+			stdout := log.New(GinkgoWriter, "", 0)
+			stderr := log.New(GinkgoWriter, "", 0)
+			modTime := time.Now()
+
+			productFile := createPivotalFile("some.pivotal", "", "")
+			contents, err := ioutil.ReadFile(productFile)
+			Expect(err).NotTo(HaveOccurred())
+
+			server := ghttp.NewTLSServer()
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases"),
+					ghttp.RespondWith(http.StatusOK, `{
+  "releases": [
+    {
+      "id": 24,
+      "version": "1.0.0"
+    }
+  ]
+}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases"),
+					ghttp.RespondWith(http.StatusOK, `{
+  "releases": [
+    {
+      "id": 24,
+      "version": "1.0.0"
+    }
+  ]
+}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases/24"),
+					ghttp.RespondWith(http.StatusOK, `{"id":24}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases/24/product_files"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+  "product_files": [
+  {
+    "id": 1,
+    "aws_object_key": "product.pivotal",
+    "_links": {
+      "download": {
+        "href": "%s/api/v2/products/pivnet-product/releases/24/product_files/21/download"
+      }
+    }
+  }
+]
+}`, server.URL())),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases/24/file_groups"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v2/products/pivnet-product/releases/24/product_files/21/download"),
+					ghttp.RespondWith(http.StatusFound, `{}`, http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/pivnet-product/releases/24/product_files/21/download", server.URL())}}),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("HEAD", "/api/v2/products/pivnet-product/releases/24/product_files/21/download"),
+					func(w http.ResponseWriter, r *http.Request) {
+						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					},
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases/24/product_files/21/download"),
+					func(w http.ResponseWriter, r *http.Request) {
+						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					},
+				),
+			)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, download_clients.DefaultPivnetFactory, "", true, server.URL())
+			versions, err := client.GetAllProductVersions("pivnet-product")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(versions).To(Equal([]string{"1.0.0"}))
+
+			file, err := client.GetLatestProductFile("pivnet-product", versions[0], "*.pivotal")
+			Expect(err).NotTo(HaveOccurred())
+
+			metadata, err := file.Metadata()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(metadata.Name).To(Equal("example-product"))
+			Expect(metadata.Version).To(Equal("1.0-build.0"))
+		})
+	})
+})
 
 var _ = Describe("PivnetClient", func() {
 	var (

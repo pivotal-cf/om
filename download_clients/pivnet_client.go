@@ -34,18 +34,25 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		stderr,
 		false,
 	)
-
+	tokenGenerator := pivnet.NewAccessTokenOrLegacyToken(
+		token,
+		pivnetHost,
+		skipSSL,
+		userAgent,
+	)
+	config := pivnet.ClientConfig{
+		Host:              pivnetHost,
+		UserAgent:         userAgent,
+		SkipSSLValidation: skipSSL,
+	}
 	downloader := factory(
-		pivnet.NewAccessTokenOrLegacyToken(
-			token,
-			pivnetHost,
-			skipSSL,
-			userAgent),
-		pivnet.ClientConfig{
-			Host:              pivnetHost,
-			UserAgent:         userAgent,
-			SkipSSLValidation: skipSSL,
-		},
+		tokenGenerator,
+		config,
+		logger,
+	)
+	client := pivnet.NewClient(
+		tokenGenerator,
+		config,
 		logger,
 	)
 
@@ -53,6 +60,7 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		filter:     filter.NewFilter(logger),
 		downloader: downloader,
 		stderr:     stderr,
+		client:     client,
 	}
 }
 
@@ -60,6 +68,7 @@ type pivnetClient struct {
 	downloader PivnetDownloader
 	filter     *filter.Filter
 	stderr     *log.Logger
+	client     pivnet.Client
 }
 
 func (p *pivnetClient) GetAllProductVersions(slug string) ([]string, error) {
@@ -105,6 +114,7 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 		releaseID:   release.ID,
 		slug:        slug,
 		productFile: productFiles[0],
+		client:      p.client,
 	}, nil
 }
 

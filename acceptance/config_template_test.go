@@ -33,10 +33,8 @@ var _ = Describe("config-template command", func() {
 			modTime := time.Now()
 
 			server = ghttp.NewTLSServer()
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases"),
-					ghttp.RespondWith(http.StatusOK, `{
+			server.RouteToHandler("GET", "/api/v2/products/example-product/releases",
+				ghttp.RespondWith(http.StatusOK, `{
   "releases": [
     {
       "id": 24,
@@ -44,10 +42,12 @@ var _ = Describe("config-template command", func() {
     }
   ]
 }`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/example-product/releases/24/product_files"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+			)
+			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24",
+				ghttp.RespondWith(http.StatusOK, `{"id":24}`),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/product_files",
+				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
   "product_files": [
   {
     "id": 1,
@@ -60,29 +60,27 @@ var _ = Describe("config-template command", func() {
   }
 ]
 }`, server.URL())),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v2/products/example-product/releases/24/pivnet_resource_eula_acceptance"),
-					ghttp.RespondWith(http.StatusOK, ""),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v2/products/product-24/releases/32/product_files/21/download"),
-					ghttp.RespondWith(http.StatusFound, "", map[string][]string{
-						"Location": {fmt.Sprintf("%s/download_file/product.pivotal", server.URL())},
-					}),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("HEAD", "/download_file/product.pivotal"),
-					func(w http.ResponseWriter, r *http.Request) {
-						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
-					},
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/download_file/product.pivotal"),
-					func(w http.ResponseWriter, r *http.Request) {
-						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
-					},
-				),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/file_groups",
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/example-product/releases/24/pivnet_resource_eula_acceptance",
+				ghttp.RespondWith(http.StatusOK, ""),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/product-24/releases/32/product_files/21/download",
+				ghttp.RespondWith(http.StatusFound, "", map[string][]string{
+					"Location": {fmt.Sprintf("%s/download_file/product.pivotal", server.URL())},
+				}),
+			)
+			server.RouteToHandler("HEAD", "/download_file/product.pivotal",
+				func(w http.ResponseWriter, r *http.Request) {
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+				},
+			)
+			server.RouteToHandler("GET", "/download_file/product.pivotal",
+				func(w http.ResponseWriter, r *http.Request) {
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+				},
 			)
 		})
 
@@ -205,21 +203,20 @@ var _ = Describe("config-template command", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			server = ghttp.NewTLSServer()
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/another-example-product/releases"),
-					ghttp.RespondWith(http.StatusOK, `{
+			server.RouteToHandler("GET", "/api/v2/products/another-example-product/releases",
+				ghttp.RespondWith(http.StatusOK, `{
   "releases": [
     {
       "id": 14,
       "version": "1.0-build.0"
     }
   ]
-}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v2/products/another-example-product/releases/14/product_files"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+}`))
+			server.RouteToHandler("GET", "/api/v2/products/another-example-product/releases/14",
+				ghttp.RespondWith(http.StatusOK, `{"id":14}`),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/another-example-product/releases/14/product_files",
+				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
   "product_files": [
   {
     "id": 1,
@@ -241,30 +238,27 @@ var _ = Describe("config-template command", func() {
   }
 ]
 }`, server.URL(), server.URL())),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v2/products/another-example-product/releases/14/pivnet_resource_eula_acceptance"),
-					ghttp.RespondWith(http.StatusOK, ""),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/v2/products/product-14/releases/14/product_files/1/download"),
-					ghttp.RespondWith(http.StatusFound, "", map[string][]string{
-						"Location": {fmt.Sprintf("%s/download_file/product.pivotal", server.URL())},
-					}),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("HEAD", "/download_file/product.pivotal"),
-					func(w http.ResponseWriter, r *http.Request) {
-						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
-					},
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/download_file/product.pivotal"),
-					func(w http.ResponseWriter, r *http.Request) {
-						http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
-					},
-				),
-
+			)
+			server.RouteToHandler("GET", "/api/v2/products/another-example-product/releases/14/file_groups",
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/another-example-product/releases/14/pivnet_resource_eula_acceptance",
+				ghttp.RespondWith(http.StatusOK, ""),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/product-14/releases/14/product_files/1/download",
+				ghttp.RespondWith(http.StatusFound, "", map[string][]string{
+					"Location": {fmt.Sprintf("%s/download_file/product.pivotal", server.URL())},
+				}),
+			)
+			server.RouteToHandler("HEAD", "/download_file/product.pivotal",
+				func(w http.ResponseWriter, r *http.Request) {
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+				},
+			)
+			server.RouteToHandler("GET", "/download_file/product.pivotal",
+				func(w http.ResponseWriter, r *http.Request) {
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+				},
 			)
 		})
 		Context("and the user has not provided a product file glob", func() {

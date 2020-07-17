@@ -198,7 +198,7 @@ func (s stowClient) GetLatestProductFile(slug, version, glob string) (FileArtifa
 		return nil, fmt.Errorf("the glob '%s' matches no file\navailable files: %s", glob, availableFiles)
 	}
 
-	return &stowFileArtifact{name: globMatchedFilepaths[0]}, nil
+	return &stowFileArtifact{name: globMatchedFilepaths[0], source: s.kind}, nil
 }
 
 func (s stowClient) DownloadProductToFile(fa FileArtifacter, destinationFile *os.File) error {
