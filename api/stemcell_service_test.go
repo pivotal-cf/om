@@ -10,27 +10,30 @@ import (
 
 var _ = Describe("StemcellService", func() {
 	var (
-		client  *ghttp.Server
+		server  *ghttp.Server
 		service api.Api
 	)
 
 	BeforeEach(func() {
-		client = ghttp.NewServer()
+		server = ghttp.NewServer()
+
+		client := httpClient{
+			server.URL(),
+		}
 
 		service = api.New(api.ApiInput{
-			Client: httpClient{
-				client.URL(),
-			},
+			Client:         client,
+			UnauthedClient: client,
 		})
 	})
 
 	AfterEach(func() {
-		client.Close()
+		server.Close()
 	})
 
 	Describe("ListStemcells", func() {
 		It("makes a request to list the stemcells", func() {
-			client.AppendHandlers(
+			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/stemcell_assignments"),
 					ghttp.RespondWith(http.StatusOK, `{
@@ -66,7 +69,7 @@ var _ = Describe("StemcellService", func() {
 
 		When("invalid JSON is returned", func() {
 			It("returns an error", func() {
-				client.AppendHandlers(
+				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/stemcell_assignments"),
 						ghttp.RespondWith(http.StatusOK, `invalid-json`),
@@ -78,9 +81,9 @@ var _ = Describe("StemcellService", func() {
 			})
 		})
 
-		When("the client errors before the request", func() {
+		When("the server errors before the request", func() {
 			It("returns an error", func() {
-				client.Close()
+				server.Close()
 
 				_, err := service.ListStemcells()
 				Expect(err).To(MatchError(ContainSubstring("could not make api request to list stemcells: could not send api request to GET /api/v0/stemcell_assignments")))
@@ -89,7 +92,7 @@ var _ = Describe("StemcellService", func() {
 
 		When("the api returns a non-200 status code", func() {
 			It("returns an error", func() {
-				client.AppendHandlers(
+				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/stemcell_assignments"),
 						ghttp.RespondWith(http.StatusTeapot, `{}`),
@@ -104,7 +107,7 @@ var _ = Describe("StemcellService", func() {
 
 	Describe("AssignStemcells", func() {
 		It("makes a request to assign the stemcells", func() {
-			client.AppendHandlers(
+			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("PATCH", "/api/v0/stemcell_assignments"),
 					ghttp.VerifyJSON(`{
@@ -126,9 +129,9 @@ var _ = Describe("StemcellService", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		When("the client errors before the request", func() {
+		When("the server errors before the request", func() {
 			It("returns an error", func() {
-				client.Close()
+				server.Close()
 
 				err := service.AssignStemcell(api.ProductStemcells{
 					Products: []api.ProductStemcell{{
@@ -142,7 +145,7 @@ var _ = Describe("StemcellService", func() {
 
 		When("the api returns a non-200 status code", func() {
 			It("returns an error", func() {
-				client.AppendHandlers(
+				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("PATCH", "/api/v0/stemcell_assignments"),
 						ghttp.VerifyJSON(`{
@@ -162,6 +165,109 @@ var _ = Describe("StemcellService", func() {
 					}},
 				})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+			})
+		})
+	})
+
+	Describe("CheckStemcellAvailability", func() {
+		When("the diagnostic report exists with stemcells", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `
+				{
+					"stemcells": ["light-bosh-stemcell-621.79-google-kvm-ubuntu-xenial-go_agent.tgz"],
+					"available_stemcells": [{
+						"filename": "light-bosh-stemcell-621.80-google-kvm-ubuntu-xenial-go_agent.tgz"
+					}]
+				}
+				`),
+				)
+			})
+
+			When("the version of the OpsManager cannot be determined", func() {
+				It("returns an error", func() {
+					server.AppendHandlers(
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					)
+
+					_, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("could not determine version"))
+				})
+			})
+
+			When("the version cannot be gotten", func() {
+				It("returns an error", func() {
+					server.AppendHandlers(
+						ghttp.RespondWith(http.StatusNotFound, nil),
+					)
+
+					_, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("cannot retrieve version"))
+				})
+			})
+
+			When("the stemcell does not exists", func() {
+				It("returns false", func() {
+					server.AppendHandlers(
+						ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.4.3"}}`),
+					)
+
+					found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(found).To(BeFalse())
+				})
+
+				When("the OpsManager is 2.6+", func() {
+					It("returns false", func() {
+						server.AppendHandlers(
+							ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+						)
+
+						found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+						Expect(err).NotTo(HaveOccurred())
+
+						Expect(found).To(BeFalse())
+					})
+				})
+			})
+
+			When("the stemcell already exists", func() {
+				It("returns true", func() {
+					server.AppendHandlers(
+						ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.4.3"}}`),
+					)
+
+					found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.79-google-kvm-ubuntu-xenial-go_agent.tgz")
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(found).To(BeTrue())
+				})
+
+				When("the OpsMan 2.6+", func() {
+					It("returns true", func() {
+						server.AppendHandlers(
+							ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+						)
+
+						found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.80-google-kvm-ubuntu-xenial-go_agent.tgz")
+						Expect(err).NotTo(HaveOccurred())
+
+						Expect(found).To(BeTrue())
+					})
+				})
+			})
+		})
+
+		When("the diagnostic report fails", func() {
+			It("returns an error", func() {
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusNotFound, nil),
+				)
+				_, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.79-google-kvm-ubuntu-xenial-go_agent.tgz")
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})

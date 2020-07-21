@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 )
@@ -56,4 +57,37 @@ func (a Api) AssignStemcell(input ProductStemcells) error {
 	}
 
 	return nil
+}
+
+func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
+	report, err := a.GetDiagnosticReport()
+	if err != nil {
+		return false, fmt.Errorf("failed to get diagnostic report: %s", err)
+	}
+
+	info, err := a.Info()
+	if err != nil {
+		return false, fmt.Errorf("cannot retrieve version of Ops Manager")
+	}
+
+	validVersion, err := info.VersionAtLeast(2, 6)
+	if err != nil {
+		return false, fmt.Errorf("could not determine version was 2.6+ compatible: %s", err)
+	}
+
+	if validVersion {
+		for _, stemcell := range report.AvailableStemcells {
+			if stemcell.Filename == filepath.Base(stemcellFilename) {
+				return true, nil
+			}
+		}
+	}
+
+	for _, stemcell := range report.Stemcells {
+		if stemcell == filepath.Base(stemcellFilename) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
