@@ -40,6 +40,7 @@ type multipart interface {
 //counterfeiter:generate -o ./fakes/upload_stemcell_service.go --fake-name UploadStemcellService . uploadStemcellService
 type uploadStemcellService interface {
 	UploadStemcell(api.StemcellUploadInput) (api.StemcellUploadOutput, error)
+	CheckStemcellAvailability(string) (bool, error)
 	GetDiagnosticReport() (api.DiagnosticReport, error)
 	Info() (api.Info, error)
 }
@@ -168,44 +169,14 @@ func (us UploadStemcell) validate() error {
 func (us UploadStemcell) checkStemcellUploaded() (exists bool, err error) {
 	us.logger.Printf("processing stemcell")
 
-	stemcellFilename := us.Options.Stemcell
-	exists = true
-
-	report, err := us.service.GetDiagnosticReport()
+	found, err := us.service.CheckStemcellAvailability(us.Options.Stemcell)
 	if err != nil {
-		switch err.(type) {
-		case api.DiagnosticReportUnavailable:
-			us.logger.Printf("%s", err)
-		default:
-			return !exists, fmt.Errorf("failed to get diagnostic report: %s", err)
-		}
+		return false, err
 	}
 
-	info, err := us.service.Info()
-	if err != nil {
-		return !exists, fmt.Errorf("cannot retrieve version of Ops Manager")
+	if found {
+		us.logger.Printf("stemcell has already been uploaded")
 	}
 
-	validVersion, err := info.VersionAtLeast(2, 6)
-	if err != nil {
-		return !exists, fmt.Errorf("could not determine version was 2.6+ compatible: %s", err)
-	}
-
-	if validVersion {
-		for _, stemcell := range report.AvailableStemcells {
-			if stemcell.Filename == filepath.Base(stemcellFilename) {
-				us.logger.Printf("stemcell has already been uploaded")
-				return exists, nil
-			}
-		}
-	}
-
-	for _, stemcell := range report.Stemcells {
-		if stemcell == filepath.Base(stemcellFilename) {
-			us.logger.Printf("stemcell has already been uploaded")
-			return exists, nil
-		}
-	}
-
-	return !exists, nil
+	return found, nil
 }

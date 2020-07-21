@@ -209,17 +209,13 @@ var _ = Describe("UploadStemcell", func() {
 	When("the stemcell already exists", func() {
 		Context("and force is not specified", func() {
 			It("exits successfully without uploading", func() {
-				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					ContentLength: 10,
 					Content:       ioutil.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 				}
 				multipart.FinalizeReturns(submission)
-
-				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
-					Stemcells: []string{"stemcell.tgz"},
-				}, nil)
+				fakeService.CheckStemcellAvailabilityReturns(true, nil)
 
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
@@ -231,44 +227,10 @@ var _ = Describe("UploadStemcell", func() {
 				format, v := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
 			})
-
-			When("the OpsMan 2.6+", func() {
-				It("exits successfully without uploading", func() {
-					fakeService.InfoReturns(api.Info{Version: "2.6.1"}, nil)
-
-					submission := formcontent.ContentSubmission{
-						ContentLength: 10,
-						Content:       ioutil.NopCloser(strings.NewReader("")),
-						ContentType:   "some content-type",
-					}
-					multipart.FinalizeReturns(submission)
-
-					fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
-						AvailableStemcells: []api.Stemcell{
-							{
-								Filename: "stemcell.tgz",
-								OS:       "ubuntu-trusty",
-								Version:  "3215",
-							},
-						},
-					}, nil)
-
-					command := commands.NewUploadStemcell(multipart, fakeService, logger)
-
-					err := command.Execute([]string{
-						"--stemcell", "/path/to/stemcell.tgz",
-					})
-					Expect(err).ToNot(HaveOccurred())
-
-					format, v := logger.PrintfArgsForCall(1)
-					Expect(fmt.Sprintf(format, v...)).To(Equal("stemcell has already been uploaded"))
-				})
-			})
 		})
 
 		Context("and force is specified", func() {
 			It("uploads the stemcell", func() {
-				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					Content:       ioutil.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
@@ -276,9 +238,7 @@ var _ = Describe("UploadStemcell", func() {
 				}
 				multipart.FinalizeReturns(submission)
 
-				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
-					Stemcells: []string{"stemcell.tgz"},
-				}, nil)
+				fakeService.CheckStemcellAvailabilityReturns(true, nil)
 
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
@@ -401,12 +361,9 @@ var _ = Describe("UploadStemcell", func() {
 			Expect(fmt.Sprintf(format, v...)).To(Equal("processing stemcell"))
 
 			format, v = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("diagnostic report is currently unavailable"))
-
-			format, v = logger.PrintfArgsForCall(2)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("beginning stemcell upload to Ops Manager"))
 
-			format, v = logger.PrintfArgsForCall(3)
+			format, v = logger.PrintfArgsForCall(2)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("finished upload"))
 		})
 	})
@@ -506,13 +463,13 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			})
 		})
 
-		When("the diagnostic report cannot be fetched", func() {
+		When("the stemcell availability cannot be fetched", func() {
 			It("returns an error", func() {
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
-				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("some diagnostic error"))
+				fakeService.CheckStemcellAvailabilityReturns(false, errors.New("some diagnostic error"))
 
 				err := command.Execute([]string{"--stemcell", "/some/path"})
-				Expect(err).To(MatchError("failed to get diagnostic report: some diagnostic error"))
+				Expect(err.Error()).To(ContainSubstring("some diagnostic error"))
 			})
 		})
 	})

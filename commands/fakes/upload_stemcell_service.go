@@ -8,6 +8,19 @@ import (
 )
 
 type UploadStemcellService struct {
+	CheckStemcellAvailabilityStub        func(string) (bool, error)
+	checkStemcellAvailabilityMutex       sync.RWMutex
+	checkStemcellAvailabilityArgsForCall []struct {
+		arg1 string
+	}
+	checkStemcellAvailabilityReturns struct {
+		result1 bool
+		result2 error
+	}
+	checkStemcellAvailabilityReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	GetDiagnosticReportStub        func() (api.DiagnosticReport, error)
 	getDiagnosticReportMutex       sync.RWMutex
 	getDiagnosticReportArgsForCall []struct {
@@ -47,6 +60,69 @@ type UploadStemcellService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *UploadStemcellService) CheckStemcellAvailability(arg1 string) (bool, error) {
+	fake.checkStemcellAvailabilityMutex.Lock()
+	ret, specificReturn := fake.checkStemcellAvailabilityReturnsOnCall[len(fake.checkStemcellAvailabilityArgsForCall)]
+	fake.checkStemcellAvailabilityArgsForCall = append(fake.checkStemcellAvailabilityArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("CheckStemcellAvailability", []interface{}{arg1})
+	fake.checkStemcellAvailabilityMutex.Unlock()
+	if fake.CheckStemcellAvailabilityStub != nil {
+		return fake.CheckStemcellAvailabilityStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.checkStemcellAvailabilityReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *UploadStemcellService) CheckStemcellAvailabilityCallCount() int {
+	fake.checkStemcellAvailabilityMutex.RLock()
+	defer fake.checkStemcellAvailabilityMutex.RUnlock()
+	return len(fake.checkStemcellAvailabilityArgsForCall)
+}
+
+func (fake *UploadStemcellService) CheckStemcellAvailabilityCalls(stub func(string) (bool, error)) {
+	fake.checkStemcellAvailabilityMutex.Lock()
+	defer fake.checkStemcellAvailabilityMutex.Unlock()
+	fake.CheckStemcellAvailabilityStub = stub
+}
+
+func (fake *UploadStemcellService) CheckStemcellAvailabilityArgsForCall(i int) string {
+	fake.checkStemcellAvailabilityMutex.RLock()
+	defer fake.checkStemcellAvailabilityMutex.RUnlock()
+	argsForCall := fake.checkStemcellAvailabilityArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *UploadStemcellService) CheckStemcellAvailabilityReturns(result1 bool, result2 error) {
+	fake.checkStemcellAvailabilityMutex.Lock()
+	defer fake.checkStemcellAvailabilityMutex.Unlock()
+	fake.CheckStemcellAvailabilityStub = nil
+	fake.checkStemcellAvailabilityReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *UploadStemcellService) CheckStemcellAvailabilityReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.checkStemcellAvailabilityMutex.Lock()
+	defer fake.checkStemcellAvailabilityMutex.Unlock()
+	fake.CheckStemcellAvailabilityStub = nil
+	if fake.checkStemcellAvailabilityReturnsOnCall == nil {
+		fake.checkStemcellAvailabilityReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.checkStemcellAvailabilityReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *UploadStemcellService) GetDiagnosticReport() (api.DiagnosticReport, error) {
@@ -225,6 +301,8 @@ func (fake *UploadStemcellService) UploadStemcellReturnsOnCall(i int, result1 ap
 func (fake *UploadStemcellService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.checkStemcellAvailabilityMutex.RLock()
+	defer fake.checkStemcellAvailabilityMutex.RUnlock()
 	fake.getDiagnosticReportMutex.RLock()
 	defer fake.getDiagnosticReportMutex.RUnlock()
 	fake.infoMutex.RLock()
