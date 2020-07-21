@@ -100,6 +100,74 @@ var _ = Describe("download-product command", func() {
 					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
 				},
 			)
+			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/dependencies",
+				ghttp.RespondWith(http.StatusOK, `{
+					"dependencies": [{
+						"release": {
+							"id": 24,
+							"version": "100.00",
+							"product": {"slug": "xenial-stemcells"}
+						}
+					}]
+				}`),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases",
+				ghttp.RespondWith(http.StatusOK, `{
+					  "releases": [
+						{
+						  "id": 24,
+						  "version": "100.00"
+						}
+					  ]
+					}`),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24",
+				ghttp.RespondWith(http.StatusOK, `{"id":24}`),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files",
+				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+					 "product_files": [
+					 {
+					   "id": 1,
+
+					   "aws_object_key": "light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz",
+					   "_links": {
+					     "download": {
+					       "href": "%s/api/v2/products/xenial-stemcells/releases/24/product_files/1/download"
+					     }
+					   }
+					 }
+					]
+					}`, server.URL())),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/file_groups",
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			)
+			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files/1",
+				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+					"product_file": {
+					   "id": 1,
+						"_links": {
+							"download": {
+								"href":"%s/api/v2/products/xenial-stemcells/releases/24/product_files/1/download"
+							}
+						}
+					}
+					}`, server.URL())),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
+				ghttp.RespondWith(http.StatusFound, `{}`, http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/xenial-stemcells/releases/24/product_files/1/download", server.URL())}}),
+			)
+			server.RouteToHandler("HEAD", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
+				func(w http.ResponseWriter, r *http.Request) {
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+				},
+			)
+			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
+				func(w http.ResponseWriter, r *http.Request) {
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+				},
+			)
 		})
 
 		AfterEach(func() {
@@ -116,6 +184,7 @@ var _ = Describe("download-product command", func() {
 				"--pivnet-disable-ssl",
 				"--pivnet-host", server.URL(),
 				"--product-version", "1.10.1",
+				"--stemcell-iaas", "google",
 				"--output-directory", tmpDir,
 			)
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -125,6 +194,7 @@ var _ = Describe("download-product command", func() {
 			Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 
 			Expect(filepath.Join(tmpDir, "example-product.pivotal")).To(BeAnExistingFile())
+			Expect(filepath.Join(tmpDir, "light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")).To(BeAnExistingFile())
 			Expect(filepath.Join(tmpDir, "example-product.pivotal.partial")).ToNot(BeAnExistingFile())
 		})
 
