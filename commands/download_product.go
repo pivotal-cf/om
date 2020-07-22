@@ -381,7 +381,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	if exist {
 		c.stderr.Printf("%s already exists, skip downloading", productFilePath)
 
-		err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+		err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath, slug)
 		if err != nil {
 			return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
 		}
@@ -389,7 +389,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 		return productFilePath, fileArtifact, nil
 	}
 
-	err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath)
+	err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath, slug)
 	if err != nil {
 		return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
 	}
@@ -423,9 +423,15 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	return productFilePath, fileArtifact, nil
 }
 
-func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string) error {
+func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string, slug string) error {
 	if c.Options.CacheCleanup == "I acknowledge this will delete files in the output directories" {
 		c.stderr.Println("Cleaning up cached artifacts...")
+		var prefixedGlob string
+		if c.Options.Source != "pivnet" || c.Options.Bucket == "" {
+			prefixedGlob = glob
+		} else {
+			prefixedGlob = fmt.Sprintf("\\[%s,*\\]%s", slug, glob)
+		}
 		outputDirContents, err := ioutil.ReadDir(outputDir)
 		if err != nil {
 			return err
@@ -433,7 +439,7 @@ func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, p
 
 		for _, file := range outputDirContents {
 			dirFilePath := path.Join(outputDir, file.Name())
-			if matchGlob, _ := filepath.Match(glob, file.Name()); matchGlob {
+			if matchGlob, _ := filepath.Match(prefixedGlob, file.Name()); matchGlob {
 				if dirFilePath != productFilePath {
 					_ = os.Remove(dirFilePath)
 				}

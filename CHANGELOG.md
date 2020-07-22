@@ -47,6 +47,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.0.1
+
+### Bug Fixes
+- `download-product` will now correctly cache if downloading from a blobstore
+  when `CACHE_CLEANUP='I acknowledge this will delete files in the output directories'`
+  is set.
+  
 ## 6.0.0
 
 ### Features
