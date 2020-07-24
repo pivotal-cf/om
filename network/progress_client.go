@@ -1,7 +1,7 @@
 package network
 
 import (
-	"gopkg.in/cheggaaa/pb.v1"
+	"github.com/cheggaaa/pb/v3"
 	"io"
 	"net/http"
 )
@@ -19,17 +19,15 @@ func NewProgressClient(client httpClient, stderr io.Writer) ProgressClient {
 }
 
 func (pc ProgressClient) Do(req *http.Request) (*http.Response, error) {
-	bar := pb.New64(0)
-	bar.Output = pc.stderr
-	bar.AutoStat = true
-	bar.ShowPercent = true
-	bar.ShowElapsedTime = true
-	bar.SetUnits(pb.U_BYTES)
+	bar := pb.Default.New(0)
+	bar.SetWriter(pc.stderr)
+	bar.Set(pb.Bytes, true)
+	bar.SetMaxWidth(80)
 
 	switch req.Method {
 	case http.MethodPost, http.MethodPut:
 		req.Body = bar.NewProxyReader(req.Body)
-		bar.SetTotal64(req.ContentLength)
+		bar.SetTotal(req.ContentLength)
 	}
 
 	bar.Start()
@@ -41,7 +39,7 @@ func (pc ProgressClient) Do(req *http.Request) (*http.Response, error) {
 
 	if req.Method == http.MethodGet {
 		resp.Body = bar.NewProxyReader(resp.Body)
-		bar.SetTotal64(resp.ContentLength)
+		bar.SetTotal(resp.ContentLength)
 	}
 
 	return resp, nil

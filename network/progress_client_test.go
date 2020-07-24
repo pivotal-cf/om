@@ -55,7 +55,7 @@ var _ = Describe("ProgressClient", func() {
 			Expect(request.Method).To(Equal("POST"))
 			Expect(request.URL.Path).To(Equal("/some/endpoint"))
 
-			Eventually(buffer).Should(gbytes.Say("===] 100.00%"))
+			Eventually(buffer).Should(gbytes.Say("---] 100.00%"))
 		})
 
 		It("makes a request to download the product to the Ops Manager", func() {
@@ -74,9 +74,11 @@ var _ = Describe("ProgressClient", func() {
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
 			rawRespBody, err := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(rawRespBody)).To(Equal("fake-server-response"))
-			Eventually(buffer).Should(gbytes.Say("===]"))
+			Eventually(buffer).Should(gbytes.Say("---] 100.00%"))
 
 			request := client.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))

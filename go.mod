@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go v1.32.13 // indirect
 	github.com/bmatcuk/doublestar v1.3.1 // indirect
 	github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 // indirect
+	github.com/cheggaaa/pb/v3 v3.0.4
 	github.com/cloudfoundry/bosh-cli v6.3.0+incompatible
 	github.com/cloudfoundry/bosh-utils v0.0.0-20200627100340-14e12bc28506 // indirect
 	github.com/cppforlife/go-patch v0.2.0

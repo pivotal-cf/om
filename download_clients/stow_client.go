@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/graymeta/stow"
 	"github.com/pivotal-cf/om/extractor"
-	"gopkg.in/cheggaaa/pb.v1"
+	"github.com/cheggaaa/pb/v3"
 	"io"
 	"log"
 	"os"
@@ -237,10 +237,11 @@ func (s *stowClient) initializeBlobReader(filename string) (blobToRead io.ReadCl
 }
 
 func (s stowClient) startProgressBar(size int64, item io.Reader) (*pb.ProgressBar, io.Reader) {
-	progressBar := pb.New64(0)
-	progressBar.Output = s.stderr.Writer()
-	progressBar.SetUnits(pb.U_BYTES)
-	progressBar.SetTotal64(size)
+	progressBar := pb.Default.New(0)
+	progressBar.SetWriter(s.stderr.Writer())
+	progressBar.Set(pb.Bytes, true)
+	progressBar.SetTotal(size)
+	progressBar.SetMaxWidth(80)
 	reader := progressBar.NewProxyReader(item)
 	progressBar.Start()
 	return progressBar, reader
