@@ -97,7 +97,7 @@ product_version: 1.2.3
 			When("the specified product file is not found", func() {
 				It("returns an error", func() {
 					err = command.Execute([]string{"-p", "non-existent-file", "--product-name"})
-					Expect(err).To(MatchError(MatchRegexp("failed to open product file")))
+					Expect(err).To(MatchError(MatchRegexp("open non-existent-file")))
 				})
 			})
 
@@ -119,7 +119,7 @@ product_version: 1.2.3
 
 				It("returns an error", func() {
 					err = command.Execute([]string{"-p", badTile.Name(), "--product-name"})
-					Expect(err).To(MatchError(MatchRegexp("failed to find metadata file")))
+					Expect(err).To(MatchError(MatchRegexp("failed to getting metadata")))
 				})
 			})
 		})

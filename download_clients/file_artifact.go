@@ -13,16 +13,16 @@ type PivnetFileArtifact struct {
 	client      pivnet.Client
 }
 
-func (f PivnetFileArtifact) Metadata() (extractor.Metadata, error) {
+func (f PivnetFileArtifact) ProductMetadata() (*extractor.Metadata, error) {
 	downloadLink, err := f.productFile.DownloadLink()
 	if err != nil {
-		return extractor.Metadata{}, fmt.Errorf("cannot retrieve download link: %w", err)
+		return nil, fmt.Errorf("cannot retrieve download link: %w", err)
 	}
 
 	fetcher := pivnet.NewProductFileLinkFetcher(downloadLink, f.client)
 	followedLink, err := fetcher.NewDownloadLink()
 	if err != nil {
-		return extractor.Metadata{}, err
+		return nil, err
 	}
 
 	metadata := extractor.NewMetadataExtractor(extractor.WithHTTPClient(f.client.HTTP))
@@ -43,8 +43,8 @@ type stowFileArtifact struct {
 	source string
 }
 
-func (f stowFileArtifact) Metadata() (extractor.Metadata, error) {
-	return extractor.Metadata{}, fmt.Errorf("there is no way to extract metadata from source \"%s\"", f.source)
+func (f stowFileArtifact) ProductMetadata() (*extractor.Metadata, error) {
+	return nil, fmt.Errorf("there is no way to extract metadata from source \"%s\"", f.source)
 }
 
 func (f stowFileArtifact) Name() string {

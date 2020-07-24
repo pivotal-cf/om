@@ -42,7 +42,7 @@ func (p *PivnetProvider) MetadataBytes() ([]byte, error) {
 		return nil, err
 	}
 
-	metadata, err := fileArtifact.Metadata()
+	metadata, err := fileArtifact.ProductMetadata()
 	if err != nil {
 		return nil, err
 	}

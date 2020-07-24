@@ -249,6 +249,7 @@ var _ = Describe("DownloadProduct", func() {
 				BeforeEach(func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fa.ProductMetadataReturns(&extractor.Metadata{Name: "fake-tile", Version: "2.0.0"}, nil)
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fa = &fakes.FileArtifacter{}
@@ -315,6 +316,29 @@ var _ = Describe("DownloadProduct", func() {
 								"product": "fake-tile",
 								"stemcell": "97.190"
 							}`))
+				})
+
+				When("the --check-upload-already is specified", func() {
+					It("does not download the stemcell and product", func() {
+						tempDir, err := ioutil.TempDir("", "om-tests-")
+						Expect(err).ToNot(HaveOccurred())
+
+						commandArgs := []string{
+							"--pivnet-api-token", "token",
+							"--file-glob", "*.pivotal",
+							"--pivnet-product-slug", "elastic-runtime",
+							"--product-version", "2.0.0",
+							"--output-directory", tempDir,
+							"--stemcell-iaas", "google",
+							"--check-already-uploaded",
+						}
+
+						err = command.Execute(commandArgs)
+						Expect(err).ToNot(HaveOccurred())
+
+						assignStemcellFilename := path.Join(tempDir, "assign-stemcell.yml")
+						Expect(assignStemcellFilename).ToNot(BeAnExistingFile())
+					})
 				})
 
 				When("the --stemcell-output-dir flag is passed", func() {
@@ -611,6 +635,7 @@ var _ = Describe("DownloadProduct", func() {
 				It("downloads the corresponding light or heavy stemcell", func() {
 					fa := &fakes.FileArtifacter{}
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+					fa.ProductMetadataReturns(&extractor.Metadata{}, nil)
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
@@ -651,6 +676,7 @@ var _ = Describe("DownloadProduct", func() {
 			When("providing the --stemcell-heavy flag", func() {
 				It("downloads the corresponding light or heavy stemcell", func() {
 					fa := &fakes.FileArtifacter{}
+					fa.ProductMetadataReturns(&extractor.Metadata{}, nil)
 					fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
@@ -739,45 +765,112 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		When("the --check-already-uploaded is set", func() {
-			When("the metadata cannot be read", func() {
+			When("looking up a stemcell as a product", func() {
 				BeforeEach(func() {
 					fa := &fakes.FileArtifacter{}
-					fa.NameReturns("/some-account/some-bucket/cf-2.1-build.11.pivotal")
-					fa.MetadataReturns(extractor.Metadata{}, fmt.Errorf("some error"))
+					fa.NameReturns("/some-account/some-bucket/stemcell.tgz")
+					fa.ProductMetadataReturns(&extractor.Metadata{Name: "xenial-stemcells", Version: "100.0"}, nil)
+					fakeProductDownloader.GetAllProductVersionsReturns([]string{"100.0"}, nil)
 
 					fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
 				})
-				It("does not download it", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
 
-					commandArgs := []string{
-						"--pivnet-api-token", "token",
-						"--file-glob", "*.pivotal",
-						"--pivnet-product-slug", "elastic-runtime",
-						"--product-version", "2.0.0",
-						"--output-directory", tempDir,
-						"--check-already-uploaded",
-					}
+				When("the stemcell already exists on the OpsManager", func() {
+					BeforeEach(func() {
+						fakeDownloadProductService.CheckStemcellAvailabilityReturns(true, nil)
+					})
 
-					err = command.Execute(commandArgs)
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("some error"))
+					It("does not download it", func() {
+						tempDir, err := ioutil.TempDir("", "om-tests-")
+						Expect(err).ToNot(HaveOccurred())
+
+						commandArgs := []string{
+							"--pivnet-api-token", "token",
+							"--file-glob", "*.tgz",
+							"--pivnet-product-slug", "xenial-stemcells",
+							"--product-version", "100.0",
+							"--output-directory", tempDir,
+							"--check-already-uploaded",
+						}
+
+						err = command.Execute(commandArgs)
+						Expect(err).ToNot(HaveOccurred())
+
+						Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
+						Expect(fakeDownloadProductService.CheckStemcellAvailabilityCallCount()).To(Equal(1))
+						filename := fakeDownloadProductService.CheckStemcellAvailabilityArgsForCall(0)
+						Expect(filename).To(Equal("stemcell.tgz"))
+					})
+				})
+
+				When("the stemcell is not on the OpsManager", func() {
+					BeforeEach(func() {
+						fakeDownloadProductService.CheckStemcellAvailabilityReturns(false, nil)
+					})
+
+					It("download the file", func() {
+						tempDir, err := ioutil.TempDir("", "om-tests-")
+						Expect(err).ToNot(HaveOccurred())
+
+						commandArgs := []string{
+							"--pivnet-api-token", "token",
+							"--file-glob", "*.tgz",
+							"--pivnet-product-slug", "xenial-stemcells",
+							"--product-version", "100.0",
+							"--output-directory", tempDir,
+							"--check-already-uploaded",
+						}
+
+						err = command.Execute(commandArgs)
+						Expect(err).ToNot(HaveOccurred())
+
+						Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(1))
+						_, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(0)
+						Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "stemcell.tgz.partial")))
+						Expect(filepath.Join(tempDir, "stemcell.tgz")).To(BeAnExistingFile())
+
+						Expect(fakeDownloadProductService.CheckStemcellAvailabilityCallCount()).To(Equal(1))
+						filename := fakeDownloadProductService.CheckStemcellAvailabilityArgsForCall(0)
+						Expect(filename).To(Equal("stemcell.tgz"))
+					})
+				})
+
+				When("the stemcell check service returns an error", func() {
+					BeforeEach(func() {
+						fakeDownloadProductService.CheckStemcellAvailabilityReturns(false, fmt.Errorf("some error"))
+					})
+
+					It("returns that error", func() {
+						tempDir, err := ioutil.TempDir("", "om-tests-")
+						Expect(err).ToNot(HaveOccurred())
+
+						commandArgs := []string{
+							"--pivnet-api-token", "token",
+							"--file-glob", "*.tgz",
+							"--pivnet-product-slug", "xenial-stemcells",
+							"--product-version", "100.0",
+							"--output-directory", tempDir,
+							"--check-already-uploaded",
+						}
+
+						err = command.Execute(commandArgs)
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("some error"))
+
+						Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
+						Expect(fakeDownloadProductService.CheckStemcellAvailabilityCallCount()).To(Equal(1))
+					})
 				})
 			})
 
-			When("the metadata can be found", func() {
-				BeforeEach(func() {
-					fa := &fakes.FileArtifacter{}
-					fa.NameReturns("/some-account/some-bucket/cf-2.1-build.11.pivotal")
-					fa.MetadataReturns(extractor.Metadata{Name: "example-product", Version: "1.2.3"}, nil)
-
-					fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
-				})
-
-				When("the product already exists on the OpsManager", func() {
+			When("looking up a pivotal file", func() {
+				When("the metadata cannot be read", func() {
 					BeforeEach(func() {
-						fakeDownloadProductService.CheckProductAvailabilityReturns(true, nil)
+						fa := &fakes.FileArtifacter{}
+						fa.NameReturns("/some-account/some-bucket/cf-2.1-build.11.pivotal")
+						fa.ProductMetadataReturns(nil, fmt.Errorf("some error"))
+
+						fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
 					})
 
 					It("does not download it", func() {
@@ -794,73 +887,108 @@ var _ = Describe("DownloadProduct", func() {
 						}
 
 						err = command.Execute(commandArgs)
-						Expect(err).ToNot(HaveOccurred())
-
-						Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
-						Expect(fakeDownloadProductService.CheckProductAvailabilityCallCount()).To(Equal(1))
-						name, version := fakeDownloadProductService.CheckProductAvailabilityArgsForCall(0)
-						Expect(name).To(Equal("example-product"))
-						Expect(version).To(Equal("1.2.3"))
-					})
-				})
-
-				When("the product is not on the OpsManager", func() {
-					BeforeEach(func() {
-						fakeDownloadProductService.CheckProductAvailabilityReturns(false, nil)
-					})
-
-					It("download the file", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
-						Expect(err).ToNot(HaveOccurred())
-
-						commandArgs := []string{
-							"--pivnet-api-token", "token",
-							"--file-glob", "*.pivotal",
-							"--pivnet-product-slug", "elastic-runtime",
-							"--product-version", "2.0.0",
-							"--output-directory", tempDir,
-							"--check-already-uploaded",
-						}
-
-						err = command.Execute(commandArgs)
-						Expect(err).ToNot(HaveOccurred())
-
-						Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(1))
-						_, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(0)
-						Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "cf-2.1-build.11.pivotal.partial")))
-						Expect(filepath.Join(tempDir, "cf-2.1-build.11.pivotal")).To(BeAnExistingFile())
-
-						Expect(fakeDownloadProductService.CheckProductAvailabilityCallCount()).To(Equal(1))
-						name, version := fakeDownloadProductService.CheckProductAvailabilityArgsForCall(0)
-
-						Expect(name).To(Equal("example-product"))
-						Expect(version).To(Equal("1.2.3"))
-					})
-				})
-				When("the product check service returns an error", func() {
-					BeforeEach(func() {
-						fakeDownloadProductService.CheckProductAvailabilityReturns(false, fmt.Errorf("some error"))
-					})
-
-					It("returns that error", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
-						Expect(err).ToNot(HaveOccurred())
-
-						commandArgs := []string{
-							"--pivnet-api-token", "token",
-							"--file-glob", "*.pivotal",
-							"--pivnet-product-slug", "elastic-runtime",
-							"--product-version", "2.0.0",
-							"--output-directory", tempDir,
-							"--check-already-uploaded",
-						}
-
-						err = command.Execute(commandArgs)
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(ContainSubstring("some error"))
+					})
+				})
 
-						Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
-						Expect(fakeDownloadProductService.CheckProductAvailabilityCallCount()).To(Equal(1))
+				When("the metadata can be found", func() {
+					BeforeEach(func() {
+						fa := &fakes.FileArtifacter{}
+						fa.NameReturns("/some-account/some-bucket/cf-2.1-build.11.pivotal")
+						fa.ProductMetadataReturns(&extractor.Metadata{Name: "example-product", Version: "1.2.3"}, nil)
+
+						fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
+					})
+
+					When("the product already exists on the OpsManager", func() {
+						BeforeEach(func() {
+							fakeDownloadProductService.CheckProductAvailabilityReturns(true, nil)
+						})
+
+						It("does not download it", func() {
+							tempDir, err := ioutil.TempDir("", "om-tests-")
+							Expect(err).ToNot(HaveOccurred())
+
+							commandArgs := []string{
+								"--pivnet-api-token", "token",
+								"--file-glob", "*.pivotal",
+								"--pivnet-product-slug", "elastic-runtime",
+								"--product-version", "2.0.0",
+								"--output-directory", tempDir,
+								"--check-already-uploaded",
+							}
+
+							err = command.Execute(commandArgs)
+							Expect(err).ToNot(HaveOccurred())
+
+							Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
+							Expect(fakeDownloadProductService.CheckProductAvailabilityCallCount()).To(Equal(1))
+							name, version := fakeDownloadProductService.CheckProductAvailabilityArgsForCall(0)
+							Expect(name).To(Equal("example-product"))
+							Expect(version).To(Equal("1.2.3"))
+						})
+					})
+
+					When("the product is not on the OpsManager", func() {
+						BeforeEach(func() {
+							fakeDownloadProductService.CheckProductAvailabilityReturns(false, nil)
+						})
+
+						It("download the file", func() {
+							tempDir, err := ioutil.TempDir("", "om-tests-")
+							Expect(err).ToNot(HaveOccurred())
+
+							commandArgs := []string{
+								"--pivnet-api-token", "token",
+								"--file-glob", "*.pivotal",
+								"--pivnet-product-slug", "elastic-runtime",
+								"--product-version", "2.0.0",
+								"--output-directory", tempDir,
+								"--check-already-uploaded",
+							}
+
+							err = command.Execute(commandArgs)
+							Expect(err).ToNot(HaveOccurred())
+
+							Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(1))
+							_, pf := fakeProductDownloader.DownloadProductToFileArgsForCall(0)
+							Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "cf-2.1-build.11.pivotal.partial")))
+							Expect(filepath.Join(tempDir, "cf-2.1-build.11.pivotal")).To(BeAnExistingFile())
+
+							Expect(fakeDownloadProductService.CheckProductAvailabilityCallCount()).To(Equal(1))
+							name, version := fakeDownloadProductService.CheckProductAvailabilityArgsForCall(0)
+
+							Expect(name).To(Equal("example-product"))
+							Expect(version).To(Equal("1.2.3"))
+						})
+					})
+
+					When("the product check service returns an error", func() {
+						BeforeEach(func() {
+							fakeDownloadProductService.CheckProductAvailabilityReturns(false, fmt.Errorf("some error"))
+						})
+
+						It("returns that error", func() {
+							tempDir, err := ioutil.TempDir("", "om-tests-")
+							Expect(err).ToNot(HaveOccurred())
+
+							commandArgs := []string{
+								"--pivnet-api-token", "token",
+								"--file-glob", "*.pivotal",
+								"--pivnet-product-slug", "elastic-runtime",
+								"--product-version", "2.0.0",
+								"--output-directory", tempDir,
+								"--check-already-uploaded",
+							}
+
+							err = command.Execute(commandArgs)
+							Expect(err).To(HaveOccurred())
+							Expect(err.Error()).To(ContainSubstring("some error"))
+
+							Expect(fakeProductDownloader.DownloadProductToFileCallCount()).To(Equal(0))
+							Expect(fakeDownloadProductService.CheckProductAvailabilityCallCount()).To(Equal(1))
+						})
 					})
 				})
 			})
@@ -875,6 +1003,7 @@ var _ = Describe("DownloadProduct", func() {
 
 				fa := &fakes.FileArtifacter{}
 				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
+				fa.ProductMetadataReturns(&extractor.Metadata{}, nil)
 				fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 				fa = &fakes.FileArtifacter{}

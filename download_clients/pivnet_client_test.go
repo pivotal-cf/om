@@ -103,7 +103,7 @@ var _ = Describe("Grabbing Metadata", func() {
 			file, err := client.GetLatestProductFile("pivnet-product", versions[0], "*.pivotal")
 			Expect(err).NotTo(HaveOccurred())
 
-			metadata, err := file.Metadata()
+			metadata, err := file.ProductMetadata()
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(metadata.Name).To(Equal("example-product"))

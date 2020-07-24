@@ -9,7 +9,7 @@ import (
 type FileArtifacter interface {
 	Name() string
 	SHA256() string
-	Metadata() (extractor.Metadata, error)
+	ProductMetadata() (*extractor.Metadata, error)
 }
 
 //counterfeiter:generate -o ./fakes/stemcell_artifacter.go --fake-name StemcellArtifacter . StemcellArtifacter

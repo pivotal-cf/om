@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -27,8 +28,8 @@ var _ = Describe("download-product command", func() {
 		var server *ghttp.Server
 
 		BeforeEach(func() {
-			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-			contents, err := ioutil.ReadFile(pivotalFile)
+			pivotalFile := createPivotalFile("[pivnet-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
+			pivotalContents, err := ioutil.ReadFile(pivotalFile)
 			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
@@ -44,7 +45,7 @@ var _ = Describe("download-product command", func() {
 
 			server = ghttp.NewTLSServer()
 
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases",
 				ghttp.RespondWith(http.StatusOK, `{
   "releases": [
     {
@@ -53,54 +54,54 @@ var _ = Describe("download-product command", func() {
     }
   ]
 }`))
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24",
 				ghttp.RespondWith(http.StatusOK, `{"id":24}`),
 			)
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/product_files",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24/product_files",
 				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
 					 "product_files": [
 					 {
 					   "id": 1,
 
-					   "aws_object_key": "example-product.pivotal",
+					   "aws_object_key": "pivnet-product.pivotal",
 					   "_links": {
 					     "download": {
-					       "href": "%s/api/v2/products/example-product/releases/24/product_files/1/download"
+					       "href": "%s/api/v2/products/pivnet-product/releases/24/product_files/1/download"
 					     }
 					   }
 					 }
 					]
 					}`, server.URL())),
 			)
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/file_groups",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24/file_groups",
 				ghttp.RespondWith(http.StatusOK, `{}`),
 			)
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/product_files/1",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24/product_files/1",
 				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
 					"product_file": {
 					   "id": 1,
 						"_links": {
 							"download": {
-								"href":"%s/api/v2/products/example-product/releases/24/product_files/1/download"
+								"href":"%s/api/v2/products/pivnet-product/releases/24/product_files/1/download"
 							}
 						}
 					}
 					}`, server.URL())),
 			)
-			server.RouteToHandler("POST", "/api/v2/products/example-product/releases/24/product_files/1/download",
-				ghttp.RespondWith(http.StatusFound, `{}`, http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/example-product/releases/24/product_files/1/download", server.URL())}}),
+			server.RouteToHandler("POST", "/api/v2/products/pivnet-product/releases/24/product_files/1/download",
+				ghttp.RespondWith(http.StatusFound, `{}`, http.Header{"Location": {fmt.Sprintf("%s/api/v2/products/pivnet-product/releases/24/product_files/1/download", server.URL())}}),
 			)
-			server.RouteToHandler("HEAD", "/api/v2/products/example-product/releases/24/product_files/1/download",
+			server.RouteToHandler("HEAD", "/api/v2/products/pivnet-product/releases/24/product_files/1/download",
 				func(w http.ResponseWriter, r *http.Request) {
-					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(pivotalContents))
 				},
 			)
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/product_files/1/download",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24/product_files/1/download",
 				func(w http.ResponseWriter, r *http.Request) {
-					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(pivotalContents))
 				},
 			)
-			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/24/dependencies",
+			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24/dependencies",
 				ghttp.RespondWith(http.StatusOK, `{
 					"dependencies": [{
 						"release": {
@@ -111,6 +112,8 @@ var _ = Describe("download-product command", func() {
 					}]
 				}`),
 			)
+
+			stemcellContents := `stemcell contents that should do nothing`
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases",
 				ghttp.RespondWith(http.StatusOK, `{
 					  "releases": [
@@ -127,18 +130,28 @@ var _ = Describe("download-product command", func() {
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files",
 				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
 					 "product_files": [
-					 {
-					   "id": 1,
-
-					   "aws_object_key": "light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz",
-					   "_links": {
-					     "download": {
-					       "href": "%s/api/v2/products/xenial-stemcells/releases/24/product_files/1/download"
-					     }
-					   }
-					 }
+						 {
+						   "id": 1,
+	
+						   "aws_object_key": "light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz",
+						   "_links": {
+							 "download": {
+							   "href": "%s/api/v2/products/xenial-stemcells/releases/24/product_files/1/download"
+							 }
+						   }
+						 },
+						 {
+						   "id": 1,
+	
+						   "aws_object_key": "bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz",
+						   "_links": {
+							 "download": {
+							   "href": "%s/api/v2/products/xenial-stemcells/releases/24/product_files/1/download"
+							 }
+						   }
+						 }
 					]
-					}`, server.URL())),
+				}`, server.URL(), server.URL())),
 			)
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/file_groups",
 				ghttp.RespondWith(http.StatusOK, `{}`),
@@ -160,12 +173,12 @@ var _ = Describe("download-product command", func() {
 			)
 			server.RouteToHandler("HEAD", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
 				func(w http.ResponseWriter, r *http.Request) {
-					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					http.ServeContent(w, r, "download", modTime, strings.NewReader(stemcellContents))
 				},
 			)
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
 				func(w http.ResponseWriter, r *http.Request) {
-					http.ServeContent(w, r, "download", modTime, bytes.NewReader(contents))
+					http.ServeContent(w, r, "download", modTime, strings.NewReader(stemcellContents))
 				},
 			)
 		})
@@ -179,8 +192,8 @@ var _ = Describe("download-product command", func() {
 			Expect(err).ToNot(HaveOccurred())
 			command := exec.Command(pathToMain, "download-product",
 				"--pivnet-api-token", "token",
-				"--file-glob", "example-product.pivotal",
-				"--pivnet-product-slug", "example-product",
+				"--file-glob", "pivnet-product.pivotal",
+				"--pivnet-product-slug", "pivnet-product",
 				"--pivnet-disable-ssl",
 				"--pivnet-host", server.URL(),
 				"--product-version", "1.10.1",
@@ -190,35 +203,57 @@ var _ = Describe("download-product command", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 			Eventually(session, "10s").Should(gexec.Exit(0))
-			Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source pivnet`))
+			Expect(session.Err).To(gbytes.Say(`attempting to download the file.*pivnet-product.pivotal.*from source pivnet`))
 			Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
 
-			Expect(filepath.Join(tmpDir, "example-product.pivotal")).To(BeAnExistingFile())
+			Expect(filepath.Join(tmpDir, "pivnet-product.pivotal")).To(BeAnExistingFile())
 			Expect(filepath.Join(tmpDir, "light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")).To(BeAnExistingFile())
-			Expect(filepath.Join(tmpDir, "example-product.pivotal.partial")).ToNot(BeAnExistingFile())
+			Expect(filepath.Join(tmpDir, "pivnet-product.pivotal.partial")).ToNot(BeAnExistingFile())
 		})
 
-		When("--check-already-uploaded is passed and no env file is provided", func() {
-			It("returns an error", func() {
+		When("the product and stemcell are already on the OpsManager", func() {
+			It("does nothing", func() {
+				opsmanServer := createTLSServer()
+				opsmanServer.RouteToHandler("GET", "/api/v0/available_products",
+					ghttp.RespondWith(http.StatusOK, `[{
+						"name": "example-product",
+						"product_version": "1.0-build.0"
+					}]`),
+				)
+				opsmanServer.RouteToHandler("GET", "/api/v0/diagnostic_report",
+					ghttp.RespondWith(http.StatusOK, `{
+						"stemcells": ["light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz"]
+					}`),
+				)
+				opsmanServer.RouteToHandler("GET", "/api/v0/info",
+					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.4.0"}}`),
+				)
+
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain,
+					"-k",
+					"--target", opsmanServer.URL(),
+					"--username", "some-username",
+					"--password", "some-password",
 					"download-product",
 					"--pivnet-api-token", "token",
-					"--file-glob", "example-product.pivotal",
-					"--pivnet-product-slug", "example-product",
+					"--file-glob", "pivnet-product.pivotal",
+					"--pivnet-product-slug", "pivnet-product",
 					"--pivnet-disable-ssl",
 					"--pivnet-host", server.URL(),
 					"--product-version", "1.10.1",
+					"--stemcell-iaas", "google",
 					"--output-directory", tmpDir,
 					"--check-already-uploaded",
 				)
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(1))
-				Expect(session.Err).To(gbytes.Say(`target flag is required`))
+				Eventually(session, "10s").Should(gexec.Exit(0))
 
-				Expect(filepath.Join(tmpDir, "example-product.pivotal")).ToNot(BeAnExistingFile())
+				Expect(filepath.Join(tmpDir, "pivnet-product.pivotal")).ToNot(BeAnExistingFile())
+				Expect(filepath.Join(tmpDir, "light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")).ToNot(BeAnExistingFile())
+				Expect(filepath.Join(tmpDir, "pivnet-product.pivotal.partial")).ToNot(BeAnExistingFile())
 			})
 		})
 	})

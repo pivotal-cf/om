@@ -8,24 +8,24 @@ import (
 )
 
 type MetadataExtractor struct {
-	ExtractFromFileStub        func(string) (extractor.Metadata, error)
+	ExtractFromFileStub        func(string) (*extractor.Metadata, error)
 	extractFromFileMutex       sync.RWMutex
 	extractFromFileArgsForCall []struct {
 		arg1 string
 	}
 	extractFromFileReturns struct {
-		result1 extractor.Metadata
+		result1 *extractor.Metadata
 		result2 error
 	}
 	extractFromFileReturnsOnCall map[int]struct {
-		result1 extractor.Metadata
+		result1 *extractor.Metadata
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *MetadataExtractor) ExtractFromFile(arg1 string) (extractor.Metadata, error) {
+func (fake *MetadataExtractor) ExtractFromFile(arg1 string) (*extractor.Metadata, error) {
 	fake.extractFromFileMutex.Lock()
 	ret, specificReturn := fake.extractFromFileReturnsOnCall[len(fake.extractFromFileArgsForCall)]
 	fake.extractFromFileArgsForCall = append(fake.extractFromFileArgsForCall, struct {
@@ -49,7 +49,7 @@ func (fake *MetadataExtractor) ExtractFromFileCallCount() int {
 	return len(fake.extractFromFileArgsForCall)
 }
 
-func (fake *MetadataExtractor) ExtractFromFileCalls(stub func(string) (extractor.Metadata, error)) {
+func (fake *MetadataExtractor) ExtractFromFileCalls(stub func(string) (*extractor.Metadata, error)) {
 	fake.extractFromFileMutex.Lock()
 	defer fake.extractFromFileMutex.Unlock()
 	fake.ExtractFromFileStub = stub
@@ -62,28 +62,28 @@ func (fake *MetadataExtractor) ExtractFromFileArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *MetadataExtractor) ExtractFromFileReturns(result1 extractor.Metadata, result2 error) {
+func (fake *MetadataExtractor) ExtractFromFileReturns(result1 *extractor.Metadata, result2 error) {
 	fake.extractFromFileMutex.Lock()
 	defer fake.extractFromFileMutex.Unlock()
 	fake.ExtractFromFileStub = nil
 	fake.extractFromFileReturns = struct {
-		result1 extractor.Metadata
+		result1 *extractor.Metadata
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *MetadataExtractor) ExtractFromFileReturnsOnCall(i int, result1 extractor.Metadata, result2 error) {
+func (fake *MetadataExtractor) ExtractFromFileReturnsOnCall(i int, result1 *extractor.Metadata, result2 error) {
 	fake.extractFromFileMutex.Lock()
 	defer fake.extractFromFileMutex.Unlock()
 	fake.ExtractFromFileStub = nil
 	if fake.extractFromFileReturnsOnCall == nil {
 		fake.extractFromFileReturnsOnCall = make(map[int]struct {
-			result1 extractor.Metadata
+			result1 *extractor.Metadata
 			result2 error
 		})
 	}
 	fake.extractFromFileReturnsOnCall[i] = struct {
-		result1 extractor.Metadata
+		result1 *extractor.Metadata
 		result2 error
 	}{result1, result2}
 }

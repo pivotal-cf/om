@@ -33,6 +33,7 @@ var _ = Describe("UploadProduct", func() {
 		multipart = &fakes.Multipart{}
 		fakeService = &fakes.UploadProductService{}
 		metadataExtractor = &fakes.MetadataExtractor{}
+		metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{}, nil)
 		logger = &fakes.Logger{}
 	})
 
@@ -88,7 +89,7 @@ var _ = Describe("UploadProduct", func() {
 	When("the same product is already present", func() {
 		It("does nothing and exits gracefully", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
-			metadataExtractor.ExtractFromFileReturns(extractor.Metadata{
+			metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 				Name:    "cf",
 				Version: "1.5.0",
 			}, nil)
@@ -123,7 +124,7 @@ var _ = Describe("UploadProduct", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
-			metadataExtractor.ExtractFromFileReturns(extractor.Metadata{
+			metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 				Name:    "cf",
 				Version: "1.5.0",
 			}, nil)
@@ -184,7 +185,7 @@ var _ = Describe("UploadProduct", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
-			metadataExtractor.ExtractFromFileReturns(extractor.Metadata{
+			metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 				Name:    "cf",
 				Version: "1.5.0",
 			}, nil)
@@ -215,7 +216,7 @@ var _ = Describe("UploadProduct", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
-			metadataExtractor.ExtractFromFileReturns(extractor.Metadata{
+			metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 				Name:    "cf",
 				Version: "1.5.0",
 			}, nil)
@@ -239,7 +240,7 @@ var _ = Describe("UploadProduct", func() {
 
 				fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
 				fakeService.UploadAvailableProductReturnsOnCall(1, api.UploadAvailableProductOutput{}, nil)
-				metadataExtractor.ExtractFromFileReturns(extractor.Metadata{
+				metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 					Name:    "cf",
 					Version: "1.5.0",
 				}, nil)
@@ -318,7 +319,7 @@ product: will-be-overridden-by-command-line
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
-			metadataExtractor.ExtractFromFileReturns(extractor.Metadata{
+			metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 				Name:    "cf",
 				Version: "1.5.0",
 			}, nil)
@@ -362,7 +363,7 @@ product: will-be-overridden-by-command-line
 
 		When("extracting the product metadata returns an error", func() {
 			It("returns an error", func() {
-				metadataExtractor.ExtractFromFileReturns(extractor.Metadata{}, errors.New("some error"))
+				metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{}, errors.New("some error"))
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 				err := command.Execute([]string{"--product", "/some/path"})
 				Expect(err).To(MatchError("failed to extract product metadata: some error"))

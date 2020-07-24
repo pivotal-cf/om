@@ -9,18 +9,6 @@ import (
 )
 
 type FileArtifacter struct {
-	MetadataStub        func() (extractor.Metadata, error)
-	metadataMutex       sync.RWMutex
-	metadataArgsForCall []struct {
-	}
-	metadataReturns struct {
-		result1 extractor.Metadata
-		result2 error
-	}
-	metadataReturnsOnCall map[int]struct {
-		result1 extractor.Metadata
-		result2 error
-	}
 	NameStub        func() string
 	nameMutex       sync.RWMutex
 	nameArgsForCall []struct {
@@ -30,6 +18,18 @@ type FileArtifacter struct {
 	}
 	nameReturnsOnCall map[int]struct {
 		result1 string
+	}
+	ProductMetadataStub        func() (*extractor.Metadata, error)
+	productMetadataMutex       sync.RWMutex
+	productMetadataArgsForCall []struct {
+	}
+	productMetadataReturns struct {
+		result1 *extractor.Metadata
+		result2 error
+	}
+	productMetadataReturnsOnCall map[int]struct {
+		result1 *extractor.Metadata
+		result2 error
 	}
 	SHA256Stub        func() string
 	sHA256Mutex       sync.RWMutex
@@ -43,61 +43,6 @@ type FileArtifacter struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FileArtifacter) Metadata() (extractor.Metadata, error) {
-	fake.metadataMutex.Lock()
-	ret, specificReturn := fake.metadataReturnsOnCall[len(fake.metadataArgsForCall)]
-	fake.metadataArgsForCall = append(fake.metadataArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Metadata", []interface{}{})
-	fake.metadataMutex.Unlock()
-	if fake.MetadataStub != nil {
-		return fake.MetadataStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.metadataReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FileArtifacter) MetadataCallCount() int {
-	fake.metadataMutex.RLock()
-	defer fake.metadataMutex.RUnlock()
-	return len(fake.metadataArgsForCall)
-}
-
-func (fake *FileArtifacter) MetadataCalls(stub func() (extractor.Metadata, error)) {
-	fake.metadataMutex.Lock()
-	defer fake.metadataMutex.Unlock()
-	fake.MetadataStub = stub
-}
-
-func (fake *FileArtifacter) MetadataReturns(result1 extractor.Metadata, result2 error) {
-	fake.metadataMutex.Lock()
-	defer fake.metadataMutex.Unlock()
-	fake.MetadataStub = nil
-	fake.metadataReturns = struct {
-		result1 extractor.Metadata
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FileArtifacter) MetadataReturnsOnCall(i int, result1 extractor.Metadata, result2 error) {
-	fake.metadataMutex.Lock()
-	defer fake.metadataMutex.Unlock()
-	fake.MetadataStub = nil
-	if fake.metadataReturnsOnCall == nil {
-		fake.metadataReturnsOnCall = make(map[int]struct {
-			result1 extractor.Metadata
-			result2 error
-		})
-	}
-	fake.metadataReturnsOnCall[i] = struct {
-		result1 extractor.Metadata
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FileArtifacter) Name() string {
@@ -150,6 +95,61 @@ func (fake *FileArtifacter) NameReturnsOnCall(i int, result1 string) {
 	fake.nameReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
+}
+
+func (fake *FileArtifacter) ProductMetadata() (*extractor.Metadata, error) {
+	fake.productMetadataMutex.Lock()
+	ret, specificReturn := fake.productMetadataReturnsOnCall[len(fake.productMetadataArgsForCall)]
+	fake.productMetadataArgsForCall = append(fake.productMetadataArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ProductMetadata", []interface{}{})
+	fake.productMetadataMutex.Unlock()
+	if fake.ProductMetadataStub != nil {
+		return fake.ProductMetadataStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.productMetadataReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FileArtifacter) ProductMetadataCallCount() int {
+	fake.productMetadataMutex.RLock()
+	defer fake.productMetadataMutex.RUnlock()
+	return len(fake.productMetadataArgsForCall)
+}
+
+func (fake *FileArtifacter) ProductMetadataCalls(stub func() (*extractor.Metadata, error)) {
+	fake.productMetadataMutex.Lock()
+	defer fake.productMetadataMutex.Unlock()
+	fake.ProductMetadataStub = stub
+}
+
+func (fake *FileArtifacter) ProductMetadataReturns(result1 *extractor.Metadata, result2 error) {
+	fake.productMetadataMutex.Lock()
+	defer fake.productMetadataMutex.Unlock()
+	fake.ProductMetadataStub = nil
+	fake.productMetadataReturns = struct {
+		result1 *extractor.Metadata
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FileArtifacter) ProductMetadataReturnsOnCall(i int, result1 *extractor.Metadata, result2 error) {
+	fake.productMetadataMutex.Lock()
+	defer fake.productMetadataMutex.Unlock()
+	fake.ProductMetadataStub = nil
+	if fake.productMetadataReturnsOnCall == nil {
+		fake.productMetadataReturnsOnCall = make(map[int]struct {
+			result1 *extractor.Metadata
+			result2 error
+		})
+	}
+	fake.productMetadataReturnsOnCall[i] = struct {
+		result1 *extractor.Metadata
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FileArtifacter) SHA256() string {
@@ -207,10 +207,10 @@ func (fake *FileArtifacter) SHA256ReturnsOnCall(i int, result1 string) {
 func (fake *FileArtifacter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.metadataMutex.RLock()
-	defer fake.metadataMutex.RUnlock()
 	fake.nameMutex.RLock()
 	defer fake.nameMutex.RUnlock()
+	fake.productMetadataMutex.RLock()
+	defer fake.productMetadataMutex.RUnlock()
 	fake.sHA256Mutex.RLock()
 	defer fake.sHA256Mutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

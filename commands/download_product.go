@@ -3,17 +3,16 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/extractor"
+	"github.com/pivotal-cf/om/validator"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
-
-	"github.com/pivotal-cf/jhanda"
-	"github.com/pivotal-cf/om/download_clients"
-	"github.com/pivotal-cf/om/validator"
 )
 
 type PivnetOptions struct {
@@ -57,11 +56,11 @@ type DownloadProductOptions struct {
 	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
 
-	Bucket       string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath  string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
-	StemcellPath string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
-	CacheCleanup string `env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
-	CheckAlreadyUploaded bool `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
+	Bucket               string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
+	ProductPath          string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
+	StemcellPath         string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
+	CacheCleanup         string `env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
+	CheckAlreadyUploaded bool   `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
 
 	AzureOptions
 	GCSOptions
@@ -84,6 +83,7 @@ type DownloadProduct struct {
 //counterfeiter:generate -o ./fakes/download_product_service.go --fake-name DownloadProductService . downloadProductService
 type downloadProductService interface {
 	CheckProductAvailability(string, string) (bool, error)
+	CheckStemcellAvailability(string) (bool, error)
 }
 
 func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, downloadProductService downloadProductService, ) *DownloadProduct {
@@ -92,7 +92,7 @@ func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr 
 		stderr:         stderr,
 		stdout:         stdout,
 		progressWriter: progressWriter,
-		service: downloadProductService,
+		service:        downloadProductService,
 	}
 }
 
@@ -140,8 +140,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
 
-	nameParts := strings.Split(productFileName, ".")
-	if nameParts[len(nameParts)-1] != "pivotal" {
+	if filepath.Ext(productFileName) != ".pivotal" {
 		c.stderr.Printf("the downloaded file is not a .pivotal file. Not determining and fetching required stemcell.")
 		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
@@ -205,6 +204,7 @@ func (c *DownloadProduct) downloadStemcell(productFileName string, productVersio
 			break
 		}
 	}
+
 	if err != nil {
 		isHeavy := ""
 		if c.Options.StemcellHeavy {
@@ -309,9 +309,15 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, prod
 }
 
 func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemcellVersion string) error {
+	if c.Options.CheckAlreadyUploaded {
+		return nil
+	}
+
 	assignStemcellFileName := "assign-stemcell.yml"
 	c.stderr.Printf("Writing a assign stemcell artifact to %s", assignStemcellFileName)
-	metadata, err := getProductMetadata(productFileName)
+
+	metadataExtractor := extractor.NewMetadataExtractor()
+	metadata, err := metadataExtractor.ExtractFromFile(productFileName)
 	if err != nil {
 		return fmt.Errorf("cannot parse product metadata: %s", err)
 	}
@@ -320,7 +326,7 @@ func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemce
 		Product  string `json:"product"`
 		Stemcell string `json:"stemcell"`
 	}{
-		Product:  metadata.ProductName,
+		Product:  metadata.Name,
 		Stemcell: stemcellVersion,
 	}
 
@@ -360,22 +366,41 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	}
 
 	if c.Options.CheckAlreadyUploaded {
-		c.stderr.Printf("checking if product already available on Ops Manager...")
-		metadata, err := fileArtifact.Metadata()
-		if err != nil {
-			return  "", nil, fmt.Errorf("could not extract metadata from product: %w", err)
-		}
+		if filepath.Ext(fileArtifact.Name()) == ".pivotal" {
+			c.stderr.Printf("checking if product already available on Ops Manager...")
 
-		found, err := c.service.CheckProductAvailability(metadata.Name, metadata.Version)
-		if err != nil {
-			return "", nil, fmt.Errorf("could not check Ops Manager for product: %w", err)
-		}
+			metadata, err := fileArtifact.ProductMetadata()
+			if err != nil {
+				return "", nil, fmt.Errorf("could not extract metadata from product: %w", err)
+			}
 
-		if found {
-			c.stderr.Println("product found. Skipping download.")
-			return productFilePath, fileArtifact, nil
+			found, err := c.service.CheckProductAvailability(metadata.Name, metadata.Version)
+			if err != nil {
+				c.stderr.Printf("could not determine if product is already uploaded")
+				return "", nil, fmt.Errorf("could not check Ops Manager for product: %w", err)
+			}
+
+			if found {
+				c.stderr.Println("product found. Skipping download.")
+				return productFilePath, fileArtifact, nil
+			}
+			c.stderr.Println("product not found. Continuing download...")
+		} else {
+			c.stderr.Printf("checking if stemcell already available on Ops Manager...")
+
+			filename := filepath.Base(fileArtifact.Name())
+			found, err := c.service.CheckStemcellAvailability(filename)
+			if err != nil {
+				c.stderr.Printf("could not determine if stemcell is already uploaded")
+				return "", nil, fmt.Errorf("could not check Ops Manager for stemcell: %w", err)
+			}
+
+			if found {
+				c.stderr.Println("stemcell found. Skipping download.")
+				return productFilePath, fileArtifact, nil
+			}
+			c.stderr.Println("stemcell not found. Continuing download...")
 		}
-		c.stderr.Println("product not found. Continuing download...")
 	}
 
 	if exist {

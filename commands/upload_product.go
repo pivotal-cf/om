@@ -36,7 +36,7 @@ type uploadProductService interface {
 
 //counterfeiter:generate -o ./fakes/metadata_extractor.go --fake-name MetadataExtractor . metadataExtractor
 type metadataExtractor interface {
-	ExtractFromFile(string) (extractor.Metadata, error)
+	ExtractFromFile(string) (*extractor.Metadata, error)
 }
 
 func NewUploadProduct(multipart multipart, metadataExtractor metadataExtractor, service uploadProductService, logger logger) UploadProduct {
