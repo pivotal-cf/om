@@ -20,7 +20,6 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
-	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/graymeta/stow v0.2.6
 	github.com/hashicorp/go-version v1.2.1
 	github.com/kr/pretty v0.2.0 // indirect
@@ -36,7 +35,6 @@ require (
 	github.com/pivotal-cf/go-pivnet/v5 v5.0.1
 	github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43
 	github.com/pivotal-cf/pivnet-cli v1.0.4
-	github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd
 	github.com/pkg/errors v0.9.1
 	github.com/sclevine/spec v1.4.0 // indirect
 	github.com/shirou/gopsutil v2.20.5+incompatible // indirect
@@ -50,7 +48,6 @@ require (
 	google.golang.org/genproto v0.0.0-20200701001935-0939c5918c31 // indirect
 	google.golang.org/grpc v1.30.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/cheggaaa/pb.v1 v1.0.28
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.3.0

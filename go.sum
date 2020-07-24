@@ -92,8 +92,6 @@ github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 h1:vTlpHKxJqykyKdW
 github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1/go.mod h1:sAoA1zHCH4FJPE2gne5iBiiVG66U7Nyp6JqlOo+FEyg=
 github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 h1:SKI1/fuSdodxmNNyVBR8d7X/HuLnRpvvFO0AgyQk764=
 github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927/go.mod h1:h/aW8ynjgkuj+NQRlZcDbAbM1ORAbXjXX77sX7T289U=
-github.com/cheggaaa/pb v1.0.28 h1:kWGpdAcSp3MxMU9CCHOwz/8V0kCHN4+9yQm2MzWuI98=
-github.com/cheggaaa/pb v2.0.7+incompatible h1:gLKifR1UkZ/kLkda5gC0K6c8g+jU2sINPtBeOiNlMhU=
 github.com/cheggaaa/pb/v3 v3.0.4 h1:QZEPYOj2ix6d5oEg63fbHmpolrnNiwjUsk+h74Yt4bM=
 github.com/cheggaaa/pb/v3 v3.0.4/go.mod h1:7rgWxLrAUcFMkvJuv09+DYi7mMUYi8nO9iOWcvGJPfw=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
@@ -192,8 +190,6 @@ github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm4
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5 h1:sjZBwGj9Jlw33ImPtvFviGYvseOtDM7hkSKB7+Tv3SM=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
-github.com/gosuri/uilive v0.0.4 h1:hUEBpQDj8D8jXgtCdBu7sWsy5sbW/5GhuO8KBwJ2jyY=
-github.com/gosuri/uilive v0.0.4/go.mod h1:V/epo5LjjlDE5RJUcqx8dbw+zc93y5Ya3yg8tfZ74VI=
 github.com/graymeta/stow v0.2.6 h1:WLcx3912lNC6vT5k9wkuGKq3jP34yXxd4jK9+f17aGg=
 github.com/graymeta/stow v0.2.6/go.mod h1:+0vRL9oMECKjPMP7OeVWl8EIqRCpFwDlth3mrAeV2Kw=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
@@ -287,8 +283,6 @@ github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43 h1:SYEUxVbqz3U7p
 github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43/go.mod h1:UXciri1Yqno0IdXxEzwMF91nnwYMPoN95goHWxVtWq8=
 github.com/pivotal-cf/pivnet-cli v1.0.4 h1:pDvBA6qcHcRZQUI/22CZAT5KkNZkZSM6NiHWwklVblo=
 github.com/pivotal-cf/pivnet-cli v1.0.4/go.mod h1:0SBj2Gm6ujacZpSowve1kmsxOLKZmOiLd3iVFdAIgKA=
-github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd h1:KRN5ZOqeY3MHImYOEVHOVis//2OfRDjsbTSf7f2PmcI=
-github.com/pivotal/uilive v0.0.0-20170323041506-ac356e6e42cd/go.mod h1:j8LyeJ7/0GbbwookzCmmFyCoRKp1WBwV/xxlebLz9UM=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
