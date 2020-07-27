@@ -47,6 +47,19 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.1.0
+
+### Features
+- [`--source pivnet` only]`download-product` now supports the `--check-already-uploaded` flag.
+  If a valid env file is provided with the flag,
+  `download-product` will attempt to check
+  if the product is already present on the Ops Manager.
+  If the product is already present,
+  `download-product` will not attempt to download from Tanzu Network.
+  This task is compatible with the `--stemcell-ias` flag.
+  If provided, the task will also check if the stemcell is already uploaded
+  before attempting to download from Tanzu Network
+
 ## 6.0.1
 
 ### Bug Fixes

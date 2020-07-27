@@ -19,7 +19,6 @@ on a vSphere Ops Manager.
 | [bosh-env](bosh-env/README.md) | prints bosh environment variables |
 | [certificate-authorities](certificate-authorities/README.md) | lists certificates managed by Ops Manager |
 | [certificate-authority](certificate-authority/README.md) | prints requested certificate authority |
-| [check-product-uploaded](check-product-uploaded/README.md) |  |
 | [config-template](config-template/README.md) | generates a config template from a Pivnet product |
 | [configure-authentication](configure-authentication/README.md) | configures Ops Manager with an internal userstore and admin user account |
 | [configure-director](configure-director/README.md) | configures the director |

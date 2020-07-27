@@ -14,9 +14,9 @@ Usage:
   om [options] certificate-authority [<args>]
 
 Flags:
-  --cert-pem    bool               Display the cert pem
-  --format, -f  string             Format to print as (options: table,json) (default: table)
-  --id          string (required)  ID of certificate to display
+  --cert-pem    bool    Display the cert pem
+  --format, -f  string  Format to print as (options: table,json) (default: table)
+  --id          string  ID of certificate to display. Required if there is more than one certificate authority
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

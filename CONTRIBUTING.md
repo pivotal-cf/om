@@ -90,7 +90,7 @@ To generate fakes for all files in a directory, run `go generate ./...`
 
 Much of `om`'s documentation is automatically generated.
 If you make any changes to any of the task flags, or need to elaborate on how to use a new feature,
-be sure to run [`docsgenerator`](https://github.com/pivotal-cf/om/tree/master/docsgenerator) 
+be sure to run [`docsgenerator`](https://github.com/pivotal-cf/om/tree/main/docsgenerator) 
 before submitting your PR.
 
 

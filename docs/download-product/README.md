@@ -22,7 +22,7 @@ Flags:
     (aliases: --s3-product-path, --gcs-product-path, --azure-product-path)
   --blobstore-stemcell-path        string             specify the lookup path where the s3|gcs|azure stemcell artifacts are stored
     (aliases: --s3-stemcell-path, --gcs-stemcell-path, --azure-stemcell-path)
-  --cache-cleanup                  bool               Delete everything except the latest artifact in output-dir and stemcell-output-dir
+  --check-already-uploaded         bool               Check if product is already uploaded on Ops Manager before downloading. This command is authenticated.
   --config, -c                     string             path to yml file for configuration (keys must match the following command line flags)
   --file-glob, -f                  string (required)  glob to match files within Pivotal Network product to be downloaded.
     (aliases: --pivnet-file-glob)
@@ -52,6 +52,7 @@ Flags:
   --var, -v                        string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV          string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l                  string (variadic)  load variables from a YAML file
+  CACHE_CLEANUP                    string             Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
