@@ -80,9 +80,14 @@ var _ = Describe("download-product command", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 
+				err = ioutil.WriteFile(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.0]example-product.pivotal"), nil, 0777)
+				Expect(err).ToNot(HaveOccurred())
+				err = ioutil.WriteFile(filepath.Join(tmpDir, "example-product.pivotal"), nil, 0777)
+				Expect(err).ToNot(HaveOccurred())
+
 				By("running the command again, it uses the cache")
 				command = exec.Command(pathToMain, "download-product",
-					"--file-glob", "*.pivotal",
+					"--file-glob", "example*.pivotal",
 					"--pivnet-product-slug", "pivnet-example-slug",
 					"--product-version", "1.10.1",
 					"--output-directory", tmpDir,
@@ -95,6 +100,7 @@ var _ = Describe("download-product command", func() {
 					"--stemcell-iaas", "google",
 					"--s3-stemcell-path", "/another/stemcell",
 					"--s3-product-path", "/some/product",
+					"--cache-cleanup", "I acknowledge this will delete files in the output directories",
 				)
 
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -109,6 +115,9 @@ var _ = Describe("download-product command", func() {
 
 				Expect(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal.partial")).ToNot(BeAnExistingFile())
 				Expect(filepath.Join(tmpDir, "[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.partial")).ToNot(BeAnExistingFile())
+
+				Expect(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.0]example-product.pivotal")).ToNot(BeAnExistingFile())
+				Expect(filepath.Join(tmpDir, "example-product.pivotal")).ToNot(BeAnExistingFile())
 			})
 		})
 

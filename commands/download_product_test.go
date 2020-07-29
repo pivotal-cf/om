@@ -466,40 +466,6 @@ var _ = Describe("DownloadProduct", func() {
 								Expect(previousDownloadedStemcell).ToNot(BeAnExistingFile())
 							})
 						})
-
-						When("--s3 bucket is provided", func() {
-							BeforeEach(func() {
-								commandArgs = []string{
-									"--pivnet-api-token", "token",
-									"--file-glob", "cf*.pivotal",
-									"--pivnet-product-slug", "elastic-runtime",
-									"--product-version", "2.0.0",
-									"--output-directory", productOutputDir,
-									"--stemcell-output-directory", stemcellOutputDir,
-									"--stemcell-iaas", "google",
-									"--s3-bucket", "there once was a man from a",
-								}
-
-							})
-
-							It("only deletes files that match the glob of the product and stemcell(s), ignoring the download prefix", func() {
-								alreadyDownloadedProduct := tempFile(productOutputDir, "[elastic-runtime,1.0.0]cf*.pivotal")
-								alreadyDownloadedLightStemcell := tempFile(stemcellOutputDir, "[stemcells-ubuntu-xenial,96.00]light-bosh-google-*.tgz")
-								unknownFileWeDontOwn := tempFile(productOutputDir, "no-delete")
-
-								err = command.Execute(commandArgs)
-								Expect(err).ToNot(HaveOccurred())
-
-								downloadedFilePath := path.Join(productOutputDir, "[elastic-runtime,2.0.0]cf-2.0-build.1.pivotal")
-								downloadedStemcellFilePath := path.Join(stemcellOutputDir, "[stemcells-ubuntu-xenial,97.190]stemcell.tgz")
-								Expect(downloadedFilePath).To(BeAnExistingFile())
-								Expect(downloadedStemcellFilePath).To(BeAnExistingFile())
-
-								Expect(alreadyDownloadedProduct).ToNot(BeAnExistingFile())
-								Expect(alreadyDownloadedLightStemcell).ToNot(BeAnExistingFile())
-								Expect(unknownFileWeDontOwn).To(BeAnExistingFile())
-							})
-						})
 					})
 				})
 

@@ -59,7 +59,7 @@ type DownloadProductOptions struct {
 	Bucket               string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
 	ProductPath          string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
 	StemcellPath         string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
-	CacheCleanup         string `env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
+	CacheCleanup         string `long:"cache-cleanup" env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
 	CheckAlreadyUploaded bool   `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
 
 	AzureOptions
@@ -450,23 +450,24 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string, slug string) error {
 	if c.Options.CacheCleanup == "I acknowledge this will delete files in the output directories" {
-		c.stderr.Println("Cleaning up cached artifacts...")
-		var prefixedGlob string
-		if c.Options.Source != "pivnet" || c.Options.Bucket == "" {
-			prefixedGlob = glob
-		} else {
-			prefixedGlob = fmt.Sprintf("\\[%s,*\\]%s", slug, glob)
-		}
+
 		outputDirContents, err := ioutil.ReadDir(outputDir)
 		if err != nil {
 			return err
 		}
 
-		for _, file := range outputDirContents {
-			dirFilePath := path.Join(outputDir, file.Name())
-			if matchGlob, _ := filepath.Match(prefixedGlob, file.Name()); matchGlob {
-				if dirFilePath != productFilePath {
-					_ = os.Remove(dirFilePath)
+		var prefixedGlob = fmt.Sprintf("\\[%s,*\\]%s", slug, glob)
+		var globs = []string{glob, prefixedGlob}
+		for _, fileGlob := range globs {
+			c.stderr.Printf("Cleaning up cached artifacts in directory '%s' with the glob '%s'", outputDir, fileGlob)
+			for _, file := range outputDirContents {
+				dirFilePath := path.Join(outputDir, file.Name())
+				c.stderr.Printf("checking if %q needs to cleaned up", file.Name())
+				if matchGlob, _ := filepath.Match(fileGlob, file.Name()); matchGlob {
+					if dirFilePath != productFilePath {
+						c.stderr.Printf("cleaning up cached file: %s", dirFilePath)
+						_ = os.Remove(dirFilePath)
+					}
 				}
 			}
 		}

@@ -47,6 +47,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.1.1
+
+### Bug Fixes
+- When using `cache-cleanup`, globbing was not correctly done for files that contain the metadata prefix.
+  This meant that files with `[pivnet-slug,pivnet-version]` will still laying around.
+
 ## 6.1.0
 
 ### Features
