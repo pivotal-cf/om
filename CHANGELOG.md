@@ -47,6 +47,15 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.2.0
+
+### Features
+- `configure-product`'s _decorating collection with guid based on `name` logical key_ logic has been extended to also use `key` or fields ending in `name` as logical keys.  Resolves [#207](https://github.com/pivotal-cf/om/issues/207)
+
+## 6.1.0
+
+### Features
+
 ## 6.1.1
 
 ### Bug Fixes
