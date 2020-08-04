@@ -1,100 +1,113 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+)
 
-var errNotFound = fmt.Errorf("element not found")
+type updatedPropertyCollectionItem struct {
+	Data map[string]interface{}
+}
+type updatedPropertyCollection []updatedPropertyCollectionItem
 
-func getString(element interface{}, key string) (string, error) {
-	value, err := get(element, key)
-	if err != nil {
-		return "", err
+func (item updatedPropertyCollectionItem) getFieldValue(fieldName string) string {
+	if value, ok := item.Data[fieldName].(string); ok {
+		return value
 	}
-	if value == nil {
-		return "", errNotFound
-	}
-	strVal, ok := value.(string)
-	if ok {
-		return strVal, nil
-	}
-	return "", fmt.Errorf("element %v (%T) with key %q is not a string", element, value, key)
+	return ""
 }
 
-func set(element interface{}, key, value string) error {
-	mapString, ok := element.(map[string]interface{})
-	if ok {
-		mapString[key] = value
-		return nil
-	}
-	mapInterface, ok := element.(map[interface{}]interface{})
-	if ok {
-		mapInterface[key] = value
-		return nil
-	}
-	return fmt.Errorf("Unexpected type %v", element)
+func (item updatedPropertyCollectionItem) setFieldValue(fieldName string, value string) {
+	item.Data[fieldName] = value
 }
 
-func get(element interface{}, key string) (interface{}, error) {
-	mapString, ok := element.(map[string]interface{})
-	if ok {
-		return mapString[key], nil
-	}
-	mapInterface, ok := element.(map[interface{}]interface{})
-	if ok {
-		return mapInterface[key], nil
-	}
-	return nil, fmt.Errorf("Unexpected type %v", element)
-}
+func parseUpdatedPropertyCollection(updatedProperty interface{}) (updatedPropertyCollection, error) {
+	var collection updatedPropertyCollection
 
-func collectionElementGUID(propertyName, elementName string, configuredProperties map[string]ResponseProperty) (string, error) {
-	collection := configuredProperties[propertyName].Value
-	collectionArray := collection.([]interface{})
-	for _, collectionElement := range collectionArray {
-		element, err := get(collectionElement, "name")
-		if err != nil {
-			return "", err
-		}
-		currentElement, err := getString(element, "value")
-		if err != nil {
-			return "", err
-		}
-		if currentElement == elementName {
-			guidElement, err := get(collectionElement, "guid")
-			if err != nil {
-				return "", err
+	if updatedPropertyAsMap, ok := updatedProperty.(map[string]interface{}); ok {
+		rawItems := updatedPropertyAsMap["value"]
+		if rawItemSlice, ok := rawItems.([]interface{}); ok {
+			for _, item := range rawItemSlice {
+				if itemMap, ok := item.(map[string]interface{}); ok {
+					collection = append(collection, updatedPropertyCollectionItem{Data: itemMap})
+				} else {
+					return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to map[string]interface{}", item)
+				}
 			}
-			guid, err := getString(guidElement, "value")
-			if err != nil {
-				return "", err
-			}
-			return guid, nil
+		} else {
+			return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to []interface{}", rawItems)
 		}
-
+	} else {
+		return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to map[string]interface{}", updatedProperty)
 	}
-	return "", nil
+	return collection, nil
+}
+
+type responsePropertyCollection []responsePropertyCollectionItem
+type responsePropertyCollectionItem struct {
+	Data map[interface{}]interface{}
+}
+
+func parseResponsePropertyCollection(rawItems interface{}) (responsePropertyCollection, error) {
+	var collection responsePropertyCollection
+	if rawItemSlice, ok := rawItems.([]interface{}); ok {
+		for _, item := range rawItemSlice {
+			if itemMap, ok := item.(map[interface{}]interface{}); ok {
+				collection = append(collection, responsePropertyCollectionItem{Data: itemMap})
+			} else {
+				return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to map[interface{}]interface{}", item)
+			}
+		}
+	} else {
+		return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to []interface{}", rawItems)
+	}
+	return collection, nil
+}
+
+func (item responsePropertyCollectionItem) getFieldValue(fieldName string) string {
+	if valueObj, ok := item.Data[fieldName].(map[interface{}]interface{}); ok {
+		if value, ok := valueObj["value"].(string); ok {
+			return value
+		}
+	}
+	return ""
+}
+
+//Finds logical key field (if exists)
+//returns <fieldName, true> if map contains field that can be considered a logical key
+//returns <"", false> if no logical key found
+func (item responsePropertyCollectionItem) findLogicalKeyField() (string, bool) {
+	if item.getFieldValue("name") != "" {
+		return "name", true
+	}
+
+	return "", false
+}
+
+func (collection responsePropertyCollection) findLogicalKeyFieldFromFirstCollectionItem() (string, bool) {
+	return collection[0].findLogicalKeyField()
 }
 
 //Find and associate the GUID for those collection items that already exist in OpsMgr
 //This ensures that updates to existing collection items don't trigger deletion & recreation (with a new GUID)
-func associateExistingCollectionGUIDs(property interface{}, propertyName string, currentConfiguredProperties map[string]ResponseProperty) error {
-	collectionValue, err := get(property, "value")
+func associateExistingCollectionGUIDs(updatedProperty interface{}, existingProperty ResponseProperty) error {
+	updatedCollection, err := parseUpdatedPropertyCollection(updatedProperty)
 	if err != nil {
 		return err
 	}
-	for _, collectionElement := range collectionValue.([]interface{}) {
-		name, err := getString(collectionElement, "name")
-		if err != nil {
-			if err == errNotFound {
-				continue
+	existingCollection, err := parseResponsePropertyCollection(existingProperty.Value)
+	if err != nil {
+		return err
+	}
+	if logicalKeyFieldName, ok := existingCollection.findLogicalKeyFieldFromFirstCollectionItem(); ok {
+		//Use the logical key to find associated GUIDs (from the existingProperty collection items) and assign them to the updatedProperty item
+		for _, updatedCollectionItem := range updatedCollection {
+			updatedCollectionItemLogicalKeyValue := updatedCollectionItem.getFieldValue(logicalKeyFieldName)
+			for _, existingCollectionItem := range existingCollection {
+				if updatedCollectionItemLogicalKeyValue == existingCollectionItem.getFieldValue(logicalKeyFieldName) {
+					updatedCollectionItem.setFieldValue("guid", existingCollectionItem.getFieldValue("guid"))
+					break //move onto the next updatedCollectionItem
+				}
 			}
-			return err
-		}
-		guid, err := collectionElementGUID(propertyName, name, currentConfiguredProperties)
-		if err != nil {
-			return err
-		}
-		err = set(collectionElement, "guid", guid)
-		if err != nil {
-			return err
 		}
 	}
 	return nil
