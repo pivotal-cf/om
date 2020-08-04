@@ -215,7 +215,7 @@ func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesIn
 	for propertyName, property := range newProperties {
 		configuredProperty := currentConfiguredProperties[propertyName]
 		if configuredProperty.isCollection() {
-			err := associateExistingCollectionGUIDs(property, propertyName, currentConfiguredProperties)
+			err := associateExistingCollectionGUIDs(property, configuredProperty)
 			if err != nil {
 				return fmt.Errorf("failed to associate guids for property %#v because:\n%v", propertyName, err)
 			}
