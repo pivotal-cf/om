@@ -25,22 +25,27 @@ func (item updatedPropertyCollectionItem) setFieldValue(fieldName string, value 
 func parseUpdatedPropertyCollection(updatedProperty interface{}) (updatedPropertyCollection, error) {
 	var collection updatedPropertyCollection
 
-	if updatedPropertyAsMap, ok := updatedProperty.(map[string]interface{}); ok {
-		rawItems := updatedPropertyAsMap["value"]
-		if rawItemSlice, ok := rawItems.([]interface{}); ok {
-			for _, item := range rawItemSlice {
-				if itemMap, ok := item.(map[string]interface{}); ok {
-					collection = append(collection, updatedPropertyCollectionItem{Data: itemMap})
-				} else {
-					return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to map[string]interface{}", item)
-				}
-			}
-		} else {
-			return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to []interface{}", rawItems)
-		}
-	} else {
+	updatedPropertyAsMap, ok := updatedProperty.(map[string]interface{})
+	if !ok {
 		return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to map[string]interface{}", updatedProperty)
 	}
+
+	rawItems := updatedPropertyAsMap["value"]
+
+	rawItemSlice, ok := rawItems.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to []interface{}", rawItems)
+	}
+
+	for _, item := range rawItemSlice {
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("parseUpdatedPropertyCollection: failed to convert %v to map[string]interface{}", item)
+		}
+
+		collection = append(collection, updatedPropertyCollectionItem{Data: itemMap})
+	}
+
 	return collection, nil
 }
 
@@ -51,17 +56,21 @@ type responsePropertyCollectionItem struct {
 
 func parseResponsePropertyCollection(rawItems interface{}) (responsePropertyCollection, error) {
 	var collection responsePropertyCollection
-	if rawItemSlice, ok := rawItems.([]interface{}); ok {
-		for _, item := range rawItemSlice {
-			if itemMap, ok := item.(map[interface{}]interface{}); ok {
-				collection = append(collection, responsePropertyCollectionItem{Data: itemMap})
-			} else {
-				return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to map[interface{}]interface{}", item)
-			}
-		}
-	} else {
+
+	rawItemSlice, ok := rawItems.([]interface{})
+	if !ok {
 		return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to []interface{}", rawItems)
 	}
+
+	for _, item := range rawItemSlice {
+		itemMap, ok := item.(map[interface{}]interface{})
+		if !ok {
+			return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to map[interface{}]interface{}", item)
+		}
+
+		collection = append(collection, responsePropertyCollectionItem{Data: itemMap})
+	}
+
 	return collection, nil
 }
 
