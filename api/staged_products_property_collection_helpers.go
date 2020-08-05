@@ -93,9 +93,6 @@ func (item responsePropertyCollectionItem) getSortedFieldNames() []string {
 	return sortedFieldNames
 }
 
-//Finds logical key field (if it exists)
-//returns <fieldName, true> if map contains field that can be considered a logical key
-//returns <"", false> if no logical key found
 func (item responsePropertyCollectionItem) findLogicalKeyField() (string, bool) {
 	//search order is important; 'name' should be found before 'ending-with-name'
 	regexes := []string{"^name$", "^key$", "(?i)name$"}
@@ -131,8 +128,6 @@ func assignExistingGUIDUsingLogicalKey(updatedCollection updatedPropertyCollecti
 	return true
 }
 
-//Find and associate the GUID for those collection items that already exist in OpsMgr
-//This ensures that updates to existing collection items don't trigger deletion & recreation (with a new GUID)
 func associateExistingCollectionGUIDs(updatedProperty interface{}, existingProperty ResponseProperty) error {
 	updatedCollection, err := parseUpdatedPropertyCollection(updatedProperty)
 	if err != nil {
