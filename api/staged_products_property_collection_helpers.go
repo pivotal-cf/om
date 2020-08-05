@@ -83,38 +83,29 @@ func (item responsePropertyCollectionItem) getFieldValue(fieldName string) strin
 	return ""
 }
 
-//Find and return first string matching regex pattern
-//returns matched <string, true> if found, or <"",false> if not
-func findFirst(strings []string, fieldRegex string) (string, bool) {
-	r, err := regexp.Compile(fieldRegex)
-	if err != nil {
-		panic(fmt.Sprintf("failed to compile regex: %v because:\n%v", fieldRegex, err))
+func (item responsePropertyCollectionItem) getSortedFieldNames() []string {
+	sortedFieldNames := make([]string, 0, len(item.Data))
+	for k := range item.Data {
+		sortedFieldNames = append(sortedFieldNames, fmt.Sprintf("%v", k))
 	}
-	for _, str := range strings {
-		if r.MatchString(str) {
-			return str, true
-		}
-	}
-	return "", false
+	sort.Strings(sortedFieldNames)
+
+	return sortedFieldNames
 }
 
-//Finds logical key field (if exists)
+//Finds logical key field (if it exists)
 //returns <fieldName, true> if map contains field that can be considered a logical key
 //returns <"", false> if no logical key found
 func (item responsePropertyCollectionItem) findLogicalKeyField() (string, bool) {
-	//Extract & sort the fieldnames to ensure search is deterministic (since map order isn't guarenteed)
-	sortedFields := make([]string, 0, len(item.Data))
-	for k := range item.Data {
-		sortedFields = append(sortedFields, fmt.Sprintf("%v", k))
-	}
-	sort.Strings(sortedFields)
-
-	if fieldName, ok := findFirst(sortedFields, "^name$"); ok { //First look for a field named 'name'
-		return fieldName, true
-	} else if fieldName, ok := findFirst(sortedFields, "^key$"); ok { //then a field named 'key'
-		return fieldName, true
-	} else if fieldName, ok := findFirst(sortedFields, "(?i)name$"); ok { // otherwise a field that ends with 'name' (case insensitive)
-		return fieldName, true
+	//search order is important; 'name' should be found before 'ending-with-name'
+	regexes := []string{"^name$", "^key$", "(?i)name$"}
+	for _, regex := range regexes {
+		compiledRegex := regexp.MustCompile(regex)
+		for _, fieldName := range item.getSortedFieldNames() {
+			if compiledRegex.MatchString(fieldName) {
+				return fieldName, true
+			}
+		}
 	}
 
 	return "", false
