@@ -111,8 +111,24 @@ func (item responsePropertyCollectionItem) findLogicalKeyField() (string, bool) 
 	return "", false
 }
 
-func (collection responsePropertyCollection) findLogicalKeyFieldFromFirstCollectionItem() (string, bool) {
-	return collection[0].findLogicalKeyField()
+func assignExistingGUIDUsingLogicalKey(updatedCollection updatedPropertyCollection, existingCollection responsePropertyCollection) bool {
+	//since all collection items have the same structure; only need to find the logical key from the first one
+	logicalKeyFieldName, found := existingCollection[0].findLogicalKeyField()
+	if !found {
+		return false
+	}
+
+	for _, updatedCollectionItem := range updatedCollection {
+		updatedCollectionItemLogicalKeyValue := updatedCollectionItem.getFieldValue(logicalKeyFieldName)
+		for _, existingCollectionItem := range existingCollection {
+			if updatedCollectionItemLogicalKeyValue == existingCollectionItem.getFieldValue(logicalKeyFieldName) {
+				updatedCollectionItem.setFieldValue("guid", existingCollectionItem.getFieldValue("guid"))
+				break //move onto the next updatedCollectionItem
+			}
+		}
+	}
+
+	return true
 }
 
 //Find and associate the GUID for those collection items that already exist in OpsMgr
@@ -126,17 +142,10 @@ func associateExistingCollectionGUIDs(updatedProperty interface{}, existingPrope
 	if err != nil {
 		return err
 	}
-	if logicalKeyFieldName, ok := existingCollection.findLogicalKeyFieldFromFirstCollectionItem(); ok {
-		//Use the logical key to find associated GUIDs (from the existingProperty collection items) and assign them to the updatedProperty item
-		for _, updatedCollectionItem := range updatedCollection {
-			updatedCollectionItemLogicalKeyValue := updatedCollectionItem.getFieldValue(logicalKeyFieldName)
-			for _, existingCollectionItem := range existingCollection {
-				if updatedCollectionItemLogicalKeyValue == existingCollectionItem.getFieldValue(logicalKeyFieldName) {
-					updatedCollectionItem.setFieldValue("guid", existingCollectionItem.getFieldValue("guid"))
-					break //move onto the next updatedCollectionItem
-				}
-			}
-		}
+
+	if assignExistingGUIDUsingLogicalKey(updatedCollection, existingCollection) {
+		return nil
 	}
+
 	return nil
 }
