@@ -485,11 +485,11 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 										"value": "28bab1d3-4a4b-48d5-8dac-796adf078100",
 										"optional": false
 									},
-									"name": {
+									"label": {
 										"type": "string",
 										"configurable": true,
 										"credential": false,
-										"value": "the_name",
+										"value": "the_label",
 										"optional": false
 									},
 									"some_property": {
@@ -619,7 +619,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		})
 
 		Context("configure product contains collection", func() {
-			It("adds the guid for elements that exist", func() {
+			It("adds the guid for elements that exist and haven't changed, but don't have a logical key field", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
@@ -629,8 +629,8 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 								"key": "value",
 								"some_collection": {
 									"value": [{
-										"name": "the_name",
-										"some_property": "property_value",
+										"label": "the_label",
+										"some_property": true,
 										"guid": "28bab1d3-4a4b-48d5-8dac-796adf078100"
 									}]
 								}
@@ -647,8 +647,8 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 						"some_collection": {
 							"value": [
 								{
-									"name": "the_name",
-									"some_property": "property_value"
+									"some_property": true,
+									"label": "the_label"
 								}
 							]
 						}
