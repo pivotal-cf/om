@@ -83,6 +83,19 @@ func (item responsePropertyCollectionItem) getFieldValue(fieldName string) strin
 	return ""
 }
 
+func (item responsePropertyCollectionItem) getFieldValuesExceptGUID() map[interface{}]interface{} {
+	extractedValues := make(map[interface{}]interface{})
+
+	for key, valueObj := range item.Data {
+		if key == "guid" {
+			continue
+		}
+		extractedValues[key] = valueObj.(map[interface{}]interface{})["value"]
+	}
+
+	return extractedValues
+}
+
 func (item responsePropertyCollectionItem) getSortedFieldNames() []string {
 	sortedFieldNames := make([]string, 0, len(item.Data))
 	for k := range item.Data {
@@ -128,6 +141,32 @@ func assignExistingGUIDUsingLogicalKey(updatedCollection updatedPropertyCollecti
 	return true
 }
 
+func (existingCollection responsePropertyCollection) findGUIDForIEquivalentlItem(updatedProperty updatedPropertyCollectionItem) (string, bool) {
+
+	for _, existingCollectionItem := range existingCollection {
+		//use the fact that fmt prints maps in order (see: https://tip.golang.org/doc/go1.12#fmt) to check for equivalence
+		if fmt.Sprintf("%+v", updatedProperty.Data) == fmt.Sprintf("%+v", existingCollectionItem.getFieldValuesExceptGUID()) {
+			return existingCollectionItem.getFieldValue("guid"), true
+		}
+	}
+
+	return "", false
+}
+
+func assignExistingGUIDUsingEquivalentValue(updatedCollection updatedPropertyCollection, existingCollection responsePropertyCollection) bool {
+
+	foundEquivalentItems := false
+
+	for _, updatedCollectionItem := range updatedCollection {
+		if guid, ok := existingCollection.findGUIDForIEquivalentlItem(updatedCollectionItem); ok {
+			updatedCollectionItem.setFieldValue("guid", guid)
+			foundEquivalentItems = true
+		}
+	}
+
+	return foundEquivalentItems
+}
+
 func associateExistingCollectionGUIDs(updatedProperty interface{}, existingProperty ResponseProperty) error {
 	updatedCollection, err := parseUpdatedPropertyCollection(updatedProperty)
 	if err != nil {
@@ -136,6 +175,10 @@ func associateExistingCollectionGUIDs(updatedProperty interface{}, existingPrope
 	existingCollection, err := parseResponsePropertyCollection(existingProperty.Value)
 	if err != nil {
 		return err
+	}
+
+	if assignExistingGUIDUsingEquivalentValue(updatedCollection, existingCollection) {
+		return nil
 	}
 
 	if assignExistingGUIDUsingLogicalKey(updatedCollection, existingCollection) {

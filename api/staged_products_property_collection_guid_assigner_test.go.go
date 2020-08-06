@@ -1,6 +1,7 @@
 package api //not in api_tests because we are intentionally testing some functionality internal to the package
 
 import (
+	"encoding/json"
 	"fmt"
 
 	. "github.com/onsi/ginkgo"
@@ -9,9 +10,17 @@ import (
 )
 
 var _ = Describe("ResponsePropertyCollection", func() {
-	unmarshalJSON := func(json string) interface{} {
+	unmarshalJSONLikeApiGetStagedProductProperties := func(json string) interface{} {
 		var rawCollection interface{}
-		err := yaml.Unmarshal([]byte(json), &rawCollection) //use yaml.Unmarshal to simulate Api.GetStagedProductProperties()
+		err := yaml.Unmarshal([]byte(json), &rawCollection)
+		if err != nil {
+			panic(fmt.Errorf("Failed to parse json: %w", err))
+		}
+		return rawCollection
+	}
+	unmarshalJSON := func(rawJSON string) interface{} {
+		var rawCollection interface{}
+		err := json.Unmarshal([]byte(rawJSON), &rawCollection)
 		if err != nil {
 			panic(fmt.Errorf("Failed to parse json: %w", err))
 		}
@@ -19,7 +28,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 	}
 	When("parseResponsePropertyCollection", func() {
 		It("parses all the elements in the collection", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -66,7 +75,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 	})
 	When("extracting field values", func() {
 		It("correctly extracts guids", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -95,7 +104,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(collection[0].getFieldValue("guid")).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
 		It("correctly extracts strings", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -126,7 +135,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 	})
 	When("finding the logical key field", func() {
 		It("finds a 'name' logical key", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -158,7 +167,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(key).To(Equal("name"))
 		})
 		It("fails to find a logical key when there isn't one", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -184,7 +193,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 		})
 
 		It("finds a 'key' logical key", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -216,7 +225,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(key).To(Equal("key"))
 		})
 		It("finds a logical key ending in 'name'", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -248,7 +257,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(key).To(Equal("sqlServerName"))
 		})
 		It("picks 'name' as the logical key when there is a 'name' field AND a field that ends in 'name' (eg: Filename)", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSON(`[
+			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -278,6 +287,109 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			key, ok := collection[0].findLogicalKeyField()
 			Expect(ok).To(BeTrue())
 			Expect(key).To(Equal("name"))
+		})
+	})
+	When("matching based on item contents", func() {
+		It("finds items that are identical", func() {
+			existingCollection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+				{
+					"guid": {
+						"type": "uuid",
+						"configurable": false,
+						"credential": false,
+						"value": "28bab1d3-4a4b-48d5-8dac-one",
+						"optional": false
+					},
+					"a_property": {
+						"type": "string",
+						"configurable": true,
+						"credential": false,
+						"value": "\"value\" of 'first' item",
+						"optional": false
+					},
+					"another_property": {
+						"type": "boolean",
+						"configurable": true,
+						"credential": false,
+						"value": true,
+						"optional": false
+					}
+				},
+				{
+					"guid": {
+						"type": "uuid",
+						"configurable": false,
+						"credential": false,
+						"value": "28bab1d3-4a4b-48d5-8dac-two",
+						"optional": false
+					},
+					"a_property": {
+						"type": "string",
+						"configurable": true,
+						"credential": false,
+						"value": "\"value\" of 'second' item",
+						"optional": false
+					},
+					"another_property": {
+						"type": "boolean",
+						"configurable": true,
+						"credential": false,
+						"value": true,
+						"optional": false
+					}
+				}
+			]`))
+			Expect(err).To(BeNil())
+			updatedCollection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
+				{
+					"a_property": "\"value\" of 'second' item",
+					"another_property": true
+				}
+			]}`))
+			Expect(err).To(BeNil())
+
+			guid, ok := existingCollection.findGUIDForIEquivalentlItem(updatedCollection[0])
+			Expect(ok).To(BeTrue())
+			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
+		})
+		It("finds items that are equivalent but have a different key order", func() {
+			existingCollection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+				{
+					"guid": {
+						"type": "uuid",
+						"configurable": false,
+						"credential": false,
+						"value": "28bab1d3-4a4b-48d5-8dac-two",
+						"optional": false
+					},
+					"a_property": {
+						"type": "string",
+						"configurable": true,
+						"credential": false,
+						"value": "\"value\" of 'second' item",
+						"optional": false
+					},
+					"another_property": {
+						"type": "boolean",
+						"configurable": true,
+						"credential": false,
+						"value": true,
+						"optional": false
+					}
+				}
+			]`))
+			Expect(err).To(BeNil())
+			updatedCollection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
+				{
+					"another_property": true,
+					"a_property": "\"value\" of 'second' item"
+				}
+			]}`))
+			Expect(err).To(BeNil())
+
+			guid, ok := existingCollection.findGUIDForIEquivalentlItem(updatedCollection[0])
+			Expect(ok).To(BeTrue())
+			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
 	})
 })
