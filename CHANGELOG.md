@@ -50,7 +50,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 6.2.0
 
 ### Features
-- `configure-product`'s _decorating collection with guid based on `name` logical key_ logic has been extended to also use `key` or fields ending in `name` as logical keys.  Resolves [#207](https://github.com/pivotal-cf/om/issues/207)
+- `configure-product`'s _decorating collection with guid_ logic has been extended to associate existing collection item guids based on (in order)
+  - equivalent item values
+  - equal logical keys (in order; ie. 'name' will be used over 'Filename' if both exist)
+    - `name`
+    - `key`
+    - fields ending in `name` (eg: `sqlServerName`)
+
+  This addresses [#207](https://github.com/pivotal-cf/om/issues/207); improving GitOps style workflows
 
 ## 6.1.0
 
