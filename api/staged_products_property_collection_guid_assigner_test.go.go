@@ -133,33 +133,14 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(collection[0].getFieldValue("name")).To(Equal("the_name"))
 		})
 	})
-	When("finding the logical key field", func() {
+	When("parseUpdatedPropertyCollection: finding the logical key field", func() {
 		It("finds a 'name' logical key", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
-					"guid": {
-						"type": "uuid",
-						"configurable": false,
-						"credential": false,
-						"value": "28bab1d3-4a4b-48d5-8dac-two",
-						"optional": false
-					},
-					"name": {
-						"type": "string",
-						"configurable": true,
-						"credential": false,
-						"value": "the_name",
-						"optional": false
-					},
-					"yet_another_property": {
-						"type": "boolean",
-						"configurable": true,
-						"credential": false,
-						"value": false,
-						"optional": false
-					}
+					"name": "the_name",
+					"yet_another_property": false
 				}
-			]`))
+			]}`))
 			Expect(err).To(BeNil())
 
 			key, ok := collection[0].findLogicalKeyField()
@@ -167,24 +148,11 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(key).To(Equal("name"))
 		})
 		It("fails to find a logical key when there isn't one", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
-					"guid": {
-						"type": "uuid",
-						"configurable": false,
-						"credential": false,
-						"value": "28bab1d3-4a4b-48d5-8dac-one",
-						"optional": false
-					},
-					"some_property": {
-						"type": "boolean",
-						"configurable": true,
-						"credential": false,
-						"value": "true",
-						"optional": false
-					}
+					"some_property": false
 				}
-			]`))
+			]}`))
 			Expect(err).To(BeNil())
 
 			key, ok := collection[0].findLogicalKeyField()
@@ -193,31 +161,12 @@ var _ = Describe("ResponsePropertyCollection", func() {
 		})
 
 		It("finds a 'key' logical key", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
-					"guid": {
-						"type": "uuid",
-						"configurable": false,
-						"credential": false,
-						"value": "28bab1d3-4a4b-48d5-8dac-three",
-						"optional": false
-					},
-					"key": {
-						"type": "string",
-						"configurable": true,
-						"credential": false,
-						"value": "the_key",
-						"optional": false
-					},
-					"some_additional_property": {
-						"type": "boolean",
-						"configurable": true,
-						"credential": false,
-						"value": false,
-						"optional": false
-					}
+					"key": "the_key",
+					"some_additional_property": false
 				}
-			]`))
+			]}`))
 			Expect(err).To(BeNil())
 
 			key, ok := collection[0].findLogicalKeyField()
@@ -225,31 +174,12 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(key).To(Equal("key"))
 		})
 		It("finds a logical key ending in 'name'", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
-					"guid": {
-						"type": "uuid",
-						"configurable": false,
-						"credential": false,
-						"value": "28bab1d3-4a4b-48d5-8dac-four",
-						"optional": false
-					},
-					"sqlServerName": {
-						"type": "string",
-						"configurable": true,
-						"credential": false,
-						"value": "the_sqlserver_name",
-						"optional": false
-					},
-					"some_additional_property": {
-						"type": "boolean",
-						"configurable": true,
-						"credential": false,
-						"value": false,
-						"optional": false
-					}
+					"sqlServerName": "the_sqlserver_name",
+					"some_additional_property": false
 				}
-			]`))
+			]}`))
 			Expect(err).To(BeNil())
 
 			key, ok := collection[0].findLogicalKeyField()
@@ -257,31 +187,12 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(key).To(Equal("sqlServerName"))
 		})
 		It("picks 'name' as the logical key when there is a 'name' field AND a field that ends in 'name' (eg: Filename)", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
-					"guid": {
-						"type": "uuid",
-						"configurable": false,
-						"credential": false,
-						"value": "28bab1d3-4a4b-48d5-8dac-five",
-						"optional": false
-					},
-					"name": {
-						"type": "string",
-						"configurable": true,
-						"credential": false,
-						"value": "the_name",
-						"optional": false
-					},
-					"Filename": {
-						"type": "string",
-						"configurable": true,
-						"credential": false,
-						"value": "important_data.tgz",
-						"optional": false
-					}
+					"name": "the_name",
+					"Filename": "important_data.tgz"
 				}
-			]`))
+			]}`))
 			Expect(err).To(BeNil())
 
 			key, ok := collection[0].findLogicalKeyField()

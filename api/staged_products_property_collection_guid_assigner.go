@@ -22,6 +22,31 @@ func (item updatedPropertyCollectionItem) setFieldValue(fieldName string, value 
 	item.Data[fieldName] = value
 }
 
+func (item updatedPropertyCollectionItem) getSortedFieldNames() []string {
+	sortedFieldNames := make([]string, 0, len(item.Data))
+	for k := range item.Data {
+		sortedFieldNames = append(sortedFieldNames, fmt.Sprintf("%v", k))
+	}
+	sort.Strings(sortedFieldNames)
+
+	return sortedFieldNames
+}
+
+func (item updatedPropertyCollectionItem) findLogicalKeyField() (string, bool) {
+	//search order is important; 'name' should be found before 'ending-with-name'
+	regexes := []string{"^name$", "^key$", "(?i)name$"}
+	for _, regex := range regexes {
+		compiledRegex := regexp.MustCompile(regex)
+		for _, fieldName := range item.getSortedFieldNames() {
+			if compiledRegex.MatchString(fieldName) {
+				return fieldName, true
+			}
+		}
+	}
+
+	return "", false
+}
+
 func parseUpdatedPropertyCollection(updatedProperty interface{}) (updatedPropertyCollection, error) {
 	var collection updatedPropertyCollection
 
@@ -96,31 +121,6 @@ func (item responsePropertyCollectionItem) getFieldValuesExceptGUID() map[interf
 	return extractedValues
 }
 
-func (item responsePropertyCollectionItem) getSortedFieldNames() []string {
-	sortedFieldNames := make([]string, 0, len(item.Data))
-	for k := range item.Data {
-		sortedFieldNames = append(sortedFieldNames, fmt.Sprintf("%v", k))
-	}
-	sort.Strings(sortedFieldNames)
-
-	return sortedFieldNames
-}
-
-func (item responsePropertyCollectionItem) findLogicalKeyField() (string, bool) {
-	//search order is important; 'name' should be found before 'ending-with-name'
-	regexes := []string{"^name$", "^key$", "(?i)name$"}
-	for _, regex := range regexes {
-		compiledRegex := regexp.MustCompile(regex)
-		for _, fieldName := range item.getSortedFieldNames() {
-			if compiledRegex.MatchString(fieldName) {
-				return fieldName, true
-			}
-		}
-	}
-
-	return "", false
-}
-
 func (existingCollection responsePropertyCollection) findGUIDForEquivalentlItem(updatedProperty updatedPropertyCollectionItem) (string, bool) {
 
 	for _, existingCollectionItem := range existingCollection {
@@ -146,7 +146,7 @@ func associateExistingCollectionGUIDs(updatedProperty interface{}, existingPrope
 	for _, updatedCollectionItem := range updatedCollection {
 		if guid, ok := existingCollection.findGUIDForEquivalentlItem(updatedCollectionItem); ok {
 			updatedCollectionItem.setFieldValue("guid", guid)
-		} else if logicalKeyFieldName, ok := existingCollection[0].findLogicalKeyField(); ok {
+		} else if logicalKeyFieldName, ok := updatedCollectionItem.findLogicalKeyField(); ok {
 			updatedCollectionItemLogicalKeyValue := updatedCollectionItem.getFieldValue(logicalKeyFieldName)
 			for _, existingCollectionItem := range existingCollection {
 				if updatedCollectionItemLogicalKeyValue == existingCollectionItem.getFieldValue(logicalKeyFieldName) {
