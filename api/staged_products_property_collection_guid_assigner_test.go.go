@@ -348,7 +348,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			]}`))
 			Expect(err).To(BeNil())
 
-			guid, ok := existingCollection.findGUIDForIEquivalentlItem(updatedCollection[0])
+			guid, ok := existingCollection.findGUIDForEquivalentlItem(updatedCollection[0])
 			Expect(ok).To(BeTrue())
 			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
@@ -387,7 +387,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			]}`))
 			Expect(err).To(BeNil())
 
-			guid, ok := existingCollection.findGUIDForIEquivalentlItem(updatedCollection[0])
+			guid, ok := existingCollection.findGUIDForEquivalentlItem(updatedCollection[0])
 			Expect(ok).To(BeTrue())
 			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})

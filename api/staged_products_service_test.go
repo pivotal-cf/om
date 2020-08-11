@@ -522,10 +522,32 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 										"optional": false
 									},
 									"some_property": {
-										"type": "boolean",
+										"type": "string",
 										"configurable": true,
 										"credential": false,
-										"value": true,
+										"value": "some property value",
+										"optional": false
+									}
+								},{
+									"guid": {
+										"type": "uuid",
+										"configurable": false,
+										"credential": false,
+										"value": "28bab1d3-4a4b-48d5-8dac-with-name-two",
+										"optional": false
+									},
+									"name": {
+										"type": "string",
+										"configurable": true,
+										"credential": false,
+										"value": "the_name_two",
+										"optional": false
+									},
+									"some_property": {
+										"type": "string",
+										"configurable": true,
+										"credential": false,
+										"value": "some property value two",
 										"optional": false
 									}
 								}],
@@ -760,6 +782,50 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 								{
 									"sqlServerName": "the_sql_server",
 									"some_property": "new_property_value"
+								}
+							]
+						}
+					}`,
+				})
+				Expect(err).ToNot(HaveOccurred())
+			})
+			It("adds the guid using different strategies for different items in the same collection", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+							"properties": {
+								"key": "value",
+								"collection_with_name": {
+									"value": [{
+										"name": "the_name",
+										"some_property": "some property value",
+										"guid": "28bab1d3-4a4b-48d5-8dac-with-name"
+									},{
+										"name": "the_name_two",
+										"some_property": "changed, so should find guid based on logical key rather than equivalence",
+										"guid": "28bab1d3-4a4b-48d5-8dac-with-name-two"
+									}]
+								}
+							}
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
+
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
+						"key": "value",
+						"collection_with_name": {
+							"value": [
+								{
+									"name": "the_name",
+									"some_property": "some property value"
+								},{
+									"name": "the_name_two",
+									"some_property": "changed, so should find guid based on logical key rather than equivalence"
 								}
 							]
 						}

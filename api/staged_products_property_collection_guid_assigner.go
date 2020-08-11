@@ -121,27 +121,7 @@ func (item responsePropertyCollectionItem) findLogicalKeyField() (string, bool) 
 	return "", false
 }
 
-func assignExistingGUIDUsingLogicalKey(updatedCollection updatedPropertyCollection, existingCollection responsePropertyCollection) bool {
-	//since all collection items have the same structure; only need to find the logical key from the first one
-	logicalKeyFieldName, found := existingCollection[0].findLogicalKeyField()
-	if !found {
-		return false
-	}
-
-	for _, updatedCollectionItem := range updatedCollection {
-		updatedCollectionItemLogicalKeyValue := updatedCollectionItem.getFieldValue(logicalKeyFieldName)
-		for _, existingCollectionItem := range existingCollection {
-			if updatedCollectionItemLogicalKeyValue == existingCollectionItem.getFieldValue(logicalKeyFieldName) {
-				updatedCollectionItem.setFieldValue("guid", existingCollectionItem.getFieldValue("guid"))
-				break //move onto the next updatedCollectionItem
-			}
-		}
-	}
-
-	return true
-}
-
-func (existingCollection responsePropertyCollection) findGUIDForIEquivalentlItem(updatedProperty updatedPropertyCollectionItem) (string, bool) {
+func (existingCollection responsePropertyCollection) findGUIDForEquivalentlItem(updatedProperty updatedPropertyCollectionItem) (string, bool) {
 
 	for _, existingCollectionItem := range existingCollection {
 		//use the fact that fmt prints maps in order (see: https://tip.golang.org/doc/go1.12#fmt) to check for equivalence
@@ -151,20 +131,6 @@ func (existingCollection responsePropertyCollection) findGUIDForIEquivalentlItem
 	}
 
 	return "", false
-}
-
-func assignExistingGUIDUsingEquivalentValue(updatedCollection updatedPropertyCollection, existingCollection responsePropertyCollection) bool {
-
-	foundEquivalentItems := false
-
-	for _, updatedCollectionItem := range updatedCollection {
-		if guid, ok := existingCollection.findGUIDForIEquivalentlItem(updatedCollectionItem); ok {
-			updatedCollectionItem.setFieldValue("guid", guid)
-			foundEquivalentItems = true
-		}
-	}
-
-	return foundEquivalentItems
 }
 
 func associateExistingCollectionGUIDs(updatedProperty interface{}, existingProperty ResponseProperty) error {
@@ -177,12 +143,18 @@ func associateExistingCollectionGUIDs(updatedProperty interface{}, existingPrope
 		return err
 	}
 
-	if assignExistingGUIDUsingEquivalentValue(updatedCollection, existingCollection) {
-		return nil
-	}
+	for _, updatedCollectionItem := range updatedCollection {
+		if guid, ok := existingCollection.findGUIDForEquivalentlItem(updatedCollectionItem); ok {
+			updatedCollectionItem.setFieldValue("guid", guid)
+		} else if logicalKeyFieldName, ok := existingCollection[0].findLogicalKeyField(); ok {
+			updatedCollectionItemLogicalKeyValue := updatedCollectionItem.getFieldValue(logicalKeyFieldName)
+			for _, existingCollectionItem := range existingCollection {
+				if updatedCollectionItemLogicalKeyValue == existingCollectionItem.getFieldValue(logicalKeyFieldName) {
+					updatedCollectionItem.setFieldValue("guid", existingCollectionItem.getFieldValue("guid"))
+				}
+			}
+		}
 
-	if assignExistingGUIDUsingLogicalKey(updatedCollection, existingCollection) {
-		return nil
 	}
 
 	return nil
