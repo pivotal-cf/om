@@ -47,21 +47,18 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 6.2.0
+## 6.1.2
 
-### Features
-- `configure-product`'s _decorating collection with guid_ logic has been extended to associate existing collection item guids based on (in order)
-  - equivalent item values
-  - equal logical keys (in order; ie. 'name' will be used over 'Filename' if both exist)
-    - `name`
-    - `key`
-    - fields ending in `name` (eg: `sqlServerName`)
+### Bug Fixes
+- `configure-product` will no longer assign a new guid for unnamed collections
+  - the _decorating collection with guid_ logic will associate existing collection item guids based on (in order)
+    - equivalent item values
+    - equal logical keys (in order; ie. 'name' will be used over 'Filename' if both exist)
+      - `name`
+      - `key`
+      - fields ending in `name` (eg: `sqlServerName`)
 
   This addresses [#207](https://github.com/pivotal-cf/om/issues/207); improving GitOps style workflows
-
-## 6.1.0
-
-### Features
 
 ## 6.1.1
 
