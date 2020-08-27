@@ -79,18 +79,37 @@ type responsePropertyCollectionItem struct {
 	Data map[interface{}]interface{}
 }
 
-func parseResponsePropertyCollection(rawItems interface{}) (responsePropertyCollection, error) {
+func parseResponsePropertyCollection(input associateExistingCollectionGUIDsInput) (responsePropertyCollection, error) {
 	var collection responsePropertyCollection
 
-	rawItemSlice, ok := rawItems.([]interface{})
+	rawItemSlice, ok := input.ExistingProperty.Value.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to []interface{}", rawItems)
+		return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to []interface{}", input.ExistingProperty.Value)
 	}
 
-	for _, item := range rawItemSlice {
+	for index, item := range rawItemSlice {
 		itemMap, ok := item.(map[interface{}]interface{})
 		if !ok {
 			return nil, fmt.Errorf("parseResponsePropertyCollection: failed to convert %v to map[interface{}]interface{}", item)
+		}
+
+		for collectionItemKey, collectionItemObj := range itemMap {
+			collectionItemObjAsMap := collectionItemObj.(map[interface{}]interface{})
+			isCredential := collectionItemObjAsMap["credential"].(bool)
+			if !isCredential {
+				continue
+			}
+
+			credentialName := fmt.Sprintf("%s[%d].%s", input.PropertyName, index, collectionItemKey)
+			apiOutput, err := input.APIService.GetDeployedProductCredential(GetDeployedProductCredentialInput{
+				DeployedGUID:        input.ProductGUID,
+				CredentialReference: credentialName,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			collectionItemObjAsMap["value"] = apiOutput.Credential.Value
 		}
 
 		collection = append(collection, responsePropertyCollectionItem{Data: itemMap})
@@ -137,12 +156,20 @@ func (existingCollection responsePropertyCollection) findGUIDForEquivalentlItem(
 	return "", false
 }
 
-func associateExistingCollectionGUIDs(updatedProperty interface{}, existingProperty ResponseProperty) error {
-	updatedCollection, err := parseUpdatedPropertyCollection(updatedProperty)
+type associateExistingCollectionGUIDsInput struct {
+	APIService       Api
+	ProductGUID      string
+	PropertyName     string
+	UpdatedProperty  interface{}
+	ExistingProperty ResponseProperty
+}
+
+func associateExistingCollectionGUIDs(input associateExistingCollectionGUIDsInput) error {
+	updatedCollection, err := parseUpdatedPropertyCollection(input.UpdatedProperty)
 	if err != nil {
 		return err
 	}
-	existingCollection, err := parseResponsePropertyCollection(existingProperty.Value)
+	existingCollection, err := parseResponsePropertyCollection(input)
 	if err != nil {
 		return err
 	}
