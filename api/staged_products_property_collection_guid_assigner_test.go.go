@@ -302,5 +302,43 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(ok).To(BeTrue())
 			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
+		It("ignores non-configurable properties when finding items that are equivalent", func() {
+			existingCollection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+				{
+					"guid": {
+						"type": "uuid",
+						"configurable": false,
+						"credential": false,
+						"value": "28bab1d3-4a4b-with-non-configurable-properties",
+						"optional": false
+					},
+					"non_configurable_property": {
+						"type": "string",
+						"configurable": false,
+						"credential": false,
+						"value": "this property can't be configured",
+						"optional": false
+					},
+					"configurable_property": {
+						"type": "string",
+						"configurable": true,
+						"credential": false,
+						"value": "this property can be configured",
+						"optional": false
+					}
+				}
+			]`))
+			Expect(err).To(BeNil())
+			updatedCollection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
+				{
+					"configurable_property": "this property can be configured"
+				}
+			]}`))
+			Expect(err).To(BeNil())
+
+			guid, ok := existingCollection.findGUIDForEquivalentlItem(updatedCollection[0])
+			Expect(ok).To(BeTrue())
+			Expect(guid).To(Equal("28bab1d3-4a4b-with-non-configurable-properties"))
+		})
 	})
 })
