@@ -2,11 +2,12 @@ package interpolate
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
+
 	"github.com/cloudfoundry/bosh-cli/director/template"
 	"github.com/cppforlife/go-patch/patch"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"strings"
 )
 
 type Options struct {
@@ -18,6 +19,7 @@ type Options struct {
 	EnvironFunc   func() []string
 	ExpectAllKeys bool
 	Path          string
+	Reinterpolate bool
 }
 
 func Execute(o Options) ([]byte, error) {

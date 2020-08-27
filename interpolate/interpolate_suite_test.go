@@ -1,9 +1,10 @@
 package interpolate_test
 
 import (
-	"github.com/pivotal-cf/om/interpolate"
 	"io/ioutil"
 	"testing"
+
+	"github.com/pivotal-cf/om/interpolate"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -159,6 +160,52 @@ var _ = Describe("Execute", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(MatchYAML(`name: Susie`))
+		})
+	})
+
+	PWhen("reinterpolate-from-env is passed", func() {
+		It("runs the interplation options a second time on the output of the first time", func() {
+			// The goal here is to allow vars to be used to map multiple variables from some source
+			// into different names.
+			// In our case, the VarsEnv are vars from a secret store,
+			// While vars-files are mappings between those canonical secret store names,
+			// And generated variable names in the template that are based on the yaml structure.
+			// The test setup will attempt to illustrate this situation,
+			// and test that the same thing could be done using flags as the canonical source.
+			templateContents := `---
+template-keys:
+  key0: ((template_keys_key_1))
+  key-2: ((template_keys_key_2))
+other-template-keys:
+  other-key-1: ((other_template_keys_other_key_1))
+  other-key-2: ((other_template_keys_other_key_2))
+`
+			varsFileContents := `---
+template_keys_key_1: ((shared_value_1))
+template_keys_key_2: non-secret-literal-value
+other_template_keys_other_key_1: ((shared_value_1))
+other_template_keys_other_key_2: ((shared_value_2))
+`
+			contents, err := interpolate.Execute(interpolate.Options{
+				TemplateFile: writeFile(templateContents),
+				VarsFiles:    []string{writeFile(varsFileContents)},
+				Vars:         []string{"shared_value_2=our-second-shared-value"},
+				VarsEnvs:     []string{"PREFIX"},
+				EnvironFunc: func() []string {
+					return []string{"PREFIX_shared_value_1=our-first-shared-value"}
+				},
+				Reinterpolate: true,
+			})
+			Expect(err).ToNot(HaveOccurred())
+			fullyInterpolatedYAML := `---
+template-keys:
+  key-1: our-first-shared-value
+  key-2: non-secret-literal-value
+other-template-keys:
+  other-key-1: our-first-shared-value
+  other-key-2: our-second-shared-value
+`
+			Expect(contents).To(MatchYAML(fullyInterpolatedYAML))
 		})
 	})
 
