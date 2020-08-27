@@ -115,6 +115,10 @@ func (item responsePropertyCollectionItem) getFieldValuesExceptGUID() map[interf
 		if key == "guid" {
 			continue
 		}
+		isNotConfigurable := !valueObj.(map[interface{}]interface{})["configurable"].(bool)
+		if isNotConfigurable {
+			continue
+		}
 		extractedValues[key] = valueObj.(map[interface{}]interface{})["value"]
 	}
 
