@@ -108,7 +108,7 @@ func Execute(o Options) ([]byte, error) {
 
 	if o.Reinterpolate {
 		tpl := template.NewTemplate(bytes)
-		bytes, err = tpl.Evaluate(staticVars, ops, evalOpts)
+		bytes, err = tpl.Evaluate(staticVars, nil, evalOpts)
 		if err != nil {
 			return nil, err
 		}

@@ -164,7 +164,7 @@ var _ = Describe("Execute", func() {
 	})
 
 	When("reinterpolate-from-env is passed", func() {
-		It("runs the interplation options a second time on the output of the first time", func() {
+		It("runs the interplation a second time on the output of the first time, without ops files", func() {
 			// The goal here is to allow vars to be used to map multiple variables from some source
 			// into different names.
 			// In our case, the VarsEnv are vars from a secret store,
@@ -172,6 +172,8 @@ var _ = Describe("Execute", func() {
 			// And generated variable names in the template that are based on the yaml structure.
 			// The test setup will attempt to illustrate this situation,
 			// and test that the same thing could be done using flags as the canonical source.
+			// We exclude Ops Files because there should be no need for a second pass,
+			// and they're not guranteed to be idempotent
 			templateContents := `---
 template-keys:
   key-1: ((template_keys_key_1))
@@ -179,6 +181,7 @@ template-keys:
 other-template-keys:
   other-key-1: ((other_template_keys_other_key_1))
   other-key-2: ((other_template_keys_other_key_2))
+key-to-be-removed-once: some-value
 `
 			varsFileContents := `---
 template_keys_key_1: ((shared_value_1))
@@ -186,6 +189,8 @@ template_keys_key_2: non-secret-literal-value
 other_template_keys_other_key_1: ((shared_value_1))
 other_template_keys_other_key_2: ((shared_value_2))
 `
+			nonIdempotentOpsFile := `[{type: remove, path: /key-to-be-removed-once}]`
+
 			contents, err := interpolate.Execute(interpolate.Options{
 				TemplateFile: writeFile(templateContents),
 				VarsFiles:    []string{writeFile(varsFileContents)},
@@ -194,6 +199,7 @@ other_template_keys_other_key_2: ((shared_value_2))
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_shared_value_1=our-first-shared-value"}
 				},
+				OpsFiles:      []string{writeFile(nonIdempotentOpsFile)},
 				Reinterpolate: true,
 			})
 			Expect(err).ToNot(HaveOccurred())
