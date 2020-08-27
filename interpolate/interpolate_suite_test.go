@@ -163,7 +163,7 @@ var _ = Describe("Execute", func() {
 		})
 	})
 
-	PWhen("reinterpolate-from-env is passed", func() {
+	When("reinterpolate-from-env is passed", func() {
 		It("runs the interplation options a second time on the output of the first time", func() {
 			// The goal here is to allow vars to be used to map multiple variables from some source
 			// into different names.
@@ -174,7 +174,7 @@ var _ = Describe("Execute", func() {
 			// and test that the same thing could be done using flags as the canonical source.
 			templateContents := `---
 template-keys:
-  key0: ((template_keys_key_1))
+  key-1: ((template_keys_key_1))
   key-2: ((template_keys_key_2))
 other-template-keys:
   other-key-1: ((other_template_keys_other_key_1))
