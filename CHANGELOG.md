@@ -52,6 +52,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Bug Fixes
 - `configure-product` will no longer assign a new guid for unnamed collections
    - that haven't changed but contain non-configurable properties
+   - that haven't changed but contain secret/credential properties
 
 ## 6.1.2
 

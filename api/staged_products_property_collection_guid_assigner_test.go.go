@@ -10,13 +10,13 @@ import (
 )
 
 var _ = Describe("ResponsePropertyCollection", func() {
-	unmarshalJSONLikeApiGetStagedProductProperties := func(json string) interface{} {
+	unmarshalJSONLikeApiGetStagedProductProperties := func(json string) ResponseProperty {
 		var rawCollection interface{}
 		err := yaml.Unmarshal([]byte(json), &rawCollection)
 		if err != nil {
 			panic(fmt.Errorf("Failed to parse json: %w", err))
 		}
-		return rawCollection
+		return ResponseProperty{Value: rawCollection}
 	}
 	unmarshalJSON := func(rawJSON string) interface{} {
 		var rawCollection interface{}
@@ -28,7 +28,8 @@ var _ = Describe("ResponsePropertyCollection", func() {
 	}
 	When("parseResponsePropertyCollection", func() {
 		It("parses all the elements in the collection", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseResponsePropertyCollection(associateExistingCollectionGUIDsInput{
+				ExistingProperty: unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -68,14 +69,15 @@ var _ = Describe("ResponsePropertyCollection", func() {
 						"optional": false
 					}
 				}
-			]`))
+			]`)})
 			Expect(err).To(BeNil())
 			Expect(len(collection)).To(Equal(2))
 		})
 	})
 	When("extracting field values", func() {
 		It("correctly extracts guids", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseResponsePropertyCollection(associateExistingCollectionGUIDsInput{
+				ExistingProperty: unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -99,12 +101,13 @@ var _ = Describe("ResponsePropertyCollection", func() {
 						"optional": false
 					}
 				}
-			]`))
+			]`)})
 			Expect(err).To(BeNil())
 			Expect(collection[0].getFieldValue("guid")).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
 		It("correctly extracts strings", func() {
-			collection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			collection, err := parseResponsePropertyCollection(associateExistingCollectionGUIDsInput{
+				ExistingProperty: unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -128,7 +131,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 						"optional": false
 					}
 				}
-			]`))
+			]`)})
 			Expect(err).To(BeNil())
 			Expect(collection[0].getFieldValue("name")).To(Equal("the_name"))
 		})
@@ -202,7 +205,8 @@ var _ = Describe("ResponsePropertyCollection", func() {
 	})
 	When("matching based on item contents", func() {
 		It("finds items that are identical", func() {
-			existingCollection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			existingCollection, err := parseResponsePropertyCollection(associateExistingCollectionGUIDsInput{
+				ExistingProperty: unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -249,7 +253,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 						"optional": false
 					}
 				}
-			]`))
+			]`)})
 			Expect(err).To(BeNil())
 			updatedCollection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
@@ -264,7 +268,8 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
 		It("finds items that are equivalent but have a different key order", func() {
-			existingCollection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			existingCollection, err := parseResponsePropertyCollection(associateExistingCollectionGUIDsInput{
+				ExistingProperty: unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -288,7 +293,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 						"optional": false
 					}
 				}
-			]`))
+			]`)})
 			Expect(err).To(BeNil())
 			updatedCollection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{
@@ -303,7 +308,8 @@ var _ = Describe("ResponsePropertyCollection", func() {
 			Expect(guid).To(Equal("28bab1d3-4a4b-48d5-8dac-two"))
 		})
 		It("ignores non-configurable properties when finding items that are equivalent", func() {
-			existingCollection, err := parseResponsePropertyCollection(unmarshalJSONLikeApiGetStagedProductProperties(`[
+			existingCollection, err := parseResponsePropertyCollection(associateExistingCollectionGUIDsInput{
+				ExistingProperty: unmarshalJSONLikeApiGetStagedProductProperties(`[
 				{
 					"guid": {
 						"type": "uuid",
@@ -327,7 +333,7 @@ var _ = Describe("ResponsePropertyCollection", func() {
 						"optional": false
 					}
 				}
-			]`))
+			]`)})
 			Expect(err).To(BeNil())
 			updatedCollection, err := parseUpdatedPropertyCollection(unmarshalJSON(`{ "value":[
 				{

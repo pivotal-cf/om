@@ -502,6 +502,40 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 								}],
 								"optional": false
 							},
+							"collection_with_secrets": {
+								"type": "collection",
+								"configurable": true,
+								"credential": false,
+								"value": [{
+									"guid": {
+										"type": "uuid",
+										"configurable": false,
+										"credential": false,
+										"value": "28bab1d3-4a4b-48d5-8dac-with-secret",
+										"optional": false
+									},
+									"super_secret_property": {
+										"type": "secret",
+										"configurable": true,
+										"credential": true,
+										"value": {
+										  "secret": "***"
+										},
+										"optional": false
+									},
+									"secret_credentials": {
+										"type": "simple_credentials",
+										"configurable": true,
+										"credential": true,
+										"value": {
+										  "identity": "unchanged-username",
+										  "password": "***"
+										},
+										"optional": true
+									}
+								}],
+								"optional": false
+							},
 							"collection_with_name": {
 								"type": "collection",
 								"configurable": true,
@@ -673,6 +707,74 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 									"label": "the_label"
 								}
 							]
+						}
+					}`,
+				})
+				Expect(err).ToNot(HaveOccurred())
+			})
+			It("adds the guid for elements with secrets that haven't changed and don't have a logical key field", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].super_secret_property"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"credential": {
+								"type": "secret",
+								"value": {
+									"secret": "unchanged_secret"
+								}
+							}
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].secret_credentials"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"credential": {
+								"type": "simple_credentials",
+								"value": {
+									"identity": "unchanged-username",
+									"password": "unchanged-password"
+								  }
+							}
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+							"properties": {
+								"key": "value",
+								"collection_with_secrets": {
+									"value": [{
+										"super_secret_property": {
+											"secret": "unchanged_secret"
+										},
+										"secret_credentials": {
+											"identity": "unchanged-username",
+											"password": "unchanged-password"
+										},
+										"guid": "28bab1d3-4a4b-48d5-8dac-with-secret"
+									}]
+								}
+							}
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
+
+				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
+					GUID: "some-product-guid",
+					Properties: `{
+						"key": "value",
+						"collection_with_secrets": {
+							"value": [{
+								"super_secret_property": {
+									"secret": "unchanged_secret"
+								},
+								"secret_credentials": {
+									"identity": "unchanged-username",
+									"password": "unchanged-password"
+								}
+							}]
 						}
 					}`,
 				})
