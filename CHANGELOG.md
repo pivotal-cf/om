@@ -20,21 +20,21 @@ The exceptions to this rule are any commands marked as "**EXPERIMENTAL**"
 - "**EXPERIMENTAL**" commands work, and pull information from the API
   same as any other. The format in which the information is returned, however,
   is subject to change without announcing a breaking change
-  by creating a major or minor bump of the semver version. 
+  by creating a major or minor bump of the semver version.
   When the `om` team is comfortable enough with the command output,
   the "**EXPERIMENTAL**" mark will be removed.
-  
+
 Any changes to the `om` filename as presented in the Github Release page.
-  
+
 Changes internal to `om` will _**NOT**_ be included as a part of the om API.
 The `om` team reserves the right to change any internal structs or structures
 as long as the outputs and behavior of the commands remain the same.
 
-**NOTE**: Additional documentation for om commands 
-leveraged by Pivotal Platform Automation 
+**NOTE**: Additional documentation for om commands
+leveraged by Pivotal Platform Automation
 can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
-`om` is versioned independently from platform-automation. 
+`om` is versioned independently from platform-automation.
 
 ### Tips
 * Use environment variables
@@ -53,7 +53,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `configure-product` will no longer assign a new guid for unnamed collections conatin:
    - non-configurable properties that haven't changed
    - secret/credential properties that haven't changed
-   
+
 ## 6.1.2
 
 ### Bug Fixes
@@ -92,7 +92,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `download-product` will now correctly cache if downloading from a blobstore
   when `CACHE_CLEANUP='I acknowledge this will delete files in the output directories'`
   is set.
-  
+
 ## 6.0.0
 
 ### Features
@@ -153,7 +153,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `apply-changes --product-name <product> --config config.yml` with errands defined in `config.yml` 
   that were not in the `product-name` list would fail.
   An explicit breakdown of how these flags interact:
-  
+
   - `apply-changes` with the `product-name` flag(s) defined
     - `--config config.yml` with different products defined than provided in the `product-name` list:
       - Succeeds with a warning message, but does not apply the errand, if a product exists in the `config.yml` file, but was not passed in the `product-name` list.
@@ -174,7 +174,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This flag is `--stemcell-version`, and requires `--stemcell-iaas` to be set.
   If `--stemcell-version` is not set, but `stemcell-iaas` is set,
   the command will download the latest stemcell for the product.
-- `bosh-diff` now supports the `--check` flag. 
+- `bosh-diff` now supports the `--check` flag.
   If set, the command will fail if there are differences returned.
   This resolves issue [#488](https://github.com/pivotal-cf/om/issues/488)]
 - `stage-product` now accepts a config file to define command line args.
@@ -198,7 +198,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
     - `syslog-settings`
 - **EXPERIMENTAL** `config-template` now supports ops manager syslog in tiles.
   In the tile metadata, this property is turned on with the `opsmanager_syslog: true` field.
-  Tiles with this property enabled will now add the section to `product.yml` 
+  Tiles with this property enabled will now add the section to `product.yml`
   and create defaults in `default-vars.yml`.
 - Added shorthand flag consistency to multiple commands.
   `--vars-file` shorthand is `-l` and `--var` shorthand is `-v`
@@ -210,7 +210,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   in `required-vars.yml` when appropriate.
 - When using `apply-changes --recreate`, Ops Manager will recreate director VM on OM 2.9+
   If a product name is passed (`apply-changes --product-name <product> --recreate`),
-  only the product VMs will be recreated. 
+  only the product VMs will be recreated.
   When using `apply-changes --recreate --skip-deploy-products`,
   only the director VM will be recreated.
   This resolves issue [#468](https://github.com/pivotal-cf/om/issues/468)
@@ -219,7 +219,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - Cleaned up all the interpolation to be more consistent with the behaviour of the `bosh` CLI.
 
   For example,
-  
+
   ```bash
   # with a variable
   $ om interpolate -c <(echo "person: ((person))") -v person="{foo: bar}"
@@ -230,7 +230,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   person:
     foo: bar
   ```
-  
+
   We did maintain,
   when using environment variables or var (`-v`),
   a multiline string needs to be maintained.
@@ -278,7 +278,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `update-ssl-certificate` has been deprecated in favor of `configure-opsman`.
   This was done to allow extensibility for other endpoints on the Settings page.
   Please note that `configure-opsman` requires a config file, and does not accept
-  `certificate-pem` or `private-key-pem` as command line arguments. 
+  `certificate-pem` or `private-key-pem` as command line arguments.
   For config example, see the [docs](https://github.com/pivotal-cf/om/tree/master/docs/configure-opsman) for the command.
 
 ## 4.6.0
@@ -296,8 +296,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   and the AWS heavy stemcell,
   this will resolve your issue.
   Please remove any custom globbing that might've been added to circumvent this issue.
-  For example, `stemcall-iaas: light*aws` should just be `stemcell-iaas: aws` now. 
-- Heavy stemcells could not be downloaded. 
+  For example, `stemcall-iaas: light*aws` should just be `stemcell-iaas: aws` now.
+- Heavy stemcells could not be downloaded.
   Support has now been added.
   Force download of the heavy stemcell (if available) with the `--stemcell-heavy` flag.
 
@@ -311,7 +311,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   $ echo "person: ((people.1))" | om interpolate -c - -l <(echo "people: [Bob, Susie, Diane]")
   person: Susie
   ```
-  
+
 ## 4.4.2
 
 ### Features
@@ -329,7 +329,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   When the command is used, it will display the director and all products by default.
   The `--director` flag can be used to show only the director diff.
   The `--product-name` flag can be used to show one or more specific products.
-  
+
   For example, `om bosh-diff --director --product-name cf --product-name p-healthwatch`
   will show the director, Pivotal Application Service, and Pivotal Healthwatch differences.
 
@@ -362,7 +362,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   through the UI - unsuccessfully).
 
 ### Bug fixes
-- Maybe not technically a bug, but: 
+- Maybe not technically a bug, but:
   some commands you love (`pre-deploy-check`, `staged-config`, and `staged-director-config`)
   no longer have the EXPERIMENTAL tag.
   Nothing has changed with them, we literally just forgot to remove these ages ago.
@@ -387,7 +387,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   * If defined in the config file and an emtpy array (`[]`), the values on Ops Manager will be removed.
   * If defined in the file with a value (`["web_lb"]`), these values will be set on Ops Manager.
 - `configure-authentication`, `configure-ldap-authentication`, and `configure-saml-authentication`
-  now support the `--var`, `--vars-file`, and `--vars-env` flags. 
+  now support the `--var`, `--vars-file`, and `--vars-env` flags.
 - **EXPERIMENTAL** `config-template` now supports the `--config`, `--var`, `--vars-file`, and `--vars-env` flags.
   (PR: @jghiloni)
 
@@ -396,9 +396,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Features
 - `download-product` supports GCS (Google Cloud Storage)
   for Tanzu Network download artifacts.
-  
+
   An example config,
-  
+
   ```yaml
   pivnet-file-glob: "*.tgz"
   pivnet-product-slug: pivotal-telemetry-collector
@@ -410,13 +410,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
     {account-JSON}
   gcs-project-id: project-id
   ```
-  
+
   This will download the `[pivotal-telemetry-collector,1.0.1]telemetry-collector-1.0.1.tgz`
   from the `some-bucket` bucket from the GCS account.
-  
+
 - `download-product` supports Azure Storage.
   for Tanzu Network download artifacts.
-  
+
   ```yaml
   pivnet-file-glob: "*.tgz"
   pivnet-product-slug: pivotal-telemetry-collector
@@ -436,14 +436,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   and `disable-product-verifiers` have been added.
   They allow verifiers that are preventing Apply Changes from succeeding to be disabled.
   This feature should be used with caution,
-  as the verifiers can provide useful feedback on mis-configuration. 
+  as the verifiers can provide useful feedback on mis-configuration.
 
 - When using `staged-director-config` and `configure-director`,
   the `iaas_configuration_name` will be used to assign an IAAS to an availability zone.
   This provides support for multiple iaas configurations on vSphere and Openstack.
   Prior to this, the `iass_configuration_guid` had to be discovered prior to assigning an availability zone;
   now the name can be used in one step.
-  
+
 - We've also made miscellanious improvements
   to warning and error messages,
   and to documentation.
@@ -460,8 +460,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - `apply-changes` will no longer reattach when it finds an already running installation.
   to re-enable this feature, provide the `--reattach` flag.
   This makes the behavior of `apply-changes` easier to anticipate
-  and specify whether applying all changes or applying changes to a particular product.  
-  
+  and specify whether applying all changes or applying changes to a particular product.
+
 ### Features
 - **EXPERIMENTAL** `config-template` now accepts `--pivnet-file-glob` instead of `--product-file-glob`.
   This is to create consistency with the `download-product` command's naming conventions.
@@ -476,23 +476,23 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ### Bug Fixes
 - `configure-director` now will configure VM Extensions before setting Resource Config.
-  This fixes issue [#411](https://github.com/pivotal-cf/om/issues/411)   
-  
+  This fixes issue [#411](https://github.com/pivotal-cf/om/issues/411)
+
 ## 3.2.0
 
 ### Features
 - `expiring-certificates` command was added.
   This command returns a list of certificates
   from an Ops Manager
-  expiring within a specified (`--expires-within/-e`) time frame. 
+  expiring within a specified (`--expires-within/-e`) time frame.
   Default: "3m" (3 months)
   Root CAs cannot be included in this list until Ops Manager 2.7.
-- `configure-product` and `staged-config` now have support for the `/syslog_configurations` endpoint. 
+- `configure-product` and `staged-config` now have support for the `/syslog_configurations` endpoint.
   This affects tiles, such as the Metrics tile,
-  that do not return these properties nested in the `product-properties` section. 
+  that do not return these properties nested in the `product-properties` section.
   This provides a solution for issue [331](https://github.com/pivotal-cf/om/issues/331).
   An example of this inside of your product config:
-  
+
     ```yaml
     syslog-properties:
       address: example.com
@@ -529,17 +529,17 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 - When interacting with an OpsManager, that OpsManager may have a custom CA cert.
   In the global options `--ca-cert` has been added to allow the usage of that custom CA cert.
   The value of `--ca-cert` can be a file or command line string.
-  
+
 ### Bug Fix
 - When using `config-template` (**EXPERIMENTAL**) or `download-product`,
-  the `--pivnet-skip-ssl` is honored when capturing the token. 
+  the `--pivnet-skip-ssl` is honored when capturing the token.
 
 ### Deprecation Notices
 - `tile-metadata` has been deprecated in favor of `product-metadata`.
   This was done to increase naming consistency.
   Both commands currently exist and do exactly the same thing.
   The `tile-metadata` command will be removed in a future release.
-  
+
 ## 3.1.0
 
 ### Features
@@ -579,23 +579,23 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
 - add support for NSX and NSXT in Ops Manager 2.7+
-  
+
 ### Breaking Changes
 
 - remove `--skip-unchanged-products` from `apply-changes`
   This option has had issues with consistent successful behaviour.
   For example, if the apply changes fails for any reason, the subsequent apply changes cannot pick where it left off.
   This usually happens in the case of errands that are used for services.
-  
+
   We are working on scoping a selective deploy feature that makes sense for users.
   We would love to have feedback from users about this.
-  
+
 - remove revert-staged-changes
   unstage-product will revert the changes if the tile has not been installed.
   There is currently no replacement for this command,
-  however, it was not working for newer versions of Ops Manager, and did nothing. 
+  however, it was not working for newer versions of Ops Manager, and did nothing.
   This resolves issue [#399](https://github.com/pivotal-cf/om/issues/399)
-  
+
 ### Bug Fix
 - `apply-changes` will error with _product not found_ if that product has not been staged.
 - `upload-stemcell` now accepts `--floating false` in addition to `floating=false`.
@@ -605,10 +605,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   (Multiple IAAS Configurations only work for vSphere and Openstack).
   `configure-director` will now check if the endpoint is supported.
   If it is not supported, it will construct a payload, and selectively configure
-  iaas_configuration as if it were nested under `properties-configuration`. 
-  _The behavior of this command remains the same._ 
-  IAAS Configuration may still be set via `iaas_configurations` OR `properties.iaas_configuration`  
-  
+  iaas_configuration as if it were nested under `properties-configuration`.
+  _The behavior of this command remains the same._
+  IAAS Configuration may still be set via `iaas_configurations` OR `properties.iaas_configuration`
+
 
 ## 2.0.1
 
@@ -627,7 +627,7 @@ Was a release to make sure that `brew upgrade` works.
   brew tap pivotal-cf/om https://github.com/pivotal-cf/om
   brew install om
   ```
-  
+
 ### Bug Fixes
 - The order of vm types and resources was being applied in the correct order.
   Now vm types will be applied then resources, so that resource can use the vm type.
@@ -635,7 +635,7 @@ Was a release to make sure that `brew upgrade` works.
   If does not the command will exit 1.
 - **EXPERIMENTAL** `config-template` will enforce the default value for a property to always be `configurable: false`.
   This is inline with the OpsManager behaviour.
-  
+
 ### Breaking Change
 - The artifacts on the Github Release include `.tar.gz` (for mac and linux) and `.zip` (windows) for compression.
   It also allows support for using `goreleaser` (in CI) to create other package manager artifacts -- `brew`.
@@ -644,8 +644,8 @@ Was a release to make sure that `brew upgrade` works.
 
 ## 1.2.0
 
-### Features 
-* Both `om configure-ldap-authentication` 
+### Features
+* Both `om configure-ldap-authentication`
   and `om configure-saml-authentication`
   will now automatically
   create a BOSH UAA admin client as documented [here](https://docs.pivotal.io/pivotalcf/2-5/customizing/opsmanager-create-bosh-client.html#saml).
@@ -663,7 +663,7 @@ Was a release to make sure that `brew upgrade` works.
   you can find the client ID and secret
   by following [steps three and four found here](https://docs.pivotal.io/pivotalcf/2-5/customizing/opsmanager-create-bosh-client.html#-provision-admin-client).
 * `om interpolate` now allows for the `-v` flag
-  to allow variables to be passed via command line. 
+  to allow variables to be passed via command line.
   Command line args > file args > env vars.
   If a user passes a var multiple times via command line,
   the right-most version of that var will
@@ -672,56 +672,56 @@ Was a release to make sure that `brew upgrade` works.
 * `om configure-director` now supports custom VM types.
   (PR: @jghiloni)
   Refer to the [VM Types Bosh documentation](https://bosh.io/docs/cloud-config/#vm-types) for IaaS specific use cases.
-  For further info: [`configure-director` readme](https://github.com/pivotal-cf/om/tree/master/docs/configure-director#vmtypes-configuration). 
+  For further info: [`configure-director` readme](https://github.com/pivotal-cf/om/tree/master/docs/configure-director#vmtypes-configuration).
   Please note this is an advanced feature, and should be used at your own discretion.
-* `download-product` will now return a `download-file.json` 
+* `download-product` will now return a `download-file.json`
   if `stemcell-iaas` is defined but the product has no stemcell.
   Previously, this would exit gracefully, but not return a file.
-  
+
 ## 1.1.0
 
 ### Features
 * (**EXPERIMENTAL**) `pre-deploy-check` has been added as a new command.
-  This command can be run at any time. 
+  This command can be run at any time.
   It will scan the director and any staged tiles
   in an Ops Manager environment for invalid or missing properties.
-  It displays these errors in a list format 
+  It displays these errors in a list format
   for the user to manually (or automatedly) update the configuration.
   This command will also return an `exit status 1`;
-  this command can be a gatekeeper in CI 
+  this command can be a gatekeeper in CI
   before running an `apply-changes`
 * `download-product` will now include the `product-version` in `download-file.json`
   (PR: @vchrisb)
 
 ### Bug Fixes
-* Extra values passed in the env file 
+* Extra values passed in the env file
   will now fail if they are not recognized properties.
   This closes issue [#258](https://github.com/pivotal-cf/om/issues/258)
 * Non-string environment variables can now be read and passed as strings to Ops Manager.
   For example, if your environment variable (`OM_NAME`) is set to `"123"` (with quotes escaped),
   it will be evaluated in your config file with the quotes.
-  
+
     Given `config.yml`
     ```yaml
     value: ((NAME))
     ```
-    
+
     `om interpolate -c config.yml --vars-env OM`
-    
+
     Will evaluate to:
     ```yaml
       value: "123"
     ```
   This closes issue [#352](https://github.com/pivotal-cf/om/issues/352)
 * the file outputted by `download-product`
-  will now use the `product-name` as defined 
-  in the downloaded-product, 
+  will now use the `product-name` as defined
+  in the downloaded-product,
   _not_ from the Tanzu Network slug.
   This fixes a mismatch between the two
   as documented in issue [#351](https://github.com/pivotal-cf/om/issues/351)
 * `bosh-env` will now set `BOSH_ALL_PROXY` without a trailing slash
   if one is provided.
-  This closes issue [#350](https://github.com/pivotal-cf/om/issues/350) 
+  This closes issue [#350](https://github.com/pivotal-cf/om/issues/350)
 
 ## 1.0.0
 
@@ -730,18 +730,18 @@ Was a release to make sure that `brew upgrade` works.
   with breaking changes in major bumps,
   non-breaking changes for minor bumps,
   and bug fixes for patches.
-* `delete-installation` now has a force flag. 
+* `delete-installation` now has a force flag.
   The flag is required to run this command quietly, as it was working before.
   The reason behind this is
-  it was easy to delete your installation without any confirmation. 
+  it was easy to delete your installation without any confirmation.
 * `staged-director-config` no longer supports `--include-credentials`
   this functionality has been replaced by `--no-redact`.
   This can be paired with `--include-placeholders`
   to return a interpolate-able config
   with all the available secrets from a running OpsMan.
-  This closes issue #356. 
+  This closes issue #356.
   The OpsMan API changed so that IAAS Configurations
-  were redacted at the API level. 
+  were redacted at the API level.
 
 ### Features
 * new command `diagnostic-report`
@@ -770,9 +770,9 @@ Was a release to make sure that `brew upgrade` works.
 * `configure-director` and `staged-director` now support `iaas-configurations`.
   This allows OpsManager 2.2+ to have multiple IAASes configured.
   Please see the API documentation for your version of OpsMan for what IAASes are supported.
-  
+
   If you are using `iaas_configuration` in your `properties-configuration` and use `iaas-configurations`
-  you'll receive an error message that only one method of configuration can be used. 
+  you'll receive an error message that only one method of configuration can be used.
 
 ## 0.57.0
 
@@ -793,7 +793,7 @@ Was a release to make sure that `brew upgrade` works.
 
 ### Breaking Changes
 * the `upload-product` flag `--sha256` has been changed to `--shasum`. `upload-stemcell`
-  used the `--shasum` flag, and this change adds parity between the two. Using 
+  used the `--shasum` flag, and this change adds parity between the two. Using
   `--shasum` instead of `--sha256` also future-proofs the flag when sha256 is no longer the
   de facto way of defining shasums.
 
@@ -804,7 +804,7 @@ Was a release to make sure that `brew upgrade` works.
    in a config file. This gives `upload-stemcell` feature parity with `upload-product`
 * Improved info messaging for `download-product` to explicitly state whether downloading
   from pivnet or S3
- 
+
 
 ## 0.55.0
 
@@ -834,10 +834,10 @@ Was a release to make sure that `brew upgrade` works.
 * download-product now supports downloading stemcells from S3, too.
 * download-product allows use of an instance iam account when `s3-auth-method: iam` is set.
 * apply-changes now has the ability to define errands via a config file when running (as a one-off errand run).
-  The [apply-changes readme](https://github.com/pivotal-cf/om/docs/apply-changes/README.md) details how this 
+  The [apply-changes readme](https://github.com/pivotal-cf/om/docs/apply-changes/README.md) details how this
   config file should look.
-* pending-changes now supports a `--check` flag, that will return an exit code 0(pass) or 1(fail) when running the command, 
-  to allow you to fail in CI if there are pending changes in the deployment. 
+* pending-changes now supports a `--check` flag, that will return an exit code 0(pass) or 1(fail) when running the command,
+  to allow you to fail in CI if there are pending changes in the deployment.
 * download-product will now create a config file (`assign-stemcell.yml`) that can be fed into `assign-stemcell`. It will have the appropriate
   format with the information it received from download-product
 
@@ -845,12 +845,12 @@ Was a release to make sure that `brew upgrade` works.
 ### Bug Fixes
 * when trying to delete a product on Ops Manager during a selective deploy (`apply-changes --product-name tile`),
   OpsManager would fail to `apply-changes` due to a change to the version string for 2.5 (would include the build
-  number). A change was made to the info service to accept the new semver formatting as well as the old 
-  versioning. 
+  number). A change was made to the info service to accept the new semver formatting as well as the old
+  versioning.
 * upload-product (among other things) is no longer sensitive to subdirectories in tile metadata directories
 * to support 2.5, new semver versioning for OpsManager was added in addition to supporting the current versioning format.
   (PR: @jplebre & @edwardecook)
-  
+
 ### WARNING
 
 To anyone who is having go install fail, it will fail until graymeta/stow#199 is merged.
@@ -867,7 +867,7 @@ to work around, you can include `om` in your project without using `go get` or `
 replace github.com/graymeta/stow => github.com/jtarchie/stow v0.0.0-20190209005554-0bff39424d5b
 ```
 
-## 0.53.0 
+## 0.53.0
 
 ### Bug Fixes
 
@@ -882,23 +882,23 @@ The behavior of `download-product` in this release is not final. Please hold off
 * `download-product` will now enforce a prefix of `{product-slug}-{semver-version}` when downloading from pivnet. The original
   filename is preserved after the prefix. If the original filename already matches the intended format, there will be no
   change. Any regexes that strictly enforce the original filename at the _beginning_ of the regex will be broken. Please
-  update accordingly. This change was done in order to encourage tile teams to change their file names to be more consistent. 
-  Ops Manager itself has already agreed to implement this change in newer versions. 
+  update accordingly. This change was done in order to encourage tile teams to change their file names to be more consistent.
+  Ops Manager itself has already agreed to implement this change in newer versions.
 
 ### Features
 * add support for the `selected_option` field when calling `staged-config` to have better support for selectors.
   * this support also extends to `configure-product`, which will accept both `selected_option` and `option_value` as
-  the machine readable value. 
+  the machine readable value.
 * `download-product` now has support for downloading from an external s3 compatible blobstore using the `--blobstore s3`
-  flag. 
+  flag.
 * `staged-director-config` now supports a `no-redact` flag that will return all of the credentials from an Ops Manager
-  director, if the user has proper permissions to do so. It is recommended to use the admin user. 
-  
+  director, if the user has proper permissions to do so. It is recommended to use the admin user.
+
 ### WARNING
 
 The behavior of `download-product` in this release is not final. Please hold off on using this feature until a release without this warning.
 
-## 0.51.0 
+## 0.51.0
 
 ### Features
 
@@ -906,7 +906,7 @@ The behavior of `download-product` in this release is not final. Please hold off
   * it exists
   * it is a valid zip file
   * it contains the `installation.yml` artifact indicative of an exported installation
-  
+
 ### Bug Fixes
 
 * Fixed typo in `configure-director` vmextensions
@@ -918,9 +918,9 @@ The behavior of `download-product` in this release is not final. Please hold off
 `configure-director` and `staged-director-config` now include a `properties-configuration`.
 
   The following keys have recently been removed from the top level configuration: director-configuration, iaas-configuration, security-configuration, syslog-configuration.
-  
+
   To fix this error, move the above keys under 'properties-configuration' and change their dashes to underscores.
-  
+
   The old configuration file would contain the keys at the top level.
 
 ```yaml
