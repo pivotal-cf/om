@@ -47,7 +47,34 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 6.1.3
+## 6.2.0
+
+### Features
+- `interpolate` behavior has been improved
+  in all commands that perform interpolation.
+  All interpolation in `om` is now dual-pass;
+  what would have previously been the final output
+  is interpolated again.
+  This allows the use of mapping-variables,
+  vars that have other vars as their values.
+  For a detailed example, see the new test for this feature,
+  found in `interpolate/interpolate_suite_test.go`.
+  - This is intended to allow the use of vars files
+    to map from automatically generated vars-names,
+    such as those created by `staged-config` and `config-template`.
+  - Also, note that Ops Files are only applied on the first pass,
+    as they're not idempotent in the way that substituion is.
+  - Similarly, the --path argument for `om interpolate` is only applied
+    on the second pass.
+  - We are aware that other CLI tools that use interpolation behavior
+    don't do this, and may not wish to -
+    for example, both `fly` and `bosh` communicate with servers
+    that also understand the ((double-paren)) var syntax,
+    and so possibly have cases for passing these things along unresolved.
+    As far as we know, this is not true of any use of `om`.
+  - We actually can't think of any case where this would be undesirable,
+    _even in the other tools we just mentioned_.
+    If you can, please open an issue!
 
 ### Bug Fixes
 - `configure-product` will no longer assign a new guid for unnamed collections conatin:
