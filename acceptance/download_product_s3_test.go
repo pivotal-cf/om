@@ -36,7 +36,7 @@ var _ = Describe("download-product command", func() {
 		})
 
 		AfterEach(func() {
-			runCommand("mc", "rm", "--force", "--recursive", "testing/"+bucketName)
+			runCommand("mc", "rb", "--force", "testing/"+bucketName)
 		})
 
 		When("specifying the stemcell iaas to download", func() {
