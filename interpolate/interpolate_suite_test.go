@@ -163,7 +163,7 @@ var _ = Describe("Execute", func() {
 		})
 	})
 
-	When("reinterpolate-from-env is passed", func() {
+	When("always", func() {
 		It("runs the interplation a second time on the output of the first time, without ops files", func() {
 			// The goal here is to allow vars to be used to map multiple variables from some source
 			// into different names.
@@ -199,8 +199,7 @@ other_template_keys_other_key_2: ((shared_value_2))
 				EnvironFunc: func() []string {
 					return []string{"PREFIX_shared_value_1=our-first-shared-value"}
 				},
-				OpsFiles:      []string{writeFile(nonIdempotentOpsFile)},
-				Reinterpolate: true,
+				OpsFiles: []string{writeFile(nonIdempotentOpsFile)},
 			})
 			Expect(err).ToNot(HaveOccurred())
 			fullyInterpolatedYAML := `---

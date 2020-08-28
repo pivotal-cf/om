@@ -19,7 +19,6 @@ type Options struct {
 	EnvironFunc   func() []string
 	ExpectAllKeys bool
 	Path          string
-	Reinterpolate bool
 }
 
 func Execute(o Options) ([]byte, error) {
@@ -97,24 +96,22 @@ func Execute(o Options) ([]byte, error) {
 		return nil, fmt.Errorf("cannot parse path: %s", err)
 	}
 
-	if path.IsSet() {
-		evalOpts.PostVarSubstitutionOp = patch.FindOp{Path: path}
-	}
-
-	bytes, err := tpl.Evaluate(staticVars, ops, evalOpts)
+	firstPassBytes, err := tpl.Evaluate(staticVars, ops, evalOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	if o.Reinterpolate {
-		tpl := template.NewTemplate(bytes)
-		bytes, err = tpl.Evaluate(staticVars, nil, evalOpts)
-		if err != nil {
-			return nil, err
-		}
+	if path.IsSet() {
+		evalOpts.PostVarSubstitutionOp = patch.FindOp{Path: path}
 	}
 
-	return bytes, nil
+	secondPassTemplate := template.NewTemplate(firstPassBytes)
+	secondPassBytes, err := secondPassTemplate.Evaluate(staticVars, nil, evalOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	return secondPassBytes, nil
 }
 
 func maintainMultilineStringForEnvVar(environFunc func() []string, key string, v interface{}) interface{} {
