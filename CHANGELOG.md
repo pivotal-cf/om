@@ -50,9 +50,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 6.1.3
 
 ### Bug Fixes
-- `configure-product` will no longer assign a new guid for unnamed collections
-   that haven't changed but contain non-configurable properties
-
+- `configure-product` will no longer assign a new guid for unnamed collections conatin:
+   - non-configurable properties that haven't changed
+   - secret/credential properties that haven't changed
+   
 ## 6.1.2
 
 ### Bug Fixes
