@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -17,7 +18,7 @@ type BoshDiff struct {
 	Options struct {
 		Product  []string `long:"product-name" short:"p" description:"Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown."`
 		Director bool     `long:"director" short:"d" description:"Include director diffs. Can be combined with --product-name."`
-		Check    bool     `long:"check" description:"Exit 1 if there are any differences. Useful for validating that Ops Manager is in a clean state."`
+		Check    bool     `long:"check" description:"Exit 2 if there are any differences. Useful for validating that Ops Manager is in a clean state."`
 	}
 }
 
@@ -97,7 +98,8 @@ func (c BoshDiff) Execute(args []string) error {
 	}
 
 	if c.Options.Check && thereAreDiffs {
-		return fmt.Errorf("Differences exist between the staged and deployed versions of the requested products")
+		c.logger.Println("Differences exist between the staged and deployed versions of the requested products")
+		os.Exit(2)
 	}
 
 	return nil
