@@ -47,6 +47,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.3.0
+
+### Feature
+- `bosh diff --check` will now return exit status 2
+  instead of exit status 1.
+  This is so the 'diff' exit status is more easily differentiated
+  from an 'error' exit status.
+
 ## 6.2.0
 
 ### Features
