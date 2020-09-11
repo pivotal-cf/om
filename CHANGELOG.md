@@ -55,6 +55,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This is so the 'diff' exit status is more easily differentiated
   from an 'error' exit status.
 
+### Bug Fixes
+- When using collection with secrets,
+  the GUID matching for maintaining GUIDs across updates faulted
+  only when the tile was being upgraded and migrating said property.
+  Related issue #514.
+
 ## 6.2.0
 
 ### Features
