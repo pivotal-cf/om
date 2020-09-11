@@ -74,10 +74,11 @@ type StagedConfigService struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	GetStagedProductPropertiesStub        func(string) (map[string]api.ResponseProperty, error)
+	GetStagedProductPropertiesStub        func(string, bool) (map[string]api.ResponseProperty, error)
 	getStagedProductPropertiesMutex       sync.RWMutex
 	getStagedProductPropertiesArgsForCall []struct {
 		arg1 string
+		arg2 bool
 	}
 	getStagedProductPropertiesReturns struct {
 		result1 map[string]api.ResponseProperty
@@ -470,16 +471,17 @@ func (fake *StagedConfigService) GetStagedProductNetworksAndAZsReturnsOnCall(i i
 	}{result1, result2}
 }
 
-func (fake *StagedConfigService) GetStagedProductProperties(arg1 string) (map[string]api.ResponseProperty, error) {
+func (fake *StagedConfigService) GetStagedProductProperties(arg1 string, arg2 bool) (map[string]api.ResponseProperty, error) {
 	fake.getStagedProductPropertiesMutex.Lock()
 	ret, specificReturn := fake.getStagedProductPropertiesReturnsOnCall[len(fake.getStagedProductPropertiesArgsForCall)]
 	fake.getStagedProductPropertiesArgsForCall = append(fake.getStagedProductPropertiesArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("GetStagedProductProperties", []interface{}{arg1})
+		arg2 bool
+	}{arg1, arg2})
+	fake.recordInvocation("GetStagedProductProperties", []interface{}{arg1, arg2})
 	fake.getStagedProductPropertiesMutex.Unlock()
 	if fake.GetStagedProductPropertiesStub != nil {
-		return fake.GetStagedProductPropertiesStub(arg1)
+		return fake.GetStagedProductPropertiesStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -494,17 +496,17 @@ func (fake *StagedConfigService) GetStagedProductPropertiesCallCount() int {
 	return len(fake.getStagedProductPropertiesArgsForCall)
 }
 
-func (fake *StagedConfigService) GetStagedProductPropertiesCalls(stub func(string) (map[string]api.ResponseProperty, error)) {
+func (fake *StagedConfigService) GetStagedProductPropertiesCalls(stub func(string, bool) (map[string]api.ResponseProperty, error)) {
 	fake.getStagedProductPropertiesMutex.Lock()
 	defer fake.getStagedProductPropertiesMutex.Unlock()
 	fake.GetStagedProductPropertiesStub = stub
 }
 
-func (fake *StagedConfigService) GetStagedProductPropertiesArgsForCall(i int) string {
+func (fake *StagedConfigService) GetStagedProductPropertiesArgsForCall(i int) (string, bool) {
 	fake.getStagedProductPropertiesMutex.RLock()
 	defer fake.getStagedProductPropertiesMutex.RUnlock()
 	argsForCall := fake.getStagedProductPropertiesArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *StagedConfigService) GetStagedProductPropertiesReturns(result1 map[string]api.ResponseProperty, result2 error) {

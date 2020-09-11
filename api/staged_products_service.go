@@ -202,7 +202,7 @@ func (a Api) GetStagedProductSyslogConfiguration(product string) (map[string]int
 }
 
 func (a Api) UpdateStagedProductProperties(input UpdateStagedProductPropertiesInput) error {
-	currentConfiguredProperties, err := a.GetStagedProductProperties(input.GUID)
+	currentConfiguredProperties, err := a.GetStagedProductProperties(input.GUID, false)
 	if err != nil {
 		return err
 	}
@@ -311,8 +311,12 @@ func (a Api) GetStagedProductManifest(guid string) (string, error) {
 	return string(manifest), nil
 }
 
-func (a Api) GetStagedProductProperties(product string) (map[string]ResponseProperty, error) {
-	resp, err := a.fetchProductResource(product, "properties")
+func (a Api) GetStagedProductProperties(product string, redact bool) (map[string]ResponseProperty, error) {
+	endpoint := "properties?redact=false"
+	if redact {
+		endpoint = "properties?redact=true"
+	}
+	resp, err := a.fetchProductResource(product, endpoint)
 	if err != nil {
 		return nil, err
 	}

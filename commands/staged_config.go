@@ -29,7 +29,7 @@ type stagedConfigService interface {
 	GetStagedProductJobResourceConfig(productGUID, jobGUID string) (api.JobProperties, error)
 	GetStagedProductNetworksAndAZs(product string) (map[string]interface{}, error)
 	GetStagedProductSyslogConfiguration(product string) (map[string]interface{}, error)
-	GetStagedProductProperties(product string) (map[string]api.ResponseProperty, error)
+	GetStagedProductProperties(product string, redact bool) (map[string]api.ResponseProperty, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	ListStagedProductErrands(productID string) (api.ErrandsListOutput, error)
@@ -77,7 +77,7 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 	productGUID := findOutput.Product.GUID
 
-	properties, err := ec.service.GetStagedProductProperties(productGUID)
+	properties, err := ec.service.GetStagedProductProperties(productGUID, !ec.Options.IncludeCredentials)
 	if err != nil {
 		return err
 	}

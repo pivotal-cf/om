@@ -30,7 +30,7 @@ var _ = Describe("StagedConfig", func() {
 				Type:         "selector",
 				Configurable: true,
 			}
-			fakeService = setFakeService(internalSelector)
+			fakeService = setFakeService(internalSelector, true)
 		})
 
 		It("writes a config file to stdout", func() {
@@ -44,7 +44,9 @@ var _ = Describe("StagedConfig", func() {
 			Expect(fakeService.GetStagedProductByNameArgsForCall(0)).To(Equal("some-product"))
 
 			Expect(fakeService.GetStagedProductPropertiesCallCount()).To(Equal(1))
-			Expect(fakeService.GetStagedProductPropertiesArgsForCall(0)).To(Equal("some-product-guid"))
+			name, redact := fakeService.GetStagedProductPropertiesArgsForCall(0)
+			Expect(name).To(Equal("some-product-guid"))
+			Expect(redact).To(BeTrue())
 
 			Expect(fakeService.GetStagedProductNetworksAndAZsCallCount()).To(Equal(1))
 			Expect(fakeService.GetStagedProductNetworksAndAZsArgsForCall(0)).To(Equal("some-product-guid"))
@@ -166,19 +168,11 @@ syslog-properties:
 
 		When("--include-credentials is used", func() {
 			BeforeEach(func() {
+				fakeService = setFakeService(internalSelector, false)
 				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
 					{
 						Type: "some-product",
 						GUID: "some-product-guid",
-					},
-				}, nil)
-
-				fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
-					Credential: api.Credential{
-						Type: "some-secret-type",
-						Value: map[string]string{
-							"some-secret-key": "some-secret-value",
-						},
 					},
 				}, nil)
 			})
@@ -191,72 +185,46 @@ syslog-properties:
 				})
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(fakeService.GetDeployedProductCredentialCallCount()).To(Equal(7))
-
-				apiInputs := []api.GetDeployedProductCredentialInput{}
-				for i := 0; i < 7; i++ {
-					apiInputs = append(apiInputs, fakeService.GetDeployedProductCredentialArgsForCall(i))
-				}
-				Expect(apiInputs).To(ConsistOf([]api.GetDeployedProductCredentialInput{
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.some-secret-property",
-					},
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.salted-credentials",
-					},
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.collection[0].certificate",
-					},
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.collection[1].certificate2",
-					},
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.simple-credentials",
-					},
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.rsa-cert-credentials",
-					},
-					{
-						DeployedGUID:        "some-product-guid",
-						CredentialReference: ".properties.rsa-pkey-credentials",
-					},
-				}))
+				Expect(fakeService.GetStagedProductPropertiesCallCount()).To(Equal(1))
+				name, redact := fakeService.GetStagedProductPropertiesArgsForCall(0)
+				Expect(name).To(Equal("some-product-guid"))
+				Expect(redact).To(BeFalse())
 
 				Expect(logger.PrintlnCallCount()).To(Equal(1))
 				output := logger.PrintlnArgsForCall(0)
-				Expect(output).To(ContainElement(MatchYAML(`
+				Expect(output[0]).To(MatchYAML(`
 product-name: some-product
 product-properties:
   .properties.collection:
     value:
     - certificate:
-        some-secret-key: some-secret-value
+        cert_pem: some-secret-value
+        private_key_pem: some-secret-value
       name: Certificate
     - certificate2:
-        some-secret-key: some-secret-value
+        cert_pem: some-secret-value
+        private_key_pem: some-secret-value
   .properties.some-string-property:
     value: some-value
   .properties.some-secret-property:
     value:
-      some-secret-key: some-secret-value
+      secret: some-secret-value
   .properties.simple-credentials:
     value:
-      some-secret-key: some-secret-value
+      identity: some-secret-value
+      password: some-secret-value
   .properties.rsa-cert-credentials:
     value:
-      some-secret-key: some-secret-value
+      cert_pem: some-secret-value
+      private_key_pem: some-secret-value
   .properties.rsa-pkey-credentials:
     value:
-      some-secret-key: some-secret-value
+      private_key_pem: some-secret-value
   .properties.salted-credentials:
     value:
-      some-secret-key: some-secret-value
+      identity: some-secret-value
+      salt: some-secret-value
+      password: some-secret-value
   .properties.some-selector:
     value: internal
 network-properties:
@@ -278,7 +246,7 @@ errand-config:
 syslog-properties:
   enabled: true
   host: tcp://1.1.1.1
-`)))
+`))
 			})
 
 			Context("and the product has not yet been deployed", func() {
@@ -299,24 +267,6 @@ syslog-properties:
 				BeforeEach(func() {
 					fakeService.ListDeployedProductsReturns(
 						[]api.DeployedProductOutput{},
-						errors.New("some-error"),
-					)
-				})
-
-				It("returns an error", func() {
-					command := commands.NewStagedConfig(fakeService, logger)
-					err := command.Execute([]string{
-						"--product-name", "some-product",
-						"--include-credentials",
-					})
-					Expect(err).To(MatchError("some-error"))
-				})
-			})
-
-			Context("and looking up a credential fails", func() {
-				BeforeEach(func() {
-					fakeService.GetDeployedProductCredentialReturns(
-						api.GetDeployedProductCredentialOutput{},
 						errors.New("some-error"),
 					)
 				})
@@ -553,7 +503,7 @@ syslog-properties:
 					Type:           "selector",
 					Configurable:   true,
 				}
-				fakeService = setFakeService(internalSelector)
+				fakeService = setFakeService(internalSelector, true)
 			})
 
 			It("will include selected_option if available", func() {
@@ -582,7 +532,7 @@ syslog-properties:
 					Type:         "selector",
 					Configurable: true,
 				}
-				fakeService = setFakeService(internalSelector)
+				fakeService = setFakeService(internalSelector, true)
 			})
 
 			It("will include properties dependent on the selected selector if available", func() {
@@ -605,8 +555,12 @@ syslog-properties:
 	})
 })
 
-func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigService {
+func setFakeService(internalSelector api.ResponseProperty, redact bool) *fakes.StagedConfigService {
 	fakeService := &fakes.StagedConfigService{}
+	secretValue := "some-secret-value"
+	if redact {
+		secretValue = "***"
+	}
 	fakeService.GetStagedProductPropertiesReturns(
 		map[string]api.ResponseProperty{
 			".properties.some-string-property": {
@@ -620,7 +574,7 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			".properties.some-secret-property": {
 				Type: "secret",
 				Value: map[string]interface{}{
-					"secret": "***",
+					"secret": secretValue,
 				},
 				IsCredential: true,
 				Configurable: true,
@@ -628,8 +582,8 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			".properties.simple-credentials": {
 				Type: "simple_credentials",
 				Value: map[string]interface{}{
-					"identity": "***",
-					"password": "***",
+					"identity": secretValue,
+					"password": secretValue,
 				},
 				IsCredential: true,
 				Configurable: true,
@@ -637,8 +591,8 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			".properties.rsa-cert-credentials": {
 				Type: "rsa_cert_credentials",
 				Value: map[string]interface{}{
-					"cert_pem":        "***",
-					"private_key_pem": "***",
+					"cert_pem":        secretValue,
+					"private_key_pem": secretValue,
 				},
 				IsCredential: true,
 				Configurable: true,
@@ -646,7 +600,7 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			".properties.rsa-pkey-credentials": {
 				Type: "rsa_pkey_credentials",
 				Value: map[string]interface{}{
-					"private_key_pem": "***",
+					"private_key_pem": secretValue,
 				},
 				IsCredential: true,
 				Configurable: true,
@@ -654,9 +608,9 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			".properties.salted-credentials": {
 				Type: "salted_credentials",
 				Value: map[string]interface{}{
-					"identity": "***",
-					"salt":     "***",
-					"password": "***",
+					"identity": secretValue,
+					"salt":     secretValue,
+					"password": secretValue,
 				},
 				IsCredential: true,
 				Configurable: true,
@@ -670,8 +624,8 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 							"configurable": true,
 							"credential":   true,
 							"value": map[interface{}]interface{}{
-								"cert_pem":        "***",
-								"private_key_pem": "***",
+								"cert_pem":        secretValue,
+								"private_key_pem": secretValue,
 							},
 						},
 						"name": map[interface{}]interface{}{
@@ -693,8 +647,8 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 							"configurable": true,
 							"credential":   true,
 							"value": map[interface{}]interface{}{
-								"cert_pem":        "***",
-								"private_key_pem": "***",
+								"cert_pem":        secretValue,
+								"private_key_pem": secretValue,
 							},
 						},
 					},
@@ -705,7 +659,7 @@ func setFakeService(internalSelector api.ResponseProperty) *fakes.StagedConfigSe
 			},
 			".properties.some-non-configurable-secret-property": {
 				Value: map[string]interface{}{
-					"some-secret-type": "***",
+					"some-secret-type": secretValue,
 				},
 				IsCredential: true,
 				Configurable: false,

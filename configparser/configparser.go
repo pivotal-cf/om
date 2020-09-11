@@ -164,14 +164,7 @@ func NewGetCredentialHandler(productGUID string, apiService getCredential) Crede
 	var output map[string]interface{}
 
 	return func(name PropertyName, property api.ResponseProperty) (map[string]interface{}, error) {
-		apiOutput, err := apiService.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-			DeployedGUID:        productGUID,
-			CredentialReference: name.credentialName(),
-		})
-		if err != nil {
-			return nil, err
-		}
-		output = map[string]interface{}{"value": apiOutput.Credential.Value}
+		output = map[string]interface{}{"value": property.Value}
 		return output, nil
 	}
 }

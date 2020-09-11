@@ -1,19 +1,15 @@
 package configparser_test
 
 import (
-	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/api"
-	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/configparser"
 	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("Config Parser", func() {
 	var (
-		productGUID string
-
 		properties map[string]api.ResponseProperty
 	)
 
@@ -42,8 +38,6 @@ var _ = Describe("Config Parser", func() {
 	}
 
 	BeforeEach(func() {
-		productGUID = "some-product-guid"
-
 		properties = map[string]api.ResponseProperty{
 			".properties.some-string-property": {
 				Value:        "some-value",
@@ -237,112 +231,6 @@ var _ = Describe("Config Parser", func() {
   value: Hello World
 `))
 
-		})
-	})
-
-	Context("given cred handler", func() {
-		var fakeCredService *fakes.CredentialsService
-
-		BeforeEach(func() {
-			fakeCredService = &fakes.CredentialsService{}
-		})
-
-		It("replace all the credential types to actual creds", func() {
-			fakeCredService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
-				Credential: api.Credential{
-					Type: "some-secret-type",
-					Value: map[string]string{
-						"some-secret-key": "some-secret-value",
-					},
-				},
-			}, nil)
-
-			output, err := getOutput(configparser.NewGetCredentialHandler(productGUID, fakeCredService))
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(fakeCredService.GetDeployedProductCredentialCallCount()).To(Equal(7))
-
-			apiInputs := []api.GetDeployedProductCredentialInput{}
-			for i := 0; i < 7; i++ {
-				apiInputs = append(apiInputs, fakeCredService.GetDeployedProductCredentialArgsForCall(i))
-			}
-			Expect(apiInputs).To(ConsistOf([]api.GetDeployedProductCredentialInput{
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.some-secret-property",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.salted-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.collection[0].certificate",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.collection[1].certificate2",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.simple-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.rsa-cert-credentials",
-				},
-				{
-					DeployedGUID:        "some-product-guid",
-					CredentialReference: ".properties.rsa-pkey-credentials",
-				},
-			}))
-
-			Expect(output).To(MatchYAML(`
-.properties.collection:
- value:
- - certificate:
-     some-secret-key: some-secret-value
-   name: Certificate
- - certificate2:
-     some-secret-key: some-secret-value
-.properties.some-string-property:
- value: some-value
-.properties.some-secret-property:
- value:
-   some-secret-key: some-secret-value
-.properties.simple-credentials:
- value:
-   some-secret-key: some-secret-value
-.properties.rsa-cert-credentials:
- value:
-   some-secret-key: some-secret-value
-.properties.rsa-pkey-credentials:
- value:
-   some-secret-key: some-secret-value
-.properties.salted-credentials:
- value:
-   some-secret-key: some-secret-value
-.properties.some-selector:
-  value: internal
-.properties.some-selector.not-internal.some-string-property:
-  value: some-value
-.properties.some-selector-with-selected-value:
-  selected_option: beginner
-  value: Hello World
-`))
-		})
-
-		Context("failure case", func() {
-			Context("looking up a credential fails", func() {
-				It("returns an error", func() {
-					fakeCredService.GetDeployedProductCredentialReturns(
-						api.GetDeployedProductCredentialOutput{},
-						errors.New("some-error"),
-					)
-					_, err := getOutput(configparser.NewGetCredentialHandler(productGUID, fakeCredService))
-					Expect(err).To(MatchError("some-error"))
-				})
-			})
 		})
 	})
 })

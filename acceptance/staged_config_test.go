@@ -41,7 +41,7 @@ var _ = Describe("staged-config command", func() {
 					ghttp.RespondWith(http.StatusOK, stagedProductsJSON),
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties", "redact=true"),
 					ghttp.RespondWith(http.StatusOK, stagedPropertiesJSON),
 				),
 				ghttp.CombineHandlers(
@@ -140,19 +140,8 @@ syslog-properties:
 					ghttp.RespondWith(http.StatusOK, stagedProductsJSON),
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
-					ghttp.RespondWith(http.StatusOK, stagedPropertiesJSON),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/.properties.some-secret-property"),
-					ghttp.RespondWith(http.StatusOK, `{
-						"credential": {
-							"type": "some-secret-type",
-							"value": {
-								"some-secret-key": "some-secret-value"
-							}
-						}
-					}`),
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties", "redact=false"),
+					ghttp.RespondWith(http.StatusOK, stagedPropertiesWithSecretsNotRedactedJSON),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
@@ -246,6 +235,34 @@ const stagedProductsJSON = `[
 	{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
 	{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0"}
 ]`
+
+const stagedPropertiesWithSecretsNotRedactedJSON = `{
+	"properties": {
+		".properties.some-configurable-property": {
+			"type": "string",
+			"configurable": true,
+			"credential": false,
+			"value": "some-configurable-value",
+			"optional": true
+		},
+		".properties.some-non-configurable-property": {
+			"type": "string",
+			"configurable": false,
+			"credential": false,
+			"value": "some-non-configurable-value",
+			"optional": false
+		},
+		".properties.some-secret-property": {
+			"type": "string",
+			"configurable": true,
+			"credential": true,
+			"value": {
+				"some-secret-key": "some-secret-value"
+			},
+			"optional": true
+		}
+	}
+}`
 
 const stagedPropertiesJSON = `{
 	"properties": {

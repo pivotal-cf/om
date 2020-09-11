@@ -463,7 +463,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		BeforeEach(func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties", "redact=false"),
 					ghttp.RespondWith(http.StatusOK, `{
 						"properties": {
 							"sample": {
@@ -519,7 +519,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 										"configurable": true,
 										"credential": true,
 										"value": {
-										  "secret": "***"
+										  "secret": "unchanged_secret"
 										},
 										"optional": false
 									},
@@ -529,7 +529,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 										"credential": true,
 										"value": {
 										  "identity": "unchanged-username",
-										  "password": "***"
+									      "password": "unchanged-password"
 										},
 										"optional": true
 									}
@@ -712,31 +712,32 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
+
 			It("adds the guid for elements with secrets that haven't changed and don't have a logical key field", func() {
 				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].super_secret_property"),
-						ghttp.RespondWith(http.StatusOK, `{
-							"credential": {
-								"type": "secret",
-								"value": {
-									"secret": "unchanged_secret"
-								}
-							}
-						}`),
-					),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].secret_credentials"),
-						ghttp.RespondWith(http.StatusOK, `{
-							"credential": {
-								"type": "simple_credentials",
-								"value": {
-									"identity": "unchanged-username",
-									"password": "unchanged-password"
-								  }
-							}
-						}`),
-					),
+					//ghttp.CombineHandlers(
+					//	ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].super_secret_property"),
+					//	ghttp.RespondWith(http.StatusOK, `{
+					//		"credential": {
+					//			"type": "secret",
+					//			"value": {
+					//				"secret": "unchanged_secret"
+					//			}
+					//		}
+					//	}`),
+					//),
+					//ghttp.CombineHandlers(
+					//	ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].secret_credentials"),
+					//	ghttp.RespondWith(http.StatusOK, `{
+					//		"credential": {
+					//			"type": "simple_credentials",
+					//			"value": {
+					//				"identity": "unchanged-username",
+					//				"password": "unchanged-password"
+					//			  }
+					//		}
+					//	}`),
+					//),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
 						ghttp.VerifyContentType("application/json"),
@@ -780,6 +781,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
+
 			It("adds the guid for elements that have a name property", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -817,6 +819,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
+
 			It("adds the guid for elements that have a key property", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -854,6 +857,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
+
 			It("adds the guid for elements that have logical key property ending in 'name'", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -891,6 +895,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
+
 			It("adds the guid using different strategies for different items in the same collection", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -935,6 +940,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
+
 			It("no guid added", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -1040,46 +1046,6 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 	})
 
 	Describe("GetStagedProductSyslogConfiguration", func() {
-		//BeforeEach(func() {
-		//	client.DoStub = func(req *http.Request) (*http.Response, error) {
-		//		var resp *http.Response
-		//		if strings.Contains(req.URL.Path, "some-product-guid") {
-		//			resp = &http.Response{
-		//				StatusCode: http.StatusOK,
-		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
-		//						"syslog_configuration": {
-		//							"enabled": true,
-		//							"address": "example.com"
-		//						}
-		//					}`)),
-		//			}
-		//		} else if strings.Contains(req.URL.Path, "missing-syslog-config") {
-		//			resp = &http.Response{
-		//				StatusCode: http.StatusUnprocessableEntity,
-		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
-		//						"errors": {
-		//						  "syslog": ["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint."]
-		//						}
-		//					}`)),
-		//			}
-		//		} else if strings.Contains(req.URL.Path, "bad-response-code") {
-		//			resp = &http.Response{
-		//				StatusCode: http.StatusBadRequest,
-		//				Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-		//			}
-		//		} else {
-		//			resp = &http.Response{
-		//				StatusCode: http.StatusOK,
-		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
-		//						invalid-json
-		//					}`)),
-		//			}
-		//		}
-		//
-		//		return resp, nil
-		//	}
-		//})
-
 		When("syslog configuration is configured for the specified product", func() {
 			It("returns the syslog configuration ", func() {
 				client.AppendHandlers(
@@ -1326,7 +1292,7 @@ key-4: 2147483648
 				),
 			)
 
-			config, err := service.GetStagedProductProperties("some-product-guid")
+			config, err := service.GetStagedProductProperties("some-product-guid", true)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(config).To(HaveKeyWithValue(".properties.some-configurable-property", api.ResponseProperty{
@@ -1363,7 +1329,7 @@ key-4: 2147483648
 			It("returns an error", func() {
 				client.Close()
 
-				_, err := service.GetStagedProductProperties("some-product-guid")
+				_, err := service.GetStagedProductProperties("some-product-guid", true)
 				Expect(err).To(MatchError(ContainSubstring(`could not make api request to staged product properties endpoint: could not send api request to GET /api/v0/staged/products/some-product-guid/properties`)))
 			})
 		})
@@ -1377,7 +1343,7 @@ key-4: 2147483648
 					),
 				)
 
-				_, err := service.GetStagedProductProperties("some-product-guid")
+				_, err := service.GetStagedProductProperties("some-product-guid", true)
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
@@ -1391,7 +1357,7 @@ key-4: 2147483648
 					),
 				)
 
-				_, err := service.GetStagedProductProperties("some-product-guid")
+				_, err := service.GetStagedProductProperties("some-product-guid", true)
 				Expect(err).To(MatchError(ContainSubstring("could not parse json")))
 			})
 		})
