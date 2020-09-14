@@ -25,14 +25,6 @@ func NewPropertyName(prefix string) PropertyName {
 	}
 }
 
-func (n *PropertyName) credentialName() string {
-	if n.collectionName != "" {
-		return n.prefix + "[" + strconv.Itoa(n.index) + "]." + n.collectionName
-	}
-
-	return n.prefix
-}
-
 func (n *PropertyName) placeholderName() string {
 	name := n.prefix
 	if n.collectionName != "" {
@@ -94,7 +86,7 @@ func (p *configParser) handleCollection(name PropertyName, property api.Response
 			if err != nil {
 				return nil, err
 			}
-			if returnValue != nil && len(returnValue) > 0 {
+			if len(returnValue) > 0 {
 				innerProperties[innerKey.(string)] = returnValue["value"]
 			}
 		}

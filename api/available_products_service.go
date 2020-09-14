@@ -1,13 +1,11 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 const availableProductsEndpoint = "/api/v0/available_products"
@@ -45,8 +43,6 @@ func (a Api) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAv
 	req.Header.Set("Content-Type", input.ContentType)
 	req.ContentLength = input.ContentLength
 
-	req = req.WithContext(context.WithValue(req.Context(), "polling-interval", time.Duration(input.PollingInterval)*time.Second))
-
 	resp, err := a.progressClient.Do(req)
 	if err != nil {
 		return UploadAvailableProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %w", err)
@@ -82,7 +78,7 @@ func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 }
 
 func (a Api) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
-	req, err := http.NewRequest("DELETE", availableProductsEndpoint, nil)
+	req, _ := http.NewRequest("DELETE", availableProductsEndpoint, nil)
 
 	if !input.ShouldDeleteAllProducts {
 		query := url.Values{}

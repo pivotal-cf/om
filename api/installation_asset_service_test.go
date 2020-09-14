@@ -118,7 +118,8 @@ var _ = Describe("InstallationAssetService", func() {
 					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 						Expect(req.ContentLength).To(Equal(int64(17)))
 
-						w.Write([]byte(`{}`))
+						_, err := w.Write([]byte(`{}`))
+						Expect(err).ToNot(HaveOccurred())
 					}),
 				),
 			)

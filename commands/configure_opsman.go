@@ -153,7 +153,7 @@ func (c ConfigureOpsman) interpolateConfig() (*opsmanConfig, error) {
 func (c ConfigureOpsman) validate(config *opsmanConfig) error {
 	invalidFields := []string{}
 	if len(config.Field) > 0 {
-		for key, _ := range config.Field {
+		for key := range config.Field {
 			if key == "opsman-configuration" {
 				continue
 			}

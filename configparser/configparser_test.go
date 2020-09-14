@@ -28,7 +28,7 @@ var _ = Describe("Config Parser", func() {
 				return "", err
 			}
 
-			if output != nil && len(output) > 0 {
+			if len(output) > 0 {
 				configurableProperties[name] = output
 			}
 		}

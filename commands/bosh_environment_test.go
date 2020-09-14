@@ -95,7 +95,8 @@ var _ = Describe("bosh-env", func() {
 			var err error
 
 			BeforeEach(func() {
-				os.Mkdir("./tmp", os.ModePerm)
+				err = os.Mkdir("./tmp", os.ModePerm)
+				Expect(err).ToNot(HaveOccurred())
 				f, err = ioutil.TempFile("./tmp", "opsmankey-*.pem")
 				Expect(err).ToNot(HaveOccurred())
 

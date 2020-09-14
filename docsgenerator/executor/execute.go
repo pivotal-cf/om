@@ -41,7 +41,6 @@ func (ex Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
 		}
 
 		if strings.Contains(commandLine, "Global Flags:") {
-			inTheCommandZone = false
 			break
 		}
 

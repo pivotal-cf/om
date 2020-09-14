@@ -243,13 +243,13 @@ func setEnvFileProperties(global *options) error {
 	if global.RequestTimeout == 1800 && opts.RequestTimeout != 0 {
 		global.RequestTimeout = opts.RequestTimeout
 	}
-	if global.SkipSSLValidation == false {
+	if !global.SkipSSLValidation {
 		global.SkipSSLValidation = opts.SkipSSLValidation
 	}
 	if global.Target == "" {
 		global.Target = opts.Target
 	}
-	if global.Trace == false {
+	if !global.Trace {
 		global.Trace = opts.Trace
 	}
 	if global.Username == "" {

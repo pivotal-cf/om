@@ -76,7 +76,6 @@ func getCommandNames() []string {
 		}
 
 		if strings.Contains(commandLine, "Global Flags:") {
-			inTheCommandZone = false
 			break
 		}
 

@@ -34,7 +34,8 @@ var _ = Describe("Interpolate", func() {
 		var err error
 		stdin, err = ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
-		ioutil.WriteFile(stdin.Name(), []byte(templateNoParametersOverStdin), os.ModeCharDevice|0755) // mimic a character device so it'll be picked up in the conditional
+		err = ioutil.WriteFile(stdin.Name(), []byte(templateNoParametersOverStdin), os.ModeCharDevice|0755) // mimic a character device so it'll be picked up in the conditional
+		Expect(err).ToNot(HaveOccurred())
 		logger = &fakes.Logger{}
 		command = commands.NewInterpolate(func() []string { return nil }, logger, stdin)
 	})

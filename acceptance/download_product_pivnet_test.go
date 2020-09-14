@@ -36,7 +36,7 @@ var _ = Describe("download-product command", func() {
 			var fakePivnetMetadataResponse []byte
 
 			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
-			defer fixtureMetadata.Close()
+			defer func() { _ = fixtureMetadata.Close()}()
 
 			Expect(err).ToNot(HaveOccurred())
 

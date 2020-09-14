@@ -238,9 +238,9 @@ var _ = Describe("download-product command", func() {
 					"product_path": "%s/[example-product,1.10.1]product.yml",
 					"product_version": "1.10.1"
 				}`, tmpDir)))
-				Expect(fileContents(tmpDir, "[example-product,1.10.1]product.yml")).To(MatchYAML(fmt.Sprintf(`{
+				Expect(fileContents(tmpDir, "[example-product,1.10.1]product.yml")).To(MatchYAML(`{
 					"nothing": "to see here"
-				}`)))
+				}`))
 			})
 		})
 
@@ -299,9 +299,9 @@ var _ = Describe("download-product command", func() {
 					"product_path": "%s/[example-product,1.10.2]product-456.yml",
 					"product_version": "1.10.2"
 				}`, tmpDir)))
-				Expect(fileContents(tmpDir, "[example-product,1.10.2]product-456.yml")).To(MatchYAML(fmt.Sprintf(`{
+				Expect(fileContents(tmpDir, "[example-product,1.10.2]product-456.yml")).To(MatchYAML(`{
 					"nothing": "to see here"
-				}`)))
+				}`))
 			})
 		})
 	})

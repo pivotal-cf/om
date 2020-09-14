@@ -76,7 +76,10 @@ func (v *VMType) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 
 	c := CreateVMType{}
-	c.UnmarshalJSON(b)
+	err := c.UnmarshalJSON(b)
+	if err != nil {
+		return err
+	}
 
 	v.CreateVMType = c
 
@@ -150,8 +153,8 @@ func (a Api) ListVMTypes() ([]VMType, error) {
 
 func (a Api) DeleteCustomVMTypes() error {
 	resp, err := a.sendAPIRequest("DELETE", "/api/v0/vm_types", nil)
-	if err = validateStatusOK(resp); err != nil {
-		return err
+	if validateError := validateStatusOK(resp); validateError != nil {
+		return validateError
 	}
 
 	return err

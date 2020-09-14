@@ -31,8 +31,10 @@ var _ = Describe("ProgressClient", func() {
 	Describe("Do", func() {
 		It("makes a request to upload the product to the Ops Manager", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				io.Copy(ioutil.Discard, req.Body)
-				req.Body.Close()
+				_, err := io.Copy(ioutil.Discard, req.Body)
+				Expect(err).ToNot(HaveOccurred())
+				err = req.Body.Close()
+				Expect(err).ToNot(HaveOccurred())
 				return &http.Response{
 					StatusCode: http.StatusOK,
 					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),

@@ -97,7 +97,7 @@ func (a Api) ListPendingDirectorChanges() (PendingDirectorChangesOutput, error) 
 }
 
 func (a Api) ListAllPendingProductChanges() ([]PendingProductChangesOutput, error) {
-	resp, err := a.sendAPIRequest("GET", fmt.Sprintf(stagedProductsEndpoint), nil)
+	resp, err := a.sendAPIRequest("GET", stagedProductsEndpoint, nil)
 	if err != nil {
 		return []PendingProductChangesOutput{}, fmt.Errorf("could not make api request to pre_deploy_check endpoint: %w", err)
 	}

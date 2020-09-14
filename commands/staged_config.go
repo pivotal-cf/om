@@ -105,7 +105,7 @@ func (ec StagedConfig) Execute(args []string) error {
 		if err != nil {
 			return err
 		}
-		if output != nil && len(output) > 0 {
+		if len(output) > 0 {
 			configurableProperties[name] = output
 		}
 	}

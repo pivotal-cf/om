@@ -248,7 +248,7 @@ func (c *DownloadProduct) validate() error {
 		return fmt.Errorf(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
 	}
 
-	if c.Options.StemcellHeavy == true && c.Options.StemcellIaas == "" {
+	if c.Options.StemcellHeavy && c.Options.StemcellIaas == "" {
 		return fmt.Errorf("--stemcell-heavy requires --stemcell-iaas to be defined")
 	}
 	if c.Options.StemcellVersion != "" && c.Options.StemcellIaas == "" {

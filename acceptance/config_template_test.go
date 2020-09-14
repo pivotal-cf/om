@@ -195,7 +195,7 @@ var _ = Describe("config-template command", func() {
 			var fakePivnetMetadataResponse []byte
 
 			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
-			defer fixtureMetadata.Close()
+			defer func() { _ = fixtureMetadata.Close()}()
 
 			Expect(err).ToNot(HaveOccurred())
 
@@ -329,7 +329,7 @@ var _ = Describe("config-template output", func() {
 			"--pivnet-product-slug", pivnetSlug,
 			"--product-version", version,
 			"--pivnet-api-token", pivnetToken,
-			"--file-glob", fmt.Sprintf("%s", glob),
+			"--file-glob", glob,
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

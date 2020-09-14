@@ -212,9 +212,8 @@ func (cp *ConfigureProduct) configureProperties(cfg configureProduct, productGUI
 
 	productProperties := cfg.ProductProperties
 	for name, value := range productProperties {
-		switch value.(type) {
+		switch v := value.(type) {
 		case map[interface{}]interface{}:
-			v := value.(map[interface{}]interface{})
 			// This is here:
 			// * the GET /properties returns the value as a field named `selected_option`.
 			// * the PUT /properties expects the filed to be named `option_value`.

@@ -106,7 +106,7 @@ func (sdc StagedDirectorConfig) Execute(args []string) error {
 	vmTypesConfig := VMTypesConfiguration{}
 
 	if len(vmTypes) > 0 {
-		outputVMTypes := make([]api.CreateVMType, len(vmTypes), len(vmTypes))
+		outputVMTypes := make([]api.CreateVMType, len(vmTypes))
 
 		for i := range vmTypes {
 			outputVMTypes[i] = vmTypes[i].CreateVMType
@@ -169,27 +169,23 @@ func (sdc StagedDirectorConfig) Execute(args []string) error {
 
 func (sdc StagedDirectorConfig) removePropertiesIAASConfig(config map[string]interface{}, multiIaasConfigs map[string][]map[string]interface{}, properties map[string]interface{}) {
 	config["iaas-configurations"] = multiIaasConfigs["iaas_configurations"]
-	if _, ok := properties["iaas_configuration"]; ok {
-		delete(properties, "iaas_configuration")
-	}
+	delete(properties, "iaas_configuration")
 }
 
 func (sdc StagedDirectorConfig) removeIAASConfigurationsGUID(config map[string]interface{}) {
 	for _, config := range config["iaas-configurations"].([]map[string]interface{}) {
-		if _, ok := config["guid"]; ok {
-			delete(config, "guid")
-		}
+		delete(config, "guid")
 	}
 }
 
 func (sdc StagedDirectorConfig) removePropertiesIAASConfigGUID(config map[string]interface{}) {
 	if propertiesConfig, ok := config["properties-configuration"].(map[string]interface{}); ok {
 		if iaasConfig, ok := propertiesConfig["iaas_configuration"]; ok {
-			switch iaasConfig.(type) {
+			switch v := iaasConfig.(type) {
 			case map[string]interface{}:
-				delete(iaasConfig.(map[string]interface{}), "guid")
+				delete(v, "guid")
 			case map[interface{}]interface{}:
-				delete(iaasConfig.(map[interface{}]interface{}), "guid")
+				delete(v, "guid")
 			}
 		}
 	}
@@ -210,13 +206,8 @@ func (sdc StagedDirectorConfig) getResourceConfigs(jobs map[string]string, direc
 }
 
 func (sdc StagedDirectorConfig) removeAllIAASConfiguration(config map[string]interface{}) {
-	if _, ok := config["properties-configuration"].(map[string]interface{})["iaas_configuration"]; ok {
-		delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
-	}
-
-	if _, ok := config["iaas-configurations"]; ok {
-		delete(config, "iaas-configurations")
-	}
+	delete(config["properties-configuration"].(map[string]interface{}), "iaas_configuration")
+	delete(config, "iaas-configurations")
 }
 
 func (sdc StagedDirectorConfig) filterSecrets(prefix string, keyName string, value interface{}) (interface{}, error) {

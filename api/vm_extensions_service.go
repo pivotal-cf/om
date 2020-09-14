@@ -64,8 +64,8 @@ func (a Api) ListStagedVMExtensions() ([]VMExtension, error) {
 
 func (a Api) DeleteVMExtension(name string) error {
 	resp, err := a.sendAPIRequest("DELETE", fmt.Sprintf("/api/v0/staged/vm_extensions/%s", name), nil)
-	if err = validateStatusOK(resp); err != nil {
-		return err
+	if validateError := validateStatusOK(resp); validateError != nil {
+		return validateError
 	}
 
 	return err

@@ -46,29 +46,28 @@ func (ac DeleteInstallation) Execute(args []string) error {
 	}
 
 	if !ac.Options.Force {
-		for {
-			scanner := bufio.NewScanner(ac.stdin)
-			ac.logger.Printf("Do you really want to delete the installation? [yes/no]: ")
+		scanner := bufio.NewScanner(ac.stdin)
+		ac.logger.Printf("Do you really want to delete the installation? [yes/no]: ")
 
+		scanner.Scan()
+		text := scanner.Text()
+
+		if text == "yes" {
+			ac.logger.Printf("Ok. Are you sure? [yes/no]: ")
 			scanner.Scan()
-			text := scanner.Text()
+			text = scanner.Text()
 
 			if text == "yes" {
-				ac.logger.Printf("Ok. Are you sure? [yes/no]: ")
-				scanner.Scan()
-				text = scanner.Text()
-
-				if text == "yes" {
-					ac.logger.Printf("Ok, deleting installation.")
-					break
-				}
+				ac.logger.Printf("Ok, deleting installation.")
+				goto Install
 			}
-
-			ac.logger.Printf("Ok, nothing was deleted.")
-			return nil
 		}
+
+		ac.logger.Printf("Ok, nothing was deleted.")
+		return nil
 	}
 
+Install:
 	//we aren't chechking this error for now
 	installation, _ := ac.service.RunningInstallation()
 

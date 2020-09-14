@@ -192,12 +192,13 @@ var _ = Describe("Executor", func() {
 func listFilesInDirectory(productPath string) []string {
 	files := []string{}
 
-	filepath.Walk(productPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(productPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			files = append(files, strings.Replace(path, productPath, "", 1))
 		}
 		return nil
 	})
+	Expect(err).NotTo(HaveOccurred())
 
 	sort.Strings(files)
 
