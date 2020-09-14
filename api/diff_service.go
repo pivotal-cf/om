@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 )
 
@@ -45,7 +44,7 @@ func (a Api) DirectorDiff() (DirectorDiff, error) {
 
 	err = validateStatusOK(resp)
 	if err != nil {
-		return DirectorDiff{}, errors.Wrap(err, "could not retrieve director diff")
+		return DirectorDiff{}, fmt.Errorf("could not retrieve director diff: %w", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -55,7 +54,7 @@ func (a Api) DirectorDiff() (DirectorDiff, error) {
 
 	var diff DirectorDiff
 	if err = json.Unmarshal(body, &diff); err != nil {
-		return DirectorDiff{}, errors.Wrap(err, fmt.Sprintf("could not unmarshal director diff response: %s", string(body)))
+		return DirectorDiff{}, fmt.Errorf("could not unmarshal director diff response: %w", err)
 	}
 
 	return diff, nil
@@ -73,24 +72,24 @@ func (a Api) ProductDiff(productName string) (ProductDiff, error) {
 
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/products/%s/diff", productGUID), nil)
 	if err != nil {
-		return ProductDiff{}, errors.Wrap(err, "could not request product diff")
+		return ProductDiff{}, fmt.Errorf("could not request product diff: %w", err)
 	}
 
 	err = validateStatusOK(resp)
 	if err != nil {
-		return ProductDiff{}, errors.Wrap(err, "could not retrieve product diff")
+		return ProductDiff{}, fmt.Errorf("could not retrieve product diff: %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return ProductDiff{}, errors.Wrap(err, "could not read response body for product diff")
+		return ProductDiff{}, fmt.Errorf("could not read response body for product diff: %w", err)
 	}
 
 	var diff ProductDiff
 	if err = json.Unmarshal(body, &diff); err != nil {
-		return ProductDiff{}, errors.Wrap(err, fmt.Sprintf("could not unmarshal product diff response: %s", string(body)))
+		return ProductDiff{}, fmt.Errorf("could not unmarshal product diff response: %w", err)
 	}
 
 	return diff, nil

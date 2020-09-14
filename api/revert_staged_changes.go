@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -14,7 +13,7 @@ func (a Api) RevertStagedChanges() (bool, error) {
 
 	response, err := a.client.Do(request)
 	if err != nil {
-		return false, errors.Wrap(err, "could not revert staged changes")
+		return false, fmt.Errorf("could not revert staged changes: %w", err)
 	}
 
 	if response.StatusCode == http.StatusNotModified {

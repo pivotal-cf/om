@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Info contains information about Ops Manager itself.
@@ -47,7 +45,7 @@ func (a Api) Info() (Info, error) {
 
 	resp, err := a.sendUnauthedAPIRequest("GET", "/api/v0/info", nil)
 	if err != nil {
-		return r.Info, errors.Wrap(err, "could not make request to info endpoint")
+		return r.Info, fmt.Errorf("could not make request to info endpoint %w", err)
 	}
 	defer resp.Body.Close()
 

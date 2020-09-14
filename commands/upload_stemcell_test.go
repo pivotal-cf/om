@@ -1,13 +1,12 @@
 package commands_test
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -160,7 +159,7 @@ var _ = Describe("UploadStemcell", func() {
 
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-				fakeService.UploadStemcellReturnsOnCall(0, api.StemcellUploadOutput{}, errors.Wrap(io.EOF, "some upload error"))
+				fakeService.UploadStemcellReturnsOnCall(0, api.StemcellUploadOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 				fakeService.UploadStemcellReturnsOnCall(1, api.StemcellUploadOutput{}, nil)
 
 				err := command.Execute([]string{
@@ -190,7 +189,7 @@ var _ = Describe("UploadStemcell", func() {
 
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-				fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, errors.Wrap(io.EOF, "some upload error"))
+				fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 
 				err := command.Execute([]string{
 					"--stemcell", "/path/to/stemcell.tgz",

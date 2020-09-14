@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-
-	"github.com/pkg/errors"
 )
 
 type ProductStemcells struct {
@@ -24,7 +22,7 @@ type ProductStemcell struct {
 func (a Api) ListStemcells() (ProductStemcells, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/stemcell_assignments", nil)
 	if err != nil {
-		return ProductStemcells{}, errors.Wrap(err, "could not make api request to list stemcells")
+		return ProductStemcells{}, fmt.Errorf("could not make api request to list stemcells: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -44,7 +42,7 @@ func (a Api) ListStemcells() (ProductStemcells, error) {
 func (a Api) AssignStemcell(input ProductStemcells) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
-		return errors.Wrap(err, "could not marshal json")
+		return fmt.Errorf("could not marshal json: %w", err)
 	}
 
 	resp, err := a.sendAPIRequest("PATCH", "/api/v0/stemcell_assignments", jsonData)

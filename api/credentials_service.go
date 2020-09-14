@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 type GetDeployedProductCredentialInput struct {
@@ -28,7 +26,7 @@ type Credential struct {
 func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInput) (GetDeployedProductCredentialOutput, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/deployed/products/%s/credentials/%s", input.DeployedGUID, input.CredentialReference), nil)
 	if err != nil {
-		return GetDeployedProductCredentialOutput{}, errors.Wrap(err, "could not make api request to credentials endpoint")
+		return GetDeployedProductCredentialOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -38,7 +36,7 @@ func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInpu
 
 	var credentialOutput GetDeployedProductCredentialOutput
 	if err := json.NewDecoder(resp.Body).Decode(&credentialOutput); err != nil {
-		return GetDeployedProductCredentialOutput{}, errors.Wrap(err, "could not unmarshal credentials response")
+		return GetDeployedProductCredentialOutput{}, fmt.Errorf("could not unmarshal credentials response: %w", err)
 	}
 
 	return credentialOutput, nil
@@ -47,7 +45,7 @@ func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInpu
 func (a Api) ListDeployedProductCredentials(deployedGUID string) (CredentialReferencesOutput, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/deployed/products/%s/credentials", deployedGUID), nil)
 	if err != nil {
-		return CredentialReferencesOutput{}, errors.Wrap(err, "could not make api request to credentials endpoint")
+		return CredentialReferencesOutput{}, fmt.Errorf("could not make api request to credentials endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -57,7 +55,7 @@ func (a Api) ListDeployedProductCredentials(deployedGUID string) (CredentialRefe
 
 	var credentialReferences CredentialReferencesOutput
 	if err := json.NewDecoder(resp.Body).Decode(&credentialReferences); err != nil {
-		return CredentialReferencesOutput{}, errors.Wrap(err, "could not unmarshal credentials response")
+		return CredentialReferencesOutput{}, fmt.Errorf("could not unmarshal credentials response: %w", err)
 	}
 
 	return credentialReferences, nil

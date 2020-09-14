@@ -134,7 +134,7 @@ var _ = Describe("Diff Service", func() {
 
 				_, err := service.DirectorDiff()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not unmarshal director diff response: %s", "ß"))
+				Expect(err.Error()).To(ContainSubstring("could not unmarshal director diff response"))
 			})
 		})
 	})
@@ -278,7 +278,7 @@ var _ = Describe("Diff Service", func() {
 
 				_, err := service.ProductDiff("some-product")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("could not unmarshal product diff response: %s", "actuallynotokayblaglegarg"))
+				Expect(err.Error()).To(ContainSubstring("could not unmarshal product diff response"))
 			})
 		})
 	})

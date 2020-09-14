@@ -3,12 +3,11 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 const availableProductsEndpoint = "/api/v0/available_products"
@@ -50,7 +49,7 @@ func (a Api) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAv
 
 	resp, err := a.progressClient.Do(req)
 	if err != nil {
-		return UploadAvailableProductOutput{}, errors.Wrap(err, "could not make api request to available_products endpoint")
+		return UploadAvailableProductOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -65,7 +64,7 @@ func (a Api) UploadAvailableProduct(input UploadAvailableProductInput) (UploadAv
 func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 	resp, err := a.sendAPIRequest("GET", availableProductsEndpoint, nil)
 	if err != nil {
-		return AvailableProductsOutput{}, errors.Wrap(err, "could not make api request to available_products endpoint")
+		return AvailableProductsOutput{}, fmt.Errorf("could not make api request to available_products endpoint: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -76,7 +75,7 @@ func (a Api) ListAvailableProducts() (AvailableProductsOutput, error) {
 
 	var availableProducts []ProductInfo
 	if err := json.NewDecoder(resp.Body).Decode(&availableProducts); err != nil {
-		return AvailableProductsOutput{}, errors.Wrap(err, "could not unmarshal available_products response")
+		return AvailableProductsOutput{}, fmt.Errorf("could not unmarshal available_products response: %w", err)
 	}
 
 	return AvailableProductsOutput{ProductsList: availableProducts}, nil
@@ -95,7 +94,7 @@ func (a Api) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
 
 	resp, err := a.client.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "could not make api request to available_products endpoint")
+		return fmt.Errorf("could not make api request to available_products endpoint: %w", err)
 	}
 
 	defer resp.Body.Close()

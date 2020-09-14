@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 )
 
@@ -22,7 +21,7 @@ type verifiersResponse struct {
 func (a Api) ListDirectorVerifiers() ([]Verifier, error) {
 	resp, err := a.sendAPIRequest("GET", listDirectorVerifiersEndpoint, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not make api request to list_director_verifiers endpoint")
+		return nil, fmt.Errorf("could not make api request to list_director_verifiers endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -37,7 +36,7 @@ func (a Api) ListDirectorVerifiers() ([]Verifier, error) {
 
 	var verifierResponse verifiersResponse
 	if err := json.Unmarshal(verifiersBytes, &verifierResponse); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal list_director_verifiers response")
+		return nil, fmt.Errorf("could not unmarshal list_director_verifiers response: %w", err)
 	}
 
 	return verifierResponse.Verifiers, nil
@@ -47,7 +46,7 @@ func (a Api) DisableDirectorVerifiers(verifiers []string) error {
 	for _, verifier := range verifiers {
 		resp, err := a.sendAPIRequest("PUT", fmt.Sprintf(disableDirectorVerifiersEndpointTemplate, verifier), []byte(`{ "enabled": false }`))
 		if err != nil {
-			return errors.Wrap(err, "could not make api request to disable_director_verifiers endpoint")
+			return fmt.Errorf("could not make api request to disable_director_verifiers endpoint: %w", err)
 		}
 		resp.Body.Close()
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"errors"
 
 	yamlConverter "github.com/ghodss/yaml"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -59,7 +59,7 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput, 
 	azs := AvailabilityZones{}
 	err := yaml.Unmarshal(input.AvailabilityZones, &azs.AvailabilityZones)
 	if err != nil {
-		return errors.Wrap(err, "provided AZ config is not well-formed JSON")
+		return fmt.Errorf("provided AZ config is not well-formed JSON: %w", err)
 	}
 
 	for i, az := range azs.AvailabilityZones {
@@ -100,12 +100,12 @@ func (a Api) UpdateStagedDirectorAvailabilityZones(input AvailabilityZoneInput, 
 			"availability_zone": az,
 		})
 		if err != nil {
-			return errors.Wrap(err, "problem marshalling request") // un-tested
+			return fmt.Errorf("problem marshalling request") // un-test: %w", erred
 		}
 
 		jsonData, err := yamlConverter.YAMLToJSON(decoratedConfig)
 		if err != nil {
-			return errors.Wrap(err, "problem converting request to JSON") // un-tested
+			return fmt.Errorf("problem converting request to JSON") // un-test: %w", erred
 		}
 
 		if az.GUID != "" {
@@ -139,7 +139,7 @@ func (a Api) UpdateStagedDirectorNetworks(input NetworkInput) error {
 	networks := Networks{}
 	err := yaml.Unmarshal(input.Networks, &networks)
 	if err != nil {
-		return errors.Wrap(err, "provided networks config is not well-formed JSON")
+		return fmt.Errorf("provided networks config is not well-formed JSON: %w", err)
 	}
 
 	for i, network := range networks.Networks {
@@ -155,12 +155,12 @@ func (a Api) UpdateStagedDirectorNetworks(input NetworkInput) error {
 
 	decoratedConfig, err := yaml.Marshal(networks)
 	if err != nil {
-		return errors.Wrap(err, "problem marshalling request") // un-tested
+		return fmt.Errorf("problem marshalling request") // un-test: %w", erred
 	}
 
 	jsonData, err := yamlConverter.YAMLToJSON(decoratedConfig)
 	if err != nil {
-		return errors.Wrap(err, "problem converting request to JSON") // un-tested
+		return fmt.Errorf("problem converting request to JSON") // un-test: %w", erred
 	}
 
 	resp, err := a.sendAPIRequest("PUT", "/api/v0/staged/director/networks", jsonData)
@@ -190,7 +190,7 @@ func (a Api) UpdateStagedDirectorNetworkAndAZ(input NetworkAndAZConfiguration) e
 	case http.StatusNotFound:
 		jsonData, err := json.Marshal(&input)
 		if err != nil {
-			return errors.Wrap(err, "could not marshal json")
+			return fmt.Errorf("could not marshal json: %w", err)
 		}
 
 		netResp, err := a.sendAPIRequest("PUT", "/api/v0/staged/director/network_and_az", jsonData)
@@ -241,13 +241,13 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 
 	existingNetworksJSON, err := ioutil.ReadAll(existingNetworksResponse.Body)
 	if err != nil {
-		return Networks{}, errors.Wrap(err, "unable to read existing network configuration") // un-tested
+		return Networks{}, fmt.Errorf("unable to read existing network configuration") // un-test: %w", erred
 	}
 
 	var existingNetworks Networks
 	err = yaml.Unmarshal(existingNetworksJSON, &existingNetworks)
 	if err != nil {
-		return Networks{}, errors.Wrap(err, "problem retrieving existing networks: response is not well-formed")
+		return Networks{}, fmt.Errorf("problem retrieving existing networks: response is not well-formed: %w", err)
 	}
 
 	for _, network := range networks.Networks {
@@ -323,12 +323,12 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 			"iaas_configuration": config,
 		})
 		if err != nil {
-			return errors.Wrap(err, "problem marshalling request") // un-tested
+			return fmt.Errorf("problem marshalling request") // un-test: %w", erred
 		}
 
 		jsonData, err := yamlConverter.YAMLToJSON(decoratedConfig)
 		if err != nil {
-			return errors.Wrap(err, "problem converting request to JSON") // un-tested
+			return fmt.Errorf("problem converting request to JSON") // un-test: %w", erred
 		}
 
 		if config.GUID == "" {
@@ -431,12 +431,12 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 
 	contents, err := yaml.Marshal(iaasConfig)
 	if err != nil {
-		return errors.Wrap(err, "problem marshalling request") // un-tested
+		return fmt.Errorf("problem marshalling request") // un-test: %w", erred
 	}
 
 	jsonData, err := yamlConverter.YAMLToJSON(contents)
 	if err != nil {
-		return errors.Wrap(err, "problem converting request to JSON") // un-tested
+		return fmt.Errorf("problem converting request to JSON") // un-test: %w", erred
 	}
 
 	err = a.UpdateStagedDirectorProperties(jsonData)
@@ -466,13 +466,13 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 
 	existingAzsJSON, err := ioutil.ReadAll(existingAzsResponse.Body)
 	if err != nil {
-		return AvailabilityZones{}, errors.Wrap(err, "unable to read existing AZ configuration") // un-tested
+		return AvailabilityZones{}, fmt.Errorf("unable to read existing AZ configuration: %w", err)
 	}
 
 	var existingAZs AvailabilityZones
 	err = yaml.Unmarshal(existingAzsJSON, &existingAZs)
 	if err != nil {
-		return AvailabilityZones{}, errors.Wrap(err, "problem retrieving existing AZs: response is not well-formed")
+		return AvailabilityZones{}, fmt.Errorf("problem retrieving existing AZs: response is not well-formed: %w", err)
 	}
 
 	for _, az := range azs.AvailabilityZones {

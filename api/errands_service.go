@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -64,7 +63,7 @@ func (a Api) UpdateStagedProductErrands(productID string, errandName string, pos
 	path := fmt.Sprintf("/api/v0/staged/products/%s/errands", productID)
 	resp, err := a.sendAPIRequest("PUT", path, payload)
 	if err != nil {
-		return errors.Wrap(err, "failed to set errand state")
+		return fmt.Errorf("failed to set errand state: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -80,7 +79,7 @@ func (a Api) ListStagedProductErrands(productID string) (ErrandsListOutput, erro
 
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/errands", productID), nil)
 	if err != nil {
-		return errandsListOutput, errors.Wrap(err, "failed to list errands")
+		return errandsListOutput, fmt.Errorf("failed to list errands: %w", err)
 	}
 	defer resp.Body.Close()
 

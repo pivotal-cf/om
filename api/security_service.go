@@ -2,8 +2,7 @@ package api
 
 import (
 	"encoding/json"
-
-	"github.com/pkg/errors"
+	"fmt"
 )
 
 type certResponse struct {
@@ -13,7 +12,7 @@ type certResponse struct {
 func (a Api) GetSecurityRootCACertificate() (string, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/security/root_ca_certificate", nil)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to submit request")
+		return "", fmt.Errorf("failed to submit request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -23,7 +22,7 @@ func (a Api) GetSecurityRootCACertificate() (string, error) {
 
 	var certResponse certResponse
 	if err := json.NewDecoder(resp.Body).Decode(&certResponse); err != nil {
-		return "", errors.Wrap(err, "failed to unmarshal response")
+		return "", fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	return certResponse.Cert, nil

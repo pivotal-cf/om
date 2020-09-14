@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"errors"
 	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"io"
@@ -15,7 +16,6 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/formcontent"
-	"github.com/pkg/errors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -238,7 +238,7 @@ var _ = Describe("UploadProduct", func() {
 
 				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
-				fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
+				fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 				fakeService.UploadAvailableProductReturnsOnCall(1, api.UploadAvailableProductOutput{}, nil)
 				metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
 					Name:    "cf",
@@ -263,7 +263,7 @@ var _ = Describe("UploadProduct", func() {
 		It("tries again", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
-			fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
+			fakeService.UploadAvailableProductReturnsOnCall(0, api.UploadAvailableProductOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 			fakeService.UploadAvailableProductReturnsOnCall(1, api.UploadAvailableProductOutput{}, nil)
 
 			err := command.Execute([]string{"--product", "/some/path"})
@@ -282,7 +282,7 @@ var _ = Describe("UploadProduct", func() {
 			command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
 
 			fakeService.CheckProductAvailabilityReturns(false, nil)
-			fakeService.UploadAvailableProductReturns(api.UploadAvailableProductOutput{}, errors.Wrap(io.EOF, "some upload error"))
+			fakeService.UploadAvailableProductReturns(api.UploadAvailableProductOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 
 			err := command.Execute([]string{"--product", "/some/path"})
 

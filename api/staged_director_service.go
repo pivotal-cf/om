@@ -1,9 +1,9 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -59,7 +59,7 @@ func (a Api) GetStagedDirectorProperties(redact bool) (map[string]interface{}, e
 
 	var properties map[string]interface{}
 	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
-		return nil, errors.Wrap(err, "could not parse json")
+		return nil, fmt.Errorf("could not parse json: %w", err)
 	}
 
 	return properties, nil
@@ -90,7 +90,7 @@ func (a Api) GetStagedDirectorIaasConfigurations(redact bool) (map[string][]map[
 
 	var properties map[string][]map[string]interface{}
 	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
-		return nil, errors.Wrap(err, "could not parse json")
+		return nil, fmt.Errorf("could not parse json: %w", err)
 	}
 
 	return properties, nil
@@ -114,7 +114,7 @@ func (a Api) GetStagedDirectorAvailabilityZones() (AvailabilityZonesOutput, erro
 	}
 
 	if err = yaml.NewDecoder(azResp.Body).Decode(&properties); err != nil {
-		return AvailabilityZonesOutput{}, errors.Wrap(err, "could not parse json")
+		return AvailabilityZonesOutput{}, fmt.Errorf("could not parse json: %w", err)
 	}
 
 	iaasResp, err := a.sendAPIRequest("GET", "/api/v0/staged/director/iaas_configurations", nil)
@@ -135,7 +135,7 @@ func (a Api) GetStagedDirectorAvailabilityZones() (AvailabilityZonesOutput, erro
 	}
 
 	if err = yaml.NewDecoder(iaasResp.Body).Decode(&iaasConfigs); err != nil {
-		return AvailabilityZonesOutput{}, errors.Wrap(err, "could not parse json")
+		return AvailabilityZonesOutput{}, fmt.Errorf("could not parse json: %w", err)
 	}
 
 	for _, iaas := range iaasConfigs.Configs {
@@ -166,7 +166,7 @@ func (a Api) GetStagedDirectorNetworks() (NetworksConfigurationOutput, error) {
 	}
 
 	if err = yaml.NewDecoder(resp.Body).Decode(&properties); err != nil {
-		return properties, errors.Wrap(err, "could not parse json")
+		return properties, fmt.Errorf("could not parse json: %w", err)
 	}
 
 	return properties, nil

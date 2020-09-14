@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"github.com/pkg/errors"
 )
 
 type CreateVMTypes struct {
@@ -111,7 +109,7 @@ func (c CreateVMType) MarshalJSON() ([]byte, error) {
 func (a Api) CreateCustomVMTypes(input CreateVMTypes) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
-		return errors.Wrap(err, "could not marshal json")
+		return fmt.Errorf("could not marshal json: %w", err)
 	}
 
 	resp, err := a.sendAPIRequest("PUT", "/api/v0/vm_types", jsonData)
@@ -144,7 +142,7 @@ func (a Api) ListVMTypes() ([]VMType, error) {
 	}
 	var vmTypes VMTypesResponse
 	if err = json.Unmarshal(body, &vmTypes); err != nil {
-		return nil, errors.Wrap(err, "could not parse json")
+		return nil, fmt.Errorf("could not parse json: %w", err)
 	}
 
 	return vmTypes.VMTypes, nil

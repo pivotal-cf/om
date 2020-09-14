@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 const expiringCertificatesEndpoint = "/api/v0/deployed/certificates?expires_within=%s"
@@ -29,7 +27,7 @@ type ExpiringCertificate struct {
 func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertificate, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf(expiringCertificatesEndpoint, expiresWithin), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not make api request to certificates endpoint")
+		return nil, fmt.Errorf("could not make api request to certificates endpoint: %w", err)
 	}
 
 	if err = validateStatusOK(resp); err != nil {

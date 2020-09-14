@@ -2,11 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"github.com/pkg/errors"
 )
 
 type DiagnosticProduct struct {
@@ -39,7 +38,7 @@ func (du DiagnosticReportUnavailable) Error() string {
 func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/diagnostic_report", nil)
 	if err != nil {
-		return DiagnosticReport{}, errors.Wrap(err, "could not make api request to diagnostic_report endpoint")
+		return DiagnosticReport{}, fmt.Errorf("could not make api request to diagnostic_report endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -65,7 +64,7 @@ func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 	}
 
 	if err := json.Unmarshal(reportBytes, &apiResponse); err != nil {
-		return DiagnosticReport{}, errors.Wrap(err, "invalid json received from server")
+		return DiagnosticReport{}, fmt.Errorf("invalid json received from server: %w", err)
 	}
 
 	return DiagnosticReport{

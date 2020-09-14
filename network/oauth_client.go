@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
@@ -166,7 +166,10 @@ retry:
 
 func CanRetry(err error) bool {
 	if err != nil {
-		err = errors.Cause(err)
+		for errors.Unwrap(err) != nil {
+			err = errors.Unwrap(err)
+		}
+
 		if IsTemporary(err) {
 			return true
 		}

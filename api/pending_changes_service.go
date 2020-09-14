@@ -2,10 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
-
-	"github.com/pkg/errors"
 )
 
 const pendingChangesEndpoint = "/api/v0/staged/pending_changes"
@@ -31,7 +30,7 @@ type ProductChange struct {
 func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
 	resp, err := a.sendAPIRequest("GET", pendingChangesEndpoint, nil)
 	if err != nil {
-		return PendingChangesOutput{}, errors.Wrap(err, "failed to submit request")
+		return PendingChangesOutput{}, fmt.Errorf("failed to submit request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -46,14 +45,14 @@ func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
 
 	var pendingChanges PendingChangesOutput
 	if err := json.Unmarshal(reportBytes, &pendingChanges); err != nil {
-		return PendingChangesOutput{}, errors.Wrap(err, "could not unmarshal pending_changes response")
+		return PendingChangesOutput{}, fmt.Errorf("could not unmarshal pending_changes response: %w", err)
 	}
 
 	var pendingChangesFull *struct {
 		PendingChanges json.RawMessage `json:"product_changes"`
 	}
 	if err := json.Unmarshal(reportBytes, &pendingChangesFull); err != nil {
-		return PendingChangesOutput{}, errors.Wrap(err, "could not unmarshal pending_changes response")
+		return PendingChangesOutput{}, fmt.Errorf("could not unmarshal pending_changes response: %w", err)
 	}
 
 	pendingChanges.FullReport = string(pendingChangesFull.PendingChanges)

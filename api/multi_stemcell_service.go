@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 type ProductMultiStemcells struct {
@@ -28,7 +26,7 @@ type ProductMultiStemcell struct {
 func (a Api) ListMultiStemcells() (ProductMultiStemcells, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/stemcell_associations", nil)
 	if err != nil {
-		return ProductMultiStemcells{}, errors.Wrap(err, "could not make api request to list stemcells")
+		return ProductMultiStemcells{}, fmt.Errorf("could not make api request to list stemcells: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -48,7 +46,7 @@ func (a Api) ListMultiStemcells() (ProductMultiStemcells, error) {
 func (a Api) AssignMultiStemcell(input ProductMultiStemcells) error {
 	jsonData, err := json.Marshal(&input)
 	if err != nil {
-		return errors.Wrap(err, "could not marshal json")
+		return fmt.Errorf("could not marshal json: %w", err)
 	}
 
 	resp, err := a.sendAPIRequest("PATCH", "/api/v0/stemcell_associations", jsonData)

@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 )
 
@@ -18,7 +17,7 @@ func (a Api) ListProductVerifiers(productName string) ([]Verifier, string, error
 
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf(listProductVerifiersEndpointTemplate, stagedProduct.Product.GUID), nil)
 	if err != nil {
-		return nil, "", errors.Wrap(err, "could not make api request to list_product_verifiers endpoint")
+		return nil, "", fmt.Errorf("could not make api request to list_product_verifiers endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -33,7 +32,7 @@ func (a Api) ListProductVerifiers(productName string) ([]Verifier, string, error
 
 	var verifierResponse verifiersResponse
 	if err := json.Unmarshal(verifiersBytes, &verifierResponse); err != nil {
-		return nil, "", errors.Wrap(err, "could not unmarshal list_product_verifiers response")
+		return nil, "", fmt.Errorf("could not unmarshal list_product_verifiers response: %w", err)
 	}
 
 	return verifierResponse.Verifiers, stagedProduct.Product.GUID, nil
@@ -43,7 +42,7 @@ func (a Api) DisableProductVerifiers(verifiers []string, productGUID string) err
 	for _, verifier := range verifiers {
 		resp, err := a.sendAPIRequest("PUT", fmt.Sprintf(disableProductVerifiersEndpointTemplate, productGUID, verifier), []byte(`{ "enabled": false }`))
 		if err != nil {
-			return errors.Wrap(err, "could not make api request to disable_product_verifiers endpoint")
+			return fmt.Errorf("could not make api request to disable_product_verifiers endpoint: %w", err)
 		}
 		resp.Body.Close()
 

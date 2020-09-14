@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -57,7 +55,7 @@ func (a Api) fetchProductGUID() (map[string]string, error) {
 func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/installations", nil)
 	if err != nil {
-		return []InstallationsServiceOutput{}, errors.Wrap(err, "could not make api request to installations endpoint")
+		return []InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -70,7 +68,7 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&responseStruct)
 	if err != nil {
-		return []InstallationsServiceOutput{}, errors.Wrap(err, "failed to decode response")
+		return []InstallationsServiceOutput{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return responseStruct.Installations, nil
@@ -79,7 +77,7 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
 	productGuidMapping, err := a.fetchProductGUID()
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "failed to list staged and/or deployed products")
+		return InstallationsServiceOutput{}, fmt.Errorf("failed to list staged and/or deployed products: %w", err)
 	}
 
 	var deployProductsVal interface{} = "all"
@@ -126,7 +124,7 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 
 	resp, err := a.sendAPIRequest("POST", "/api/v0/installations", data)
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "could not make api request to installations endpoint")
+		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -145,7 +143,7 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 	}
 	err = json.NewDecoder(resp.Body).Decode(&installation)
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "failed to decode response")
+		return InstallationsServiceOutput{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return InstallationsServiceOutput{ID: installation.Install.ID}, nil
@@ -154,7 +152,7 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/installations/%d", id), nil)
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "could not make api request to installations status endpoint")
+		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations status endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -167,7 +165,7 @@ func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "failed to decode response")
+		return InstallationsServiceOutput{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return InstallationsServiceOutput{Status: output.Status}, nil
@@ -176,7 +174,7 @@ func (a Api) GetInstallation(id int) (InstallationsServiceOutput, error) {
 func (a Api) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/installations/%d/logs", id), nil)
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "could not make api request to installations logs endpoint")
+		return InstallationsServiceOutput{}, fmt.Errorf("could not make api request to installations logs endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -189,7 +187,7 @@ func (a Api) GetInstallationLogs(id int) (InstallationsServiceOutput, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err != nil {
-		return InstallationsServiceOutput{}, errors.Wrap(err, "failed to decode response")
+		return InstallationsServiceOutput{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return InstallationsServiceOutput{Logs: output.Logs}, nil

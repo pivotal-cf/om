@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -22,14 +21,14 @@ func (a Api) sendUnauthedAPIRequest(method, endpoint string, jsonData []byte) (*
 func sendRequest(client httpClient, method, endpoint string, jsonData []byte) (*http.Response, error) {
 	req, err := http.NewRequest(method, endpoint, bytes.NewReader(jsonData))
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("could not create api request %s %s", method, endpoint))
+		return nil, fmt.Errorf("could not create api request %s %s: %w", method, endpoint, err)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("could not send api request to %s %s", method, endpoint))
+		return nil, fmt.Errorf("could not send api request to %s %s: %w", method, endpoint, err)
 	}
 
 	return resp, nil

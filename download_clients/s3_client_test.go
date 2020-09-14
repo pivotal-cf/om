@@ -2,6 +2,7 @@ package download_clients_test
 
 import (
 	"archive/zip"
+	"errors"
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -11,7 +12,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"text/template"

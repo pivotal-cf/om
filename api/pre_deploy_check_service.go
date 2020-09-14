@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -76,7 +75,7 @@ type PendingProductChangesOutput struct {
 func (a Api) ListPendingDirectorChanges() (PendingDirectorChangesOutput, error) {
 	resp, err := a.sendAPIRequest("GET", preDeployDirectorEndpoint, nil)
 	if err != nil {
-		return PendingDirectorChangesOutput{}, errors.Wrap(err, "could not make api request to pre_deploy_check endpoint")
+		return PendingDirectorChangesOutput{}, fmt.Errorf("could not make api request to pre_deploy_check endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -91,7 +90,7 @@ func (a Api) ListPendingDirectorChanges() (PendingDirectorChangesOutput, error) 
 
 	var pendingDirectorChanges PendingDirectorChangesOutput
 	if err := json.Unmarshal(reportBytes, &pendingDirectorChanges); err != nil {
-		return PendingDirectorChangesOutput{}, errors.Wrap(err, "could not unmarshal pre_deploy_check response")
+		return PendingDirectorChangesOutput{}, fmt.Errorf("could not unmarshal pre_deploy_check response: %w", err)
 	}
 
 	return pendingDirectorChanges, nil
@@ -100,7 +99,7 @@ func (a Api) ListPendingDirectorChanges() (PendingDirectorChangesOutput, error) 
 func (a Api) ListAllPendingProductChanges() ([]PendingProductChangesOutput, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf(stagedProductsEndpoint), nil)
 	if err != nil {
-		return []PendingProductChangesOutput{}, errors.Wrap(err, "could not make api request to pre_deploy_check endpoint")
+		return []PendingProductChangesOutput{}, fmt.Errorf("could not make api request to pre_deploy_check endpoint: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -112,7 +111,7 @@ func (a Api) ListAllPendingProductChanges() ([]PendingProductChangesOutput, erro
 		GUID string `json:"guid"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&stagedProducts); err != nil {
-		return []PendingProductChangesOutput{}, errors.Wrap(err, "could not unmarshal pre_deploy_check response")
+		return []PendingProductChangesOutput{}, fmt.Errorf("could not unmarshal pre_deploy_check response: %w", err)
 	}
 
 	var allPendingProductChanges []PendingProductChangesOutput
@@ -121,7 +120,7 @@ func (a Api) ListAllPendingProductChanges() ([]PendingProductChangesOutput, erro
 		resp, err = a.sendAPIRequest("GET", fmt.Sprintf(preDeployProductEndpointTemplate, sp.GUID), nil)
 
 		if err != nil {
-			return []PendingProductChangesOutput{}, errors.Wrap(err, "could not make api request to pre_deploy_check endpoint")
+			return []PendingProductChangesOutput{}, fmt.Errorf("could not make api request to pre_deploy_check endpoint: %w", err)
 		}
 
 		if err = validateStatusOK(resp); err != nil {
@@ -130,7 +129,7 @@ func (a Api) ListAllPendingProductChanges() ([]PendingProductChangesOutput, erro
 
 		var pendingProductChanges PendingProductChangesOutput
 		if err := json.NewDecoder(resp.Body).Decode(&pendingProductChanges); err != nil {
-			return []PendingProductChangesOutput{}, errors.Wrap(err, "could not unmarshal pre_deploy_check response")
+			return []PendingProductChangesOutput{}, fmt.Errorf("could not unmarshal pre_deploy_check response: %w", err)
 		}
 		allPendingProductChanges = append(allPendingProductChanges, pendingProductChanges)
 		_ = resp.Body.Close()
