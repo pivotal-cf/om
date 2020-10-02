@@ -24,6 +24,7 @@ type UploadProduct struct {
 		PollingInterval int    `long:"polling-interval" short:"pi"  description:"interval (in seconds) at which to print status" default:"1"`
 		Shasum          string `long:"shasum"                       description:"shasum of the provided product file to be used for validation"`
 		Version         string `long:"product-version"              description:"version of the provided product file to be used for validation"`
+		Force           bool   `long:"force" description:"force upload a product"`
 	}
 	metadataExtractor metadataExtractor
 }
@@ -90,14 +91,16 @@ func (up UploadProduct) Execute(args []string) error {
 	}
 
 	var prodAvailable bool
-	prodAvailable, err = up.service.CheckProductAvailability(metadata.Name, metadata.Version)
-	if err != nil {
-		return fmt.Errorf("failed to check product availability: %s", err)
-	}
+	if !up.Options.Force {
+		prodAvailable, err = up.service.CheckProductAvailability(metadata.Name, metadata.Version)
+		if err != nil {
+			return fmt.Errorf("failed to check product availability: %s", err)
+		}
 
-	if prodAvailable {
-		up.logger.Printf("product %s %s is already uploaded, nothing to be done", metadata.Name, metadata.Version)
-		return nil
+		if prodAvailable {
+			up.logger.Printf("product %s %s is already uploaded, nothing to be done", metadata.Name, metadata.Version)
+			return nil
+		}
 	}
 
 	for i := 0; i <= maxProductUploadRetries; i++ {
