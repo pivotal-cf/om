@@ -52,6 +52,8 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Features
 - When using `stage-product`, the `--product-version` can use the placeholder `latest`.
   This finds the highest semvered available product (of `--product-name`) version to stage.
+- When using `stage-product` the config file provided can be _any_ config file,
+  just as long as it has `product-version` and `product-name`.
 
 ### Bug Fixes
 - tl;dr: Collections are hard.

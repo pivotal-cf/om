@@ -119,7 +119,9 @@ var _ = Describe("StageProduct", func() {
 		It("stages a product", func() {
 			config := `---
 product-name: some-product
-product-version: some-version`
+product-version: some-version
+unnecessary-field: ((some-value))
+`
 
 			configFile, err := ioutil.TempFile("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())

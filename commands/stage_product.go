@@ -2,10 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type StageProduct struct {
@@ -14,8 +14,8 @@ type StageProduct struct {
 	Options struct {
 		interpolateConfigFileOptions
 
-		Product string `long:"product-name"    short:"p" required:"true" description:"name of product"`
-		Version string `long:"product-version"           required:"true" description:"version of product"`
+		Product string `yaml:"product-name" long:"product-name"    short:"p" required:"true" description:"name of product"`
+		Version string `yaml:"product-version" long:"product-version"           required:"true" description:"version of product"`
 	}
 }
 
@@ -37,9 +37,9 @@ func NewStageProduct(service stageProductService, logger logger) StageProduct {
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	err := loadConfigFile(args, &sp.Options, os.Environ)
+	err := sp.loadConfig(args)
 	if err != nil {
-		return fmt.Errorf("could not parse stage-product flags: %s", err)
+		return err
 	}
 
 	productName := sp.Options.Product
@@ -113,4 +113,32 @@ func (sp StageProduct) Usage() jhanda.Usage {
 		ShortDescription: "stages a given product in the Ops Manager targeted",
 		Flags:            sp.Options,
 	}
+}
+
+func (sp *StageProduct) loadConfig(args []string) error {
+	_, err := jhanda.Parse(&sp.Options, args)
+
+	if sp.Options.ConfigFile == "" && err != nil {
+		return fmt.Errorf("could not parse stage-product flags: %s", err)
+	}
+
+	if sp.Options.ConfigFile != "" {
+		contents, err := ioutil.ReadFile(sp.Options.ConfigFile)
+		if err != nil {
+			return err
+		}
+
+		err = yaml.Unmarshal(contents, &sp.Options)
+		if err != nil {
+			return err
+		}
+	}
+
+	productName := sp.Options.Product
+	productVersion := sp.Options.Version
+	if productName == "" || productVersion == "" {
+		return fmt.Errorf("--product-name (%s) and --product-version (%s) are required", productName, productVersion)
+	}
+
+	return nil
 }
