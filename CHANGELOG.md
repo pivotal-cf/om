@@ -47,11 +47,6 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 6.4.0
-
-### Feature
-- `upload-product` now includes `--force`, when a product needs to be uploaded to the OpsManager.
-
 ## 6.3.0
 
 ### Feature

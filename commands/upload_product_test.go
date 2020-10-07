@@ -110,30 +110,6 @@ var _ = Describe("UploadProduct", func() {
 			format, v := logger.PrintfArgsForCall(0)
 			Expect(fmt.Sprintf(format, v...)).To(Equal("product cf 1.5.0 is already uploaded, nothing to be done"))
 		})
-
-		When("--force is specified", func() {
-			It("uploads the product", func() {
-				command := commands.NewUploadProduct(multipart, metadataExtractor, fakeService, logger)
-				metadataExtractor.ExtractFromFileReturns(&extractor.Metadata{
-					Name:    "cf",
-					Version: "1.5.0",
-				}, nil)
-				fakeService.CheckProductAvailabilityStub = func(name, version string) (bool, error) {
-					if name == "cf" && version == "1.5.0" {
-						return true, nil
-					}
-					return false, errors.New("unknown")
-				}
-
-				err := command.Execute([]string{
-					"--product", "/path/to/some-product.tgz",
-					"--force",
-				})
-				Expect(err).ToNot(HaveOccurred())
-				Expect(metadataExtractor.ExtractFromFileCallCount()).To(Equal(1))
-				Expect(fakeService.UploadAvailableProductCallCount()).To(Equal(1))
-			})
-		})
 	})
 
 	When("the --shasum flag is defined", func() {
