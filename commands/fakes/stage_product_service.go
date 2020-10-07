@@ -34,6 +34,19 @@ type StageProductService struct {
 		result1 api.DiagnosticReport
 		result2 error
 	}
+	GetLatestAvailableVersionStub        func(string) (string, error)
+	getLatestAvailableVersionMutex       sync.RWMutex
+	getLatestAvailableVersionArgsForCall []struct {
+		arg1 string
+	}
+	getLatestAvailableVersionReturns struct {
+		result1 string
+		result2 error
+	}
+	getLatestAvailableVersionReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
 	listDeployedProductsMutex       sync.RWMutex
 	listDeployedProductsArgsForCall []struct {
@@ -189,6 +202,69 @@ func (fake *StageProductService) GetDiagnosticReportReturnsOnCall(i int, result1
 	}
 	fake.getDiagnosticReportReturnsOnCall[i] = struct {
 		result1 api.DiagnosticReport
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StageProductService) GetLatestAvailableVersion(arg1 string) (string, error) {
+	fake.getLatestAvailableVersionMutex.Lock()
+	ret, specificReturn := fake.getLatestAvailableVersionReturnsOnCall[len(fake.getLatestAvailableVersionArgsForCall)]
+	fake.getLatestAvailableVersionArgsForCall = append(fake.getLatestAvailableVersionArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetLatestAvailableVersion", []interface{}{arg1})
+	fake.getLatestAvailableVersionMutex.Unlock()
+	if fake.GetLatestAvailableVersionStub != nil {
+		return fake.GetLatestAvailableVersionStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getLatestAvailableVersionReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StageProductService) GetLatestAvailableVersionCallCount() int {
+	fake.getLatestAvailableVersionMutex.RLock()
+	defer fake.getLatestAvailableVersionMutex.RUnlock()
+	return len(fake.getLatestAvailableVersionArgsForCall)
+}
+
+func (fake *StageProductService) GetLatestAvailableVersionCalls(stub func(string) (string, error)) {
+	fake.getLatestAvailableVersionMutex.Lock()
+	defer fake.getLatestAvailableVersionMutex.Unlock()
+	fake.GetLatestAvailableVersionStub = stub
+}
+
+func (fake *StageProductService) GetLatestAvailableVersionArgsForCall(i int) string {
+	fake.getLatestAvailableVersionMutex.RLock()
+	defer fake.getLatestAvailableVersionMutex.RUnlock()
+	argsForCall := fake.getLatestAvailableVersionArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *StageProductService) GetLatestAvailableVersionReturns(result1 string, result2 error) {
+	fake.getLatestAvailableVersionMutex.Lock()
+	defer fake.getLatestAvailableVersionMutex.Unlock()
+	fake.GetLatestAvailableVersionStub = nil
+	fake.getLatestAvailableVersionReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StageProductService) GetLatestAvailableVersionReturnsOnCall(i int, result1 string, result2 error) {
+	fake.getLatestAvailableVersionMutex.Lock()
+	defer fake.getLatestAvailableVersionMutex.Unlock()
+	fake.GetLatestAvailableVersionStub = nil
+	if fake.getLatestAvailableVersionReturnsOnCall == nil {
+		fake.getLatestAvailableVersionReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.getLatestAvailableVersionReturnsOnCall[i] = struct {
+		result1 string
 		result2 error
 	}{result1, result2}
 }
@@ -371,6 +447,8 @@ func (fake *StageProductService) Invocations() map[string][][]interface{} {
 	defer fake.checkProductAvailabilityMutex.RUnlock()
 	fake.getDiagnosticReportMutex.RLock()
 	defer fake.getDiagnosticReportMutex.RUnlock()
+	fake.getLatestAvailableVersionMutex.RLock()
+	defer fake.getLatestAvailableVersionMutex.RUnlock()
 	fake.listDeployedProductsMutex.RLock()
 	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.listInstallationsMutex.RLock()

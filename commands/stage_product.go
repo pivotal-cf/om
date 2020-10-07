@@ -26,6 +26,7 @@ type stageProductService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	Stage(api.StageProductInput, string) error
+	GetLatestAvailableVersion(productName string) (string, error)
 }
 
 func NewStageProduct(service stageProductService, logger logger) StageProduct {
@@ -41,6 +42,9 @@ func (sp StageProduct) Execute(args []string) error {
 		return fmt.Errorf("could not parse stage-product flags: %s", err)
 	}
 
+	productName := sp.Options.Product
+	productVersion := sp.Options.Version
+
 	err = checkRunningInstallation(sp.service.ListInstallations)
 	if err != nil {
 		return err
@@ -53,8 +57,9 @@ func (sp StageProduct) Execute(args []string) error {
 
 	deployedProductGUID := ""
 	deployedProducts, err := sp.service.ListDeployedProducts()
+
 	for _, deployedProduct := range deployedProducts {
-		if deployedProduct.Type == sp.Options.Product {
+		if deployedProduct.Type == productName {
 			deployedProductGUID = deployedProduct.GUID
 			break
 		}
@@ -63,27 +68,35 @@ func (sp StageProduct) Execute(args []string) error {
 		return fmt.Errorf("failed to stage product: %s", err)
 	}
 
+	if productVersion == "latest" {
+		latestVersion, err := sp.service.GetLatestAvailableVersion(productName)
+		if err != nil {
+			return fmt.Errorf("could not find latest version: %w", err)
+		}
+		productVersion = latestVersion
+	}
+
 	for _, stagedProduct := range diagnosticReport.StagedProducts {
-		if stagedProduct.Name == sp.Options.Product && stagedProduct.Version == sp.Options.Version {
-			sp.logger.Printf("%s %s is already staged", sp.Options.Product, sp.Options.Version)
+		if stagedProduct.Name == productName && stagedProduct.Version == productVersion {
+			sp.logger.Printf("%s %s is already staged", productName, productVersion)
 			return nil
 		}
 	}
 
-	available, err := sp.service.CheckProductAvailability(sp.Options.Product, sp.Options.Version)
+	available, err := sp.service.CheckProductAvailability(productName, productVersion)
 	if err != nil {
-		return fmt.Errorf("failed to stage product: cannot check availability of product %s %s", sp.Options.Product, sp.Options.Version)
+		return fmt.Errorf("failed to stage product: cannot check availability of product %s %s", productName, productVersion)
 	}
 
 	if !available {
-		return fmt.Errorf("failed to stage product: cannot find product %s %s", sp.Options.Product, sp.Options.Version)
+		return fmt.Errorf("failed to stage product: cannot find product %s %s", productName, productVersion)
 	}
 
-	sp.logger.Printf("staging %s %s", sp.Options.Product, sp.Options.Version)
+	sp.logger.Printf("staging %s %s", productName, productVersion)
 
 	err = sp.service.Stage(api.StageProductInput{
-		ProductName:    sp.Options.Product,
-		ProductVersion: sp.Options.Version,
+		ProductName:    productName,
+		ProductVersion: productVersion,
 	}, deployedProductGUID)
 	if err != nil {
 		return fmt.Errorf("failed to stage product: %s", err)

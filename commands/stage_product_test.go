@@ -59,6 +59,62 @@ var _ = Describe("StageProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished staging"))
 	})
 
+	When("the product-version is `latest`", func() {
+		It("uses the latest available product version", func() {
+			fakeService.CheckProductAvailabilityReturns(true, nil)
+
+			command := commands.NewStageProduct(fakeService, logger)
+
+			fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
+				api.DeployedProductOutput{
+					Type: "some-other-product",
+					GUID: "deployed-product-guid",
+				},
+			}, nil)
+
+			fakeService.GetLatestAvailableVersionReturns("1.1.1", nil)
+
+			err := command.Execute([]string{
+				"--product-name", "some-product",
+				"--product-version", "latest",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.ListDeployedProductsCallCount()).To(Equal(1))
+
+			Expect(fakeService.StageCallCount()).To(Equal(1))
+			stageProductInput, _ := fakeService.StageArgsForCall(0)
+			Expect(stageProductInput).To(Equal(api.StageProductInput{
+				ProductName:    "some-product",
+				ProductVersion: "1.1.1",
+			}))
+		})
+
+		When("there is not latest version", func() {
+			It("errors with a useful message", func() {
+				fakeService.CheckProductAvailabilityReturns(true, nil)
+
+				command := commands.NewStageProduct(fakeService, logger)
+
+				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
+					api.DeployedProductOutput{
+						Type: "some-other-product",
+						GUID: "deployed-product-guid",
+					},
+				}, nil)
+
+				fakeService.GetLatestAvailableVersionReturns("", errors.New("some error"))
+
+				err := command.Execute([]string{
+					"--product-name", "some-product",
+					"--product-version", "latest",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not find latest version: some error"))
+			})
+		})
+	})
+
 	When("--config is provided", func() {
 		It("stages a product", func() {
 			config := `---

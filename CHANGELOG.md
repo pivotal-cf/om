@@ -47,7 +47,11 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 6.3.1
+## 6.4.0
+
+### Features
+- When using `stage-product`, the `--product-version` can use the placeholder `latest`.
+  This finds the highest semvered available product (of `--product-name`) version to stage.
 
 ### Bug Fixes
 - tl;dr: Collections are hard.
