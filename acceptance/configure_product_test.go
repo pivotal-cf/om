@@ -188,7 +188,7 @@ var _ = Describe("configure-product command", func() {
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
 
-		Eventually(session).Should(gexec.Exit(0))
+		Eventually(session, "10s").Should(gexec.Exit(0))
 
 		Expect(session.Out).To(gbytes.Say("setting properties"))
 		Expect(session.Out).To(gbytes.Say("finished setting properties"))

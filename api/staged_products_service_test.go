@@ -1,12 +1,11 @@
 package api_test
 
 import (
-	"net/http"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/om/api"
+	"net/http"
 )
 
 var _ = Describe("StagedProducts", func() {
@@ -485,69 +484,6 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 										"value": "28bab1d3-4a4b-48d5-8dac-796adf078100",
 										"optional": false
 									},
-									"label": {
-										"type": "string",
-										"configurable": true,
-										"credential": false,
-										"value": "the_label",
-										"optional": false
-									},
-									"some_property": {
-										"type": "boolean",
-										"configurable": true,
-										"credential": false,
-										"value": true,
-										"optional": false
-									}
-								}],
-								"optional": false
-							},
-							"collection_with_secrets": {
-								"type": "collection",
-								"configurable": true,
-								"credential": false,
-								"value": [{
-									"guid": {
-										"type": "uuid",
-										"configurable": false,
-										"credential": false,
-										"value": "28bab1d3-4a4b-48d5-8dac-with-secret",
-										"optional": false
-									},
-									"super_secret_property": {
-										"type": "secret",
-										"configurable": true,
-										"credential": true,
-										"value": {
-										  "secret": "unchanged_secret"
-										},
-										"optional": false
-									},
-									"secret_credentials": {
-										"type": "simple_credentials",
-										"configurable": true,
-										"credential": true,
-										"value": {
-										  "identity": "unchanged-username",
-									      "password": "unchanged-password"
-										},
-										"optional": true
-									}
-								}],
-								"optional": false
-							},
-							"collection_with_name": {
-								"type": "collection",
-								"configurable": true,
-								"credential": false,
-								"value": [{
-									"guid": {
-										"type": "uuid",
-										"configurable": false,
-										"credential": false,
-										"value": "28bab1d3-4a4b-48d5-8dac-with-name",
-										"optional": false
-									},
 									"name": {
 										"type": "string",
 										"configurable": true,
@@ -556,57 +492,6 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 										"optional": false
 									},
 									"some_property": {
-										"type": "string",
-										"configurable": true,
-										"credential": false,
-										"value": "some property value",
-										"optional": false
-									}
-								},{
-									"guid": {
-										"type": "uuid",
-										"configurable": false,
-										"credential": false,
-										"value": "28bab1d3-4a4b-48d5-8dac-with-name-two",
-										"optional": false
-									},
-									"name": {
-										"type": "string",
-										"configurable": true,
-										"credential": false,
-										"value": "the_name_two",
-										"optional": false
-									},
-									"some_property": {
-										"type": "string",
-										"configurable": true,
-										"credential": false,
-										"value": "some property value two",
-										"optional": false
-									}
-								}],
-								"optional": false
-							},
-							"collection_with_key": {
-								"type": "collection",
-								"configurable": true,
-								"credential": false,
-								"value": [{
-									"guid": {
-										"type": "uuid",
-										"configurable": false,
-										"credential": false,
-										"value": "28bab1d3-4a4b-48d5-8dac-with-key",
-										"optional": false
-									},
-									"key": {
-										"type": "string",
-										"configurable": true,
-										"credential": false,
-										"value": "the_key_value",
-										"optional": false
-									},
-									"some_property": {
 										"type": "boolean",
 										"configurable": true,
 										"credential": false,
@@ -616,35 +501,6 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 								}],
 								"optional": false
 							},
-							"collection_with_logical_key_ending_in_name": {
-								"type": "collection",
-								"configurable": true,
-								"credential": false,
-								"value": [{
-									"guid": {
-										"type": "uuid",
-										"configurable": false,
-										"credential": false,
-										"value": "28bab1d3-4a4b-48d5-8dac-ending-in-name",
-										"optional": false
-									},
-									"sqlServerName": {
-										"type": "string",
-										"configurable": true,
-										"credential": false,
-										"value": "the_sql_server",
-										"optional": false
-									},
-									"some_property": {
-										"type": "boolean",
-										"configurable": true,
-										"credential": false,
-										"value": true,
-										"optional": false
-									}
-								}],
-								"optional": false
-							}
 						}
 					}`),
 				),
@@ -675,7 +531,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		})
 
 		Context("configure product contains collection", func() {
-			It("adds the guid for elements that exist and haven't changed, but don't have a logical key field", func() {
+			It("adds the guid for elements that exist", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
@@ -685,8 +541,8 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 								"key": "value",
 								"some_collection": {
 									"value": [{
-										"label": "the_label",
-										"some_property": true,
+										"name": "the_name",
+										"some_property": "property_value",
 										"guid": "28bab1d3-4a4b-48d5-8dac-796adf078100"
 									}]
 								}
@@ -703,236 +559,8 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 						"some_collection": {
 							"value": [
 								{
-									"some_property": true,
-									"label": "the_label"
-								}
-							]
-						}
-					}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
-			})
-
-			It("adds the guid for elements with secrets that haven't changed and don't have a logical key field", func() {
-				client.AppendHandlers(
-					//ghttp.CombineHandlers(
-					//	ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].super_secret_property"),
-					//	ghttp.RespondWith(http.StatusOK, `{
-					//		"credential": {
-					//			"type": "secret",
-					//			"value": {
-					//				"secret": "unchanged_secret"
-					//			}
-					//		}
-					//	}`),
-					//),
-					//ghttp.CombineHandlers(
-					//	ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-product-guid/credentials/collection_with_secrets[0].secret_credentials"),
-					//	ghttp.RespondWith(http.StatusOK, `{
-					//		"credential": {
-					//			"type": "simple_credentials",
-					//			"value": {
-					//				"identity": "unchanged-username",
-					//				"password": "unchanged-password"
-					//			  }
-					//		}
-					//	}`),
-					//),
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
-						ghttp.VerifyContentType("application/json"),
-						ghttp.VerifyJSON(`{
-							"properties": {
-								"key": "value",
-								"collection_with_secrets": {
-									"value": [{
-										"super_secret_property": {
-											"secret": "unchanged_secret"
-										},
-										"secret_credentials": {
-											"identity": "unchanged-username",
-											"password": "unchanged-password"
-										},
-										"guid": "28bab1d3-4a4b-48d5-8dac-with-secret"
-									}]
-								}
-							}
-						}`),
-						ghttp.RespondWith(http.StatusOK, `{}`),
-					),
-				)
-
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-						"key": "value",
-						"collection_with_secrets": {
-							"value": [{
-								"super_secret_property": {
-									"secret": "unchanged_secret"
-								},
-								"secret_credentials": {
-									"identity": "unchanged-username",
-									"password": "unchanged-password"
-								}
-							}]
-						}
-					}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
-			})
-
-			It("adds the guid for elements that have a name property", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
-						ghttp.VerifyContentType("application/json"),
-						ghttp.VerifyJSON(`{
-							"properties": {
-								"key": "value",
-								"collection_with_name": {
-									"value": [{
-										"name": "the_name",
-										"some_property": "new_property_value",
-										"guid": "28bab1d3-4a4b-48d5-8dac-with-name"
-									}]
-								}
-							}
-						}`),
-						ghttp.RespondWith(http.StatusOK, `{}`),
-					),
-				)
-
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-						"key": "value",
-						"collection_with_name": {
-							"value": [
-								{
 									"name": "the_name",
-									"some_property": "new_property_value"
-								}
-							]
-						}
-					}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
-			})
-
-			It("adds the guid for elements that have a key property", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
-						ghttp.VerifyContentType("application/json"),
-						ghttp.VerifyJSON(`{
-							"properties": {
-								"key": "value",
-								"collection_with_key": {
-									"value": [{
-										"key": "the_key_value",
-										"some_property": "new_property_value",
-										"guid": "28bab1d3-4a4b-48d5-8dac-with-key"
-									}]
-								}
-							}
-						}`),
-						ghttp.RespondWith(http.StatusOK, `{}`),
-					),
-				)
-
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-						"key": "value",
-						"collection_with_key": {
-							"value": [
-								{
-									"key": "the_key_value",
-									"some_property": "new_property_value"
-								}
-							]
-						}
-					}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
-			})
-
-			It("adds the guid for elements that have logical key property ending in 'name'", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
-						ghttp.VerifyContentType("application/json"),
-						ghttp.VerifyJSON(`{
-							"properties": {
-								"key": "value",
-								"collection_with_logical_key_ending_in_name": {
-									"value": [{
-										"sqlServerName": "the_sql_server",
-										"some_property": "new_property_value",
-										"guid": "28bab1d3-4a4b-48d5-8dac-ending-in-name"
-									}]
-								}
-							}
-						}`),
-						ghttp.RespondWith(http.StatusOK, `{}`),
-					),
-				)
-
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-						"key": "value",
-						"collection_with_logical_key_ending_in_name": {
-							"value": [
-								{
-									"sqlServerName": "the_sql_server",
-									"some_property": "new_property_value"
-								}
-							]
-						}
-					}`,
-				})
-				Expect(err).ToNot(HaveOccurred())
-			})
-
-			It("adds the guid using different strategies for different items in the same collection", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("PUT", "/api/v0/staged/products/some-product-guid/properties"),
-						ghttp.VerifyContentType("application/json"),
-						ghttp.VerifyJSON(`{
-							"properties": {
-								"key": "value",
-								"collection_with_name": {
-									"value": [{
-										"name": "the_name",
-										"some_property": "some property value",
-										"guid": "28bab1d3-4a4b-48d5-8dac-with-name"
-									},{
-										"name": "the_name_two",
-										"some_property": "changed, so should find guid based on logical key rather than equivalence",
-										"guid": "28bab1d3-4a4b-48d5-8dac-with-name-two"
-									}]
-								}
-							}
-						}`),
-						ghttp.RespondWith(http.StatusOK, `{}`),
-					),
-				)
-
-				err := service.UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput{
-					GUID: "some-product-guid",
-					Properties: `{
-						"key": "value",
-						"collection_with_name": {
-							"value": [
-								{
-									"name": "the_name",
-									"some_property": "some property value"
-								},{
-									"name": "the_name_two",
-									"some_property": "changed, so should find guid based on logical key rather than equivalence"
+									"some_property": "property_value"
 								}
 							]
 						}
@@ -1046,6 +674,46 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 	})
 
 	Describe("GetStagedProductSyslogConfiguration", func() {
+		//BeforeEach(func() {
+		//	client.DoStub = func(req *http.Request) (*http.Response, error) {
+		//		var resp *http.Response
+		//		if strings.Contains(req.URL.Path, "some-product-guid") {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusOK,
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//						"syslog_configuration": {
+		//							"enabled": true,
+		//							"address": "example.com"
+		//						}
+		//					}`)),
+		//			}
+		//		} else if strings.Contains(req.URL.Path, "missing-syslog-config") {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusUnprocessableEntity,
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//						"errors": {
+		//						  "syslog": ["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint."]
+		//						}
+		//					}`)),
+		//			}
+		//		} else if strings.Contains(req.URL.Path, "bad-response-code") {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusBadRequest,
+		//				Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+		//			}
+		//		} else {
+		//			resp = &http.Response{
+		//				StatusCode: http.StatusOK,
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
+		//						invalid-json
+		//					}`)),
+		//			}
+		//		}
+		//
+		//		return resp, nil
+		//	}
+		//})
+
 		When("syslog configuration is configured for the specified product", func() {
 			It("returns the syslog configuration ", func() {
 				client.AppendHandlers(
@@ -1260,7 +928,7 @@ key-4: 2147483648
 		It("returns the configuration for a product", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties"),
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties", "redact=true"),
 					ghttp.RespondWith(http.StatusOK, `{
 						"properties": {
 							".properties.some-configurable-property": {

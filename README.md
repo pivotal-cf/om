@@ -27,7 +27,7 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
 `om` went 1.0.0 on May 7, 2019
 
 As of that release, `om` is [semantically versioned](https://semver.org/).
-When consuming `om` in your CI system,
+When consumig `om` in your CI system,
 it is now safe to pin to a particular minor version line (major.minor.patch)
 without fear of breaking changes.
 
