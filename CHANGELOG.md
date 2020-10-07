@@ -47,6 +47,19 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.3.1
+
+### Bug Fixes
+- tl;dr: Collections are hard.
+
+  We are reverting code for handling collections when updating their values.
+  As of recently, we tried to make collection property updating for products more idempotent.
+  This required logic to associate collections in a config file with their _potential_ GUID in the already configured product.
+  This logic introduced edge cases, which we missed.
+  We tried to fix them, but kept running into them.
+  We've made the decision to revert the logic to its original state.
+  Please see the original issue [#207](https://github.com/pivotal-cf/om/issues/207) for more information.
+
 ## 6.3.0
 
 ### Feature
