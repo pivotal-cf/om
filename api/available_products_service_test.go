@@ -30,6 +30,88 @@ var _ = Describe("Available Products", func() {
 		client.Close()
 	})
 
+	Describe("GetLatestAvailableVersion", func() {
+		When("there is a single version", func() {
+			It("returns that version", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+						ghttp.RespondWith(http.StatusOK, `[
+						{
+							"name": "available-product",
+							"product_version": "1.2.3"
+						}
+					]`),
+					),
+				)
+
+				version, err := service.GetLatestAvailableVersion("available-product")
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(version).To(Equal("1.2.3"))
+			})
+		})
+
+		When("there are multiple versions", func() {
+			It("returns the greatest (by semver)", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+						ghttp.RespondWith(http.StatusOK, `[
+						{
+							"name": "available-product",
+							"product_version": "1.2.3"
+						},
+						{
+							"name": "not-the-product-we-are-looking-for",
+							"product_version": "100.100.100"
+						},
+						{
+							"name": "available-product",
+							"product_version": "1.1.1"
+						}
+					]`),
+					),
+				)
+
+				version, err := service.GetLatestAvailableVersion("available-product")
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(version).To(Equal("1.2.3"))
+			})
+		})
+
+		When("there are no versions for the product", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+						ghttp.RespondWith(http.StatusOK, `[]`),
+					),
+				)
+
+				_, err := service.GetLatestAvailableVersion("available-product")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("no versions available for the product 'available-product'"))
+			})
+		})
+
+		When("the api returns an error", func() {
+			It("returns an error", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+						ghttp.RespondWith(http.StatusBadGateway, `[]`),
+					),
+				)
+
+				_, err := service.GetLatestAvailableVersion("available-product")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not retrieve product list from Ops Manager: "))
+			})
+		})
+	})
+
 	Describe("UploadAvailableProduct", func() {
 		It("makes a request to upload the product to the Ops Manager", func() {
 			progressClient.AppendHandlers(

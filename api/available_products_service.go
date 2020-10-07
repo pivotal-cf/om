@@ -3,9 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/go-version"
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 )
 
 const availableProductsEndpoint = "/api/v0/available_products"
@@ -100,4 +102,30 @@ func (a Api) DeleteAvailableProducts(input DeleteAvailableProductsInput) error {
 	}
 
 	return nil
+}
+
+func (a Api) GetLatestAvailableVersion(productName string) (string, error) {
+	products, err := a.ListAvailableProducts()
+	if err != nil {
+		return "", fmt.Errorf("could not retrieve product list from Ops Manager: %w", err)
+	}
+
+	var versions version.Collection
+	for _, product := range products.ProductsList {
+		if productName == product.Name {
+			v, err := version.NewVersion(product.Version)
+			if err != nil {
+				continue
+			}
+			versions = append(versions, v)
+		}
+	}
+
+	if len(versions) == 0 {
+		return "", fmt.Errorf("no versions available for the product '%s'", productName)
+	}
+
+	sort.Sort(sort.Reverse(versions))
+
+	return versions[0].String(), nil
 }
