@@ -2,6 +2,8 @@ package commands_test
 
 import (
 	"errors"
+	"github.com/onsi/gomega/gbytes"
+	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,15 +18,17 @@ var _ = Describe("PendingChanges.Execute", func() {
 		presenter *presenterfakes.FormattedPresenter
 		pcService *fakes.PendingChangesService
 		command   commands.PendingChanges
+		stderr    *gbytes.Buffer
+		logger    *log.Logger
 	)
 
 	BeforeEach(func() {
+		stderr = gbytes.NewBuffer()
+		logger = log.New(stderr, "", 0)
+
 		presenter = &presenterfakes.FormattedPresenter{}
 		pcService = &fakes.PendingChangesService{}
-		command = commands.NewPendingChanges(presenter, pcService)
-	})
-
-	BeforeEach(func() {
+		command = commands.NewPendingChanges(presenter, pcService, logger)
 		pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{
 			ChangeList: []api.ProductChange{
 				{
@@ -42,6 +46,11 @@ var _ = Describe("PendingChanges.Execute", func() {
 							PreDelete:  "false",
 						},
 					},
+					CompletenessChecks: &api.CompletenessChecks{
+						ConfigurationComplete:       false,
+						StemcellPresent:             false,
+						ConfigurablePropertiesValid: false,
+					},
 				},
 				{
 					GUID:    "some-product-without-errand",
@@ -52,12 +61,17 @@ var _ = Describe("PendingChanges.Execute", func() {
 		}, nil)
 	})
 
-	It("lists the pending changes", func() {
+	It("lists the pending changes and all warnings", func() {
 		err := command.Execute([]string{})
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
 		Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
+
+		Expect(stderr).To(gbytes.Say("configuration is incomplete for guid"))
+		Expect(stderr).To(gbytes.Say("stemcell is missing for one or more products for guid"))
+		Expect(stderr).To(gbytes.Say("one or more properties are invalid for guid"))
+		Expect(stderr).To(gbytes.Say("there are pending changes"))
 	})
 
 	When("the check flag is provided", func() {
@@ -140,35 +154,6 @@ var _ = Describe("PendingChanges.Execute", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
-	})
-
-	When("the format flag is provided", func() {
-		It("sets the format on the presenter", func() {
-			err := command.Execute([]string{"--format", "json"})
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
-		})
-	})
-
-	Describe("failure cases", func() {
-		When("an unknown flag is passed", func() {
-			It("returns an error", func() {
-				err := command.Execute([]string{"--unknown-flag"})
-				Expect(err).To(MatchError("could not parse pending-changes flags: flag provided but not defined: -unknown-flag"))
-			})
-		})
-
-		When("fetching the pending changes fails", func() {
-			It("returns an error", func() {
-				command := commands.NewPendingChanges(presenter, pcService)
-
-				pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{}, errors.New("beep boop"))
-
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("failed to retrieve pending changes beep boop"))
-			})
-		})
 
 		Describe("Ops Man 2.5 and earlier", func() {
 			When("completeness_check returns any false values", func() {
@@ -187,7 +172,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{})
+					err := command.Execute(options)
 					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 					Expect(err).To(MatchError(ContainSubstring("configuration is incomplete for guid some-product-without-errands")))
 					Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
@@ -208,7 +193,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{})
+					err := command.Execute(options)
 					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 					Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands")))
 					Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
@@ -230,7 +215,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{})
+					err := command.Execute(options)
 					Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 					Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid some-product-without-errands")))
 					Expect(err).To(MatchError(ContainSubstring("Please validate your Ops Manager installation in the UI")))
@@ -263,7 +248,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 							},
 						}, nil)
 
-						err := command.Execute([]string{})
+						err := command.Execute(options)
 						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 						Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid some-product-without-errands")))
 						Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands")))
@@ -292,7 +277,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 							},
 						}, nil)
 
-						err := command.Execute([]string{})
+						err := command.Execute(options)
 						Expect(presenter.PresentPendingChangesCallCount()).To(Equal(1))
 						Expect(err).To(MatchError(ContainSubstring("one or more properties are invalid for guid some-product-without-errands")))
 						Expect(err).To(MatchError(ContainSubstring("stemcell is missing for one or more products for guid some-product-without-errands")))
@@ -302,9 +287,32 @@ var _ = Describe("PendingChanges.Execute", func() {
 				})
 			})
 		})
+	})
 
-		Describe("Ops Man 2.6 and later", func() {
+	When("the format flag is provided", func() {
+		It("sets the format on the presenter", func() {
+			err := command.Execute([]string{"--format", "json"})
+			Expect(err).ToNot(HaveOccurred())
 
+			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
+		})
+	})
+
+	When("an unknown flag is passed", func() {
+		It("returns an error", func() {
+			err := command.Execute([]string{"--unknown-flag"})
+			Expect(err).To(MatchError("could not parse pending-changes flags: flag provided but not defined: -unknown-flag"))
+		})
+	})
+
+	When("fetching the pending changes fails", func() {
+		It("returns an error", func() {
+			command := commands.NewPendingChanges(presenter, pcService, nil)
+
+			pcService.ListStagedPendingChangesReturns(api.PendingChangesOutput{}, errors.New("beep boop"))
+
+			err := command.Execute([]string{})
+			Expect(err).To(MatchError("failed to retrieve pending changes beep boop"))
 		})
 	})
 })

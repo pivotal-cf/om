@@ -174,7 +174,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	commandSet["installation-log"] = commands.NewInstallationLog(api, stdout)
 	commandSet["installations"] = commands.NewInstallations(api, presenter)
 	commandSet["interpolate"] = commands.NewInterpolate(os.Environ, stdout, os.Stdin)
-	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api)
+	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api, stderr)
 	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api, stdout)
 	commandSet["product-metadata"] = commands.NewProductMetadata(stdout)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
