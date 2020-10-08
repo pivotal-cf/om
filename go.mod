@@ -35,7 +35,6 @@ require (
 	github.com/pivotal-cf/go-pivnet/v5 v5.0.1
 	github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43
 	github.com/pivotal-cf/pivnet-cli v1.0.4
-	github.com/pkg/errors v0.9.1
 	github.com/sclevine/spec v1.4.0 // indirect
 	github.com/shirou/gopsutil v2.20.5+incompatible // indirect
 	go.opencensus.io v0.22.4 // indirect
