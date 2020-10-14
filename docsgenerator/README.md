@@ -6,7 +6,7 @@ docsgenerator will take the usage defined in the command definition,
 and combine it with an optional 
 `EXPANDED_DESCRIPTION.md` and optional `ADDITIONAL_INFO.md` 
 in order to create a unified `README.md` for the command
-that can automatedly be kept up-to-date.
+that can automatically be kept up-to-date.
 
 To rephrase or offer a better summary of what the command does,
 add information to the `EXPANDED_DESCRIPTION.md`.

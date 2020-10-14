@@ -15,6 +15,20 @@ type Product struct {
 	Version string `json:"version"`
 }
 
+type ProductsVersionsDisplay struct {
+	ProductVersions []ProductVersions `json:"product_versions"`
+	Available       bool
+	Staged          bool
+	Deployed        bool
+}
+
+type ProductVersions struct {
+	Name      string `json:"name"`
+	Available string `json:"available,omitempty"`
+	Staged    string `json:"staged,omitempty"`
+	Deployed  string `json:"deployed,omitempty"`
+}
+
 type Errand struct {
 	Name              string `json:"name"`
 	PostDeployEnabled string `json:"post_deploy_enabled,omitempty"`

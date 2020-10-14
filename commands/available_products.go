@@ -59,8 +59,8 @@ func (ap AvailableProducts) Execute(args []string) error {
 
 func (ap AvailableProducts) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command lists all available products.",
-		ShortDescription: "list available products",
+		Description:      "**DEPRECATED** This authenticated command lists all available products. Use 'products --available' instead.",
+		ShortDescription: "**DEPRECATED** lists available products. Use 'products --available' instead.",
 		Flags:            ap.Options,
 	}
 }

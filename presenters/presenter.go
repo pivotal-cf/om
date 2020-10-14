@@ -18,6 +18,7 @@ type Presenter interface {
 	PresentErrands([]models.Errand)
 	PresentInstallations([]models.Installation)
 	PresentPendingChanges(api.PendingChangesOutput)
+	PresentProducts(display models.ProductsVersionsDisplay)
 	PresentStagedProducts([]api.DiagnosticProduct)
 	PresentDiagnosticReport(api.DiagnosticReport)
 }
@@ -134,6 +135,15 @@ func (p *MultiPresenter) PresentPendingChanges(c api.PendingChangesOutput) {
 		p.jsonPresenter.PresentPendingChanges(c)
 	default:
 		p.tablePresenter.PresentPendingChanges(c)
+	}
+}
+
+func (p *MultiPresenter) PresentProducts(products models.ProductsVersionsDisplay) {
+	switch p.format {
+	case "json":
+		p.jsonPresenter.PresentProducts(products)
+	default:
+		p.tablePresenter.PresentProducts(products)
 	}
 }
 

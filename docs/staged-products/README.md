@@ -3,12 +3,12 @@
 
 # `om staged-products`
 
-This authenticated command lists all staged products.
+**DEPRECATED** This authenticated command lists all staged products. Use 'products --staged' instead.
 
 ## Command Usage
 ```
 
-This authenticated command lists all staged products.
+**DEPRECATED** This authenticated command lists all staged products. Use 'products --staged' instead.
 
 Usage:
   om [options] staged-products [<args>]

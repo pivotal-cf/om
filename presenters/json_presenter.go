@@ -62,6 +62,31 @@ func (j JSONPresenter) PresentPendingChanges(pendingChangesOutput api.PendingCha
 	_, _ = j.stdout.Write([]byte(pendingChangesOutput.FullReport))
 }
 
+func (j JSONPresenter) PresentProducts(products models.ProductsVersionsDisplay) {
+	var output []models.ProductVersions
+	for _, product := range products.ProductVersions {
+		productVersions := models.ProductVersions{
+			Name:      product.Name,
+		}
+
+		if products.Available {
+			productVersions.Available = product.Available
+		}
+
+		if products.Staged {
+			productVersions.Staged = product.Staged
+		}
+
+		if products.Deployed {
+			productVersions.Deployed = product.Deployed
+		}
+
+		output = append(output, productVersions)
+	}
+
+	j.encodeJSON(output)
+}
+
 func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
 	_, _ = j.stdout.Write([]byte(report.FullReport))
 }

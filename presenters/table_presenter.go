@@ -161,6 +161,43 @@ func (t TablePresenter) PresentPendingChanges(output api.PendingChangesOutput) {
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentProducts(products models.ProductsVersionsDisplay) {
+	var columns []string
+	if products.Available {
+		columns = append(columns, "Available")
+	}
+
+	if products.Staged {
+		columns = append(columns, "Staged")
+	}
+
+	if products.Deployed {
+		columns = append(columns, "Deployed")
+	}
+
+	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+	t.tableWriter.SetHeader(append([]string{"Name"}, columns...))
+
+	for _, product := range products.ProductVersions {
+		var outputData []string
+		if products.Available {
+			outputData = append(outputData, product.Available)
+		}
+
+		if products.Staged {
+			outputData = append(outputData, product.Staged)
+		}
+
+		if products.Deployed {
+			outputData = append(outputData, product.Deployed)
+		}
+
+		t.tableWriter.Append(append([]string{product.Name}, outputData...))
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
 	t.tableWriter.SetHeader([]string{"Name", "Version"})
 

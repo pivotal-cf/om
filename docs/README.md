@@ -14,7 +14,7 @@ for this product.
 | [apply-changes](apply-changes/README.md) | triggers an install on the Ops Manager targeted |
 | [assign-multi-stemcell](assign-multi-stemcell/README.md) | assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+ |
 | [assign-stemcell](assign-stemcell/README.md) | assigns an uploaded stemcell to a product in the targeted Ops Manager |
-| [available-products](available-products/README.md) | list available products |
+| [available-products](available-products/README.md) | **DEPRECATED** lists available products. Use 'products --available' instead. |
 | [bosh-diff](bosh-diff/README.md) | displays BOSH manifest diff for the director and products |
 | [bosh-env](bosh-env/README.md) | prints bosh environment variables |
 | [certificate-authorities](certificate-authorities/README.md) | lists certificates managed by Ops Manager |
@@ -37,7 +37,7 @@ for this product.
 | [delete-ssl-certificate](delete-ssl-certificate/README.md) | deletes certificate applied to Ops Manager |
 | [delete-unused-products](delete-unused-products/README.md) | deletes unused products on the Ops Manager targeted |
 | [deployed-manifest](deployed-manifest/README.md) | prints the deployed manifest for a product |
-| [deployed-products](deployed-products/README.md) | lists deployed products |
+| [deployed-products](deployed-products/README.md) | **DEPRECATED** lists deployed products. Use 'products --deployed' instead. |
 | [diagnostic-report](diagnostic-report/README.md) | reports current state of your Ops Manager |
 | [disable-director-verifiers](disable-director-verifiers/README.md) | disables director verifiers |
 | [disable-product-verifiers](disable-product-verifiers/README.md) | disables product verifiers |
@@ -55,6 +55,7 @@ for this product.
 | [pending-changes](pending-changes/README.md) | checks for pending changes |
 | [pre-deploy-check](pre-deploy-check/README.md) | checks completeness and validity of product configuration |
 | [product-metadata](product-metadata/README.md) | prints product metadata |
+| [products](products/README.md) | lists product staged, available, and deployed versions |
 | [regenerate-certificates](regenerate-certificates/README.md) | deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes |
 | [revert-staged-changes](revert-staged-changes/README.md) | This command reverts the staged changes already on an Ops Manager. |
 | [ssl-certificate](ssl-certificate/README.md) | gets certificate applied to Ops Manager |
@@ -62,7 +63,7 @@ for this product.
 | [staged-config](staged-config/README.md) | generates a config from a staged product |
 | [staged-director-config](staged-director-config/README.md) | generates a config from a staged director |
 | [staged-manifest](staged-manifest/README.md) | prints the staged manifest for a product |
-| [staged-products](staged-products/README.md) | lists staged products |
+| [staged-products](staged-products/README.md) | **DEPRECATED** lists staged products. Use 'products --staged' instead. |
 | [unstage-product](unstage-product/README.md) | unstages a given product from the Ops Manager targeted |
 | [upload-product](upload-product/README.md) | uploads a given product to the Ops Manager targeted |
 | [upload-stemcell](upload-stemcell/README.md) | uploads a given stemcell to the Ops Manager targeted |

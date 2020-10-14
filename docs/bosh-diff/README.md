@@ -14,7 +14,7 @@ Usage:
   om [options] bosh-diff [<args>]
 
 Flags:
-  --check             bool               Exit 1 if there are any differences. Useful for validating that Ops Manager is in a clean state.
+  --check             bool               Exit 2 if there are any differences. Useful for validating that Ops Manager is in a clean state.
   --director, -d      bool               Include director diffs. Can be combined with --product-name.
   --product-name, -p  string (variadic)  Product to get diff for. Pass repeatedly for multiple products. If excluded, all staged non-director products will be shown.
 
