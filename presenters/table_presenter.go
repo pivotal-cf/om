@@ -192,6 +192,8 @@ func (t TablePresenter) PresentProducts(products models.ProductsVersionsDisplay)
 					outputData = append(outputData, product.Available[0])
 					moreAvailableProducts = true
 					product.Available = product.Available[1:]
+				} else if firstProductLine {
+					outputData = append(outputData, "")
 				} else {
 					break
 				}
@@ -215,13 +217,7 @@ func (t TablePresenter) PresentProducts(products models.ProductsVersionsDisplay)
 				}
 			}
 
-			//outputColumnsLength := len(outputData)
 			if len(outputData) != 0 && hasData {
-				//if outputColumnsLength < len(columns) {
-				//	for i := 0; i < len(columns)-outputColumnsLength; i++ {
-				//		outputData = append(outputData, "")
-				//	}
-				//}
 
 				productName := product.Name
 				if !firstProductLine {

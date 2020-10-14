@@ -343,6 +343,11 @@ var _ = Describe("TablePresenter", func() {
 					Available: []string{"4"},
 					Staged:    "5",
 					Deployed:  "",
+				},  {
+					Name:      "p-bosh-test",
+					Available: []string{},
+					Staged:    "6",
+					Deployed:  "7",
 				}},
 				Available: true,
 				Staged:    false,
@@ -358,7 +363,7 @@ var _ = Describe("TablePresenter", func() {
 			headers := fakeTableWriter.SetHeaderArgsForCall(0)
 			Expect(headers).To(Equal([]string{"Name", "Available", "Deployed"}))
 
-			Expect(fakeTableWriter.AppendCallCount()).To(Equal(3))
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(4))
 
 			values := fakeTableWriter.AppendArgsForCall(0)
 			Expect(values).To(Equal([]string{"test-product", "1", "3"}))
@@ -366,6 +371,8 @@ var _ = Describe("TablePresenter", func() {
 			Expect(values).To(Equal([]string{"", "2", ""}))
 			values = fakeTableWriter.AppendArgsForCall(2)
 			Expect(values).To(Equal([]string{"another-product", "4", ""}))
+			values = fakeTableWriter.AppendArgsForCall(3)
+			Expect(values).To(Equal([]string{"p-bosh-test", "", "7"}))
 
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 
@@ -386,10 +393,12 @@ var _ = Describe("TablePresenter", func() {
 			headers = fakeTableWriter.SetHeaderArgsForCall(0)
 			Expect(headers).To(Equal([]string{"Name", "Staged"}))
 
-			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
 
 			values = fakeTableWriter.AppendArgsForCall(0)
 			Expect(values).To(Equal([]string{"another-product", "5"}))
+			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{"p-bosh-test", "6"}))
 
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
