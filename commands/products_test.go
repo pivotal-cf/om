@@ -65,6 +65,10 @@ var _ = Describe("Products", func() {
 						Name:    "acme-product",
 						Version: "another-version",
 					},
+					api.ProductInfo{
+						Name:    "acme-product",
+						Version: "version-infinity",
+					},
 				},
 			}
 
@@ -86,12 +90,12 @@ var _ = Describe("Products", func() {
 			products := models.ProductsVersionsDisplay{
 				ProductVersions: []models.ProductVersions{{
 					Name:      "some-product",
-					Available: "1.2.3",
+					Available: []string{"1.2.3"},
 					Staged:    "some-version",
 					Deployed:  "some-version",
 				}, {
 					Name:      "acme-product",
-					Available: "another-version",
+					Available: []string{"another-version", "version-infinity"},
 					Staged:    "version-infinity",
 					Deployed:  "another-version",
 				}},

@@ -65,23 +65,36 @@ func (j JSONPresenter) PresentPendingChanges(pendingChangesOutput api.PendingCha
 func (j JSONPresenter) PresentProducts(products models.ProductsVersionsDisplay) {
 	var output []models.ProductVersions
 	for _, product := range products.ProductVersions {
+		hasData := false
+
 		productVersions := models.ProductVersions{
 			Name:      product.Name,
 		}
 
 		if products.Available {
-			productVersions.Available = product.Available
+			if len(product.Available) > 0 {
+				hasData = true
+				productVersions.Available = product.Available
+			}
 		}
 
 		if products.Staged {
-			productVersions.Staged = product.Staged
+			if product.Staged != "" {
+				hasData = true
+				productVersions.Staged = product.Staged
+			}
 		}
 
 		if products.Deployed {
-			productVersions.Deployed = product.Deployed
+			if product.Deployed != "" {
+				hasData = true
+				productVersions.Deployed = product.Deployed
+			}
 		}
 
-		output = append(output, productVersions)
+		if hasData {
+			output = append(output, productVersions)
+		}
 	}
 
 	j.encodeJSON(output)

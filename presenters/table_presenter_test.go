@@ -272,18 +272,18 @@ var _ = Describe("TablePresenter", func() {
 			products := models.ProductsVersionsDisplay{
 				ProductVersions: []models.ProductVersions{{
 					Name:      "test-product",
-					Available: "1",
+					Available: []string{"1"},
 					Staged:    "2",
 					Deployed:  "3",
 				}, {
 					Name:      "another-product",
-					Available: "4",
+					Available: []string{"4"},
 					Staged:    "5",
 					Deployed:  "6",
 				}},
-				Available:       true,
-				Staged:          false,
-				Deployed:        true,
+				Available: true,
+				Staged:    false,
+				Deployed:  true,
 			}
 			By("Printing available and deployed columns")
 			tablePresenter.PresentProducts(products)
@@ -326,6 +326,69 @@ var _ = Describe("TablePresenter", func() {
 			values = fakeTableWriter.AppendArgsForCall(0)
 			Expect(values).To(Equal([]string{"test-product", "2"}))
 			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{"another-product", "5"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+
+		It("does not display a product if it has no versions for all of the listed columns", func() {
+			products := models.ProductsVersionsDisplay{
+				ProductVersions: []models.ProductVersions{{
+					Name:      "test-product",
+					Available: []string{"1", "2"},
+					Staged:    "",
+					Deployed:  "3",
+				}, {
+					Name:      "another-product",
+					Available: []string{"4"},
+					Staged:    "5",
+					Deployed:  "",
+				}},
+				Available: true,
+				Staged:    false,
+				Deployed:  true,
+			}
+			By("Printing available and deployed columns")
+			tablePresenter.PresentProducts(products)
+
+			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Name", "Available", "Deployed"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(3))
+
+			values := fakeTableWriter.AppendArgsForCall(0)
+			Expect(values).To(Equal([]string{"test-product", "1", "3"}))
+			values = fakeTableWriter.AppendArgsForCall(1)
+			Expect(values).To(Equal([]string{"", "2", ""}))
+			values = fakeTableWriter.AppendArgsForCall(2)
+			Expect(values).To(Equal([]string{"another-product", "4", ""}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+
+			By("printing only the staged column")
+			products.Available = false
+			products.Staged = true
+			products.Deployed = false
+
+			fakeTableWriter = &fakes.TableWriter{}
+			tablePresenter = presenters.NewTablePresenter(fakeTableWriter)
+
+			tablePresenter.PresentProducts(products)
+
+			Expect(fakeTableWriter.SetAlignmentCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAlignmentArgsForCall(0)).To(Equal(tablewriter.ALIGN_LEFT))
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			headers = fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Name", "Staged"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+
+			values = fakeTableWriter.AppendArgsForCall(0)
 			Expect(values).To(Equal([]string{"another-product", "5"}))
 
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))

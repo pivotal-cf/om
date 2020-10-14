@@ -93,7 +93,7 @@ func (sp Products) Execute(args []string) error {
 		}
 
 		productVersions := productVersionsCombiner[product.Name]
-		productVersions.Available = product.Version
+		productVersions.Available = append(productVersions.Available, product.Version)
 		productVersionsCombiner[product.Name] = productVersions
 	}
 

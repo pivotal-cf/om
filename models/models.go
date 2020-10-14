@@ -24,7 +24,7 @@ type ProductsVersionsDisplay struct {
 
 type ProductVersions struct {
 	Name      string `json:"name"`
-	Available string `json:"available,omitempty"`
+	Available []string `json:"available,omitempty"`
 	Staged    string `json:"staged,omitempty"`
 	Deployed  string `json:"deployed,omitempty"`
 }

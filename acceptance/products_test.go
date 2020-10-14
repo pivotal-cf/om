@@ -16,7 +16,8 @@ var _ = Describe("products command", func() {
 |      NAME      | AVAILABLE | STAGED | DEPLOYED |
 +----------------+-----------+--------+----------+
 | acme-product-1 | 1.13.1    | 1.13.2 | 1.13.3   |
-| acme-product-2 | 1.8.0     | 1.8.1  | 1.8.2    |
+|                | 1.13.2    |        |          |
+| acme-product-2 | 1.8.0     | 1.8.1  |          |
 +----------------+-----------+--------+----------+
 `
 
@@ -24,6 +25,7 @@ var _ = Describe("products command", func() {
 |      NAME      | AVAILABLE |
 +----------------+-----------+
 | acme-product-1 | 1.13.1    |
+|                | 1.13.2    |
 | acme-product-2 | 1.8.0     |
 +----------------+-----------+
 `
@@ -33,6 +35,7 @@ var _ = Describe("products command", func() {
 +----------------+--------+
 | acme-product-1 | 1.13.2 |
 | acme-product-2 | 1.8.1  |
+| p-bosh         | 1.9.1  |
 +----------------+--------+
 `
 
@@ -40,39 +43,42 @@ var _ = Describe("products command", func() {
 |      NAME      | DEPLOYED |
 +----------------+----------+
 | acme-product-1 | 1.13.3   |
-| acme-product-2 | 1.8.2    |
+| p-bosh         | 1.9.1    |
 +----------------+----------+
 `
 
 	const defaultJsonOutput = `[
-		{"name":"acme-product-1","available":"1.13.1","staged":"1.13.2","deployed":"1.13.3"},
-		{"name":"acme-product-2","available":"1.8.0","staged":"1.8.1","deployed":"1.8.2"}
+		{"name":"acme-product-1","available":["1.13.1","1.13.2"],"staged":"1.13.2","deployed":"1.13.3"},
+		{"name":"acme-product-2","available":["1.8.0"],"staged":"1.8.1"},
+		{"name":"p-bosh","staged":"1.9.1","deployed":"1.9.1"}
 	]`
 
 	const availableJsonOutput = `[
-		{"name":"acme-product-1","available":"1.13.1"},
-		{"name":"acme-product-2","available":"1.8.0"}
+		{"name":"acme-product-1","available":["1.13.1","1.13.2"]},
+		{"name":"acme-product-2","available":["1.8.0"]}
 	]`
 
 	const stagedJsonOutput = `[
 		{"name":"acme-product-1","staged":"1.13.2"},
-		{"name":"acme-product-2","staged":"1.8.1"}
+		{"name":"acme-product-2","staged":"1.8.1"},
+		{"name":"p-bosh","staged":"1.9.1"}
 	]`
 
 	const deployedJsonOutput = `[
 		{"name":"acme-product-1","deployed":"1.13.3"},
-		{"name":"acme-product-2","deployed":"1.8.2"}
+		{"name":"p-bosh","deployed":"1.9.1"}
 	]`
 
 	const diagnosticReport = `{
 		"added_products": {
 			"staged": [
 				{"name":"acme-product-1","version":"1.13.2"},
-				{"name":"acme-product-2","version":"1.8.1"}
+				{"name":"acme-product-2","version":"1.8.1"},
+				{"name":"p-bosh","version":"1.9.1"}
 			],
 			"deployed": [
 				{"name":"acme-product-1","version":"1.13.3"},
-				{"name":"acme-product-2","version":"1.8.2"}
+				{"name":"p-bosh","version":"1.9.1"}
 			]
 		}
 	}`
@@ -80,6 +86,9 @@ var _ = Describe("products command", func() {
 	const availableProducts = `[{
 		"name": "acme-product-1",
 		"product_version": "1.13.1"
+	}, {
+		"name": "acme-product-1",
+		"product_version": "1.13.2"
 	}, {
 		"name":"acme-product-2",
 		"product_version":"1.8.0"

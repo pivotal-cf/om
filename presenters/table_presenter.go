@@ -179,20 +179,60 @@ func (t TablePresenter) PresentProducts(products models.ProductsVersionsDisplay)
 	t.tableWriter.SetHeader(append([]string{"Name"}, columns...))
 
 	for _, product := range products.ProductVersions {
-		var outputData []string
-		if products.Available {
-			outputData = append(outputData, product.Available)
-		}
+		moreAvailableProducts, firstProductLine := true, true
+		hasData := false
 
-		if products.Staged {
-			outputData = append(outputData, product.Staged)
-		}
+		for moreAvailableProducts {
+			var outputData []string
 
-		if products.Deployed {
-			outputData = append(outputData, product.Deployed)
-		}
+			moreAvailableProducts = false
+			if products.Available {
+				if len(product.Available) > 0 {
+					hasData = true
+					outputData = append(outputData, product.Available[0])
+					moreAvailableProducts = true
+					product.Available = product.Available[1:]
+				} else {
+					break
+				}
+			}
 
-		t.tableWriter.Append(append([]string{product.Name}, outputData...))
+			if products.Staged {
+				if product.Staged != "" && firstProductLine {
+					hasData = true
+					outputData = append(outputData, product.Staged)
+				} else {
+					outputData = append(outputData, "")
+				}
+			}
+
+			if products.Deployed {
+				if product.Deployed != "" && firstProductLine {
+					hasData = true
+					outputData = append(outputData, product.Deployed)
+				} else {
+					outputData = append(outputData, "")
+				}
+			}
+
+			//outputColumnsLength := len(outputData)
+			if len(outputData) != 0 && hasData {
+				//if outputColumnsLength < len(columns) {
+				//	for i := 0; i < len(columns)-outputColumnsLength; i++ {
+				//		outputData = append(outputData, "")
+				//	}
+				//}
+
+				productName := product.Name
+				if !firstProductLine {
+					productName = ""
+				}
+
+				t.tableWriter.Append(append([]string{productName}, outputData...))
+
+				firstProductLine = false
+			}
+		}
 	}
 
 	t.tableWriter.Render()
