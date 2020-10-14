@@ -220,7 +220,7 @@ var _ = Describe("Execute", func() {
 		Expect(err).To(MatchError(ContainSubstring("Expected to find variables: username")))
 	})
 
-	It("runs the interplation a second time on the output of the first time, without ops files", func() {
+	It("runs the interpolation a second time on the output of the first time, without ops files", func() {
 		// The goal here is to allow vars to be used to map multiple variables from some source
 		// into different names.
 		// In our case, the VarsEnv are vars from a secret store,
