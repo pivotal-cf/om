@@ -3,12 +3,12 @@
 
 # `om deployed-products`
 
-This authenticated command lists all deployed products.
+**DEPRECATED** This authenticated command lists all deployed products. Use 'products --deployed' instead.
 
 ## Command Usage
 ```
 
-This authenticated command lists all deployed products.
+**DEPRECATED** This authenticated command lists all deployed products. Use 'products --deployed' instead.
 
 Usage:
   om [options] deployed-products [<args>]

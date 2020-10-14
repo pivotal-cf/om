@@ -8,7 +8,7 @@ The `available-products` command will list all available product names and versi
 ## Command Usage
 ```
 
-This authenticated command lists all available products.
+**DEPRECATED** This authenticated command lists all available products. Use 'products --available' instead.
 
 Usage:
   om [options] available-products [<args>]

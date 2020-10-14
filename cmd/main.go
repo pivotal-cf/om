@@ -177,6 +177,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api, stderr)
 	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api, stdout)
 	commandSet["product-metadata"] = commands.NewProductMetadata(stdout)
+	commandSet["products"] = commands.NewProducts(presenter, api)
 	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
 	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(api, stdout)
 	commandSet["ssl-certificate"] = commands.NewSSLCertificate(api, presenter)

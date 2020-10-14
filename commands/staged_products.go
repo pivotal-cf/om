@@ -42,8 +42,8 @@ func (sp StagedProducts) Execute(args []string) error {
 
 func (sp StagedProducts) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command lists all staged products.",
-		ShortDescription: "lists staged products",
+		Description:      "**DEPRECATED** This authenticated command lists all staged products. Use 'products --staged' instead.",
+		ShortDescription: "**DEPRECATED** lists staged products. Use 'products --staged' instead.",
 		Flags:            sp.Options,
 	}
 }

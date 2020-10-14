@@ -60,6 +60,11 @@ type FormattedPresenter struct {
 	presentPendingChangesArgsForCall []struct {
 		arg1 api.PendingChangesOutput
 	}
+	PresentProductsStub        func(models.ProductsVersionsDisplay)
+	presentProductsMutex       sync.RWMutex
+	presentProductsArgsForCall []struct {
+		arg1 models.ProductsVersionsDisplay
+	}
 	PresentSSLCertificateStub        func(api.SSLCertificate)
 	presentSSLCertificateMutex       sync.RWMutex
 	presentSSLCertificateArgsForCall []struct {
@@ -419,6 +424,37 @@ func (fake *FormattedPresenter) PresentPendingChangesArgsForCall(i int) api.Pend
 	return argsForCall.arg1
 }
 
+func (fake *FormattedPresenter) PresentProducts(arg1 models.ProductsVersionsDisplay) {
+	fake.presentProductsMutex.Lock()
+	fake.presentProductsArgsForCall = append(fake.presentProductsArgsForCall, struct {
+		arg1 models.ProductsVersionsDisplay
+	}{arg1})
+	fake.recordInvocation("PresentProducts", []interface{}{arg1})
+	fake.presentProductsMutex.Unlock()
+	if fake.PresentProductsStub != nil {
+		fake.PresentProductsStub(arg1)
+	}
+}
+
+func (fake *FormattedPresenter) PresentProductsCallCount() int {
+	fake.presentProductsMutex.RLock()
+	defer fake.presentProductsMutex.RUnlock()
+	return len(fake.presentProductsArgsForCall)
+}
+
+func (fake *FormattedPresenter) PresentProductsCalls(stub func(models.ProductsVersionsDisplay)) {
+	fake.presentProductsMutex.Lock()
+	defer fake.presentProductsMutex.Unlock()
+	fake.PresentProductsStub = stub
+}
+
+func (fake *FormattedPresenter) PresentProductsArgsForCall(i int) models.ProductsVersionsDisplay {
+	fake.presentProductsMutex.RLock()
+	defer fake.presentProductsMutex.RUnlock()
+	argsForCall := fake.presentProductsArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FormattedPresenter) PresentSSLCertificate(arg1 api.SSLCertificate) {
 	fake.presentSSLCertificateMutex.Lock()
 	fake.presentSSLCertificateArgsForCall = append(fake.presentSSLCertificateArgsForCall, struct {
@@ -540,6 +576,8 @@ func (fake *FormattedPresenter) Invocations() map[string][][]interface{} {
 	defer fake.presentInstallationsMutex.RUnlock()
 	fake.presentPendingChangesMutex.RLock()
 	defer fake.presentPendingChangesMutex.RUnlock()
+	fake.presentProductsMutex.RLock()
+	defer fake.presentProductsMutex.RUnlock()
 	fake.presentSSLCertificateMutex.RLock()
 	defer fake.presentSSLCertificateMutex.RUnlock()
 	fake.presentStagedProductsMutex.RLock()
