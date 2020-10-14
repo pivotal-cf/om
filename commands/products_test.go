@@ -102,7 +102,11 @@ var _ = Describe("Products", func() {
 
 			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
 			Expect(presenter.PresentProductsCallCount()).To(Equal(1))
-			Expect(presenter.PresentProductsArgsForCall(0)).To(Equal(products))
+			Expect(presenter.PresentProductsArgsForCall(0).Available).To(Equal(true))
+			Expect(presenter.PresentProductsArgsForCall(0).Staged).To(Equal(true))
+			Expect(presenter.PresentProductsArgsForCall(0).Deployed).To(Equal(true))
+			Expect(presenter.PresentProductsArgsForCall(0).ProductVersions).To(ContainElements(products.ProductVersions))
+
 		})
 
 		When("the available flag is provided", func() {
