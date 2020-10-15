@@ -47,6 +47,13 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.4.2
+
+### Bug Fixes
+- `upload-stemcell` when providing `--stemcell` it always required an absolute path.
+  This has been fixed, so any stemcell path can be used.
+  Fixed #498.
+
 ## 6.4.1
 
 ### Bug Fixes

@@ -4,6 +4,7 @@ import (
 	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -21,14 +22,17 @@ var _ = Describe("upload-stemcell command", func() {
 		server       *ghttp.Server
 	)
 
-	createStemcell := func(filename string) string {
+	createStemcell := func(filename string) (string, string) {
 		dir, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		path := filepath.Join(dir, filename)
+		err = os.MkdirAll(filepath.Join(dir, "stemcells"), 0777)
+		Expect(err).ToNot(HaveOccurred())
+
+		path := filepath.Join(dir, "stemcells", filename)
 		err = ioutil.WriteFile(path, []byte("content so validation does not fail"), 0777)
 		Expect(err).ToNot(HaveOccurred())
-		return path
+		return path, dir
 	}
 
 	BeforeEach(func() {
@@ -70,13 +74,14 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 
 		It("successfully sends the stemcell to the Ops Manager", func() {
+			filename, _ := createStemcell("stemcell.tgz")
 			command := exec.Command(pathToMain,
 				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "pass",
 				"--skip-ssl-validation",
 				"upload-stemcell",
-				"--stemcell", createStemcell("stemcell.tgz"),
+				"--stemcell", filename,
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -91,27 +96,55 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 
 		When("the stemcell name has the `download-product` prefix", func() {
-			It("successfully sends the stemcell to the Ops Manager", func() {
-				filename := createStemcell("[ubuntu-xenial,97.88]stemcell.tgz")
-				command := exec.Command(pathToMain,
-					"--target", server.URL(),
-					"--username", "some-username",
-					"--password", "pass",
-					"--skip-ssl-validation",
-					"upload-stemcell",
-					"--stemcell", filename,
-				)
+			When("a relative path", func() {
+				It("successfully sends the stemcell to the Ops Manager", func() {
+					filename, dir := createStemcell("[ubuntu-xenial,97.88]stemcell.tgz")
+					command := exec.Command(pathToMain,
+						"--target", server.URL(),
+						"--username", "some-username",
+						"--password", "pass",
+						"--skip-ssl-validation",
+						"upload-stemcell",
+						"--stemcell", "stemcells/[ubuntu-xenial,97.88]stemcell.tgz",
+					)
+					command.Dir = dir
 
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
+					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Expect(err).ToNot(HaveOccurred())
 
-				Eventually(session, 10*time.Second).Should(gexec.Exit(0))
-				Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
-				Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
-				Eventually(session.Out).Should(gbytes.Say("finished upload"))
+					Eventually(session, 10*time.Second).Should(gexec.Exit(0))
+					Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
+					Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
+					Eventually(session.Out).Should(gbytes.Say("finished upload"))
 
-				Expect(stemcellName).To(Equal("stemcell.tgz"))
-				Expect(filename).To(BeAnExistingFile())
+					Expect(stemcellName).To(Equal("stemcell.tgz"))
+					Expect(filename).To(BeAnExistingFile())
+				})
+			})
+
+			When("a absolute path", func() {
+				It("successfully sends the stemcell to the Ops Manager", func() {
+					filename, _ := createStemcell("[ubuntu-xenial,97.88]stemcell.tgz")
+					command := exec.Command(pathToMain,
+						"--target", server.URL(),
+						"--username", "some-username",
+						"--password", "pass",
+						"--skip-ssl-validation",
+						"upload-stemcell",
+						"--stemcell", filename,
+					)
+
+					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Expect(err).ToNot(HaveOccurred())
+
+					Eventually(session, 10*time.Second).Should(gexec.Exit(0))
+					Eventually(session.Out).Should(gbytes.Say("processing stemcell"))
+					Eventually(session.Out).Should(gbytes.Say("beginning stemcell upload to Ops Manager"))
+					Eventually(session.Out).Should(gbytes.Say("finished upload"))
+
+					Expect(stemcellName).To(Equal("stemcell.tgz"))
+					Expect(filename).To(BeAnExistingFile())
+				})
 			})
 		})
 	})
@@ -152,13 +185,14 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 
 		It("exits early with no error", func() {
+			filename, _ := createStemcell("stemcell.tgz")
 			command := exec.Command(pathToMain,
 				"--target", server.URL(),
 				"--username", "some-username",
 				"--password", "some-password",
 				"--skip-ssl-validation",
 				"upload-stemcell",
-				"--stemcell", createStemcell("stemcell.tgz"),
+				"--stemcell", filename,
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
