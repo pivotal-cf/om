@@ -47,6 +47,20 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.5.0
+
+### Features
+- `om products` has been added.
+  This combines the functionality of staged-products, available-products, and deployed-products
+  and gives a default view that displays all three. 
+
+### Deprecation Notices
+These deprecations were added to eventually minimize
+some of the ever-growing command overhead in `om`
+- `deployed-products` has been deprecated in favor of `om products --deployed`
+- `available-products` has been deprecated in favor of `om products --available`
+- `staged-products` has been deprecated in favor of `om products --staged`
+
 ## 6.4.2
 
 ### Bug Fixes
