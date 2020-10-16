@@ -114,7 +114,7 @@ Commands:
   apply-changes                   triggers an install on the Ops Manager targeted
   assign-multi-stemcell           assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+
   assign-stemcell                 assigns an uploaded stemcell to a product in the targeted Ops Manager
-  available-products              list available products
+  available-products              **DEPRECATED** lists available products. Use 'products --available' instead.
   bosh-diff                       displays BOSH manifest diff for the director and products
   bosh-env                        prints bosh environment variables
   certificate-authorities         lists certificates managed by Ops Manager
@@ -137,7 +137,7 @@ Commands:
   delete-ssl-certificate          deletes certificate applied to Ops Manager
   delete-unused-products          deletes unused products on the Ops Manager targeted
   deployed-manifest               prints the deployed manifest for a product
-  deployed-products               lists deployed products
+  deployed-products               **DEPRECATED** lists deployed products. Use 'products --deployed' instead.
   diagnostic-report               reports current state of your Ops Manager
   disable-director-verifiers      disables director verifiers
   disable-product-verifiers       disables product verifiers
@@ -155,6 +155,7 @@ Commands:
   pending-changes                 checks for pending changes
   pre-deploy-check                checks completeness and validity of product configuration
   product-metadata                prints product metadata
+  products                        lists product staged, available, and deployed versions
   regenerate-certificates         deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes
   revert-staged-changes           This command reverts the staged changes already on an Ops Manager.
   ssl-certificate                 gets certificate applied to Ops Manager
@@ -162,7 +163,7 @@ Commands:
   staged-config                   generates a config from a staged product
   staged-director-config          generates a config from a staged director
   staged-manifest                 prints the staged manifest for a product
-  staged-products                 lists staged products
+  staged-products                 **DEPRECATED** lists staged products. Use 'products --staged' instead.
   unstage-product                 unstages a given product from the Ops Manager targeted
   upload-product                  uploads a given product to the Ops Manager targeted
   upload-stemcell                 uploads a given stemcell to the Ops Manager targeted
