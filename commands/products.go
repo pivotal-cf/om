@@ -49,53 +49,19 @@ func (sp Products) Execute(args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to retrieve staged and deployed products %s", err)
 	}
-
+	
+	stagedProducts := diagnosticReport.StagedProducts
+	deployedProducts := diagnosticReport.DeployedProducts
+	
 	availableProducts, err := sp.productService.ListAvailableProducts()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve available products %s", err)
 	}
-
-	stagedProducts := diagnosticReport.StagedProducts
-	deployedProducts := diagnosticReport.DeployedProducts
-
-	sp.presenter.SetFormat(sp.Options.Format)
-
+	
 	productVersionsCombiner := make(map[string]models.ProductVersions)
-	for _, product := range stagedProducts {
-		if _, ok := productVersionsCombiner[product.Name]; !ok {
-			productVersionsCombiner[product.Name] = models.ProductVersions{
-				Name: product.Name,
-			}
-		}
-
-		productVersions := productVersionsCombiner[product.Name]
-		productVersions.Staged = product.Version
-		productVersionsCombiner[product.Name] = productVersions
-	}
-
-	for _, product := range deployedProducts {
-		if _, ok := productVersionsCombiner[product.Name]; !ok {
-			productVersionsCombiner[product.Name] = models.ProductVersions{
-				Name: product.Name,
-			}
-		}
-
-		productVersions := productVersionsCombiner[product.Name]
-		productVersions.Deployed = product.Version
-		productVersionsCombiner[product.Name] = productVersions
-	}
-
-	for _, product := range availableProducts.ProductsList {
-		if _, ok := productVersionsCombiner[product.Name]; !ok {
-			productVersionsCombiner[product.Name] = models.ProductVersions{
-				Name: product.Name,
-			}
-		}
-
-		productVersions := productVersionsCombiner[product.Name]
-		productVersions.Available = append(productVersions.Available, product.Version)
-		productVersionsCombiner[product.Name] = productVersions
-	}
+	sp.combineStagedProducts(stagedProducts,productVersionsCombiner)
+	sp.combineDeployedProducts(deployedProducts, productVersionsCombiner)
+	sp.combineAvailableProducts(availableProducts, productVersionsCombiner)
 
 	var productVersions []models.ProductVersions
 	for _, versions := range productVersionsCombiner {
@@ -122,9 +88,52 @@ func (sp Products) Execute(args []string) error {
 		productVersionsOutput.Deployed = true
 	}
 
+	sp.presenter.SetFormat(sp.Options.Format)
 	sp.presenter.PresentProducts(productVersionsOutput)
 
 	return nil
+}
+
+func (sp Products) combineStagedProducts(stagedProducts []api.DiagnosticProduct, productVersionsCombiner map[string]models.ProductVersions) {
+	for _, product := range stagedProducts {
+		if _, ok := productVersionsCombiner[product.Name]; !ok {
+			productVersionsCombiner[product.Name] = models.ProductVersions{
+				Name: product.Name,
+			}
+		}
+
+		productVersions := productVersionsCombiner[product.Name]
+		productVersions.Staged = product.Version
+		productVersionsCombiner[product.Name] = productVersions
+	}
+}
+
+func (sp Products) combineDeployedProducts(deployedProducts []api.DiagnosticProduct, productVersionsCombiner map[string]models.ProductVersions) {
+	for _, product := range deployedProducts {
+		if _, ok := productVersionsCombiner[product.Name]; !ok {
+			productVersionsCombiner[product.Name] = models.ProductVersions{
+				Name: product.Name,
+			}
+		}
+
+		productVersions := productVersionsCombiner[product.Name]
+		productVersions.Deployed = product.Version
+		productVersionsCombiner[product.Name] = productVersions
+	}
+}
+
+func (sp Products) combineAvailableProducts(availableProducts api.AvailableProductsOutput, productVersionsCombiner map[string]models.ProductVersions) {
+	for _, product := range availableProducts.ProductsList {
+		if _, ok := productVersionsCombiner[product.Name]; !ok {
+			productVersionsCombiner[product.Name] = models.ProductVersions{
+				Name: product.Name,
+			}
+		}
+
+		productVersions := productVersionsCombiner[product.Name]
+		productVersions.Available = append(productVersions.Available, product.Version)
+		productVersionsCombiner[product.Name] = productVersions
+	}
 }
 
 func (sp Products) Usage() jhanda.Usage {
