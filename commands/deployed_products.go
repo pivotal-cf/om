@@ -48,8 +48,8 @@ func (dp DeployedProducts) Execute(args []string) error {
 
 func (dp DeployedProducts) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This authenticated command lists all deployed products.",
-		ShortDescription: "lists deployed products",
+		Description:      "**DEPRECATED** This authenticated command lists all deployed products. Use 'products --deployed' instead.",
+		ShortDescription: "**DEPRECATED** lists deployed products. Use 'products --deployed' instead.",
 		Flags:            dp.Options,
 	}
 }

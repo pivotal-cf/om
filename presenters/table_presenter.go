@@ -161,6 +161,79 @@ func (t TablePresenter) PresentPendingChanges(output api.PendingChangesOutput) {
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentProducts(products models.ProductsVersionsDisplay) {
+	var columns []string
+	if products.Available {
+		columns = append(columns, "Available")
+	}
+
+	if products.Staged {
+		columns = append(columns, "Staged")
+	}
+
+	if products.Deployed {
+		columns = append(columns, "Deployed")
+	}
+
+	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
+	t.tableWriter.SetHeader(append([]string{"Name"}, columns...))
+
+	for _, product := range products.ProductVersions {
+		moreAvailableProducts, firstProductLine := true, true
+		hasData := false
+
+		for moreAvailableProducts {
+			var outputData []string
+
+			moreAvailableProducts = false
+			if products.Available {
+				if len(product.Available) > 0 {
+					hasData = true
+					outputData = append(outputData, product.Available[0])
+					moreAvailableProducts = true
+					product.Available = product.Available[1:]
+				} else if firstProductLine {
+					outputData = append(outputData, "")
+				} else {
+					break
+				}
+			}
+
+			if products.Staged {
+				if product.Staged != "" && firstProductLine {
+					hasData = true
+					outputData = append(outputData, product.Staged)
+				} else {
+					outputData = append(outputData, "")
+				}
+			}
+
+			if products.Deployed {
+				if product.Deployed != "" && firstProductLine {
+					hasData = true
+					outputData = append(outputData, product.Deployed)
+				} else {
+					outputData = append(outputData, "")
+				}
+			}
+
+			if len(outputData) != 0 && hasData {
+
+				productName := product.Name
+				if !firstProductLine {
+					productName = ""
+				}
+
+				t.tableWriter.Append(append([]string{productName}, outputData...))
+
+				firstProductLine = false
+			}
+		}
+	}
+
+	t.tableWriter.Render()
+}
+
 func (t TablePresenter) PresentStagedProducts(stagedProducts []api.DiagnosticProduct) {
 	t.tableWriter.SetHeader([]string{"Name", "Version"})
 
