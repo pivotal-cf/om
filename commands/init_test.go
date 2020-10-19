@@ -4,8 +4,11 @@ import (
 	"github.com/fatih/color"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
 
+	"io/ioutil"
+	"regexp"
+	"strings"
+	"os"
 	"testing"
 )
 
@@ -29,4 +32,13 @@ var _ = BeforeSuite(func() {
 	//which ginkgo uses when running in parallel,
 	//so we have to override it)
 	color.NoColor = false
+
+	// Clear any OM env vars so as to not pollute the tests
+	re := regexp.MustCompile(`OM_*`)
+	for _, pair := range os.Environ() {
+		split := strings.Split(pair, "=")
+		if re.MatchString(split[0]) {
+			Expect(os.Unsetenv(split[0])).NotTo(HaveOccurred())
+		}
+	}
 })
