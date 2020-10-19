@@ -7,7 +7,10 @@ import (
 	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,6 +48,15 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	return []byte(omPath)
 }, func(data []byte) {
 	pathToMain = string(data)
+
+	// Clear any OM env vars so as to not pollute the tests
+	re := regexp.MustCompile(`OM_*`)
+	for _, pair := range os.Environ() {
+		split := strings.Split(pair, "=")
+		if re.MatchString(split[0]) {
+			Expect(os.Unsetenv(split[0])).NotTo(HaveOccurred())
+		}
+	}
 })
 
 var _ = SynchronizedAfterSuite(func() {
