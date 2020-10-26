@@ -116,7 +116,7 @@ Commands:
   assign-stemcell                 assigns an uploaded stemcell to a product in the targeted Ops Manager
   available-products              **DEPRECATED** lists available products. Use 'products --available' instead.
   bosh-diff                       displays BOSH manifest diff for the director and products
-  bosh-env                        prints bosh environment variables
+  bosh-env                        prints environment variables for BOSH and Credhub
   certificate-authorities         lists certificates managed by Ops Manager
   certificate-authority           prints requested certificate authority
   config-template                 generates a config template from a Pivnet product
