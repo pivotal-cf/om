@@ -259,8 +259,8 @@ func (c ConfigureDirector) updateIAASConfigurations(config *directorConfig) erro
 		if err != nil {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
-		if ok, _ := info.VersionAtLeast(2, 2); !ok {
-			return fmt.Errorf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s", info.Version)
+		if ok, err := info.VersionAtLeast(2, 2); !ok {
+			return fmt.Errorf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s. Error: %w", info.Version, err)
 		}
 
 		configurations, err := getJSONProperties(config.IAASConfigurations)

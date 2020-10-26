@@ -455,7 +455,7 @@ errands: lolololol
 
 						command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 						err := command.Execute([]string{"--product-name", "p-mysql"})
-						Expect(err).To(MatchError(fmt.Sprintf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", version)))
+						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", version)))
 					}
 				})
 			})

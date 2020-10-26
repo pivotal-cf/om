@@ -137,10 +137,14 @@ func (ec StagedConfig) Execute(args []string) error {
 	}
 
 	var syslogProperties map[string]interface{}
-	if ok, _ := info.VersionAtLeast(2, 4); ok {
+	if ok, err := info.VersionAtLeast(2, 4); ok {
+		var errStr string
+		if err != nil {
+			errStr = err.Error()
+		}
 		syslogProperties, err = ec.service.GetStagedProductSyslogConfiguration(productGUID)
 		if err != nil {
-			return err
+			return fmt.Errorf("syslog properties are only available in Ops Manager 2.4 or later. You are running: %s; %s %w", info.Version, errStr, err)
 		}
 	}
 

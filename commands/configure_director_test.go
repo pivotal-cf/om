@@ -624,7 +624,7 @@ vmtypes-configuration:
 							service.InfoReturns(api.Info{Version: version}, nil)
 
 							err := command.Execute([]string{"--config", writeTestConfigFile(`"iaas-configurations": [{"name": "default", "guid": "some-guid"}]`)})
-							Expect(err).To(MatchError(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s", version)))
+							Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("\"iaas-configurations\" is only available with Ops Manager 2.2 or later: you are running %s", version)))
 						}
 					})
 				})

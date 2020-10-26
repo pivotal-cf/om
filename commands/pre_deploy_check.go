@@ -46,8 +46,8 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-	if ok, _ := info.VersionAtLeast(2, 6); !ok {
-		return fmt.Errorf("pre deploy checks are only supported in OpsManager 2.6")
+	if ok, err := info.VersionAtLeast(2, 6); !ok {
+		return fmt.Errorf("pre deploy checks are only supported in OpsManager 2.6: %w", err)
 	}
 
 	pendingDirectorChanges, err := pc.service.ListPendingDirectorChanges()

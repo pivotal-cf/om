@@ -430,7 +430,7 @@ syslog-properties:
 				err := command.Execute([]string{
 					"--product-name", "some-product",
 				})
-				Expect(err).To(MatchError("some-error"))
+				Expect(err.Error()).To(ContainSubstring("some-error"))
 			})
 		})
 	})
