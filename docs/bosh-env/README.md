@@ -8,7 +8,7 @@ The `bosh-env` command setup environment variables to target bosh director and/o
 ## Command Usage
 ```
 
-This prints bosh environment variables to target bosh director. You can invoke it directly to see its output, or use it directly with an evaluate-type command:
+This prints environment variables to target the BOSH director and Credhub. You can invoke it directly to see its output, or use it directly with an evaluate-type command:
 On posix system: eval "$(om bosh-env)"
 On powershell: iex $(om bosh-env | Out-String)
 
@@ -16,6 +16,8 @@ Usage:
   om [options] bosh-env [<args>]
 
 Flags:
+  --bosh, -b             bool    Prints the BOSH director environment variables (default: false)
+  --credhub, -c          bool    Prints the Credhub environment variables (default: false)
   --shell-type           string  Prints for the given shell (posix|powershell)
   --ssh-private-key, -i  string  Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel.
 

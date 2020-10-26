@@ -21,6 +21,8 @@ type BoshEnvironment struct {
 	opsmanHost      string
 	Options         struct {
 		ShellType     string `long:"shell-type" description:"Prints for the given shell (posix|powershell)"`
+		BoshVars      bool   `long:"bosh" short:"b" default:"false" description:"Prints the BOSH director environment variables"`
+		CredhubVars   bool   `long:"credhub" short:"c" default:"false" description:"Prints the Credhub environment variables"`
 		SSHPrivateKey string `long:"ssh-private-key" short:"i" description:"Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel."`
 	}
 }
@@ -89,15 +91,22 @@ func (be BoshEnvironment) Execute(args []string) error {
 	}
 
 	variables := make(map[string]string)
-	variables["BOSH_CLIENT"] = boshEnvironment.Client
-	variables["BOSH_CLIENT_SECRET"] = boshEnvironment.ClientSecret
-	variables["BOSH_ENVIRONMENT"] = boshEnvironment.Environment
-	variables["BOSH_CA_CERT"] = boshCACerts
 
-	variables["CREDHUB_CLIENT"] = boshEnvironment.Client
-	variables["CREDHUB_SECRET"] = boshEnvironment.ClientSecret
-	variables["CREDHUB_SERVER"] = fmt.Sprintf("https://%s:8844", boshEnvironment.Environment)
-	variables["CREDHUB_CA_CERT"] = boshCACerts
+	allEnvVars := !be.Options.BoshVars && !be.Options.CredhubVars
+
+	if be.Options.BoshVars || allEnvVars {
+		variables["BOSH_CLIENT"] = boshEnvironment.Client
+		variables["BOSH_CLIENT_SECRET"] = boshEnvironment.ClientSecret
+		variables["BOSH_ENVIRONMENT"] = boshEnvironment.Environment
+		variables["BOSH_CA_CERT"] = boshCACerts
+	}
+
+	if be.Options.CredhubVars || allEnvVars {
+		variables["CREDHUB_CLIENT"] = boshEnvironment.Client
+		variables["CREDHUB_SECRET"] = boshEnvironment.ClientSecret
+		variables["CREDHUB_SERVER"] = fmt.Sprintf("https://%s:8844", boshEnvironment.Environment)
+		variables["CREDHUB_CA_CERT"] = boshCACerts
+	}
 
 	if be.Options.SSHPrivateKey != "" {
 		file, err := getKeyFilePath(be.Options.SSHPrivateKey)
@@ -105,8 +114,16 @@ func (be BoshEnvironment) Execute(args []string) error {
 			return err
 		}
 
-		variables["BOSH_ALL_PROXY"] = fmt.Sprintf("ssh+socks5://ubuntu@%s:22?private-key=%s", be.Target(), file)
-		variables["CREDHUB_PROXY"] = variables["BOSH_ALL_PROXY"]
+		proxy := fmt.Sprintf("ssh+socks5://ubuntu@%s:22?private-key=%s", be.Target(), file)
+
+		if be.Options.BoshVars || allEnvVars {
+			variables["BOSH_ALL_PROXY"] = proxy
+		}
+
+
+		if be.Options.CredhubVars || allEnvVars {
+			variables["CREDHUB_PROXY"] = proxy
+		}
 	}
 	be.renderVariables(renderer, variables)
 
@@ -115,8 +132,8 @@ func (be BoshEnvironment) Execute(args []string) error {
 
 func (be BoshEnvironment) Usage() jhanda.Usage {
 	return jhanda.Usage{
-		Description:      "This prints bosh environment variables to target bosh director. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
-		ShortDescription: "prints bosh environment variables",
+		Description:      "This prints environment variables to target the BOSH director and Credhub. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
+		ShortDescription: "prints environment variables for BOSH and Credhub",
 		Flags:            be.Options,
 	}
 }

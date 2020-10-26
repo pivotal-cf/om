@@ -16,7 +16,7 @@ for this product.
 | [assign-stemcell](assign-stemcell/README.md) | assigns an uploaded stemcell to a product in the targeted Ops Manager |
 | [available-products](available-products/README.md) | **DEPRECATED** lists available products. Use 'products --available' instead. |
 | [bosh-diff](bosh-diff/README.md) | displays BOSH manifest diff for the director and products |
-| [bosh-env](bosh-env/README.md) | prints bosh environment variables |
+| [bosh-env](bosh-env/README.md) | prints environment variables for BOSH and Credhub |
 | [certificate-authorities](certificate-authorities/README.md) | lists certificates managed by Ops Manager |
 | [certificate-authority](certificate-authority/README.md) | prints requested certificate authority |
 | [config-template](config-template/README.md) | generates a config template from a Pivnet product |
