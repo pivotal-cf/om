@@ -48,11 +48,17 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
 ## 6.5.0
-
 ### Features
 - `om products` has been added.
   This combines the functionality of staged-products, available-products, and deployed-products
-  and gives a default view that displays all three. 
+  and gives a default view that displays all three.
+  This resolved issue [#458](https://github.com/pivotal-cf/om/issues/458).
+  Thanks to [@iplay88keys](https://github.com/iplay88keys) for the PR!
+- `om bosh-env` now supports the `--credhub` and `--bosh` flags.
+  If provided, only the vars for the provided flags will be printed.
+  Default behavior of printing both sets of vars remains the same.
+  This resolved issue [#466](https://github.com/pivotal-cf/om/issues/466).
+  Thanks to [@iplay88keys](https://github.com/iplay88keys) for the PR!
 
 ### Deprecation Notices
 These deprecations were added to eventually minimize
@@ -62,21 +68,18 @@ some of the ever-growing command overhead in `om`
 - `staged-products` has been deprecated in favor of `om products --staged`
 
 ## 6.4.2
-
 ### Bug Fixes
 - `upload-stemcell` when providing `--stemcell` it always required an absolute path.
   This has been fixed, so any stemcell path can be used.
   Fixed #498.
 
 ## 6.4.1
-
 ### Bug Fixes
 - `pending-changes` would always fail if installation incomplete, product unconfigured, or stemcell missing
   regardless of whether the `--check` flag (exit 1 if there are pending changes) was set.
   This has been fixed so that the implied and intended behavior is reflected in the ouput of the command.
 
 ## 6.4.0
-
 ### Features
 - When using `stage-product`, the `--product-version` can use the placeholder `latest`.
   This finds the highest semvered available product (of `--product-name`) version to stage.
@@ -95,7 +98,6 @@ some of the ever-growing command overhead in `om`
   Please see the original issue [#207](https://github.com/pivotal-cf/om/issues/207) for more information.
 
 ## 6.3.0
-
 ### Feature
 - `bosh diff --check` will now return exit status 2
   instead of exit status 1.
@@ -106,10 +108,9 @@ some of the ever-growing command overhead in `om`
 - When using collection with secrets,
   the GUID matching for maintaining GUIDs across updates faulted
   only when the tile was being upgraded and migrating said property.
-  Related issue #514.
+  Related issue [#514](https://github.com/pivotal-cf/om/issues/514).
 
 ## 6.2.0
-
 ### Features
 - `interpolate` behavior has been improved
   in all commands that perform interpolation.
@@ -143,7 +144,6 @@ some of the ever-growing command overhead in `om`
    - secret/credential properties that haven't changed
 
 ## 6.1.2
-
 ### Bug Fixes
 - `configure-product` will no longer assign a new guid for unnamed collections
   - the _decorating collection with guid_ logic will associate existing collection item guids based on (in order)
@@ -156,13 +156,11 @@ some of the ever-growing command overhead in `om`
   This addresses [#207](https://github.com/pivotal-cf/om/issues/207); improving GitOps style workflows
 
 ## 6.1.1
-
 ### Bug Fixes
 - When using `cache-cleanup`, globbing was not correctly done for files that contain the metadata prefix.
   This meant that files with `[pivnet-slug,pivnet-version]` will still laying around.
 
 ## 6.1.0
-
 ### Features
 - [`--source pivnet` only]`download-product` now supports the `--check-already-uploaded` flag.
   If a valid env file is provided with the flag,
@@ -175,14 +173,12 @@ some of the ever-growing command overhead in `om`
   before attempting to download from Tanzu Network
 
 ## 6.0.1
-
 ### Bug Fixes
 - `download-product` will now correctly cache if downloading from a blobstore
   when `CACHE_CLEANUP='I acknowledge this will delete files in the output directories'`
   is set.
 
 ## 6.0.0
-
 ### Features
 - With some code refactoring,
   we've introduced support for `--vars`, `--vars-file`, and `--vars-env`
@@ -213,7 +209,6 @@ some of the ever-growing command overhead in `om`
   found in `download-product` and `stage-product`.
 
 ## 5.0.0
-
 ### Breaking Changes
 - Removed deprecated `tile-metadata` command.
   Please use `product-metadata` command.
@@ -256,7 +251,6 @@ some of the ever-growing command overhead in `om`
 - `interpolate` will no longer append a newline to end of the output
 
 ## 4.8.0
-
 ### Features
 - `download-product` now supports defining a custom `stemcell-version` in the config file.
   This flag is `--stemcell-version`, and requires `--stemcell-iaas` to be set.
@@ -269,7 +263,6 @@ some of the ever-growing command overhead in `om`
   This matches patterns for automation available in other commands.
 
 ## 4.7.0
-
 ### Features
 - `configure-opsman` command has been added.
   This allows configuration of several Ops Manager settings.
@@ -370,7 +363,6 @@ some of the ever-growing command overhead in `om`
   For config example, see the [docs](https://github.com/pivotal-cf/om/tree/master/docs/configure-opsman) for the command.
 
 ## 4.6.0
-
 ### Features
 - `configure-authentication` now supports
   the `OM_DECRYPTION_PASSPHRASE` environment variable.
@@ -390,7 +382,6 @@ some of the ever-growing command overhead in `om`
   Force download of the heavy stemcell (if available) with the `--stemcell-heavy` flag.
 
 ## 4.5.0
-
 ### Features
 - `interpolate` now supports the dot notation to reference array values.
   For example,
@@ -401,7 +392,6 @@ some of the ever-growing command overhead in `om`
   ```
 
 ## 4.4.2
-
 ### Features
 - To mitigate confusion, the `pivnet-file-glob` param for `download-product` now has an alias of `file-glob`.
 - `update-ssl-certificate` now supports passing `certificate-pem` and `private-key-pem`
@@ -409,7 +399,6 @@ some of the ever-growing command overhead in `om`
   This closes issue [#463](https://github.com/pivotal-cf/om/issues/463).
 
 ## 4.4.1
-
 ### Features
 - The experimental command `product-diff` had been renamed `bosh-diff`
   and now includes the director diff.
@@ -422,7 +411,6 @@ some of the ever-growing command overhead in `om`
   will show the director, Pivotal Application Service, and Pivotal Healthwatch differences.
 
 ## 4.4.0
-
 ### Features
 - The experimental command `product-diff` has been added.
   It gets the manifest diff for a specified set of products.
@@ -438,7 +426,6 @@ some of the ever-growing command overhead in `om`
 - The environment variable `OM_VARS_ENV` was not enabled on all commands that allows `--vars-env`.
 
 ## 4.3.0
-
 ### Features
 - We'd like to welcome back the `revert-staged-changes` command.
   It requires an API endpoint released in Ops Manager versions 2.5.21+, 2.6.13+, or 2.7.2+.
@@ -456,7 +443,6 @@ some of the ever-growing command overhead in `om`
   Nothing has changed with them, we literally just forgot to remove these ages ago.
 
 ## 4.2.1
-
 ### Bug fixes
 * `interpolate` command now has order precedence when a file or stdin is provided.
   - `--config` with a file always takes precedence
@@ -466,7 +452,6 @@ some of the ever-growing command overhead in `om`
   will be ignored when interacting with IAAS endpoints.
 
 ## 4.2.0
-
 ### Features
 - **EXPERIMENTAL** `config-template` now includes `max-in-flight` for all resources. (PR: @jghiloni)
 - When using `configure-product` and `configure-director`,
@@ -480,7 +465,6 @@ some of the ever-growing command overhead in `om`
   (PR: @jghiloni)
 
 ## 4.1.0
-
 ### Features
 - `download-product` supports GCS (Google Cloud Storage)
   for Tanzu Network download artifacts.
@@ -537,13 +521,11 @@ some of the ever-growing command overhead in `om`
   and to documentation.
 
 ## 4.0.1
-
 ### Bug Fixes
 - The `ca-cert` option works in the `env.yml`.
   A filename or string value can be used.
 
 ## 4.0.0
-
 ### Breaking Changes
 - `apply-changes` will no longer reattach when it finds an already running installation.
   to re-enable this feature, provide the `--reattach` flag.
@@ -554,20 +536,18 @@ some of the ever-growing command overhead in `om`
 - **EXPERIMENTAL** `config-template` now accepts `--pivnet-file-glob` instead of `--product-file-glob`.
   This is to create consistency with the `download-product` command's naming conventions.
   (PR: @poligraph)
+  
 ## 3.2.2
-
 ### Bug Fixes
 - `staged-config` will now work again for Ops Manager versions <= 2.3.
   This solves issue [#419](https://github.com/pivotal-cf/om/issues/419)
 
 ## 3.2.1
-
 ### Bug Fixes
 - `configure-director` now will configure VM Extensions before setting Resource Config.
   This fixes issue [#411](https://github.com/pivotal-cf/om/issues/411)
 
 ## 3.2.0
-
 ### Features
 - `expiring-certificates` command was added.
   This command returns a list of certificates
@@ -629,7 +609,6 @@ some of the ever-growing command overhead in `om`
   The `tile-metadata` command will be removed in a future release.
 
 ## 3.1.0
-
 ### Features
 
 - TLS v1.2 is the minimum version supported when connecting to an Ops Manager
@@ -658,7 +637,6 @@ some of the ever-growing command overhead in `om`
   ```
 
 ## 3.0.0
-
 ### Features
 
 - `pivnet-api-token` is now optional in `download-product`
@@ -703,7 +681,6 @@ some of the ever-growing command overhead in `om`
 Was a release to make sure that `brew upgrade` works.
 
 ## 2.0.0
-
 ### Features
 - `configure-ldap-authentication` and `configure-saml-authentication` can create a UAA client on the Ops Manager vm.
   The client_secret will be the value provided to this option `precreated-client-secret`.
@@ -731,7 +708,6 @@ Was a release to make sure that `brew upgrade` works.
   Our semver API declaration has been updated to reflect this.
 
 ## 1.2.0
-
 ### Features
 * Both `om configure-ldap-authentication`
   and `om configure-saml-authentication`
@@ -767,7 +743,6 @@ Was a release to make sure that `brew upgrade` works.
   Previously, this would exit gracefully, but not return a file.
 
 ## 1.1.0
-
 ### Features
 * (**EXPERIMENTAL**) `pre-deploy-check` has been added as a new command.
   This command can be run at any time.
@@ -812,7 +787,6 @@ Was a release to make sure that `brew upgrade` works.
   This closes issue [#350](https://github.com/pivotal-cf/om/issues/350)
 
 ## 1.0.0
-
 ### Breaking Changes
 * `om` will now follow conventional Semantic Versioning,
   with breaking changes in major bumps,
