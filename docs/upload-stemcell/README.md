@@ -19,7 +19,7 @@ Flags:
   --floating               string             assigns the stemcell to all compatible products  (default: true)
   --force, -f              bool               upload stemcell even if it already exists on the target Ops Manager
   --shasum                 string             shasum of the provided product file to be used for validation
-  --stemcell, -s           string (required)  path to stemcell (NOTE: use absolute path)
+  --stemcell, -s           string (required)  path to stemcell
   --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
   --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
   --vars-file, -l          string (variadic)  load variables from a YAML file

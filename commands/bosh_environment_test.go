@@ -23,11 +23,13 @@ var _ = Describe("bosh-env", func() {
 			fakeRendererFactory *fakes.RendererFactory
 			stdout              *fakes.Logger
 		)
+
 		BeforeEach(func() {
 			fakeService = &fakes.BoshEnvironmentService{}
 			fakeRendererFactory = &fakes.RendererFactory{}
 			stdout = &fakes.Logger{}
 		})
+
 		It("Should use the target as is", func() {
 			command := commands.NewBoshEnvironment(fakeService, stdout, "opsman.pivotal.io", fakeRendererFactory)
 			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
@@ -53,6 +55,7 @@ var _ = Describe("bosh-env", func() {
 			Expect(command.Target()).Should(Equal("opsman.pivotal.io"))
 		})
 	})
+
 	Context("calling the api", func() {
 		var (
 			command             commands.BoshEnvironment
@@ -128,7 +131,6 @@ var _ = Describe("bosh-env", func() {
 						Expect(value).To(Equal(fmt.Sprintf("[export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s]", keyFile)))
 					}
 				}
-
 			})
 		})
 
@@ -166,6 +168,177 @@ var _ = Describe("bosh-env", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(stdout.PrintlnCallCount()).To(Equal(8))
 			})
+		})
+	})
+
+	Context("calling the api", func() {
+		var (
+			command             commands.BoshEnvironment
+			fakeService         *fakes.BoshEnvironmentService
+			fakeRendererFactory *fakes.RendererFactory
+			stdout              *fakes.Logger
+			err                 error
+		)
+
+		BeforeEach(func() {
+			fakeService = &fakes.BoshEnvironmentService{}
+			fakeRendererFactory = &fakes.RendererFactory{}
+			stdout = &fakes.Logger{}
+			command = commands.NewBoshEnvironment(fakeService, stdout, "opsman.pivotal.io", fakeRendererFactory)
+			fakeService.GetBoshEnvironmentReturns(api.GetBoshEnvironmentOutput{
+				Client:       "opsmanager_client",
+				ClientSecret: "my-super-secret",
+				Environment:  "10.0.0.10",
+			}, nil)
+			fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{
+				CAs: []api.CA{
+					api.CA{
+						Active:  true,
+						CertPEM: "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
+					},
+				},
+			}, nil)
+			fakeRendererFactory.CreateReturns(renderers.NewPosix(), nil)
+		})
+
+		It("prints all of the environment variables when neither the bosh or credhub flags are passed", func() {
+			err = os.Mkdir("./tmp-all-env", os.ModePerm)
+			Expect(err).ToNot(HaveOccurred())
+
+			defer func() {
+				err = os.RemoveAll("./tmp-all-env")
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			f, err := ioutil.TempFile("./tmp-all-env", "opsmankey-*.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			keyFile, err := filepath.Abs(f.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			wd, err := os.Getwd()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err = os.Chdir(wd)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			err = os.Chdir("./tmp-all-env")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{"-i", filepath.Base(keyFile)})
+			Expect(err).ToNot(HaveOccurred())
+
+			var lines []string
+			for _, outer := range stdout.Invocations()["Println"] {
+				for _, middle := range outer {
+					for _, line := range middle.([]interface{}) {
+						lines = append(lines, fmt.Sprintf("%v", line))
+					}
+				}
+			}
+
+			Expect(lines).To(ContainElements(
+				"export CREDHUB_SERVER=https://10.0.0.10:8844",
+				"export CREDHUB_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
+				fmt.Sprintf("export CREDHUB_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
+				"export BOSH_CLIENT=opsmanager_client",
+				"export BOSH_CLIENT_SECRET=my-super-secret",
+				"export BOSH_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
+				fmt.Sprintf("export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
+				"export BOSH_ENVIRONMENT=10.0.0.10",
+				"export CREDHUB_CLIENT=opsmanager_client",
+				"export CREDHUB_SECRET=my-super-secret",
+			))
+		})
+
+		It("prints only BOSH environment variables when the bosh flag is passed", func() {
+			err = os.Mkdir("./tmp-bosh-env", os.ModePerm)
+			Expect(err).ToNot(HaveOccurred())
+
+			defer func() {
+				err = os.RemoveAll("./tmp-bosh-env")
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			f, err := ioutil.TempFile("./tmp-bosh-env", "opsmankey-*.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			keyFile, err := filepath.Abs(f.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			wd, err := os.Getwd()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err = os.Chdir(wd)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			err = os.Chdir("./tmp-bosh-env")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{"-i", filepath.Base(keyFile), "-b"})
+			Expect(err).ToNot(HaveOccurred())
+
+			var lines []string
+			for _, outer := range stdout.Invocations()["Println"] {
+				for _, middle := range outer {
+					for _, line := range middle.([]interface{}) {
+						lines = append(lines, fmt.Sprintf("%v", line))
+					}
+				}
+			}
+
+			Expect(lines).To(ContainElements(
+				"export BOSH_CLIENT=opsmanager_client",
+				"export BOSH_CLIENT_SECRET=my-super-secret",
+				"export BOSH_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
+				fmt.Sprintf("export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
+				"export BOSH_ENVIRONMENT=10.0.0.10",
+			))
+		})
+
+		It("prints only the Credhub environment variables when the credhub flag is passed", func() {
+			err = os.Mkdir("./tmp-credhub-env", os.ModePerm)
+			Expect(err).ToNot(HaveOccurred())
+
+			defer func() {
+				err = os.RemoveAll("./tmp-credhub-env")
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			f, err := ioutil.TempFile("./tmp-credhub-env", "opsmankey-*.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			keyFile, err := filepath.Abs(f.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			wd, err := os.Getwd()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err = os.Chdir(wd)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			err = os.Chdir("./tmp-credhub-env")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{"-i", filepath.Base(keyFile), "-c"})
+			Expect(err).ToNot(HaveOccurred())
+
+			var lines []string
+			for _, outer := range stdout.Invocations()["Println"] {
+				for _, middle := range outer {
+					for _, line := range middle.([]interface{}) {
+						lines = append(lines, fmt.Sprintf("%v", line))
+					}
+				}
+			}
+
+			Expect(lines).To(ContainElements(
+				"export CREDHUB_SERVER=https://10.0.0.10:8844",
+				"export CREDHUB_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
+				fmt.Sprintf("export CREDHUB_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
+				"export CREDHUB_CLIENT=opsmanager_client",
+				"export CREDHUB_SECRET=my-super-secret",
+			))
 		})
 	})
 })
