@@ -23,6 +23,7 @@ type BoshEnvironment struct {
 		ShellType     string `long:"shell-type" description:"Prints for the given shell (posix|powershell)"`
 		BoshVars      bool   `long:"bosh" short:"b" default:"false" description:"Prints the BOSH director environment variables"`
 		CredhubVars   bool   `long:"credhub" short:"c" default:"false" description:"Prints the Credhub environment variables"`
+		Unset         bool   `long:"unset" short:"u" default:"false" description:"Prints unset commands for the environment variables"`
 		SSHPrivateKey string `long:"ssh-private-key" short:"i" description:"Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel."`
 	}
 }
@@ -91,6 +92,9 @@ func (be BoshEnvironment) Execute(args []string) error {
 	}
 
 	variables := make(map[string]string)
+	var unsetVariables []string
+	{
+	}
 
 	allEnvVars := !be.Options.BoshVars && !be.Options.CredhubVars
 
@@ -99,6 +103,13 @@ func (be BoshEnvironment) Execute(args []string) error {
 		variables["BOSH_CLIENT_SECRET"] = boshEnvironment.ClientSecret
 		variables["BOSH_ENVIRONMENT"] = boshEnvironment.Environment
 		variables["BOSH_CA_CERT"] = boshCACerts
+
+		unsetVariables = append(unsetVariables, []string{
+			"BOSH_CLIENT",
+			"BOSH_CLIENT_SECRET",
+			"BOSH_ENVIRONMENT",
+			"BOSH_CA_CERT",
+		}...)
 	}
 
 	if be.Options.CredhubVars || allEnvVars {
@@ -106,6 +117,13 @@ func (be BoshEnvironment) Execute(args []string) error {
 		variables["CREDHUB_SECRET"] = boshEnvironment.ClientSecret
 		variables["CREDHUB_SERVER"] = fmt.Sprintf("https://%s:8844", boshEnvironment.Environment)
 		variables["CREDHUB_CA_CERT"] = boshCACerts
+
+		unsetVariables = append(unsetVariables, []string{
+			"CREDHUB_CLIENT",
+			"CREDHUB_SECRET",
+			"CREDHUB_SERVER",
+			"CREDHUB_CA_CERT",
+		}...)
 	}
 
 	if be.Options.SSHPrivateKey != "" {
@@ -118,14 +136,22 @@ func (be BoshEnvironment) Execute(args []string) error {
 
 		if be.Options.BoshVars || allEnvVars {
 			variables["BOSH_ALL_PROXY"] = proxy
-		}
 
+			unsetVariables = append(unsetVariables, "BOSH_ALL_PROXY")
+		}
 
 		if be.Options.CredhubVars || allEnvVars {
 			variables["CREDHUB_PROXY"] = proxy
+
+			unsetVariables = append(unsetVariables, "CREDHUB_PROXY")
 		}
 	}
-	be.renderVariables(renderer, variables)
+
+	if be.Options.Unset {
+		be.renderUnsetVariables(renderer, unsetVariables)
+	} else {
+		be.renderVariables(renderer, variables)
+	}
 
 	return nil
 }
@@ -141,6 +167,12 @@ func (be BoshEnvironment) Usage() jhanda.Usage {
 func (be BoshEnvironment) renderVariables(renderer renderers.Renderer, variables map[string]string) {
 	for k, v := range variables {
 		be.logger.Println(renderer.RenderEnvironmentVariable(k, v))
+	}
+}
+
+func (be BoshEnvironment) renderUnsetVariables(renderer renderers.Renderer, variables []string) {
+	for _, variable := range variables {
+		be.logger.Println(renderer.RenderUnsetVariable(variable))
 	}
 }
 

@@ -171,7 +171,7 @@ var _ = Describe("bosh-env", func() {
 		})
 	})
 
-	Context("calling the api", func() {
+	Context("printing environment variables", func() {
 		var (
 			command             commands.BoshEnvironment
 			fakeService         *fakes.BoshEnvironmentService
@@ -338,6 +338,177 @@ var _ = Describe("bosh-env", func() {
 				fmt.Sprintf("export CREDHUB_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
 				"export CREDHUB_CLIENT=opsmanager_client",
 				"export CREDHUB_SECRET=my-super-secret",
+			))
+		})
+	})
+
+	Context("printing unset commands for the environment variables", func() {
+		var (
+			command             commands.BoshEnvironment
+			fakeService         *fakes.BoshEnvironmentService
+			fakeRendererFactory *fakes.RendererFactory
+			stdout              *fakes.Logger
+			err                 error
+		)
+
+		BeforeEach(func() {
+			fakeService = &fakes.BoshEnvironmentService{}
+			fakeRendererFactory = &fakes.RendererFactory{}
+			stdout = &fakes.Logger{}
+			command = commands.NewBoshEnvironment(fakeService, stdout, "opsman.pivotal.io", fakeRendererFactory)
+			fakeService.GetBoshEnvironmentReturns(api.GetBoshEnvironmentOutput{
+				Client:       "opsmanager_client",
+				ClientSecret: "my-super-secret",
+				Environment:  "10.0.0.10",
+			}, nil)
+			fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{
+				CAs: []api.CA{
+					api.CA{
+						Active:  true,
+						CertPEM: "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....",
+					},
+				},
+			}, nil)
+			fakeRendererFactory.CreateReturns(renderers.NewPosix(), nil)
+		})
+
+		It("prints all of the unset commands when neither the bosh or credhub flags are passed", func() {
+			err = os.Mkdir("./tmp-unset-all-env", os.ModePerm)
+			Expect(err).ToNot(HaveOccurred())
+
+			defer func() {
+				err = os.RemoveAll("./tmp-unset-all-env")
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			f, err := ioutil.TempFile("./tmp-unset-all-env", "opsmankey-*.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			keyFile, err := filepath.Abs(f.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			wd, err := os.Getwd()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err = os.Chdir(wd)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			err = os.Chdir("./tmp-unset-all-env")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{"-i", filepath.Base(keyFile), "--unset"})
+			Expect(err).ToNot(HaveOccurred())
+
+			var lines []string
+			for _, outer := range stdout.Invocations()["Println"] {
+				for _, middle := range outer {
+					for _, line := range middle.([]interface{}) {
+						lines = append(lines, fmt.Sprintf("%v", line))
+					}
+				}
+			}
+
+			Expect(lines).To(ContainElements(
+				"unset CREDHUB_SERVER",
+				"unset CREDHUB_CA_CERT",
+				"unset CREDHUB_PROXY",
+				"unset BOSH_CLIENT",
+				"unset BOSH_CLIENT_SECRET",
+				"unset BOSH_CA_CERT",
+				"unset BOSH_ALL_PROXY",
+				"unset BOSH_ENVIRONMENT",
+				"unset CREDHUB_CLIENT",
+				"unset CREDHUB_SECRET",
+			))
+		})
+
+		It("prints only unset commands for BOSH environment variables when the bosh flag is passed", func() {
+			err = os.Mkdir("./tmp-unset-bosh-env", os.ModePerm)
+			Expect(err).ToNot(HaveOccurred())
+
+			defer func() {
+				err = os.RemoveAll("./tmp-unset-bosh-env")
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			f, err := ioutil.TempFile("./tmp-unset-bosh-env", "opsmankey-*.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			keyFile, err := filepath.Abs(f.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			wd, err := os.Getwd()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err = os.Chdir(wd)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			err = os.Chdir("./tmp-unset-bosh-env")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{"-i", filepath.Base(keyFile), "--unset", "-b"})
+			Expect(err).ToNot(HaveOccurred())
+
+			var lines []string
+			for _, outer := range stdout.Invocations()["Println"] {
+				for _, middle := range outer {
+					for _, line := range middle.([]interface{}) {
+						lines = append(lines, fmt.Sprintf("%v", line))
+					}
+				}
+			}
+
+			Expect(lines).To(ContainElements(
+				"unset BOSH_CLIENT",
+				"unset BOSH_CLIENT_SECRET",
+				"unset BOSH_CA_CERT",
+				"unset BOSH_ALL_PROXY",
+				"unset BOSH_ENVIRONMENT",
+			))
+		})
+
+		It("prints only inset commands for the Credhub environment variables when the credhub flag is passed", func() {
+			err = os.Mkdir("./tmp-unset-credhub-env", os.ModePerm)
+			Expect(err).ToNot(HaveOccurred())
+
+			defer func() {
+				err = os.RemoveAll("./tmp-unset-credhub-env")
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			f, err := ioutil.TempFile("./tmp-unset-credhub-env", "opsmankey-*.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			keyFile, err := filepath.Abs(f.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			wd, err := os.Getwd()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err = os.Chdir(wd)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			err = os.Chdir("./tmp-unset-credhub-env")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = command.Execute([]string{"-i", filepath.Base(keyFile), "--unset", "-c"})
+			Expect(err).ToNot(HaveOccurred())
+
+			var lines []string
+			for _, outer := range stdout.Invocations()["Println"] {
+				for _, middle := range outer {
+					for _, line := range middle.([]interface{}) {
+						lines = append(lines, fmt.Sprintf("%v", line))
+					}
+				}
+			}
+
+			Expect(lines).To(ContainElements(
+				"unset CREDHUB_SERVER",
+				"unset CREDHUB_CA_CERT",
+				"unset CREDHUB_PROXY",
+				"unset CREDHUB_CLIENT",
+				"unset CREDHUB_SECRET",
 			))
 		})
 	})

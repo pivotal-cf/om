@@ -20,6 +20,7 @@ Flags:
   --credhub, -c          bool    Prints the Credhub environment variables (default: false)
   --shell-type           string  Prints for the given shell (posix|powershell)
   --ssh-private-key, -i  string  Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel.
+  --unset, -u            bool    Prints unset commands for the environment variables (default: false)
 
 Global Flags:
   --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value

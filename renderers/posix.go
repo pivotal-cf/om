@@ -24,6 +24,10 @@ func (renderer *posix) RenderEnvironmentVariable(variable string, value string) 
 	return fmt.Sprintf("export %s=%s", variable, value)
 }
 
+func (renderer *posix) RenderUnsetVariable(variable string) string {
+	return fmt.Sprintf("unset %s", variable)
+}
+
 func (renderer *posix) Type() string {
 	return ShellTypePosix
 }

@@ -24,6 +24,10 @@ func (renderer *powershell) RenderEnvironmentVariable(variable string, value str
 	return fmt.Sprintf("$env:%s=\"%s\"", variable, value)
 }
 
+func (renderer *powershell) RenderUnsetVariable(variable string) string {
+	return fmt.Sprintf("$env:%s=$null", variable)
+}
+
 func (renderer *powershell) Type() string {
 	return ShellTypePowershell
 }
