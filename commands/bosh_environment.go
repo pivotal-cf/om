@@ -92,8 +92,9 @@ func (be BoshEnvironment) Execute(args []string) error {
 	}
 
 	variables := make(map[string]string)
-	var unsetVariables []string
-	{
+	unsetVariables := []string{
+		"BOSH_ALL_PROXY",
+		"CREDHUB_PROXY",
 	}
 
 	allEnvVars := !be.Options.BoshVars && !be.Options.CredhubVars
@@ -136,14 +137,10 @@ func (be BoshEnvironment) Execute(args []string) error {
 
 		if be.Options.BoshVars || allEnvVars {
 			variables["BOSH_ALL_PROXY"] = proxy
-
-			unsetVariables = append(unsetVariables, "BOSH_ALL_PROXY")
 		}
 
 		if be.Options.CredhubVars || allEnvVars {
 			variables["CREDHUB_PROXY"] = proxy
-
-			unsetVariables = append(unsetVariables, "CREDHUB_PROXY")
 		}
 	}
 

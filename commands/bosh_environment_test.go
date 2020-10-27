@@ -373,30 +373,7 @@ var _ = Describe("bosh-env", func() {
 		})
 
 		It("prints all of the unset commands when neither the bosh or credhub flags are passed", func() {
-			err = os.Mkdir("./tmp-unset-all-env", os.ModePerm)
-			Expect(err).ToNot(HaveOccurred())
-
-			defer func() {
-				err = os.RemoveAll("./tmp-unset-all-env")
-				Expect(err).ToNot(HaveOccurred())
-			}()
-			f, err := ioutil.TempFile("./tmp-unset-all-env", "opsmankey-*.pem")
-			Expect(err).ToNot(HaveOccurred())
-
-			keyFile, err := filepath.Abs(f.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			wd, err := os.Getwd()
-			Expect(err).ToNot(HaveOccurred())
-			defer func() {
-				err = os.Chdir(wd)
-				Expect(err).ToNot(HaveOccurred())
-			}()
-
-			err = os.Chdir("./tmp-unset-all-env")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{"-i", filepath.Base(keyFile), "--unset"})
+			err = command.Execute([]string{"--unset"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -423,30 +400,7 @@ var _ = Describe("bosh-env", func() {
 		})
 
 		It("prints only unset commands for BOSH environment variables when the bosh flag is passed", func() {
-			err = os.Mkdir("./tmp-unset-bosh-env", os.ModePerm)
-			Expect(err).ToNot(HaveOccurred())
-
-			defer func() {
-				err = os.RemoveAll("./tmp-unset-bosh-env")
-				Expect(err).ToNot(HaveOccurred())
-			}()
-			f, err := ioutil.TempFile("./tmp-unset-bosh-env", "opsmankey-*.pem")
-			Expect(err).ToNot(HaveOccurred())
-
-			keyFile, err := filepath.Abs(f.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			wd, err := os.Getwd()
-			Expect(err).ToNot(HaveOccurred())
-			defer func() {
-				err = os.Chdir(wd)
-				Expect(err).ToNot(HaveOccurred())
-			}()
-
-			err = os.Chdir("./tmp-unset-bosh-env")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{"-i", filepath.Base(keyFile), "--unset", "-b"})
+			err = command.Execute([]string{"--unset", "-b"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -468,30 +422,7 @@ var _ = Describe("bosh-env", func() {
 		})
 
 		It("prints only inset commands for the Credhub environment variables when the credhub flag is passed", func() {
-			err = os.Mkdir("./tmp-unset-credhub-env", os.ModePerm)
-			Expect(err).ToNot(HaveOccurred())
-
-			defer func() {
-				err = os.RemoveAll("./tmp-unset-credhub-env")
-				Expect(err).ToNot(HaveOccurred())
-			}()
-			f, err := ioutil.TempFile("./tmp-unset-credhub-env", "opsmankey-*.pem")
-			Expect(err).ToNot(HaveOccurred())
-
-			keyFile, err := filepath.Abs(f.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			wd, err := os.Getwd()
-			Expect(err).ToNot(HaveOccurred())
-			defer func() {
-				err = os.Chdir(wd)
-				Expect(err).ToNot(HaveOccurred())
-			}()
-
-			err = os.Chdir("./tmp-unset-credhub-env")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = command.Execute([]string{"-i", filepath.Base(keyFile), "--unset", "-c"})
+			err = command.Execute([]string{"--unset", "-c"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
