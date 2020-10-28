@@ -47,6 +47,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 6.6.0
+### Features
+- `om bosh-env` now supports being able to `--unset` environment variables.
+  This can also unset `--bosh` and `--credhub` vars only
+  when used with the new `--unset` flag.
+  This resolved issue [#457](https://github.com/pivotal-cf/om/issues/457).
+  Thanks to [@iplay88keys](https://github.com/iplay88keys) for the PR!
+
 ## 6.5.0
 ### Features
 - `om products` has been added.
