@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os/exec"
 
-	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
@@ -22,20 +21,11 @@ var _ = Describe("global flags", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
-			Expect(session.Err).Should(gbytes.Say("flag provided but not defined: -?"))
+			Expect(session.Err.Contents()).Should(ContainSubstring("unknown flag `?'"))
 		})
 	})
 
 	When("not provided a target flag", func() {
-		It("does not return an error if the command is help", func() {
-			cmd := exec.Command(pathToMain, "help")
-
-			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			Eventually(session).Should(gexec.Exit(0))
-		})
-
 		It("does not return an error if the command is version", func() {
 			cmd := exec.Command(pathToMain, "version")
 
