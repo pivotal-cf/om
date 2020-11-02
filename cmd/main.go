@@ -55,6 +55,14 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 
 	args, _ = parser.ParseArgs(args[1:])
 
+	if global.Version {
+		return commands.NewVersion(version, sout).Execute(nil)
+	}
+
+	if len(args) > 0 && args[0] == "help" {
+		args[0] = "--help"
+	}
+
 	err := setEnvFileProperties(&global)
 	if err != nil {
 		return err

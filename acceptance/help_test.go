@@ -42,4 +42,15 @@ var _ = Describe("help", func() {
 			Expect(session.Out.Contents()).Should(ContainSubstring(`om [OPTIONS] <command>`))
 		})
 	})
+
+	When("given the help command", func() {
+		It("prints the global usage", func() {
+			command := exec.Command(pathToMain, "help")
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Expect(session.Out.Contents()).Should(ContainSubstring(`om [OPTIONS] <command>`))
+		})
+	})
 })
