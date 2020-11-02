@@ -18,7 +18,7 @@ type ConfigTemplate struct {
 		PivnetApiToken    string `long:"pivnet-api-token"`
 		PivnetProductSlug string `long:"pivnet-product-slug"                          description:"the product name in pivnet"`
 		ProductVersion    string `long:"product-version"                              description:"the version of the product from which to generate a template"`
-		FileGlob          string `long:"file-glob" short:"f" alias:"pivnet-file-glob" description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal"`
+		FileGlob          string `long:"file-glob" short:"f" description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal"`
 		PivnetDisableSSL  bool   `long:"pivnet-disable-ssl"                           description:"whether to disable ssl validation when contacting the Pivotal Network"`
 
 		ProductPath string `long:"product-path" description:"path to product file"`
@@ -26,6 +26,8 @@ type ConfigTemplate struct {
 		OutputDirectory   string `long:"output-directory" description:"a directory to create templates under. must already exist." required:"true"`
 		ExcludeVersion    bool   `long:"exclude-version"  description:"if set, will not output a version-specific directory"`
 		SizeOfCollections int    `long:"size-of-collections" default:"10"`
+
+		PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
 	}
 }
 
@@ -104,6 +106,10 @@ func (c *ConfigTemplate) newMetadataSource() (metadataSource MetadataProvider) {
 }
 
 func (c *ConfigTemplate) Validate() error {
+	if c.Options.PivnetFileGlobSupport != "" {
+		c.Options.FileGlob = c.Options.PivnetFileGlobSupport
+	}
+
 	if c.Options.PivnetApiToken != "" && c.Options.PivnetProductSlug != "" && c.Options.ProductVersion != "" && c.Options.ProductPath == "" {
 		return nil
 	}

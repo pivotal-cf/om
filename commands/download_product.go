@@ -19,14 +19,19 @@ type PivnetOptions struct {
 	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
 	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
 	PivnetHost          string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
-	FileGlob            string `long:"file-glob"             short:"f" alias:"pivnet-file-glob" description:"glob to match files within Pivotal Network product to be downloaded." required:"true"`
+	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded."`
 	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+
+	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
 }
 
 type GCSOptions struct {
-	GCSServiceAccountJSON string `long:"gcs-service-account-json" alias:"gcp-service-account-json" description:"the service account key JSON"`
-	GCSProjectID          string `long:"gcs-project-id"           alias:"gcp-project-id"           description:"the project id for the bucket's gcp account"`
+	GCSServiceAccountJSON string `long:"gcs-service-account-json" description:"the service account key JSON"`
+	GCSProjectID          string `long:"gcs-project-id"           description:"the project id for the bucket's gcp account"`
+
+	GCPServiceAccountSupport string `long:"gcp-service-account-json" hidden:"true"`
+	GCPProjectIDSupport      string `long:"gcp-project-id"           hidden:"true"`
 }
 
 type S3Options struct {
@@ -55,12 +60,12 @@ type DownloadProductOptions struct {
 	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
 
-	Bucket                   string `long:"blobstore-bucket" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath              string `long:"blobstore-product-path"   description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
-	StemcellPath             string `long:"blobstore-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
-	CacheCleanup             string `long:"cache-cleanup" env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
-	CheckAlreadyUploaded     bool   `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
-	
+	Bucket               string `long:"blobstore-bucket" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
+	ProductPath          string `long:"blobstore-product-path"   description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
+	StemcellPath         string `long:"blobstore-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
+	CacheCleanup         string `long:"cache-cleanup" env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
+	CheckAlreadyUploaded bool   `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
+
 	S3BucketSupport          string `long:"s3-bucket" hidden:"true"`
 	GCSBucketSupport         string `long:"gcs-bucket" hidden:"true"`
 	AzureBucketSupport       string `long:"azure-container" hidden:"true"`
@@ -70,7 +75,7 @@ type DownloadProductOptions struct {
 	S3StemcellPathSupport    string `long:"s3-stemcell-path" hidden:"true"`
 	GCSStemcellPathSupport   string `long:"gcs-stemcell-path" hidden:"true"`
 	AzureStemcellPathSupport string `long:"azure-stemcell-path" hidden:"true"`
-	
+
 	AzureOptions
 	GCSOptions
 	interpolateConfigFileOptions
@@ -239,6 +244,10 @@ func (c *DownloadProduct) createClient() error {
 func (c *DownloadProduct) validate() error {
 	c.handleAliases()
 
+	if c.Options.FileGlob == "" {
+		return fmt.Errorf("--file-glob is required")
+	}
+
 	if c.Options.ProductVersionRegex != "" && c.Options.ProductVersion != "" {
 		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
@@ -280,7 +289,7 @@ func (c *DownloadProduct) validate() error {
 	return nil
 }
 
-func (c *DownloadProduct) handleAliases(){
+func (c *DownloadProduct) handleAliases() {
 	if c.Options.S3BucketSupport != "" {
 		c.Options.Bucket = c.Options.S3BucketSupport
 	}
@@ -290,7 +299,7 @@ func (c *DownloadProduct) handleAliases(){
 	if c.Options.AzureBucketSupport != "" {
 		c.Options.Bucket = c.Options.AzureBucketSupport
 	}
-	
+
 	if c.Options.S3ProductPathSupport != "" {
 		c.Options.ProductPath = c.Options.S3ProductPathSupport
 	}
@@ -300,7 +309,7 @@ func (c *DownloadProduct) handleAliases(){
 	if c.Options.AzureProductPathSupport != "" {
 		c.Options.ProductPath = c.Options.AzureProductPathSupport
 	}
-	
+
 	if c.Options.S3StemcellPathSupport != "" {
 		c.Options.StemcellPath = c.Options.S3StemcellPathSupport
 	}
@@ -309,6 +318,15 @@ func (c *DownloadProduct) handleAliases(){
 	}
 	if c.Options.AzureStemcellPathSupport != "" {
 		c.Options.StemcellPath = c.Options.AzureStemcellPathSupport
+	}
+	if c.Options.PivnetFileGlobSupport != "" {
+		c.Options.FileGlob = c.Options.PivnetFileGlobSupport
+	}
+	if c.Options.GCPServiceAccountSupport != "" {
+		c.Options.GCSServiceAccountJSON = c.Options.GCPServiceAccountSupport
+	}
+	if c.Options.GCPProjectIDSupport != "" {
+		c.Options.GCSProjectID = c.Options.GCPProjectIDSupport
 	}
 }
 
