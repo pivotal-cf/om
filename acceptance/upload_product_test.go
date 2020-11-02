@@ -98,6 +98,26 @@ name: some-product`)
 			Eventually(session.Out, 5).Should(gbytes.Say("beginning product upload to Ops Manager"))
 			Eventually(session.Out, 5).Should(gbytes.Say("finished upload"))
 		})
+
+		When("a config file is provided with incorrect verison info", func() {
+			It("prints a helpful error message ", func() {
+				command := exec.Command(pathToMain,
+					"--target", server.URL(),
+					"--username", "some-username",
+					"--password", "some-password",
+					"--skip-ssl-validation",
+					"upload-product",
+					"--product", productFile.Name(),
+					"--config", writeFile("product-version: 1.8.15"),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session, 5).Should(gexec.Exit(1))
+				Eventually(session.Err, 5).Should(gbytes.Say("expected version 1.8.15 does not match product version 1.8.14"))
+			})
+		})
 	})
 
 	When("the content to upload is empty", func() {
