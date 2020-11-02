@@ -3,7 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/formcontent"
 	"github.com/pivotal-cf/om/network"
@@ -45,29 +44,21 @@ type uploadStemcellService interface {
 	Info() (api.Info, error)
 }
 
-func NewUploadStemcell(multipart multipart, service uploadStemcellService, logger logger) UploadStemcell {
-	return UploadStemcell{
+func NewUploadStemcell(multipart multipart, service uploadStemcellService, logger logger) *UploadStemcell {
+	return &UploadStemcell{
 		multipart: multipart,
 		logger:    logger,
 		service:   service,
 	}
 }
 
-func (us UploadStemcell) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped",
-		ShortDescription: "uploads a given stemcell to the Ops Manager targeted",
-		Flags:            us.Options,
-	}
-}
-
 func (us UploadStemcell) Execute(args []string) error {
-	err := loadConfigFile(args, &us.Options, os.Environ)
-	if err != nil {
-		return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
-	}
+	//err := cmd.loadConfigFile(args, &us.Options, os.Environ)
+	//if err != nil {
+	//	return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
+	//}
 
-	err = us.validate()
+	err := us.validate()
 	if err != nil {
 		return err
 	}

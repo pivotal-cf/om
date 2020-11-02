@@ -9,7 +9,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -24,7 +23,7 @@ type ApplyChanges struct {
 		IgnoreWarnings     bool     `short:"i"   long:"ignore-warnings"      description:"For convenience. Use other commands to disable particular verifiers if they are inappropriate."`
 		Reattach           bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
 		RecreateVMs        bool     `long:"recreate-vms" description:"recreate all vms"`
-		SkipDeployProducts bool     `short:"sdp" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
+		SkipDeployProducts bool     `short:"s" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
 		ProductNames       []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
 }
@@ -45,8 +44,8 @@ type logWriter interface {
 	Flush(logs string) error
 }
 
-func NewApplyChanges(service applyChangesService, pendingService pendingChangesService, logWriter logWriter, logger logger, waitDuration time.Duration) ApplyChanges {
-	return ApplyChanges{
+func NewApplyChanges(service applyChangesService, pendingService pendingChangesService, logWriter logWriter, logger logger, waitDuration time.Duration) *ApplyChanges {
+	return &ApplyChanges{
 		service:        service,
 		pendingService: pendingService,
 		logger:         logger,
@@ -56,10 +55,6 @@ func NewApplyChanges(service applyChangesService, pendingService pendingChangesS
 }
 
 func (ac ApplyChanges) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ac.Options, args); err != nil {
-		return fmt.Errorf("could not parse apply-changes flags: %s", err)
-	}
-
 	if ac.Options.RecreateVMs && ac.Options.Reattach {
 		return fmt.Errorf("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")
 	}
@@ -194,13 +189,5 @@ func (ac ApplyChanges) waitForApplyChangesCompletion(installation api.Installati
 		}
 
 		time.Sleep(ac.waitDuration)
-	}
-}
-
-func (ac ApplyChanges) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command kicks off an install of any staged changes on the Ops Manager.",
-		ShortDescription: "triggers an install on the Ops Manager targeted",
-		Flags:            ac.Options,
 	}
 }

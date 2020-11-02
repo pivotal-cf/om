@@ -14,7 +14,7 @@ var _ = Describe("AssignStemcell", func() {
 	var (
 		fakeService *fakes.AssignStemcellService
 		logger      *fakes.Logger
-		command     commands.AssignStemcell
+		command     *commands.AssignStemcell
 	)
 
 	BeforeEach(func() {

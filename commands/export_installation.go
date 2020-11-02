@@ -2,8 +2,6 @@ package commands
 
 import (
 	"fmt"
-
-	"github.com/pivotal-cf/jhanda"
 )
 
 type ExportInstallation struct {
@@ -19,26 +17,14 @@ type exportInstallationService interface {
 	DownloadInstallationAssetCollection(outputFile string) error
 }
 
-func NewExportInstallation(service exportInstallationService, logger logger) ExportInstallation {
-	return ExportInstallation{
+func NewExportInstallation(service exportInstallationService, logger logger) *ExportInstallation {
+	return &ExportInstallation{
 		logger:  logger,
 		service: service,
 	}
 }
 
-func (ei ExportInstallation) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command will export the current installation of the target Ops Manager.",
-		ShortDescription: "exports the installation of the target Ops Manager",
-		Flags:            ei.Options,
-	}
-}
-
 func (ei ExportInstallation) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ei.Options, args); err != nil {
-		return fmt.Errorf("could not parse export-installation flags: %s", err)
-	}
-
 	ei.logger.Printf("exporting installation")
 
 	err := ei.service.DownloadInstallationAssetCollection(ei.Options.OutputFile)

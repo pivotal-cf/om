@@ -21,7 +21,7 @@ var _ = Describe("ConfigureLDAPAuthentication.Execute", func() {
 		service             *fakes.ConfigureAuthenticationService
 		stdout              *gbytes.Buffer
 		logger              *log.Logger
-		command             commands.ConfigureLDAPAuthentication
+		command             *commands.ConfigureLDAPAuthentication
 		commandLineArgs     []string
 		expectedPayload     api.SetupInput
 		eaExpectedCallCount int

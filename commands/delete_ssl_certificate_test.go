@@ -14,7 +14,7 @@ var _ = Describe("DeleteSSLCertificate", func() {
 	var (
 		fakeService *fakes.DeleteSSLCertificateService
 		fakeLogger  *fakes.Logger
-		command     commands.DeleteSSLCertificate
+		command     *commands.DeleteSSLCertificate
 	)
 
 	BeforeEach(func() {

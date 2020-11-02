@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -26,15 +25,11 @@ type credentialsService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
-func NewCredentials(csService credentialsService, presenter presenters.FormattedPresenter, logger logger) Credentials {
-	return Credentials{service: csService, presenter: presenter, logger: logger}
+func NewCredentials(csService credentialsService, presenter presenters.FormattedPresenter, logger logger) *Credentials {
+	return &Credentials{service: csService, presenter: presenter, logger: logger}
 }
 
 func (cs Credentials) Execute(args []string) error {
-	if _, err := jhanda.Parse(&cs.Options, args); err != nil {
-		return fmt.Errorf("could not parse credential-references flags: %s", err)
-	}
-
 	deployedProductGUID := ""
 	deployedProducts, err := cs.service.ListDeployedProducts()
 	if err != nil {
@@ -75,12 +70,4 @@ func (cs Credentials) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (cs Credentials) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command fetches credentials for deployed products.",
-		ShortDescription: "fetch credentials for a deployed product",
-		Flags:            cs.Options,
-	}
 }

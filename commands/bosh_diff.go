@@ -8,8 +8,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/pivotal-cf/om/api"
-
-	"github.com/pivotal-cf/jhanda"
 )
 
 type BoshDiff struct {
@@ -31,18 +29,14 @@ type boshDiffService interface {
 	ListStagedProducts() (api.StagedProductsOutput, error)
 }
 
-func NewBoshDiff(service boshDiffService, logger logger) BoshDiff {
-	return BoshDiff{
+func NewBoshDiff(service boshDiffService, logger logger) *BoshDiff {
+	return &BoshDiff{
 		service: service,
 		logger:  logger,
 	}
 }
 
 func (c BoshDiff) Execute(args []string) error {
-	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse bosh-diff flags: %s", err)
-	}
-
 	var diffableProducts []string
 	var thereAreDiffs bool
 
@@ -172,12 +166,4 @@ func (c BoshDiff) colorizeDiff(diff string) string {
 		}
 	}
 	return strings.Join(lines, "\n")
-}
-
-func (c BoshDiff) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)",
-		ShortDescription: "displays BOSH manifest diff for the director and products",
-		Flags:            c.Options,
-	}
 }

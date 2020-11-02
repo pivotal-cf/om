@@ -13,7 +13,7 @@ import (
 
 var _ = Describe("DeleteProduct", func() {
 	var (
-		command     commands.DeleteProduct
+		command     *commands.DeleteProduct
 		fakeService *fakes.DeleteProductService
 	)
 

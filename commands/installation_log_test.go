@@ -12,7 +12,7 @@ import (
 
 var _ = Describe("InstallationLog", func() {
 	var (
-		command     commands.InstallationLog
+		command     *commands.InstallationLog
 		fakeService *fakes.InstallationLogService
 		logger      *fakes.Logger
 	)

@@ -58,7 +58,7 @@ var _ = Describe("bosh-env", func() {
 
 	Context("calling the api", func() {
 		var (
-			command             commands.BoshEnvironment
+			command             *commands.BoshEnvironment
 			fakeService         *fakes.BoshEnvironmentService
 			fakeRendererFactory *fakes.RendererFactory
 			stdout              *fakes.Logger
@@ -173,7 +173,7 @@ var _ = Describe("bosh-env", func() {
 
 	Context("printing environment variables", func() {
 		var (
-			command             commands.BoshEnvironment
+			command             *commands.BoshEnvironment
 			fakeService         *fakes.BoshEnvironmentService
 			fakeRendererFactory *fakes.RendererFactory
 			stdout              *fakes.Logger
@@ -344,7 +344,7 @@ var _ = Describe("bosh-env", func() {
 
 	Context("printing unset commands for the environment variables", func() {
 		var (
-			command             commands.BoshEnvironment
+			command             *commands.BoshEnvironment
 			fakeService         *fakes.BoshEnvironmentService
 			fakeRendererFactory *fakes.RendererFactory
 			stdout              *fakes.Logger

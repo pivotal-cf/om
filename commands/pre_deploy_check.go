@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 	"strings"
@@ -25,8 +24,8 @@ type preDeployCheckService interface {
 	ListAllPendingProductChanges() ([]api.PendingProductChangesOutput, error)
 }
 
-func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeployCheckService, logger logger) PreDeployCheck {
-	return PreDeployCheck{
+func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeployCheckService, logger logger) *PreDeployCheck {
+	return &PreDeployCheck{
 		service:   service,
 		presenter: presenter,
 		logger:    logger,
@@ -35,10 +34,6 @@ func NewPreDeployCheck(presenter presenters.FormattedPresenter, service preDeplo
 
 func (pc PreDeployCheck) Execute(args []string) error {
 	var errorBuffer []string
-
-	if _, err := jhanda.Parse(&pc.Options, args); err != nil {
-		return fmt.Errorf("could not parse pending-changes flags: %s", err)
-	}
 
 	pc.logger.Println("Scanning OpsManager now ...\n")
 
@@ -185,13 +180,4 @@ func (pc PreDeployCheck) determineProductErrors(productOutput api.PendingProduct
 	}
 
 	return errBuffer
-}
-
-func (pc PreDeployCheck) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description: "This authenticated checks completeness and validity of product configuration." +
-			" This includes whether stemcells are assigned, missing configuration, and failed validators for a product.",
-		ShortDescription: "checks completeness and validity of product configuration",
-		Flags:            pc.Options,
-	}
 }

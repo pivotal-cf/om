@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 	"github.com/pivotal-cf/om/presenters"
@@ -22,18 +19,14 @@ type installationsService interface {
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 }
 
-func NewInstallations(service installationsService, presenter presenters.FormattedPresenter) Installations {
-	return Installations{
+func NewInstallations(service installationsService, presenter presenters.FormattedPresenter) *Installations {
+	return &Installations{
 		service:   service,
 		presenter: presenter,
 	}
 }
 
 func (i Installations) Execute(args []string) error {
-	if _, err := jhanda.Parse(&i.Options, args); err != nil {
-		return fmt.Errorf("could not parse installations flags: %s", err)
-	}
-
 	installationsOutput, err := i.service.ListInstallations()
 	if err != nil {
 		return err
@@ -54,12 +47,4 @@ func (i Installations) Execute(args []string) error {
 	i.presenter.PresentInstallations(installations)
 
 	return nil
-}
-
-func (i Installations) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command lists all recent installation events.",
-		ShortDescription: "list recent installation events",
-		Flags:            i.Options,
-	}
 }

@@ -25,7 +25,7 @@ var opsFileParameter = `- type: replace
 
 var _ = Describe("Interpolate", func() {
 	var (
-		command commands.Interpolate
+		command *commands.Interpolate
 		logger  *fakes.Logger
 		stdin   *os.File
 	)

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"regexp"
 	"strings"
@@ -31,19 +30,7 @@ func NewExpiringCertificates(service expiringCertsService, logger logger) *Expir
 	}
 }
 
-func (e ExpiringCerts) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "returns a list of expiring certificates from an existing Ops Manager",
-		ShortDescription: "lists expiring certificates from the Ops Manager targeted",
-		Flags:            e.Options,
-	}
-}
-
 func (e *ExpiringCerts) Execute(args []string) error {
-	if _, err := jhanda.Parse(&e.Options, args); err != nil {
-		return fmt.Errorf("could not parse expiring-certificates flags: %s", err)
-	}
-
 	if e.Options.ExpiresWithin == "" {
 		e.Options.ExpiresWithin = "3m"
 	}

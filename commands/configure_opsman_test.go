@@ -13,7 +13,7 @@ import (
 
 var _ = Describe("ConfigureOpsman", func() {
 	var (
-		command     commands.ConfigureOpsman
+		command     *commands.ConfigureOpsman
 		fakeService *fakes.ConfigureOpsmanService
 	)
 

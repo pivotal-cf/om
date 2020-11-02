@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -29,8 +28,8 @@ type stageProductService interface {
 	GetLatestAvailableVersion(productName string) (string, error)
 }
 
-func NewStageProduct(service stageProductService, logger logger) StageProduct {
-	return StageProduct{
+func NewStageProduct(service stageProductService, logger logger) *StageProduct {
+	return &StageProduct{
 		logger:  logger,
 		service: service,
 	}
@@ -107,21 +106,7 @@ func (sp StageProduct) Execute(args []string) error {
 	return nil
 }
 
-func (sp StageProduct) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command attempts to stage a product in the Ops Manager",
-		ShortDescription: "stages a given product in the Ops Manager targeted",
-		Flags:            sp.Options,
-	}
-}
-
 func (sp *StageProduct) loadConfig(args []string) error {
-	_, err := jhanda.Parse(&sp.Options, args)
-
-	if sp.Options.ConfigFile == "" && err != nil {
-		return fmt.Errorf("could not parse stage-product flags: %s", err)
-	}
-
 	if sp.Options.ConfigFile != "" {
 		contents, err := ioutil.ReadFile(sp.Options.ConfigFile)
 		if err != nil {

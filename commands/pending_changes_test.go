@@ -17,7 +17,7 @@ var _ = Describe("PendingChanges.Execute", func() {
 	var (
 		presenter *presenterfakes.FormattedPresenter
 		pcService *fakes.PendingChangesService
-		command   commands.PendingChanges
+		command   *commands.PendingChanges
 		stderr    *gbytes.Buffer
 		logger    *log.Logger
 	)

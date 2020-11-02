@@ -33,7 +33,7 @@ var _ = Describe("CreateVMExtension", func() {
 	var (
 		fakeService *fakes.CreateVMExtensionService
 		fakeLogger  *fakes.Logger
-		command     commands.CreateVMExtension
+		command     *commands.CreateVMExtension
 		configFile  *os.File
 		err         error
 		varsFile    *os.File

@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 	"github.com/pivotal-cf/om/presenters"
@@ -24,15 +21,11 @@ type availableProductsService interface {
 	ListAvailableProducts() (api.AvailableProductsOutput, error)
 }
 
-func NewAvailableProducts(apService availableProductsService, presenter presenters.FormattedPresenter, logger logger) AvailableProducts {
-	return AvailableProducts{service: apService, presenter: presenter, logger: logger}
+func NewAvailableProducts(apService availableProductsService, presenter presenters.FormattedPresenter, logger logger) *AvailableProducts {
+	return &AvailableProducts{service: apService, presenter: presenter, logger: logger}
 }
 
 func (ap AvailableProducts) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ap.Options, args); err != nil {
-		return fmt.Errorf("could not parse available-products flags: %s", err)
-	}
-
 	output, err := ap.service.ListAvailableProducts()
 	if err != nil {
 		return err
@@ -55,12 +48,4 @@ func (ap AvailableProducts) Execute(args []string) error {
 	ap.presenter.PresentAvailableProducts(products)
 
 	return nil
-}
-
-func (ap AvailableProducts) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "**DEPRECATED** This authenticated command lists all available products. Use 'products --available' instead.",
-		ShortDescription: "**DEPRECATED** lists available products. Use 'products --available' instead.",
-		Flags:            ap.Options,
-	}
 }

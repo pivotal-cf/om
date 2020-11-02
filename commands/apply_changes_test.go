@@ -292,7 +292,7 @@ var _ = Describe("ApplyChanges", func() {
 			Context("given a valid config file", func() {
 				BeforeEach(func() {
 					fh, err := ioutil.TempFile("", "")
-					defer func() { _ = fh.Close()}()
+					defer func() { _ = fh.Close() }()
 					Expect(err).ToNot(HaveOccurred())
 					_, err = fh.WriteString(`
 ---

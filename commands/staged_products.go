@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/presenters"
 )
 
@@ -15,18 +14,14 @@ type StagedProducts struct {
 	}
 }
 
-func NewStagedProducts(presenter presenters.FormattedPresenter, service diagnosticReportService) StagedProducts {
-	return StagedProducts{
+func NewStagedProducts(presenter presenters.FormattedPresenter, service diagnosticReportService) *StagedProducts {
+	return &StagedProducts{
 		presenter: presenter,
 		service:   service,
 	}
 }
 
 func (sp StagedProducts) Execute(args []string) error {
-	if _, err := jhanda.Parse(&sp.Options, args); err != nil {
-		return fmt.Errorf("could not parse staged-products flags: %s", err)
-	}
-
 	diagnosticReport, err := sp.service.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve staged products %s", err)
@@ -38,12 +33,4 @@ func (sp StagedProducts) Execute(args []string) error {
 	sp.presenter.PresentStagedProducts(stagedProducts)
 
 	return nil
-}
-
-func (sp StagedProducts) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "**DEPRECATED** This authenticated command lists all staged products. Use 'products --staged' instead.",
-		ShortDescription: "**DEPRECATED** lists staged products. Use 'products --staged' instead.",
-		Flags:            sp.Options,
-	}
 }

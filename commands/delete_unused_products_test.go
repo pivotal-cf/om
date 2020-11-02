@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("DeleteProduct", func() {
 	var (
-		command     commands.DeleteUnusedProducts
+		command     *commands.DeleteUnusedProducts
 		fakeService *fakes.DeleteUnusedProductsService
 		logger      *fakes.Logger
 	)

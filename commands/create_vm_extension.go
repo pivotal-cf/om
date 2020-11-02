@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/config"
 	"github.com/pivotal-cf/om/interpolate"
@@ -25,12 +24,12 @@ type CreateVMExtension struct {
 
 		interpolateConfigFileOptions
 		OpsFile         []string `long:"ops-file"           short:"o"   description:"YAML operations file"`
-		CloudProperties string   `long:"cloud-properties"   short:"cp"  description:"cloud properties in JSON format"`
+		CloudProperties string   `long:"cloud-properties"               description:"cloud properties in JSON format"`
 	}
 }
 
-func NewCreateVMExtension(environFunc func() []string, service createVMExtensionService, logger logger) CreateVMExtension {
-	return CreateVMExtension{
+func NewCreateVMExtension(environFunc func() []string, service createVMExtensionService, logger logger) *CreateVMExtension {
+	return &CreateVMExtension{
 		environFunc: environFunc,
 		service:     service,
 		logger:      logger,
@@ -38,10 +37,6 @@ func NewCreateVMExtension(environFunc func() []string, service createVMExtension
 }
 
 func (c CreateVMExtension) Execute(args []string) error {
-	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse create-vm-extension flags: %s", err)
-	}
-
 	var (
 		name            string
 		cloudProperties json.RawMessage
@@ -97,12 +92,4 @@ func (c CreateVMExtension) Execute(args []string) error {
 	c.logger.Printf("VM Extension '%s' created/updated\n", name)
 
 	return nil
-}
-
-func (c CreateVMExtension) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This creates/updates a VM extension",
-		ShortDescription: "creates/updates a VM extension",
-		Flags:            c.Options,
-	}
 }

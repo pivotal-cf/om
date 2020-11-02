@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("SslCertificate", func() {
 	var (
-		sslCertificate            commands.SSLCertificate
+		sslCertificate            *commands.SSLCertificate
 		fakeSSLCertificateService *fakes.SSLCertificateService
 		fakePresenter             *presenterfakes.FormattedPresenter
 	)

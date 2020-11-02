@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pivotal-cf/om/extractor"
-
-	"github.com/pivotal-cf/jhanda"
 )
 
 type ProductMetadata struct {
@@ -17,19 +15,15 @@ type ProductMetadata struct {
 	}
 }
 
-func NewProductMetadata(stdout logger) ProductMetadata {
+func NewProductMetadata(stdout logger) *ProductMetadata {
 	return newProductMetadata(stdout)
 }
 
-func newProductMetadata(stdout logger) ProductMetadata {
-	return ProductMetadata{stdout: stdout}
+func newProductMetadata(stdout logger) *ProductMetadata {
+	return &ProductMetadata{stdout: stdout}
 }
 
 func (t ProductMetadata) Execute(args []string) error {
-	if _, err := jhanda.Parse(&t.Options, args); err != nil {
-		return fmt.Errorf("could not parse product-metadata flags: %s", err)
-	}
-
 	if !t.Options.ProductName && !t.Options.ProductVersion {
 		return errors.New("you must specify product-name and/or product-version")
 	}
@@ -49,14 +43,4 @@ func (t ProductMetadata) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (t ProductMetadata) Usage() jhanda.Usage {
-	usage := jhanda.Usage{
-		Description:      "This command prints metadata about the given product",
-		ShortDescription: "prints product metadata",
-		Flags:            t.Options,
-	}
-
-	return usage
 }

@@ -16,7 +16,7 @@ import (
 var _ = Describe("ProductMetadata", func() {
 	Describe("Execute", func() {
 		var (
-			command commands.ProductMetadata
+			command *commands.ProductMetadata
 			stdout  *fakes.Logger
 
 			productFile *os.File

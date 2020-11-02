@@ -20,7 +20,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 	var (
 		presenter *presenterfakes.FormattedPresenter
 		service   *fakes.DisableDirectorVerifiersService
-		command   commands.DisableDirectorVerifiers
+		command   *commands.DisableDirectorVerifiers
 		stderr    *gbytes.Buffer
 		logger    *log.Logger
 	)

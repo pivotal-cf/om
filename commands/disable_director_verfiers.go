@@ -3,10 +3,8 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
-	"os"
 )
 
 type DisableDirectorVerifiers struct {
@@ -26,8 +24,8 @@ type disableDirectorVerifiersService interface {
 	DisableDirectorVerifiers(verifierTypes []string) error
 }
 
-func NewDisableDirectorVerifiers(presenter presenters.FormattedPresenter, service disableDirectorVerifiersService, logger logger) DisableDirectorVerifiers {
-	return DisableDirectorVerifiers{
+func NewDisableDirectorVerifiers(presenter presenters.FormattedPresenter, service disableDirectorVerifiersService, logger logger) *DisableDirectorVerifiers {
+	return &DisableDirectorVerifiers{
 		service:   service,
 		presenter: presenter,
 		logger:    logger,
@@ -35,10 +33,10 @@ func NewDisableDirectorVerifiers(presenter presenters.FormattedPresenter, servic
 }
 
 func (dv DisableDirectorVerifiers) Execute(args []string) error {
-	err := loadConfigFile(args, &dv.Options, os.Environ)
-	if err != nil {
-		return fmt.Errorf("could not parse disable-director-verifiers flags: %s", err)
-	}
+	//err := cmd.loadConfigFile(args, &dv.Options, os.Environ)
+	//if err != nil {
+	//	return fmt.Errorf("could not parse disable-director-verifiers flags: %s", err)
+	//}
 
 	directorVerifiers, err := dv.service.ListDirectorVerifiers()
 	if err != nil {
@@ -84,12 +82,4 @@ func (dv DisableDirectorVerifiers) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (dv DisableDirectorVerifiers) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command disables director verifiers",
-		ShortDescription: "disables director verifiers",
-		Flags:            dv.Options,
-	}
 }

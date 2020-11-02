@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"reflect"
+	"github.com/jessevdk/go-flags"
 	"strconv"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/interpolate"
 	"gopkg.in/yaml.v2"
 )
@@ -14,61 +13,43 @@ import (
 // To use this function, `Config` field must be defined in the command struct being passed in.
 // To load vars, VarsFile and/or VarsEnv must exist in the command struct being passed in.
 // If VarsEnv is used, envFunc must be defined instead of nil
-func loadConfigFile(args []string, command interface{}, envFunc func() []string) error {
-	_, err := jhanda.Parse(command, args)
-	commandValue := reflect.ValueOf(command).Elem()
-	configFile := commandValue.FieldByName("ConfigFile").String()
-	if configFile == "" {
-		return err
+func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
+	var err error
+	var config struct {
+		ConfigFile string   `long:"config"                     short:"c"`
+		VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"`
+		VarsFile   []string `long:"vars-file"                  short:"l"`
+		Vars       []string `long:"var"                        short:"v"`
 	}
 
-	varsFileField := commandValue.FieldByName("VarsFile")
-	varsEnvField := commandValue.FieldByName("VarsEnv")
-	cmdVarsField := commandValue.FieldByName("Vars")
+	parser := flags.NewParser(&config, flags.IgnoreUnknown)
+	args, err = parser.ParseArgs(args)
+	configFile := config.ConfigFile
+	if configFile == "" {
+		return args, err
+	}
 
 	var (
-		varsField []string
-		varsEnv   []string
-		cmdVars   []string
-		ok        bool
-		options   map[string]interface{}
-		contents  []byte
+		cmdVars []string
+		options map[string]interface{}
 	)
 
-	if varsFileField.IsValid() {
-		if varsField, ok = varsFileField.Interface().([]string); !ok {
-			return fmt.Errorf("expect VarsFile field to be a `[]string`, found %s", varsEnvField.Type())
-		}
-	}
-
-	if cmdVarsField.IsValid() {
-		if cmdVars, ok = cmdVarsField.Interface().([]string); !ok {
-			return fmt.Errorf("expect Vars field to be a `[]string`, found %s", cmdVarsField.Type())
-		}
-	}
-
-	if varsEnvField.IsValid() {
-		if varsEnv, ok = varsEnvField.Interface().([]string); !ok {
-			return fmt.Errorf("expect VarsEnv field to be a `[]string`, found %s", varsEnvField.Type())
-		}
-	}
-
-	contents, err = interpolate.Execute(interpolate.Options{
+	contents, err := interpolate.Execute(interpolate.Options{
 		TemplateFile:  configFile,
-		VarsEnvs:      varsEnv,
-		VarsFiles:     varsField,
+		VarsEnvs:      config.VarsEnv,
+		VarsFiles:     config.VarsFile,
 		Vars:          cmdVars,
 		EnvironFunc:   envFunc,
 		OpsFiles:      nil,
 		ExpectAllKeys: true,
 	})
 	if err != nil {
-		return fmt.Errorf("could not load the config file: %s", err)
+		return nil, fmt.Errorf("could not load the config file: %s", err)
 	}
 
 	err = yaml.Unmarshal(contents, &options)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal config file %s: %s", configFile, err)
+		return nil, fmt.Errorf("failed to unmarshal config file %s: %s", configFile, err)
 	}
 
 	var fileArgs []string
@@ -85,7 +66,6 @@ func loadConfigFile(args []string, command interface{}, envFunc func() []string)
 		}
 
 	}
-	fileArgs = append(fileArgs, args...)
-	_, err = jhanda.Parse(command, fileArgs)
-	return err
+	fileArgs = append(args, fileArgs...)
+	return fileArgs, err
 }

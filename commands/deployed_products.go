@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -21,18 +20,14 @@ type deployedProductsService interface {
 	GetDiagnosticReport() (api.DiagnosticReport, error)
 }
 
-func NewDeployedProducts(presenter presenters.FormattedPresenter, service deployedProductsService) DeployedProducts {
-	return DeployedProducts{
+func NewDeployedProducts(presenter presenters.FormattedPresenter, service deployedProductsService) *DeployedProducts {
+	return &DeployedProducts{
 		presenter: presenter,
 		service:   service,
 	}
 }
 
 func (dp DeployedProducts) Execute(args []string) error {
-	if _, err := jhanda.Parse(&dp.Options, args); err != nil {
-		return fmt.Errorf("could not parse deployed-products flags: %s", err)
-	}
-
 	diagnosticReport, err := dp.service.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve deployed products %s", err)
@@ -44,12 +39,4 @@ func (dp DeployedProducts) Execute(args []string) error {
 	dp.presenter.PresentDeployedProducts(deployedProducts)
 
 	return nil
-}
-
-func (dp DeployedProducts) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "**DEPRECATED** This authenticated command lists all deployed products. Use 'products --deployed' instead.",
-		ShortDescription: "**DEPRECATED** lists deployed products. Use 'products --deployed' instead.",
-		Flags:            dp.Options,
-	}
 }

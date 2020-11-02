@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -23,15 +20,11 @@ type createCertificateAuthorityService interface {
 	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.CA, error)
 }
 
-func NewCreateCertificateAuthority(service createCertificateAuthorityService, presenter presenters.FormattedPresenter) CreateCertificateAuthority {
-	return CreateCertificateAuthority{service: service, presenter: presenter}
+func NewCreateCertificateAuthority(service createCertificateAuthorityService, presenter presenters.FormattedPresenter) *CreateCertificateAuthority {
+	return &CreateCertificateAuthority{service: service, presenter: presenter}
 }
 
 func (c CreateCertificateAuthority) Execute(args []string) error {
-	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse create-certificate-authority flags: %s", err)
-	}
-
 	ca, err := c.service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 		CertPem:       c.Options.CertPem,
 		PrivateKeyPem: c.Options.PrivateKey,
@@ -44,12 +37,4 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 	c.presenter.PresentCertificateAuthority(ca)
 
 	return nil
-}
-
-func (c CreateCertificateAuthority) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command creates a certificate authority on the Ops Manager with the given cert and key",
-		ShortDescription: "creates a certificate authority on the Ops Manager",
-		Flags:            c.Options,
-	}
 }

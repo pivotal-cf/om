@@ -2,10 +2,8 @@ package commands
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -25,27 +23,18 @@ type assignStemcellService interface {
 	AssignStemcell(input api.ProductStemcells) error
 }
 
-func NewAssignStemcell(service assignStemcellService, logger logger) AssignStemcell {
-	return AssignStemcell{
+func NewAssignStemcell(service assignStemcellService, logger logger) *AssignStemcell {
+	return &AssignStemcell{
 		service: service,
 		logger:  logger,
 	}
 }
 
-func (as AssignStemcell) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description: "This command will assign an already uploaded stemcell to a specific product in Ops Manager.\n" +
-			"It is recommended to use \"upload-stemcell --floating=false\" before using this command.",
-		ShortDescription: "assigns an uploaded stemcell to a product in the targeted Ops Manager",
-		Flags:            as.Options,
-	}
-}
-
 func (as AssignStemcell) Execute(args []string) error {
-	err := loadConfigFile(args, &as.Options, os.Environ)
-	if err != nil {
-		return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
-	}
+	//err := cmd.loadConfigFile(args, &as.Options, os.Environ)
+	//if err != nil {
+	//	return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
+	//}
 
 	as.logger.Printf("finding available stemcells for product: \"%s\"...", as.Options.ProductName)
 	productStemcell, err := as.getProductStemcell()

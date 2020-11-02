@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 )
@@ -63,27 +62,15 @@ type configureDirectorService interface {
 	UpdateStagedDirectorProperties(api.DirectorProperties) error
 }
 
-func NewConfigureDirector(environFunc func() []string, service configureDirectorService, logger logger) ConfigureDirector {
-	return ConfigureDirector{
+func NewConfigureDirector(environFunc func() []string, service configureDirectorService, logger logger) *ConfigureDirector {
+	return &ConfigureDirector{
 		environFunc: environFunc,
 		service:     service,
 		logger:      logger,
 	}
 }
 
-func (c ConfigureDirector) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command configures the director.",
-		ShortDescription: "configures the director",
-		Flags:            c.Options,
-	}
-}
-
 func (c ConfigureDirector) Execute(args []string) error {
-	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse configure-director flags: %s", err)
-	}
-
 	err := checkRunningInstallation(c.service.ListInstallations)
 	if err != nil {
 		return err

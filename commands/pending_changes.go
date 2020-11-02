@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -24,8 +23,8 @@ type pendingChangesService interface {
 	ListStagedPendingChanges() (api.PendingChangesOutput, error)
 }
 
-func NewPendingChanges(presenter presenters.FormattedPresenter, service pendingChangesService, logger logger) PendingChanges {
-	return PendingChanges{
+func NewPendingChanges(presenter presenters.FormattedPresenter, service pendingChangesService, logger logger) *PendingChanges {
+	return &PendingChanges{
 		service:   service,
 		presenter: presenter,
 		logger:    logger,
@@ -33,10 +32,6 @@ func NewPendingChanges(presenter presenters.FormattedPresenter, service pendingC
 }
 
 func (pc PendingChanges) Execute(args []string) error {
-	if _, err := jhanda.Parse(&pc.Options, args); err != nil {
-		return fmt.Errorf("could not parse pending-changes flags: %s", err)
-	}
-
 	output, err := pc.service.ListStagedPendingChanges()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve pending changes %s", err)
@@ -77,12 +72,4 @@ func (pc PendingChanges) Execute(args []string) error {
 		pc.logger.Printf("Warnings:\n%s", strings.Join(errs, ",\n"))
 	}
 	return nil
-}
-
-func (pc PendingChanges) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command lists all products and will display whether they are unchanged (no pending changes) or changed (has pending changes).",
-		ShortDescription: "checks for pending changes",
-		Flags:            pc.Options,
-	}
 }

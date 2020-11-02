@@ -16,7 +16,7 @@ var _ = Describe("GenerateCertificate", func() {
 	var (
 		fakeService *fakes.GenerateCertificateService
 		fakeLogger  *fakes.Logger
-		command     commands.GenerateCertificate
+		command     *commands.GenerateCertificate
 	)
 
 	BeforeEach(func() {

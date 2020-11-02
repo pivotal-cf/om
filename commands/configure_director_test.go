@@ -21,7 +21,7 @@ var _ = Describe("ConfigureDirector", func() {
 	var (
 		stdout     *gbytes.Buffer
 		service    *fakes.ConfigureDirectorService
-		command    commands.ConfigureDirector
+		command    *commands.ConfigureDirector
 		err        error
 		config     string
 		configFile *os.File

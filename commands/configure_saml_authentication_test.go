@@ -18,7 +18,7 @@ var _ = Describe("ConfigureSAMLAuthentication.Execute", func() {
 	var (
 		service         *fakes.ConfigureAuthenticationService
 		logger          *fakes.Logger
-		command         commands.ConfigureSAMLAuthentication
+		command         *commands.ConfigureSAMLAuthentication
 		commandLineArgs []string
 		expectedPayload api.SetupInput
 	)

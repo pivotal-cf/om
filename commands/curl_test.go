@@ -28,7 +28,7 @@ var _ = Describe("Curl", func() {
 	}
 	Describe("Execute", func() {
 		var (
-			command     commands.Curl
+			command     *commands.Curl
 			fakeService *fakes.CurlService
 			stdout      *fakes.Logger
 			stderr      *fakes.Logger

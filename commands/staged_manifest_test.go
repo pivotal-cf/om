@@ -13,7 +13,7 @@ import (
 
 var _ = Describe("StagedManifest", func() {
 	var (
-		command     commands.StagedManifest
+		command     *commands.StagedManifest
 		logger      *fakes.Logger
 		fakeService *fakes.StagedManifestService
 	)

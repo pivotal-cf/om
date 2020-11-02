@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("Certificate Authority", func() {
 	var (
-		certificateAuthority              commands.CertificateAuthority
+		certificateAuthority              *commands.CertificateAuthority
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
 		fakePresenter                     *presenterfakes.FormattedPresenter
 		fakeLogger                        *fakes.Logger

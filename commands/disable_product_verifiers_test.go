@@ -17,7 +17,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 	var (
 		presenter *presenterfakes.FormattedPresenter
 		service   *fakes.DisableProductVerifiersService
-		command   commands.DisableProductVerifiers
+		command   *commands.DisableProductVerifiers
 		stderr    *gbytes.Buffer
 		logger    *log.Logger
 	)

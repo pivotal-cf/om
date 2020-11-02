@@ -3,7 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -24,8 +23,8 @@ type disableProductVerifiersService interface {
 	DisableProductVerifiers(verifierTypes []string, productGUID string) error
 }
 
-func NewDisableProductVerifiers(presenter presenters.FormattedPresenter, service disableProductVerifiersService, logger logger) DisableProductVerifiers {
-	return DisableProductVerifiers{
+func NewDisableProductVerifiers(presenter presenters.FormattedPresenter, service disableProductVerifiersService, logger logger) *DisableProductVerifiers {
+	return &DisableProductVerifiers{
 		service:   service,
 		presenter: presenter,
 		logger:    logger,
@@ -33,11 +32,6 @@ func NewDisableProductVerifiers(presenter presenters.FormattedPresenter, service
 }
 
 func (dpv DisableProductVerifiers) Execute(args []string) error {
-	_, err := jhanda.Parse(&dpv.Options, args)
-	if err != nil {
-		return fmt.Errorf("could not parse disable-product-verifiers flags: %s", err)
-	}
-
 	productName := dpv.Options.ProductName
 	productVerifiers, productGUID, err := dpv.service.ListProductVerifiers(productName)
 	if err != nil {
@@ -83,12 +77,4 @@ func (dpv DisableProductVerifiers) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (dpv DisableProductVerifiers) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command disables product verifiers",
-		ShortDescription: "disables product verifiers",
-		Flags:            dpv.Options,
-	}
 }

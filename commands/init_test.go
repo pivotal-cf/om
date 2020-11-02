@@ -6,9 +6,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
-	"os"
 	"testing"
 )
 

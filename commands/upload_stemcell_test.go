@@ -76,7 +76,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 
 		Context("floating", func() {
-			var command commands.UploadStemcell
+			var command *commands.UploadStemcell
 			BeforeEach(func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{

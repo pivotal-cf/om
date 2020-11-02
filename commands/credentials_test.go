@@ -18,7 +18,7 @@ var _ = Describe("Credentials", func() {
 		fakePresenter *presenterfakes.FormattedPresenter
 		logger        *fakes.Logger
 
-		command commands.Credentials
+		command *commands.Credentials
 	)
 
 	BeforeEach(func() {

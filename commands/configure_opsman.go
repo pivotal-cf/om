@@ -3,7 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/interpolate"
 	"gopkg.in/yaml.v2"
@@ -52,8 +51,8 @@ type configureOpsmanService interface {
 	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error
 }
 
-func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) ConfigureOpsman {
-	return ConfigureOpsman{
+func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) *ConfigureOpsman {
+	return &ConfigureOpsman{
 		environFunc: environFunc,
 		service:     service,
 		logger:      logger,
@@ -61,10 +60,6 @@ func NewConfigureOpsman(environFunc func() []string, service configureOpsmanServ
 }
 
 func (c ConfigureOpsman) Execute(args []string) error {
-	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse configure-opsman flags: %s", err)
-	}
-
 	config, err := c.interpolateConfig()
 	if err != nil {
 		return err
@@ -173,15 +168,4 @@ func (c ConfigureOpsman) validate(config *opsmanConfig) error {
 		}
 	}
 	return nil
-}
-
-func (c ConfigureOpsman) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description: "This authenticated command " +
-			"configures settings available on the \"Settings\" page " +
-			"in the Ops Manager UI. For an example config, " +
-			"reference the docs directory for this command.",
-		ShortDescription: "configures values present on the Ops Manager settings page",
-		Flags:            c.Options,
-	}
 }

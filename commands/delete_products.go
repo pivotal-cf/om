@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -20,17 +17,13 @@ type deleteProductService interface {
 	DeleteAvailableProducts(input api.DeleteAvailableProductsInput) error
 }
 
-func NewDeleteProduct(service deleteProductService) DeleteProduct {
-	return DeleteProduct{
+func NewDeleteProduct(service deleteProductService) *DeleteProduct {
+	return &DeleteProduct{
 		service: service,
 	}
 }
 
 func (dp DeleteProduct) Execute(args []string) error {
-	if _, err := jhanda.Parse(&dp.Options, args); err != nil {
-		return fmt.Errorf("could not parse delete-product flags: %s", err)
-	}
-
 	err := dp.service.DeleteAvailableProducts(api.DeleteAvailableProductsInput{
 		ProductName:             dp.Options.Product,
 		ProductVersion:          dp.Options.Version,
@@ -41,12 +34,4 @@ func (dp DeleteProduct) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (dp DeleteProduct) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command deletes the specified unused product from the targeted Ops Manager",
-		ShortDescription: "deletes an unused product from the Ops Manager",
-		Flags:            dp.Options,
-	}
 }

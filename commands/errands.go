@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
 	"github.com/pivotal-cf/om/presenters"
@@ -25,18 +24,14 @@ type Errands struct {
 	}
 }
 
-func NewErrands(presenter presenters.FormattedPresenter, service errandsService) Errands {
-	return Errands{
+func NewErrands(presenter presenters.FormattedPresenter, service errandsService) *Errands {
+	return &Errands{
 		presenter: presenter,
 		service:   service,
 	}
 }
 
 func (e Errands) Execute(args []string) error {
-	if _, err := jhanda.Parse(&e.Options, args); err != nil {
-		return fmt.Errorf("could not parse errands flags: %s", err)
-	}
-
 	findOutput, err := e.service.GetStagedProductByName(e.Options.ProductName)
 	if err != nil {
 		return fmt.Errorf("failed to find staged product %q: %s", e.Options.ProductName, err)
@@ -70,13 +65,5 @@ func boolStringFromType(object interface{}) string {
 		return strconv.FormatBool(p)
 	default:
 		return ""
-	}
-}
-
-func (e Errands) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command lists all errands for a product.",
-		ShortDescription: "list errands for a product",
-		Flags:            e.Options,
 	}
 }

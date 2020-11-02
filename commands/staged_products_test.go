@@ -15,7 +15,7 @@ var _ = Describe("StagedProducts", func() {
 	var (
 		presenter   *presenterfakes.FormattedPresenter
 		fakeService *fakes.StagedProductsService
-		command     commands.StagedProducts
+		command     *commands.StagedProducts
 	)
 
 	BeforeEach(func() {

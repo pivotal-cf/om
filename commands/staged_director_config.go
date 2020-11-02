@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
 )
@@ -39,8 +38,8 @@ type stagedDirectorConfigService interface {
 	ListVMTypes() ([]api.VMType, error)
 }
 
-func NewStagedDirectorConfig(service stagedDirectorConfigService, stdout logger, stderr logger) StagedDirectorConfig {
-	return StagedDirectorConfig{
+func NewStagedDirectorConfig(service stagedDirectorConfigService, stdout logger, stderr logger) *StagedDirectorConfig {
+	return &StagedDirectorConfig{
 		stdout:  stdout,
 		stderr:  stderr,
 		service: service,
@@ -48,10 +47,6 @@ func NewStagedDirectorConfig(service stagedDirectorConfigService, stdout logger,
 }
 
 func (sdc StagedDirectorConfig) Execute(args []string) error {
-	if _, err := jhanda.Parse(&sdc.Options, args); err != nil {
-		return fmt.Errorf("could not parse staged-config flags: %s", err)
-	}
-
 	stagedDirector, err := sdc.service.GetStagedProductByName("p-bosh")
 	if err != nil {
 		return err
@@ -269,12 +264,4 @@ func (sdc StagedDirectorConfig) filterSecrets(prefix string, keyName string, val
 	}
 
 	return value, nil
-}
-
-func (sdc StagedDirectorConfig) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command generates a config from a staged director that can be passed in to om configure-director",
-		ShortDescription: "generates a config from a staged director",
-		Flags:            sdc.Options,
-	}
 }

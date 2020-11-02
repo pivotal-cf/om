@@ -6,7 +6,6 @@ import (
 	"github.com/pivotal-cf/om/models"
 	"sort"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/presenters"
 )
 
@@ -26,40 +25,36 @@ type Products struct {
 	presenter      presenters.FormattedPresenter
 	productService productService
 	Options        struct {
-		Available bool   `long:"available" short:"a" default:"false" description:"Specify to include available products. Can be used with other options."`
-		Staged    bool   `long:"staged" short:"s" default:"false" description:"Specify to include staged products. Can be used with other options."`
-		Deployed  bool   `long:"deployed" short:"d" default:"false" description:"Specify to deployed products. Can be used with other options."`
+		Available bool   `long:"available" short:"a" description:"Specify to include available products. Can be used with other options."`
+		Staged    bool   `long:"staged" short:"s" description:"Specify to include staged products. Can be used with other options."`
+		Deployed  bool   `long:"deployed" short:"d" description:"Specify to deployed products. Can be used with other options."`
 		Format    string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
 
-func NewProducts(presenter presenters.FormattedPresenter, productService productService) Products {
-	return Products{
+func NewProducts(presenter presenters.FormattedPresenter, productService productService) *Products {
+	return &Products{
 		presenter:      presenter,
 		productService: productService,
 	}
 }
 
 func (sp Products) Execute(args []string) error {
-	if _, err := jhanda.Parse(&sp.Options, args); err != nil {
-		return fmt.Errorf("could not parse products flags: %s", err)
-	}
-
 	diagnosticReport, err := sp.productService.GetDiagnosticReport()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve staged and deployed products %s", err)
 	}
-	
+
 	stagedProducts := diagnosticReport.StagedProducts
 	deployedProducts := diagnosticReport.DeployedProducts
-	
+
 	availableProducts, err := sp.productService.ListAvailableProducts()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve available products %s", err)
 	}
-	
+
 	productVersionsCombiner := make(map[string]models.ProductVersions)
-	sp.combineStagedProducts(stagedProducts,productVersionsCombiner)
+	sp.combineStagedProducts(stagedProducts, productVersionsCombiner)
 	sp.combineDeployedProducts(deployedProducts, productVersionsCombiner)
 	sp.combineAvailableProducts(availableProducts, productVersionsCombiner)
 
@@ -133,13 +128,5 @@ func (sp Products) combineAvailableProducts(availableProducts api.AvailableProdu
 		productVersions := productVersionsCombiner[product.Name]
 		productVersions.Available = append(productVersions.Available, product.Version)
 		productVersionsCombiner[product.Name] = productVersions
-	}
-}
-
-func (sp Products) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command lists all products. Staged, available, and deployed are listed by default.",
-		ShortDescription: "lists product staged, available, and deployed versions",
-		Flags:            sp.Options,
 	}
 }

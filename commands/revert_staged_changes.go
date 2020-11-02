@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/jhanda"
 )
 
 type RevertStagedChanges struct {
@@ -14,8 +13,8 @@ type revertStagedChangesService interface {
 	RevertStagedChanges() (bool, error)
 }
 
-func NewRevertStagedChanges(service revertStagedChangesService, logger logger) RevertStagedChanges {
-	return RevertStagedChanges{service: service, logger: logger}
+func NewRevertStagedChanges(service revertStagedChangesService, logger logger) *RevertStagedChanges {
+	return &RevertStagedChanges{service: service, logger: logger}
 }
 
 func (r RevertStagedChanges) Execute(_ []string) error {
@@ -32,11 +31,4 @@ func (r RevertStagedChanges) Execute(_ []string) error {
 	}
 
 	return nil
-}
-
-func (r RevertStagedChanges) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command reverts the staged changes already on an Ops Manager. Useful for ensuring that unintended changes are not applied.",
-		ShortDescription: "This command reverts the staged changes already on an Ops Manager.",
-	}
 }

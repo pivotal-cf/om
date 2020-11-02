@@ -7,7 +7,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -30,8 +29,8 @@ type deleteInstallationService interface {
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 }
 
-func NewDeleteInstallation(service deleteInstallationService, logWriter logWriter, logger logger, stdin io.Reader, waitDuration time.Duration) DeleteInstallation {
-	return DeleteInstallation{
+func NewDeleteInstallation(service deleteInstallationService, logWriter logWriter, logger logger, stdin io.Reader, waitDuration time.Duration) *DeleteInstallation {
+	return &DeleteInstallation{
 		service:      service,
 		logger:       logger,
 		logWriter:    logWriter,
@@ -41,10 +40,6 @@ func NewDeleteInstallation(service deleteInstallationService, logWriter logWrite
 }
 
 func (ac DeleteInstallation) Execute(args []string) error {
-	if _, err := jhanda.Parse(&ac.Options, args); err != nil {
-		return fmt.Errorf("could not parse delete-installation flags: %s", err)
-	}
-
 	if !ac.Options.Force {
 		scanner := bufio.NewScanner(ac.stdin)
 		ac.logger.Printf("Do you really want to delete the installation? [yes/no]: ")
@@ -112,13 +107,5 @@ Install:
 		}
 
 		time.Sleep(ac.waitDuration)
-	}
-}
-
-func (ac DeleteInstallation) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command deletes all the products installed on the targeted Ops Manager.",
-		ShortDescription: "deletes all the products on the Ops Manager targeted",
-		Flags:            ac.Options,
 	}
 }

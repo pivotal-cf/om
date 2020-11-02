@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/renderers"
 )
@@ -21,9 +20,9 @@ type BoshEnvironment struct {
 	opsmanHost      string
 	Options         struct {
 		ShellType     string `long:"shell-type" description:"Prints for the given shell (posix|powershell)"`
-		BoshVars      bool   `long:"bosh" short:"b" default:"false" description:"Prints the BOSH director environment variables"`
-		CredhubVars   bool   `long:"credhub" short:"c" default:"false" description:"Prints the Credhub environment variables"`
-		Unset         bool   `long:"unset" short:"u" default:"false" description:"Prints unset commands for the environment variables"`
+		BoshVars      bool   `long:"bosh" short:"b" description:"Prints the BOSH director environment variables"`
+		CredhubVars   bool   `long:"credhub" short:"c" description:"Prints the Credhub environment variables"`
+		Unset         bool   `long:"unset" short:"u" description:"Prints unset commands for the environment variables"`
 		SSHPrivateKey string `long:"ssh-private-key" short:"i" description:"Location of ssh private key to use to tunnel through the Ops Manager VM. Only necessary if bosh director is not reachable without a tunnel."`
 	}
 }
@@ -39,8 +38,8 @@ type rendererFactory interface {
 	Create(shellType string) (renderers.Renderer, error)
 }
 
-func NewBoshEnvironment(service boshEnvironmentService, logger logger, opsmanHost string, rendererFactory rendererFactory) BoshEnvironment {
-	return BoshEnvironment{
+func NewBoshEnvironment(service boshEnvironmentService, logger logger, opsmanHost string, rendererFactory rendererFactory) *BoshEnvironment {
+	return &BoshEnvironment{
 		service:         service,
 		logger:          logger,
 		rendererFactory: rendererFactory,
@@ -62,10 +61,6 @@ func (be BoshEnvironment) stripTrailingSlash(host string) string {
 }
 
 func (be BoshEnvironment) Execute(args []string) error {
-	if _, err := jhanda.Parse(&be.Options, args); err != nil {
-		return fmt.Errorf("could not parse bosh-env flags: %s", err)
-	}
-
 	renderer, err := be.rendererFactory.Create(be.Options.ShellType)
 	if err != nil {
 		return err
@@ -150,14 +145,6 @@ func (be BoshEnvironment) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (be BoshEnvironment) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This prints environment variables to target the BOSH director and Credhub. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
-		ShortDescription: "prints environment variables for BOSH and Credhub",
-		Flags:            be.Options,
-	}
 }
 
 func (be BoshEnvironment) renderVariables(renderer renderers.Renderer, variables map[string]string) {

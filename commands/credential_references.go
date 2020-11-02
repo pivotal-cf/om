@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
 )
@@ -25,15 +24,11 @@ type credentialReferencesService interface {
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 }
 
-func NewCredentialReferences(crService credentialReferencesService, presenter presenters.FormattedPresenter, logger logger) CredentialReferences {
-	return CredentialReferences{service: crService, presenter: presenter, logger: logger}
+func NewCredentialReferences(crService credentialReferencesService, presenter presenters.FormattedPresenter, logger logger) *CredentialReferences {
+	return &CredentialReferences{service: crService, presenter: presenter, logger: logger}
 }
 
 func (cr CredentialReferences) Execute(args []string) error {
-	if _, err := jhanda.Parse(&cr.Options, args); err != nil {
-		return fmt.Errorf("could not parse credential-references flags: %s", err)
-	}
-
 	deployedProductGUID := ""
 	deployedProducts, err := cr.service.ListDeployedProducts()
 	if err != nil {
@@ -65,12 +60,4 @@ func (cr CredentialReferences) Execute(args []string) error {
 	cr.presenter.PresentCredentialReferences(output.Credentials)
 
 	return nil
-}
-
-func (cr CredentialReferences) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command lists credential references for deployed products.",
-		ShortDescription: "list credential references for a deployed product",
-		Flags:            cr.Options,
-	}
 }

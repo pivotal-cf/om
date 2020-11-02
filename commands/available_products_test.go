@@ -19,7 +19,7 @@ var _ = Describe("AvailableProducts", func() {
 		fakePresenter *presenterfakes.FormattedPresenter
 		logger        *fakes.Logger
 
-		command commands.AvailableProducts
+		command *commands.AvailableProducts
 	)
 
 	BeforeEach(func() {

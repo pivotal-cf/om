@@ -9,7 +9,6 @@ import (
 
 	"encoding/json"
 
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -31,15 +30,11 @@ type Curl struct {
 	}
 }
 
-func NewCurl(service curlService, stdout logger, stderr logger) Curl {
-	return Curl{service: service, stdout: stdout, stderr: stderr}
+func NewCurl(service curlService, stdout logger, stderr logger) *Curl {
+	return &Curl{service: service, stdout: stdout, stderr: stderr}
 }
 
 func (c Curl) Execute(args []string) error {
-	if _, err := jhanda.Parse(&c.Options, args); err != nil {
-		return fmt.Errorf("could not parse curl flags: %s", err)
-	}
-
 	requestHeaders := make(http.Header)
 	for _, h := range c.Options.Headers {
 		split := strings.Split(h, " ")
@@ -100,12 +95,4 @@ func (c Curl) Execute(args []string) error {
 	}
 
 	return nil
-}
-
-func (c Curl) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This command issues an authenticated API request as defined in the arguments",
-		ShortDescription: "issues an authenticated API request",
-		Flags:            c.Options,
-	}
 }

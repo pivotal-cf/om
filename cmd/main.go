@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/jessevdk/go-flags"
 	"github.com/olekukonko/tablewriter"
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/extractor"
@@ -33,15 +33,14 @@ type options struct {
 	ConnectTimeout       int    `yaml:"connect-timeout"       short:"o"  long:"connect-timeout"       env:"OM_CONNECT_TIMEOUT"     default:"10"    description:"timeout in seconds to make TCP connections"`
 	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d"  long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE"             description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
 	Env                  string `                             short:"e"  long:"env"                                                              description:"env file with login credentials"`
-	Help                 bool   `                             short:"h"  long:"help"                                             default:"false" description:"prints this usage information"`
 	Password             string `yaml:"password"              short:"p"  long:"password"              env:"OM_PASSWORD"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 	RequestTimeout       int    `yaml:"request-timeout"       short:"r"  long:"request-timeout"       env:"OM_REQUEST_TIMEOUT"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
-	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"   short:"k"  long:"skip-ssl-validation"   env:"OM_SKIP_SSL_VALIDATION" default:"false" description:"skip ssl certificate validation during http requests"`
+	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"   short:"k"  long:"skip-ssl-validation"   env:"OM_SKIP_SSL_VALIDATION"                 description:"skip ssl certificate validation during http requests"`
 	Target               string `yaml:"target"                short:"t"  long:"target"                env:"OM_TARGET"                              description:"location of the Ops Manager VM"`
-	Trace                bool   `yaml:"trace"                 short:"tr" long:"trace"                 env:"OM_TRACE"                               description:"prints HTTP requests and response payloads"`
+	Trace                bool   `yaml:"trace"                            long:"trace"                 env:"OM_TRACE"                               description:"prints HTTP requests and response payloads"`
 	Username             string `yaml:"username"              short:"u"  long:"username"              env:"OM_USERNAME"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
-	VarsEnv              string `                                                                     env:"OM_VARS_ENV"                            description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
-	Version              bool   `                             short:"v"  long:"version"                                          default:"false" description:"prints the om release version"`
+	VarsEnv              string `                                        long:"vars-env"              env:"OM_VARS_ENV"                            description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+	Version              bool   `                             short:"v"  long:"version"                                                            description:"prints the om release version"`
 }
 
 func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationString string, args []string) error {
@@ -51,37 +50,14 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	stderr := log.New(serr, "", 0)
 
 	var global options
+	parser := flags.NewParser(&global, flags.PassDoubleDash | flags.PassAfterNonOption)
+	parser.Name = "om"
 
-	args, err := jhanda.Parse(&global, args[1:])
+	args, _ = parser.ParseArgs(args[1:])
+
+	err := setEnvFileProperties(&global)
 	if err != nil {
 		return err
-	}
-
-	err = setEnvFileProperties(&global)
-	if err != nil {
-		return err
-	}
-
-	globalFlagsUsage, err := jhanda.PrintUsage(global)
-	if err != nil {
-		return err
-	}
-
-	var command string
-	if len(args) > 0 {
-		command, args = args[0], args[1:]
-	}
-
-	if global.Version {
-		command = "version"
-	}
-
-	if global.Help {
-		command = "help"
-	}
-
-	if command == "" {
-		command = "help"
 	}
 
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
@@ -131,72 +107,531 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
 	envRendererFactory := renderers.NewFactory(renderers.NewEnvGetter())
 
-	commandSet := jhanda.CommandSet{}
-	commandSet["activate-certificate-authority"] = commands.NewActivateCertificateAuthority(api, stdout)
-	commandSet["apply-changes"] = commands.NewApplyChanges(api, api, logWriter, stdout, applySleepDuration)
-	commandSet["assign-multi-stemcell"] = commands.NewAssignMultiStemcell(api, stdout)
-	commandSet["assign-stemcell"] = commands.NewAssignStemcell(api, stdout)
-	commandSet["available-products"] = commands.NewAvailableProducts(api, presenter, stdout)
-	commandSet["bosh-diff"] = commands.NewBoshDiff(api, stdout)
-	commandSet["bosh-env"] = commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory)
-	commandSet["certificate-authorities"] = commands.NewCertificateAuthorities(api, presenter)
-	commandSet["certificate-authority"] = commands.NewCertificateAuthority(api, presenter, stdout)
-	commandSet["config-template"] = commands.NewConfigTemplate(commands.DefaultProvider())
-	commandSet["configure-authentication"] = commands.NewConfigureAuthentication(os.Environ, api, stdout)
-	commandSet["configure-director"] = commands.NewConfigureDirector(os.Environ, api, stdout)
-	commandSet["configure-ldap-authentication"] = commands.NewConfigureLDAPAuthentication(os.Environ, api, stdout)
-	commandSet["configure-opsman"] = commands.NewConfigureOpsman(os.Environ, api, stderr)
-	commandSet["configure-product"] = commands.NewConfigureProduct(os.Environ, api, global.Target, stdout)
-	commandSet["configure-saml-authentication"] = commands.NewConfigureSAMLAuthentication(os.Environ, api, stdout)
-	commandSet["create-certificate-authority"] = commands.NewCreateCertificateAuthority(api, presenter)
-	commandSet["create-vm-extension"] = commands.NewCreateVMExtension(os.Environ, api, stdout)
-	commandSet["credential-references"] = commands.NewCredentialReferences(api, presenter, stdout)
-	commandSet["credentials"] = commands.NewCredentials(api, presenter, stdout)
-	commandSet["curl"] = commands.NewCurl(api, stdout, stderr)
-	commandSet["delete-certificate-authority"] = commands.NewDeleteCertificateAuthority(api, stdout)
-	commandSet["delete-installation"] = commands.NewDeleteInstallation(api, logWriter, stdout, os.Stdin, applySleepDuration)
-	commandSet["delete-product"] = commands.NewDeleteProduct(api)
-	commandSet["delete-ssl-certificate"] = commands.NewDeleteSSLCertificate(api, stdout)
-	commandSet["delete-unused-products"] = commands.NewDeleteUnusedProducts(api, stdout)
-	commandSet["deployed-manifest"] = commands.NewDeployedManifest(api, stdout)
-	commandSet["deployed-products"] = commands.NewDeployedProducts(presenter, api)
-	commandSet["diagnostic-report"] = commands.NewDiagnosticReport(presenter, api)
-	commandSet["disable-director-verifiers"] = commands.NewDisableDirectorVerifiers(presenter, api, stdout)
-	commandSet["disable-product-verifiers"] = commands.NewDisableProductVerifiers(presenter, api, stdout)
-	commandSet["download-product"] = commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr, api)
-	commandSet["errands"] = commands.NewErrands(presenter, api)
-	commandSet["expiring-certificates"] = commands.NewExpiringCertificates(api, stdout)
-	commandSet["export-installation"] = commands.NewExportInstallation(api, stderr)
-	commandSet["generate-certificate"] = commands.NewGenerateCertificate(api, stdout)
-	commandSet["generate-certificate-authority"] = commands.NewGenerateCertificateAuthority(api, presenter)
-	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
-	commandSet["import-installation"] = commands.NewImportInstallation(form, api, global.DecryptionPassphrase, stdout)
-	commandSet["installation-log"] = commands.NewInstallationLog(api, stdout)
-	commandSet["installations"] = commands.NewInstallations(api, presenter)
-	commandSet["interpolate"] = commands.NewInterpolate(os.Environ, stdout, os.Stdin)
-	commandSet["pending-changes"] = commands.NewPendingChanges(presenter, api, stderr)
-	commandSet["pre-deploy-check"] = commands.NewPreDeployCheck(presenter, api, stdout)
-	commandSet["product-metadata"] = commands.NewProductMetadata(stdout)
-	commandSet["products"] = commands.NewProducts(presenter, api)
-	commandSet["regenerate-certificates"] = commands.NewRegenerateCertificates(api, stdout)
-	commandSet["revert-staged-changes"] = commands.NewRevertStagedChanges(api, stdout)
-	commandSet["ssl-certificate"] = commands.NewSSLCertificate(api, presenter)
-	commandSet["stage-product"] = commands.NewStageProduct(api, stdout)
-	commandSet["staged-config"] = commands.NewStagedConfig(api, stdout)
-	commandSet["staged-director-config"] = commands.NewStagedDirectorConfig(api, stdout, stderr)
-	commandSet["staged-manifest"] = commands.NewStagedManifest(api, stdout)
-	commandSet["staged-products"] = commands.NewStagedProducts(presenter, api)
-	commandSet["unstage-product"] = commands.NewUnstageProduct(api, stdout)
-	commandSet["upload-product"] = commands.NewUploadProduct(form, metadataExtractor, api, stdout)
-	commandSet["upload-stemcell"] = commands.NewUploadStemcell(form, api, stdout)
-	commandSet["version"] = commands.NewVersion(version, sout)
-
-	err = commandSet.Execute(command, args)
+	_, err = parser.AddCommand(
+		"activate-certificate-authority",
+		"activates a certificate authority on the Ops Manager",
+		"This authenticated command activates an existing certificate authority on the Ops Manager",
+		commands.NewActivateCertificateAuthority(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"apply-changes",
+		"triggers an install on the Ops Manager targeted",
+		"This authenticated command kicks off an install of any staged changes on the Ops Manager.",
+		commands.NewApplyChanges(api, api, logWriter, stdout, applySleepDuration),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"assign-multi-stemcell",
+		"assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+",
+		"This command will assign multiple already uploaded stemcells to a specific product in Ops Manager 2.6+.\n"+
+			"It is recommended to use \"upload-stemcell --floating=false\" before using this command.",
+		commands.NewAssignMultiStemcell(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"assign-stemcell",
+		"assigns an uploaded stemcell to a product in the targeted Ops Manager",
+		"This command will assign an already uploaded stemcell to a specific product in Ops Manager.\n"+
+			"It is recommended to use \"upload-stemcell --floating=false\" before using this command.",
+		commands.NewAssignStemcell(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"available-products",
+		"**DEPRECATED** lists available products. Use 'products --available' instead.",
+		"**DEPRECATED** This authenticated command lists all available products. Use 'products --available' instead.",
+		commands.NewAvailableProducts(api, presenter, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"bosh-diff",
+		"displays BOSH manifest diff for the director and products",
+		"This command displays the bosh manifest diff for the director and products (Note: secret values are replaced with double-paren variable names)",
+		commands.NewBoshDiff(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"bosh-env",
+		"prints environment variables for BOSH and Credhub",
+		"This prints environment variables to target the BOSH director and Credhub. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
+		commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"certificate-authorities",
+		"lists certificates managed by Ops Manager",
+		"lists certificates managed by Ops Manager",
+		commands.NewCertificateAuthorities(api, presenter),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"certificate-authority",
+		"prints requested certificate authority",
+		"prints requested certificate authority",
+		commands.NewCertificateAuthority(api, presenter, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"config-template",
+		"generates a config template from a Pivnet product",
+		"this command generates a product configuration template from a .pivotal file on Pivnet",
+		commands.NewConfigTemplate(commands.DefaultProvider()),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"configure-authentication",
+		"configures Ops Manager with an internal userstore and admin user account",
+		"This unauthenticated command helps setup the internal userstore authentication mechanism for your Ops Manager.",
+		commands.NewConfigureAuthentication(os.Environ, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"configure-director",
+		"configures the director",
+		"This authenticated command configures the director.",
+		commands.NewConfigureDirector(os.Environ, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"configure-ldap-authentication",
+		"configures Ops Manager with LDAP authentication",
+		"This unauthenticated command helps setup the authentication mechanism for your Ops Manager with LDAP.",
+		commands.NewConfigureLDAPAuthentication(os.Environ, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"configure-opsman",
+		"configures values present on the Ops Manager settings page",
+		"This authenticated command configures settings available on the \"Settings\" page in the Ops Manager UI. For an example config, reference the docs directory for this command.",
+		commands.NewConfigureOpsman(os.Environ, api, stderr),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"configure-product",
+		"configures a staged product",
+		"This authenticated command configures a staged product",
+		commands.NewConfigureProduct(os.Environ, api, global.Target, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"configure-saml-authentication",
+		"configures Ops Manager with SAML authentication",
+		"This unauthenticated command helps setup the authentication mechanism for your Ops Manager with SAML.",
+		commands.NewConfigureSAMLAuthentication(os.Environ, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"create-certificate-authority",
+		"creates a certificate authority on the Ops Manager",
+		"This authenticated command creates a certificate authority on the Ops Manager with the given cert and key",
+		commands.NewCreateCertificateAuthority(api, presenter),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"create-vm-extension",
+		"creates/updates a VM extension",
+		"This creates/updates a VM extension",
+		commands.NewCreateVMExtension(os.Environ, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"credential-references",
+		"list credential references for a deployed product",
+		"This authenticated command lists credential references for deployed products.",
+		commands.NewCredentialReferences(api, presenter, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"credentials",
+		"fetch credentials for a deployed product",
+		"This authenticated command fetches credentials for deployed products.",
+		commands.NewCredentials(api, presenter, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"curl",
+		"issues an authenticated API request",
+		"This command issues an authenticated API request as defined in the arguments",
+		commands.NewCurl(api, stdout, stderr),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"delete-certificate-authority",
+		"deletes a certificate authority on the Ops Manager",
+		"This authenticated command deletes an existing certificate authority on the Ops Manager",
+		commands.NewDeleteCertificateAuthority(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"delete-installation",
+		"deletes all the products on the Ops Manager targeted",
+		"This authenticated command deletes all the products installed on the targeted Ops Manager.",
+		commands.NewDeleteInstallation(api, logWriter, stdout, os.Stdin, applySleepDuration),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"delete-product",
+		"deletes an unused product from the Ops Manager",
+		"This command deletes the specified unused product from the targeted Ops Manager",
+		commands.NewDeleteProduct(api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"delete-ssl-certificate",
+		"deletes certificate applied to Ops Manager",
+		"This authenticated command deletes a custom certificate applied to Ops Manager and reverts to the auto-generated cert",
+		commands.NewDeleteSSLCertificate(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"delete-unused-products",
+		"deletes unused products on the Ops Manager targeted",
+		"This command deletes unused products in the targeted Ops Manager",
+		commands.NewDeleteUnusedProducts(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"deployed-manifest",
+		"prints the deployed manifest for a product",
+		"This authenticated command prints the deployed manifest for a product",
+		commands.NewDeployedManifest(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"deployed-products",
+		"**DEPRECATED** lists deployed products. Use 'products --deployed' instead.",
+		"**DEPRECATED** This authenticated command lists all deployed products. Use 'products --deployed' instead.",
+		commands.NewDeployedProducts(presenter, api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"diagnostic-report",
+		"reports current state of your Ops Manager",
+		"retrieve a diagnostic report with general information about the state of your Ops Manager.",
+		commands.NewDiagnosticReport(presenter, api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"disable-director-verifiers",
+		"disables director verifiers",
+		"This authenticated command disables director verifiers",
+		commands.NewDisableDirectorVerifiers(presenter, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"disable-product-verifiers",
+		"disables product verifiers",
+		"This authenticated command disables product verifiers",
+		commands.NewDisableProductVerifiers(presenter, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"download-product",
+		"downloads a specified product file from Pivotal Network",
+		"This command attempts to download a single product file from Pivotal Network. The API token used must be associated with a user account that has already accepted the EULA for the specified product",
+		commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr, api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"errands",
+		"list errands for a product",
+		"This authenticated command lists all errands for a product.",
+		commands.NewErrands(presenter, api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"expiring-certificates",
+		"lists expiring certificates from the Ops Manager targeted",
+		"returns a list of expiring certificates from an existing Ops Manager",
+		commands.NewExpiringCertificates(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"export-installation",
+		"exports the installation of the target Ops Manager",
+		"This command will export the current installation of the target Ops Manager.",
+		commands.NewExportInstallation(api, stderr),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"generate-certificate",
+		"generates a new certificate signed by Ops Manager's root CA",
+		"This authenticated command generates a new RSA public/private certificate signed by Ops Manager’s root CA certificate",
+		commands.NewGenerateCertificate(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"generate-certificate-authority",
+		"generates a certificate authority on the Opsman",
+		"This authenticated command generates a certificate authority on the Ops Manager",
+		commands.NewGenerateCertificateAuthority(api, presenter),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"import-installation",
+		"imports a given installation to the Ops Manager targeted",
+		"This unauthenticated command attempts to import an installation to the Ops Manager targeted.",
+		commands.NewImportInstallation(form, api, global.DecryptionPassphrase, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"installation-log",
+		"output installation logs",
+		"This authenticated command retrieves the logs for a given installation.",
+		commands.NewInstallationLog(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"installations",
+		"list recent installation events",
+		"This authenticated command lists all recent installation events.",
+		commands.NewInstallations(api, presenter),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"interpolate",
+		"interpolates variables into a manifest",
+		"interpolates variables into a manifest",
+		commands.NewInterpolate(os.Environ, stdout, os.Stdin),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"pending-changes",
+		"checks for pending changes",
+		"This authenticated command lists all products and will display whether they are unchanged (no pending changes) or changed (has pending changes).",
+		commands.NewPendingChanges(presenter, api, stderr),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"pre-deploy-check",
+		"checks completeness and validity of product configuration",
+		"This authenticated checks completeness and validity of product configuration. This includes whether stemcells are assigned, missing configuration, and failed validators for a product.",
+		commands.NewPreDeployCheck(presenter, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"product-metadata",
+		"prints product metadata",
+		"This command prints metadata about the given product",
+		commands.NewProductMetadata(stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"products",
+		"lists product staged, available, and deployed versions",
+		"This authenticated command lists all products. Staged, available, and deployed are listed by default.",
+		commands.NewProducts(presenter, api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"regenerate-certificates",
+		"deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
+		"This authenticated command deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes",
+		commands.NewRegenerateCertificates(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"revert-staged-changes",
+		"This command reverts the staged changes already on an Ops Manager.",
+		"This command reverts the staged changes already on an Ops Manager. Useful for ensuring that unintended changes are not applied.",
+		commands.NewRevertStagedChanges(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"ssl-certificate",
+		"gets certificate applied to Ops Manager",
+		"This authenticated command gets certificate applied to Ops Manager",
+		commands.NewSSLCertificate(api, presenter),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"stage-product",
+		"stages a given product in the Ops Manager targeted",
+		"This command attempts to stage a product in the Ops Manager",
+		commands.NewStageProduct(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"staged-config",
+		"generates a config from a staged product",
+		"This command generates a config from a staged product that can be passed in to om configure-product (Note: credentials are not available and will appear as '***')",
+		commands.NewStagedConfig(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"staged-director-config",
+		"generates a config from a staged director",
+		"This command generates a config from a staged director that can be passed in to om configure-director",
+		commands.NewStagedDirectorConfig(api, stdout, stderr),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"staged-manifest",
+		"prints the staged manifest for a product",
+		"This authenticated command prints the staged manifest for a product",
+		commands.NewStagedManifest(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"staged-products",
+		"**DEPRECATED** lists staged products. Use 'products --staged' instead.",
+		"**DEPRECATED** This authenticated command lists all staged products. Use 'products --staged' instead.",
+		commands.NewStagedProducts(presenter, api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"unstage-product",
+		"unstages a given product from the Ops Manager targeted",
+		"This command attempts to unstage a product from the Ops Manager",
+		commands.NewUnstageProduct(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"upload-product",
+		"uploads a given product to the Ops Manager targeted",
+		"This command attempts to upload a product to the Ops Manager",
+		commands.NewUploadProduct(form, metadataExtractor, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"upload-stemcell",
+		"uploads a given stemcell to the Ops Manager targeted",
+		"This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped",
+		commands.NewUploadStemcell(form, api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"version",
+		"prints the om release version",
+		"This command prints the om release version number.",
+		commands.NewVersion(version, sout),
+	)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	args, err = loadConfigFile(args, os.Environ)
+	if err != nil {
+		return err
+	}
+
+	parser.Options |= flags.HelpFlag
+
+	_, err = parser.ParseArgs(args)
+	return err
 }
 
 func setEnvFileProperties(global *options) error {

@@ -2,9 +2,6 @@ package commands
 
 import (
 	"errors"
-	"fmt"
-
-	"github.com/pivotal-cf/jhanda"
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -22,18 +19,14 @@ type deployedManifestService interface {
 	GetDeployedProductManifest(guid string) (string, error)
 }
 
-func NewDeployedManifest(service deployedManifestService, logger logger) DeployedManifest {
-	return DeployedManifest{
+func NewDeployedManifest(service deployedManifestService, logger logger) *DeployedManifest {
+	return &DeployedManifest{
 		service: service,
 		logger:  logger,
 	}
 }
 
 func (dm DeployedManifest) Execute(args []string) error {
-	if _, err := jhanda.Parse(&dm.Options, args); err != nil {
-		return fmt.Errorf("could not parse staged-manifest flags: %s", err)
-	}
-
 	output, err := dm.service.ListDeployedProducts()
 	if err != nil {
 		return err
@@ -59,12 +52,4 @@ func (dm DeployedManifest) Execute(args []string) error {
 	dm.logger.Print(manifest)
 
 	return nil
-}
-
-func (dm DeployedManifest) Usage() jhanda.Usage {
-	return jhanda.Usage{
-		Description:      "This authenticated command prints the deployed manifest for a product",
-		ShortDescription: "prints the deployed manifest for a product",
-		Flags:            dm.Options,
-	}
 }

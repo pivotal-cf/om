@@ -25,7 +25,7 @@ func parseTime(timeString string) *time.Time {
 
 var _ = Describe("Installations", func() {
 	var (
-		command       commands.Installations
+		command       *commands.Installations
 		fakeService   *fakes.InstallationsService
 		fakePresenter *presenterfakes.FormattedPresenter
 	)

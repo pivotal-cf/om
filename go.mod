@@ -22,6 +22,7 @@ require (
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/graymeta/stow v0.2.6
 	github.com/hashicorp/go-version v1.2.1
+	github.com/jessevdk/go-flags v1.4.0
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
