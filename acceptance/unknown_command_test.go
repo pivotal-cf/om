@@ -11,7 +11,7 @@ import (
 )
 
 var _ = Describe("unknown command", func() {
-	FIt("prints the usage", func() {
+	It("prints the usage", func() {
 		cmd := exec.Command(pathToMain, "-t", "pcf.foo.cf-app.com", "banana")
 
 		session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)

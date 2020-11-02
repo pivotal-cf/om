@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("download-product command", func() {
+var _ = FDescribe("download-product command", func() {
 	When("downloading from s3", func() {
 		var (
 			bucketName string
@@ -40,7 +40,7 @@ var _ = Describe("download-product command", func() {
 		})
 
 		When("specifying the stemcell iaas to download", func() {
-			It("downloads the product and correct stemcell", func() {
+			FIt("downloads the product and correct stemcell", func() {
 				pivotalFile := createPivotalFile("[pivnet-example-slug,1.10.1]example*pivotal", "./fixtures/example-product.yml")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")

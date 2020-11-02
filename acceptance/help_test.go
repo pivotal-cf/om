@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"github.com/onsi/gomega/gbytes"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -10,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("help", func() {
+var _ = Describe("help", func() {
 	When("given no command at all", func() {
 		It("prints the global usage", func() {
 			command := exec.Command(pathToMain)
@@ -18,8 +17,7 @@ var _ = FDescribe("help", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).To(gbytes.Say(`Usage:
-  om [OPTIONS] <command>`))
+			Expect(session.Out.Contents()).Should(ContainSubstring(`om [OPTIONS] <command>`))
 		})
 	})
 
@@ -30,8 +28,7 @@ var _ = FDescribe("help", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).To(gbytes.Say(`Usage:
-  om [OPTIONS] <command>`))
+			Expect(session.Out.Contents()).Should(ContainSubstring(`om [OPTIONS] <command>`))
 		})
 	})
 
@@ -42,32 +39,7 @@ var _ = FDescribe("help", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).To(gbytes.Say(`Usage:
-  om [OPTIONS] <command>`))
-		})
-	})
-
-	When("given the help command", func() {
-		It("prints the global usage", func() {
-			command := exec.Command(pathToMain, "help")
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).To(gbytes.Say(`Usage:
-  om [OPTIONS] <command>`))
-		})
-	})
-
-	When("given a command", func() {
-		It("prints the usage for that command", func() {
-			command := exec.Command(pathToMain, "help", "configure-authentication")
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			Eventually(session).Should(gexec.Exit(0))
-			Expect(session.Out).To(gbytes.Say(`Usage:
-  om [OPTIONS] <command>`))
+			Expect(session.Out.Contents()).Should(ContainSubstring(`om [OPTIONS] <command>`))
 		})
 	})
 })
