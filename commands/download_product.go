@@ -55,12 +55,22 @@ type DownloadProductOptions struct {
 	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
 
-	Bucket               string `long:"blobstore-bucket"        alias:"s3-bucket,gcs-bucket,azure-container"                   description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
-	ProductPath          string `long:"blobstore-product-path"  alias:"s3-product-path,gcs-product-path,azure-product-path"    description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
-	StemcellPath         string `long:"blobstore-stemcell-path" alias:"s3-stemcell-path,gcs-stemcell-path,azure-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
-	CacheCleanup         string `long:"cache-cleanup" env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
-	CheckAlreadyUploaded bool   `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
-
+	Bucket                   string `long:"blobstore-bucket" description:"bucket name where the product resides in the s3|gcs|azure compatible blobstore"`
+	ProductPath              string `long:"blobstore-product-path"   description:"specify the lookup path where the s3|gcs|azure product artifacts are stored"`
+	StemcellPath             string `long:"blobstore-stemcell-path" description:"specify the lookup path where the s3|gcs|azure stemcell artifacts are stored"`
+	CacheCleanup             string `long:"cache-cleanup" env:"CACHE_CLEANUP" description:"Delete everything except the latest artifact in output-dir and stemcell-output-dir, set to 'I acknowledge this will delete files in the output directories' to accept these terms"`
+	CheckAlreadyUploaded     bool   `long:"check-already-uploaded" description:"Check if product is already uploaded on Ops Manager before downloading. This command is authenticated."`
+	
+	S3BucketSupport          string `long:"s3-bucket" hidden:"true"`
+	GCSBucketSupport         string `long:"gcs-bucket" hidden:"true"`
+	AzureBucketSupport       string `long:"azure-container" hidden:"true"`
+	S3ProductPathSupport     string `long:"s3-product-path" hidden:"true"`
+	GCSProductPathSupport    string `long:"gcs-product-path" hidden:"true"`
+	AzureProductPathSupport  string `long:"azure-product-path" hidden:"true"`
+	S3StemcellPathSupport    string `long:"s3-stemcell-path" hidden:"true"`
+	GCSStemcellPathSupport   string `long:"gcs-stemcell-path" hidden:"true"`
+	AzureStemcellPathSupport string `long:"azure-stemcell-path" hidden:"true"`
+	
 	AzureOptions
 	GCSOptions
 	interpolateConfigFileOptions
@@ -219,7 +229,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 func (c *DownloadProduct) createClient() error {
 	plugin, err := newDownloadClientFromSource(c.Options, c.progressWriter, c.stdout, c.stderr)
 	if err != nil {
-		return fmt.Errorf("could not find valid source for '%s'", c.Options.Source)
+		return fmt.Errorf("could not find valid source for '%s': %w", c.Options.Source, err)
 	}
 
 	c.downloadClient = plugin
@@ -227,6 +237,8 @@ func (c *DownloadProduct) createClient() error {
 }
 
 func (c *DownloadProduct) validate() error {
+	c.handleAliases()
+
 	if c.Options.ProductVersionRegex != "" && c.Options.ProductVersion != "" {
 		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
@@ -266,6 +278,38 @@ func (c *DownloadProduct) validate() error {
 		}
 	}
 	return nil
+}
+
+func (c *DownloadProduct) handleAliases(){
+	if c.Options.S3BucketSupport != "" {
+		c.Options.Bucket = c.Options.S3BucketSupport
+	}
+	if c.Options.GCSBucketSupport != "" {
+		c.Options.Bucket = c.Options.GCSBucketSupport
+	}
+	if c.Options.AzureBucketSupport != "" {
+		c.Options.Bucket = c.Options.AzureBucketSupport
+	}
+	
+	if c.Options.S3ProductPathSupport != "" {
+		c.Options.ProductPath = c.Options.S3ProductPathSupport
+	}
+	if c.Options.GCSProductPathSupport != "" {
+		c.Options.ProductPath = c.Options.GCSProductPathSupport
+	}
+	if c.Options.AzureProductPathSupport != "" {
+		c.Options.ProductPath = c.Options.AzureProductPathSupport
+	}
+	
+	if c.Options.S3StemcellPathSupport != "" {
+		c.Options.StemcellPath = c.Options.S3StemcellPathSupport
+	}
+	if c.Options.GCSStemcellPathSupport != "" {
+		c.Options.StemcellPath = c.Options.GCSStemcellPathSupport
+	}
+	if c.Options.AzureStemcellPathSupport != "" {
+		c.Options.StemcellPath = c.Options.AzureStemcellPathSupport
+	}
 }
 
 func (c DownloadProduct) writeDownloadProductOutput(productFileName string, productVersion string, stemcellFileName string, stemcellVersion string) error {
