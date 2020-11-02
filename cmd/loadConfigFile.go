@@ -14,6 +14,17 @@ import (
 // To load vars, VarsFile and/or VarsEnv must exist in the command struct being passed in.
 // If VarsEnv is used, envFunc must be defined instead of nil
 func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
+	for _, cmdConfigBypassList := range []string{
+		"interpolate",
+		"configure-opsman",
+		"configure-product",
+		"configure-director",
+	} {
+		if cmdConfigBypassList == args[0] {
+			return args, nil
+		}
+	}
+	
 	var err error
 	var config struct {
 		ConfigFile string   `long:"config"                     short:"c"`

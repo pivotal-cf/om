@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("download-product command", func() {
+var _ = Describe("download-product command", func() {
 	When("downloading from s3", func() {
 		var (
 			bucketName string
