@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"fmt"
 	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
@@ -93,6 +94,29 @@ var _ = Describe("upload-stemcell command", func() {
 			Eventually(session.Out).Should(gbytes.Say("finished upload"))
 
 			Expect(stemcellName).To(Equal("stemcell.tgz"))
+		})
+
+		When("a config file is provided", func() {
+			It("successfully sends the stemcell to the Ops Manager", func() {
+				filename, _ := createStemcell("stemcell.tgz")
+				command := exec.Command(pathToMain,
+					"--target", server.URL(),
+					"--username", "some-username",
+					"--password", "pass",
+					"--skip-ssl-validation",
+					"upload-stemcell",
+					"--config", writeFile(fmt.Sprintf("{stemcell: %s, shasum: 33d5f6335e83364e11760878afad059fffd6a2729ae53691c87cc349a784de92}", filename)),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session, 10*time.Second).Should(gexec.Exit(0))
+				Eventually(session.Out).Should(gbytes.Say("expected shasum matches stemcell shasum."))
+
+				Expect(stemcellName).To(Equal("stemcell.tgz"))
+			})
+
 		})
 
 		When("the stemcell name has the `download-product` prefix", func() {

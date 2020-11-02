@@ -3,6 +3,7 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"github.com/jessevdk/go-flags"
 	"io"
 	"io/ioutil"
 	"os"
@@ -16,6 +17,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func executeCommand(command interface{}, args []string) error {
+	flags.ParseArgs(command, args)
+
+	commander, ok := command.(flags.Commander)
+	Expect(ok).To(BeTrue())
+
+	return commander.Execute(nil)
+}
 
 var _ = Describe("UploadStemcell", func() {
 	var (
@@ -44,7 +54,7 @@ var _ = Describe("UploadStemcell", func() {
 
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-			err := command.Execute([]string{
+			err := executeCommand(command, []string{
 				"--stemcell", "/path/to/stemcell.tgz",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -92,7 +102,7 @@ var _ = Describe("UploadStemcell", func() {
 			})
 
 			It("disables floating", func() {
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "false",
 				})
@@ -125,19 +135,19 @@ var _ = Describe("UploadStemcell", func() {
 			})
 
 			It("only accepts true and false", func() {
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "flalsee",
 				})
 				Expect(err).To(MatchError(ContainSubstring("--floating must be \"true\" or \"false\". Default: true")))
 
-				err = command.Execute([]string{
+				err = executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "trurure",
 				})
 				Expect(err).To(MatchError(ContainSubstring("--floating must be \"true\" or \"false\". Default: true")))
 
-				err = command.Execute([]string{
+				err = executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--floating", "true",
 				})
@@ -162,7 +172,7 @@ var _ = Describe("UploadStemcell", func() {
 				fakeService.UploadStemcellReturnsOnCall(0, api.StemcellUploadOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 				fakeService.UploadStemcellReturnsOnCall(1, api.StemcellUploadOutput{}, nil)
 
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -191,7 +201,7 @@ var _ = Describe("UploadStemcell", func() {
 
 				fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, fmt.Errorf("some upload error: %w", io.EOF))
 
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 				})
 				Expect(err).To(MatchError(ContainSubstring("EOF")))
@@ -218,7 +228,7 @@ var _ = Describe("UploadStemcell", func() {
 
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -241,7 +251,7 @@ var _ = Describe("UploadStemcell", func() {
 
 				command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--stemcell", "/path/to/stemcell.tgz",
 					"--force",
 				})
@@ -289,7 +299,7 @@ var _ = Describe("UploadStemcell", func() {
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
 
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-			err = command.Execute([]string{
+			err = executeCommand(command, []string{
 				"--stemcell", file.Name(),
 				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
@@ -308,7 +318,7 @@ var _ = Describe("UploadStemcell", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-			err = command.Execute([]string{
+			err = executeCommand(command, []string{
 				"--stemcell", file.Name(),
 				"--shasum", "not-the-correct-shasum",
 			})
@@ -317,7 +327,7 @@ var _ = Describe("UploadStemcell", func() {
 		})
 		It("fails when the file can not calculate a shasum", func() {
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command, []string{
 				"--stemcell", "/path/to/testing.tgz",
 				"--shasum", "2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44",
 			})
@@ -340,7 +350,7 @@ var _ = Describe("UploadStemcell", func() {
 
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 
-			err := command.Execute([]string{
+			err := executeCommand(command, []string{
 				"--stemcell", "/path/to/stemcell.tgz",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -367,85 +377,13 @@ var _ = Describe("UploadStemcell", func() {
 		})
 	})
 
-	When("config file is provided", func() {
-		var (
-			configFile *os.File
-			file       *os.File
-		)
-
-		BeforeEach(func() {
-			var err error
-			configContent := `
-shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
-`
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = configFile.WriteString(configContent)
-			Expect(err).ToNot(HaveOccurred())
-
-			file, err = ioutil.TempFile("", "test-file.tgz")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = file.WriteString("testing-shasum")
-			Expect(err).ToNot(HaveOccurred())
-			err = file.Close()
-			Expect(err).ToNot(HaveOccurred())
-
-			submission := formcontent.ContentSubmission{
-				ContentLength: 10,
-				Content:       ioutil.NopCloser(strings.NewReader("")),
-				ContentType:   "some content-type",
-			}
-			multipart.FinalizeReturns(submission)
-
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{Stemcells: []string{}}, nil)
-		})
-
-		AfterEach(func() {
-			err := os.Remove(configFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-
-			err = os.Remove(file.Name())
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("reads configuration from config file", func() {
-			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
-			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-			err := command.Execute([]string{
-				"--stemcell", file.Name(),
-				"--config", configFile.Name(),
-			})
-			Expect(err).ToNot(HaveOccurred())
-			format, v := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches stemcell shasum."))
-		})
-	})
-
-	When("an unknown flag is provided", func() {
-		It("returns an error", func() {
-			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-			err := command.Execute([]string{"--badflag"})
-			Expect(err).To(MatchError("could not parse upload-stemcell flags: flag provided but not defined: -badflag"))
-		})
-	})
-
-	When("the --stemcell flag is missing", func() {
-		It("returns an error", func() {
-			command := commands.NewUploadStemcell(multipart, fakeService, logger)
-			err := command.Execute([]string{})
-			Expect(err).To(MatchError("could not parse upload-stemcell flags: missing required flag \"--stemcell\""))
-		})
-	})
-
 	When("the file cannot be opened", func() {
 		It("returns an error", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			multipart.AddFileReturns(errors.New("bad file"))
 
-			err := command.Execute([]string{"--stemcell", "/some/path"})
+			err := executeCommand(command, []string{"--stemcell", "/some/path"})
 			Expect(err).To(MatchError("failed to upload stemcell: bad file"))
 		})
 	})
@@ -456,7 +394,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			fakeService.UploadStemcellReturns(api.StemcellUploadOutput{}, errors.New("some stemcell error"))
 
-			err := command.Execute([]string{"--stemcell", "/some/path"})
+			err := executeCommand(command, []string{"--stemcell", "/some/path"})
 			Expect(err).To(MatchError("failed to upload stemcell: some stemcell error"))
 		})
 	})
@@ -466,7 +404,7 @@ shasum: 2815ab9694a4a2cfd59424a734833010e143a0b2db20be3741507f177f289f44
 			command := commands.NewUploadStemcell(multipart, fakeService, logger)
 			fakeService.CheckStemcellAvailabilityReturns(false, errors.New("some diagnostic error"))
 
-			err := command.Execute([]string{"--stemcell", "/some/path"})
+			err := executeCommand(command, []string{"--stemcell", "/some/path"})
 			Expect(err.Error()).To(ContainSubstring("some diagnostic error"))
 		})
 	})

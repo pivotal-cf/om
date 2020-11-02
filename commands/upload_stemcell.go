@@ -53,11 +53,6 @@ func NewUploadStemcell(multipart multipart, service uploadStemcellService, logge
 }
 
 func (us UploadStemcell) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &us.Options, os.Environ)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse upload-stemcell flags: %s", err)
-	//}
-
 	err := us.validate()
 	if err != nil {
 		return err
