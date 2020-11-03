@@ -41,11 +41,6 @@ func NewConfigureAuthentication(environFunc func() []string, service configureAu
 func (ca ConfigureAuthentication) Execute(args []string) error {
 	var opsManUaaClientMsg string
 
-	//err := cmd.loadConfigFile(args, &ca.Options, ca.environFunc)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse configure-authentication flags: %s", err)
-	//}
-
 	ensureAvailabilityOutput, err := ca.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 	if err != nil {
 		return fmt.Errorf("could not determine initial configuration status: %s", err)

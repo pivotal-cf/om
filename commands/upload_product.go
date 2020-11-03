@@ -46,11 +46,6 @@ func NewUploadProduct(multipart multipart, metadataExtractor metadataExtractor, 
 }
 
 func (up UploadProduct) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &up.Options, os.Environ)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse upload-product flags: %s", err)
-	//}
-
 	if up.Options.Shasum != "" {
 		shaValidator := validator.NewSHA256Calculator()
 		shasum, err := shaValidator.Checksum(up.Options.Product)

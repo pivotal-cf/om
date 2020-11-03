@@ -31,11 +31,6 @@ func NewAssignMultiStemcell(service assignMultiStemcellService, logger logger) *
 }
 
 func (as AssignMultiStemcell) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &as.Options, os.Environ)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
-	//}
-
 	err := as.validateOpsManVersion()
 	if err != nil {
 		return err

@@ -47,11 +47,6 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 		opsManUaaClientMsg string
 	)
 
-	//err := cmd.loadConfigFile(args, &ca.Options, ca.environFunc)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse configure-ldap-authentication flags: %s", err)
-	//}
-
 	ensureAvailabilityOutput, err := ca.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 	if err != nil {
 		return fmt.Errorf("could not determine initial configuration status: %s", err)

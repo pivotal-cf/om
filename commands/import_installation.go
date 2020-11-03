@@ -121,11 +121,6 @@ func (ii *ImportInstallation) validate(args []string) error {
 		return fmt.Errorf("the global decryption-passphrase argument is required for this command")
 	}
 
-	//err := cmd.loadConfigFile(args, &ii.Options, os.Environ)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse import-installation flags: %s", err)
-	//}
-
 	if _, err := os.Stat(ii.Options.Installation); err != nil {
 		return fmt.Errorf("file: \"%s\" does not exist. Please check the name and try again.", ii.Options.Installation)
 	}

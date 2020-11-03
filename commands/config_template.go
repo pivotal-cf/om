@@ -63,11 +63,6 @@ func NewConfigTemplateWithEnvironment(bp buildProvider, environFunc envProvider)
 
 //Execute - generates config template and ops files
 func (c *ConfigTemplate) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &c.Options, c.environFunc)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse config-template flags: %s", err.Error())
-	//}
-
 	_, err := os.Stat(c.Options.OutputDirectory)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("output-directory does not exist: %s", c.Options.OutputDirectory)

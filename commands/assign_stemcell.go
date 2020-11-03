@@ -31,11 +31,6 @@ func NewAssignStemcell(service assignStemcellService, logger logger) *AssignStem
 }
 
 func (as AssignStemcell) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &as.Options, os.Environ)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse assign-stemcell flags: %s", err)
-	//}
-
 	as.logger.Printf("finding available stemcells for product: \"%s\"...", as.Options.ProductName)
 	productStemcell, err := as.getProductStemcell()
 	if err != nil {

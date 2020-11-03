@@ -33,11 +33,6 @@ func NewDisableDirectorVerifiers(presenter presenters.FormattedPresenter, servic
 }
 
 func (dv DisableDirectorVerifiers) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &dv.Options, os.Environ)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse disable-director-verifiers flags: %s", err)
-	//}
-
 	directorVerifiers, err := dv.service.ListDirectorVerifiers()
 	if err != nil {
 		return fmt.Errorf("could not get available verifiers from Ops Manager: %s", err)

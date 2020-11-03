@@ -111,11 +111,6 @@ func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr 
 }
 
 func (c *DownloadProduct) Execute(args []string) error {
-	//err := cmd.loadConfigFile(args, &c.Options, c.environFunc)
-	//if err != nil {
-	//	return fmt.Errorf("could not parse download-product flags: %s", err)
-	//}
-
 	err := c.validate()
 	if err != nil {
 		return err
