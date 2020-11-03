@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/om/configtemplate/generator"
 	"github.com/pivotal-cf/om/configtemplate/metadata"
 )
@@ -18,6 +17,7 @@ type ConfigTemplate struct {
 		PivnetApiToken    string `long:"pivnet-api-token"`
 		PivnetProductSlug string `long:"pivnet-product-slug"                          description:"the product name in pivnet"`
 		ProductVersion    string `long:"product-version"                              description:"the version of the product from which to generate a template"`
+		PivnetHost        string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
 		FileGlob          string `long:"file-glob" short:"f" description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal"`
 		PivnetDisableSSL  bool   `long:"pivnet-disable-ssl"                           description:"whether to disable ssl validation when contacting the Pivotal Network"`
 
@@ -36,14 +36,13 @@ type MetadataProvider interface {
 	MetadataBytes() ([]byte, error)
 }
 
-var pivnetHost = pivnet.DefaultHost
 var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 	return func(c *ConfigTemplate) MetadataProvider {
 		options := c.Options
 		if options.ProductPath != "" {
 			return metadata.NewFileProvider(options.ProductPath)
 		}
-		return metadata.NewPivnetProvider(pivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.FileGlob, options.PivnetDisableSSL)
+		return metadata.NewPivnetProvider(options.PivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.FileGlob, options.PivnetDisableSSL)
 	}
 }
 

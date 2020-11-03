@@ -25,7 +25,7 @@ var (
 
 var _ = SynchronizedBeforeSuite(func() []byte {
 	var err error
-	omPath, err := gexec.Build("../main.go", "-ldflags", "-X main.applySleepDurationString=1ms -X github.com/pivotal-cf/om/commands.pivnetHost=http://example.com")
+	omPath, err := gexec.Build("../main.go", "-ldflags", "-X main.applySleepDurationString=1ms")
 	Expect(err).ToNot(HaveOccurred())
 
 	minioPath, _ := exec.LookPath("minio")

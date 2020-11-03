@@ -97,8 +97,8 @@ var _ = Describe("config-template command", func() {
 				"--product-version", productVersion,
 				"--pivnet-api-token", "token",
 				"--pivnet-disable-ssl",
+				"--pivnet-host", server.URL(),
 			)
-			command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
@@ -123,8 +123,8 @@ var _ = Describe("config-template command", func() {
 					"--product-version", productVersion,
 					"--pivnet-api-token", "token",
 					"--pivnet-disable-ssl",
+					"--pivnet-host", server.URL(),
 				)
-				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -161,8 +161,8 @@ var _ = Describe("config-template command", func() {
 					"--product-version", productVersion,
 					"--pivnet-api-token", "token",
 					"--pivnet-disable-ssl",
+					"--pivnet-host", server.URL(),
 				)
-				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -275,8 +275,8 @@ var _ = Describe("config-template command", func() {
 					"--product-version", productVersion,
 					"--pivnet-api-token", "token",
 					"--pivnet-disable-ssl",
+					"--pivnet-host", server.URL(),
 				)
-				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -299,8 +299,8 @@ var _ = Describe("config-template command", func() {
 					"--pivnet-api-token", "token",
 					"--file-glob", "product.pivotal",
 					"--pivnet-disable-ssl",
+					"--pivnet-host", server.URL(),
 				)
-				command.Env = []string{fmt.Sprintf("HTTP_PROXY=%s", server.URL())}
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
