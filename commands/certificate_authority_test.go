@@ -136,47 +136,45 @@ var _ = Describe("Certificate Authority", func() {
 			})
 		})
 
-		Context("failure cases", func() {
-			When("the args cannot parsed", func() {
-				It("returns an error", func() {
-					err := certificateAuthority.Execute([]string{
-						"--bogus", "nothing",
-					})
-					Expect(err).To(MatchError(
-						"could not parse certificate-authority flags: flag provided but not defined: -bogus",
-					))
+		When("the args cannot parsed", func() {
+			It("returns an error", func() {
+				err := certificateAuthority.Execute([]string{
+					"--bogus", "nothing",
 				})
+				Expect(err).To(MatchError(
+					"could not parse certificate-authority flags: flag provided but not defined: -bogus",
+				))
+			})
+		})
+
+		When("the service fails to retrieve CAs", func() {
+			BeforeEach(func() {
+				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
+					api.CertificateAuthoritiesOutput{},
+					errors.New("service failed"),
+				)
 			})
 
-			When("the service fails to retrieve CAs", func() {
-				BeforeEach(func() {
-					fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
-						api.CertificateAuthoritiesOutput{},
-						errors.New("service failed"),
-					)
+			It("returns an error", func() {
+				err := certificateAuthority.Execute([]string{
+					"--id", "some-guid",
 				})
-
-				It("returns an error", func() {
-					err := certificateAuthority.Execute([]string{
-						"--id", "some-guid",
-					})
-					Expect(err).To(MatchError("service failed"))
-				})
+				Expect(err).To(MatchError("service failed"))
 			})
+		})
 
-			When("the --id flag is missing", func() {
-				It("returns an error", func() {
-					err := certificateAuthority.Execute([]string{})
-					Expect(err).To(MatchError("More than one certificate authority found. Please use --id flag to specify. IDs can be found using the certificate-authorities command"))
-				})
+		When("the --id flag is missing", func() {
+			It("returns an error", func() {
+				err := certificateAuthority.Execute([]string{})
+				Expect(err).To(MatchError("More than one certificate authority found. Please use --id flag to specify. IDs can be found using the certificate-authorities command"))
 			})
-			When("the request certificate authority is not found", func() {
-				It("returns an error", func() {
-					err := certificateAuthority.Execute([]string{
-						"--id", "doesnt-exist",
-					})
-					Expect(err).To(MatchError(`could not find a certificate authority with ID: "doesnt-exist"`))
+		})
+		When("the request certificate authority is not found", func() {
+			It("returns an error", func() {
+				err := certificateAuthority.Execute([]string{
+					"--id", "doesnt-exist",
 				})
+				Expect(err).To(MatchError(`could not find a certificate authority with ID: "doesnt-exist"`))
 			})
 		})
 	})

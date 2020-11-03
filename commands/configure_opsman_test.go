@@ -32,7 +32,7 @@ banner-settings:
 `
 			configFileName := writeTestConfigFile(bannerConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -55,7 +55,7 @@ ssl-certificate:
 `
 			configFileName := writeTestConfigFile(sslCertConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -77,7 +77,7 @@ pivotal-network-settings:
 `
 			configFileName := writeTestConfigFile(pivnetConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -98,7 +98,7 @@ rbac-settings:
 `
 			configFileName := writeTestConfigFile(rbacConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -120,7 +120,7 @@ rbac-settings:
 `
 			configFileName := writeTestConfigFile(rbacConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -151,7 +151,7 @@ syslog-settings:
 `
 			configFileName := writeTestConfigFile(syslogConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -185,7 +185,7 @@ rbac-settings:
 `
 			configFileName := writeTestConfigFile(rbacConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).To(HaveOccurred())
@@ -199,7 +199,7 @@ rbac-settings:
 		})
 
 		It("errors when no config file is provided", func() {
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("missing required flag \"--config\""))
 
@@ -212,7 +212,7 @@ invalid-key: 1
 `
 			configFileName := writeTestConfigFile(invalidConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).To(HaveOccurred())
@@ -231,7 +231,7 @@ invalid-key-two: 2
 `
 			configFileName := writeTestConfigFile(invalidConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).To(HaveOccurred())
@@ -249,7 +249,7 @@ opsman-configuration: 1
 `
 			configFileName := writeTestConfigFile(opsmanConfiguration)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -264,7 +264,7 @@ opsman-configuration: 1
 			uninterpolatedConfig := `opsman-configuration: ((missing-var))`
 			configFileName := writeTestConfigFile(uninterpolatedConfig)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--config", configFileName,
 			})
 			Expect(err).To(HaveOccurred())
@@ -287,7 +287,7 @@ ssl-certificate:
 `
 				configFileName := writeTestConfigFile(config)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--config", configFileName,
 				})
 				Expect(err).To(HaveOccurred())
@@ -309,7 +309,7 @@ pivotal-network-settings:
 `
 				configFileName := writeTestConfigFile(config)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--config", configFileName,
 				})
 				Expect(err).To(HaveOccurred())
@@ -328,7 +328,7 @@ banner-settings:
 `
 				configFileName := writeTestConfigFile(config)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--config", configFileName,
 				})
 				Expect(err).To(HaveOccurred())
@@ -347,7 +347,7 @@ rbac-settings:
 `
 				configFileName := writeTestConfigFile(config)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--config", configFileName,
 				})
 				Expect(err).To(HaveOccurred())
@@ -374,7 +374,7 @@ syslog-settings:
 `
 				configFileName := writeTestConfigFile(config)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--config", configFileName,
 				})
 				Expect(err).To(HaveOccurred())

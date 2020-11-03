@@ -26,7 +26,7 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 
 	Describe("Execute", func() {
 		It("deletes the specified certificate authority", func() {
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--id", "some-certificate-authority-id",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -41,23 +41,21 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Certificate authority 'some-certificate-authority-id' deleted\n"))
 		})
 
-		Context("failure cases", func() {
-			When("the service fails to delete a certificate", func() {
-				It("returns an error", func() {
-					fakeService.DeleteCertificateAuthorityReturns(errors.New("failed to delete certificate"))
+		When("the service fails to delete a certificate", func() {
+			It("returns an error", func() {
+				fakeService.DeleteCertificateAuthorityReturns(errors.New("failed to delete certificate"))
 
-					err := executeCommand(command,[]string{
-						"--id", "some-certificate-authority-id",
-					})
-					Expect(err).To(MatchError("failed to delete certificate"))
+				err := executeCommand(command, []string{
+					"--id", "some-certificate-authority-id",
 				})
+				Expect(err).To(MatchError("failed to delete certificate"))
 			})
+		})
 
-			When("the id flag is not provided", func() {
-				It("returns an error", func() {
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("could not parse delete-certificate-authority flags: missing required flag \"--id\""))
-				})
+		When("the id flag is not provided", func() {
+			It("returns an error", func() {
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("could not parse delete-certificate-authority flags: missing required flag \"--id\""))
 			})
 		})
 	})

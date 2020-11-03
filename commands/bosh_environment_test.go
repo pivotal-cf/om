@@ -87,7 +87,7 @@ var _ = Describe("bosh-env", func() {
 
 		Describe("Execute with a nonexistent ssh key", func() {
 			It("executes the API call", func() {
-				err := executeCommand(command,[]string{"-i", "somepath.pem"})
+				err := executeCommand(command, []string{"-i", "somepath.pem"})
 				Expect(err).To(MatchError(ContainSubstring("ssh key file 'somepath.pem' does not exist")))
 			})
 		})
@@ -122,7 +122,7 @@ var _ = Describe("bosh-env", func() {
 				err = os.Chdir("./tmp")
 				Expect(err).ToNot(HaveOccurred())
 
-				err = executeCommand(command,[]string{"-i", filepath.Base(keyFile)})
+				err = executeCommand(command, []string{"-i", filepath.Base(keyFile)})
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(stdout.PrintlnCallCount()).To(Equal(10))
 				for i := 0; i < 10; i++ {
@@ -148,7 +148,7 @@ var _ = Describe("bosh-env", func() {
 						},
 					},
 				}, nil)
-				err := executeCommand(command,[]string{})
+				err := executeCommand(command, []string{})
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(stdout.PrintlnCallCount()).To(Equal(8))
@@ -163,7 +163,7 @@ var _ = Describe("bosh-env", func() {
 
 		Describe("Execute without ssh key", func() {
 			It("executes the API call", func() {
-				err := executeCommand(command,[]string{})
+				err := executeCommand(command, []string{})
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(stdout.PrintlnCallCount()).To(Equal(8))
@@ -225,7 +225,7 @@ var _ = Describe("bosh-env", func() {
 			err = os.Chdir("./tmp-all-env")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{"-i", filepath.Base(keyFile)})
+			err = executeCommand(command, []string{"-i", filepath.Base(keyFile)})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -275,7 +275,7 @@ var _ = Describe("bosh-env", func() {
 			err = os.Chdir("./tmp-bosh-env")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{"-i", filepath.Base(keyFile), "-b"})
+			err = executeCommand(command, []string{"-i", filepath.Base(keyFile), "-b"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -320,7 +320,7 @@ var _ = Describe("bosh-env", func() {
 			err = os.Chdir("./tmp-credhub-env")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{"-i", filepath.Base(keyFile), "-c"})
+			err = executeCommand(command, []string{"-i", filepath.Base(keyFile), "-c"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -373,7 +373,7 @@ var _ = Describe("bosh-env", func() {
 		})
 
 		It("prints all of the unset commands when neither the bosh or credhub flags are passed", func() {
-			err = executeCommand(command,[]string{"--unset"})
+			err = executeCommand(command, []string{"--unset"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -400,7 +400,7 @@ var _ = Describe("bosh-env", func() {
 		})
 
 		It("prints only unset commands for BOSH environment variables when the bosh flag is passed", func() {
-			err = executeCommand(command,[]string{"--unset", "-b"})
+			err = executeCommand(command, []string{"--unset", "-b"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string
@@ -422,7 +422,7 @@ var _ = Describe("bosh-env", func() {
 		})
 
 		It("prints only inset commands for the Credhub environment variables when the credhub flag is passed", func() {
-			err = executeCommand(command,[]string{"--unset", "-c"})
+			err = executeCommand(command, []string{"--unset", "-c"})
 			Expect(err).ToNot(HaveOccurred())
 
 			var lines []string

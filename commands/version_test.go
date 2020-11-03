@@ -28,15 +28,13 @@ var _ = Describe("Version", func() {
 			Expect(output).To(ContainSubstring("v1.2.3\n"))
 		})
 
-		Context("failure cases", func() {
-			When("the output cannot be written to", func() {
-				It("returns an error", func() {
+		When("the output cannot be written to", func() {
+			It("returns an error", func() {
 
-					version := commands.NewVersion("v1.2.3", badWriter{})
+				version := commands.NewVersion("v1.2.3", badWriter{})
 
-					err := version.Execute([]string{})
-					Expect(err).To(MatchError("could not print version: failed to write"))
-				})
+				err := version.Execute([]string{})
+				Expect(err).To(MatchError("could not print version: failed to write"))
 			})
 		})
 	})

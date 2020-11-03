@@ -83,7 +83,7 @@ var _ = Describe("DeleteInstallation", func() {
 			_, err = stdin.WriteString("yes\n")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{})
+			err = executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -128,7 +128,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := executeCommand(command,[]string{"--force"})
+			err := executeCommand(command, []string{"--force"})
 			Expect(err).To(MatchError("deleting the installation was unsuccessful"))
 		})
 
@@ -140,7 +140,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := executeCommand(command,[]string{"--force"})
+			err := executeCommand(command, []string{"--force"})
 			Expect(err).ToNot(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -171,7 +171,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-				err := executeCommand(command,[]string{"--force"})
+				err := executeCommand(command, []string{"--force"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.DeleteInstallationAssetCollectionCallCount()).To(Equal(0))
@@ -184,75 +184,73 @@ var _ = Describe("DeleteInstallation", func() {
 			})
 		})
 
-		Context("failure cases", func() {
-			When("the delete to installation_asset_collection is unsuccessful", func() {
-				It("returns an error", func() {
-					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+		When("the delete to installation_asset_collection is unsuccessful", func() {
+			It("returns an error", func() {
+				fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
+				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := executeCommand(command,[]string{"--force"})
-					Expect(err).To(MatchError("failed to delete installation: some error"))
-				})
+				err := executeCommand(command, []string{"--force"})
+				Expect(err).To(MatchError("failed to delete installation: some error"))
 			})
+		})
 
-			When("getting the installation status has an error", func() {
-				It("returns an error", func() {
-					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+		When("getting the installation status has an error", func() {
+			It("returns an error", func() {
+				fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
-					statusOutputs = []api.InstallationsServiceOutput{{}}
+				statusOutputs = []api.InstallationsServiceOutput{{}}
 
-					statusErrors = []error{errors.New("another error")}
+				statusErrors = []error{errors.New("another error")}
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
+				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := executeCommand(command,[]string{"--force"})
-					Expect(err).To(MatchError("installation failed to get status: another error"))
-				})
+				err := executeCommand(command, []string{"--force"})
+				Expect(err).To(MatchError("installation failed to get status: another error"))
 			})
+		})
 
-			When("there is an error fetching the logs", func() {
-				It("returns an error", func() {
-					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+		When("there is an error fetching the logs", func() {
+			It("returns an error", func() {
+				fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
-					statusOutputs = []api.InstallationsServiceOutput{
-						{Status: "running"},
-					}
+				statusOutputs = []api.InstallationsServiceOutput{
+					{Status: "running"},
+				}
 
-					statusErrors = []error{nil}
+				statusErrors = []error{nil}
 
-					logsOutputs = []api.InstallationsServiceOutput{{}}
+				logsOutputs = []api.InstallationsServiceOutput{{}}
 
-					logsErrors = []error{errors.New("no")}
+				logsErrors = []error{errors.New("no")}
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
+				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := executeCommand(command,[]string{"--force"})
-					Expect(err).To(MatchError("installation failed to get logs: no"))
-				})
+				err := executeCommand(command, []string{"--force"})
+				Expect(err).To(MatchError("installation failed to get logs: no"))
 			})
+		})
 
-			When("there is an error flushing the logs", func() {
-				It("returns an error", func() {
-					fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+		When("there is an error flushing the logs", func() {
+			It("returns an error", func() {
+				fakeService.DeleteInstallationAssetCollectionReturns(api.InstallationsServiceOutput{ID: 311}, nil)
 
-					statusOutputs = []api.InstallationsServiceOutput{
-						{Status: "running"},
-					}
+				statusOutputs = []api.InstallationsServiceOutput{
+					{Status: "running"},
+				}
 
-					statusErrors = []error{nil}
+				statusErrors = []error{nil}
 
-					logsOutputs = []api.InstallationsServiceOutput{{Logs: "some logs"}}
+				logsOutputs = []api.InstallationsServiceOutput{{Logs: "some logs"}}
 
-					logsErrors = []error{nil}
+				logsErrors = []error{nil}
 
-					writer.FlushReturns(errors.New("failed flush"))
+				writer.FlushReturns(errors.New("failed flush"))
 
-					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
+				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := executeCommand(command,[]string{"--force"})
-					Expect(err).To(MatchError("installation failed to flush logs: failed flush"))
-				})
+				err := executeCommand(command, []string{"--force"})
+				Expect(err).To(MatchError("installation failed to flush logs: failed flush"))
 			})
 		})
 	})

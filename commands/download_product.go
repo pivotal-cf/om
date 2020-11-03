@@ -100,7 +100,7 @@ type downloadProductService interface {
 	CheckStemcellAvailability(string) (bool, error)
 }
 
-func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, downloadProductService downloadProductService, ) *DownloadProduct {
+func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, downloadProductService downloadProductService) *DownloadProduct {
 	return &DownloadProduct{
 		environFunc:    environFunc,
 		stderr:         stderr,

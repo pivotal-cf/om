@@ -56,7 +56,7 @@ var _ = Describe("CreateVMExtension", func() {
 
 	Describe("Execute", func() {
 		It("makes a request to the OpsMan to create a VM extension", func() {
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--name", "some-vm-extension",
 				"--cloud-properties", "{ \"iam_instance_profile\": \"some-iam-profile\", \"elbs\": [\"some-elb\"] }",
 			})
@@ -87,7 +87,7 @@ var _ = Describe("CreateVMExtension", func() {
 					_, err = varsFile.WriteString(`vm_extension_name: some-vm-extension`)
 					Expect(err).ToNot(HaveOccurred())
 
-					err := executeCommand(command,[]string{
+					err := executeCommand(command, []string{
 						"--config", configFile.Name(),
 						"--vars-file", varsFile.Name(),
 					})
@@ -116,7 +116,7 @@ var _ = Describe("CreateVMExtension", func() {
 					_, err = configFile.WriteString(ymlVMExtensionFile)
 					Expect(err).ToNot(HaveOccurred())
 
-					err := executeCommand(command,[]string{
+					err := executeCommand(command, []string{
 						"--config", configFile.Name(),
 						"--var", "vm_extension_name=some-vm-extension",
 					})
@@ -146,7 +146,7 @@ var _ = Describe("CreateVMExtension", func() {
 					_, err = configFile.WriteString(ymlVMExtensionFile)
 					Expect(err).ToNot(HaveOccurred())
 
-					err := executeCommand(command,[]string{
+					err := executeCommand(command, []string{
 						"--config", configFile.Name(),
 						"--vars-env", "OM_VAR",
 					})
@@ -164,75 +164,72 @@ var _ = Describe("CreateVMExtension", func() {
 			})
 		})
 
-		Context("failure cases", func() {
-			When("the service fails to create a VM extension", func() {
-				It("returns an error", func() {
-					fakeService.CreateStagedVMExtensionReturns(errors.New("failed to create VM extension"))
+		When("the service fails to create a VM extension", func() {
+			It("returns an error", func() {
+				fakeService.CreateStagedVMExtensionReturns(errors.New("failed to create VM extension"))
 
-					err := executeCommand(command,[]string{
-						"--name", "some-vm-extension",
-						"--cloud-properties", "{ \"iam_instance_profile\": \"some-iam-profile\", \"elbs\": [\"some-elb\"] }",
-					})
-
-					Expect(err).To(MatchError("failed to create VM extension"))
+				err := executeCommand(command, []string{
+					"--name", "some-vm-extension",
+					"--cloud-properties", "{ \"iam_instance_profile\": \"some-iam-profile\", \"elbs\": [\"some-elb\"] }",
 				})
+
+				Expect(err).To(MatchError("failed to create VM extension"))
 			})
+		})
 
-			Context("error when name is not provided", func() {
-				It("returns an error when flag is missing", func() {
-					err := executeCommand(command,[]string{"--cloud-properties", "{ \"iam_instance_profile\": \"some-iam-profile\", \"elbs\": [\"some-elb\"] }"})
-					Expect(err).To(MatchError("VM Extension name must provide name via --name flag"))
-					Expect(fakeService.CreateStagedVMExtensionCallCount()).Should(Equal(0))
-				})
-				It("returns an error when name not in file", func() {
-					configFile, err = ioutil.TempFile("", "")
-					Expect(err).ToNot(HaveOccurred())
-
-					_, err = configFile.WriteString(ymlVMExtensionNoNameFile)
-					Expect(err).ToNot(HaveOccurred())
-
-					err := executeCommand(command,[]string{
-						"--config", configFile.Name(),
-					})
-
-					Expect(err).To(MatchError("Config file must contain name element"))
-					Expect(fakeService.CreateStagedVMExtensionCallCount()).Should(Equal(0))
-
-				})
+		Context("error when name is not provided", func() {
+			It("returns an error when flag is missing", func() {
+				err := executeCommand(command, []string{"--cloud-properties", "{ \"iam_instance_profile\": \"some-iam-profile\", \"elbs\": [\"some-elb\"] }"})
+				Expect(err).To(MatchError("VM Extension name must provide name via --name flag"))
+				Expect(fakeService.CreateStagedVMExtensionCallCount()).Should(Equal(0))
 			})
+			It("returns an error when name not in file", func() {
+				configFile, err = ioutil.TempFile("", "")
+				Expect(err).ToNot(HaveOccurred())
 
-			Context("fails to interpolate config file", func() {
-				It("returns an error", func() {
-					configFile, err = ioutil.TempFile("", "")
-					Expect(err).ToNot(HaveOccurred())
+				_, err = configFile.WriteString(ymlVMExtensionNoNameFile)
+				Expect(err).ToNot(HaveOccurred())
 
-					_, err = configFile.WriteString(ymlVMExtensionFile)
-					Expect(err).ToNot(HaveOccurred())
-
-					err := executeCommand(command,[]string{
-						"--config", configFile.Name(),
-					})
-
-					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
-
+				err := executeCommand(command, []string{
+					"--config", configFile.Name(),
 				})
+
+				Expect(err).To(MatchError("Config file must contain name element"))
+				Expect(fakeService.CreateStagedVMExtensionCallCount()).Should(Equal(0))
+
 			})
+		})
 
-			Context("bad yaml in config file", func() {
-				It("returns an error", func() {
-					configFile, err = ioutil.TempFile("", "")
-					Expect(err).ToNot(HaveOccurred())
+		Context("fails to interpolate config file", func() {
+			It("returns an error", func() {
+				configFile, err = ioutil.TempFile("", "")
+				Expect(err).ToNot(HaveOccurred())
 
-					_, err = configFile.WriteString("asdfasdf")
-					Expect(err).ToNot(HaveOccurred())
+				_, err = configFile.WriteString(ymlVMExtensionFile)
+				Expect(err).ToNot(HaveOccurred())
 
-					err := executeCommand(command,[]string{
-						"--config", configFile.Name(),
-					})
-					Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration: yaml")))
+				err := executeCommand(command, []string{
+					"--config", configFile.Name(),
 				})
-			})
 
+				Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
+
+			})
+		})
+
+		Context("bad yaml in config file", func() {
+			It("returns an error", func() {
+				configFile, err = ioutil.TempFile("", "")
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = configFile.WriteString("asdfasdf")
+				Expect(err).ToNot(HaveOccurred())
+
+				err := executeCommand(command, []string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration: yaml")))
+			})
 		})
 	})
 })

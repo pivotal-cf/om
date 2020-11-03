@@ -50,7 +50,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			}, nil)
 			service.DisableDirectorVerifiersReturns(nil)
 
-			err := executeCommand(command,[]string{"--type", verifierType1, "-t", verifierType2})
+			err := executeCommand(command, []string{"--type", verifierType1, "-t", verifierType2})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListDirectorVerifiersCallCount()).To(Equal(1))
@@ -65,7 +65,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 		It("returns an error", func() {
 			service.ListDirectorVerifiersReturns(nil, errors.New("some error occurred"))
 
-			err := executeCommand(command,[]string{"--type", "failing-verifier-type"})
+			err := executeCommand(command, []string{"--type", "failing-verifier-type"})
 			Expect(err).To(MatchError("could not get available verifiers from Ops Manager: some error occurred"))
 		})
 	})
@@ -81,7 +81,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 
 			service.DisableDirectorVerifiersReturns(errors.New("some error occurred"))
 
-			err := executeCommand(command,[]string{"--type", "some-verifier-type"})
+			err := executeCommand(command, []string{"--type", "some-verifier-type"})
 			Expect(err).To(MatchError("could not disable verifiers in Ops Manager: some error occurred"))
 		})
 	})
@@ -93,7 +93,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 				Enabled: true,
 			}}, nil)
 
-			err := executeCommand(command,[]string{"--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
+			err := executeCommand(command, []string{"--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
 			Expect(err).To(MatchError(ContainSubstring("verifier does not exist for director")))
 
 			Expect(service.DisableDirectorVerifiersCallCount()).To(Equal(0))
@@ -137,7 +137,7 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			_, err := configFile.WriteString(configContent)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{"--config", configFile.Name()})
+			err = executeCommand(command, []string{"--config", configFile.Name()})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListDirectorVerifiersCallCount()).To(Equal(1))
@@ -148,14 +148,14 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			_, err := configFile.WriteString("malformed-yaml")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{"--config", configFile.Name()})
+			err = executeCommand(command, []string{"--config", configFile.Name()})
 			Expect(err).To(HaveOccurred())
 		})
 	})
 
 	When("flags are provided", func() {
 		It("returns an error if there is no --type provided", func() {
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
 		})
 	})

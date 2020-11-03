@@ -36,7 +36,7 @@ var _ = Describe("StageProduct", func() {
 			},
 		}, nil)
 
-		err := executeCommand(command,[]string{
+		err := executeCommand(command, []string{
 			"--product-name", "some-product",
 			"--product-version", "some-version",
 		})
@@ -74,7 +74,7 @@ var _ = Describe("StageProduct", func() {
 
 			fakeService.GetLatestAvailableVersionReturns("1.1.1", nil)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 				"--product-version", "latest",
 			})
@@ -105,7 +105,7 @@ var _ = Describe("StageProduct", func() {
 
 				fakeService.GetLatestAvailableVersionReturns("", errors.New("some error"))
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--product-name", "some-product",
 					"--product-version", "latest",
 				})
@@ -141,7 +141,7 @@ unnecessary-field: ((some-value))
 			_, err = configFile.WriteString(config)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"--config", configFile.Name(),
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -181,7 +181,7 @@ unnecessary-field: ((some-value))
 				},
 			}, nil)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})
@@ -219,7 +219,7 @@ unnecessary-field: ((some-value))
 
 			command := commands.NewStageProduct(fakeService, logger)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})
@@ -247,7 +247,7 @@ unnecessary-field: ((some-value))
 		})
 		It("returns an error", func() {
 			command := commands.NewStageProduct(fakeService, logger)
-			err := executeCommand(command,[]string{"--product-name", "cf", "--product-version", "some-version"})
+			err := executeCommand(command, []string{"--product-name", "cf", "--product-version", "some-version"})
 			Expect(err).To(MatchError("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes"))
 			Expect(fakeService.ListInstallationsCallCount()).To(Equal(1))
 		})
@@ -256,7 +256,7 @@ unnecessary-field: ((some-value))
 	When("the product-name flag is not provided", func() {
 		It("returns an error", func() {
 			command := commands.NewStageProduct(fakeService, logger)
-			err := executeCommand(command,[]string{"--product-version", "1.0"})
+			err := executeCommand(command, []string{"--product-version", "1.0"})
 			Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-name\""))
 		})
 	})
@@ -264,7 +264,7 @@ unnecessary-field: ((some-value))
 	When("the product-version flag is not provided", func() {
 		It("returns an error", func() {
 			command := commands.NewStageProduct(fakeService, logger)
-			err := executeCommand(command,[]string{"--product-name", "some-product"})
+			err := executeCommand(command, []string{"--product-name", "some-product"})
 			Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-version\""))
 		})
 	})
@@ -277,7 +277,7 @@ unnecessary-field: ((some-value))
 		It("returns an error", func() {
 			command := commands.NewStageProduct(fakeService, logger)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})
@@ -293,7 +293,7 @@ unnecessary-field: ((some-value))
 		It("returns an error", func() {
 			command := commands.NewStageProduct(fakeService, logger)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})
@@ -307,7 +307,7 @@ unnecessary-field: ((some-value))
 			fakeService.CheckProductAvailabilityReturns(true, nil)
 			fakeService.StageReturns(errors.New("some product error"))
 
-			err := executeCommand(command,[]string{"--product-name", "some-product", "--product-version", "some-version"})
+			err := executeCommand(command, []string{"--product-name", "some-product", "--product-version", "some-version"})
 			Expect(err).To(MatchError("failed to stage product: some product error"))
 		})
 	})
@@ -318,7 +318,7 @@ unnecessary-field: ((some-value))
 			fakeService.CheckProductAvailabilityReturns(true, nil)
 			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("bad diagnostic report"))
 
-			err := executeCommand(command,[]string{"--product-name", "some-product", "--product-version", "some-version"})
+			err := executeCommand(command, []string{"--product-name", "some-product", "--product-version", "some-version"})
 			Expect(err).To(MatchError("failed to stage product: bad diagnostic report"))
 		})
 	})
@@ -333,7 +333,7 @@ unnecessary-field: ((some-value))
 		It("returns an error", func() {
 			command := commands.NewStageProduct(fakeService, logger)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 				"--product-version", "some-version",
 			})

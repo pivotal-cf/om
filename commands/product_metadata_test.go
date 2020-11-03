@@ -56,7 +56,7 @@ product_version: 1.2.3
 		})
 
 		It("shows product name from tile metadata file", func() {
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"-p",
 				productFile.Name(),
 				"--product-name",
@@ -68,7 +68,7 @@ product_version: 1.2.3
 		})
 
 		It("shows product version from tile metadata file", func() {
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"-p",
 				productFile.Name(),
 				"--product-version",
@@ -79,48 +79,46 @@ product_version: 1.2.3
 			Expect(content).To(ContainElement("1.2.3"))
 		})
 
-		Context("failure cases", func() {
-			When("the flags cannot be parsed", func() {
-				It("returns an error", func() {
-					err = executeCommand(command,[]string{"--bad-flag", "some-value"})
-					Expect(err).To(MatchError(MatchRegexp("could not parse product-metadata flags")))
-				})
+		When("the flags cannot be parsed", func() {
+			It("returns an error", func() {
+				err = executeCommand(command, []string{"--bad-flag", "some-value"})
+				Expect(err).To(MatchError(MatchRegexp("could not parse product-metadata flags")))
+			})
+		})
+
+		When("the flags are not specified", func() {
+			It("returns an error", func() {
+				err = executeCommand(command, []string{"-p", productFile.Name()})
+				Expect(err).To(MatchError(MatchRegexp("you must specify product-name and/or product-version")))
+			})
+		})
+
+		When("the specified product file is not found", func() {
+			It("returns an error", func() {
+				err = executeCommand(command, []string{"-p", "non-existent-file", "--product-name"})
+				Expect(err).To(MatchError(MatchRegexp("open non-existent-file")))
+			})
+		})
+
+		When("the file does not have metadata", func() {
+			var (
+				badTile *os.File
+			)
+
+			BeforeEach(func() {
+				badTile, err = ioutil.TempFile("", "bad-tile")
+				Expect(err).ToNot(HaveOccurred())
+				z := zip.NewWriter(badTile)
+				Expect(z.Close()).To(Succeed())
 			})
 
-			When("the flags are not specified", func() {
-				It("returns an error", func() {
-					err = executeCommand(command,[]string{"-p", productFile.Name()})
-					Expect(err).To(MatchError(MatchRegexp("you must specify product-name and/or product-version")))
-				})
+			AfterEach(func() {
+				Expect(os.RemoveAll(badTile.Name())).To(Succeed())
 			})
 
-			When("the specified product file is not found", func() {
-				It("returns an error", func() {
-					err = executeCommand(command,[]string{"-p", "non-existent-file", "--product-name"})
-					Expect(err).To(MatchError(MatchRegexp("open non-existent-file")))
-				})
-			})
-
-			When("the file does not have metadata", func() {
-				var (
-					badTile *os.File
-				)
-
-				BeforeEach(func() {
-					badTile, err = ioutil.TempFile("", "bad-tile")
-					Expect(err).ToNot(HaveOccurred())
-					z := zip.NewWriter(badTile)
-					Expect(z.Close()).To(Succeed())
-				})
-
-				AfterEach(func() {
-					Expect(os.RemoveAll(badTile.Name())).To(Succeed())
-				})
-
-				It("returns an error", func() {
-					err = executeCommand(command,[]string{"-p", badTile.Name(), "--product-name"})
-					Expect(err).To(MatchError(MatchRegexp("failed to getting metadata")))
-				})
+			It("returns an error", func() {
+				err = executeCommand(command, []string{"-p", badTile.Name(), "--product-name"})
+				Expect(err).To(MatchError(MatchRegexp("failed to getting metadata")))
 			})
 		})
 	})

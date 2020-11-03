@@ -25,7 +25,7 @@ var _ = Describe("DeleteSSLCertificate", func() {
 
 	Describe("Execute", func() {
 		It("deletes the custom ssl certificate", func() {
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.DeleteSSLCertificateCallCount()).To(Equal(1))
@@ -37,14 +37,12 @@ var _ = Describe("DeleteSSLCertificate", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Please allow about 1 min for the new certificate to take effect.\n"))
 		})
 
-		Context("failure cases", func() {
-			When("the service fails to delete the custom certificate", func() {
-				It("returns an error", func() {
-					fakeService.DeleteSSLCertificateReturns(errors.New("failed to delete certificate"))
+		When("the service fails to delete the custom certificate", func() {
+			It("returns an error", func() {
+				fakeService.DeleteSSLCertificateReturns(errors.New("failed to delete certificate"))
 
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("failed to delete certificate"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("failed to delete certificate"))
 			})
 		})
 	})

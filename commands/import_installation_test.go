@@ -81,7 +81,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-		err := executeCommand(command,[]string{"--polling-interval", "0",
+		err := executeCommand(command, []string{"--polling-interval", "0",
 			"--installation", installationFile,
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -124,7 +124,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := executeCommand(command,[]string{"--polling-interval", "0",
+			err := executeCommand(command, []string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -170,7 +170,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := executeCommand(command,[]string{"--polling-interval", "0",
+			err := executeCommand(command, []string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -207,7 +207,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := executeCommand(command,[]string{"--polling-interval", "0",
+			err := executeCommand(command, []string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 				"--installation", installationFile,
 			})
@@ -254,7 +254,7 @@ var _ = Describe("ImportInstallation", func() {
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			err := executeCommand(command,[]string{"--polling-interval", "0",
+			err := executeCommand(command, []string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -287,7 +287,7 @@ var _ = Describe("ImportInstallation", func() {
 				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
 			}
 
-			err := executeCommand(command,[]string{"--polling-interval", "0",
+			err := executeCommand(command, []string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))
@@ -295,93 +295,91 @@ var _ = Describe("ImportInstallation", func() {
 		}, 1)
 	})
 
-	Context("failure cases", func() {
-		When("the global decryption-passphrase is not provided", func() {
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "", logger)
-				err := executeCommand(command,[]string{"--polling-interval", "0"})
-				Expect(err).To(MatchError("the global decryption-passphrase argument is required for this command"))
-			})
+	When("the global decryption-passphrase is not provided", func() {
+		It("returns an error", func() {
+			command := commands.NewImportInstallation(multipart, fakeService, "", logger)
+			err := executeCommand(command, []string{"--polling-interval", "0"})
+			Expect(err).To(MatchError("the global decryption-passphrase argument is required for this command"))
+		})
+	})
+
+	When("the --installation provided is a file that does not exist", func() {
+		It("returns an error", func() {
+			command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+			err := executeCommand(command, []string{"--installation", "does-not-exist.zip"})
+			Expect(err).To(MatchError("file: \"does-not-exist.zip\" does not exist. Please check the name and try again."))
+		})
+	})
+
+	When("the --installation provided is not a valid zip file", func() {
+		var notZipFile string
+		BeforeEach(func() {
+			tmpFile, err := ioutil.TempFile("", "")
+			Expect(err).ToNot(HaveOccurred())
+			notZipFile = tmpFile.Name()
 		})
 
-		When("the --installation provided is a file that does not exist", func() {
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := executeCommand(command,[]string{"--installation", "does-not-exist.zip"})
-				Expect(err).To(MatchError("file: \"does-not-exist.zip\" does not exist. Please check the name and try again."))
-			})
+		AfterEach(func() {
+			os.Remove(notZipFile)
 		})
 
-		When("the --installation provided is not a valid zip file", func() {
-			var notZipFile string
-			BeforeEach(func() {
-				tmpFile, err := ioutil.TempFile("", "")
-				Expect(err).ToNot(HaveOccurred())
-				notZipFile = tmpFile.Name()
-			})
+		It("returns an error", func() {
+			command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+			err := executeCommand(command, []string{"--installation", notZipFile})
+			Expect(err).To(MatchError(fmt.Sprintf("file: \"%s\" is not a valid zip file", notZipFile)))
+		})
+	})
 
-			AfterEach(func() {
-				os.Remove(notZipFile)
-			})
-
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := executeCommand(command,[]string{"--installation", notZipFile})
-				Expect(err).To(MatchError(fmt.Sprintf("file: \"%s\" is not a valid zip file", notZipFile)))
-			})
+	When("the --installation provided does not have required installation.yml", func() {
+		var invalidInstallation string
+		BeforeEach(func() {
+			invalidInstallation = createZipFile([]struct{ Name, Body string }{})
 		})
 
-		When("the --installation provided does not have required installation.yml", func() {
-			var invalidInstallation string
-			BeforeEach(func() {
-				invalidInstallation = createZipFile([]struct{ Name, Body string }{})
-			})
-
-			AfterEach(func() {
-				os.Remove(invalidInstallation)
-			})
-
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := executeCommand(command,[]string{"--installation", invalidInstallation})
-				expectedErrorTemplate := "file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
-				Expect(err).To(MatchError(fmt.Sprintf(expectedErrorTemplate, invalidInstallation)))
-			})
+		AfterEach(func() {
+			os.Remove(invalidInstallation)
 		})
 
-		When("the ensure_availability endpoint returns an error", func() {
-			It("returns an error", func() {
-				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
-				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-				err := executeCommand(command,[]string{"--polling-interval", "0", "--installation", installationFile})
-				Expect(err).To(MatchError("could not check Ops Manager status: some error"))
-			})
+		It("returns an error", func() {
+			command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
+			err := executeCommand(command, []string{"--installation", invalidInstallation})
+			expectedErrorTemplate := "file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
+			Expect(err).To(MatchError(fmt.Sprintf(expectedErrorTemplate, invalidInstallation)))
 		})
+	})
 
-		When("the file cannot be opened", func() {
-			It("returns an error", func() {
-				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
-					Status: api.EnsureAvailabilityStatusUnstarted,
-				}, nil)
-				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-				multipart.AddFileReturns(errors.New("bad file"))
-
-				err := executeCommand(command,[]string{"--polling-interval", "0", "--installation", installationFile})
-				Expect(err).To(MatchError("failed to load installation: bad file"))
-			})
+	When("the ensure_availability endpoint returns an error", func() {
+		It("returns an error", func() {
+			fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+			err := executeCommand(command, []string{"--polling-interval", "0", "--installation", installationFile})
+			Expect(err).To(MatchError("could not check Ops Manager status: some error"))
 		})
+	})
 
-		When("the installation cannot be imported", func() {
-			It("returns an error", func() {
-				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
-					Status: api.EnsureAvailabilityStatusUnstarted,
-				}, nil)
-				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-				fakeService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
+	When("the file cannot be opened", func() {
+		It("returns an error", func() {
+			fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
+				Status: api.EnsureAvailabilityStatusUnstarted,
+			}, nil)
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+			multipart.AddFileReturns(errors.New("bad file"))
 
-				err := executeCommand(command,[]string{"--polling-interval", "0", "--installation", installationFile})
-				Expect(err).To(MatchError("failed to import installation: some installation error"))
-			})
+			err := executeCommand(command, []string{"--polling-interval", "0", "--installation", installationFile})
+			Expect(err).To(MatchError("failed to load installation: bad file"))
+		})
+	})
+
+	When("the installation cannot be imported", func() {
+		It("returns an error", func() {
+			fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
+				Status: api.EnsureAvailabilityStatusUnstarted,
+			}, nil)
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+			fakeService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
+
+			err := executeCommand(command, []string{"--polling-interval", "0", "--installation", installationFile})
+			Expect(err).To(MatchError("failed to import installation: some installation error"))
 		})
 	})
 })

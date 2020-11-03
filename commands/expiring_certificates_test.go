@@ -32,7 +32,7 @@ var _ = Describe("ExpiringCertificates", func() {
 	When("there are no expiring certificates in the time range", func() {
 		It("displays a helpful message", func() {
 			command := commands.NewExpiringCertificates(service, logger)
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Getting expiring certificates...")))
@@ -41,7 +41,7 @@ var _ = Describe("ExpiringCertificates", func() {
 
 		It("sets ExpiresWithin when passed", func() {
 			command := commands.NewExpiringCertificates(service, logger)
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--expires-within",
 				"5w",
 			})
@@ -137,7 +137,7 @@ var _ = Describe("ExpiringCertificates", func() {
 				}, nil
 			}
 			command := commands.NewExpiringCertificates(service, logger)
-			err = executeCommand(command,[]string{})
+			err = executeCommand(command, []string{})
 			Expect(err).To(HaveOccurred())
 
 			contentsStr := string(stdout.Contents())
@@ -159,7 +159,7 @@ var _ = Describe("ExpiringCertificates", func() {
 
 		It("sets ExpiresWithin to 3m as default", func() {
 			command := commands.NewExpiringCertificates(service, logger)
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("3m"))
@@ -167,7 +167,7 @@ var _ = Describe("ExpiringCertificates", func() {
 
 		It("sets ExpiresWithin when passed", func() {
 			command := commands.NewExpiringCertificates(service, logger)
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--expires-within",
 				"5w",
 			})
@@ -178,38 +178,38 @@ var _ = Describe("ExpiringCertificates", func() {
 
 		It("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
 			command := commands.NewExpiringCertificates(service, logger)
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--expires-within",
 				"1s",
 			})
 			Expect(err).To(MatchError(ContainSubstring("only d,w,m, or y are supported. Default is \"3m\"")))
 
 			command = commands.NewExpiringCertificates(service, logger)
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"--expires-within",
 				"0d",
 			})
 			Expect(err).To(MatchError(ContainSubstring("only d,w,m, or y are supported. Default is \"3m\"")))
 
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"--expires-within",
 				"2d",
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"--expires-within",
 				"11y",
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"--expires-within",
 				"109w",
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			err = executeCommand(command,[]string{
+			err = executeCommand(command, []string{
 				"--expires-within",
 				"20m",
 			})
@@ -222,7 +222,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			service.ListExpiringCertificatesReturns(nil, errors.New("an api error"))
 			command := commands.NewExpiringCertificates(service, logger)
 
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).To(MatchError(ContainSubstring("could not fetch expiring certificates: an api error")))
 		})
 	})

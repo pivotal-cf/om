@@ -47,7 +47,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 			}, "cf-guid", nil)
 			service.DisableProductVerifiersReturns(nil)
 
-			err := executeCommand(command,[]string{"--product-name", "cf", "--type", verifierType1, "-t", verifierType2})
+			err := executeCommand(command, []string{"--product-name", "cf", "--type", verifierType1, "-t", verifierType2})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.ListProductVerifiersCallCount()).To(Equal(1))
@@ -63,7 +63,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 		It("returns an error", func() {
 			service.ListProductVerifiersReturns(nil, "", errors.New("some error occurred"))
 
-			err := executeCommand(command,[]string{"--product-name", "cf", "--type", "failing-verifier-type"})
+			err := executeCommand(command, []string{"--product-name", "cf", "--type", "failing-verifier-type"})
 			Expect(err).To(MatchError("could not get available verifiers from Ops Manager: some error occurred"))
 		})
 	})
@@ -79,7 +79,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 
 			service.DisableProductVerifiersReturns(errors.New("some error occurred"))
 
-			err := executeCommand(command,[]string{"--product-name", "cf", "--type", "some-verifier-type"})
+			err := executeCommand(command, []string{"--product-name", "cf", "--type", "some-verifier-type"})
 			Expect(err).To(MatchError("could not disable verifiers in Ops Manager: some error occurred"))
 		})
 	})
@@ -91,7 +91,7 @@ var _ = Describe("DisableProductVerifiers", func() {
 				Enabled: true,
 			}}, "cf-guid", nil)
 
-			err := executeCommand(command,[]string{"--product-name", "cf", "--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
+			err := executeCommand(command, []string{"--product-name", "cf", "--type", "missing-verifier-type", "-t", "another-missing-verifier-type"})
 			Expect(err).To(MatchError(ContainSubstring("verifier does not exist for product")))
 
 			Expect(service.DisableProductVerifiersCallCount()).To(Equal(0))
@@ -106,12 +106,12 @@ var _ = Describe("DisableProductVerifiers", func() {
 	When("flags are provided", func() {
 
 		It("returns an error if there is no --type provided", func() {
-			err := executeCommand(command,[]string{"--product-name", "cf"})
+			err := executeCommand(command, []string{"--product-name", "cf"})
 			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
 		})
 
 		It("returns an error if there is no --product-name provided", func() {
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--product-name"`)))
 		})
 	})

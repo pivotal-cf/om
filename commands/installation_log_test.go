@@ -26,7 +26,7 @@ var _ = Describe("InstallationLog", func() {
 	Describe("Execute", func() {
 		It("displays the logs for the specified installation", func() {
 			fakeService.GetInstallationLogsReturns(api.InstallationsServiceOutput{Logs: "some log output"}, nil)
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--id", "999",
 			})
 
@@ -41,28 +41,26 @@ var _ = Describe("InstallationLog", func() {
 			Expect(outputLogs).To(Equal("some log output"))
 		})
 
-		Context("Failure cases", func() {
-			When("an unknown flag is provided", func() {
-				It("returns an error", func() {
-					err := executeCommand(command,[]string{"--since", "yesterday"})
-					Expect(err).To(MatchError("could not parse installation-log flags: flag provided but not defined: -since"))
-				})
+		When("an unknown flag is provided", func() {
+			It("returns an error", func() {
+				err := executeCommand(command, []string{"--since", "yesterday"})
+				Expect(err).To(MatchError("could not parse installation-log flags: flag provided but not defined: -since"))
 			})
-			When("the installation id is not provided", func() {
-				It("returns an error", func() {
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("could not parse installation-log flags: missing required flag \"--id\""))
-				})
+		})
+		When("the installation id is not provided", func() {
+			It("returns an error", func() {
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("could not parse installation-log flags: missing required flag \"--id\""))
 			})
-			When("the api fails to retrieve the installation log", func() {
-				It("returns an error", func() {
-					fakeService.GetInstallationLogsReturns(
-						api.InstallationsServiceOutput{},
-						errors.New("failed to retrieve installation log"),
-					)
-					err := executeCommand(command,[]string{"--id", "999"})
-					Expect(err).To(MatchError("failed to retrieve installation log"))
-				})
+		})
+		When("the api fails to retrieve the installation log", func() {
+			It("returns an error", func() {
+				fakeService.GetInstallationLogsReturns(
+					api.InstallationsServiceOutput{},
+					errors.New("failed to retrieve installation log"),
+				)
+				err := executeCommand(command, []string{"--id", "999"})
+				Expect(err).To(MatchError("failed to retrieve installation log"))
 			})
 		})
 	})

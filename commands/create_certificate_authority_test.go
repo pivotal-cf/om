@@ -26,7 +26,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 
 	Describe("Execute", func() {
 		It("makes a request to the Opsman to create a certificate authority", func() {
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--certificate-pem", "some CertPem",
 				"--private-key-pem", "some PrivateKey",
 			})
@@ -51,7 +51,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 
 			fakeService.CreateCertificateAuthorityReturns(ca, nil)
 
-			err := executeCommand(command,[]string{
+			err := executeCommand(command, []string{
 				"--certificate-pem", "some CertPem",
 				"--private-key-pem", "some PrivateKey",
 			})
@@ -63,7 +63,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 
 		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--format", "json",
 					"--certificate-pem", "some CertPem",
 					"--private-key-pem", "some PrivateKey",
@@ -75,35 +75,33 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			})
 		})
 
-		Context("failure cases", func() {
-			When("the service fails to create a certificate", func() {
-				It("returns an error", func() {
-					fakeService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
+		When("the service fails to create a certificate", func() {
+			It("returns an error", func() {
+				fakeService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
 
-					err := executeCommand(command,[]string{
-						"--certificate-pem", "some CertPem",
-						"--private-key-pem", "some PrivateKey",
-					})
-					Expect(err).To(MatchError("failed to create certificate"))
+				err := executeCommand(command, []string{
+					"--certificate-pem", "some CertPem",
+					"--private-key-pem", "some PrivateKey",
 				})
+				Expect(err).To(MatchError("failed to create certificate"))
 			})
+		})
 
-			When("the certificate flag is not provided", func() {
-				It("returns an error", func() {
-					err := executeCommand(command,[]string{
-						"--private-key-pem", "some PrivateKey",
-					})
-					Expect(err).To(MatchError("could not parse create-certificate-authority flags: missing required flag \"--certificate-pem\""))
+		When("the certificate flag is not provided", func() {
+			It("returns an error", func() {
+				err := executeCommand(command, []string{
+					"--private-key-pem", "some PrivateKey",
 				})
+				Expect(err).To(MatchError("could not parse create-certificate-authority flags: missing required flag \"--certificate-pem\""))
 			})
+		})
 
-			When("the private key flag is not provided", func() {
-				It("returns an error", func() {
-					err := executeCommand(command,[]string{
-						"--certificate-pem", "some CertPem",
-					})
-					Expect(err).To(MatchError("could not parse create-certificate-authority flags: missing required flag \"--private-key-pem\""))
+		When("the private key flag is not provided", func() {
+			It("returns an error", func() {
+				err := executeCommand(command, []string{
+					"--certificate-pem", "some CertPem",
 				})
+				Expect(err).To(MatchError("could not parse create-certificate-authority flags: missing required flag \"--private-key-pem\""))
 			})
 		})
 	})

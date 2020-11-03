@@ -55,7 +55,7 @@ var _ = Describe("ApplyChanges", func() {
 		It("applies changes to the Ops Manager", func() {
 			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
@@ -84,7 +84,7 @@ var _ = Describe("ApplyChanges", func() {
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{"--ignore-warnings"})
+				err := executeCommand(command, []string{"--ignore-warnings"})
 				Expect(err).ToNot(HaveOccurred())
 
 				ignoreWarnings, _, _, _ := service.CreateInstallationArgsForCall(0)
@@ -96,7 +96,7 @@ var _ = Describe("ApplyChanges", func() {
 			It("applies changes while not deploying products", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{"--skip-deploy-products"})
+				err := executeCommand(command, []string{"--skip-deploy-products"})
 				Expect(err).ToNot(HaveOccurred())
 
 				_, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
@@ -105,7 +105,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			It("fails if product names were specified", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-				err := executeCommand(command,[]string{"--skip-deploy-products", "--product-name", "product1"})
+				err := executeCommand(command, []string{"--skip-deploy-products", "--product-name", "product1"})
 				Expect(err).To(HaveOccurred())
 			})
 		})
@@ -117,7 +117,7 @@ var _ = Describe("ApplyChanges", func() {
 				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, nil)
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-				err := executeCommand(command,[]string{"--product-name", "product1", "--product-name", "product2"})
+				err := executeCommand(command, []string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
 				_, _, productNames, _ := service.CreateInstallationArgsForCall(0)
@@ -137,7 +137,7 @@ var _ = Describe("ApplyChanges", func() {
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{"--reattach"})
+				err := executeCommand(command, []string{"--reattach"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.CreateInstallationCallCount()).To(Equal(0))
@@ -153,7 +153,7 @@ var _ = Describe("ApplyChanges", func() {
 				It("errors because this is a conflict", func() {
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{"--reattach", "--recreate-vms"})
+					err := executeCommand(command, []string{"--reattach", "--recreate-vms"})
 					Expect(err).To(MatchError(ContainSubstring("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")))
 				})
 			})
@@ -171,7 +171,7 @@ var _ = Describe("ApplyChanges", func() {
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{})
+				err := executeCommand(command, []string{})
 				Expect(err).To(HaveOccurred())
 
 				Expect(service.CreateInstallationCallCount()).To(Equal(0))
@@ -184,7 +184,7 @@ var _ = Describe("ApplyChanges", func() {
 			It("ensures all vms are recreated", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{"--recreate-vms"})
+				err := executeCommand(command, []string{"--recreate-vms"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
@@ -203,7 +203,7 @@ var _ = Describe("ApplyChanges", func() {
 			It("ensures only the director is recreated", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--recreate-vms",
 					"--skip-deploy-products",
 				})
@@ -224,7 +224,7 @@ var _ = Describe("ApplyChanges", func() {
 			It("ensures only products are updated", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-				err := executeCommand(command,[]string{
+				err := executeCommand(command, []string{
 					"--recreate-vms",
 					"--product-name", "cf",
 					"-n", "example-product",
@@ -252,7 +252,7 @@ var _ = Describe("ApplyChanges", func() {
 
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{
+					err := executeCommand(command, []string{
 						"--recreate-vms",
 						"--product-name", "cf",
 						"-n", "example-product",
@@ -280,7 +280,7 @@ var _ = Describe("ApplyChanges", func() {
 					service.UpdateStagedDirectorPropertiesReturns(errors.New("testing"))
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{"--recreate-vms"})
+					err := executeCommand(command, []string{"--recreate-vms"})
 					Expect(err).To(MatchError(ContainSubstring("testing")))
 				})
 			})
@@ -348,7 +348,7 @@ errands:
 				It("calls the api with correct arguments", func() {
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{"--config", fileName})
+					err := executeCommand(command, []string{"--config", fileName})
 					Expect(err).ToNot(HaveOccurred())
 
 					Expect(service.CreateInstallationCallCount()).To(Equal(1))
@@ -396,7 +396,7 @@ errands:
 				It("returns an error", func() {
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{"--config", "filedoesnotexist"})
+					err := executeCommand(command, []string{"--config", "filedoesnotexist"})
 					Expect(err).To(MatchError("could not load config: open filedoesnotexist: no such file or directory"))
 				})
 			})
@@ -418,7 +418,7 @@ errands: lolololol
 				It("returns an error", func() {
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{"--config", fileName})
+					err := executeCommand(command, []string{"--config", fileName})
 					Expect(err).To(MatchError(ContainSubstring("line 3: cannot unmarshal !!str `lolololol`")))
 				})
 			})
@@ -431,84 +431,82 @@ errands: lolololol
 
 			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-			err := executeCommand(command,[]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).To(MatchError("installation was unsuccessful"))
 		})
 
-		Context("failure cases", func() {
-			When("checking for an already running installation returns an error", func() {
-				It("returns an error", func() {
-					service.RunningInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+		When("checking for an already running installation returns an error", func() {
+			It("returns an error", func() {
+				service.RunningInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("could not check for any already running installation: some error"))
+			})
+		})
+
+		When("--product-name is used with an old version of ops manager", func() {
+			It("returns an error", func() {
+				versions := []string{"2.1-build.326", "1.12-build99"}
+				for _, version := range versions {
+					service.InfoReturns(api.Info{Version: version}, nil)
 
 					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("could not check for any already running installation: some error"))
-				})
+					err := executeCommand(command, []string{"--product-name", "p-mysql"})
+					Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", version)))
+				}
 			})
+		})
 
-			When("--product-name is used with an old version of ops manager", func() {
-				It("returns an error", func() {
-					versions := []string{"2.1-build.326", "1.12-build99"}
-					for _, version := range versions {
-						service.InfoReturns(api.Info{Version: version}, nil)
+		When("an installation cannot be triggered", func() {
+			It("returns an error", func() {
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
 
-						command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-						err := executeCommand(command,[]string{"--product-name", "p-mysql"})
-						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("--product-name is only available with Ops Manager 2.2 or later: you are running %s", version)))
-					}
-				})
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("installation failed to trigger: some error"))
 			})
+		})
 
-			When("an installation cannot be triggered", func() {
-				It("returns an error", func() {
-					service.CreateInstallationReturns(api.InstallationsServiceOutput{}, errors.New("some error"))
+		When("getting the installation status has an error", func() {
+			It("returns an error", func() {
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("another error"))
 
-					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("installation failed to trigger: some error"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("installation failed to get status: another error"))
 			})
+		})
 
-			When("getting the installation status has an error", func() {
-				It("returns an error", func() {
-					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-					service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("another error"))
+		When("there is an error fetching the logs", func() {
+			It("returns an error", func() {
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
+				service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("no"))
 
-					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("installation failed to get status: another error"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("installation failed to get logs: no"))
 			})
+		})
 
-			When("there is an error fetching the logs", func() {
-				It("returns an error", func() {
-					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-					service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
-					service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("no"))
+		When("there is an error flushing the logs", func() {
+			It("returns an error", func() {
+				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
+				service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
+				service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{Logs: "some logs"}, nil)
 
-					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+				writer.FlushReturns(errors.New("yes"))
 
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("installation failed to get logs: no"))
-				})
-			})
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
-			When("there is an error flushing the logs", func() {
-				It("returns an error", func() {
-					service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-					service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{Status: "running"}, nil)
-					service.GetInstallationLogsReturnsOnCall(0, api.InstallationsServiceOutput{Logs: "some logs"}, nil)
-
-					writer.FlushReturns(errors.New("yes"))
-
-					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
-
-					err := executeCommand(command,[]string{})
-					Expect(err).To(MatchError("installation failed to flush logs: yes"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("installation failed to flush logs: yes"))
 			})
 		})
 	})
