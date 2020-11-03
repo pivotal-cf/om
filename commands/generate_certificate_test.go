@@ -48,13 +48,6 @@ var _ = Describe("GenerateCertificate", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal(`some-json-response`))
 		})
 
-		When("the domains flag is missing", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{})
-				Expect(err).To(MatchError("could not parse generate-certificate flags: missing required flag \"--domains\""))
-			})
-		})
-
 		It("returns an error when the service fails to generate a certificate", func() {
 			fakeService.GenerateCertificateReturns(`some-json-response`, errors.New("failed to generate certificate"))
 

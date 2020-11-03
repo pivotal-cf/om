@@ -2,15 +2,12 @@ package commands_test
 
 import (
 	"errors"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
-	"io/ioutil"
-	"log"
-	"os"
-
-	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/commands/fakes"
 	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
+	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -102,61 +99,6 @@ var _ = Describe("DisableDirectorVerifiers", func() {
 			Expect(string(stderr.Contents())).To(ContainSubstring("- missing-verifier-type"))
 			Expect(string(stderr.Contents())).To(ContainSubstring("- another-missing-verifier-type"))
 			Expect(string(stderr.Contents())).To(ContainSubstring("No changes were made."))
-		})
-	})
-
-	When("config file is provided", func() {
-		var configFile *os.File
-
-		BeforeEach(func() {
-			var err error
-
-			service.ListDirectorVerifiersReturns([]api.Verifier{
-				{
-					Type:    "some-verifier-type",
-					Enabled: false,
-				},
-				{
-					Type:    "another-verifier-type",
-					Enabled: true,
-				},
-			}, nil)
-
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		AfterEach(func() {
-			err := os.Remove(configFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("reads configuration from config file", func() {
-			configContent := `type: [ "some-verifier-type", "another-verifier-type" ]`
-
-			_, err := configFile.WriteString(configContent)
-			Expect(err).ToNot(HaveOccurred())
-
-			err = executeCommand(command, []string{"--config", configFile.Name()})
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(service.ListDirectorVerifiersCallCount()).To(Equal(1))
-			Expect(service.DisableDirectorVerifiersCallCount()).To(Equal(1))
-		})
-
-		It("returns an error if the config file is malformed", func() {
-			_, err := configFile.WriteString("malformed-yaml")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = executeCommand(command, []string{"--config", configFile.Name()})
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
-	When("flags are provided", func() {
-		It("returns an error if there is no --type provided", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
 		})
 	})
 })

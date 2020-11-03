@@ -523,77 +523,6 @@ vmtypes-configuration:
 			})
 		})
 
-		When("an error occurs", func() {
-			When("no director configuration flags are provided", func() {
-				It("returns an error ", func() {
-					err := executeCommand(command, []string{})
-					Expect(err).To(MatchError(ContainSubstring("missing required flag \"--config\"")))
-				})
-			})
-
-			When("flag parser fails", func() {
-				It("returns an error", func() {
-					err := executeCommand(command, []string{"--foo", "bar"})
-					Expect(err).To(MatchError("could not parse configure-director flags: flag provided but not defined: -foo"))
-				})
-			})
-
-			When("configuring availability_zones fails", func() {
-				It("returns an error", func() {
-					service.UpdateStagedDirectorAvailabilityZonesReturns(errors.New("az endpoint failed"))
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"az-configuration": {}}`)})
-					Expect(err).To(MatchError("availability zones configuration could not be applied: az endpoint failed"))
-				})
-			})
-
-			When("configuring networks fails", func() {
-				It("returns an error", func() {
-					service.UpdateStagedDirectorNetworksReturns(errors.New("networks endpoint failed"))
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"networks-configuration": {}}`)})
-					Expect(err).To(MatchError("networks configuration could not be applied: networks endpoint failed"))
-				})
-			})
-
-			When("configuring networks fails", func() {
-				It("returns an error", func() {
-					service.UpdateStagedDirectorNetworkAndAZReturns(errors.New("director service failed"))
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"network-assignment": {}}`)})
-					Expect(err).To(MatchError("network and AZs could not be applied: director service failed"))
-				})
-			})
-
-			When("configuring properties fails", func() {
-				It("returns an error", func() {
-					service.UpdateStagedDirectorPropertiesReturns(errors.New("properties end point failed"))
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"properties-configuration": {"director_configuration": {}}}`)})
-					Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
-				})
-			})
-
-			When("retrieving staged products fails", func() {
-				It("returns an error", func() {
-					service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"resource-configuration": {}}`)})
-					Expect(err).To(MatchError(ContainSubstring("some-error")))
-				})
-			})
-
-			When("user-provided top-level resource config is not valid JSON", func() {
-				It("returns an error", func() {
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"resource-configuration": {{{{}`)})
-					Expect(err).To(MatchError(ContainSubstring("did not find expected ',' or '}'")))
-				})
-			})
-
-			When("configuring the job fails", func() {
-				It("returns an error", func() {
-					service.ConfigureJobResourceConfigReturns(errors.New("some-error"))
-					err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"resource-configuration": {"resource": {}}}`)})
-					Expect(err).To(MatchError(ContainSubstring("some-error")))
-				})
-			})
-		})
-
 		When("iaas-configurations is set", func() {
 			It("configures the director", func() {
 				err := executeCommand(command, []string{
@@ -633,6 +562,61 @@ vmtypes-configuration:
 			It("returns an error", func() {
 				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"iaas-configurations": [], "properties-configuration": {"iaas-configuration": {}}}`)})
 				Expect(err).To(MatchError("iaas-configurations cannot be used with properties-configuration.iaas-configurations\nPlease only use one implementation."))
+			})
+		})
+
+		When("configuring availability_zones fails", func() {
+			It("returns an error", func() {
+				service.UpdateStagedDirectorAvailabilityZonesReturns(errors.New("az endpoint failed"))
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"az-configuration": {}}`)})
+				Expect(err).To(MatchError("availability zones configuration could not be applied: az endpoint failed"))
+			})
+		})
+
+		When("configuring networks fails", func() {
+			It("returns an error", func() {
+				service.UpdateStagedDirectorNetworksReturns(errors.New("networks endpoint failed"))
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"networks-configuration": {}}`)})
+				Expect(err).To(MatchError("networks configuration could not be applied: networks endpoint failed"))
+			})
+		})
+
+		When("configuring networks fails", func() {
+			It("returns an error", func() {
+				service.UpdateStagedDirectorNetworkAndAZReturns(errors.New("director service failed"))
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"network-assignment": {}}`)})
+				Expect(err).To(MatchError("network and AZs could not be applied: director service failed"))
+			})
+		})
+
+		When("configuring properties fails", func() {
+			It("returns an error", func() {
+				service.UpdateStagedDirectorPropertiesReturns(errors.New("properties end point failed"))
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"properties-configuration": {"director_configuration": {}}}`)})
+				Expect(err).To(MatchError("properties could not be applied: properties end point failed"))
+			})
+		})
+
+		When("retrieving staged products fails", func() {
+			It("returns an error", func() {
+				service.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"resource-configuration": {}}`)})
+				Expect(err).To(MatchError(ContainSubstring("some-error")))
+			})
+		})
+
+		When("user-provided top-level resource config is not valid JSON", func() {
+			It("returns an error", func() {
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"resource-configuration": {{{{}`)})
+				Expect(err).To(MatchError(ContainSubstring("did not find expected ',' or '}'")))
+			})
+		})
+
+		When("configuring the job fails", func() {
+			It("returns an error", func() {
+				service.ConfigureJobResourceConfigReturns(errors.New("some-error"))
+				err := executeCommand(command, []string{"--config", writeTestConfigFile(`{"resource-configuration": {"resource": {}}}`)})
+				Expect(err).To(MatchError(ContainSubstring("some-error")))
 			})
 		})
 	})

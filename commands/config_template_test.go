@@ -2,9 +2,7 @@ package commands_test
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -17,7 +15,6 @@ import (
 var _ = Describe("ConfigTemplate", func() {
 	var (
 		command     *commands.ConfigTemplate
-		environFunc func() []string
 	)
 
 	createOutputDirectory := func() string {
@@ -26,10 +23,6 @@ var _ = Describe("ConfigTemplate", func() {
 
 		return tempDir
 	}
-
-	BeforeEach(func() {
-		environFunc = func() []string { return nil }
-	})
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
@@ -220,7 +213,7 @@ property_blueprints:
 					"--pivnet-api-token", "b",
 					"--pivnet-product-slug", "c",
 					"--product-version", "d",
-					"--size-of-collections", "3",
+					"--size-of-collections", "10",
 				})
 				Expect(err).ToNot(HaveOccurred())
 
@@ -231,6 +224,13 @@ property_blueprints:
     - name: ((some_property_0_name))
     - name: ((some_property_1_name))
     - name: ((some_property_2_name))
+    - name: ((some_property_3_name))
+    - name: ((some_property_4_name))
+    - name: ((some_property_5_name))
+    - name: ((some_property_6_name))
+    - name: ((some_property_7_name))
+    - name: ((some_property_8_name))
+    - name: ((some_property_9_name))
 `
 
 				matches, err := filepath.Glob(filepath.Join(tempDir, "example-product", "1.1.1", "optional", "*.yml"))
@@ -244,22 +244,6 @@ property_blueprints:
 	})
 
 	Describe("flag handling", func() {
-		When("an unknown flag is provided", func() {
-			BeforeEach(func() {
-				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
-					f := &fakes.MetadataProvider{}
-					f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-					return f
-				})
-			})
-			It("returns an error", func() {
-				err := executeCommand(command, []string{"--invalid"})
-				Expect(err).To(MatchError("could not parse config-template flags: flag provided but not defined: -invalid"))
-				err = executeCommand(command, []string{"--unreal"})
-				Expect(err).To(MatchError("could not parse config-template flags: flag provided but not defined: -unreal"))
-			})
-		})
-
 		When("pivnet and product path args are provided", func() {
 			BeforeEach(func() {
 				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
@@ -303,121 +287,10 @@ property_blueprints:
 				err := executeCommand(command, args)
 				Expect(err).To(MatchError(ContainSubstring(message)))
 			},
-				Entry("with output-directory", "--output-directory", `missing required flag "--output-directory"`),
 				Entry("with pivnet-api-token", "--pivnet-api-token", "please provide either pivnet flags OR product-path"),
 				Entry("with pivnet-product-slug", "--pivnet-product-slug", "please provide either pivnet flags OR product-path"),
 				Entry("with product-version", "--product-version", "please provide either pivnet flags OR product-path"),
 			)
-		})
-
-		When("the --config flag is passed", func() {
-			BeforeEach(func() {
-				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
-					f := &fakes.MetadataProvider{}
-					f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-					return f
-				})
-			})
-			var (
-				configFile *os.File
-				err        error
-			)
-
-			When("the config file contains variables", func() {
-				const downloadProductConfigWithVariablesTmpl = `---
-pivnet-api-token: "token"
-file-glob: "*.pivotal"
-pivnet-product-slug: ((product-slug))
-product-version: 2.0.0
-output-directory: %s
-`
-
-				BeforeEach(func() {
-					configFile, err = ioutil.TempFile("", "")
-					Expect(err).ToNot(HaveOccurred())
-
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
-
-					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
-					Expect(err).ToNot(HaveOccurred())
-
-					err = configFile.Close()
-					Expect(err).ToNot(HaveOccurred())
-				})
-
-				AfterEach(func() {
-					err = os.RemoveAll(configFile.Name())
-					Expect(err).ToNot(HaveOccurred())
-				})
-
-				It("returns an error if missing variables", func() {
-					err = executeCommand(command, []string{
-						"--config", configFile.Name(),
-					})
-					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
-				})
-
-				Context("passed in a vars-file", func() {
-					var varsFile *os.File
-
-					BeforeEach(func() {
-						varsFile, err = ioutil.TempFile("", "")
-						Expect(err).ToNot(HaveOccurred())
-
-						_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
-						Expect(err).ToNot(HaveOccurred())
-
-						err = varsFile.Close()
-						Expect(err).ToNot(HaveOccurred())
-					})
-
-					AfterEach(func() {
-						err = os.RemoveAll(varsFile.Name())
-						Expect(err).ToNot(HaveOccurred())
-					})
-
-					It("can interpolate variables into the configuration", func() {
-						err = executeCommand(command, []string{
-							"--config", configFile.Name(),
-							"--vars-file", varsFile.Name(),
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
-				Context("given vars", func() {
-					It("can interpolate variables into the configuration", func() {
-						err = executeCommand(command, []string{
-							"--config", configFile.Name(),
-							"--var", "product-slug=elastic-runtime",
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
-				Context("passed as environment variables", func() {
-					BeforeEach(func() {
-						environFunc = func() []string {
-							return []string{"OM_VAR_product-slug='sea-slug'"}
-						}
-
-						command = commands.NewConfigTemplateWithEnvironment(func(*commands.ConfigTemplate) commands.MetadataProvider {
-							f := &fakes.MetadataProvider{}
-							f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-							return f
-						}, environFunc)
-					})
-
-					It("can interpolate variables into the configuration", func() {
-						err = executeCommand(command, []string{
-							"--config", configFile.Name(),
-							"--vars-env", "OM_VAR",
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-			})
 		})
 
 		Describe("metadata extraction and parsing failures", func() {

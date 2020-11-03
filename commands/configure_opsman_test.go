@@ -198,14 +198,6 @@ rbac-settings:
 			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
 		})
 
-		It("errors when no config file is provided", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("missing required flag \"--config\""))
-
-			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
-		})
-
 		It("returns an error when there is an unrecognized top-level key", func() {
 			invalidConfig := `
 invalid-key: 1

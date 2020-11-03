@@ -96,12 +96,5 @@ var _ = Describe("Errands", func() {
 				Expect(err).To(MatchError("failed to list errands: there was an error"))
 			})
 		})
-
-		When("the product name is missing", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{})
-				Expect(err).To(MatchError("could not parse errands flags: missing required flag \"--product-name\""))
-			})
-		})
 	})
 })

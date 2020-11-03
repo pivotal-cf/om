@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("Certificate Authorities", func() {
 	var (
-		certificateAuthorities            *commands.CertificateAuthorities
+		command                           *commands.CertificateAuthorities
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
 		fakePresenter                     *presenterfakes.FormattedPresenter
 	)
@@ -22,7 +22,7 @@ var _ = Describe("Certificate Authorities", func() {
 	BeforeEach(func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
 		fakePresenter = &presenterfakes.FormattedPresenter{}
-		certificateAuthorities = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakePresenter)
+		command = commands.NewCertificateAuthorities(fakeCertificateAuthoritiesService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -55,7 +55,7 @@ var _ = Describe("Certificate Authorities", func() {
 		})
 
 		It("prints the certificate authorities to a table", func() {
-			err := certificateAuthorities.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
@@ -66,22 +66,13 @@ var _ = Describe("Certificate Authorities", func() {
 
 		When("the format flag is provided", func() {
 			It("calls the presenter to set the json format", func() {
-				err := certificateAuthorities.Execute([]string{
+				err := executeCommand(command, []string{
 					"--format", "json",
 				})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
-			})
-		})
-
-		When("the flag cannot parsed", func() {
-			It("returns an error", func() {
-				err := certificateAuthorities.Execute([]string{"--bogus", "nothing"})
-				Expect(err).To(MatchError(
-					"could not parse certificate-authorities flags: flag provided but not defined: -bogus",
-				))
 			})
 		})
 
@@ -92,7 +83,7 @@ var _ = Describe("Certificate Authorities", func() {
 					fmt.Errorf("could not get certificate authorities"),
 				)
 
-				err := certificateAuthorities.Execute([]string{})
+				err := executeCommand(command, []string{})
 				Expect(err).To(MatchError("could not get certificate authorities"))
 			})
 		})

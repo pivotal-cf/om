@@ -212,23 +212,6 @@ var _ = Describe("Curl", func() {
 			})
 		})
 
-		When("the flags cannot be parsed", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{"--bad-flag", "some-value"})
-				Expect(err).To(MatchError("could not parse curl flags: flag provided but not defined: -bad-flag"))
-			})
-		})
-
-		When("the request path is not provided", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{
-					"--request", "GET",
-					"--data", `{"some-key": "some-value"}`,
-				})
-				Expect(err).To(MatchError("could not parse curl flags: missing required flag \"--path\""))
-			})
-		})
-
 		When("the request service returns an error", func() {
 			It("returns an error", func() {
 				fakeService.CurlReturns(api.RequestServiceCurlOutput{}, errors.New("some request error"))

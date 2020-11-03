@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("ConfigureSAMLAuthentication.Execute", func() {
+var _ = Describe("ConfigureSAMLAuthentication.Execute", func() {
 	var (
 		service         *fakes.ConfigureAuthenticationService
 		logger          *fakes.Logger

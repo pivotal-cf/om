@@ -253,22 +253,6 @@ unnecessary-field: ((some-value))
 		})
 	})
 
-	When("the product-name flag is not provided", func() {
-		It("returns an error", func() {
-			command := commands.NewStageProduct(fakeService, logger)
-			err := executeCommand(command, []string{"--product-version", "1.0"})
-			Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-name\""))
-		})
-	})
-
-	When("the product-version flag is not provided", func() {
-		It("returns an error", func() {
-			command := commands.NewStageProduct(fakeService, logger)
-			err := executeCommand(command, []string{"--product-name", "some-product"})
-			Expect(err).To(MatchError("could not parse stage-product flags: missing required flag \"--product-version\""))
-		})
-	})
-
 	When("the product is not available", func() {
 		BeforeEach(func() {
 			fakeService.CheckProductAvailabilityReturns(false, nil)

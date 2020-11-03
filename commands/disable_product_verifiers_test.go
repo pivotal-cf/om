@@ -102,17 +102,4 @@ var _ = Describe("DisableProductVerifiers", func() {
 			Expect(string(stderr.Contents())).To(ContainSubstring("No changes were made."))
 		})
 	})
-
-	When("flags are provided", func() {
-
-		It("returns an error if there is no --type provided", func() {
-			err := executeCommand(command, []string{"--product-name", "cf"})
-			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--type"`)))
-		})
-
-		It("returns an error if there is no --product-name provided", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--product-name"`)))
-		})
-	})
 })

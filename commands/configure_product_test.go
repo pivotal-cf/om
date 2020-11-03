@@ -54,7 +54,7 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -102,7 +102,7 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).To(HaveOccurred())
@@ -137,7 +137,7 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).To(HaveOccurred())
@@ -167,7 +167,7 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -206,7 +206,7 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -250,7 +250,7 @@ var _ = Describe("ConfigureProduct", func() {
 					"bad":            "do-not-use",
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -303,7 +303,7 @@ var _ = Describe("ConfigureProduct", func() {
 					"bad":            "do-not-use",
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -362,7 +362,7 @@ var _ = Describe("ConfigureProduct", func() {
 						_, err = varsFile.WriteString(`password: something-secure`)
 						Expect(err).ToNot(HaveOccurred())
 
-						err = client.Execute([]string{
+						err = executeCommand(client, []string{
 							"--config", configFile.Name(),
 							"--vars-file", varsFile.Name(),
 						})
@@ -380,7 +380,7 @@ var _ = Describe("ConfigureProduct", func() {
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).ToNot(HaveOccurred())
 
-						err = client.Execute([]string{
+						err = executeCommand(client, []string{
 							"--config", configFile.Name(),
 							"--var", "password=something-secure",
 						})
@@ -398,7 +398,7 @@ var _ = Describe("ConfigureProduct", func() {
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).ToNot(HaveOccurred())
 
-						err = client.Execute([]string{
+						err = executeCommand(client, []string{
 							"--config", configFile.Name(),
 							"--vars-env", "OM_VAR",
 						})
@@ -417,7 +417,7 @@ var _ = Describe("ConfigureProduct", func() {
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).ToNot(HaveOccurred())
 
-						err = client.Execute([]string{
+						err = executeCommand(client, []string{
 							"--config", configFile.Name(),
 						})
 						Expect(err).ToNot(HaveOccurred())
@@ -433,7 +433,7 @@ var _ = Describe("ConfigureProduct", func() {
 					_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 					Expect(err).ToNot(HaveOccurred())
 
-					err = client.Execute([]string{
+					err = executeCommand(client, []string{
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
@@ -456,7 +456,7 @@ var _ = Describe("ConfigureProduct", func() {
 					_, err = opsFile.WriteString(productOpsFile)
 					Expect(err).ToNot(HaveOccurred())
 
-					err = client.Execute([]string{
+					err = executeCommand(client, []string{
 						"--config", configFile.Name(),
 						"--ops-file", opsFile.Name(),
 					})
@@ -483,7 +483,7 @@ var _ = Describe("ConfigureProduct", func() {
 					_, err = opsFile.WriteString(`%%%`)
 					Expect(err).ToNot(HaveOccurred())
 
-					err = client.Execute([]string{
+					err = executeCommand(client, []string{
 						"-c", configFile.Name(),
 						"-o", opsFile.Name(),
 					})
@@ -512,7 +512,7 @@ var _ = Describe("ConfigureProduct", func() {
 				}, nil)
 
 				service.ConfigureJobResourceConfigReturns(errors.New("some error"))
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 
@@ -576,7 +576,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 			It("returns an error", func() {
 				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-				err := client.Execute([]string{"--config", configFile.Name()})
+				err := executeCommand(client, []string{"--config", configFile.Name()})
 				Expect(err).To(MatchError("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes"))
 				Expect(service.ListInstallationsCallCount()).To(Equal(1))
 			})
@@ -601,7 +601,7 @@ var _ = Describe("ConfigureProduct", func() {
 					},
 				}, nil)
 
-				err := client.Execute([]string{
+				err := executeCommand(client, []string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -722,7 +722,7 @@ var _ = Describe("ConfigureProduct", func() {
 						_, err = configFile.WriteString(invalidConfig)
 						Expect(err).ToNot(HaveOccurred())
 
-						err = client.Execute([]string{"--config", configFile.Name()})
+						err = executeCommand(client, []string{"--config", configFile.Name()})
 						Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration")))
 
 						os.RemoveAll(configFile.Name())
@@ -836,7 +836,7 @@ var _ = Describe("ConfigureProduct", func() {
 					_, err = configFile.WriteString(errandConfigFile)
 					Expect(err).ToNot(HaveOccurred())
 
-					err = client.Execute([]string{
+					err = executeCommand(client, []string{
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(MatchError("failed to set errand state for errand push-usage-service: error configuring errand"))
@@ -853,7 +853,7 @@ var _ = Describe("ConfigureProduct", func() {
 					Expect(configFile.Close()).ToNot(HaveOccurred())
 
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-					err = client.Execute([]string{
+					err = executeCommand(client, []string{
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(MatchError(ContainSubstring(`the config file contains unrecognized keys: unrecognized-key, unrecognized-other-key`)))

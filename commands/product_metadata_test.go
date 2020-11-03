@@ -79,13 +79,6 @@ product_version: 1.2.3
 			Expect(content).To(ContainElement("1.2.3"))
 		})
 
-		When("the flags cannot be parsed", func() {
-			It("returns an error", func() {
-				err = executeCommand(command, []string{"--bad-flag", "some-value"})
-				Expect(err).To(MatchError(MatchRegexp("could not parse product-metadata flags")))
-			})
-		})
-
 		When("the flags are not specified", func() {
 			It("returns an error", func() {
 				err = executeCommand(command, []string{"-p", productFile.Name()})

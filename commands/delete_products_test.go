@@ -45,23 +45,5 @@ var _ = Describe("DeleteProduct", func() {
 				Expect(err).To(MatchError("something bad happened"))
 			})
 		})
-
-		When("the --product-name flag is missing", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{
-					"--product-version", "1.2.3",
-				})
-				Expect(err).To(MatchError("could not parse delete-product flags: missing required flag \"--product-name\""))
-			})
-		})
-
-		When("the --product-version flag is missing", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{
-					"--product-name", "some-product",
-				})
-				Expect(err).To(MatchError("could not parse delete-product flags: missing required flag \"--product-version\""))
-			})
-		})
 	})
 })

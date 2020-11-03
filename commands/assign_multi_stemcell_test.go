@@ -6,8 +6,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"io/ioutil"
-	"os"
 )
 
 var _ = Describe("AssignMutliStemcell", func() {
@@ -123,61 +121,6 @@ var _ = Describe("AssignMutliStemcell", func() {
 					},
 				}))
 			})
-		})
-	})
-
-	When("config file is provided", func() {
-		var configFile *os.File
-
-		BeforeEach(func() {
-			var err error
-
-			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
-				Products: []api.ProductMultiStemcell{
-					{
-						GUID:              "cf-guid",
-						ProductName:       "cf",
-						StagedForDeletion: false,
-						StagedStemcells:   []api.StemcellObject{},
-						AvailableVersions: []api.StemcellObject{
-							{OS: "ubuntu-trusty", Version: "1234.5"},
-							{OS: "ubuntu-trusty", Version: "1234.6"},
-							{OS: "ubuntu-xenial", Version: "1234.67"},
-							{OS: "ubuntu-trusty", Version: "1234.99"},
-						},
-					},
-				},
-			}, nil)
-
-			configContent := `
-product: cf
-stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
-`
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = configFile.WriteString(configContent)
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("reads configuration from config file", func() {
-			err := executeCommand(command, []string{"--config", configFile.Name()})
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
-			Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))
-
-			Expect(fakeService.AssignMultiStemcellArgsForCall(0)).To(Equal(api.ProductMultiStemcells{
-				Products: []api.ProductMultiStemcell{
-					{
-						GUID: "cf-guid",
-						StagedStemcells: []api.StemcellObject{
-							{OS: "ubuntu-trusty", Version: "1234.6"},
-							{OS: "ubuntu-xenial", Version: "1234.67"},
-						},
-					},
-				},
-			}))
 		})
 	})
 
@@ -315,20 +258,6 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(0))
-		})
-	})
-
-	When("the product flag is not provided", func() {
-		It("returns an error", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).To(MatchError("could not parse assign-stemcell flags: missing required flag \"--product\""))
-		})
-	})
-
-	When("there is no --stemcell provided", func() {
-		It("returns an error", func() {
-			err := executeCommand(command, []string{"--product", "cf"})
-			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--stemcell"`)))
 		})
 	})
 

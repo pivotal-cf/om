@@ -6,8 +6,6 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
-	"io/ioutil"
-	"os"
 )
 
 var _ = Describe("AssignStemcell", func() {
@@ -112,55 +110,6 @@ var _ = Describe("AssignStemcell", func() {
 		})
 	})
 
-	When("config file is provided", func() {
-		var configFile *os.File
-
-		BeforeEach(func() {
-			var err error
-
-			fakeService.ListStemcellsReturns(api.ProductStemcells{
-				Products: []api.ProductStemcell{
-					{
-						GUID:                  "cf-guid",
-						ProductName:           "cf",
-						StagedForDeletion:     false,
-						StagedStemcellVersion: "",
-						AvailableVersions: []string{
-							"1234.5", "1234.6", "1234.99",
-						},
-					},
-				},
-			}, nil)
-
-			configContent := `
-product: cf
-stemcell: "1234.6"
-`
-			configFile, err = ioutil.TempFile("", "")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = configFile.WriteString(configContent)
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("reads configuration from config file", func() {
-			err := executeCommand(command, []string{"--config", configFile.Name()})
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
-			Expect(fakeService.AssignStemcellCallCount()).To(Equal(1))
-
-			Expect(fakeService.AssignStemcellArgsForCall(0)).To(Equal(api.ProductStemcells{
-				Products: []api.ProductStemcell{
-					{
-						GUID:                  "cf-guid",
-						StagedStemcellVersion: "1234.6",
-					},
-				},
-			}))
-		})
-	})
-
 	When("given stemcell version is not available", func() {
 		BeforeEach(func() {
 			fakeService.ListStemcellsReturns(api.ProductStemcells{
@@ -259,12 +208,6 @@ stemcell: "1234.6"
 
 			Expect(fakeService.ListStemcellsCallCount()).To(Equal(1))
 			Expect(fakeService.AssignStemcellCallCount()).To(Equal(0))
-		})
-	})
-	When("the product flag is not provided", func() {
-		It("returns an error", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).To(MatchError("could not parse assign-stemcell flags: missing required flag \"--product\""))
 		})
 	})
 })

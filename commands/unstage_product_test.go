@@ -44,14 +44,6 @@ var _ = Describe("UnstageProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished unstaging"))
 	})
 
-	When("the product-name flag is not provided", func() {
-		It("returns an error", func() {
-			command := commands.NewUnstageProduct(fakeService, logger)
-			err := executeCommand(command, []string{})
-			Expect(err).To(MatchError("could not parse unstage-product flags: missing required flag \"--product-name\""))
-		})
-	})
-
 	When("the product cannot be unstaged", func() {
 		It("returns an error", func() {
 			command := commands.NewUnstageProduct(fakeService, logger)

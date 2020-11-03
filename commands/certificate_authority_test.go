@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("Certificate Authority", func() {
 	var (
-		certificateAuthority              *commands.CertificateAuthority
+		command                           *commands.CertificateAuthority
 		fakeCertificateAuthoritiesService *fakes.CertificateAuthoritiesService
 		fakePresenter                     *presenterfakes.FormattedPresenter
 		fakeLogger                        *fakes.Logger
@@ -24,7 +24,7 @@ var _ = Describe("Certificate Authority", func() {
 		fakeCertificateAuthoritiesService = &fakes.CertificateAuthoritiesService{}
 		fakePresenter = &presenterfakes.FormattedPresenter{}
 		fakeLogger = &fakes.Logger{}
-		certificateAuthority = commands.NewCertificateAuthority(fakeCertificateAuthoritiesService, fakePresenter, fakeLogger)
+		command = commands.NewCertificateAuthority(fakeCertificateAuthoritiesService, fakePresenter, fakeLogger)
 
 		certificateAuthorities := []api.CA{
 			{
@@ -53,7 +53,7 @@ var _ = Describe("Certificate Authority", func() {
 
 	Describe("Execute", func() {
 		It("requests CAs from the server and prints to a table", func() {
-			err := certificateAuthority.Execute([]string{
+			err := executeCommand(command, []string{
 				"--id", "other-guid",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -75,7 +75,7 @@ var _ = Describe("Certificate Authority", func() {
 
 		When("the cert-pem flag is provided", func() {
 			It("logs the cert pem to the stdout", func() {
-				err := certificateAuthority.Execute([]string{
+				err := executeCommand(command, []string{
 					"--id", "other-guid",
 					"--cert-pem",
 				})
@@ -89,7 +89,7 @@ var _ = Describe("Certificate Authority", func() {
 
 		When("the format flag is provided", func() {
 			It("calls the presenter to set the json format", func() {
-				err := certificateAuthority.Execute([]string{
+				err := executeCommand(command, []string{
 					"--id", "other-guid",
 					"--format", "json",
 				})
@@ -117,7 +117,7 @@ var _ = Describe("Certificate Authority", func() {
 					api.CertificateAuthoritiesOutput{CAs: certificateAuthorities},
 					nil,
 				)
-				err := certificateAuthority.Execute([]string{})
+				err := executeCommand(command, []string{})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeCertificateAuthoritiesService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
@@ -145,7 +145,7 @@ var _ = Describe("Certificate Authority", func() {
 			})
 
 			It("returns an error", func() {
-				err := certificateAuthority.Execute([]string{
+				err := executeCommand(command, []string{
 					"--id", "some-guid",
 				})
 				Expect(err).To(MatchError("service failed"))
@@ -154,13 +154,14 @@ var _ = Describe("Certificate Authority", func() {
 
 		When("the --id flag is missing", func() {
 			It("returns an error", func() {
-				err := certificateAuthority.Execute([]string{})
+				err := executeCommand(command, []string{})
 				Expect(err).To(MatchError("More than one certificate authority found. Please use --id flag to specify. IDs can be found using the certificate-authorities command"))
 			})
 		})
+
 		When("the request certificate authority is not found", func() {
 			It("returns an error", func() {
-				err := certificateAuthority.Execute([]string{
+				err := executeCommand(command, []string{
 					"--id", "doesnt-exist",
 				})
 				Expect(err).To(MatchError(`could not find a certificate authority with ID: "doesnt-exist"`))

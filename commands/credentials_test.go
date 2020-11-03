@@ -86,26 +86,6 @@ var _ = Describe("Credentials", func() {
 				})
 			})
 
-			When("the --product-name flag is missing", func() {
-				It("returns an error", func() {
-					err := executeCommand(command, []string{
-						"--credential-reference", "some-credential",
-					})
-					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--product-name\""))
-				})
-			})
-
-			When("the --credential-reference flag is missing", func() {
-				It("returns an error", func() {
-					command := commands.NewCredentials(fakeService, fakePresenter, logger)
-
-					err := executeCommand(command, []string{
-						"--product-name", "some-product",
-					})
-					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--credential-reference\""))
-				})
-			})
-
 			When("the credential reference cannot be found", func() {
 				BeforeEach(func() {
 					fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{}, nil)

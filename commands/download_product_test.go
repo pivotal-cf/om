@@ -1019,108 +1019,6 @@ var _ = Describe("DownloadProduct", func() {
 			})
 		})
 
-		When("the --config flag is passed", func() {
-			BeforeEach(func() {
-				fa := &fakes.FileArtifacter{}
-				fa.NameReturns("/some-account/some-bucket/cf-2.0-build.1.pivotal")
-				fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
-			})
-			var (
-				configFile *os.File
-				err        error
-			)
-
-			When("the config file contains variables", func() {
-				const downloadProductConfigWithVariablesTmpl = `---
-pivnet-api-token: "token"
-file-glob: "*.pivotal"
-pivnet-product-slug: ((product-slug))
-product-version: 2.0.0
-output-directory: %s
-`
-
-				BeforeEach(func() {
-					configFile, err = ioutil.TempFile("", "")
-					Expect(err).ToNot(HaveOccurred())
-
-					tempDir, err := ioutil.TempDir("", "om-tests-")
-					Expect(err).ToNot(HaveOccurred())
-
-					_, err = configFile.WriteString(fmt.Sprintf(downloadProductConfigWithVariablesTmpl, tempDir))
-					Expect(err).ToNot(HaveOccurred())
-
-					err = configFile.Close()
-					Expect(err).ToNot(HaveOccurred())
-				})
-
-				AfterEach(func() {
-					err = os.RemoveAll(configFile.Name())
-					Expect(err).ToNot(HaveOccurred())
-				})
-
-				It("returns an error if missing variables", func() {
-					err = executeCommand(command, []string{
-						"--config", configFile.Name(),
-					})
-					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
-				})
-
-				Context("passed in a vars-file", func() {
-					var varsFile *os.File
-
-					BeforeEach(func() {
-						varsFile, err = ioutil.TempFile("", "")
-						Expect(err).ToNot(HaveOccurred())
-
-						_, err = varsFile.WriteString(`product-slug: elastic-runtime`)
-						Expect(err).ToNot(HaveOccurred())
-
-						err = varsFile.Close()
-						Expect(err).ToNot(HaveOccurred())
-					})
-
-					AfterEach(func() {
-						err = os.RemoveAll(varsFile.Name())
-						Expect(err).ToNot(HaveOccurred())
-					})
-
-					It("can interpolate variables into the configuration", func() {
-						err = executeCommand(command, []string{
-							"--config", configFile.Name(),
-							"--vars-file", varsFile.Name(),
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
-				Context("given vars", func() {
-					It("can interpolate variables into the configuration", func() {
-						err = executeCommand(command, []string{
-							"--config", configFile.Name(),
-							"--var", "product-slug=elastic-runtime",
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-
-				Context("passed as environment variables", func() {
-					BeforeEach(func() {
-						environFunc = func() []string {
-							return []string{"OM_VAR_product-slug='sea-slug'"}
-						}
-					})
-
-					It("can interpolate variables into the configuration", func() {
-						err = executeCommand(command, []string{
-							"--config", configFile.Name(),
-							"--vars-env", "OM_VAR",
-						})
-						Expect(err).ToNot(HaveOccurred())
-					})
-				})
-			})
-		})
-
 		Describe("managing and reporting the filename written to the filesystem", func() {
 			When("S3 configuration is provided and source is not set", func() {
 				BeforeEach(func() {
@@ -1326,14 +1224,6 @@ output-directory: %s
 
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(expectedOutput))
-		})
-	})
-
-	When("a required flag is not provided", func() {
-		It("returns an error", func() {
-			err = executeCommand(command, []string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("could not parse download-product flags: missing required flag \"--output-directory\""))
 		})
 	})
 

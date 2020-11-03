@@ -25,7 +25,7 @@ type ConfigTemplate struct {
 
 		OutputDirectory   string `long:"output-directory" description:"a directory to create templates under. must already exist." required:"true"`
 		ExcludeVersion    bool   `long:"exclude-version"  description:"if set, will not output a version-specific directory"`
-		SizeOfCollections int    `long:"size-of-collections" default:"10"`
+		SizeOfCollections int    `long:"size-of-collections"`
 
 		PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
 	}
@@ -79,10 +79,10 @@ func (c *ConfigTemplate) Execute(args []string) error {
 	}
 
 	var userSetSizeOfCollections bool
-	for _, arg := range args {
-		if arg == "--size-of-collections" {
-			userSetSizeOfCollections = true
-		}
+	if c.Options.SizeOfCollections > 0 {
+		userSetSizeOfCollections = true
+	} else {
+		c.Options.SizeOfCollections = 10
 	}
 
 	metadataSource := c.newMetadataSource()

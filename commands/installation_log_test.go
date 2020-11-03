@@ -40,19 +40,6 @@ var _ = Describe("InstallationLog", func() {
 			outputLogs := logger.PrintArgsForCall(0)[0]
 			Expect(outputLogs).To(Equal("some log output"))
 		})
-
-		When("an unknown flag is provided", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{"--since", "yesterday"})
-				Expect(err).To(MatchError("could not parse installation-log flags: flag provided but not defined: -since"))
-			})
-		})
-		When("the installation id is not provided", func() {
-			It("returns an error", func() {
-				err := executeCommand(command, []string{})
-				Expect(err).To(MatchError("could not parse installation-log flags: missing required flag \"--id\""))
-			})
-		})
 		When("the api fails to retrieve the installation log", func() {
 			It("returns an error", func() {
 				fakeService.GetInstallationLogsReturns(
