@@ -315,9 +315,9 @@ var _ = Describe("config-template command", func() {
 
 var _ = Describe("config-template output", func() {
 	DescribeTable("has the same output as historically cached", func(pivnetSlug, version, glob, metadataName string) {
-		pivnetToken := os.Getenv("OM_PIVNET_TOKEN")
+		pivnetToken := os.Getenv("TEST_PIVNET_TOKEN")
 		if pivnetToken == "" {
-			Skip("OM_PIVNET_TOKEN not specified")
+			Skip("TEST_PIVNET_TOKEN not specified")
 		}
 
 		outputDir, err := ioutil.TempDir("", "")

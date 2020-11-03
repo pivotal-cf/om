@@ -26,19 +26,19 @@ var _ = Describe("download-product command", func() {
 				Skip("az not installed")
 			}
 
-			storageAccount = os.Getenv("OM_AZURE_STORAGE_ACCOUNT")
+			storageAccount = os.Getenv("TEST_AZURE_STORAGE_ACCOUNT")
 			if storageAccount == "" {
-				Skip("OM_AZURE_STORAGE_ACCOUNT is not set")
+				Skip("TEST_AZURE_STORAGE_ACCOUNT is not set")
 			}
 
-			key = os.Getenv("OM_AZURE_STORAGE_KEY")
+			key = os.Getenv("TEST_AZURE_STORAGE_KEY")
 			if key == "" {
-				Skip("OM_AZURE_STORAGE_KEY is not set")
+				Skip("TEST_AZURE_STORAGE_KEY is not set")
 			}
 
-			bucketName = os.Getenv("OM_AZURE_CONTAINER_NAME")
+			bucketName = os.Getenv("TEST_AZURE_CONTAINER_NAME")
 			if bucketName == "" {
-				Skip("OM_AZURE_CONTAINER_NAME is not set")
+				Skip("TEST_AZURE_CONTAINER_NAME is not set")
 			}
 		})
 

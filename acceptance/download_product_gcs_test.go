@@ -29,14 +29,14 @@ var _ = Describe("download-product command", func() {
 				Skip("gsutil not installed")
 			}
 
-			serviceAccountKey = os.Getenv("OM_GCP_SERVICE_ACCOUNT_KEY")
+			serviceAccountKey = os.Getenv("TEST_GCP_SERVICE_ACCOUNT_KEY")
 			if serviceAccountKey == "" {
-				Skip("OM_GCP_SERVICE_ACCOUNT_KEY is not set")
+				Skip("TEST_GCP_SERVICE_ACCOUNT_KEY is not set")
 			}
 
-			projectID = os.Getenv("OM_GCP_PROJECT_ID")
+			projectID = os.Getenv("TEST_GCP_PROJECT_ID")
 			if projectID == "" {
-				Skip("OM_GCP_PROJECT_ID is not set")
+				Skip("TEST_GCP_PROJECT_ID is not set")
 			}
 
 			// upload artifact to it
