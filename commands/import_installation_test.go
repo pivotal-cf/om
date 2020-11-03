@@ -304,23 +304,6 @@ var _ = Describe("ImportInstallation", func() {
 			})
 		})
 
-		When("config file cannot be opened", func() {
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := executeCommand(command,[]string{"--config", "something"})
-				Expect(err).To(MatchError("could not parse import-installation flags: could not load the config file: could not read file (something): open something: no such file or directory"))
-
-			})
-		})
-
-		When("the --installation flag is missing", func() {
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := executeCommand(command,[]string{"--polling-interval", "0"})
-				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--installation\""))
-			})
-		})
-
 		When("the --installation provided is a file that does not exist", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)

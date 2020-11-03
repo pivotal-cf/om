@@ -114,4 +114,52 @@ var _ = Describe("configure-authentication command", func() {
 		Expect(session.Out).To(gbytes.Say("waiting for configuration to complete..."))
 		Expect(session.Out).To(gbytes.Say("configuration complete"))
 	})
+
+	When("the config file contains variables", func() {
+		var configFile string
+
+		When("required command line arguments are missing", func() {
+			It("returns an error", func() {
+				configContent := `username: some-username`
+				configFile = writeFile(configContent)
+
+				command := exec.Command(pathToMain,
+					"--target", server.URL(),
+					"--skip-ssl-validation",
+					"configure-authentication",
+					"--config", configFile,
+				)
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session, "5s").Should(gexec.Exit(1))
+				Expect(session.Err.Contents()).To(ContainSubstring("the required flags"))
+				Expect(session.Err.Contents()).To(ContainSubstring("were not specified"))
+			})
+		})
+
+		When("variables are not provided", func() {
+			It("returns an error", func() {
+				configContent := `
+username: some-username
+password: ((vars-password))
+decryption-passphrase: ((vars-passphrase))
+`
+
+				configFile = writeFile(configContent)
+
+				command := exec.Command(pathToMain,
+					"--target", server.URL(),
+					"--skip-ssl-validation",
+					"configure-authentication",
+					"--config", configFile,
+				)
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session, "5s").Should(gexec.Exit(1))
+				Expect(session.Err.Contents()).To(ContainSubstring("Expected to find variables"))
+			})
+		})
+	})
 })
