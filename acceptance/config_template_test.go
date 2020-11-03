@@ -323,7 +323,7 @@ var _ = Describe("config-template output", func() {
 		outputDir, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		command := exec.Command("go", "run", "../main.go",
+		command := exec.Command(pathToMain,
 			"config-template",
 			"--output-directory", outputDir,
 			"--pivnet-product-slug", pivnetSlug,
