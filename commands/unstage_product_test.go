@@ -26,7 +26,7 @@ var _ = Describe("UnstageProduct", func() {
 	It("unstages a product", func() {
 		command := commands.NewUnstageProduct(fakeService, logger)
 
-		err := command.Execute([]string{
+		err := executeCommand(command, []string{
 			"--product-name", "some-product",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -44,32 +44,21 @@ var _ = Describe("UnstageProduct", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished unstaging"))
 	})
 
-	Context("failure cases", func() {
-		When("an unknown flag is provided", func() {
-			It("returns an error", func() {
-				command := commands.NewUnstageProduct(fakeService, logger)
-				err := command.Execute([]string{"--badflag"})
-				Expect(err).To(MatchError("could not parse unstage-product flags: flag provided but not defined: -badflag"))
-			})
+	When("the product-name flag is not provided", func() {
+		It("returns an error", func() {
+			command := commands.NewUnstageProduct(fakeService, logger)
+			err := executeCommand(command, []string{})
+			Expect(err).To(MatchError("could not parse unstage-product flags: missing required flag \"--product-name\""))
 		})
+	})
 
-		When("the product-name flag is not provided", func() {
-			It("returns an error", func() {
-				command := commands.NewUnstageProduct(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("could not parse unstage-product flags: missing required flag \"--product-name\""))
-			})
+	When("the product cannot be unstaged", func() {
+		It("returns an error", func() {
+			command := commands.NewUnstageProduct(fakeService, logger)
+			fakeService.DeleteStagedProductReturns(errors.New("some product error"))
+
+			err := executeCommand(command, []string{"--product-name", "some-product"})
+			Expect(err).To(MatchError("failed to unstage product: some product error"))
 		})
-
-		When("the product cannot be unstaged", func() {
-			It("returns an error", func() {
-				command := commands.NewUnstageProduct(fakeService, logger)
-				fakeService.DeleteStagedProductReturns(errors.New("some product error"))
-
-				err := command.Execute([]string{"--product-name", "some-product"})
-				Expect(err).To(MatchError("failed to unstage product: some product error"))
-			})
-		})
-
 	})
 })

@@ -27,7 +27,7 @@ var _ = Describe("GenerateCertificate", func() {
 
 	Describe("Execute", func() {
 		It("makes a request to the Opsman to generate a certificate from the given domains", func() {
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--domains", "*.apps.example.com, *.sys.example.com",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -38,7 +38,7 @@ var _ = Describe("GenerateCertificate", func() {
 		It("prints a json output for the generated certificate", func() {
 			fakeService.GenerateCertificateReturns(`some-json-response`, nil)
 
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--domains", "*.apps.example.com, *.sys.example.com",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -51,7 +51,7 @@ var _ = Describe("GenerateCertificate", func() {
 		Context("failure cases", func() {
 			When("the domains flag is missing", func() {
 				It("returns an error", func() {
-					err := command.Execute([]string{})
+					err := executeCommand(command,[]string{})
 					Expect(err).To(MatchError("could not parse generate-certificate flags: missing required flag \"--domains\""))
 				})
 			})
@@ -59,7 +59,7 @@ var _ = Describe("GenerateCertificate", func() {
 			It("returns an error when the service fails to generate a certificate", func() {
 				fakeService.GenerateCertificateReturns(`some-json-response`, errors.New("failed to generate certificate"))
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--domains", "*.apps.example.com, *.sys.example.com",
 				})
 				Expect(err).To(MatchError("failed to generate certificate"))
@@ -70,7 +70,7 @@ var _ = Describe("GenerateCertificate", func() {
 					return fmt.Sprintf("[%q]", strings.Join(input.Domains, ",")), nil
 				}
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--domains", "*.apps.example.com, *.sys.example.com",
 					"--domains", "opsmanager.example.com",
 					"--domains", "*.login.sys.example.com,*.uaa.sys.example.com",

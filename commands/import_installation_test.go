@@ -81,7 +81,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-		err := command.Execute([]string{"--polling-interval", "0",
+		err := executeCommand(command,[]string{"--polling-interval", "0",
 			"--installation", installationFile,
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -124,7 +124,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := command.Execute([]string{"--polling-interval", "0",
+			err := executeCommand(command,[]string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -170,7 +170,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := command.Execute([]string{"--polling-interval", "0",
+			err := executeCommand(command,[]string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -207,7 +207,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := command.Execute([]string{"--polling-interval", "0",
+			err := executeCommand(command,[]string{"--polling-interval", "0",
 				"--config", configFile.Name(),
 				"--installation", installationFile,
 			})
@@ -254,7 +254,7 @@ var _ = Describe("ImportInstallation", func() {
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			err := command.Execute([]string{"--polling-interval", "0",
+			err := executeCommand(command,[]string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -287,7 +287,7 @@ var _ = Describe("ImportInstallation", func() {
 				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
 			}
 
-			err := command.Execute([]string{"--polling-interval", "0",
+			err := executeCommand(command,[]string{"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))
@@ -299,23 +299,15 @@ var _ = Describe("ImportInstallation", func() {
 		When("the global decryption-passphrase is not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "", logger)
-				err := command.Execute([]string{"--polling-interval", "0"})
+				err := executeCommand(command,[]string{"--polling-interval", "0"})
 				Expect(err).To(MatchError("the global decryption-passphrase argument is required for this command"))
-			})
-		})
-
-		When("an unknown flag is provided", func() {
-			It("returns an error", func() {
-				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--polling-interval", "0", "--badflag"})
-				Expect(err).To(MatchError("could not parse import-installation flags: flag provided but not defined: -badflag"))
 			})
 		})
 
 		When("config file cannot be opened", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--config", "something"})
+				err := executeCommand(command,[]string{"--config", "something"})
 				Expect(err).To(MatchError("could not parse import-installation flags: could not load the config file: could not read file (something): open something: no such file or directory"))
 
 			})
@@ -324,7 +316,7 @@ var _ = Describe("ImportInstallation", func() {
 		When("the --installation flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--polling-interval", "0"})
+				err := executeCommand(command,[]string{"--polling-interval", "0"})
 				Expect(err).To(MatchError("could not parse import-installation flags: missing required flag \"--installation\""))
 			})
 		})
@@ -332,7 +324,7 @@ var _ = Describe("ImportInstallation", func() {
 		When("the --installation provided is a file that does not exist", func() {
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--installation", "does-not-exist.zip"})
+				err := executeCommand(command,[]string{"--installation", "does-not-exist.zip"})
 				Expect(err).To(MatchError("file: \"does-not-exist.zip\" does not exist. Please check the name and try again."))
 			})
 		})
@@ -351,7 +343,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--installation", notZipFile})
+				err := executeCommand(command,[]string{"--installation", notZipFile})
 				Expect(err).To(MatchError(fmt.Sprintf("file: \"%s\" is not a valid zip file", notZipFile)))
 			})
 		})
@@ -368,7 +360,7 @@ var _ = Describe("ImportInstallation", func() {
 
 			It("returns an error", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
-				err := command.Execute([]string{"--installation", invalidInstallation})
+				err := executeCommand(command,[]string{"--installation", invalidInstallation})
 				expectedErrorTemplate := "file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
 				Expect(err).To(MatchError(fmt.Sprintf(expectedErrorTemplate, invalidInstallation)))
 			})
@@ -378,7 +370,7 @@ var _ = Describe("ImportInstallation", func() {
 			It("returns an error", func() {
 				fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("some error"))
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
-				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
+				err := executeCommand(command,[]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("could not check Ops Manager status: some error"))
 			})
 		})
@@ -391,7 +383,7 @@ var _ = Describe("ImportInstallation", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				multipart.AddFileReturns(errors.New("bad file"))
 
-				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
+				err := executeCommand(command,[]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("failed to load installation: bad file"))
 			})
 		})
@@ -404,7 +396,7 @@ var _ = Describe("ImportInstallation", func() {
 				command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 				fakeService.UploadInstallationAssetCollectionReturns(errors.New("some installation error"))
 
-				err := command.Execute([]string{"--polling-interval", "0", "--installation", installationFile})
+				err := executeCommand(command,[]string{"--polling-interval", "0", "--installation", installationFile})
 				Expect(err).To(MatchError("failed to import installation: some installation error"))
 			})
 		})

@@ -83,7 +83,7 @@ var _ = Describe("DeleteInstallation", func() {
 			_, err = stdin.WriteString("yes\n")
 			Expect(err).ToNot(HaveOccurred())
 
-			err = command.Execute([]string{})
+			err = executeCommand(command,[]string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -128,7 +128,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := command.Execute([]string{"--force"})
+			err := executeCommand(command,[]string{"--force"})
 			Expect(err).To(MatchError("deleting the installation was unsuccessful"))
 		})
 
@@ -140,7 +140,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 			command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-			err := command.Execute([]string{"--force"})
+			err := executeCommand(command,[]string{"--force"})
 			Expect(err).ToNot(HaveOccurred())
 
 			format, content := logger.PrintfArgsForCall(0)
@@ -171,7 +171,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 				command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-				err := command.Execute([]string{"--force"})
+				err := executeCommand(command,[]string{"--force"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.DeleteInstallationAssetCollectionCallCount()).To(Equal(0))
@@ -191,7 +191,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{"--force"})
+					err := executeCommand(command,[]string{"--force"})
 					Expect(err).To(MatchError("failed to delete installation: some error"))
 				})
 			})
@@ -206,7 +206,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{"--force"})
+					err := executeCommand(command,[]string{"--force"})
 					Expect(err).To(MatchError("installation failed to get status: another error"))
 				})
 			})
@@ -227,7 +227,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{"--force"})
+					err := executeCommand(command,[]string{"--force"})
 					Expect(err).To(MatchError("installation failed to get logs: no"))
 				})
 			})
@@ -250,7 +250,7 @@ var _ = Describe("DeleteInstallation", func() {
 
 					command := commands.NewDeleteInstallation(fakeService, writer, logger, stdin, 1)
 
-					err := command.Execute([]string{"--force"})
+					err := executeCommand(command,[]string{"--force"})
 					Expect(err).To(MatchError("installation failed to flush logs: failed flush"))
 				})
 			})

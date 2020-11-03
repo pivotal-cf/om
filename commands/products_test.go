@@ -81,7 +81,7 @@ var _ = Describe("Products", func() {
 		})
 
 		It("lists the products and their available, staged, and deployed versions", func() {
-			err := command.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeProductService.GetDiagnosticReportCallCount()).To(Equal(1))
@@ -115,7 +115,7 @@ var _ = Describe("Products", func() {
 
 		When("the available flag is provided", func() {
 			It("sets the available flag for the presenter", func() {
-				err := command.Execute([]string{"--available"})
+				err := executeCommand(command, []string{"--available"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
@@ -128,7 +128,7 @@ var _ = Describe("Products", func() {
 
 		When("the staged flag is provided", func() {
 			It("sets the staged flag for the presenter", func() {
-				err := command.Execute([]string{"--staged"})
+				err := executeCommand(command, []string{"--staged"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
@@ -141,7 +141,7 @@ var _ = Describe("Products", func() {
 
 		When("the deployed flag is provided", func() {
 			It("sets the deployed flag for the presenter", func() {
-				err := command.Execute([]string{"--deployed"})
+				err := executeCommand(command, []string{"--deployed"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
@@ -154,7 +154,7 @@ var _ = Describe("Products", func() {
 
 		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
-				err := command.Execute([]string{"--format", "json"})
+				err := executeCommand(command, []string{"--format", "json"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(presenter.SetFormatCallCount()).To(Equal(1))
@@ -162,31 +162,22 @@ var _ = Describe("Products", func() {
 			})
 		})
 
-		Context("failure cases", func() {
-			When("fetching the diagnostic report fails", func() {
-				It("returns an error", func() {
-					fakeProductService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+		When("fetching the diagnostic report fails", func() {
+			It("returns an error", func() {
+				fakeProductService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("failed to retrieve staged and deployed products beep boop"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("failed to retrieve staged and deployed products beep boop"))
 			})
+		})
 
-			When("fetching the available products fails", func() {
-				It("returns an error", func() {
-					fakeProductService.GetDiagnosticReportReturns(api.DiagnosticReport{}, nil)
-					fakeProductService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, errors.New("beep boop"))
+		When("fetching the available products fails", func() {
+			It("returns an error", func() {
+				fakeProductService.GetDiagnosticReportReturns(api.DiagnosticReport{}, nil)
+				fakeProductService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, errors.New("beep boop"))
 
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("failed to retrieve available products beep boop"))
-				})
-			})
-
-			When("an unknown flag is passed", func() {
-				It("returns an error", func() {
-					err := command.Execute([]string{"--unknown-flag"})
-					Expect(err).To(MatchError("could not parse products flags: flag provided but not defined: -unknown-flag"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("failed to retrieve available products beep boop"))
 			})
 		})
 	})

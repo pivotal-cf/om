@@ -56,7 +56,7 @@ var _ = Describe("Installations", func() {
 		})
 
 		It("lists recent installations as a table", func() {
-			err := command.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentInstallationsCallCount()).To(Equal(1))
@@ -79,7 +79,7 @@ var _ = Describe("Installations", func() {
 
 		When("the format flag is provided", func() {
 			It("sets the format on the presenter", func() {
-				err := command.Execute([]string{"--format", "json"})
+				err := executeCommand(command, []string{"--format", "json"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
@@ -87,21 +87,12 @@ var _ = Describe("Installations", func() {
 			})
 		})
 
-		Context("Failure cases", func() {
-			When("an unknown flag is passed", func() {
-				It("returns an error", func() {
-					err := command.Execute([]string{"--unknown-flag"})
-					Expect(err).To(MatchError("could not parse installations flags: flag provided but not defined: -unknown-flag"))
-				})
-			})
+		When("the api fails to list installations", func() {
+			It("returns an error", func() {
+				fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
 
-			When("the api fails to list installations", func() {
-				It("returns an error", func() {
-					fakeService.ListInstallationsReturns([]api.InstallationsServiceOutput{}, errors.New("failed to retrieve installations"))
-
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("failed to retrieve installations"))
-				})
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("failed to retrieve installations"))
 			})
 		})
 	})

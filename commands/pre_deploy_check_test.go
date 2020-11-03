@@ -86,7 +86,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 			service.ListPendingDirectorChangesReturns(api.PendingDirectorChangesOutput{}, errors.New("something bad happened with the director"))
 
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError(ContainSubstring("something bad happened with the director")))
 		})
 	})
@@ -95,7 +95,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 		It("displays the error", func() {
 			service.ListAllPendingProductChangesReturns([]api.PendingProductChangesOutput{}, errors.New("something bad happened with the product"))
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError(ContainSubstring("something bad happened with the product")))
 		})
 	})
@@ -103,7 +103,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 	When("the director and product are complete", func() {
 		It("displays a helpful message", func() {
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Scanning OpsManager now ...")))
@@ -129,7 +129,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
@@ -158,7 +158,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
@@ -221,7 +221,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 					},
 				}, nil)
 				command := commands.NewPreDeployCheck(presenter, service, logger)
-				err := command.Execute([]string{})
+				err := executeCommand(command,[]string{})
 				Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 				contents := string(stdout.Contents())
@@ -269,7 +269,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[X] director: p-bosh-guid"))
@@ -294,7 +294,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 				},
 			}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 			Expect(string(stdout.Contents())).To(ContainSubstring("[✓] director: p-bosh-guid"))
@@ -359,7 +359,7 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 					},
 				}, nil)
 				command := commands.NewPreDeployCheck(presenter, service, logger)
-				err := command.Execute([]string{})
+				err := executeCommand(command,[]string{})
 				Expect(err).To(MatchError(ContainSubstring("OpsManager is not fully configured")))
 
 				contents := string(stdout.Contents())
@@ -394,13 +394,13 @@ var _ = Describe("PreDeployCheck.Execute", func() {
 		for _, validVersion := range []string{"2.6.0", "2.7.0", "2.8.0"} {
 			service.InfoReturns(api.Info{Version: validVersion}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).ToNot(HaveOccurred())
 		}
 		for _, invalidVersion := range []string{"2.3.0", "2.4.0", "2.5.0"} {
 			service.InfoReturns(api.Info{Version: invalidVersion}, nil)
 			command := commands.NewPreDeployCheck(presenter, service, logger)
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(HaveOccurred())
 		}
 	})

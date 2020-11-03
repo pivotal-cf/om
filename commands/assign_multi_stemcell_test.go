@@ -46,7 +46,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 		})
 
 		It("assigns the stemcell", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6"})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -65,7 +65,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 		})
 
 		It("assigns multiple stemcells", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6", "--stemcell", "ubuntu-xenial:1234.67"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6", "--stemcell", "ubuntu-xenial:1234.67"})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -85,7 +85,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 		})
 
 		It("assigns multiple stemcells with the same version number", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6", "--stemcell", "ubuntu-xenial:1234.6"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.6", "--stemcell", "ubuntu-xenial:1234.6"})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -106,7 +106,7 @@ var _ = Describe("AssignMutliStemcell", func() {
 
 		When("--stemcell latest is used", func() {
 			It("assign the latest stemcell available", func() {
-				err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:latest"})
+				err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:latest"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -161,7 +161,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 
 		It("reads configuration from config file", func() {
-			err := command.Execute([]string{"--config", configFile.Name()})
+			err := executeCommand(command,[]string{"--config", configFile.Name()})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -199,7 +199,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 			}, nil)
 		})
 		It("returns an error with the available stemcells", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.1"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.1"})
 			Expect(err).To(MatchError(ContainSubstring("stemcell version 1234.1 for ubuntu-trusty not found in Ops Manager")))
 			Expect(err).To(MatchError(ContainSubstring("Available Stemcells for \"cf\": ubuntu-trusty 1234.5, ubuntu-trusty 1234.6")))
 
@@ -226,7 +226,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 
 		It("returns an error", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.5"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.5"})
 			Expect(err).To(MatchError(ContainSubstring("could not list product stemcell: product \"cf\" not found")))
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -250,7 +250,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 
 		It("returns an error", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.5"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-trusty:1234.5"})
 			Expect(err).To(MatchError(ContainSubstring("could not assign stemcell: product \"cf\" is staged for deletion")))
 
 			Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
@@ -277,7 +277,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 
 		It("returns an error", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-xenial:1234.5"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-xenial:1234.5"})
 			Expect(err).To(MatchError(ContainSubstring("no stemcells are available for \"cf\".")))
 			Expect(err).To(MatchError(ContainSubstring("minimum required stemcells are: ubuntu-xenial 1234.9")))
 			Expect(err).To(MatchError(ContainSubstring("upload-stemcell, and try again")))
@@ -308,7 +308,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 
 		It("returns an error", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu-xenial:1234.5"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu-xenial:1234.5"})
 			Expect(err).To(MatchError(ContainSubstring(`stemcell version 1234.5 for ubuntu-xenial not found in Ops Manager.`)))
 			Expect(err).To(MatchError(ContainSubstring(`there are no available stemcells to for "cf"`)))
 			Expect(err).To(MatchError(ContainSubstring("upload-stemcell, and try again")))
@@ -318,30 +318,23 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		})
 	})
 
-	When("an unknown flag is provided", func() {
-		It("returns an error", func() {
-			err := command.Execute([]string{"--badflag"})
-			Expect(err).To(MatchError("could not parse assign-stemcell flags: flag provided but not defined: -badflag"))
-		})
-	})
-
 	When("the product flag is not provided", func() {
 		It("returns an error", func() {
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).To(MatchError("could not parse assign-stemcell flags: missing required flag \"--product\""))
 		})
 	})
 
 	When("there is no --stemcell provided", func() {
 		It("returns an error", func() {
-			err := command.Execute([]string{"--product", "cf"})
+			err := executeCommand(command,[]string{"--product", "cf"})
 			Expect(err).To(MatchError(ContainSubstring(`missing required flag "--stemcell"`)))
 		})
 	})
 
 	When("incorrect os and version are entered", func() {
 		It("returns an error", func() {
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu    1234.5"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu    1234.5"})
 			Expect(err).To(MatchError(ContainSubstring(`could not parse assign-stemcell arguments: expected "--stemcell" format value as "operating-system=version"`)))
 		})
 	})
@@ -350,7 +343,7 @@ stemcell: [ "ubuntu-trusty:1234.6", "ubuntu-xenial:latest" ]
 		It("returns an error", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 
-			err := command.Execute([]string{"--product", "cf", "--stemcell", "ubuntu=1234.5"})
+			err := executeCommand(command,[]string{"--product", "cf", "--stemcell", "ubuntu=1234.5"})
 			Expect(err).To(MatchError(ContainSubstring("this command can only be used with OpsManager 2.6+")))
 		})
 	})

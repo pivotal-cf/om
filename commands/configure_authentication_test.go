@@ -44,7 +44,7 @@ var _ = Describe("ConfigureAuthentication.Execute", func() {
 		}
 
 		command := commands.NewConfigureAuthentication(nil, service, logger)
-		err := command.Execute([]string{
+		err := executeCommand(command,[]string{
 			"--username", "some-username",
 			"--password", "some-password",
 			"--decryption-passphrase", "some-passphrase",
@@ -81,7 +81,7 @@ It will have the username 'precreated-client' and the client secret you provided
 			}, nil)
 
 			command := commands.NewConfigureAuthentication(nil, service, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--username", "some-username",
 				"--password", "some-password",
 				"--decryption-passphrase", "some-passphrase",
@@ -124,7 +124,7 @@ decryption-passphrase: some-passphrase
 
 		It("reads configuration from config file", func() {
 			command := commands.NewConfigureAuthentication(nil, service, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--config", configFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -148,7 +148,7 @@ decryption-passphrase: some-passphrase
 
 		It("respects vars from flags over those in the config file", func() {
 			command := commands.NewConfigureAuthentication(nil, service, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--config", configFile,
 				"--password", "some-password-1",
 			})
@@ -191,7 +191,7 @@ decryption-passphrase: ((vars-passphrase))
 		Context("variables are not provided", func() {
 			It("returns an error", func() {
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--config", configFile,
 				})
 				Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
@@ -217,7 +217,7 @@ vars-passphrase: a-vars-file-passphrase
 
 			It("uses values from the vars file", func() {
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--config", configFile,
 					"--vars-file", varsFile,
 				})
@@ -238,7 +238,7 @@ vars-passphrase: a-vars-file-passphrase
 		Context("passed in a var (--var)", func() {
 			It("uses values from the command line", func() {
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--config", configFile,
 					"--var", "vars-password=a-command-line-password",
 					"--var", "vars-passphrase=a-command-line-passphrase",
@@ -267,7 +267,7 @@ vars-passphrase: a-vars-file-passphrase
 					logger,
 				)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--config", configFile,
 					"--vars-env", "OM_VAR",
 				})
@@ -297,7 +297,7 @@ vars-passphrase: a-vars-file-passphrase
 					logger,
 				)
 
-				err = command.Execute([]string{
+				err = executeCommand(command,[]string{
 					"--config", configFile,
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -333,7 +333,7 @@ vars-passphrase: a-vars-file-passphrase
 			}, nil)
 
 			command := commands.NewConfigureAuthentication(nil, service, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--username", "some-username",
 				"--password", "some-password",
 				"--decryption-passphrase", "some-passphrase",
@@ -350,7 +350,7 @@ This is only supported in OpsManager 2.5 and up.
 		When("an unknown flag is provided", func() {
 			It("returns an error", func() {
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{"--banana"})
+				err := executeCommand(command,[]string{"--banana"})
 				Expect(err).To(MatchError("could not parse configure-authentication flags: flag provided but not defined: -banana"))
 			})
 		})
@@ -358,7 +358,7 @@ This is only supported in OpsManager 2.5 and up.
 		When("config file cannot be opened", func() {
 			It("returns an error", func() {
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{"--config", "something"})
+				err := executeCommand(command,[]string{"--config", "something"})
 				Expect(err).To(MatchError("could not parse configure-authentication flags: could not load the config file: could not read file (something): open something: no such file or directory"))
 			})
 		})
@@ -368,7 +368,7 @@ This is only supported in OpsManager 2.5 and up.
 				service.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{}, errors.New("failed to fetch status"))
 
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--username", "some-username",
 					"--password", "some-password",
 					"--decryption-passphrase", "some-passphrase",
@@ -384,7 +384,7 @@ This is only supported in OpsManager 2.5 and up.
 				}, nil)
 
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--username", "some-username",
 					"--password", "some-password",
 					"--decryption-passphrase", "some-passphrase",
@@ -402,7 +402,7 @@ This is only supported in OpsManager 2.5 and up.
 				service.SetupReturns(api.SetupOutput{}, errors.New("could not setup"))
 
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--username", "some-username",
 					"--password", "some-password",
 					"--decryption-passphrase", "some-passphrase",
@@ -427,7 +427,7 @@ This is only supported in OpsManager 2.5 and up.
 				}
 
 				command := commands.NewConfigureAuthentication(nil, service, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--username", "some-username",
 					"--password", "some-password",
 					"--decryption-passphrase", "some-passphrase",
@@ -439,7 +439,7 @@ This is only supported in OpsManager 2.5 and up.
 		When("the --username flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewConfigureAuthentication(nil, nil, nil)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--password", "some-password",
 					"--decryption-passphrase", "some-passphrase",
 				})
@@ -450,7 +450,7 @@ This is only supported in OpsManager 2.5 and up.
 		When("the --password flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewConfigureAuthentication(nil, nil, nil)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--username", "some-username",
 					"--decryption-passphrase", "some-passphrase",
 				})
@@ -461,7 +461,7 @@ This is only supported in OpsManager 2.5 and up.
 		When("the --decryption-passphrase flag is missing", func() {
 			It("returns an error", func() {
 				command := commands.NewConfigureAuthentication(nil, nil, nil)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--username", "some-username",
 					"--password", "some-password",
 				})

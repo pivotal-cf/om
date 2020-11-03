@@ -25,7 +25,7 @@ var _ = Describe("ExportInstallation", func() {
 	It("exports the installation", func() {
 		command := commands.NewExportInstallation(fakeService, logger)
 
-		err := command.Execute([]string{
+		err := executeCommand(command, []string{
 			"--output-file", "/path/to/output.zip",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -44,31 +44,21 @@ var _ = Describe("ExportInstallation", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished exporting installation"))
 	})
 
-	Context("failure cases", func() {
-		When("an unknown flag is provided", func() {
-			It("returns an error", func() {
-				command := commands.NewExportInstallation(fakeService, logger)
-				err := command.Execute([]string{"--badflag"})
-				Expect(err).To(MatchError("could not parse export-installation flags: flag provided but not defined: -badflag"))
-			})
+	When("output file is not provided", func() {
+		It("returns an error and prints out usage", func() {
+			command := commands.NewExportInstallation(fakeService, logger)
+			err := executeCommand(command, []string{})
+			Expect(err).To(MatchError("could not parse export-installation flags: missing required flag \"--output-file\""))
 		})
+	})
 
-		When("output file is not provided", func() {
-			It("returns an error and prints out usage", func() {
-				command := commands.NewExportInstallation(fakeService, logger)
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("could not parse export-installation flags: missing required flag \"--output-file\""))
-			})
-		})
+	When("the installation cannot be exported", func() {
+		It("returns an error", func() {
+			command := commands.NewExportInstallation(fakeService, logger)
+			fakeService.DownloadInstallationAssetCollectionReturns(errors.New("some error"))
 
-		When("the installation cannot be exported", func() {
-			It("returns an error", func() {
-				command := commands.NewExportInstallation(fakeService, logger)
-				fakeService.DownloadInstallationAssetCollectionReturns(errors.New("some error"))
-
-				err := command.Execute([]string{"--output-file", "/some/path"})
-				Expect(err).To(MatchError("failed to export installation: some error"))
-			})
+			err := executeCommand(command, []string{"--output-file", "/some/path"})
+			Expect(err).To(MatchError("failed to export installation: some error"))
 		})
 	})
 })

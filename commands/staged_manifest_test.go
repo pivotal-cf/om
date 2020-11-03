@@ -33,7 +33,7 @@ key: value
 	})
 
 	It("prints the manifest of the staged product", func() {
-		err := command.Execute([]string{
+		err := executeCommand(command, []string{
 			"--product-name", "some-product",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -51,36 +51,25 @@ key: value
 `))
 	})
 
-	Context("failure cases", func() {
-		When("an unrecognized flag is passed", func() {
-			It("returns an error", func() {
-				err := command.Execute([]string{
-					"--some-unknown-flag", "some-value",
-				})
-				Expect(err).To(MatchError(ContainSubstring("could not parse staged-manifest flags")))
+	When("the staged products service find call fails", func() {
+		It("returns an error", func() {
+			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
+
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
 			})
+			Expect(err).To(MatchError(ContainSubstring("failed to find product: product find failed")))
 		})
+	})
 
-		When("the staged products service find call fails", func() {
-			It("returns an error", func() {
-				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("product find failed"))
+	When("the staged products service manifest call fails", func() {
+		It("returns an error", func() {
+			fakeService.GetStagedProductManifestReturns("", errors.New("product manifest failed"))
 
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to find product: product find failed")))
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
 			})
-		})
-
-		When("the staged products service manifest call fails", func() {
-			It("returns an error", func() {
-				fakeService.GetStagedProductManifestReturns("", errors.New("product manifest failed"))
-
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to fetch product manifest: product manifest failed")))
-			})
+			Expect(err).To(MatchError(ContainSubstring("failed to fetch product manifest: product manifest failed")))
 		})
 	})
 })

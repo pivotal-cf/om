@@ -35,7 +35,7 @@ var _ = Describe("StagedConfig", func() {
 
 		It("writes a config file to stdout", func() {
 			command := commands.NewStagedConfig(fakeService, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--product-name", "some-product",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -99,7 +99,7 @@ syslog-properties:
 		When("--include-placeholders is used", func() {
 			It("replaces *** with interpolatable placeholders and removes non-configurable properties", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 					"--include-placeholders",
 				})
@@ -179,7 +179,7 @@ syslog-properties:
 
 			It("includes secret values in the output", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 					"--include-credentials",
 				})
@@ -255,7 +255,7 @@ syslog-properties:
 				})
 				It("errors with a helpful message to the operator", func() {
 					command := commands.NewStagedConfig(fakeService, logger)
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--include-credentials",
 					})
@@ -273,7 +273,7 @@ syslog-properties:
 
 				It("returns an error", func() {
 					command := commands.NewStagedConfig(fakeService, logger)
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--include-credentials",
 					})
@@ -306,7 +306,7 @@ syslog-properties:
 
 			It("does not call the syslog configuration endpoint", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 					"--include-credentials",
 				})
@@ -326,7 +326,7 @@ syslog-properties:
 
 			It("returns an error before making any other calls", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 					"--include-credentials",
 				})
@@ -334,18 +334,10 @@ syslog-properties:
 			})
 		})
 
-		When("an unknown flag is provided", func() {
-			It("returns an error", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{"--badflag"})
-				Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
-			})
-		})
-
 		When("product name is not provided", func() {
 			It("returns an error and prints out usage", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{})
+				err := executeCommand(command,[]string{})
 				Expect(err).To(MatchError("could not parse staged-config flags: missing required flag \"--product-name\""))
 			})
 		})
@@ -357,7 +349,7 @@ syslog-properties:
 
 			It("returns an error", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
@@ -371,7 +363,7 @@ syslog-properties:
 
 			It("returns an error", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
@@ -385,7 +377,7 @@ syslog-properties:
 
 			It("returns an error", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
@@ -399,7 +391,7 @@ syslog-properties:
 
 			It("returns an error", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
@@ -413,7 +405,7 @@ syslog-properties:
 
 			It("returns an error", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).To(MatchError("some-error"))
@@ -427,7 +419,7 @@ syslog-properties:
 
 			It("returns an error", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err.Error()).To(ContainSubstring("some-error"))
@@ -447,7 +439,7 @@ syslog-properties:
 				}, nil)
 
 			command := commands.NewStagedConfig(fakeService, logger)
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--product-name", "some-product",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -508,7 +500,7 @@ syslog-properties:
 
 			It("will include selected_option if available", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -537,7 +529,7 @@ syslog-properties:
 
 			It("will include properties dependent on the selected selector if available", func() {
 				command := commands.NewStagedConfig(fakeService, logger)
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 				})
 				Expect(err).ToNot(HaveOccurred())

@@ -50,7 +50,7 @@ var _ = Describe("ConfigTemplate", func() {
 						"--product-version", "d",
 					}
 
-					err := command.Execute(args)
+					err := executeCommand(command,args)
 					Expect(err).To(MatchError("output-directory does not exist: /not/real/directory"))
 				})
 
@@ -75,7 +75,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 
 					It("creates nested subdirectories named by product slug and version", func() {
-						err := command.Execute(args)
+						err := executeCommand(command,args)
 						Expect(err).ToNot(HaveOccurred())
 
 						productDir := filepath.Join(tempDir, "example-product")
@@ -86,7 +86,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 
 					It("creates the various generated sub directories within the product directory", func() {
-						err := command.Execute(args)
+						err := executeCommand(command,args)
 						Expect(err).ToNot(HaveOccurred())
 
 						featuresDir := filepath.Join(tempDir, "example-product", "1.1.1", "features")
@@ -103,7 +103,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 
 					It("creates the correct files", func() {
-						err := command.Execute(args)
+						err := executeCommand(command,args)
 						Expect(err).ToNot(HaveOccurred())
 
 						productDir := filepath.Join(tempDir, "example-product", "1.1.1")
@@ -130,7 +130,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 
 					It("creates nested subdirectories named by product slug", func() {
-						err := command.Execute(args)
+						err := executeCommand(command,args)
 						Expect(err).ToNot(HaveOccurred())
 
 						productDir := filepath.Join(tempDir, "example-product")
@@ -141,7 +141,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 
 					It("creates the various generated sub directories within the product directory", func() {
-						err := command.Execute(args)
+						err := executeCommand(command,args)
 						Expect(err).ToNot(HaveOccurred())
 
 						featuresDir := filepath.Join(tempDir, "example-product", "features")
@@ -158,7 +158,7 @@ var _ = Describe("ConfigTemplate", func() {
 					})
 
 					It("creates the correct files", func() {
-						err := command.Execute(args)
+						err := executeCommand(command,args)
 						Expect(err).ToNot(HaveOccurred())
 
 						productDir := filepath.Join(tempDir, "example-product")
@@ -199,7 +199,7 @@ property_blueprints:
 			It("outputs 10 ops-files by default", func() {
 				tempDir := createOutputDirectory()
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--output-directory", tempDir,
 					"--pivnet-api-token", "b",
 					"--pivnet-product-slug", "c",
@@ -215,7 +215,7 @@ property_blueprints:
 			It("outputs 1 ops-file per collection when specifying --size-of-collections", func() {
 				tempDir := createOutputDirectory()
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--output-directory", tempDir,
 					"--pivnet-api-token", "b",
 					"--pivnet-product-slug", "c",
@@ -253,9 +253,9 @@ property_blueprints:
 				})
 			})
 			It("returns an error", func() {
-				err := command.Execute([]string{"--invalid"})
+				err := executeCommand(command,[]string{"--invalid"})
 				Expect(err).To(MatchError("could not parse config-template flags: flag provided but not defined: -invalid"))
-				err = command.Execute([]string{"--unreal"})
+				err = executeCommand(command,[]string{"--unreal"})
 				Expect(err).To(MatchError("could not parse config-template flags: flag provided but not defined: -unreal"))
 			})
 		})
@@ -269,7 +269,7 @@ property_blueprints:
 				})
 			})
 			It("returns an error", func() {
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--output-directory", createOutputDirectory(),
 					"--pivnet-api-token", "b",
 					"--product-path", "c",
@@ -300,7 +300,7 @@ property_blueprints:
 					}
 				}
 
-				err := command.Execute(args)
+				err := executeCommand(command,args)
 				Expect(err).To(MatchError(ContainSubstring(message)))
 			},
 				Entry("with output-directory", "--output-directory", `missing required flag "--output-directory"`),
@@ -352,7 +352,7 @@ output-directory: %s
 				})
 
 				It("returns an error if missing variables", func() {
-					err = command.Execute([]string{
+					err = executeCommand(command,[]string{
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(MatchError(ContainSubstring("Expected to find variables")))
@@ -378,7 +378,7 @@ output-directory: %s
 					})
 
 					It("can interpolate variables into the configuration", func() {
-						err = command.Execute([]string{
+						err = executeCommand(command,[]string{
 							"--config", configFile.Name(),
 							"--vars-file", varsFile.Name(),
 						})
@@ -388,7 +388,7 @@ output-directory: %s
 
 				Context("given vars", func() {
 					It("can interpolate variables into the configuration", func() {
-						err = command.Execute([]string{
+						err = executeCommand(command,[]string{
 							"--config", configFile.Name(),
 							"--var", "product-slug=elastic-runtime",
 						})
@@ -410,7 +410,7 @@ output-directory: %s
 					})
 
 					It("can interpolate variables into the configuration", func() {
-						err = command.Execute([]string{
+						err = executeCommand(command,[]string{
 							"--config", configFile.Name(),
 							"--vars-env", "OM_VAR",
 						})
@@ -440,7 +440,7 @@ output-directory: %s
 						"--product-version", "1.1.1",
 					}
 
-					err := command.Execute(args)
+					err := executeCommand(command,args)
 					Expect(err).To(MatchError("error getting metadata for example-product at version 1.1.1: cannot get metadata"))
 				})
 			})
@@ -462,7 +462,7 @@ output-directory: %s
 						"--product-version", "1.1.1",
 					}
 
-					err := command.Execute(args)
+					err := executeCommand(command,args)
 					Expect(err).To(HaveOccurred())
 				})
 			})

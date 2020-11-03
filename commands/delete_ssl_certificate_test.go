@@ -25,7 +25,7 @@ var _ = Describe("DeleteSSLCertificate", func() {
 
 	Describe("Execute", func() {
 		It("deletes the custom ssl certificate", func() {
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.DeleteSSLCertificateCallCount()).To(Equal(1))
@@ -42,14 +42,8 @@ var _ = Describe("DeleteSSLCertificate", func() {
 				It("returns an error", func() {
 					fakeService.DeleteSSLCertificateReturns(errors.New("failed to delete certificate"))
 
-					err := command.Execute([]string{})
+					err := executeCommand(command,[]string{})
 					Expect(err).To(MatchError("failed to delete certificate"))
-				})
-			})
-			When("an unknown flag is provided", func() {
-				It("returns an error", func() {
-					err := command.Execute([]string{"--badflag"})
-					Expect(err).To(MatchError("could not parse delete-ssl-certificate flags: flag provided but not defined: -badflag"))
 				})
 			})
 		})

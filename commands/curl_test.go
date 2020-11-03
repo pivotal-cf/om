@@ -52,7 +52,7 @@ var _ = Describe("Curl", func() {
 				Body: stringCloser(`{"some-response-key": "%some-response-value"}`),
 			}, nil)
 
-			err := command.Execute([]string{
+			err := executeCommand(command,[]string{
 				"--path", "/api/v0/some/path",
 				"--request", "POST",
 				"--data", `{"some-key": "some-value"}`,
@@ -87,7 +87,7 @@ var _ = Describe("Curl", func() {
 					Body: stringCloser(`{}`),
 				}, nil)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--path", "/api/v0/some/path",
 					"--request", "GET",
 					"--silent",
@@ -106,7 +106,7 @@ var _ = Describe("Curl", func() {
 					Body: stringCloser(`{}`),
 				}, nil)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--path", "/api/v0/some/path",
 					"--request", "POST",
 					"--silent",
@@ -125,7 +125,7 @@ var _ = Describe("Curl", func() {
 					Body: stringCloser(`{}`),
 				}, nil)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--path", "/api/v0/some/path",
 					"--request", "GET",
 					"--silent",
@@ -151,7 +151,7 @@ var _ = Describe("Curl", func() {
 					Body: stringCloser(`{"some-response-key": "%some-response-value"}`),
 				}, nil)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--path", "/api/v0/some/path",
 					"--request", "POST",
 					"--data", `some_key=some_value`,
@@ -177,7 +177,7 @@ var _ = Describe("Curl", func() {
 						Body: stringCloser(`{"some-response-key": "some-response-value"}`),
 					}, nil)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--path", "/api/v0/some/path",
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,
@@ -199,7 +199,7 @@ var _ = Describe("Curl", func() {
 						Body: stringCloser(`{"some-response-key": "some-response-value"}`),
 					}, nil)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--path", "/api/v0/some/path",
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,
@@ -215,14 +215,14 @@ var _ = Describe("Curl", func() {
 		Context("failure cases", func() {
 			When("the flags cannot be parsed", func() {
 				It("returns an error", func() {
-					err := command.Execute([]string{"--bad-flag", "some-value"})
+					err := executeCommand(command,[]string{"--bad-flag", "some-value"})
 					Expect(err).To(MatchError("could not parse curl flags: flag provided but not defined: -bad-flag"))
 				})
 			})
 
 			When("the request path is not provided", func() {
 				It("returns an error", func() {
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--request", "GET",
 						"--data", `{"some-key": "some-value"}`,
 					})
@@ -233,7 +233,7 @@ var _ = Describe("Curl", func() {
 			When("the request service returns an error", func() {
 				It("returns an error", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{}, errors.New("some request error"))
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--path", "/api/v0/some/path",
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,
@@ -247,7 +247,7 @@ var _ = Describe("Curl", func() {
 					fakeService.CurlReturns(api.RequestServiceCurlOutput{
 						Body: ioutil.NopCloser(errReader{}),
 					}, nil)
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--path", "/api/v0/some/path",
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,
@@ -263,7 +263,7 @@ var _ = Describe("Curl", func() {
 						Body:       stringCloser(`{"some-response-key": "some-response-value"}`),
 					}, nil)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--path", "/api/v0/some/path",
 						"--request", "POST",
 						"--data", `{"some-key": "some-value"}`,

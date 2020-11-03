@@ -34,7 +34,7 @@ key: value
 	})
 
 	It("prints the manifest of the deployed product", func() {
-		err := command.Execute([]string{
+		err := executeCommand(command, []string{
 			"--product-name", "some-product",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -51,44 +51,33 @@ key: value
 `))
 	})
 
-	Context("failure cases", func() {
-		When("the flags cannot be parsed", func() {
-			It("returns an error", func() {
-				err := command.Execute([]string{
-					"--unknown-flag", "unknown-value",
-				})
-				Expect(err).To(MatchError(ContainSubstring("flag provided but not defined")))
+	When("the deployed products cannot be listed", func() {
+		It("returns an error", func() {
+			fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, errors.New("deployed products cannot be listed"))
+
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
 			})
+			Expect(err).To(MatchError(ContainSubstring("deployed products cannot be listed")))
 		})
+	})
 
-		When("the deployed products cannot be listed", func() {
-			It("returns an error", func() {
-				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, errors.New("deployed products cannot be listed"))
-
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-				})
-				Expect(err).To(MatchError(ContainSubstring("deployed products cannot be listed")))
+	When("the guid is not found", func() {
+		It("returns an error", func() {
+			err := executeCommand(command, []string{
+				"--product-name", "unknown-product",
 			})
+			Expect(err).To(MatchError(ContainSubstring("could not find given product")))
 		})
+	})
 
-		When("the guid is not found", func() {
-			It("returns an error", func() {
-				err := command.Execute([]string{
-					"--product-name", "unknown-product",
-				})
-				Expect(err).To(MatchError(ContainSubstring("could not find given product")))
+	When("the manifest cannot be returned", func() {
+		It("returns an error", func() {
+			fakeService.GetDeployedProductManifestReturns("", errors.New("manifest could not be retrieved"))
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
 			})
-		})
-
-		When("the manifest cannot be returned", func() {
-			It("returns an error", func() {
-				fakeService.GetDeployedProductManifestReturns("", errors.New("manifest could not be retrieved"))
-				err := command.Execute([]string{
-					"--product-name", "some-product",
-				})
-				Expect(err).To(MatchError(ContainSubstring("manifest could not be retrieved")))
-			})
+			Expect(err).To(MatchError(ContainSubstring("manifest could not be retrieved")))
 		})
 	})
 })

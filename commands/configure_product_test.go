@@ -533,7 +533,7 @@ var _ = Describe("ConfigureProduct", func() {
 			It("logs and then does nothing if they are empty", func() {
 				command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--config", configFile.Name(),
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -623,7 +623,7 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--config", configFile.Name(),
 					})
 					Expect(err).To(MatchError(`could not find product "cf"`))
@@ -643,7 +643,7 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError(ContainSubstring("could not be parsed as valid configuration: yaml: unmarshal errors")))
 				})
 			})
@@ -666,16 +666,8 @@ var _ = Describe("ConfigureProduct", func() {
 							"some-job": "a-guid",
 						}, errors.New("boom"))
 
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("failed to fetch jobs: boom"))
-				})
-			})
-
-			When("an unknown flag is provided", func() {
-				It("returns an error", func() {
-					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-					err := command.Execute([]string{"--badflag"})
-					Expect(err).To(MatchError("could not parse configure-product flags: flag provided but not defined: -badflag"))
 				})
 			})
 
@@ -686,7 +678,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 				It("returns an error", func() {
 					command := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("could not parse configure-product config: \"product-name\" is required"))
 				})
 			})
@@ -700,7 +692,7 @@ var _ = Describe("ConfigureProduct", func() {
 								{GUID: "some-product-guid", Type: "cf"},
 							},
 						}, nil)
-						err := command.Execute([]string{"--config", "some/non-existant/path.yml"})
+						err := executeCommand(command,[]string{"--config", "some/non-existant/path.yml"})
 						Expect(err).To(MatchError(ContainSubstring("open some/non-existant/path.yml: no such file or directory")))
 					})
 				})
@@ -753,7 +745,7 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("failed to configure product: some product error"))
 				})
 			})
@@ -773,7 +765,7 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("failed to configure product: some product error"))
 				})
 			})
@@ -793,7 +785,7 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("failed to configure product: some product error"))
 				})
 			})
@@ -813,7 +805,7 @@ var _ = Describe("ConfigureProduct", func() {
 						},
 					}, nil)
 
-					err := command.Execute([]string{"--config", configFile.Name()})
+					err := executeCommand(command,[]string{"--config", configFile.Name()})
 					Expect(err).To(MatchError("failed to configure product: some product error"))
 				})
 			})

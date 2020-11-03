@@ -47,7 +47,7 @@ var _ = Describe("AvailableProducts", func() {
 		})
 
 		It("lists the available products", func() {
-			err := command.Execute([]string{})
+			err := executeCommand(command,[]string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentAvailableProductsCallCount()).To(Equal(1))
@@ -66,7 +66,7 @@ var _ = Describe("AvailableProducts", func() {
 
 		When("the json flag is provided", func() {
 			It("sets the format to json on the presenter", func() {
-				err := command.Execute([]string{"--format", "json"})
+				err := executeCommand(command,[]string{"--format", "json"})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
@@ -80,7 +80,7 @@ var _ = Describe("AvailableProducts", func() {
 
 				apService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, nil)
 
-				err := command.Execute([]string{})
+				err := executeCommand(command,[]string{})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(logger.PrintfArgsForCall(0)).To(Equal("no available products found"))
@@ -94,15 +94,8 @@ var _ = Describe("AvailableProducts", func() {
 
 				apService.ListAvailableProductsReturns(api.AvailableProductsOutput{}, errors.New("blargh"))
 
-				err := command.Execute([]string{})
+				err := executeCommand(command,[]string{})
 				Expect(err).To(MatchError("blargh"))
-			})
-		})
-
-		When("an unknown flag is passed", func() {
-			It("returns an error", func() {
-				err := command.Execute([]string{"--unknown-flag"})
-				Expect(err).To(MatchError("could not parse available-products flags: flag provided but not defined: -unknown-flag"))
 			})
 		})
 	})

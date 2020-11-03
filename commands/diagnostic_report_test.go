@@ -31,7 +31,7 @@ var _ = Describe("DiagnosticReport", func() {
 		})
 
 		It("displays the diagnostic report", func() {
-			err := command.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.GetDiagnosticReportCallCount()).To(Equal(1))
@@ -42,21 +42,12 @@ var _ = Describe("DiagnosticReport", func() {
 		})
 	})
 
-	Context("failure cases", func() {
-		When("fetching the diagnostic report fails", func() {
-			It("returns an error", func() {
-				fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
+	When("fetching the diagnostic report fails", func() {
+		It("returns an error", func() {
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{}, errors.New("beep boop"))
 
-				err := command.Execute([]string{})
-				Expect(err).To(MatchError("failed to retrieve diagnostic-report beep boop"))
-			})
-		})
-
-		When("an unknown flag is passed", func() {
-			It("returns an error", func() {
-				err := command.Execute([]string{"--unknown-flag"})
-				Expect(err).To(MatchError("could not parse diagnostic-report flags: flag provided but not defined: -unknown-flag"))
-			})
+			err := executeCommand(command, []string{})
+			Expect(err).To(MatchError("failed to retrieve diagnostic-report beep boop"))
 		})
 	})
 })

@@ -47,7 +47,7 @@ var _ = Describe("CredentialReferences", func() {
 		})
 
 		It("lists the credential references in alphabetical order", func() {
-			err := command.Execute([]string{
+			err := executeCommand(command, []string{
 				"--product-name", "some-product",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -62,7 +62,7 @@ var _ = Describe("CredentialReferences", func() {
 
 		When("the format flag is provided", func() {
 			It("sets format on the presenter", func() {
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--product-name", "some-product",
 					"--format", "json",
 				})
@@ -73,84 +73,74 @@ var _ = Describe("CredentialReferences", func() {
 			})
 		})
 
-		Context("failure cases", func() {
-			When("an unknown flag is provided", func() {
-				It("returns an error", func() {
-					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
-					err := command.Execute([]string{"--badflag"})
-					Expect(err).To(MatchError("could not parse credential-references flags: flag provided but not defined: -badflag"))
-				})
+		When("the product-name flag is not provided", func() {
+			It("returns an error", func() {
+				command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--product-name\""))
+			})
+		})
+
+		When("the deployed product cannot be found", func() {
+			BeforeEach(func() {
+				fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
 			})
 
-			When("the product-name flag is not provided", func() {
-				It("returns an error", func() {
-					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--product-name\""))
+			It("returns an error", func() {
+				command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+
+				err := executeCommand(command, []string{
+					"--product-name", "some-product",
 				})
+				Expect(err).To(MatchError(ContainSubstring("failed to list credential references")))
 			})
+		})
 
-			When("the deployed product cannot be found", func() {
-				BeforeEach(func() {
-					fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
+		When("there are no credential references to list", func() {
+			It("prints a helpful message instead of a table", func() {
+				command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+
+				fakeService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{}, nil)
+
+				err := executeCommand(command, []string{
+					"--product-name", "some-product",
 				})
+				Expect(err).ToNot(HaveOccurred())
 
-				It("returns an error", func() {
-					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+				Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 
-					err := command.Execute([]string{
-						"--product-name", "some-product",
-					})
-					Expect(err).To(MatchError(ContainSubstring("failed to list credential references")))
-				})
+				Expect(logger.PrintfArgsForCall(0)).To(Equal("no credential references found"))
 			})
+		})
 
-			When("there are no credential references to list", func() {
-				It("prints a helpful message instead of a table", func() {
-					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+		When("the credential references cannot be fetched", func() {
+			It("returns an error", func() {
+				command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
 
-					fakeService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{}, nil)
+				fakeService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
 
-					err := command.Execute([]string{
-						"--product-name", "some-product",
-					})
-					Expect(err).ToNot(HaveOccurred())
-
-					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
-
-					Expect(logger.PrintfArgsForCall(0)).To(Equal("no credential references found"))
+				err := executeCommand(command, []string{
+					"--product-name", "some-product",
 				})
+				Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch credential references")))
+
+				Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 			})
+		})
 
-			When("the credential references cannot be fetched", func() {
-				It("returns an error", func() {
-					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+		When("the deployed products cannot be fetched", func() {
+			It("returns an error", func() {
+				fakeService.ListDeployedProductsReturns(
+					[]api.DeployedProductOutput{},
+					errors.New("could not fetch deployed products"))
 
-					fakeService.ListDeployedProductCredentialsReturns(api.CredentialReferencesOutput{}, errors.New("could not fetch credential references"))
-
-					err := command.Execute([]string{
-						"--product-name", "some-product",
-					})
-					Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch credential references")))
-
-					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
+				command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
+				err := executeCommand(command, []string{
+					"--product-name", "some-product",
 				})
-			})
+				Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch deployed products")))
 
-			When("the deployed products cannot be fetched", func() {
-				It("returns an error", func() {
-					fakeService.ListDeployedProductsReturns(
-						[]api.DeployedProductOutput{},
-						errors.New("could not fetch deployed products"))
-
-					command := commands.NewCredentialReferences(fakeService, fakePresenter, logger)
-					err := command.Execute([]string{
-						"--product-name", "some-product",
-					})
-					Expect(err).To(MatchError(ContainSubstring("failed to list credential references: could not fetch deployed products")))
-
-					Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
-				})
+				Expect(fakePresenter.PresentCredentialReferencesCallCount()).To(Equal(0))
 			})
 		})
 	})

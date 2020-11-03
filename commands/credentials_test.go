@@ -50,7 +50,7 @@ var _ = Describe("Credentials", func() {
 
 		Describe("outputting all values for a credential", func() {
 			It("outputs the credentials alphabetically", func() {
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 					"--credential-reference", ".properties.some-credentials",
 				})
@@ -75,7 +75,7 @@ var _ = Describe("Credentials", func() {
 
 			When("the format flag is provided", func() {
 				It("sets the format on the presenter", func() {
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 						"--format", "json",
@@ -88,7 +88,7 @@ var _ = Describe("Credentials", func() {
 
 			When("the --product-name flag is missing", func() {
 				It("returns an error", func() {
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--credential-reference", "some-credential",
 					})
 					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--product-name\""))
@@ -99,7 +99,7 @@ var _ = Describe("Credentials", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 					})
 					Expect(err).To(MatchError("could not parse credential-references flags: missing required flag \"--credential-reference\""))
@@ -114,7 +114,7 @@ var _ = Describe("Credentials", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
@@ -128,7 +128,7 @@ var _ = Describe("Credentials", func() {
 
 					fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{}, errors.New("could not fetch credentials"))
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
@@ -145,7 +145,7 @@ var _ = Describe("Credentials", func() {
 						errors.New("could not fetch deployed products"))
 
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
@@ -164,7 +164,7 @@ var _ = Describe("Credentials", func() {
 						}}, nil)
 
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 					})
@@ -191,7 +191,7 @@ var _ = Describe("Credentials", func() {
 			It("outputs the credential value only", func() {
 				command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-				err := command.Execute([]string{
+				err := executeCommand(command,[]string{
 					"--product-name", "some-product",
 					"--credential-reference", ".properties.some-credentials",
 					"--credential-field", "password",
@@ -205,7 +205,7 @@ var _ = Describe("Credentials", func() {
 				It("returns an error", func() {
 					command := commands.NewCredentials(fakeService, fakePresenter, logger)
 
-					err := command.Execute([]string{
+					err := executeCommand(command,[]string{
 						"--product-name", "some-product",
 						"--credential-reference", "some-credential",
 						"--credential-field", "missing-field",

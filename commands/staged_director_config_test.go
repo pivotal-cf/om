@@ -128,7 +128,7 @@ var _ = Describe("StagedDirectorConfig", func() {
 
 		It("writes a complete config file with filtered sensitive fields to stdout", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-			err := command.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			output := stdout.PrintlnArgsForCall(0)
@@ -181,7 +181,7 @@ vmtypes-configuration: {}
 			}, nil)
 
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-			err := command.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			output := stdout.PrintlnArgsForCall(0)
@@ -239,7 +239,7 @@ vmtypes-configuration:
 
 		It("doesn't redact values when --no-redact is passed", func() {
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-			err := command.Execute([]string{"--no-redact"})
+			err := executeCommand(command, []string{"--no-redact"})
 			Expect(err).ToNot(HaveOccurred())
 
 			invocations := fakeService.Invocations()["GetStagedDirectorProperties"]
@@ -250,7 +250,7 @@ vmtypes-configuration:
 			It("doesn't return the az in the config", func() {
 				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, nil)
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{})
+				err := executeCommand(command, []string{})
 				Expect(err).ToNot(HaveOccurred())
 
 				output := stdout.PrintlnArgsForCall(0)
@@ -307,7 +307,7 @@ vmtypes-configuration: {}
 			}, nil)
 
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-			err := command.Execute([]string{
+			err := executeCommand(command, []string{
 				"--no-redact",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -390,7 +390,7 @@ vmtypes-configuration: {}
 			fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
 
 			command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-			err := command.Execute([]string{
+			err := executeCommand(command, []string{
 				"--no-redact",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -447,7 +447,7 @@ vmtypes-configuration: {}
 		Describe("with --no-redact", func() {
 			It("Includes the filtered fields when printing to stdout", func() {
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--no-redact",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -516,7 +516,7 @@ vmtypes-configuration: {}
 				}, nil)
 
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--no-redact",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -577,7 +577,7 @@ vmtypes-configuration: {}
 		Describe("with --include-placeholders", func() {
 			It("Includes the placeholder fields when printing to stdout", func() {
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--include-placeholders",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -651,7 +651,7 @@ vmtypes-configuration: {}
 				}, nil)
 
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--include-placeholders",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -722,7 +722,7 @@ vmtypes-configuration: {}
 				}, nil)
 
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--include-placeholders",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -786,7 +786,7 @@ vmtypes-configuration: {}
 				}, nil)
 
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--include-placeholders",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -858,7 +858,7 @@ vmtypes-configuration: {}
 				fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
 
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--include-placeholders",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -918,7 +918,7 @@ vmtypes-configuration: {}
 				fakeService.GetStagedDirectorPropertiesReturns(expectedDirectorProperties, nil)
 
 				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-				err := command.Execute([]string{
+				err := executeCommand(command, []string{
 					"--include-placeholders",
 				})
 				Expect(err).ToNot(HaveOccurred())
@@ -963,100 +963,90 @@ vmtypes-configuration: {}
 			})
 		})
 
-		Describe("failure cases", func() {
-			When("an unknown flag is provided", func() {
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{"--badflag"})
-					Expect(err).To(MatchError("could not parse staged-config flags: flag provided but not defined: -badflag"))
-				})
+		When("looking up the director GUID fails", func() {
+			BeforeEach(func() {
+				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
 			})
 
-			When("looking up the director GUID fails", func() {
-				BeforeEach(func() {
-					fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
 
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+		When("looking up the director properties fails", func() {
+			BeforeEach(func() {
+				fakeService.GetStagedDirectorPropertiesReturns(nil, errors.New("some-error"))
 			})
 
-			When("looking up the director properties fails", func() {
-				BeforeEach(func() {
-					fakeService.GetStagedDirectorPropertiesReturns(nil, errors.New("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
 
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+		When("looking up the director azs fails", func() {
+			BeforeEach(func() {
+				fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, errors.New("some-error"))
 			})
 
-			When("looking up the director azs fails", func() {
-				BeforeEach(func() {
-					fakeService.GetStagedDirectorAvailabilityZonesReturns(api.AvailabilityZonesOutput{}, errors.New("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
 
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+		When("looking up the director networks fails", func() {
+			BeforeEach(func() {
+				fakeService.GetStagedDirectorNetworksReturns(api.NetworksConfigurationOutput{}, errors.New("some-error"))
 			})
 
-			When("looking up the director networks fails", func() {
-				BeforeEach(func() {
-					fakeService.GetStagedDirectorNetworksReturns(api.NetworksConfigurationOutput{}, errors.New("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
 
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+		When("looking up the director network assignment fails", func() {
+			BeforeEach(func() {
+				fakeService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
 			})
 
-			When("looking up the director network assignment fails", func() {
-				BeforeEach(func() {
-					fakeService.GetStagedProductNetworksAndAZsReturns(nil, errors.New("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
 
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+		When("looking up the director jobs fails", func() {
+			BeforeEach(func() {
+				fakeService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
 			})
 
-			When("looking up the director jobs fails", func() {
-				BeforeEach(func() {
-					fakeService.ListStagedProductJobsReturns(nil, errors.New("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
 
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+		When("looking up the director job resource config fails", func() {
+			BeforeEach(func() {
+				fakeService.ListStagedProductJobsReturns(map[string]string{
+					"some-job": "some-job-guid",
+				}, nil)
+				fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
 			})
 
-			When("looking up the director job resource config fails", func() {
-				BeforeEach(func() {
-					fakeService.ListStagedProductJobsReturns(map[string]string{
-						"some-job": "some-job-guid",
-					}, nil)
-					fakeService.GetStagedProductJobResourceConfigReturns(api.JobProperties{}, errors.New("some-error"))
-				})
-
-				It("returns an error", func() {
-					command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
-					err := command.Execute([]string{})
-					Expect(err).To(MatchError("some-error"))
-				})
+			It("returns an error", func() {
+				command := commands.NewStagedDirectorConfig(fakeService, stdout, stderr)
+				err := executeCommand(command, []string{})
+				Expect(err).To(MatchError("some-error"))
 			})
 		})
 	})
