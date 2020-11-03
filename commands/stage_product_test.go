@@ -3,8 +3,6 @@ package commands_test
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -112,55 +110,6 @@ var _ = Describe("StageProduct", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("could not find latest version: some error"))
 			})
-		})
-	})
-
-	When("--config is provided", func() {
-		It("stages a product", func() {
-			config := `---
-product-name: some-product
-product-version: some-version
-unnecessary-field: ((some-value))
-`
-
-			configFile, err := ioutil.TempFile("", "config.yml")
-			Expect(err).ToNot(HaveOccurred())
-			defer configFile.Close()
-
-			fakeService.CheckProductAvailabilityReturns(true, nil)
-
-			command := commands.NewStageProduct(fakeService, logger)
-
-			fakeService.ListDeployedProductsReturns([]api.DeployedProductOutput{
-				api.DeployedProductOutput{
-					Type: "some-other-product",
-					GUID: "deployed-product-guid",
-				},
-			}, nil)
-
-			_, err = configFile.WriteString(config)
-			Expect(err).ToNot(HaveOccurred())
-
-			err = executeCommand(command, []string{
-				"--config", configFile.Name(),
-			})
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(fakeService.ListDeployedProductsCallCount()).To(Equal(1))
-
-			Expect(fakeService.StageCallCount()).To(Equal(1))
-			stageProductInput, deployedProductGUID := fakeService.StageArgsForCall(0)
-			Expect(stageProductInput).To(Equal(api.StageProductInput{
-				ProductName:    "some-product",
-				ProductVersion: "some-version",
-			}))
-			Expect(deployedProductGUID).To(BeEmpty())
-
-			format, v := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("staging some-product some-version"))
-
-			format, v = logger.PrintfArgsForCall(1)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("finished staging"))
 		})
 	})
 

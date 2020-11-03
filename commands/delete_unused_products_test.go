@@ -50,7 +50,7 @@ var _ = Describe("DeleteProduct", func() {
 			It("returns an error", func() {
 				fakeService.DeleteAvailableProductsReturns(errors.New("something bad happened"))
 
-				err := executeCommand(command, []string{"-p", "nah", "-v", "nope"})
+				err := executeCommand(command, []string{})
 				Expect(err).To(MatchError("something bad happened"))
 			})
 		})

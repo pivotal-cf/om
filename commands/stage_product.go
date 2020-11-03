@@ -3,8 +3,6 @@ package commands
 import (
 	"fmt"
 	"github.com/pivotal-cf/om/api"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 type StageProduct struct {
@@ -36,7 +34,7 @@ func NewStageProduct(service stageProductService, logger logger) *StageProduct {
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	err := sp.loadConfig(args)
+	err := sp.validate()
 	if err != nil {
 		return err
 	}
@@ -106,19 +104,7 @@ func (sp StageProduct) Execute(args []string) error {
 	return nil
 }
 
-func (sp *StageProduct) loadConfig(args []string) error {
-	if sp.Options.ConfigFile != "" {
-		contents, err := ioutil.ReadFile(sp.Options.ConfigFile)
-		if err != nil {
-			return err
-		}
-
-		err = yaml.Unmarshal(contents, &sp.Options)
-		if err != nil {
-			return err
-		}
-	}
-
+func (sp *StageProduct) validate() error {
 	productName := sp.Options.Product
 	productVersion := sp.Options.Version
 	if productName == "" || productVersion == "" {
