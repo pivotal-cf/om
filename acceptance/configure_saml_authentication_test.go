@@ -19,13 +19,6 @@ var _ = Describe("configure-saml-authentication command", func() {
 
 	BeforeEach(func() {
 		server = createTLSServer()
-	})
-
-	AfterEach(func() {
-		server.Close()
-	})
-
-	It("configures the admin user account on OpsManager with SAML", func() {
 		server.AppendHandlers(
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/login/ensure_availability"),
@@ -69,7 +62,13 @@ var _ = Describe("configure-saml-authentication command", func() {
 				ghttp.RespondWith(http.StatusFound, "", map[string][]string{"Location": {"/auth/cloudfoundry"}}),
 			),
 		)
+	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
+	It("configures the admin user account on OpsManager with SAML", func() {
 		command := exec.Command(pathToMain,
 			"--target", server.URL(),
 			"--skip-ssl-validation",

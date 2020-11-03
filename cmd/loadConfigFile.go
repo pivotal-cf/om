@@ -28,7 +28,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 			return args, nil
 		}
 	}
-	
+
 	var err error
 	var config struct {
 		ConfigFile string   `long:"config"                     short:"c"`
@@ -45,7 +45,6 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 	}
 
 	var (
-		cmdVars []string
 		options map[string]interface{}
 	)
 
@@ -53,7 +52,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		TemplateFile:  configFile,
 		VarsEnvs:      config.VarsEnv,
 		VarsFiles:     config.VarsFile,
-		Vars:          cmdVars,
+		Vars:          config.Vars,
 		EnvironFunc:   envFunc,
 		OpsFiles:      nil,
 		ExpectAllKeys: true,
@@ -81,6 +80,9 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		}
 
 	}
-	fileArgs = append(args, fileArgs...)
-	return fileArgs, err
+
+	cmdArgs := []string{args[0]}
+	cmdArgs = append(cmdArgs, fileArgs...)
+	cmdArgs = append(cmdArgs, args[1:]...)
+	return cmdArgs, err
 }

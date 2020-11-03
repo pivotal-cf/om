@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("SslCertificate", func() {
 	var (
-		sslCertificate            *commands.SSLCertificate
+		command                   *commands.SSLCertificate
 		fakeSSLCertificateService *fakes.SSLCertificateService
 		fakePresenter             *presenterfakes.FormattedPresenter
 	)
@@ -22,7 +22,7 @@ var _ = Describe("SslCertificate", func() {
 	BeforeEach(func() {
 		fakeSSLCertificateService = &fakes.SSLCertificateService{}
 		fakePresenter = &presenterfakes.FormattedPresenter{}
-		sslCertificate = commands.NewSSLCertificate(fakeSSLCertificateService, fakePresenter)
+		command = commands.NewSSLCertificate(fakeSSLCertificateService, fakePresenter)
 	})
 
 	Describe("Execute", func() {
@@ -40,7 +40,7 @@ var _ = Describe("SslCertificate", func() {
 		})
 
 		It("prints the certificate to a table", func() {
-			err := sslCertificate.Execute([]string{})
+			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeSSLCertificateService.GetSSLCertificateCallCount()).To(Equal(1))
@@ -51,22 +51,13 @@ var _ = Describe("SslCertificate", func() {
 
 		When("the format flag is provided", func() {
 			It("calls the presenter to set the json format", func() {
-				err := sslCertificate.Execute([]string{
+				err := executeCommand(command, []string{
 					"--format", "json",
 				})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(fakePresenter.SetFormatCallCount()).To(Equal(1))
 				Expect(fakePresenter.SetFormatArgsForCall(0)).To(Equal("json"))
-			})
-		})
-
-		When("the flag cannot parsed", func() {
-			It("returns an error", func() {
-				err := sslCertificate.Execute([]string{"--bogus", "nothing"})
-				Expect(err).To(MatchError(
-					"could not parse ssl-certificate flags: flag provided but not defined: -bogus",
-				))
 			})
 		})
 
@@ -77,7 +68,7 @@ var _ = Describe("SslCertificate", func() {
 					fmt.Errorf("could not get custom certificate"),
 				)
 
-				err := sslCertificate.Execute([]string{})
+				err := executeCommand(command, []string{})
 				Expect(err).To(MatchError("could not get custom certificate"))
 			})
 		})

@@ -334,14 +334,6 @@ syslog-properties:
 			})
 		})
 
-		When("product name is not provided", func() {
-			It("returns an error and prints out usage", func() {
-				command := commands.NewStagedConfig(fakeService, logger)
-				err := executeCommand(command, []string{})
-				Expect(err).To(MatchError("could not parse staged-config flags: missing required flag \"--product-name\""))
-			})
-		})
-
 		When("looking up the product GUID fails", func() {
 			BeforeEach(func() {
 				fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{}, errors.New("some-error"))

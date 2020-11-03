@@ -136,17 +136,6 @@ var _ = Describe("Certificate Authority", func() {
 			})
 		})
 
-		When("the args cannot parsed", func() {
-			It("returns an error", func() {
-				err := certificateAuthority.Execute([]string{
-					"--bogus", "nothing",
-				})
-				Expect(err).To(MatchError(
-					"could not parse certificate-authority flags: flag provided but not defined: -bogus",
-				))
-			})
-		})
-
 		When("the service fails to retrieve CAs", func() {
 			BeforeEach(func() {
 				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
