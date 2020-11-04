@@ -22,17 +22,15 @@ func (ex Executor) GetDescription(commandName string) (string, error) {
 	}
 
 	lines := strings.Split(string(output), "\n")
-	var description = lines[3]
+	var i int
 
-	for i:= 4; i < len(lines); i++ {
-		if lines[i] != "" {
-			description += "\n"+lines[i]
-			continue
+	for i = 3; i < len(lines); i++ {
+		if lines[i] == "" {
+			break
 		}
-		break
 	}
 
-	return description, nil
+	return strings.Join(lines[3:i], "\n"), nil
 }
 
 func (ex Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
