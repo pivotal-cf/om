@@ -21,7 +21,18 @@ func (ex Executor) GetDescription(commandName string) (string, error) {
 		return "", err
 	}
 
-	return strings.Split(string(output), "\n")[1], nil
+	lines := strings.Split(string(output), "\n")
+	var description = lines[3]
+
+	for i:= 4; i < len(lines); i++ {
+		if lines[i] != "" {
+			description += "\n"+lines[i]
+			continue
+		}
+		break
+	}
+
+	return description, nil
 }
 
 func (ex Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
@@ -35,13 +46,9 @@ func (ex Executor) GetCommandNamesAndDescriptions() (map[string]string, error) {
 	var inTheCommandZone bool
 	commands := make(map[string]string)
 	for _, commandLine := range outputLines {
-		if strings.Contains(commandLine, "Commands:") && !inTheCommandZone {
+		if strings.Contains(commandLine, "Available commands:") && !inTheCommandZone {
 			inTheCommandZone = true
 			continue
-		}
-
-		if strings.Contains(commandLine, "Global Flags:") {
-			break
 		}
 
 		if inTheCommandZone && commandLine != "" {

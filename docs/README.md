@@ -47,7 +47,6 @@ for this product.
 | [export-installation](export-installation/README.md) | exports the installation of the target Ops Manager |
 | [generate-certificate-authority](generate-certificate-authority/README.md) | generates a certificate authority on the Opsman |
 | [generate-certificate](generate-certificate/README.md) | generates a new certificate signed by Ops Manager's root CA |
-| [help](help/README.md) | prints this usage information |
 | [import-installation](import-installation/README.md) | imports a given installation to the Ops Manager targeted |
 | [installation-log](installation-log/README.md) | output installation logs |
 | [installations](installations/README.md) | list recent installation events |
@@ -68,6 +67,7 @@ for this product.
 | [upload-product](upload-product/README.md) | uploads a given product to the Ops Manager targeted |
 | [upload-stemcell](upload-stemcell/README.md) | uploads a given stemcell to the Ops Manager targeted |
 | [version](version/README.md) | prints the om release version |
+| [vm-lifecycle](vm-lifecycle/README.md) | commands to manage the state of the Ops Manager VM (aliases: nom) |
 
 # Authentication
 OM will by preference use Client ID and Client Secret if provided. To create a Client ID and Client Secret

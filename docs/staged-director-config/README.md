@@ -7,33 +7,53 @@ The `staged-director-config` command will export a YAML config file that can be 
 
 ## Command Usage
 ```
-
-This command generates a config from a staged director that can be passed in to om configure-director
-
 Usage:
-  om [options] staged-director-config [<args>]
+  om [OPTIONS] staged-director-config [staged-director-config-OPTIONS]
 
-Flags:
-  --include-placeholders, -r  bool  Replace obscured credentials to interpolatable placeholders.
-  				    To include credentials hidden by OpsMan, use with "--no-redact"
-  --no-redact                 bool  Redact IaaS values from director configuration
+This command generates a config from a staged director that can be passed in to
+om configure-director
 
-Global Flags:
-  --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
-  --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
-  --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --connect-timeout, -o, OM_CONNECT_TIMEOUT              int     timeout in seconds to make TCP connections (default: 10)
-  --decryption-passphrase, -d, OM_DECRYPTION_PASSPHRASE  string  Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)
-  --env, -e                                              string  env file with login credentials
-  --help, -h                                             bool    prints this usage information (default: false)
-  --password, -p, OM_PASSWORD                            string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  --request-timeout, -r, OM_REQUEST_TIMEOUT              int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
-  --skip-ssl-validation, -k, OM_SKIP_SSL_VALIDATION      bool    skip ssl certificate validation during http requests (default: false)
-  --target, -t, OM_TARGET                                string  location of the Ops Manager VM
-  --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
-  --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
-  --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+Application Options:
+      --ca-cert=                  OpsManager CA certificate path or value
+                                  [$OM_CA_CERT]
+  -c, --client-id=                Client ID for the Ops Manager VM (not
+                                  required for unauthenticated commands)
+                                  [$OM_CLIENT_ID]
+  -s, --client-secret=            Client Secret for the Ops Manager VM (not
+                                  required for unauthenticated commands)
+                                  [$OM_CLIENT_SECRET]
+  -o, --connect-timeout=          timeout in seconds to make TCP connections
+                                  (default: 10) [$OM_CONNECT_TIMEOUT]
+  -d, --decryption-passphrase=    Passphrase to decrypt the installation if the
+                                  Ops Manager VM has been rebooted (optional
+                                  for most commands) [$OM_DECRYPTION_PASSPHRASE]
+  -e, --env=                      env file with login credentials
+  -p, --password=                 admin password for the Ops Manager VM (not
+                                  required for unauthenticated commands)
+                                  [$OM_PASSWORD]
+  -r, --request-timeout=          timeout in seconds for HTTP requests to Ops
+                                  Manager (default: 1800) [$OM_REQUEST_TIMEOUT]
+  -k, --skip-ssl-validation       skip ssl certificate validation during http
+                                  requests [$OM_SKIP_SSL_VALIDATION]
+  -t, --target=                   location of the Ops Manager VM [$OM_TARGET]
+      --trace                     prints HTTP requests and response payloads
+                                  [$OM_TRACE]
+  -u, --username=                 admin username for the Ops Manager VM (not
+                                  required for unauthenticated commands)
+                                  [$OM_USERNAME]
+      --vars-env=                 load vars from environment variables by
+                                  specifying a prefix (e.g.: 'MY' to load
+                                  MY_var=value) [$OM_VARS_ENV]
+  -v, --version                   prints the om release version
 
+Help Options:
+  -h, --help                      Show this help message
+
+[staged-director-config command options]
+      -r, --include-placeholders  Replace obscured credentials to
+                                  interpolatable placeholders.
+                                  To include credentials hidden by OpsMan, use
+                                  with "--no-redact"
+          --no-redact             Redact IaaS values from director configuration
 ```
 

@@ -8,38 +8,62 @@ This stemcell will then be available for use by any product specifying that stem
 
 ## Command Usage
 ```
-
-This command will upload a stemcell to the target Ops Manager. Unless the force flag is used, if the stemcell already exists that upload will be skipped
-
 Usage:
-  om [options] upload-stemcell [<args>]
+  om [OPTIONS] upload-stemcell [upload-stemcell-OPTIONS]
 
-Flags:
-  --config, -c             string             path to yml file for configuration (keys must match the following command line flags)
-  --floating               string             assigns the stemcell to all compatible products  (default: true)
-  --force, -f              bool               upload stemcell even if it already exists on the target Ops Manager
-  --shasum                 string             shasum of the provided product file to be used for validation
-  --stemcell, -s           string (required)  path to stemcell
-  --var, -v                string (variadic)  load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV  string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l          string (variadic)  load variables from a YAML file
+This command will upload a stemcell to the target Ops Manager. Unless the force
+flag is used, if the stemcell already exists that upload will be skipped
 
-Global Flags:
-  --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
-  --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
-  --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --connect-timeout, -o, OM_CONNECT_TIMEOUT              int     timeout in seconds to make TCP connections (default: 10)
-  --decryption-passphrase, -d, OM_DECRYPTION_PASSPHRASE  string  Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)
-  --env, -e                                              string  env file with login credentials
-  --help, -h                                             bool    prints this usage information (default: false)
-  --password, -p, OM_PASSWORD                            string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  --request-timeout, -r, OM_REQUEST_TIMEOUT              int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
-  --skip-ssl-validation, -k, OM_SKIP_SSL_VALIDATION      bool    skip ssl certificate validation during http requests (default: false)
-  --target, -t, OM_TARGET                                string  location of the Ops Manager VM
-  --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
-  --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
-  --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+Application Options:
+      --ca-cert=               OpsManager CA certificate path or value
+                               [$OM_CA_CERT]
+  -c, --client-id=             Client ID for the Ops Manager VM (not required
+                               for unauthenticated commands) [$OM_CLIENT_ID]
+  -s, --client-secret=         Client Secret for the Ops Manager VM (not
+                               required for unauthenticated commands)
+                               [$OM_CLIENT_SECRET]
+  -o, --connect-timeout=       timeout in seconds to make TCP connections
+                               (default: 10) [$OM_CONNECT_TIMEOUT]
+  -d, --decryption-passphrase= Passphrase to decrypt the installation if the
+                               Ops Manager VM has been rebooted (optional for
+                               most commands) [$OM_DECRYPTION_PASSPHRASE]
+  -e, --env=                   env file with login credentials
+  -p, --password=              admin password for the Ops Manager VM (not
+                               required for unauthenticated commands)
+                               [$OM_PASSWORD]
+  -r, --request-timeout=       timeout in seconds for HTTP requests to Ops
+                               Manager (default: 1800) [$OM_REQUEST_TIMEOUT]
+  -k, --skip-ssl-validation    skip ssl certificate validation during http
+                               requests [$OM_SKIP_SSL_VALIDATION]
+  -t, --target=                location of the Ops Manager VM [$OM_TARGET]
+      --trace                  prints HTTP requests and response payloads
+                               [$OM_TRACE]
+  -u, --username=              admin username for the Ops Manager VM (not
+                               required for unauthenticated commands)
+                               [$OM_USERNAME]
+      --vars-env=              load vars from environment variables by
+                               specifying a prefix (e.g.: 'MY' to load
+                               MY_var=value) [$OM_VARS_ENV]
+  -v, --version                prints the om release version
 
+Help Options:
+  -h, --help                   Show this help message
+
+[upload-stemcell command options]
+      -c, --config=            path to yml file for configuration (keys must
+                               match the following command line flags)
+          --vars-env=          load variables from environment variables
+                               matching the provided prefix (e.g.: 'MY' to load
+                               MY_var=value) [$OM_VARS_ENV]
+      -l, --vars-file=         load variables from a YAML file
+      -v, --var=               load variable from the command line. Format:
+                               VAR=VAL
+      -s, --stemcell=          path to stemcell
+      -f, --force              upload stemcell even if it already exists on the
+                               target Ops Manager
+          --floating=          assigns the stemcell to all compatible products
+                               (default: true)
+          --shasum=            shasum of the provided product file to be used
+                               for validation
 ```
 

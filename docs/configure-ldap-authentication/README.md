@@ -3,55 +3,109 @@
 
 # `om configure-ldap-authentication`
 
-This unauthenticated command helps setup the authentication mechanism for your Ops Manager with LDAP.
+This unauthenticated command helps setup the authentication mechanism for your
+Ops Manager with LDAP.
 
 ## Command Usage
 ```
-
-This unauthenticated command helps setup the authentication mechanism for your Ops Manager with LDAP.
-
 Usage:
-  om [options] configure-ldap-authentication [<args>]
+  om [OPTIONS] configure-ldap-authentication [configure-ldap-authentication-OPTIONS]
 
-Flags:
-  --config, -c                     string             path to yml file for configuration (keys must match the following command line flags)
-  --decryption-passphrase, -dp     string (required)  passphrase used to encrypt the installation
-  --email-attribute                string (required)  name of the LDAP attribute that contains the users email address
-  --group-search-base              string (required)  start point for a user group membership search, and sequential nested searches
-  --group-search-filter            string (required)  search filter to find the groups to which a user belongs, e.g. 'member={0}'
-  --http-proxy-url                 string             proxy for outbound HTTP network traffic
-  --https-proxy-url                string             proxy for outbound HTTPS network traffic
-  --ldap-password                  string (required)  password for ldap-username DN
-  --ldap-rbac-admin-group-name     string (required)  the name of LDAP group whose members should be considered admins of OpsManager
-  --ldap-referrals                 string (required)  configure the UAA LDAP referral behavior
-  --ldap-username                  string (required)  DN for the LDAP credentials used to search the directory
-  --no-proxy                       string             comma-separated list of hosts that do not go through the proxy
-  --precreated-client-secret       string             create a UAA client on the Ops Manager vm. The client_secret will be the value provided to this option
-  --server-ssl-cert                string             the server certificate when using ldaps://
-  --server-url                     string (required)  URL to the ldap server, must start with ldap:// or ldaps://
-  --skip-create-bosh-admin-client  bool               by default, this command creates a UAA client on the Bosh Director, whose credentials can be passed to the BOSH CLI to execute BOSH commands. This flag skips that.
-  --user-search-base               string (required)  a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'
-  --user-search-filter             string (required)  search filter used for the query. Takes one parameter, user ID defined as {0}. e.g. 'cn={0}'
-  --var, -v                        string (variadic)  load variable from the command line. Format: VAR=VAL
-  --vars-env, OM_VARS_ENV          string (variadic)  load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)
-  --vars-file, -l                  string (variadic)  load variables from a YAML file
+This unauthenticated command helps setup the authentication mechanism for your
+Ops Manager with LDAP.
 
-Global Flags:
-  --ca-cert, OM_CA_CERT                                  string  OpsManager CA certificate path or value
-  --client-id, -c, OM_CLIENT_ID                          string  Client ID for the Ops Manager VM (not required for unauthenticated commands)
-  --client-secret, -s, OM_CLIENT_SECRET                  string  Client Secret for the Ops Manager VM (not required for unauthenticated commands)
-  --connect-timeout, -o, OM_CONNECT_TIMEOUT              int     timeout in seconds to make TCP connections (default: 10)
-  --decryption-passphrase, -d, OM_DECRYPTION_PASSPHRASE  string  Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)
-  --env, -e                                              string  env file with login credentials
-  --help, -h                                             bool    prints this usage information (default: false)
-  --password, -p, OM_PASSWORD                            string  admin password for the Ops Manager VM (not required for unauthenticated commands)
-  --request-timeout, -r, OM_REQUEST_TIMEOUT              int     timeout in seconds for HTTP requests to Ops Manager (default: 1800)
-  --skip-ssl-validation, -k, OM_SKIP_SSL_VALIDATION      bool    skip ssl certificate validation during http requests (default: false)
-  --target, -t, OM_TARGET                                string  location of the Ops Manager VM
-  --trace, -tr, OM_TRACE                                 bool    prints HTTP requests and response payloads
-  --username, -u, OM_USERNAME                            string  admin username for the Ops Manager VM (not required for unauthenticated commands)
-  --version, -v                                          bool    prints the om release version (default: false)
-  OM_VARS_ENV                                            string  load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)
+Application Options:
+      --ca-cert=                           OpsManager CA certificate path or
+                                           value [$OM_CA_CERT]
+  -c, --client-id=                         Client ID for the Ops Manager VM
+                                           (not required for unauthenticated
+                                           commands) [$OM_CLIENT_ID]
+  -s, --client-secret=                     Client Secret for the Ops Manager VM
+                                           (not required for unauthenticated
+                                           commands) [$OM_CLIENT_SECRET]
+  -o, --connect-timeout=                   timeout in seconds to make TCP
+                                           connections (default: 10)
+                                           [$OM_CONNECT_TIMEOUT]
+  -d, --decryption-passphrase=             Passphrase to decrypt the
+                                           installation if the Ops Manager VM
+                                           has been rebooted (optional for most
+                                           commands) [$OM_DECRYPTION_PASSPHRASE]
+  -e, --env=                               env file with login credentials
+  -p, --password=                          admin password for the Ops Manager
+                                           VM (not required for unauthenticated
+                                           commands) [$OM_PASSWORD]
+  -r, --request-timeout=                   timeout in seconds for HTTP requests
+                                           to Ops Manager (default: 1800)
+                                           [$OM_REQUEST_TIMEOUT]
+  -k, --skip-ssl-validation                skip ssl certificate validation
+                                           during http requests
+                                           [$OM_SKIP_SSL_VALIDATION]
+  -t, --target=                            location of the Ops Manager VM
+                                           [$OM_TARGET]
+      --trace                              prints HTTP requests and response
+                                           payloads [$OM_TRACE]
+  -u, --username=                          admin username for the Ops Manager
+                                           VM (not required for unauthenticated
+                                           commands) [$OM_USERNAME]
+      --vars-env=                          load vars from environment variables
+                                           by specifying a prefix (e.g.: 'MY'
+                                           to load MY_var=value) [$OM_VARS_ENV]
+  -v, --version                            prints the om release version
 
+Help Options:
+  -h, --help                               Show this help message
+
+[configure-ldap-authentication command options]
+      -c, --config=                        path to yml file for configuration
+                                           (keys must match the following
+                                           command line flags)
+          --vars-env=                      load variables from environment
+                                           variables matching the provided
+                                           prefix (e.g.: 'MY' to load
+                                           MY_var=value) [$OM_VARS_ENV]
+      -l, --vars-file=                     load variables from a YAML file
+      -v, --var=                           load variable from the command line.
+                                           Format: VAR=VAL
+      -d, --decryption-passphrase=         passphrase used to encrypt the
+                                           installation
+          --http-proxy-url=                proxy for outbound HTTP network
+                                           traffic
+          --https-proxy-url=               proxy for outbound HTTPS network
+                                           traffic
+          --no-proxy=                      comma-separated list of hosts that
+                                           do not go through the proxy
+          --email-attribute=               name of the LDAP attribute that
+                                           contains the users email address
+          --group-search-base=             start point for a user group
+                                           membership search, and sequential
+                                           nested searches
+          --group-search-filter=           search filter to find the groups to
+                                           which a user belongs, e.g.
+                                           'member={0}'
+          --ldap-password=                 password for ldap-username DN
+          --ldap-rbac-admin-group-name=    the name of LDAP group whose members
+                                           should be considered admins of
+                                           OpsManager
+          --ldap-referrals=                configure the UAA LDAP referral
+                                           behavior
+          --ldap-username=                 DN for the LDAP credentials used to
+                                           search the directory
+          --server-ssl-cert=               the server certificate when using
+                                           ldaps://
+          --server-url=                    URL to the ldap server, must start
+                                           with ldap:// or ldaps://
+          --user-search-base=              a base at which the search starts,
+                                           e.g. 'ou=users,dc=mycompany,dc=com'
+          --user-search-filter=            search filter used for the query.
+                                           Takes one parameter, user ID defined
+                                           as {0}. e.g. 'cn={0}'
+          --skip-create-bosh-admin-client  by default, this command creates a
+                                           UAA client on the Bosh Director,
+                                           whose credentials can be passed to
+                                           the BOSH CLI to execute BOSH
+                                           commands. This flag skips that.
+          --precreated-client-secret=      create a UAA client on the Ops
+                                           Manager vm. The client_secret will
+                                           be the value provided to this option
 ```
 
