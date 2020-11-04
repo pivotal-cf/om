@@ -47,13 +47,37 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 6.6.0
+## 7.0.0
 ### Features
 - `om bosh-env` now supports being able to `--unset` environment variables.
   This can also unset `--bosh` and `--credhub` vars only
   when used with the new `--unset` flag.
   This resolved issue [#457](https://github.com/pivotal-cf/om/issues/457).
   Thanks to [@iplay88keys](https://github.com/iplay88keys) for the PR!
+- Format of the `help` command has been changed.
+  This is due to a transition to `jessevdk/go-flags` from `pivotal-cf/jhanda`
+  
+### Breaking Changes
+- Because of code changes in `om`, the long command line flags no longer support single dash assignment.
+  For example, if you had been doing:
+  ```bash
+  om --env env.yml diagnostic-report -format json
+  ```
+  You now have to:
+  ```bash
+  om --env env.yml diagnostic-report --format json
+  ```
+- Some commands have different `short` command line flags.
+  For example:
+  ```bash
+  om --env env.yml apply-changes -sdp
+  ```
+  Must now be called like
+  ```bash
+  om --env env.yml apply-changes -s
+  ```
+
+## 6.6.0
 
 ## 6.5.0
 ### Features
