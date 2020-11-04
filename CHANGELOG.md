@@ -77,8 +77,6 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   om --env env.yml apply-changes -s
   ```
 
-## 6.6.0
-
 ## 6.5.0
 ### Features
 - `om products` has been added.
