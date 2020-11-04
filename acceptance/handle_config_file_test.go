@@ -154,7 +154,7 @@ no-proxy: 10.10.10.10,11.11.11.11
 			Eventually(session, "5s").Should(gexec.Exit(0))
 		})
 
-		FIt("can be evaluated by vars environment variables by setting OM_VARS_ENV", func() {
+		It("can be evaluated by vars environment variables by setting OM_VARS_ENV", func() {
 			configFile := writeFile(`
 username: ((username))
 password: password
