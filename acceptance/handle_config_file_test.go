@@ -154,6 +154,32 @@ no-proxy: 10.10.10.10,11.11.11.11
 			Eventually(session, "5s").Should(gexec.Exit(0))
 		})
 
+		FIt("can be evaluated by vars environment variables by setting OM_VARS_ENV", func() {
+			configFile := writeFile(`
+username: ((username))
+password: password
+decryption-passphrase: passphrase
+http-proxy-url: http://http-proxy.com
+https-proxy-url: http://https-proxy.com
+no-proxy: 10.10.10.10,11.11.11.11
+`)
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--skip-ssl-validation",
+				"configure-authentication",
+				"--config", configFile,
+			)
+			command.Env = append(command.Env,
+				"OM_VARS_ENV=SOME_VAR",
+				"SOME_VAR_username=username",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session, "5s").Should(gexec.Exit(0))
+		})
+
 		It("can be evaluated by vars environment variables", func() {
 			configFile := writeFile(`
 username: ((username))

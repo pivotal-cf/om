@@ -3,16 +3,17 @@ package commands
 import (
 	"fmt"
 	"github.com/pivotal-cf/om/api"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type StageProduct struct {
 	logger  logger
 	service stageProductService
 	Options struct {
-		interpolateConfigFileOptions
-
-		Product string `yaml:"product-name" long:"product-name"    short:"p" required:"true" description:"name of product"`
-		Version string `yaml:"product-version" long:"product-version"           required:"true" description:"version of product"`
+		ConfigFile string `long:"config" description:"the config file to load product name and version (can be same as the product configuration file)"`
+		Product    string `yaml:"product-name" long:"product-name"    short:"p" description:"name of product"`
+		Version    string `yaml:"product-version" long:"product-version"        description:"version of product"`
 	}
 }
 
@@ -34,7 +35,7 @@ func NewStageProduct(service stageProductService, logger logger) *StageProduct {
 }
 
 func (sp StageProduct) Execute(args []string) error {
-	err := sp.validate()
+	err := sp.loadConfig()
 	if err != nil {
 		return err
 	}
@@ -104,7 +105,19 @@ func (sp StageProduct) Execute(args []string) error {
 	return nil
 }
 
-func (sp *StageProduct) validate() error {
+func (sp *StageProduct) loadConfig() error {
+	if sp.Options.ConfigFile != "" {
+		contents, err := ioutil.ReadFile(sp.Options.ConfigFile)
+		if err != nil {
+			return err
+		}
+
+		err = yaml.Unmarshal(contents, &sp.Options)
+		if err != nil {
+			return err
+		}
+	}
+
 	productName := sp.Options.Product
 	productVersion := sp.Options.Version
 	if productName == "" || productVersion == "" {

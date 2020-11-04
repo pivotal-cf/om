@@ -78,6 +78,31 @@ var _ = Describe("stage-product command", func() {
 			Eventually(session.Out).Should(gbytes.Say("staging cf"))
 			Eventually(session.Out).Should(gbytes.Say("finished staging"))
 		})
+
+		When("a --config option is passed", func() {
+			It("only cares about product name and version (ignores any interpolation)", func() {
+				command := exec.Command(pathToMain,
+					"--target", server.URL(),
+					"--username", "some-username",
+					"--password", "some-password",
+					"--skip-ssl-validation",
+					"stage-product",
+					"--config", writeFile(`
+product-name: cf
+product-version: 1.8.7-build.3
+properties:
+- value: ((some_value_to_ignore))
+`),
+				)
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session).Should(gexec.Exit(0))
+				Eventually(session.Out).Should(gbytes.Say("staging cf"))
+				Eventually(session.Out).Should(gbytes.Say("finished staging"))
+			})
+		})
 	})
 
 	When("the same type of product is already deployed", func() {

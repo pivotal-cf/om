@@ -23,6 +23,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		"configure-opsman",
 		"configure-product",
 		"configure-director",
+		"stage-product",
 	} {
 		if cmdConfigBypassList == args[0] {
 			return args, nil
