@@ -115,6 +115,18 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	presenter := presenters.NewPresenter(presenters.NewTablePresenter(tableWriter), presenters.NewJSONPresenter(os.Stdout))
 	envRendererFactory := renderers.NewFactory(renderers.NewEnvGetter())
 
+	command, err := parser.AddCommand(
+		"vm-lifecycle",
+		"commands to manage the state of the Ops Manager VM",
+		"commands to manage the state of the Ops Manager VM. Requires the cli of the desired IAAS to be installed.",
+		commands.NewAutomator(os.Stdout, os.Stderr),
+	)
+	if err != nil {
+		return err
+	}
+
+	command.Aliases = append(command.Aliases, "nom")
+
 	_, err = parser.AddCommand(
 		"activate-certificate-authority",
 		"activates a certificate authority on the Ops Manager",

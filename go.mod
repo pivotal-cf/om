@@ -5,11 +5,14 @@ go 1.14
 require (
 	cloud.google.com/go v0.60.0 // indirect
 	cloud.google.com/go/storage v1.8.0
-	github.com/Azure/azure-sdk-for-go v43.3.0+incompatible // indirect
-	github.com/Azure/go-autorest/autorest v0.11.0 // indirect
+	github.com/Azure/azure-sdk-for-go v43.3.0+incompatible
+	github.com/Azure/go-autorest/autorest v0.11.9
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
 	github.com/Azure/go-autorest/autorest/to v0.3.0 // indirect
-	github.com/aws/aws-sdk-go v1.32.13 // indirect
-	github.com/bmatcuk/doublestar v1.3.1 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
+	github.com/aws/aws-sdk-go v1.32.13
+	github.com/blang/semver v3.5.1+incompatible
+	github.com/bmatcuk/doublestar v1.3.1
 	github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.4
 	github.com/cloudfoundry/bosh-cli v6.3.0+incompatible
@@ -37,6 +40,7 @@ require (
 	github.com/pivotal-cf/pivnet-cli v1.0.4
 	github.com/sclevine/spec v1.4.0 // indirect
 	github.com/shirou/gopsutil v2.20.5+incompatible // indirect
+	github.com/vmware/govmomi v0.23.1
 	go.opencensus.io v0.22.4 // indirect
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d

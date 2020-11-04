@@ -48,15 +48,6 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
 ## 7.0.0
-### Features
-- `om bosh-env` now supports being able to `--unset` environment variables.
-  This can also unset `--bosh` and `--credhub` vars only
-  when used with the new `--unset` flag.
-  This resolved issue [#457](https://github.com/pivotal-cf/om/issues/457).
-  Thanks to [@iplay88keys](https://github.com/iplay88keys) for the PR!
-- Format of the `help` command has been changed.
-  This is due to a transition to `jessevdk/go-flags` from `pivotal-cf/jhanda`
-  
 ### Breaking Changes
 - Because of code changes in `om`, the long command line flags no longer support single dash assignment.
   For example, if you had been doing:
@@ -88,6 +79,44 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   | configure-saml-authentication | -dp            | -d        |
   | import-installation           | -pi            | -p        |
   | upload-product                | -pi            | -p        |
+
+### Features
+- `om bosh-env` now supports being able to `--unset` environment variables.
+  This can also unset `--bosh` and `--credhub` vars only
+  when used with the new `--unset` flag.
+  This resolved issue [#457](https://github.com/pivotal-cf/om/issues/457).
+  Thanks to [@iplay88keys](https://github.com/iplay88keys) for the PR!
+- Format of the `help` command has been changed.
+  This is due to a transition to `jessevdk/go-flags` from `pivotal-cf/jhanda`
+- `vm-lifecyle` command had been added.
+  This command will create, delete, or upgrade the Ops Manager VM.
+  For users of [Platform Automation](https://docs.pivotal.io/platform-automation)
+  will recognize this command.
+  It is the `om` equivalent of `p-automator`. 
+  
+  *Most of these subcommands require the IAAS CLI to be installed.*
+  These clis are:
+  | IAAS      | Required CLI                                                                                                     |
+  |-----------|------------------------------------------------------------------------------------------------------------------|
+  | AWS       | [aws](https://aws.amazon.com/cli/)                                                                               |
+  | Azure     | [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)                                               |
+  | GCP       | [gcloud](https://cloud.google.com/sdk)                                                                           |
+  | Openstack | [openstack](https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html) |
+  | vSphere   | [govc](https://github.com/vmware/govmomi/releases)                                                               |
+  
+- `vm-lifecycle create-vm` will create an Ops Manager VM on a given IAAS.
+  NOTE: this command requires the relevant IAAS CLI to be installed.
+- `vm-lifecycle delete-vm` will delete an Ops Manager VM on a given IAAS.
+  NOTE: this command requires the relevant IAAS CLI to be installed.
+- `vm-lifecycle export-opsman-config` will export an `opsman.yml`
+  (for use in `create-vm` and `delete-vm`) for an existing Ops Manager VM.
+- `vm-lifecycle prepare-tasks-with-secrets` modifies a Concourse task to include
+  configuration secrets as `params`.
+- `vm-lifecycle upgrade-opsman` is a command that will call
+  `delete-vm`, `create-vm`, and `import-installation`, with additional safeguards
+  to prevent accidental deletion of importan Ops Manager VM data.
+  This command is idempotent, has strict command line requirements,
+  and tracks state via a state file.
 
 ## 6.5.0
 ### Features

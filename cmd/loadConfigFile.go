@@ -24,6 +24,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		"configure-product",
 		"configure-director",
 		"stage-product",
+		"vm-lifecycle",
 	} {
 		if cmdConfigBypassList == args[0] {
 			return args, nil

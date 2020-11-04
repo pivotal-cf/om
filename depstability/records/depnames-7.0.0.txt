@@ -8,9 +8,12 @@ github.com/Azure/azure-sdk-for-go
 github.com/Azure/go-autorest
 github.com/Azure/go-autorest/autorest
 github.com/Azure/go-autorest/autorest/adal
+github.com/Azure/go-autorest/autorest/azure/auth
+github.com/Azure/go-autorest/autorest/azure/cli
 github.com/Azure/go-autorest/autorest/date
 github.com/Azure/go-autorest/autorest/mocks
 github.com/Azure/go-autorest/autorest/to
+github.com/Azure/go-autorest/autorest/validation
 github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/tracing
 github.com/BurntSushi/toml
@@ -18,6 +21,7 @@ github.com/BurntSushi/xgb
 github.com/StackExchange/wmi
 github.com/VividCortex/ewma
 github.com/aws/aws-sdk-go
+github.com/blang/semver
 github.com/bmatcuk/doublestar
 github.com/census-instrumentation/opencensus-proto
 github.com/charlievieth/fs
@@ -32,11 +36,14 @@ github.com/cloudfoundry/bosh-utils
 github.com/cncf/udpa/go
 github.com/cppforlife/go-patch
 github.com/davecgh/go-spew
+github.com/davecgh/go-xdr
 github.com/dgrijalva/jwt-go
+github.com/dimchansky/utfbom
 github.com/dnaeon/go-vcr
 github.com/envoyproxy/go-control-plane
 github.com/envoyproxy/protoc-gen-validate
 github.com/fatih/color
+github.com/form3tech-oss/jwt-go
 github.com/fsnotify/fsnotify
 github.com/ghodss/yaml
 github.com/go-gl/glfw
@@ -55,6 +62,7 @@ github.com/google/martian
 github.com/google/pprof
 github.com/google/readahead
 github.com/google/renameio
+github.com/google/uuid
 github.com/googleapis/gax-go/v2
 github.com/graymeta/stow
 github.com/hashicorp/errwrap
@@ -77,6 +85,7 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 github.com/mattn/go-runewidth
 github.com/maxbrunsfeld/counterfeiter/v6
+github.com/mitchellh/go-homedir
 github.com/ncw/swift
 github.com/nu7hatch/gouuid
 github.com/nxadm/tail
@@ -98,6 +107,8 @@ github.com/sclevine/spec
 github.com/shirou/gopsutil
 github.com/stretchr/objx
 github.com/stretchr/testify
+github.com/vmware/govmomi
+github.com/vmware/vmw-guestinfo
 github.com/yuin/goldmark
 go.opencensus.io
 golang.org/x/crypto
