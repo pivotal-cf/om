@@ -76,6 +76,18 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   ```bash
   om --env env.yml apply-changes -s
   ```
+  
+  List of changes:
+  
+  | command                       | original short | new short |
+  |-------------------------------|----------------|-----------|
+  | global                        | -tr            | n/a       |
+  | apply-changes                 | -sdp           | -s        |
+  | configure-authentication      | -dp            | -d        |
+  | configure-ldap-authentication | -dp            | -d        |
+  | configure-saml-authentication | -dp            | -d        |
+  | import-installation           | -pi            | -p        |
+  | upload-product                | -pi            | -p        |
 
 ## 6.5.0
 ### Features
