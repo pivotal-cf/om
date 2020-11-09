@@ -73,7 +73,6 @@ github.com/go-gl/glfw/v3.3/glfw
 github.com/go-ole/go-ole
 github.com/go-playground/locales
 github.com/go-playground/universal-translator
-github.com/go-sql-driver/mysql
 github.com/golang/glog
 github.com/golang/groupcache
 github.com/golang/mock
@@ -130,7 +129,6 @@ github.com/opencontainers/image-spec
 github.com/pierrec/lz4
 github.com/pivotal-cf-experimental/gomegamatchers
 github.com/pivotal-cf/go-pivnet
-github.com/pivotal-cf/go-pivnet/v4
 github.com/pivotal-cf/go-pivnet/v5
 github.com/pivotal-cf/jhanda
 github.com/pivotal-cf/paraphernalia
