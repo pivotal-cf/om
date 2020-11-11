@@ -96,13 +96,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   
   *Most of these subcommands require the IAAS CLI to be installed.*
   These clis are:
-  | IAAS      | Required CLI                                                                                                     |
-  |-----------|------------------------------------------------------------------------------------------------------------------|
-  | AWS       | [aws](https://aws.amazon.com/cli/)                                                                               |
-  | Azure     | [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)                                               |
-  | GCP       | [gcloud](https://cloud.google.com/sdk)                                                                           |
-  | Openstack | [openstack](https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html) |
-  | vSphere   | [govc](https://github.com/vmware/govmomi/releases)                                                               |
+| IAAS      | Required CLI                                                                                                     | Version   |
+  |-----------|------------------------------------------------------------------------------------------------------------------|-------|
+  | AWS       | [aws](https://aws.amazon.com/cli/)                                                                               | v1.18.163+ |
+  | Azure     | [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)                                               | v2.13.0+ |
+  | GCP       | [gcloud](https://cloud.google.com/sdk)                                                                           | v315.0.0+ |
+  | Openstack | [openstack](https://docs.openstack.org/newton/user-guide/common/cli-install-openstack-command-line-clients.html) | n/a
+  | vSphere   | [govc](https://github.com/vmware/govmomi/releases)                                                               | 0.23.0+ |
+  
   
 - `vm-lifecycle create-vm` will create an Ops Manager VM on a given IAAS.
   NOTE: this command requires the relevant IAAS CLI to be installed.
