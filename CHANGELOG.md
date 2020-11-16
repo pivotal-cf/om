@@ -47,6 +47,10 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.0.1
+### Bug Fixes
+- Some of the `-c` short flags were conflicting with short values.
+
 ## 7.0.0
 ### Breaking Changes
 - Because of code changes in `om`, the long command line flags no longer support single dash assignment.

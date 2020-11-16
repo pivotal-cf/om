@@ -19,11 +19,15 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 	}
 
 	for _, cmdConfigBypassList := range []string{
-		"interpolate",
+		"apply-changes",
+		"bosh-env",
+		"configure-director",
 		"configure-opsman",
 		"configure-product",
-		"configure-director",
+		"credentials",
+		"interpolate",
 		"stage-product",
+		"staged-config",
 		"vm-lifecycle",
 	} {
 		if cmdConfigBypassList == args[0] {

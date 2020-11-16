@@ -12,7 +12,7 @@ type DisableProductVerifiers struct {
 	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
-		ProductName   string   `long:"product-name"   short:"c" required:"true" description:"the name of the product"`
+		ProductName   string   `long:"product-name" short:"n" required:"true" description:"the name of the product"`
 		VerifierTypes []string `long:"type" short:"t"  description:"verifier types to disable" required:"true"`
 	}
 }
