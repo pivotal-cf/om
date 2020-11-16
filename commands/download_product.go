@@ -78,7 +78,7 @@ type DownloadProductOptions struct {
 
 	AzureOptions
 	GCSOptions
-	interpolateConfigFileOptions
+	InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 	PivnetOptions
 	S3Options
 	StemcellOptions

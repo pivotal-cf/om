@@ -17,7 +17,7 @@ type ImportInstallation struct {
 	service    importInstallationService
 	passphrase string
 	Options    struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		Installation    string `long:"installation"          short:"i"  required:"true" description:"path to installation."`
 		PollingInterval int    `long:"polling-interval"      short:"p"                 description:"interval (in seconds) to check OpsManager availability" default:"10"`

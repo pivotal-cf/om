@@ -12,7 +12,7 @@ type ConfigTemplate struct {
 	environFunc   envProvider
 	buildProvider buildProvider
 	Options       struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		PivnetApiToken    string `long:"pivnet-api-token"`
 		PivnetProductSlug string `long:"pivnet-product-slug"                          description:"the product name in pivnet"`

@@ -12,7 +12,7 @@ type DisableDirectorVerifiers struct {
 	presenter presenters.FormattedPresenter
 	logger    logger
 	Options   struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		VerifierTypes []string `long:"type" short:"t"  description:"verifier types to disable" required:"true"`
 	}

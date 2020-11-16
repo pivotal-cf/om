@@ -15,7 +15,7 @@ type UploadProduct struct {
 	logger    logger
 	service   uploadProductService
 	Options   struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		Product         string `long:"product"          short:"p"   description:"path to product" required:"true"`
 		PollingInterval int    `long:"polling-interval" short:"i"  description:"interval (in seconds) at which to print status" default:"1"`

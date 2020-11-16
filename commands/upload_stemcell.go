@@ -19,7 +19,7 @@ type UploadStemcell struct {
 	logger    logger
 	service   uploadStemcellService
 	Options   struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		Stemcell string `long:"stemcell" short:"s" required:"true" description:"path to stemcell"`
 		Force    bool   `long:"force"    short:"f"                 description:"upload stemcell even if it already exists on the target Ops Manager"`

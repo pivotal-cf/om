@@ -18,7 +18,7 @@ type ConfigureAuthentication struct {
 	logger      logger
 	environFunc func() []string
 	Options     struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		Username               string `long:"username"              short:"u"  env:"OM_USERNAME"              description:"admin username" required:"true"`
 		Password               string `long:"password"              short:"p"  env:"OM_PASSWORD"              description:"admin password" required:"true"`

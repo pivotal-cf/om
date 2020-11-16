@@ -11,7 +11,7 @@ type ConfigureLDAPAuthentication struct {
 	logger      logger
 	environFunc func() []string
 	Options     struct {
-		interpolateConfigFileOptions
+		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
 		DecryptionPassphrase      string `long:"decryption-passphrase" short:"d" required:"true" description:"passphrase used to encrypt the installation"`
 		HTTPProxyURL              string `long:"http-proxy-url"                                   description:"proxy for outbound HTTP network traffic"`

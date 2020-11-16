@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pivotal-cf/om/interpolate"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -19,6 +20,10 @@ type interpolateConfigFileOptions struct {
 	VarsEnv    []string `long:"vars-env" env:"OM_VARS_ENV"           description:"load variables from environment variables matching the provided prefix (e.g.: 'MY' to load MY_var=value)"`
 	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
 	Vars       []string `long:"var"                        short:"v" description:"load variable from the command line. Format: VAR=VAL"`
+}
+func (*interpolateConfigFileOptions) UnmarshalFlag(value string) error {
+	log.Print("We made it!")
+	return nil
 }
 
 type Interpolate struct {

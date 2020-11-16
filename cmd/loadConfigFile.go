@@ -25,6 +25,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		"configure-opsman",
 		"configure-product",
 		"credentials",
+		"create-vm-extension",
 		"interpolate",
 		"stage-product",
 		"staged-config",
