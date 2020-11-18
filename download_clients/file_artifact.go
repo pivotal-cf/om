@@ -2,7 +2,7 @@ package download_clients
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet/v5"
+	"github.com/pivotal-cf/go-pivnet/v6"
 	"github.com/pivotal-cf/om/extractor"
 )
 

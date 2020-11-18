@@ -2,8 +2,8 @@ package download_clients
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet/v5/logshim"
-	"github.com/pivotal-cf/pivnet-cli/filter"
+	"github.com/pivotal-cf/go-pivnet/v6/logshim"
+	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 	"io"
 	"log"
 	"os"
@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet/v5"
-	"github.com/pivotal-cf/go-pivnet/v5/download"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/v5/logger"
-	"github.com/pivotal-cf/pivnet-cli/gp"
+	"github.com/pivotal-cf/go-pivnet/v6"
+	"github.com/pivotal-cf/go-pivnet/v6/download"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v6/logger"
+	"github.com/pivotal-cf/pivnet-cli/v2/gp"
 )
 
 //counterfeiter:generate -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
