@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/jessevdk/go-flags"
-	"strconv"
-
 	"github.com/pivotal-cf/om/interpolate"
 	"gopkg.in/yaml.v2"
 )
@@ -81,7 +79,9 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 				fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, v))
 			}
 		case bool:
-			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, strconv.FormatBool(convertedValue)))
+			if convertedValue {
+				fileArgs = append(fileArgs, fmt.Sprintf("--%s", key))
+			}
 		default:
 			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, value))
 		}

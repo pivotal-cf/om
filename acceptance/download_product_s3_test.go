@@ -119,6 +119,42 @@ var _ = Describe("download-product command", func() {
 				Expect(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.0]example-product.pivotal")).ToNot(BeAnExistingFile())
 				Expect(filepath.Join(tmpDir, "example-product.pivotal")).ToNot(BeAnExistingFile())
 			})
+
+			When("specifying a heavy stemcell", func() {
+				It("downloads the heavy one", func() {
+					pivotalFile := createPivotalFile("[pivnet-example-slug,1.10.1]example*pivotal", "./fixtures/example-product.yml")
+					runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
+					runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
+
+					tmpDir, err := ioutil.TempDir("", "")
+					Expect(err).ToNot(HaveOccurred())
+					command := exec.Command(pathToMain, "download-product",
+						"--output-directory", tmpDir,
+						"--s3-bucket", bucketName,
+						"--config", writeFile(`---
+file-glob: example-product.pivotal
+pivnet-product-slug: pivnet-example-slug
+product-version: 1.10.1
+source: s3
+s3-access-key-id: minio
+s3-secret-access-key: password
+s3-region-name: unknown
+s3-endpoint: http://127.0.0.1:9001
+stemcell-iaas: google
+s3-stemcell-path: /another/stemcell
+s3-product-path: /some/product
+stemcell-heavy: true`))
+
+					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Expect(err).ToNot(HaveOccurred())
+					Eventually(session, "10s").Should(gexec.Exit(0))
+
+					_, err = os.Stat(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.1]example-product.pivotal"))
+					Expect(err).ToNot(HaveOccurred())
+					Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source s3`))
+					Expect(session.Err).To(gbytes.Say(`attempting to download the file.*bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.*from source s3`))
+				})
+			})
 		})
 
 		When("the bucket does not exist", func() {
