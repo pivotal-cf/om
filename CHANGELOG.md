@@ -47,6 +47,11 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.0.2
+### Bug Fixes
+- When using the `stemcell-heavy` in a `download-product` config file,
+  it would error with `cannot have an argument` error. [#521]
+
 ## 7.0.1
 ### Bug Fixes
 - Some of the `-c` short flags were conflicting with short values.
