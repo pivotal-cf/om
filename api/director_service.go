@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"errors"
 
 	yamlConverter "github.com/ghodss/yaml"
 	"gopkg.in/yaml.v2"

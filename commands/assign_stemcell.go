@@ -12,8 +12,8 @@ type AssignStemcell struct {
 	service assignStemcellService
 	Options struct {
 		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
-		ProductName     string `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
-		StemcellVersion string `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile." default:"latest"`
+		ProductName        string                       `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
+		StemcellVersion    string                       `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile." default:"latest"`
 	}
 }
 

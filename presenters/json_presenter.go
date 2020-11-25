@@ -68,7 +68,7 @@ func (j JSONPresenter) PresentProducts(products models.ProductsVersionsDisplay) 
 		hasData := false
 
 		productVersions := models.ProductVersions{
-			Name:      product.Name,
+			Name: product.Name,
 		}
 
 		if products.Available {

@@ -155,7 +155,7 @@ var _ = Describe("OAuthClient", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				noScheme.Scheme = ""
- 				finalURL := noScheme.String()[2:] // removing leading "//"
+				finalURL := noScheme.String()[2:] // removing leading "//"
 
 				client, err := network.NewOAuthClient(finalURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 				Expect(err).ToNot(HaveOccurred())

@@ -14,7 +14,7 @@ type httpClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
-func WithHTTPClient(client httpClient) Option{
+func WithHTTPClient(client httpClient) Option {
 	return func(me *MetadataExtractor) {
 		me.httpClient = client
 	}
@@ -66,7 +66,7 @@ func (me *MetadataExtractor) ExtractFromURL(productURL string) (*Metadata, error
 
 	zipReader, err := zip.NewReader(reader, length)
 	if err != nil {
-		return nil, fmt.Errorf( "could not create zip reader: %w", err)
+		return nil, fmt.Errorf("could not create zip reader: %w", err)
 	}
 
 	return fromZipFiles(zipReader.File)

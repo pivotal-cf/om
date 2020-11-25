@@ -55,7 +55,7 @@ func DetermineProductVersion(
 	return "", msg
 }
 
-func findLatestVersionFromRegex(productVersions []string, regex string, stderr *log.Logger) (string ,error) {
+func findLatestVersionFromRegex(productVersions []string, regex string, stderr *log.Logger) (string, error) {
 	re, err := regexp.Compile(regex)
 	if err != nil {
 		return "", fmt.Errorf("could not compile regex %q: %w", regex, err)

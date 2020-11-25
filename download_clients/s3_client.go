@@ -50,7 +50,7 @@ func NewS3Client(stower Stower, config S3Configuration, stderr *log.Logger) (sto
 		s3.ConfigAuthType:    config.AuthType,
 	}
 
-	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "s3", config.Bucket, ), nil
+	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "s3", config.Bucket), nil
 }
 
 func validateAccessKeyAuthType(config S3Configuration) error {

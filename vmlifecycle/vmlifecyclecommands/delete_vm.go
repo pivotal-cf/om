@@ -2,8 +2,8 @@ package vmlifecyclecommands
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/interpolate"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"

@@ -343,7 +343,7 @@ var _ = Describe("TablePresenter", func() {
 					Available: []string{"4"},
 					Staged:    "5",
 					Deployed:  "",
-				},  {
+				}, {
 					Name:      "p-bosh-test",
 					Available: []string{},
 					Staged:    "6",

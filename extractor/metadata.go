@@ -6,7 +6,7 @@ type Metadata struct {
 	StemcellCriteria struct {
 		OS                   string `yaml:"os"`
 		Version              string `yaml:"version"`
-		PatchSecurityUpdates bool `yaml:"enable_patch_security_updates"`
+		PatchSecurityUpdates bool   `yaml:"enable_patch_security_updates"`
 	} `yaml:"stemcell_criteria"`
 	Raw []byte
 }

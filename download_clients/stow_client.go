@@ -2,9 +2,9 @@ package download_clients
 
 import (
 	"fmt"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/graymeta/stow"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/cheggaaa/pb/v3"
 	"io"
 	"log"
 	"os"

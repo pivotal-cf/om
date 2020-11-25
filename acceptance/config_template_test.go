@@ -195,7 +195,7 @@ var _ = Describe("config-template command", func() {
 			var fakePivnetMetadataResponse []byte
 
 			fixtureMetadata, err := os.Open("fixtures/example-product.yml")
-			defer func() { _ = fixtureMetadata.Close()}()
+			defer func() { _ = fixtureMetadata.Close() }()
 
 			Expect(err).ToNot(HaveOccurred())
 

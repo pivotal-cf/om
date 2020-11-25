@@ -11,8 +11,8 @@ type AssignMultiStemcell struct {
 	service assignMultiStemcellService
 	Options struct {
 		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
-		ProductName string   `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
-		Stemcells   []string `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile (ie 'ubuntu-trusty:123.4')" required:"true"`
+		ProductName        string                       `long:"product"  short:"p"  description:"name of Ops Manager tile to associate a stemcell to" required:"true"`
+		Stemcells          []string                     `long:"stemcell" short:"s"  description:"associate a particular stemcell version to a tile (ie 'ubuntu-trusty:123.4')" required:"true"`
 	}
 }
 

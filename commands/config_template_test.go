@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("ConfigTemplate", func() {
 	var (
-		command     *commands.ConfigTemplate
+		command *commands.ConfigTemplate
 	)
 
 	createOutputDirectory := func() string {

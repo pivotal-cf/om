@@ -19,7 +19,7 @@ import (
 )
 
 func executeCommand(command interface{}, args []string) error {
-	parser := flags.NewParser(command, flags.HelpFlag  | flags.PassDoubleDash)
+	parser := flags.NewParser(command, flags.HelpFlag|flags.PassDoubleDash)
 	_, err := parser.ParseArgs(args)
 	Expect(err).NotTo(HaveOccurred())
 

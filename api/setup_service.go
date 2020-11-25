@@ -94,7 +94,7 @@ func (a Api) EnsureAvailability(input EnsureAvailabilityInput) (EnsureAvailabili
 	defer response.Body.Close()
 
 	var status string
-	switch response.StatusCode{
+	switch response.StatusCode {
 	case http.StatusFound:
 		location, err := url.Parse(response.Header.Get("Location"))
 		if err != nil {

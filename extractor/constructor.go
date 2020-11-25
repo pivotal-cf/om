@@ -4,7 +4,7 @@ import "net/http"
 
 type Option func(*MetadataExtractor)
 
-type MetadataExtractor struct{
+type MetadataExtractor struct {
 	httpClient httpClient
 }
 

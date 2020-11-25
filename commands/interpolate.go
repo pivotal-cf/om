@@ -21,6 +21,7 @@ type interpolateConfigFileOptions struct {
 	VarsFile   []string `long:"vars-file"                  short:"l" description:"load variables from a YAML file"`
 	Vars       []string `long:"var"                        short:"v" description:"load variable from the command line. Format: VAR=VAL"`
 }
+
 func (*interpolateConfigFileOptions) UnmarshalFlag(value string) error {
 	log.Print("We made it!")
 	return nil

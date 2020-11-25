@@ -27,5 +27,5 @@ func NewAzureClient(stower Stower, config AzureConfiguration, stderr *log.Logger
 		azure.ConfigKey:     config.Key,
 	}
 
-	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "azure", config.Container, ), nil
+	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "azure", config.Container), nil
 }

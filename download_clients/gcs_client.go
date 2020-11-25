@@ -29,5 +29,5 @@ func NewGCSClient(stower Stower, config GCSConfiguration, stderr *log.Logger) (s
 		google.ConfigScopes:    storage.DevstorageReadOnlyScope,
 	}
 
-	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "google", config.Bucket, ), nil
+	return NewStowClient(stower, stderr, stowConfig, config.ProductPath, config.StemcellPath, "google", config.Bucket), nil
 }

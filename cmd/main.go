@@ -50,7 +50,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	stderr := log.New(serr, "", 0)
 
 	var global options
-	parser := flags.NewParser(&global, flags.PassDoubleDash | flags.PassAfterNonOption)
+	parser := flags.NewParser(&global, flags.PassDoubleDash|flags.PassAfterNonOption)
 	parser.Name = "om"
 
 	args, _ = parser.ParseArgs(args[1:])
