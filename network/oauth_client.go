@@ -6,6 +6,7 @@ import (
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -47,15 +48,17 @@ func NewOAuthClient(
 func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	token := oc.token
 	client := oc.client
+	target := oc.target
 
-	targetURL, err := url.Parse(oc.target)
+	if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
+		target = "https://" + target
+	}
+
+	targetURL, err := url.Parse(target)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse target url: %s", err)
 	}
 
-	if targetURL.Scheme == "" {
-		targetURL.Scheme = "https"
-	}
 	targetURL.Path = "/uaa"
 
 	request.URL.Scheme = targetURL.Scheme
