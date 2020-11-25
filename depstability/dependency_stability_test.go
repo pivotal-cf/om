@@ -40,7 +40,7 @@ func listDepnamesFromGoSum() (deplist []string, err error) {
 }
 
 func listDepnamesFromRecords() (deplist []string, err error) {
-	depRecords, err := ioutil.ReadFile("records/depnames-7.0.1.txt")
+	depRecords, err := ioutil.ReadFile("records/depnames-7.0.3.txt")
 	trimmedDepRecords := strings.TrimSpace(string(depRecords))
 	deplist = strings.Split(trimmedDepRecords, "\n")
 	return

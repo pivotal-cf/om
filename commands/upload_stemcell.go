@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/formcontent"
-	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/validator"
 	"os"
 	"path/filepath"
@@ -123,7 +122,7 @@ func (us UploadStemcell) uploadStemcell(stemcellFilename string) (err error) {
 			ContentType:   submission.ContentType,
 			ContentLength: submission.ContentLength,
 		})
-		if network.CanRetry(err) && i < maxStemcellUploadRetries {
+		if err != nil && i < maxStemcellUploadRetries {
 			us.logger.Printf("retrying stemcell upload after error: %s\n", err)
 			us.multipart.Reset()
 		} else {

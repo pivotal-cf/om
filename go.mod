@@ -21,6 +21,7 @@ require (
 	github.com/bmatcuk/doublestar v1.3.3
 	github.com/cheggaaa/pb v1.0.28 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.5
+	github.com/cloudfoundry-community/go-uaa v0.3.1
 	github.com/cloudfoundry/bosh-agent v2.340.0+incompatible // indirect
 	github.com/cloudfoundry/bosh-cli v6.4.1+incompatible
 	github.com/cloudfoundry/bosh-davcli v0.0.44 // indirect

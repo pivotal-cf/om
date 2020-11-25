@@ -91,9 +91,11 @@ var _ = Describe("OAuthClient", func() {
 			err = req.ParseForm()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(req.Form).To(Equal(url.Values{
-				"grant_type": []string{"password"},
-				"username":   []string{"opsman-username"},
-				"password":   []string{"opsman-password"},
+				"grant_type":   []string{"password"},
+				"username":     []string{"opsman-username"},
+				"password":     []string{"opsman-password"},
+				"token_format": []string{"opaque"},
+				"client_id":    []string{"opsman"},
 			}))
 		})
 
@@ -126,7 +128,8 @@ var _ = Describe("OAuthClient", func() {
 			err = req.ParseForm()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(req.Form).To(Equal(url.Values{
-				"grant_type": []string{"client_credentials"},
+				"grant_type":   []string{"client_credentials"},
+				"token_format": []string{"opaque"},
 			}))
 		})
 
@@ -262,7 +265,7 @@ var _ = Describe("OAuthClient", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = client.Do(req)
-					Expect(err).To(MatchError(ContainSubstring("token could not be retrieved from target url: oauth2: cannot fetch token: 500")))
+					Expect(err).To(MatchError(ContainSubstring("token could not be retrieved from target url")))
 				})
 			})
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/extractor"
-	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/validator"
 )
 
@@ -102,7 +101,7 @@ func (up UploadProduct) Execute(args []string) error {
 			ContentLength:   submission.ContentLength,
 			PollingInterval: up.Options.PollingInterval,
 		})
-		if network.CanRetry(err) && i < maxProductUploadRetries {
+		if err != nil && i < maxProductUploadRetries {
 			up.logger.Printf("retrying product upload after error: %s\n", err)
 			up.multipart.Reset()
 
