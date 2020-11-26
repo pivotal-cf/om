@@ -93,6 +93,8 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 			oc.clientSecret,
 			uaa.OpaqueToken,
 		)
+	} else {
+		return nil, fmt.Errorf("authentication required to perform operation, ensure username/password or clientID/clientSecret")
 	}
 
 	api, err := uaa.New(
