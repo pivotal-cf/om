@@ -39,6 +39,9 @@ type opsmanConfig struct {
 	Syslog *struct {
 		Settings api.SyslogSettings `yaml:",inline"`
 	} `yaml:"syslog-settings"`
+	TokenExpirations *struct {
+		Settings api.TokensExpiration `yaml:",inline"`
+	} `yaml:"tokens-expiration"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
@@ -49,6 +52,7 @@ type configureOpsmanService interface {
 	UpdatePivnetToken(settings api.PivnetSettings) error
 	EnableRBAC(rbacSettings api.RBACSettings) error
 	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error
+	UpdateTokensExpiration(tokenExpirations api.TokensExpiration) error
 }
 
 func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) *ConfigureOpsman {
@@ -116,6 +120,17 @@ func (c ConfigureOpsman) Execute(args []string) error {
 		}
 		c.logger.Printf("Successfully applied Syslog.\n")
 	}
+
+	if config.TokenExpirations != nil {
+		c.logger.Printf("Updating tokens expiration...\n")
+		payload := config.TokenExpirations.Settings
+		err = c.service.UpdateTokensExpiration(payload)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully updated tokens expiration.\n")
+	}
+
 	return nil
 }
 
