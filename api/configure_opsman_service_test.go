@@ -338,4 +338,57 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			})
 		})
 	})
+
+	Describe("UpdateTokensExpiration", func() {
+		It("Updates the tokens expiration in ops manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/uaa/tokens_expiration"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{
+					  "tokens_expiration": {
+            "access_token_expiration": 100,
+            "refresh_token_expiration": 1200,
+            "session_idle_timeout": 50
+					  }
+					}`),
+				),
+			)
+
+			err := service.UpdateTokensExpiration(api.TokensExpiration{
+				AccessTokenExpiration:  100,
+				RefreshTokenExpiration: 1200,
+				SessionIdleTimeout:     50,
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("omits empty fields", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/uaa/tokens_expiration"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{"tokens_expiration": {}}`),
+				),
+			)
+
+			err := service.UpdateTokensExpiration(api.TokensExpiration{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		When("the api returns an error", func() {
+			It("returns the error to the user", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/uaa/tokens_expiration"),
+						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					),
+				)
+
+				err := service.UpdateTokensExpiration(api.TokensExpiration{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("500 Internal Server Error"))
+			})
+		})
+	})
 })

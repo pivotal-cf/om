@@ -63,6 +63,17 @@ type ConfigureOpsmanService struct {
 	updateSyslogSettingsReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateTokensExpirationStub        func(api.TokensExpiration) error
+	updateTokensExpirationMutex       sync.RWMutex
+	updateTokensExpirationArgsForCall []struct {
+		arg1 api.TokensExpiration
+	}
+	updateTokensExpirationReturns struct {
+		result1 error
+	}
+	updateTokensExpirationReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -367,6 +378,66 @@ func (fake *ConfigureOpsmanService) UpdateSyslogSettingsReturnsOnCall(i int, res
 	}{result1}
 }
 
+func (fake *ConfigureOpsmanService) UpdateTokensExpiration(arg1 api.TokensExpiration) error {
+	fake.updateTokensExpirationMutex.Lock()
+	ret, specificReturn := fake.updateTokensExpirationReturnsOnCall[len(fake.updateTokensExpirationArgsForCall)]
+	fake.updateTokensExpirationArgsForCall = append(fake.updateTokensExpirationArgsForCall, struct {
+		arg1 api.TokensExpiration
+	}{arg1})
+	fake.recordInvocation("UpdateTokensExpiration", []interface{}{arg1})
+	fake.updateTokensExpirationMutex.Unlock()
+	if fake.UpdateTokensExpirationStub != nil {
+		return fake.UpdateTokensExpirationStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateTokensExpirationReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureOpsmanService) UpdateTokensExpirationCallCount() int {
+	fake.updateTokensExpirationMutex.RLock()
+	defer fake.updateTokensExpirationMutex.RUnlock()
+	return len(fake.updateTokensExpirationArgsForCall)
+}
+
+func (fake *ConfigureOpsmanService) UpdateTokensExpirationCalls(stub func(api.TokensExpiration) error) {
+	fake.updateTokensExpirationMutex.Lock()
+	defer fake.updateTokensExpirationMutex.Unlock()
+	fake.UpdateTokensExpirationStub = stub
+}
+
+func (fake *ConfigureOpsmanService) UpdateTokensExpirationArgsForCall(i int) api.TokensExpiration {
+	fake.updateTokensExpirationMutex.RLock()
+	defer fake.updateTokensExpirationMutex.RUnlock()
+	argsForCall := fake.updateTokensExpirationArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureOpsmanService) UpdateTokensExpirationReturns(result1 error) {
+	fake.updateTokensExpirationMutex.Lock()
+	defer fake.updateTokensExpirationMutex.Unlock()
+	fake.UpdateTokensExpirationStub = nil
+	fake.updateTokensExpirationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureOpsmanService) UpdateTokensExpirationReturnsOnCall(i int, result1 error) {
+	fake.updateTokensExpirationMutex.Lock()
+	defer fake.updateTokensExpirationMutex.Unlock()
+	fake.UpdateTokensExpirationStub = nil
+	if fake.updateTokensExpirationReturnsOnCall == nil {
+		fake.updateTokensExpirationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateTokensExpirationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -380,6 +451,8 @@ func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	defer fake.updateSSLCertificateMutex.RUnlock()
 	fake.updateSyslogSettingsMutex.RLock()
 	defer fake.updateSyslogSettingsMutex.RUnlock()
+	fake.updateTokensExpirationMutex.RLock()
+	defer fake.updateTokensExpirationMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

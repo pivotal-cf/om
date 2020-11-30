@@ -35,6 +35,12 @@ type PivnetSettings struct {
 	APIToken string `json:"api_token" yaml:"api_token"`
 }
 
+type TokensExpiration struct {
+	AccessTokenExpiration  int `json:"access_token_expiration,omitempty" yaml:"access_token_expiration"`
+	RefreshTokenExpiration int `json:"refresh_token_expiration,omitempty" yaml:"refresh_token_expiration"`
+	SessionIdleTimeout     int `json:"session_idle_timeout,omitempty" yaml:"session_idle_timeout"`
+}
+
 type SyslogSettings struct {
 	Enabled             string `json:"enabled,omitempty" yaml:"enabled"`
 	Address             string `json:"address,omitempty" yaml:"address"`
@@ -103,7 +109,7 @@ func (a Api) UpdateSSLCertificate(certBody SSLCertificateSettings) error {
 	}
 
 	body := strings.NewReader(string(payload))
-	return a.updateSettings(body, "ssl_certificate")
+	return a.updateSettings(body, "settings/ssl_certificate")
 }
 
 func (a Api) UpdatePivnetToken(pivnetSettings PivnetSettings) error {
@@ -114,7 +120,7 @@ func (a Api) UpdatePivnetToken(pivnetSettings PivnetSettings) error {
 
 	body := strings.NewReader(fmt.Sprintf(
 		`{ "pivotal_network_settings": %s}`, payload))
-	return a.updateSettings(body, "pivotal_network_settings")
+	return a.updateSettings(body, "settings/pivotal_network_settings")
 }
 
 func (a Api) EnableRBAC(rbacSettings RBACSettings) error {
@@ -124,7 +130,7 @@ func (a Api) EnableRBAC(rbacSettings RBACSettings) error {
 	}
 
 	body := strings.NewReader(string(payload))
-	return a.updateSettings(body, "rbac")
+	return a.updateSettings(body, "settings/rbac")
 }
 
 func (a Api) UpdateBanner(bannerSettings BannerSettings) error {
@@ -134,7 +140,7 @@ func (a Api) UpdateBanner(bannerSettings BannerSettings) error {
 	}
 
 	body := strings.NewReader(string(payload))
-	return a.updateSettings(body, "banner")
+	return a.updateSettings(body, "settings/banner")
 }
 
 func (a Api) UpdateSyslogSettings(syslogSettings SyslogSettings) error {
@@ -145,12 +151,23 @@ func (a Api) UpdateSyslogSettings(syslogSettings SyslogSettings) error {
 
 	body := strings.NewReader(fmt.Sprintf(
 		`{ "syslog": %s}`, payload))
-	return a.updateSettings(body, "syslog")
+	return a.updateSettings(body, "settings/syslog")
+}
+
+func (a Api) UpdateTokensExpiration(tokenExpirations TokensExpiration) error {
+	payload, err := json.Marshal(tokenExpirations)
+	if err != nil {
+		return err // not tested
+	}
+
+	body := strings.NewReader(fmt.Sprintf(
+		`{ "tokens_expiration": %s}`, payload))
+	return a.updateSettings(body, "uaa/tokens_expiration")
 }
 
 func (a Api) updateSettings(body *strings.Reader, endpoint string) error {
 
-	apiPath := fmt.Sprintf("/api/v0/settings/%s", endpoint)
+	apiPath := fmt.Sprintf("/api/v0/%s", endpoint)
 	req, err := http.NewRequest("PUT", apiPath, body)
 	if err != nil {
 		return err // not tested

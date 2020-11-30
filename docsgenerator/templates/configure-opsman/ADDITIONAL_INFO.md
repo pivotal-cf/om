@@ -6,6 +6,7 @@ Settings that can be set using this command include:
 - Pivotal Network Settings (pending)
 - Custom Banner (pending)
 - Syslog (pending)
+- UAA tokens expiration
 - Role Based Access Control (if enabled) (pending)
 
 An example config file for updating settings 
@@ -40,6 +41,10 @@ syslog-settings:
   queue_size: 100000
   forward_debug_logs: false
   custom_rsyslog_configuration: if $message contains 'test' then stop
+tokens-expiration:
+  access_token_expiration: 100
+  refresh_token_expiration: 1200
+  session_idle_timeout: 50
 rbac-settings: # if your RBAC is SAML, use these settings
   rbac_saml_admin_group: example_group_name
   rbac_saml_groups_attribute: example_attribute_name

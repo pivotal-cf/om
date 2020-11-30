@@ -176,6 +176,34 @@ syslog-settings:
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
 		})
 
+		It("updates the UAA refresh token settings when given the proper keys", func() {
+			uaaConfig := `
+tokens-expiration:
+  access_token_expiration: 100
+  refresh_token_expiration: 1200
+  session_idle_timeout: 50
+`
+			configFileName := writeTestConfigFile(uaaConfig)
+
+			err := executeCommand(command, []string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateTokensExpirationCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateTokensExpirationArgsForCall(0)).To(Equal(api.TokensExpiration{
+				AccessTokenExpiration:  100,
+				RefreshTokenExpiration: 1200,
+				SessionIdleTimeout:     50,
+			}))
+
+			Expect(fakeService.UpdateSSLCertificateCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(0))
+			Expect(fakeService.UpdateBannerCallCount()).To(Equal(0))
+			Expect(fakeService.EnableRBACCallCount()).To(Equal(0))
+			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
+		})
+
 		It("returns an error if both ldap and saml keys provided", func() {
 			rbacConfig := `
 rbac-settings:
