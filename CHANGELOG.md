@@ -47,6 +47,22 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.1.0
+### Features
+- `om configure-opsman` can not set the UAA token expirations and timeouts.
+   For example,
+   
+   ```yaml
+   tokens-expiration:
+     access_token_expiration: 10
+     refresh_token_expiration: 10
+     session_idle_timeout: 10
+   ```
+
+### Bug Fixes
+- When using a long running command (ie `apply-changes`) the UAA token could expire.
+  Now once the token expires, it will refress with the UAA, so no disruption occurs.
+
 ## 7.0.2
 ### Bug Fixes
 - When using the `stemcell-heavy` in a `download-product` config file,
