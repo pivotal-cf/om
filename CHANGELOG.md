@@ -49,7 +49,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 
 ## 7.1.0
 ### Features
-- `om configure-opsman` can not set the UAA token expirations and timeouts.
+- `om configure-opsman` can now set the UAA token expirations and timeouts.
    For example,
    
    ```yaml
