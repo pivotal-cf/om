@@ -48,6 +48,10 @@ var _ = Describe("upgradeOpsman", func() {
 						ghttp.RespondWith(404, "not found"),
 					),
 					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/uaa/oauth/token"),
+						ghttp.RespondWith(404, "not found"),
+					),
+					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/login/ensure_availability"),
 						ghttp.RespondWith(302, "", map[string][]string{
 							"Location": {"/auth/cloudfoundry"},
@@ -88,6 +92,10 @@ var _ = Describe("upgradeOpsman", func() {
 									"https://example.com/auth/cloudfoundry",
 								},
 							}),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/uaa/oauth/token"),
+							ghttp.RespondWith(500, ""),
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("POST", "/uaa/oauth/token"),
@@ -155,6 +163,10 @@ var _ = Describe("upgradeOpsman", func() {
 						ghttp.VerifyRequest("POST", "/uaa/oauth/token"),
 						ghttp.RespondWith(401, "Bad credentials"),
 					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/uaa/oauth/token"),
+						ghttp.RespondWith(401, "Bad credentials"),
+					),
 				)
 			})
 
@@ -167,6 +179,8 @@ var _ = Describe("upgradeOpsman", func() {
 
 				command.ImportInstallation.EnvFile = writeFile(createJsonString(map[string]interface{}{
 					"target":                server.URL(),
+					"username":              "username",
+					"password":              "password",
 					"request-timeout":       1,
 					"connect-timeout":       1,
 					"skip-ssl-validation":   true,
@@ -605,6 +619,8 @@ project_name: awesome-project
 
 				command.ImportInstallation.EnvFile = writeFile(createJsonString(map[string]interface{}{
 					"target":                server.URL(),
+					"username":              "username",
+					"password":              "password",
 					"request-timeout":       1,
 					"connect-timeout":       1,
 					"skip-ssl-validation":   true,

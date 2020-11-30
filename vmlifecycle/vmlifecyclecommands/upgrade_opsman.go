@@ -118,8 +118,8 @@ func (n *UpgradeOpsman) setup() {
 }
 
 func (n *UpgradeOpsman) checkCredentials(errInfo string) error {
-	if strings.Contains(strings.ToLower(errInfo), "bad credential") {
-		return fmt.Errorf("could not authenticate with Ops Manager %s", errInfo)
+	if strings.Contains(strings.ToLower(errInfo), "an error occurred while calling") {
+		return fmt.Errorf("could not authenticate with Ops Manager: %s", errInfo)
 	}
 	return nil
 }

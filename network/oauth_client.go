@@ -87,14 +87,12 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 			oc.password,
 			uaa.OpaqueToken,
 		)
-	} else if oc.clientID != "" && oc.clientSecret != "" {
+	} else {
 		authOption = uaa.WithClientCredentials(
 			oc.clientID,
 			oc.clientSecret,
 			uaa.OpaqueToken,
 		)
-	} else {
-		return nil, fmt.Errorf("authentication required to perform operation, ensure username/password or clientID/clientSecret")
 	}
 
 	api, err := uaa.New(
@@ -106,7 +104,13 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("could not init UAA client: %w", err)
 	}
 
-	token, err = api.Token(request.Context())
+	for i := 0; i <= 2 ; i++ {
+		token, err = api.Token(request.Context())
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("token could not be retrieved from target url: %w", err)
 	}
