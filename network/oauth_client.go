@@ -104,7 +104,7 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("could not init UAA client: %w", err)
 	}
 
-	for i := 0; i <= 2 ; i++ {
+	for i := 0; i <= 2; i++ {
 		token, err = api.Token(request.Context())
 		if err == nil {
 			break
