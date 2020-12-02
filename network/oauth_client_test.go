@@ -21,7 +21,7 @@ import (
 
 var _ = Describe("OAuthClient", func() {
 	var (
-		server     *ghttp.Server
+		server *ghttp.Server
 	)
 
 	BeforeEach(func() {
@@ -29,6 +29,109 @@ var _ = Describe("OAuthClient", func() {
 	})
 
 	Describe("Do", func() {
+		When("with a request timeout", func() {
+			It("use that timeout value", func() {
+				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Nanosecond, time.Nanosecond)
+				Expect(err).ToNot(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("context deadline exceeded"))
+			})
+
+			It("retries with a new client", func() {
+				server.AppendHandlers(
+					func(http.ResponseWriter, *http.Request) {
+						time.Sleep(time.Duration(200) * time.Millisecond)
+					},
+					func(http.ResponseWriter, *http.Request) {
+						time.Sleep(time.Duration(200) * time.Millisecond)
+					},
+					ghttp.RespondWith(http.StatusOK, `{
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+						}`, http.Header{
+						"Content-Type": []string{"application/json"},
+					}),
+					ghttp.RespondWith(http.StatusOK, nil),
+				)
+
+				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
+				Expect(err).ToNot(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
+		When("a token expires", func() {
+			It("will refresh it", func() {
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `{
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 1
+						}`, http.Header{
+						"Content-Type": []string{"application/json"},
+					}),
+					ghttp.RespondWith(http.StatusOK, nil),
+					ghttp.RespondWith(http.StatusOK, `{
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 1
+						}`, http.Header{
+						"Content-Type": []string{"application/json"},
+					}),
+					ghttp.RespondWith(http.StatusOK, nil),
+				)
+
+				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
+				Expect(err).ToNot(HaveOccurred())
+
+				for i := 0; i < 2; i++ {
+					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+					Expect(err).ToNot(HaveOccurred())
+
+					_, err = client.Do(req)
+					Expect(err).ToNot(HaveOccurred())
+				}
+			})
+		})
+
+		When("a token has not expired", func() {
+			It("reuses it", func() {
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `{
+						"access_token": "some-opsman-token",
+						"token_type": "bearer",
+						"expires_in": 3600
+						}`, http.Header{
+						"Content-Type": []string{"application/json"},
+					}),
+					ghttp.RespondWith(http.StatusOK, ""),
+					ghttp.RespondWith(http.StatusOK, ""),
+				)
+
+				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
+				Expect(err).ToNot(HaveOccurred())
+
+				for i := 0; i < 2; i++ {
+					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+					Expect(err).ToNot(HaveOccurred())
+
+					_, err = client.Do(req)
+					Expect(err).ToNot(HaveOccurred())
+				}
+			})
+		})
+
 		It("makes a request with authentication", func() {
 			server.RouteToHandler("POST", "/uaa/oauth/token", ghttp.CombineHandlers(
 				ghttp.VerifyBasicAuth("opsman", ""),

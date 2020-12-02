@@ -47,6 +47,14 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.1.1
+### Bug Fixes
+- The oauth handler created a client with a request and connection timeout.
+  When that timeout occurred, the and a retry happened (usually in the command logic)
+  the HTTP client would be reused.
+  The previous timeout would be propagated.
+  This will not create a new HTTP client each time.
+
 ## 7.1.0
 ### Features
 - `om configure-opsman` can now set the UAA token expirations and timeouts.

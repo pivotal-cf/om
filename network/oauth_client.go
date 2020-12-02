@@ -11,7 +11,7 @@ import (
 )
 
 type OAuthClient struct {
-	client             *http.Client
+	caCert             string
 	clientID           string
 	clientSecret       string
 	insecureSkipVerify bool
@@ -19,6 +19,8 @@ type OAuthClient struct {
 	target             string
 	token              *oauth2.Token
 	username           string
+	connectTimeout     time.Duration
+	requestTimeout     time.Duration
 }
 
 func NewOAuthClient(
@@ -29,25 +31,21 @@ func NewOAuthClient(
 	connectTimeout time.Duration,
 	requestTimeout time.Duration,
 ) (*OAuthClient, error) {
-	httpclient, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout)
-	if err != nil {
-		return nil, err
-	}
-
 	return &OAuthClient{
-		client:             httpclient,
+		caCert:             caCert,
 		clientID:           clientID,
 		clientSecret:       clientSecret,
 		insecureSkipVerify: insecureSkipVerify,
 		password:           password,
 		target:             target,
 		username:           username,
+		connectTimeout:     connectTimeout,
+		requestTimeout:     requestTimeout,
 	}, nil
 }
 
 func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	token := oc.token
-	client := oc.client
 	target := oc.target
 
 	if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
@@ -63,6 +61,17 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 
 	request.URL.Scheme = targetURL.Scheme
 	request.URL.Host = targetURL.Host
+
+	client, err := newHTTPClient(
+		oc.insecureSkipVerify,
+		oc.caCert,
+		oc.requestTimeout,
+		oc.connectTimeout,
+	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if token != nil && token.Valid() {
 		request.Header.Set(
