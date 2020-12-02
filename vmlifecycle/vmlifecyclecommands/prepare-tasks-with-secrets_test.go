@@ -2,7 +2,6 @@ package vmlifecyclecommands_test
 
 import (
 	"errors"
-	"fmt"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands/fakes"
@@ -66,7 +65,7 @@ var _ = Describe("PrepareTasksWithSecrets", func() {
 		Expect(configPaths).To(Equal([]string{configDir, configDir2}))
 		Expect(varsPaths).To(Equal([]string{varsDir, varsDir2}))
 
-		Expect(outWriter).To(gbytes.Say(fmt.Sprintf("successfully added secrets to provided tasks")))
+		Expect(outWriter).To(gbytes.Say("successfully added secrets to provided tasks"))
 	})
 
 	It("returns an error if the service fails", func() {

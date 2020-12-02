@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
@@ -32,8 +31,6 @@ type taskFile struct {
 	Fields map[string]interface{} `yaml:",inline"`
 	Params map[string]string      `yaml:"params"`
 }
-
-var interpolationRegex = regexp.MustCompile(`\(\((!?[-/\.\w\pL]+)\)\)`)
 
 func (c *TaskModifier) ModifyTasksWithSecrets(stderr io.Writer, taskDir string, configPaths []string, varsPaths []string) error {
 	if _, err := os.Stat(taskDir); os.IsNotExist(err) {

@@ -143,12 +143,12 @@ opsman-configuration:
 					It("sets cpu or memory if only one is not default", func() {
 						memDefault := fmt.Sprintf(configTemplate, vmmanagers.DefaultMemory, "12")
 						command, runner := createCommand(memDefault, opsmanVersionBelow26)
-						command.CreateVM()
+						_, _, _ = command.CreateVM()
 						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
 
 						cpuDefault := fmt.Sprintf(configTemplate, "25", vmmanagers.DefaultCPU)
 						command, runner = createCommand(cpuDefault, opsmanVersionBelow26)
-						command.CreateVM()
+						_, _, _ = command.CreateVM()
 						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
 					})
 

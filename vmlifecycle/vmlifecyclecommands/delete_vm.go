@@ -114,7 +114,7 @@ func GuardAgainstMissingOpsmanConfiguration(configContent []byte, configFilename
 
 	if !opsmanConfigFound {
 		var keys []string
-		for key, _ := range topLevelkeys {
+		for key := range topLevelkeys {
 			keys = append(keys, key)
 		}
 		sort.Strings(keys)

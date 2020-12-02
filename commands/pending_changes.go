@@ -59,7 +59,7 @@ func (pc PendingChanges) Execute(args []string) error {
 
 	for _, ProductChange := range output.ChangeList {
 		if ProductChange.Action != "unchanged" {
-			errs = append(errs, fmt.Sprintf("there are pending changes.\nGo into the Ops Manager UI, unstage changes, and try again"))
+			errs = append(errs, "there are pending changes.\nGo into the Ops Manager UI, unstage changes, and try again")
 			break
 		}
 	}

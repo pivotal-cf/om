@@ -127,7 +127,7 @@ func initializeVMManager(config *OpsmanConfigFilePayload, image string, state St
 func ValidateOpsManConfig(config *OpsmanConfigFilePayload) error {
 	if len(config.OpsmanConfig.Unknown) > 0 {
 		var unknownIaas []string
-		for key, _ := range config.OpsmanConfig.Unknown {
+		for key := range config.OpsmanConfig.Unknown {
 			unknownIaas = append(unknownIaas, key)
 		}
 

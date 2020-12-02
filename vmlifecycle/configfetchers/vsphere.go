@@ -76,7 +76,7 @@ func (v *VSphereConfigFetcher) FetchConfig() (*vmmanagers.OpsmanConfigFilePayloa
 
 	insecure := "0"
 	caCert := "((ca-cert))"
-	if v.credentials.VSphere.Insecure == true {
+	if v.credentials.VSphere.Insecure {
 		insecure = "1"
 		caCert = ""
 	}

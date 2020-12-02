@@ -773,11 +773,13 @@ project_name: awesome-project
 			Expect(err).ToNot(HaveOccurred())
 			Expect(err).ToNot(HaveOccurred())
 			_, err = configFile.WriteString(configContent)
+			Expect(err).ToNot(HaveOccurred())
 
 			envFile, err = ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(err).ToNot(HaveOccurred())
 			_, err = envFile.WriteString(envContent)
+			Expect(err).ToNot(HaveOccurred())
 
 			imageFile, err = ioutil.TempFile("", "opsman-2.2.2*.yml")
 			Expect(err).ToNot(HaveOccurred())
