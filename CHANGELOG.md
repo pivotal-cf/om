@@ -50,7 +50,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ## 7.1.1
 ### Bug Fixes
 - The oauth handler created a client with a request and connection timeout.
-  When that timeout occurred, the and a retry happened (usually in the command logic)
+  When that timeout occurred and a retry happened (usually in the command logic)
   the HTTP client would be reused.
   The previous timeout would be propagated.
   This will not create a new HTTP client each time.
