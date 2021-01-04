@@ -62,14 +62,14 @@ var _ = Describe("gcp", func() {
 					"zone": "some-region-a"
 				}`),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/some-project-id/zones/some-region-a/machineTypes/n1-highmem-2"),
+					ghttp.VerifyRequest("GET", "/projects/some-project-id/zones/some-region-a/machineTypes/n1-highmem-2"),
 					ghttp.RespondWith(http.StatusOK, `{
 						"guestCpus": 1,
 						"memoryMb": 3840
 					}`),
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/some-project-id/zones/some-region-a/disks/some-disk-id"),
+					ghttp.VerifyRequest("GET", "/projects/some-project-id/zones/some-region-a/disks/some-disk-id"),
 					ghttp.RespondWith(http.StatusOK, `{
 						"sizeGb": "160"
 					}`),
@@ -229,14 +229,14 @@ var _ = Describe("gcp", func() {
 					"zone": "some-region-a"
 				}`),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/some-project-id/zones/some-region-a/machineTypes/n1-highmem-2"),
+					ghttp.VerifyRequest("GET", "/projects/some-project-id/zones/some-region-a/machineTypes/n1-highmem-2"),
 					ghttp.RespondWith(http.StatusOK, `{
 						"guestCpus": 1,
 						"memoryMb": 3840
 					}`),
 				),
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/some-project-id/zones/some-region-a/disks/some-disk-id"),
+					ghttp.VerifyRequest("GET", "/projects/some-project-id/zones/some-region-a/disks/some-disk-id"),
 					ghttp.RespondWith(http.StatusOK, `{
 						"sizeGb": "160"
 					}`),
