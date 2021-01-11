@@ -323,6 +323,7 @@ opsman-configuration:
     private_ip: 10.0.0.2
     scopes: ["my-custom-scope1", "my-custom-scope-2"]
     ssh_public_key: ssh-rsa abcd
+    hostname: custom.domain.name
 `
 					command, runner := createCommand("us-west1", sshKeyConfigStrTemplate)
 					status, stateInfo, err := command.CreateVM()
@@ -343,6 +344,7 @@ opsman-configuration:
 						"--tags", "good",
 						"--scopes", "my-custom-scope1,my-custom-scope-2",
 						"--metadata", "ssh-keys=ubuntu:ssh-rsa abcd,block-project-ssh-keys=TRUE",
+						"--hostname", "custom.domain.name",
 					}))
 
 					Expect(status).To(Equal(vmmanagers.Success))

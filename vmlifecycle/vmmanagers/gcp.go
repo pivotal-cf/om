@@ -30,6 +30,7 @@ type GCPConfig struct {
 	BootDiskSize  string   `yaml:"boot_disk_size"`
 	Scopes        []string `yaml:"scopes,omitempty"`
 	SSHPublicKey  string   `yaml:"ssh_public_key"`
+	Hostname      string   `yaml:"hostname"`
 }
 
 //go:generate counterfeiter -o ./fakes/gcloudRunner.go --fake-name GCloudRunner . gcloudRunner
@@ -299,6 +300,14 @@ func (g *GCPVMManager) createVM(publicIP string) (Status, StateInfo, error) {
 	if len(g.Config.OpsmanConfig.GCP.SSHPublicKey) > 0 {
 		createVMArgs = append(createVMArgs, "--metadata")
 		createVMArgs = append(createVMArgs, fmt.Sprintf("ssh-keys=ubuntu:%s,block-project-ssh-keys=TRUE", g.Config.OpsmanConfig.GCP.SSHPublicKey))
+	}
+
+	if len(g.Config.OpsmanConfig.GCP.Hostname) > 0 {
+		createVMArgs = append(
+			createVMArgs,
+			"--hostname",
+			g.Config.OpsmanConfig.GCP.Hostname,
+		)
 	}
 
 	_, errBufWriter, err := g.gcloudRunner.Execute(createVMArgs)

@@ -56,7 +56,8 @@ var _ = AfterSuite(func() {
 
 func testIAASForPropertiesInExampleFile(iaas string) {
 	It("has an example file the represents all the correct fields", func() {
-		exampleFile, err := ioutil.ReadFile(fmt.Sprintf("../../../docs-platform-automation/docs/examples/opsman-config/%s.yml", strings.ToLower(iaas)))
+		filename := fmt.Sprintf("../../../docs-platform-automation/docs/examples/opsman-config/%s.yml", strings.ToLower(iaas))
+		exampleFile, err := ioutil.ReadFile(filename)
 		Expect(err).ToNot(HaveOccurred())
 
 		isolateCommentedParamRegex := regexp.MustCompile(`(?m)^(\s+)# ([\w-]+: )`)
@@ -72,18 +73,18 @@ func testIAASForPropertiesInExampleFile(iaas string) {
 
 		Expect(iaasStruct.NumField()).To(BeNumerically(">", 0))
 
-		testPropertiesExist(iaasStruct)
+		testPropertiesExist(iaasStruct, filename)
 	})
 }
 
-func testPropertiesExist(vst reflect.Value) {
+func testPropertiesExist(vst reflect.Value, filename string) {
 	tst := vst.Type()
 	for i := 0; i < vst.NumField(); i++ {
-		errorMsg := fmt.Sprintf("field %s does not exist or is an empty value in the iaas example config", tst.Field(i).Name)
+		errorMsg := fmt.Sprintf("field %s does not exist or is an empty value in the iaas example config %q", tst.Field(i).Name, filename)
 		field := vst.Field(i)
 		switch field.Kind() {
 		case reflect.Struct:
-			testPropertiesExist(vst.Field(i))
+			testPropertiesExist(vst.Field(i), filename)
 		case reflect.Bool:
 			if tst.Field(i).Name != "UseUnmanagedDiskDEPRECATED" && tst.Field(i).Name != "UseInstanceProfileDEPRECATED" {
 				Expect(field.Bool()).ToNot(Equal(false), errorMsg)
