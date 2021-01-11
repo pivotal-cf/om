@@ -29,13 +29,15 @@ archives:
   - goos: windows
     format: zip
 brews:
-- github:
+- tap:
     owner: pivotal-cf
     name: om
   ids:
   - homebrew
   test: |
     system "#{bin}/om --version"
+  install:
+    bin.install "om"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
