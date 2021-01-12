@@ -47,6 +47,31 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.2.0
+### Features
+- An Ops Manager VM on GCP can be created with the property [`hostname`](https://cloud.google.com/compute/docs/instances/custom-hostname-vm).
+  This allows a user to assign a custom internal hostname for the VM. [#531]
+  
+  Usage:
+  ```yaml
+  ---
+  opsman-configuration:
+    gcp:
+      boot_disk_size: 100
+      custom_cpu: 4
+      custom_memory: 16
+      gcp_service_account: ((service_account_key))
+      project: ((project))
+      public_ip: ((ops_manager_public_ip))
+      region: ((region))
+      ssh_public_key: ((ops_manager_ssh_public_key))
+      tags: ((ops_manager_tags))
+      vm_name: ((environment_name))-ops-manager-vm
+      vpc_subnet: ((management_subnet_name))
+      zone: ((availability_zones.0))
+      hostname: testing.some.domain
+  ```
+
 ## 7.1.2
 ### Bug Fixes
 - The `nom` alias was not apart of the config file block list.
