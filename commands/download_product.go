@@ -3,15 +3,15 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pivotal-cf/om/download_clients"
-	"github.com/pivotal-cf/om/extractor"
-	"github.com/pivotal-cf/om/validator"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/validator"
 )
 
 type PivnetOptions struct {
@@ -156,7 +156,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return err
 	}
 
-	return c.writeAssignStemcellInput(productFileName, stemcellVersion)
+	return c.writeAssignStemcellInput(productFileArtifact, stemcellVersion)
 }
 
 func (c *DownloadProduct) downloadStemcell(productFileName string, productVersion string, productFileArtifact download_clients.FileArtifacter) (string, string, error) {
@@ -356,16 +356,11 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, prod
 	return nil
 }
 
-func (c DownloadProduct) writeAssignStemcellInput(productFileName string, stemcellVersion string) error {
-	if c.Options.CheckAlreadyUploaded {
-		return nil
-	}
-
+func (c DownloadProduct) writeAssignStemcellInput(fileArtifact download_clients.FileArtifacter, stemcellVersion string) error {
 	assignStemcellFileName := "assign-stemcell.yml"
 	c.stderr.Printf("Writing a assign stemcell artifact to %s", assignStemcellFileName)
 
-	metadataExtractor := extractor.NewMetadataExtractor()
-	metadata, err := metadataExtractor.ExtractFromFile(productFileName)
+	metadata, err := fileArtifact.ProductMetadata()
 	if err != nil {
 		return fmt.Errorf("cannot parse product metadata: %s", err)
 	}
