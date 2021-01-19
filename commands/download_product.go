@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/validator"
 )
 
@@ -157,7 +158,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return err
 	}
 
-	return c.writeAssignStemcellInput(productFileArtifact, stemcellVersion)
+	return c.writeAssignStemcellInput(productFileName, productFileArtifact, stemcellVersion)
 }
 
 func (c *DownloadProduct) downloadStemcell(productFileName string, productVersion string, productFileArtifact download_clients.FileArtifacter) (string, string, error) {
@@ -357,19 +358,32 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, prod
 	return nil
 }
 
-func (c DownloadProduct) writeAssignStemcellInput(fileArtifact download_clients.FileArtifacter, stemcellVersion string) error {
+func (c DownloadProduct) writeAssignStemcellInput(productFile string, fileArtifact download_clients.FileArtifacter, stemcellVersion string) error {
 	assignStemcellFileName := "assign-stemcell.yml"
-	c.stderr.Printf("Writing a assign stemcell artifact to %s", assignStemcellFileName)
 
-	metadata, err := fileArtifact.ProductMetadata()
-	if err != nil {
-		if !errors.Is(err, download_clients.ErrCannotExtractMetadata) {
+	var (
+		metadata *extractor.Metadata
+		err      error
+	)
+
+	if c.Options.CheckAlreadyUploaded {
+		metadata, err = fileArtifact.ProductMetadata()
+		if err != nil {
+			if !errors.Is(err, download_clients.ErrCannotExtractMetadata) {
+				return fmt.Errorf("cannot parse product metadata: %s", err)
+			}
+
+			c.stderr.Printf("cannot extract metadata because the product file was not downloaded, will not create assign-stemcell input: %v", err)
+			return nil
+		}
+	} else {
+		metadataExtractor := extractor.NewMetadataExtractor()
+		if metadata, err = metadataExtractor.ExtractFromFile(productFile); err != nil {
 			return fmt.Errorf("cannot parse product metadata: %s", err)
 		}
-
-		c.stderr.Printf("cannot extract metadata, will not create assign-stemcell input: %v", err)
-		return nil
 	}
+
+	c.stderr.Printf("Writing a assign stemcell artifact to %s", assignStemcellFileName)
 
 	assignStemcellPayload := struct {
 		Product  string `json:"product"`
