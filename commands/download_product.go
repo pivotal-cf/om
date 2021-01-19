@@ -12,7 +12,10 @@ import (
 	"path/filepath"
 
 	"github.com/pivotal-cf/om/download_clients"
+<<<<<<< HEAD
 	"github.com/pivotal-cf/om/extractor"
+=======
+>>>>>>> origin/main
 	"github.com/pivotal-cf/om/validator"
 )
 
@@ -158,7 +161,11 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return err
 	}
 
+<<<<<<< HEAD
 	return c.writeAssignStemcellInput(productFileName, productFileArtifact, stemcellVersion)
+=======
+	return c.writeAssignStemcellInput(productFileArtifact, stemcellVersion)
+>>>>>>> origin/main
 }
 
 func (c *DownloadProduct) downloadStemcell(productFileName string, productVersion string, productFileArtifact download_clients.FileArtifacter) (string, string, error) {
