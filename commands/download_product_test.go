@@ -4,12 +4,13 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/extractor"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/pivotal-cf/om/extractor"
 
 	"github.com/pivotal-cf/om/download_clients"
 
@@ -337,7 +338,7 @@ var _ = Describe("DownloadProduct", func() {
 						Expect(err).ToNot(HaveOccurred())
 
 						assignStemcellFilename := path.Join(tempDir, "assign-stemcell.yml")
-						Expect(assignStemcellFilename).ToNot(BeAnExistingFile())
+						Expect(assignStemcellFilename).To(BeAnExistingFile())
 					})
 				})
 
