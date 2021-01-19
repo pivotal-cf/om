@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -362,7 +363,12 @@ func (c DownloadProduct) writeAssignStemcellInput(fileArtifact download_clients.
 
 	metadata, err := fileArtifact.ProductMetadata()
 	if err != nil {
-		return fmt.Errorf("cannot parse product metadata: %s", err)
+		if !errors.Is(err, download_clients.ErrCannotExtractMetadata) {
+			return fmt.Errorf("cannot parse product metadata: %s", err)
+		}
+
+		c.stderr.Printf("cannot extract metadata, will not create assign-stemcell input: %v", err)
+		return nil
 	}
 
 	assignStemcellPayload := struct {

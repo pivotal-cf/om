@@ -1,7 +1,9 @@
 package download_clients
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/pivotal-cf/go-pivnet/v6"
 	"github.com/pivotal-cf/om/extractor"
 )
@@ -12,6 +14,8 @@ type PivnetFileArtifact struct {
 	productFile pivnet.ProductFile
 	client      pivnet.Client
 }
+
+var ErrCannotExtractMetadata = errors.New("there is no way to extract metadata from source")
 
 func (f PivnetFileArtifact) ProductMetadata() (*extractor.Metadata, error) {
 	downloadLink, err := f.productFile.DownloadLink()
@@ -44,7 +48,7 @@ type stowFileArtifact struct {
 }
 
 func (f stowFileArtifact) ProductMetadata() (*extractor.Metadata, error) {
-	return nil, fmt.Errorf("there is no way to extract metadata from source \"%s\"", f.source)
+	return nil, fmt.Errorf("%w \"%s\"", ErrCannotExtractMetadata, f.source)
 }
 
 func (f stowFileArtifact) Name() string {
