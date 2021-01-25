@@ -51,7 +51,7 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
 ### Features
 - An Ops Manager VM on GCP can be created with the property [`hostname`](https://cloud.google.com/compute/docs/instances/custom-hostname-vm).
   This allows a user to assign a custom internal hostname for the VM. [#531]
-  
+
   Usage:
   ```yaml
   ---
@@ -71,6 +71,9 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
       zone: ((availability_zones.0))
       hostname: testing.some.domain
   ```
+
+### Bug Fixes
+- Always generate `assign-stemcell.yml` in `download-product`.
 
 ## 7.1.2
 ### Bug Fixes
