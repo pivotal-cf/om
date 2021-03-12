@@ -36,11 +36,6 @@ func (as AssignMultiStemcell) Execute(args []string) error {
 		return err
 	}
 
-	err = as.validateArgs()
-	if err != nil {
-		return fmt.Errorf("could not parse assign-stemcell arguments: %s", err)
-	}
-
 	as.logger.Printf("finding available stemcells for product: \"%s\"...", as.Options.ProductName)
 	productStemcell, err := as.getProductStemcell()
 	if err != nil {
@@ -78,16 +73,6 @@ func (as AssignMultiStemcell) Execute(args []string) error {
 	return nil
 }
 
-func (as AssignMultiStemcell) validateArgs() error {
-	for _, option := range as.Options.Stemcells {
-		parts := strings.Split(option, ":")
-		if len(parts) < 2 {
-			return fmt.Errorf(`expected "--stemcell" format value as "operating-system=version"`)
-		}
-	}
-	return nil
-}
-
 func (as AssignMultiStemcell) getProductStemcell() (api.ProductMultiStemcell, error) {
 	var result api.ProductMultiStemcell
 
@@ -119,7 +104,10 @@ func (as *AssignMultiStemcell) validateStemcellVersion(productStemcell api.Produ
 
 	stemcellGroup := []api.StemcellObject{}
 	for index, option := range as.Options.Stemcells {
-		parts := strings.Split(option, ":")
+		parts, err := as.transformArgs(availableVersions, index, option)
+		if err != nil {
+			return nil, err
+		}
 		os, version := parts[0], parts[1]
 
 		if version == "latest" {
@@ -172,6 +160,37 @@ func (as AssignMultiStemcell) validateOpsManVersion() error {
 	}
 
 	return fmt.Errorf("this command can only be used with OpsManager 2.6+")
+}
+
+func (as AssignMultiStemcell) transformArgs(availableVersions []api.StemcellObject, index int, option string) ([]string, error) {
+	parts := strings.Split(option, ":")
+	if len(parts) == 2 {
+		return parts, nil
+	}
+
+	if option == "latest" {
+		return nil, fmt.Errorf(`expected "--stemcell" format value as "operating-system:latest"`)
+	}
+
+	var os []string
+	for _, available := range availableVersions {
+		if option == available.Version {
+			os = append(os, available.OS)
+		}
+	}
+
+	if len(os) > 1 {
+		return nil, fmt.Errorf(`multiple stemcells match version %s in Ops Manager.
+			expected "--stemcell" format value as "operating-system:version"`, option)
+	} else if len(os) == 0 {
+		return nil, fmt.Errorf(`stemcell version %s not found in Ops Manager.
+			there are no available stemcells to for "%s"
+			upload-stemcell, and try again`, option, as.Options.ProductName)
+	}
+
+	as.logger.Printf(`WARNING: updated "--stemcell" format value to "operating-system:version", "%s:%s"`, os[0], option)
+	as.Options.Stemcells[index] = fmt.Sprintf("%s:%s", os[0], option)
+	return strings.Split(as.Options.Stemcells[index], ":"), nil
 }
 
 func getStemcellsForOS(availableStemcells []api.StemcellObject, os string) []string {

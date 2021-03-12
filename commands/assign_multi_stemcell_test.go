@@ -262,9 +262,125 @@ var _ = Describe("AssignMutliStemcell", func() {
 	})
 
 	When("incorrect os and version are entered", func() {
+		BeforeEach(func() {
+			fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
+				Products: []api.ProductMultiStemcell{
+					{
+						GUID:              "cf-guid",
+						ProductName:       "cf",
+						StagedForDeletion: false,
+						StagedStemcells:   []api.StemcellObject{},
+						AvailableVersions: []api.StemcellObject{
+							{OS: "ubuntu-xenial", Version: "1234.5"},
+						},
+						RequiredStemcells: []api.StemcellObject{},
+					},
+				},
+			}, nil)
+		})
+
 		It("returns an error", func() {
 			err := executeCommand(command, []string{"--product", "cf", "--stemcell", "ubuntu    1234.5"})
-			Expect(err).To(MatchError(ContainSubstring(`could not parse assign-stemcell arguments: expected "--stemcell" format value as "operating-system=version"`)))
+			Expect(err).To(MatchError(ContainSubstring(`stemcell version ubuntu    1234.5 not found in Ops Manager.`)))
+			Expect(err).To(MatchError(ContainSubstring(`there are no available stemcells to for "cf"`)))
+			Expect(err).To(MatchError(ContainSubstring("upload-stemcell, and try again")))
+		})
+	})
+
+	When("no os is entered", func() {
+		When("matches no available stemcells", func() {
+			BeforeEach(func() {
+				fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
+					Products: []api.ProductMultiStemcell{
+						{
+							GUID:              "cf-guid",
+							ProductName:       "cf",
+							StagedForDeletion: false,
+							StagedStemcells:   []api.StemcellObject{},
+							AvailableVersions: []api.StemcellObject{
+								{OS: "ubuntu-xenial", Version: "1234.5"},
+							},
+							RequiredStemcells: []api.StemcellObject{},
+						},
+					},
+				}, nil)
+			})
+			It("returns an error", func() {
+				err := executeCommand(command, []string{"--product", "cf", "--stemcell", "1234.9"})
+				Expect(err).To(MatchError(ContainSubstring(`stemcell version 1234.9 not found in Ops Manager.`)))
+				Expect(err).To(MatchError(ContainSubstring(`there are no available stemcells to for "cf"`)))
+				Expect(err).To(MatchError(ContainSubstring("upload-stemcell, and try again")))
+
+				Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
+				Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(0))
+
+			})
+		})
+
+		When("matches one available stemcell", func() {
+			BeforeEach(func() {
+				fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
+					Products: []api.ProductMultiStemcell{
+						{
+							GUID:              "cf-guid",
+							ProductName:       "cf",
+							StagedForDeletion: false,
+							StagedStemcells:   []api.StemcellObject{},
+							AvailableVersions: []api.StemcellObject{
+								{OS: "ubuntu-xenial", Version: "1234.9"},
+							},
+							RequiredStemcells: []api.StemcellObject{},
+						},
+					},
+				}, nil)
+			})
+
+			It("assigns the matching stemcell", func() {
+				err := executeCommand(command, []string{"--product", "cf", "--stemcell", "1234.9"})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
+				Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(1))
+
+				Expect(fakeService.AssignMultiStemcellArgsForCall(0)).To(Equal(api.ProductMultiStemcells{
+					Products: []api.ProductMultiStemcell{
+						{
+							GUID: "cf-guid",
+							StagedStemcells: []api.StemcellObject{
+								{OS: "ubuntu-xenial", Version: "1234.9"},
+							},
+						},
+					},
+				}))
+			})
+		})
+
+		When("matches multiple available stemcells", func() {
+			BeforeEach(func() {
+				fakeService.ListMultiStemcellsReturns(api.ProductMultiStemcells{
+					Products: []api.ProductMultiStemcell{
+						{
+							GUID:              "cf-guid",
+							ProductName:       "cf",
+							StagedForDeletion: false,
+							StagedStemcells:   []api.StemcellObject{},
+							AvailableVersions: []api.StemcellObject{
+								{OS: "ubuntu-trusty", Version: "1234.9"},
+								{OS: "ubuntu-xenial", Version: "1234.9"},
+							},
+							RequiredStemcells: []api.StemcellObject{},
+						},
+					},
+				}, nil)
+			})
+			It("returns an error", func() {
+				err := executeCommand(command, []string{"--product", "cf", "--stemcell", "1234.9"})
+				Expect(err).To(MatchError(ContainSubstring(`multiple stemcells match version 1234.9 in Ops Manager.`)))
+				Expect(err).To(MatchError(ContainSubstring(`expected "--stemcell" format value as "operating-system:version"`)))
+
+				Expect(fakeService.ListMultiStemcellsCallCount()).To(Equal(1))
+				Expect(fakeService.AssignMultiStemcellCallCount()).To(Equal(0))
+			})
 		})
 	})
 
