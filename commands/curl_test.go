@@ -140,6 +140,30 @@ var _ = Describe("Curl", func() {
 			})
 		})
 
+		When("--data is passed", func() {
+			It("should set method to POST if no --method flag is passed", func() {
+				fakeService.CurlReturns(api.RequestServiceCurlOutput{
+					Headers: http.Header{
+						"Content-Length": []string{"33"},
+						"Content-Type":   []string{"application/json"},
+						"Accept":         []string{"text/plain"},
+					},
+					Body: stringCloser(`{"some-response-key": "%some-response-value"}`),
+				}, nil)
+
+				err := command.Execute([]string{
+					"--path", "/api/v0/some/path",
+					"--data", `some_key=some_value`,
+					"--header", "Content-Type: application/x-www-form-urlencoded",
+				})
+
+				Expect(err).ToNot(HaveOccurred())
+
+				input := fakeService.CurlArgsForCall(0)
+				Expect(input.Method).To(Equal("POST"))
+			})
+		})
+
 		When("a custom content-type is passed in", func() {
 			It("executes the API call with the given content type", func() {
 				fakeService.CurlReturns(api.RequestServiceCurlOutput{

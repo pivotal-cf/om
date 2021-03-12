@@ -53,6 +53,10 @@ func (c Curl) Execute(args []string) error {
 		Headers: requestHeaders,
 	}
 
+	if c.Options.Data != "" && c.Options.Method == "GET" {
+		input.Method = "POST"
+	}
+
 	output, err := c.service.Curl(input)
 	if err != nil {
 		return fmt.Errorf("failed to make api request: %s", err)
