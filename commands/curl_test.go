@@ -185,6 +185,29 @@ var _ = Describe("Curl", func() {
 				input := fakeService.CurlArgsForCall(0)
 				Expect(input.Method).To(Equal("PUT"))
 			})
+
+			It("respects the --request/x flag, even if it's GET", func() {
+				fakeService.CurlReturns(api.RequestServiceCurlOutput{
+					Headers: http.Header{
+						"Content-Length": []string{"33"},
+						"Content-Type":   []string{"application/json"},
+						"Accept":         []string{"text/plain"},
+					},
+					Body: stringCloser(`{"some-response-key": "%some-response-value"}`),
+				}, nil)
+
+				err := command.Execute([]string{
+					"--path", "/api/v0/some/path",
+					"--data", `some_key=some_value`,
+					"--header", "Content-Type: application/x-www-form-urlencoded",
+					"--request", "GET",
+				})
+
+				Expect(err).ToNot(HaveOccurred())
+
+				input := fakeService.CurlArgsForCall(0)
+				Expect(input.Method).To(Equal("GET"))
+			})
 		})
 
 		When("a custom content-type is passed in", func() {

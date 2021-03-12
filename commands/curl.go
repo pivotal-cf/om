@@ -53,7 +53,7 @@ func (c Curl) Execute(args []string) error {
 		Headers: requestHeaders,
 	}
 
-	if c.Options.Data != "" && c.Options.Method == "GET" {
+	if c.Options.Data != "" && c.requestNotSpecified(args) {
 		input.Method = "POST"
 	}
 
@@ -104,6 +104,15 @@ func (c Curl) Execute(args []string) error {
 	}
 
 	return nil
+}
+
+func (c Curl) requestNotSpecified(args []string) bool {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "-x") || strings.HasPrefix(arg, "--request") {
+			return false
+		}
+	}
+	return true
 }
 
 func (c Curl) Usage() jhanda.Usage {
