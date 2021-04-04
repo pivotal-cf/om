@@ -23,7 +23,7 @@ type Curl struct {
 	stderr  logger
 	Options struct {
 		Path    string   `long:"path"    short:"p" required:"true" description:"path to api endpoint"`
-		Method  string   `long:"request" short:"x"                 description:"http verb" default:"GET"`
+		Method  string   `long:"request" short:"x"                 description:"http verb (defaults to GET, POST when 'data' specified"`
 		Data    string   `long:"data"    short:"d"                 description:"api request payload"`
 		Silent  bool     `long:"silent"  short:"s"                 description:"only write response headers to stderr if response status is 4XX or 5XX"`
 		Headers []string `long:"header"  short:"H"                 description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
@@ -46,6 +46,14 @@ func (c Curl) Execute(args []string) error {
 		Method:  c.Options.Method,
 		Data:    strings.NewReader(c.Options.Data),
 		Headers: requestHeaders,
+	}
+
+	if c.Options.Method == "" {
+		input.Method = "GET"
+
+		if c.Options.Data != "" {
+			input.Method = "POST"
+		}
 	}
 
 	output, err := c.service.Curl(input)
