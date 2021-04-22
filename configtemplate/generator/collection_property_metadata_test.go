@@ -95,6 +95,28 @@ var _ = Describe("CollectionPropertyMetadata", func() {
 			Expect(err).Should(MatchError("value int64 is not known"))
 			Expect(len(collectionArray)).Should(Equal(0))
 		})
+
+		It("contains float32 types", func() {
+			defaults := make([]interface{}, 1)
+			defaults[0] = map[interface{}]interface{}{
+				"simple": float32(0),
+			}
+			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(collectionArray)).Should(Equal(1))
+			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleFloat(0.0)))
+		})
+
+		It("contains float64 types", func() {
+			defaults := make([]interface{}, 1)
+			defaults[0] = map[interface{}]interface{}{
+				"simple": float64(0),
+			}
+			collectionArray, err := generator.DefaultsArrayToCollectionArray("foo", defaults, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(collectionArray)).Should(Equal(1))
+			Expect(collectionArray[0]["simple"]).Should(Equal(generator.SimpleFloat(0.0)))
+		})
 	})
 
 	Context("DefaultsToArray", func() {

@@ -29,6 +29,10 @@ func DefaultsArrayToCollectionArray(propertyName string, defaultValue interface{
 					arrayProperties[keyAsString] = SimpleBoolean(v)
 				case int:
 					arrayProperties[keyAsString] = SimpleInteger(v)
+				case float32:
+					arrayProperties[keyAsString] = SimpleFloat(v)
+				case float64:
+					arrayProperties[keyAsString] = SimpleFloat(v)
 
 				default:
 					return nil, fmt.Errorf("value %v is not known", reflect.TypeOf(value))
