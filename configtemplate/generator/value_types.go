@@ -42,6 +42,16 @@ func (s SimpleInteger) IsSelector() bool {
 	return false
 }
 
+type SimpleFloat float64
+
+func (s SimpleFloat) Parameters() []string {
+	return []string{fmt.Sprintf("%f", s)}
+}
+
+func (s SimpleFloat) IsSelector() bool {
+	return false
+}
+
 type SelectorValue struct {
 	Value string `yaml:"value"`
 }
