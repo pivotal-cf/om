@@ -2,6 +2,7 @@ package vmmanagers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -110,15 +111,15 @@ func (g *GCPVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 
 	if g.Config.OpsmanConfig.GCP.PublicIP == "" && g.Config.OpsmanConfig.GCP.PrivateIP == "" {
-		return Unknown, StateInfo{}, fmt.Errorf("PublicIP and/or PrivateIP must be set")
+		return Unknown, StateInfo{}, errors.New("PublicIP and/or PrivateIP must be set")
 	}
 
 	if g.Config.OpsmanConfig.GCP.ServiceAccount == "" && g.Config.OpsmanConfig.GCP.ServiceAccountName == "" {
-		return Unknown, StateInfo{}, fmt.Errorf("gcp_service_account or gcp_service_account_name must be set")
+		return Unknown, StateInfo{}, errors.New("gcp_service_account or gcp_service_account_name must be set")
 	}
 
 	if g.Config.OpsmanConfig.GCP.ServiceAccount != "" && g.Config.OpsmanConfig.GCP.ServiceAccountName != "" {
-		return Unknown, StateInfo{}, fmt.Errorf("both gcp_service_account and gcp_service_account_name cannot be set")
+		return Unknown, StateInfo{}, errors.New("both gcp_service_account and gcp_service_account_name cannot be set")
 	}
 
 	imageUriMap, err := loadImageYaml(g.ImageYaml)
@@ -169,7 +170,6 @@ func (g *GCPVMManager) authenticate() error {
 				"describe",
 				g.Config.OpsmanConfig.GCP.ServiceAccountName,
 			})
-
 			if err != nil {
 				return fmt.Errorf("service_account_name error. The service account may not exist or this SDK dose not have permission to access: %s", err)
 			}
@@ -204,7 +204,6 @@ func (g *GCPVMManager) setProject() error {
 		"project",
 		g.Config.OpsmanConfig.GCP.Project,
 	})
-
 	if err != nil {
 		return fmt.Errorf("gcloud error setting project: %s", err)
 	}
@@ -218,7 +217,6 @@ func (g *GCPVMManager) setComputeRegion() error {
 		"compute/region",
 		g.Config.OpsmanConfig.GCP.Region,
 	})
-
 	if err != nil {
 		return fmt.Errorf("gcloud error setting compute/region: %s", err)
 	}
@@ -321,7 +319,6 @@ func (g *GCPVMManager) createVM(publicIP string) (Status, StateInfo, error) {
 		return Exist, currentState, nil
 	}
 	return Unknown, StateInfo{}, fmt.Errorf("gcloud error creating VM: %s", err)
-
 }
 
 func (g *GCPVMManager) deleteVM(id string) error {
@@ -330,7 +327,6 @@ func (g *GCPVMManager) deleteVM(id string) error {
 		"--zone", g.Config.OpsmanConfig.GCP.Zone,
 		"--quiet",
 	})
-
 	if err != nil {
 		return fmt.Errorf("gcloud error deleting VM: %s", err)
 	}

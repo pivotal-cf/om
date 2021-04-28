@@ -1,13 +1,13 @@
 package vmlifecyclecommands
 
 import (
+	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
-	"fmt"
-
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"io/ioutil"
 )
 
 type initCreateFunc func(config *vmmanagers.OpsmanConfigFilePayload, image string, state vmmanagers.StateInfo, outWriter, errWriter io.Writer) (vmmanagers.CreateVMService, error)
@@ -56,7 +56,7 @@ func (c *CreateVM) Execute(args []string) error {
 		_, _ = c.stdout.Write([]byte("VM already exists, not attempting to create it\n"))
 		return writeStatefile(c.StateFile, newState)
 	case vmmanagers.StateMismatch:
-		return fmt.Errorf("VM specified in the statefile does not exist in your IAAS")
+		return errors.New("VM specified in the statefile does not exist in your IAAS")
 	case vmmanagers.Incomplete:
 		finalErr := fmt.Errorf("the VM was created, but subsequent configuration failed: %s", err)
 		writeErr := writeStatefile(c.StateFile, newState)

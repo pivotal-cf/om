@@ -2,11 +2,13 @@ package commands
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/api"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/pivotal-cf/om/api"
 )
 
 const maxRetries = 3
@@ -118,7 +120,7 @@ func (ii ImportInstallation) ensureAvailability() error {
 
 func (ii *ImportInstallation) validate(args []string) error {
 	if ii.passphrase == "" {
-		return fmt.Errorf("the global decryption-passphrase argument is required for this command")
+		return errors.New("the global decryption-passphrase argument is required for this command")
 	}
 
 	if _, err := os.Stat(ii.Options.Installation); err != nil {

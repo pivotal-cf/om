@@ -2,13 +2,15 @@ package vmmanagers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/vmlifecycle/runner"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pivotal-cf/om/vmlifecycle/runner"
 )
 
 type OpenstackCredential struct {
@@ -92,7 +94,7 @@ func (o *OpenstackVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 
 	if o.Config.PublicIP == "" && o.Config.PrivateIP == "" {
-		return Unknown, StateInfo{}, fmt.Errorf("PublicIP and/or PrivateIP must be set")
+		return Unknown, StateInfo{}, errors.New("PublicIP and/or PrivateIP must be set")
 	}
 
 	o.addDefaultConfigFields()
@@ -176,7 +178,6 @@ func (o *OpenstackVMManager) createImage(imageName string) (imageURI string, err
 }
 
 func (o *OpenstackVMManager) createVM(imageID string) (serverID string, state StateInfo, err error) {
-
 	var nicStr string
 	if o.Config.PrivateIP != "" {
 		nicStr = fmt.Sprintf(`net-id=%s,v4-fixed-ip=%s`, o.Config.NetID, o.Config.PrivateIP)
@@ -261,7 +262,6 @@ func (o *OpenstackVMManager) getVMImage() (string, error) {
 		`--column`, `image`,
 		`--format`, `value`)
 	stdout, _, err := o.runner.Execute(args)
-
 	if err != nil {
 		return "", fmt.Errorf(
 			"%s\n       Could not find VM with ID %q.\n       To fix, ensure the VM ID in the statefile matches a VM that exists.\n       If the VM has already been deleted, delete the contents of the statefile.",

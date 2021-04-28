@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"os"
 	"sort"
 	"time"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/om/api"
 )
@@ -56,7 +57,7 @@ func NewApplyChanges(service applyChangesService, pendingService pendingChangesS
 
 func (ac ApplyChanges) Execute(args []string) error {
 	if ac.Options.RecreateVMs && ac.Options.Reattach {
-		return fmt.Errorf("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")
+		return errors.New("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")
 	}
 
 	errands := api.ApplyErrandChanges{}
@@ -76,7 +77,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 	var changedProducts []string
 	if len(ac.Options.ProductNames) > 0 {
 		if ac.Options.SkipDeployProducts {
-			return fmt.Errorf("product-name flag can not be passed with the skip-deploy-products flag")
+			return errors.New("product-name flag can not be passed with the skip-deploy-products flag")
 		}
 		info, err := ac.service.Info()
 		if err != nil {
@@ -104,7 +105,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return err
 		} else {
 			ac.logger.Printf("found already running installation... not re-attaching (Installation ID: %d, Started: %s)", installation.ID, startedAtFormatted)
-			return fmt.Errorf("apply changes is already running, use \"--reattach\" to enable reattaching")
+			return errors.New("apply changes is already running, use \"--reattach\" to enable reattaching")
 		}
 	}
 

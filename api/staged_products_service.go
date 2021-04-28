@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -200,7 +201,7 @@ func (a Api) GetStagedProductSyslogConfiguration(product string) (map[string]int
 	return syslogConfig.SyslogConfiguration, nil
 }
 
-var errNotFound = fmt.Errorf("element not found")
+var errNotFound = errors.New("element not found")
 
 func getString(element interface{}, key string) (string, error) {
 	value, err := get(element, key)
@@ -365,7 +366,7 @@ func (a Api) UpdateSyslogConfiguration(input UpdateSyslogConfigurationInput) err
 	return nil
 }
 
-//TODO consider refactoring to use fetchProductResource
+// TODO consider refactoring to use fetchProductResource
 func (a Api) GetStagedProductManifest(guid string) (string, error) {
 	resp, err := a.sendAPIRequest("GET", fmt.Sprintf("/api/v0/staged/products/%s/manifest", guid), nil)
 	if err != nil {

@@ -3,12 +3,8 @@ package vmlifecyclecommands
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
-	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
-	"github.com/pivotal-cf/om/vmlifecycle/runner"
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,6 +12,12 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/pivotal-cf/om/interpolate"
+	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
+	"github.com/pivotal-cf/om/vmlifecycle/runner"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+	"gopkg.in/yaml.v2"
 )
 
 type opsmanVersion struct {
@@ -93,7 +95,7 @@ func (n *UpgradeOpsman) Execute(args []string) error {
 		return n.upgradeOpsman()
 	}
 	if compare == DOWNGRADE {
-		return fmt.Errorf("downgrading is not supported by Ops Manager")
+		return errors.New("downgrading is not supported by Ops Manager")
 	}
 	if compare == EQUAL {
 		if !n.Recreate {
@@ -107,7 +109,7 @@ func (n *UpgradeOpsman) Execute(args []string) error {
 		return n.upgradeOpsman()
 	}
 
-	return fmt.Errorf("unexpected error in upgrading opsman")
+	return errors.New("unexpected error in upgrading opsman")
 }
 
 func (n *UpgradeOpsman) setup() {
@@ -145,7 +147,7 @@ func (n *UpgradeOpsman) compareOpsmanVersions(outBuf *bytes.Buffer) (processingE
 		return ERROR, fmt.Errorf("fatal error %s", err)
 	}
 	if version.Info.Version == "" {
-		return ERROR, fmt.Errorf("info struct could not be parsed")
+		return ERROR, errors.New("info struct could not be parsed")
 	}
 
 	versionToInstall, err := extractopsmansemver.Do(n.CreateVM.ImageFile) //[ops-manager,2.2.0]OpsManager2.2-build.296onGCP.yml
@@ -303,7 +305,7 @@ func (n *UpgradeOpsman) validateImportInstallationConfig() error {
 	}
 
 	if target.Target == "" {
-		return fmt.Errorf("target is a required field in the env configuration")
+		return errors.New("target is a required field in the env configuration")
 	}
 
 	if target.DecryptionPassphrase == "" {
@@ -311,7 +313,7 @@ func (n *UpgradeOpsman) validateImportInstallationConfig() error {
 	}
 
 	if target.DecryptionPassphrase == "" {
-		return fmt.Errorf("decryption-passphrase is a required field in the env configuration")
+		return errors.New("decryption-passphrase is a required field in the env configuration")
 	}
 
 	return nil

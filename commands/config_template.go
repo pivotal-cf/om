@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -46,8 +47,10 @@ var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 	}
 }
 
-type buildProvider func(*ConfigTemplate) MetadataProvider
-type envProvider func() []string
+type (
+	buildProvider func(*ConfigTemplate) MetadataProvider
+	envProvider   func() []string
+)
 
 func NewConfigTemplate(bp buildProvider) *ConfigTemplate {
 	return NewConfigTemplateWithEnvironment(bp, os.Environ)
@@ -60,7 +63,7 @@ func NewConfigTemplateWithEnvironment(bp buildProvider, environFunc envProvider)
 	}
 }
 
-//Execute - generates config template and ops files
+// Execute - generates config template and ops files
 func (c *ConfigTemplate) Execute(args []string) error {
 	_, err := os.Stat(c.Options.OutputDirectory)
 	if os.IsNotExist(err) {
@@ -112,5 +115,5 @@ func (c *ConfigTemplate) Validate() error {
 		return nil
 	}
 
-	return fmt.Errorf("cannot load tile metadata: please provide either pivnet flags OR product-path")
+	return errors.New("cannot load tile metadata: please provide either pivnet flags OR product-path")
 }

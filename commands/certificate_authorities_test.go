@@ -1,7 +1,7 @@
 package commands_test
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -80,7 +80,7 @@ var _ = Describe("Certificate Authorities", func() {
 			It("returns an error", func() {
 				fakeCertificateAuthoritiesService.ListCertificateAuthoritiesReturns(
 					api.CertificateAuthoritiesOutput{},
-					fmt.Errorf("could not get certificate authorities"),
+					errors.New("could not get certificate authorities"),
 				)
 
 				err := executeCommand(command, []string{})

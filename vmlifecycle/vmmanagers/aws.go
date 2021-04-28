@@ -2,8 +2,8 @@ package vmmanagers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"math"
@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 type AWSCredential struct {
@@ -105,7 +107,7 @@ func (a *AWSVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 
 	if a.Config.OpsmanConfig.AWS.PublicIP == "" && a.Config.OpsmanConfig.AWS.PrivateIP == "" {
-		return Unknown, latestState, fmt.Errorf("PublicIP and/or PrivateIP must be set")
+		return Unknown, latestState, errors.New("PublicIP and/or PrivateIP must be set")
 	}
 
 	ami, err := amiFromRegion(iaasConfig.Region, a.ImageYaml)
@@ -223,7 +225,8 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 
 	sort.Strings(tags)
 
-	args := []interface{}{"ec2", "run-instances",
+	args := []interface{}{
+		"ec2", "run-instances",
 		"--tag-specifications", fmt.Sprintf(
 			"ResourceType=instance,Tags=[%s]",
 			strings.Join(tags, ","),
@@ -259,7 +262,8 @@ func (a *AWSVMManager) getVolumeID(instanceID string) (volumeID string, err erro
 	// wait until available
 	for {
 		volumeID, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-			[]interface{}{"ec2", "describe-volumes",
+			[]interface{}{
+				"ec2", "describe-volumes",
 				"--filters",
 				fmt.Sprintf("Name=attachment.instance-id,Values=%s", instanceID),
 				"Name=attachment.status,Values=attached",
@@ -280,10 +284,11 @@ func (a *AWSVMManager) getVolumeID(instanceID string) (volumeID string, err erro
 func (a *AWSVMManager) modifyVolume(volumeID string) error {
 	// wait until available
 	var currentRetryCount float64
-	var timeoutTime = time.Now().Add(time.Hour)
+	timeoutTime := time.Now().Add(time.Hour)
 	for {
 		_, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-			[]interface{}{"ec2", "modify-volume",
+			[]interface{}{
+				"ec2", "modify-volume",
 				"--volume-id", volumeID,
 				"--size", a.Config.OpsmanConfig.AWS.BootDiskSize,
 			})
@@ -301,7 +306,7 @@ func (a *AWSVMManager) modifyVolume(volumeID string) error {
 		_, _ = a.stderr.Write([]byte(fmt.Sprintf("volume not available to configure yet, polling in %s\n", waitTime)))
 
 		if time.Now().After(timeoutTime) {
-			return fmt.Errorf("failed to modify VM disk volume within the hour allowed")
+			return errors.New("failed to modify VM disk volume within the hour allowed")
 		}
 
 		time.Sleep(waitTime)
@@ -313,11 +318,11 @@ func (a *AWSVMManager) modifyVolume(volumeID string) error {
 
 func (a *AWSVMManager) getIPAddressID() (ipAddress string, err error) {
 	allocationID, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-		[]interface{}{"ec2", "describe-addresses",
+		[]interface{}{
+			"ec2", "describe-addresses",
 			`--filters`, fmt.Sprintf("Name=public-ip,Values=%s", a.Config.OpsmanConfig.AWS.PublicIP),
 			`--query`, `Addresses[0].AllocationId`,
 		})
-
 	if err != nil {
 		return "", fmt.Errorf("aws error finding public IP address: %s", err)
 	}
@@ -327,11 +332,11 @@ func (a *AWSVMManager) getIPAddressID() (ipAddress string, err error) {
 
 func (a *AWSVMManager) associateIP(addressID, instanceID string) error {
 	_, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-		[]interface{}{"ec2", "associate-address",
+		[]interface{}{
+			"ec2", "associate-address",
 			"--allocation-id", addressID,
 			"--instance-id", instanceID,
 		})
-
 	if err != nil {
 		return fmt.Errorf("aws error finding public IP address: %s", err)
 	}
@@ -341,18 +346,19 @@ func (a *AWSVMManager) associateIP(addressID, instanceID string) error {
 
 func (a *AWSVMManager) rebootVM(instanceID string) error {
 	_, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-		[]interface{}{"ec2", "stop-instances",
+		[]interface{}{
+			"ec2", "stop-instances",
 			"--instance-ids", instanceID,
 		})
-
 	if err != nil {
 		return fmt.Errorf("aws error can not stop vm: %s", err)
 	}
 
-	//wait until vm stopped
+	// wait until vm stopped
 	for {
 		state, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-			[]interface{}{"ec2", "describe-instances",
+			[]interface{}{
+				"ec2", "describe-instances",
 				"--instance-ids", instanceID,
 				"--query", "Reservations[*].Instances[*].State.Name",
 			})
@@ -366,7 +372,8 @@ func (a *AWSVMManager) rebootVM(instanceID string) error {
 	}
 
 	_, _, err = a.ExecuteWithInstanceProfile(a.addEnvVars(),
-		[]interface{}{"ec2", "start-instances",
+		[]interface{}{
+			"ec2", "start-instances",
 			"--instance-ids", instanceID,
 		})
 
@@ -384,10 +391,10 @@ func (a *AWSVMManager) deleteVM(instanceID string) error {
 	}
 
 	_, errBuffWriter, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-		[]interface{}{"ec2", "terminate-instances",
+		[]interface{}{
+			"ec2", "terminate-instances",
 			"--instance-ids", instanceID,
 		})
-
 	if err != nil {
 		errStr := errBuffWriter.String()
 		if strings.Contains(errStr, "InvalidInstanceID.NotFound") {
@@ -419,7 +426,8 @@ func (a *AWSVMManager) vmExists() (vmExists bool, err error) {
 
 	var vmStatus, errBufWriter *bytes.Buffer
 	vmStatus, errBufWriter, err = a.ExecuteWithInstanceProfile(a.addEnvVars(),
-		[]interface{}{"ec2", "describe-instances",
+		[]interface{}{
+			"ec2", "describe-instances",
 			"--instance-ids", a.State.ID,
 			"--query", "Reservations[*].Instances[*].State.Name",
 		})
@@ -458,7 +466,7 @@ func (a *AWSConfig) validateConfig() error {
 
 func (a *AWSConfig) validateInstanceProfileConfig() error {
 	if a.AssumeRole != "" && (a.AccessKeyId != "" || a.SecretAccessKey != "") {
-		return fmt.Errorf("Assume Role only works when using an instance profile for AWS authentication")
+		return errors.New("Assume Role only works when using an instance profile for AWS authentication")
 	}
 
 	return nil
@@ -466,10 +474,10 @@ func (a *AWSConfig) validateInstanceProfileConfig() error {
 
 func (a *AWSConfig) validateDeprecations() error {
 	if a.SecurityGroupIdDEPRECATED == "" && len(a.SecurityGroupIds) == 0 {
-		return fmt.Errorf("security_groups_ids is required")
+		return errors.New("security_groups_ids is required")
 	}
 	if a.SecurityGroupIdDEPRECATED != "" && len(a.SecurityGroupIds) > 0 {
-		return fmt.Errorf(`security_groups_id is DEPRECATED. Cannot use "security_group_id" and "security_group_ids" together. Use "security_groups_ids" instead.`)
+		return errors.New(`security_groups_id is DEPRECATED. Cannot use "security_group_id" and "security_group_ids" together. Use "security_groups_ids" instead.`)
 	}
 	if a.SecurityGroupIdDEPRECATED != "" && len(a.SecurityGroupIds) == 0 {
 		a.SecurityGroupIds = []string{a.SecurityGroupIdDEPRECATED}
@@ -498,7 +506,7 @@ func amiFromRegion(region, imageFile string) (imageURI string, err error) {
 
 	image, ok := images[region]
 	if !ok {
-		return "", fmt.Errorf("could not find a image uri for region")
+		return "", errors.New("could not find a image uri for region")
 	}
 
 	return image, nil

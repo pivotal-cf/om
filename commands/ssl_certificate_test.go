@@ -1,7 +1,7 @@
 package commands_test
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -65,7 +65,7 @@ var _ = Describe("SslCertificate", func() {
 			It("returns an error", func() {
 				fakeSSLCertificateService.GetSSLCertificateReturns(
 					api.SSLCertificateOutput{},
-					fmt.Errorf("could not get custom certificate"),
+					errors.New("could not get custom certificate"),
 				)
 
 				err := executeCommand(command, []string{})

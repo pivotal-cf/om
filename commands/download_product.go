@@ -242,26 +242,26 @@ func (c *DownloadProduct) validate() error {
 	c.handleAliases()
 
 	if c.Options.FileGlob == "" {
-		return fmt.Errorf("--file-glob is required")
+		return errors.New("--file-glob is required")
 	}
 
 	if c.Options.ProductVersionRegex != "" && c.Options.ProductVersion != "" {
-		return fmt.Errorf("cannot use both --product-version and --product-version-regex; please choose one or the other")
+		return errors.New("cannot use both --product-version and --product-version-regex; please choose one or the other")
 	}
 
 	if c.Options.ProductVersionRegex == "" && c.Options.ProductVersion == "" {
-		return fmt.Errorf("no version information provided; please provide either --product-version or --product-version-regex")
+		return errors.New("no version information provided; please provide either --product-version or --product-version-regex")
 	}
 
 	if c.Options.PivnetToken == "" && c.Options.Source == "pivnet" {
-		return fmt.Errorf(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
+		return errors.New(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
 	}
 
 	if c.Options.StemcellHeavy && c.Options.StemcellIaas == "" {
-		return fmt.Errorf("--stemcell-heavy requires --stemcell-iaas to be defined")
+		return errors.New("--stemcell-heavy requires --stemcell-iaas to be defined")
 	}
 	if c.Options.StemcellVersion != "" && c.Options.StemcellIaas == "" {
-		return fmt.Errorf("--stemcell-version requires --stemcell-iaas to be defined")
+		return errors.New("--stemcell-version requires --stemcell-iaas to be defined")
 	}
 
 	file, err := os.Open(c.Options.OutputDir)
@@ -504,7 +504,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 			productFilePath)
 		c.stderr.Print(e)
 		_ = os.Remove(partialProductFilePath)
-		return productFilePath, fileArtifact, fmt.Errorf(e)
+		return productFilePath, fileArtifact, errors.New(e)
 	}
 
 	_ = os.Rename(partialProductFilePath, productFilePath)
@@ -519,8 +519,8 @@ func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, p
 			return err
 		}
 
-		var prefixedGlob = fmt.Sprintf("\\[%s,*\\]%s", slug, glob)
-		var globs = []string{glob, prefixedGlob}
+		prefixedGlob := fmt.Sprintf("\\[%s,*\\]%s", slug, glob)
+		globs := []string{glob, prefixedGlob}
 		for _, fileGlob := range globs {
 			c.stderr.Printf("Cleaning up cached artifacts in directory '%s' with the glob '%s'", outputDir, fileGlob)
 			for _, file := range outputDirContents {
@@ -632,5 +632,5 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 		), nil
 	}
 
-	return nil, fmt.Errorf("could not find a plugin")
+	return nil, errors.New("could not find a plugin")
 }

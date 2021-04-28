@@ -130,7 +130,8 @@ var _ = Describe("Curl", func() {
 					"--request", "GET",
 					"--silent",
 				})
-				Expect(err).To(MatchError("server responded with an error"))
+
+				Expect(err).To(MatchError("server responded with a 404 error"))
 
 				format, content := stderr.PrintfArgsForCall(0)
 				Expect(fmt.Sprintf(format, content...)).To(Equal("Status: 404 Not Found"))
@@ -250,7 +251,7 @@ var _ = Describe("Curl", func() {
 					"--request", "POST",
 					"--data", `{"some-key": "some-value"}`,
 				})
-				Expect(err).To(MatchError("server responded with an error"))
+				Expect(err).To(MatchError("server responded with a 401 error"))
 			})
 		})
 	})

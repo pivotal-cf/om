@@ -3,14 +3,16 @@ package extractor_test
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"fmt"
-	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-cf/om/extractor/fakes"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/extractor/fakes"
 
 	"github.com/pivotal-cf/om/extractor"
 
@@ -98,7 +100,7 @@ var _ = Describe("MetadataExtractor", func() {
 
 		It("allows a custom HTTP client", func() {
 			client := &fakes.HttpClient{}
-			client.DoReturns(nil, fmt.Errorf("some error"))
+			client.DoReturns(nil, errors.New("some error"))
 
 			metadataExtractor = extractor.NewMetadataExtractor(extractor.WithHTTPClient(client))
 			_, err := metadataExtractor.ExtractFromURL("https://example.com")

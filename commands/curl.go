@@ -2,12 +2,11 @@ package commands
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"encoding/json"
 
 	"github.com/pivotal-cf/om/api"
 )
@@ -91,7 +90,7 @@ func (c Curl) Execute(args []string) error {
 	c.stdout.Println(string(body))
 
 	if output.StatusCode >= 400 {
-		return fmt.Errorf("server responded with an error")
+		return fmt.Errorf("server responded with a %d error", output.StatusCode)
 	}
 
 	return nil

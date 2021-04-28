@@ -1,11 +1,13 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/pivotal-cf/om/interpolate"
 )
 
 type interpolateOptions struct {
@@ -76,7 +78,7 @@ func (c Interpolate) Execute(args []string) error {
 		c.Options.ConfigFile = tempFile.Name()
 
 	} else if len(c.Options.ConfigFile) == 0 || c.Options.ConfigFile == "-" {
-		return fmt.Errorf("no file or STDIN input provided. Please provide a valid --config file or use a pipe to get STDIN")
+		return errors.New("no file or STDIN input provided. Please provide a valid --config file or use a pipe to get STDIN")
 	}
 
 	expectAllKeys := true

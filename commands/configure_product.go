@@ -2,10 +2,12 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
 	"sort"
 	"strings"
+
+	"github.com/pivotal-cf/om/interpolate"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/config"
@@ -334,7 +336,7 @@ func (cp *ConfigureProduct) interpolateConfig(cfg configureProduct) (configurePr
 
 func (cp ConfigureProduct) validateConfig(cfg configureProduct) error {
 	if cfg.ProductName == "" {
-		return fmt.Errorf("could not parse configure-product config: \"product-name\" is required")
+		return errors.New("could not parse configure-product config: \"product-name\" is required")
 	}
 
 	if len(cfg.Field) > 0 {
@@ -386,7 +388,7 @@ func (cp ConfigureProduct) validateConfigComplete(productGUID string) error {
 		if changeList.GUID == productGUID {
 			completenessCheck := changeList.CompletenessChecks
 			if completenessCheck == nil {
-				return fmt.Errorf("configuration completeness could not be determined.\nThis feature is only supported for OpsMan 2.2+\nIf you're on older version of OpsMan add the line `validate-config-complete: false` to your config file.")
+				return errors.New("configuration completeness could not be determined.\nThis feature is only supported for OpsMan 2.2+\nIf you're on older version of OpsMan add the line `validate-config-complete: false` to your config file.")
 			}
 			if !completenessCheck.ConfigurationComplete {
 				return fmt.Errorf("configuration not complete.\nThe properties you provided have been set,\nbut some required properties or configuration details are still missing.\nVisit the Ops Manager for details: %s", cp.target)

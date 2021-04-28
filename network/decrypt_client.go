@@ -65,7 +65,7 @@ func (c *DecryptClient) decrypt() error {
 		}
 
 		if e, ok := err.(net.Error); ok && e.Timeout() {
-			//jitter on the retry
+			// jitter on the retry
 			time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
 			continue
 		}
@@ -81,14 +81,14 @@ func (c *DecryptClient) decrypt() error {
 
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not unlock ops manager, check if the decryption passphrase is correct")
+		return errors.New("could not unlock ops manager, check if the decryption passphrase is correct")
 	}
 
 	return c.waitUntilAvailable()
 }
 
 func (c DecryptClient) waitUntilAvailable() error {
-	var trial = 1
+	trial := 1
 	for {
 		if trial == 2 {
 			_, _ = c.writer.Write([]byte("Waiting for Ops Manager's auth systems to start. This may take a few minutes...\n"))

@@ -131,7 +131,6 @@ var _ = Describe("DownloadProduct", func() {
 
 			When("the releases contains non-semver-compatible version", func() {
 				BeforeEach(func() {
-
 					fakeProductDownloader.GetAllProductVersionsReturns(
 						[]string{"2.1.2", "2.0.x"},
 						nil,
@@ -804,7 +803,7 @@ var _ = Describe("DownloadProduct", func() {
 
 				When("the stemcell check service returns an error", func() {
 					BeforeEach(func() {
-						fakeDownloadProductService.CheckStemcellAvailabilityReturns(false, fmt.Errorf("some error"))
+						fakeDownloadProductService.CheckStemcellAvailabilityReturns(false, errors.New("some error"))
 					})
 
 					It("returns that error", func() {
@@ -835,7 +834,7 @@ var _ = Describe("DownloadProduct", func() {
 					BeforeEach(func() {
 						fa := &fakes.FileArtifacter{}
 						fa.NameReturns("/some-account/some-bucket/cf-2.1-build.11.pivotal")
-						fa.ProductMetadataReturns(nil, fmt.Errorf("some error"))
+						fa.ProductMetadataReturns(nil, errors.New("some error"))
 
 						fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
 					})
@@ -933,7 +932,7 @@ var _ = Describe("DownloadProduct", func() {
 
 					When("the product check service returns an error", func() {
 						BeforeEach(func() {
-							fakeDownloadProductService.CheckProductAvailabilityReturns(false, fmt.Errorf("some error"))
+							fakeDownloadProductService.CheckProductAvailabilityReturns(false, errors.New("some error"))
 						})
 
 						It("returns that error", func() {
@@ -1277,7 +1276,7 @@ var _ = Describe("DownloadProduct", func() {
 
 	When("the release specified is not available", func() {
 		BeforeEach(func() {
-			fakeProductDownloader.GetLatestProductFileReturns(nil, fmt.Errorf("some-error"))
+			fakeProductDownloader.GetLatestProductFileReturns(nil, errors.New("some-error"))
 		})
 
 		It("returns an error", func() {

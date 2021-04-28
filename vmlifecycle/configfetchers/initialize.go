@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
-	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -238,7 +239,6 @@ func validateGCPCreds(creds *Credentials) (err error) {
 	if creds.GCP.ServiceAccount != "" {
 		if _, err := os.Stat(creds.GCP.ServiceAccount); os.IsNotExist(err) {
 			errs = append(errs, fmt.Sprintf("gcp-service-account-json file (%s) cannot be found", creds.GCP.ServiceAccount))
-
 		}
 
 		contents, err := ioutil.ReadFile(creds.GCP.ServiceAccount)
@@ -249,7 +249,7 @@ func validateGCPCreds(creds *Credentials) (err error) {
 	}
 
 	if len(errs) > 0 {
-		err = fmt.Errorf(strings.Join(errs, "\n"))
+		err = errors.New(strings.Join(errs, "\n"))
 	}
 
 	return err
@@ -270,7 +270,7 @@ func validateVCenterCreds(creds *Credentials) (err error) {
 	}
 
 	if len(errs) > 0 {
-		err = fmt.Errorf(strings.Join(errs, "\n"))
+		err = errors.New(strings.Join(errs, "\n"))
 	}
 
 	return err
@@ -295,7 +295,7 @@ func validateAzureCreds(creds *Credentials) (err error) {
 	}
 
 	if len(errs) > 0 {
-		err = fmt.Errorf(strings.Join(errs, "\n"))
+		err = errors.New(strings.Join(errs, "\n"))
 	}
 
 	return err

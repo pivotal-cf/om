@@ -1,9 +1,11 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/api"
 	"strings"
+
+	"github.com/pivotal-cf/om/api"
 )
 
 type AssignMultiStemcell struct {
@@ -141,13 +143,12 @@ Available Stemcells for "%s": %s`, version, os, as.Options.ProductName, listOfSt
 	}
 
 	return stemcellGroup, nil
-
 }
 
 func (as AssignMultiStemcell) validateOpsManVersion() error {
 	info, err := as.service.Info()
 	if err != nil {
-		return fmt.Errorf("cannot retrieve version of Ops Manager")
+		return errors.New("cannot retrieve version of Ops Manager")
 	}
 
 	validVersion, err := info.VersionAtLeast(2, 6)
@@ -159,7 +160,7 @@ func (as AssignMultiStemcell) validateOpsManVersion() error {
 		return nil
 	}
 
-	return fmt.Errorf("this command can only be used with OpsManager 2.6+")
+	return errors.New("this command can only be used with OpsManager 2.6+")
 }
 
 func (as AssignMultiStemcell) transformArgs(availableVersions []api.StemcellObject, index int, option string) ([]string, error) {

@@ -3,6 +3,7 @@ package network
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -53,7 +54,7 @@ func setCACert(caCert string, tlsConfig *tls.Config) error {
 		caCert = string(contents)
 	}
 	if ok := caCertPool.AppendCertsFromPEM([]byte(caCert)); !ok {
-		return fmt.Errorf("could not use ca cert")
+		return errors.New("could not use ca cert")
 	}
 
 	tlsConfig.RootCAs = caCertPool

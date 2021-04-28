@@ -2,10 +2,12 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
 	"sort"
 	"strings"
+
+	"github.com/pivotal-cf/om/interpolate"
 
 	"github.com/pivotal-cf/om/api"
 	"gopkg.in/yaml.v2"
@@ -212,7 +214,7 @@ vmextensions-configuration: {}
 		for _, depKey := range deprecatedKeys {
 			for _, unrecKey := range unrecognizedKeys {
 				if depKey == unrecKey {
-					return fmt.Errorf(errorMessage)
+					return errors.New(errorMessage)
 				}
 			}
 		}
@@ -232,7 +234,7 @@ func (c ConfigureDirector) checkIAASConfigurationIsOnlySetOnce(config *directorC
 	iaasProperties := properties["iaas-configuration"]
 
 	if iaasConfigurations != nil && iaasProperties != nil {
-		return fmt.Errorf("iaas-configurations cannot be used with properties-configuration.iaas-configurations\n" +
+		return errors.New("iaas-configurations cannot be used with properties-configuration.iaas-configurations\n" +
 			"Please only use one implementation.")
 	}
 	return nil
@@ -448,7 +450,7 @@ func (c ConfigureDirector) configureVMExtensions(config *directorConfig) error {
 func (c ConfigureDirector) configureVMTypes(config *directorConfig) error {
 	if len(config.VMTypes.VMTypes) == 0 {
 		if config.VMTypes.CustomTypesOnly {
-			return fmt.Errorf("if custom_types = true, vm_types must not be empty")
+			return errors.New("if custom_types = true, vm_types must not be empty")
 		}
 
 		return nil
@@ -529,7 +531,7 @@ func checkRunningInstallation(listInstallations func() ([]api.InstallationsServi
 	}
 	if len(installations) > 0 {
 		if installations[0].Status == "running" {
-			return fmt.Errorf("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes")
+			return errors.New("OpsManager does not allow configuration or staging changes while apply changes are running to prevent data loss for configuration and/or staging changes")
 		}
 	}
 	return nil
