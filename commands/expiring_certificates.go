@@ -3,11 +3,12 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/pivotal-cf/om/api"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/pivotal-cf/om/api"
 )
 
 //counterfeiter:generate -o ./fakes/expiring_certs_service.go --fake-name ExpiringCertsService . expiringCertsService
@@ -118,7 +119,7 @@ func (e ExpiringCerts) validateConfig() error {
 	}
 
 	if !matched {
-		return fmt.Errorf("only d,w,m, or y are supported. Default is \"3m\"")
+		return errors.New("only d,w,m, or y are supported. Default is \"3m\"")
 	}
 	return nil
 }

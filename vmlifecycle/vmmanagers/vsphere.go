@@ -1,20 +1,19 @@
 package vmmanagers
 
 import (
+	"archive/tar"
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/blang/semver"
-	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 
-	"fmt"
-
-	"archive/tar"
+	"github.com/blang/semver"
+	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
 )
 
 type VcenterCredential struct {
@@ -313,7 +312,6 @@ func (v *VsphereVMManager) validateImage() error {
 		fileHeader, err := imageTar.Next()
 		if err != nil {
 			return fmt.Errorf("could not validate image-file format of %s. Is your image an OVA file? %s", v.ImageOVA, err.Error())
-
 		}
 		if strings.Contains(fileHeader.Name, ".ovf") {
 			return nil
@@ -322,9 +320,11 @@ func (v *VsphereVMManager) validateImage() error {
 }
 
 func (v *VsphereVMManager) createVM(env []string, optionFilename string) (errorBuffer *bytes.Buffer, err error) {
-	_, errBufWriter, err := v.runner.ExecuteWithEnvVars(env, []interface{}{"import.ova",
+	_, errBufWriter, err := v.runner.ExecuteWithEnvVars(env, []interface{}{
+		"import.ova",
 		"-options=" + optionFilename,
-		v.ImageOVA})
+		v.ImageOVA,
+	})
 
 	return errBufWriter, checkFormatedError("govc error: %s", err)
 }
@@ -382,17 +382,17 @@ func (v *VsphereVMManager) updateVMProperties(env []string, ipath string) error 
 	log.Println("Setting Memory and CPU for the VM...")
 	err := v.powerOffVM(env, ipath)
 	if err != nil {
-		return fmt.Errorf("govc error: could not turn off VM")
+		return errors.New("govc error: could not turn off VM")
 	}
 
 	err = v.setVMProperties(env, ipath)
 	if err != nil {
-		return fmt.Errorf("govc error: could not reassign memory and CPU")
+		return errors.New("govc error: could not reassign memory and CPU")
 	}
 
 	err = v.powerOnVM(env, ipath)
 	if err != nil {
-		return fmt.Errorf("govc error: could not turn on VM")
+		return errors.New("govc error: could not turn on VM")
 	}
 
 	log.Println("Memory and CPU set")
@@ -420,12 +420,13 @@ func (v *VsphereVMManager) updateVMDiskProperties(env []string, ipath string) er
 }
 
 func (v *VsphereVMManager) powerOffVM(env []string, vmID string) error {
-	_, stderr, err := v.runner.ExecuteWithEnvVars(env, []interface{}{"vm.power",
+	_, stderr, err := v.runner.ExecuteWithEnvVars(env, []interface{}{
+		"vm.power",
 		"-off=true",
-		fmt.Sprintf("-vm.ipath=%s", vmID)})
+		fmt.Sprintf("-vm.ipath=%s", vmID),
+	})
 
 	if err != nil && strings.Contains(stderr.String(), "attempted operation cannot be performed in the current state (Powered off)") {
-
 		return nil
 	}
 
@@ -437,7 +438,8 @@ func (v *VsphereVMManager) setVMProperties(env []string, ipath string) error {
 	if err != nil {
 		return fmt.Errorf("could not parse memory as an integer: %v", err)
 	}
-	_, _, err = v.runner.ExecuteWithEnvVars(env, []interface{}{"vm.change",
+	_, _, err = v.runner.ExecuteWithEnvVars(env, []interface{}{
+		"vm.change",
 		"-vm.ipath=" + ipath,
 		"-m=" + memory,
 		"-c=" + v.Config.OpsmanConfig.Vsphere.CPU,
@@ -454,7 +456,8 @@ func (v *VsphereVMManager) setVMDiskProperties(env []string, ipath string) error
 }
 
 func (v *VsphereVMManager) powerOnVM(env []string, vmID string) error {
-	_, _, err := v.runner.ExecuteWithEnvVars(env, []interface{}{"vm.power",
+	_, _, err := v.runner.ExecuteWithEnvVars(env, []interface{}{
+		"vm.power",
 		"-on=true",
 		fmt.Sprintf(`-vm.ipath=%s`, vmID),
 	})
@@ -462,7 +465,8 @@ func (v *VsphereVMManager) powerOnVM(env []string, vmID string) error {
 }
 
 func (v *VsphereVMManager) deleteVM(env []string, vmID string) error {
-	_, _, err := v.runner.ExecuteWithEnvVars(env, []interface{}{`vm.destroy`,
+	_, _, err := v.runner.ExecuteWithEnvVars(env, []interface{}{
+		`vm.destroy`,
 		fmt.Sprintf(`-vm.ipath=%s`, vmID),
 	})
 

@@ -1,15 +1,17 @@
 package vmlifecyclecommands
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/interpolate"
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"sort"
+
+	"github.com/pivotal-cf/om/interpolate"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+	"gopkg.in/yaml.v2"
 )
 
 type initDeleteFunc func(config *vmmanagers.OpsmanConfigFilePayload, image string, state vmmanagers.StateInfo, outWriter, errWriter io.Writer) (vmmanagers.DeleteVMService, error)
@@ -123,7 +125,7 @@ func GuardAgainstMissingOpsmanConfiguration(configContent []byte, configFilename
 		for _, key := range keys {
 			foundKeysMessage = foundKeysMessage + fmt.Sprintf("  '%s'\n", key)
 		}
-		return fmt.Errorf("top-level-key 'opsman-configuration' is a required key.\n" +
+		return errors.New("top-level-key 'opsman-configuration' is a required key.\n" +
 			"Ensure the correct file is passed, the 'opsman-configuration' key is present, " +
 			"and the key is spelled correctly with a dash(-).\n" +
 			foundKeysMessage)

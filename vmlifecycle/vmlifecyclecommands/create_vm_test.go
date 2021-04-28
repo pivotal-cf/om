@@ -1,7 +1,12 @@
 package vmlifecyclecommands_test
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+
 	"github.com/jessevdk/go-flags"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -10,9 +15,6 @@ import (
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
-	"io"
-	"io/ioutil"
-	"os"
 )
 
 var _ = Describe("Create VM", func() {
@@ -298,7 +300,6 @@ opsman-configuration:
 			err := command.Execute([]string{})
 			Expect(err.Error()).To(ContainSubstring(`unknown iaas: non-existent-iaas, please refer to documentation`))
 		})
-
 	})
 
 	When("more than one iaas matches", func() {
@@ -394,7 +395,7 @@ opsman-configuration:
 
 	When("the vm is not created and there is an error", func() {
 		It("does not write or change the state file", func() {
-			fakeService.CreateVMReturns(vmmanagers.Unknown, vmmanagers.StateInfo{}, fmt.Errorf("unknown error"))
+			fakeService.CreateVMReturns(vmmanagers.Unknown, vmmanagers.StateInfo{}, errors.New("unknown error"))
 			command = createCommand(outWriter, errWriter, fakeService, configStr, "", "", "iaas: gcp\nvm_id: 123")
 
 			err := command.Execute([]string{})
@@ -406,7 +407,7 @@ opsman-configuration:
 
 	When("the vm is created, but some some subsequent step fails", func() {
 		BeforeEach(func() {
-			fakeService.CreateVMReturns(vmmanagers.Incomplete, vmmanagers.StateInfo{IAAS: "gcp", ID: "vm-id"}, fmt.Errorf("unknown error"))
+			fakeService.CreateVMReturns(vmmanagers.Incomplete, vmmanagers.StateInfo{IAAS: "gcp", ID: "vm-id"}, errors.New("unknown error"))
 			command = createCommand(outWriter, errWriter, fakeService, configStr, "", "", "")
 		})
 		It("still writes the VM ID to the statefile", func() {

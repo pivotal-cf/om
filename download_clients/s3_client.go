@@ -1,12 +1,13 @@
 package download_clients
 
 import (
-	"fmt"
+	"errors"
+	"log"
+	"strconv"
+
 	"github.com/graymeta/stow"
 	"github.com/graymeta/stow/s3"
 	"gopkg.in/go-playground/validator.v9"
-	"log"
-	"strconv"
 )
 
 type S3Configuration struct {
@@ -59,7 +60,7 @@ func validateAccessKeyAuthType(config S3Configuration) error {
 	}
 
 	if config.AccessKeyID == "" || config.SecretAccessKey == "" {
-		return fmt.Errorf("the flags \"s3-access-key-id\" and \"s3-secret-access-key\" are required when the \"auth-type\" is \"accesskey\"")
+		return errors.New("the flags \"s3-access-key-id\" and \"s3-secret-access-key\" are required when the \"auth-type\" is \"accesskey\"")
 	}
 
 	return nil

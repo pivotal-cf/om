@@ -1,7 +1,16 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/jessevdk/go-flags"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pivotal-cf/om/api"
@@ -13,13 +22,6 @@ import (
 	"github.com/pivotal-cf/om/presenters"
 	"github.com/pivotal-cf/om/renderers"
 	"gopkg.in/yaml.v2"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"regexp"
-	"strings"
-	"time"
 )
 
 type httpClient interface {
@@ -769,7 +771,7 @@ func checkForVars(opts *options) error {
 		errBuffer = append(errBuffer, "Or, to enable interpolation of env.yml with variables from env-vars,")
 		errBuffer = append(errBuffer, "set the OM_VARS_ENV env var and put export the needed vars.")
 
-		return fmt.Errorf(strings.Join(errBuffer, "\n"))
+		return errors.New(strings.Join(errBuffer, "\n"))
 	}
 
 	return nil

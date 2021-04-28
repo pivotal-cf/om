@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/pivotal-cf/om/api"
@@ -14,7 +15,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"os"
 )
 
 var _ = Describe("ImportInstallation", func() {
@@ -81,7 +81,8 @@ var _ = Describe("ImportInstallation", func() {
 
 		command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-		err := executeCommand(command, []string{"--polling-interval", "0",
+		err := executeCommand(command, []string{
+			"--polling-interval", "0",
 			"--installation", installationFile,
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -124,7 +125,8 @@ var _ = Describe("ImportInstallation", func() {
 
 			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
 
-			err := executeCommand(command, []string{"--polling-interval", "0",
+			err := executeCommand(command, []string{
+				"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -152,7 +154,7 @@ var _ = Describe("ImportInstallation", func() {
 		It("it retries on the specified polling interval to allow nginx time to boot up", func() {
 			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 				if fakeService.EnsureAvailabilityCallCount() < 4 && fakeService.EnsureAvailabilityCallCount() > 2 {
-					return api.EnsureAvailabilityOutput{}, fmt.Errorf("connection refused")
+					return api.EnsureAvailabilityOutput{}, errors.New("connection refused")
 				}
 
 				eaOutputs := []api.EnsureAvailabilityOutput{
@@ -165,7 +167,8 @@ var _ = Describe("ImportInstallation", func() {
 				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
 			}
 
-			err := executeCommand(command, []string{"--polling-interval", "0",
+			err := executeCommand(command, []string{
+				"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -192,13 +195,14 @@ var _ = Describe("ImportInstallation", func() {
 		It("it only retries 3 times before giving up", func(done Done) {
 			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 				if fakeService.EnsureAvailabilityCallCount() > 2 {
-					return api.EnsureAvailabilityOutput{}, fmt.Errorf("connection refused")
+					return api.EnsureAvailabilityOutput{}, errors.New("connection refused")
 				}
 
 				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
 			}
 
-			err := executeCommand(command, []string{"--polling-interval", "0",
+			err := executeCommand(command, []string{
+				"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))

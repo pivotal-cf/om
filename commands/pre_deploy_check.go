@@ -1,11 +1,13 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
-	"strings"
 )
 
 type PreDeployCheck struct {
@@ -79,7 +81,7 @@ func (pc PreDeployCheck) Execute(args []string) error {
 	if len(errorBuffer) > 0 {
 		pc.logger.Printf(strings.Join(errorBuffer, "\n") + "\n")
 
-		return fmt.Errorf("OpsManager is not fully configured")
+		return errors.New("OpsManager is not fully configured")
 	}
 
 	pc.logger.Println("\nThe director and products are configured correctly.")

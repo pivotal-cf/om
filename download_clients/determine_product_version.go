@@ -1,12 +1,14 @@
 package download_clients
 
 import (
+	"errors"
 	"fmt"
-	"github.com/hashicorp/go-version"
 	"log"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/hashicorp/go-version"
 )
 
 //counterfeiter:generate -o ./fakes/product_versioner.go --fake-name ProductVersioner . productVersioner
@@ -69,7 +71,7 @@ func findLatestVersionFromRegex(productVersions []string, regex string, stderr *
 
 		v, err := version.NewVersion(productVersion)
 		if err != nil {
-			stderr.Printf(fmt.Sprintf("warning: could not parse semver version from: %s", productVersion))
+			stderr.Printf("warning: could not parse semver version from: %s", productVersion)
 			continue
 		}
 		versions = append(versions, v)
@@ -78,7 +80,7 @@ func findLatestVersionFromRegex(productVersions []string, regex string, stderr *
 	sort.Sort(versions)
 
 	if len(versions) == 0 {
-		return "", fmt.Errorf("no available version found")
+		return "", errors.New("no available version found")
 	}
 
 	return versions[len(versions)-1].Original(), nil

@@ -1,10 +1,12 @@
 package configfetchers
 
 import (
+	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"google.golang.org/api/compute/v1"
-	"strings"
 )
 
 type GCPConfigFetcher struct {
@@ -27,17 +29,16 @@ func (g *GCPConfigFetcher) FetchConfig() (*vmmanagers.OpsmanConfigFilePayload, e
 		g.credentials.GCP.Zone,
 		g.state.ID,
 	).Do()
-
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch instance data: %s", err)
 	}
 
 	if len(instance.Disks) == 0 {
-		return nil, fmt.Errorf("expected a boot disk to be attached to the VM")
+		return nil, errors.New("expected a boot disk to be attached to the VM")
 	}
 
 	if len(instance.NetworkInterfaces) == 0 {
-		return nil, fmt.Errorf("expected a network interface to be attached to the VM")
+		return nil, errors.New("expected a network interface to be attached to the VM")
 	}
 
 	var scopes []string
@@ -56,7 +57,6 @@ func (g *GCPConfigFetcher) FetchConfig() (*vmmanagers.OpsmanConfigFilePayload, e
 		g.credentials.GCP.Zone,
 		splitMachineTypeURL[len(splitMachineTypeURL)-1],
 	).Do()
-
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch machine type data: %s", err)
 	}
@@ -67,7 +67,6 @@ func (g *GCPConfigFetcher) FetchConfig() (*vmmanagers.OpsmanConfigFilePayload, e
 		g.credentials.GCP.Zone,
 		splitDiskURL[len(splitDiskURL)-1],
 	).Do()
-
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch disk data: %s", err)
 	}

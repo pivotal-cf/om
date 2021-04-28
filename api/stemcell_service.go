@@ -65,7 +65,7 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 
 	info, err := a.Info()
 	if err != nil {
-		return false, fmt.Errorf("cannot retrieve version of Ops Manager")
+		return false, fmt.Errorf("cannot retrieve version of Ops Manager: %w", err)
 	}
 
 	validVersion, err := info.VersionAtLeast(2, 6)

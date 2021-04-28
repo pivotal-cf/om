@@ -12,10 +12,9 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pivotal-cf/om/vmlifecycle/runner"
-
-	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -184,7 +183,7 @@ func (a *AzureVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 
 	if a.Config.OpsmanConfig.Azure.PublicIP == "" && a.Config.OpsmanConfig.Azure.PrivateIP == "" {
-		return Unknown, StateInfo{}, fmt.Errorf("PublicIP and/or PrivateIP must be set")
+		return Unknown, StateInfo{}, errors.New("PublicIP and/or PrivateIP must be set")
 	}
 
 	a.addDefaultConfigFields()
@@ -292,26 +291,24 @@ func (a *AzureVMManager) generateImageName(image string) string {
 	digest := md5.New()
 	_, _ = digest.Write([]byte(image))
 	return fmt.Sprintf("opsman-image-%s", hex.EncodeToString(digest.Sum(nil)))
-
 }
 
 func (a *AzureVMManager) generateDiskName(disk string) string {
 	digest := md5.New()
 	_, _ = digest.Write([]byte(disk))
 	return fmt.Sprintf("opsman-disk-%s", hex.EncodeToString(digest.Sum(nil)))
-
 }
 
 func (a *AzureVMManager) deleteVM() error {
 	azure := a.Config.OpsmanConfig.Azure
 
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"vm", "delete",
+		[]interface{}{
+			"vm", "delete",
 			"--yes",
 			"--name", a.State.ID,
 			"--resource-group", azure.ResourceGroup,
 		})
-
 	if err != nil {
 		return fmt.Errorf("azure error deleting vm: %s", err)
 	}
@@ -323,7 +320,8 @@ func (a *AzureVMManager) authenticate() error {
 	azure := a.Config.OpsmanConfig.Azure
 
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"cloud", "set",
+		[]interface{}{
+			"cloud", "set",
 			"--name", azure.CloudName,
 		})
 	if err != nil {
@@ -331,7 +329,8 @@ func (a *AzureVMManager) authenticate() error {
 	}
 
 	_, _, err = a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"login", "--service-principal",
+		[]interface{}{
+			"login", "--service-principal",
 			"-u", azure.ClientID,
 			"-p", runner.Redact(azure.ClientSecret),
 			"--tenant", azure.TenantID,
@@ -351,7 +350,8 @@ func (a *AzureVMManager) copyImageBlob(imageSourceURL string, imageName string) 
 	azure := a.Config.OpsmanConfig.Azure
 
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"storage", "blob", "copy", "start",
+		[]interface{}{
+			"storage", "blob", "copy", "start",
 			"--source-uri", imageSourceURL,
 			"--destination-container", azure.Container,
 			"--destination-blob", imageName + ".vhd",
@@ -362,7 +362,8 @@ func (a *AzureVMManager) copyImageBlob(imageSourceURL string, imageName string) 
 
 	for {
 		out, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-			[]interface{}{"storage", "blob", "show",
+			[]interface{}{
+				"storage", "blob", "show",
 				"--name", imageName + ".vhd",
 				"--container-name", azure.Container,
 				"--query", "properties.copy.status",
@@ -406,7 +407,8 @@ func (a *AzureVMManager) addDefaultConfigFields() {
 
 func (a *AzureVMManager) getImageUri(imageName string) (imageURI string, err error) {
 	out, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"storage", "blob", "url",
+		[]interface{}{
+			"storage", "blob", "url",
 			"--name", imageName + ".vhd",
 			"--container-name", a.Config.OpsmanConfig.Azure.Container,
 		})
@@ -420,7 +422,8 @@ func (a *AzureVMManager) getPublicIP() (publicIP string, err error) {
 	}
 
 	out, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"network", "public-ip", "list",
+		[]interface{}{
+			"network", "public-ip", "list",
 			"--query", fmt.Sprintf("[?ipAddress == '%s'].name | [0]", a.Config.OpsmanConfig.Azure.PublicIP),
 		})
 
@@ -434,7 +437,8 @@ func (a *AzureVMManager) createImage(imageUri string, imageName string) (string,
 		return "", nil
 	}
 	out, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"image", "create",
+		[]interface{}{
+			"image", "create",
 			"--resource-group", azure.ResourceGroup,
 			"--name", imageName,
 			"--source", imageUri,
@@ -506,16 +510,16 @@ func (a *AzureVMManager) getVMInfo() (AzureVMInfo, error) {
 	azure := a.Config.OpsmanConfig.Azure
 
 	out, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"vm", "show",
+		[]interface{}{
+			"vm", "show",
 			"--name", a.State.ID,
 			"--resource-group", azure.ResourceGroup,
 		})
-
 	if err != nil {
 		return AzureVMInfo{}, fmt.Errorf("azure error getting vm info: %s", err)
 	}
 
-	var azVMInfo = AzureVMInfo{}
+	azVMInfo := AzureVMInfo{}
 	err = json.Unmarshal(out.Bytes(), &azVMInfo)
 	if err != nil {
 		return AzureVMInfo{}, fmt.Errorf("azure error unmarshalling vm info: %s", err)
@@ -525,7 +529,7 @@ func (a *AzureVMManager) getVMInfo() (AzureVMInfo, error) {
 }
 
 func (a *AzureVMManager) deleteNics(ids []ID) error {
-	var args = []interface{}{
+	args := []interface{}{
 		"network", "nic", "delete",
 		"--ids",
 	}
@@ -544,10 +548,10 @@ func (a *AzureVMManager) deleteNics(ids []ID) error {
 
 func (a *AzureVMManager) deleteImage(id string) error {
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"image", "delete",
+		[]interface{}{
+			"image", "delete",
 			"--ids", id,
 		})
-
 	if err != nil {
 		return fmt.Errorf("azure error deleting image: %s", err)
 	}
@@ -561,7 +565,8 @@ func (a *AzureVMManager) vmExists() (vmExists bool, err error) {
 	}
 
 	vmID, errBuffWriter, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"vm", "show",
+		[]interface{}{
+			"vm", "show",
 			"--name", a.State.ID,
 			"--resource-group", a.Config.OpsmanConfig.Azure.ResourceGroup,
 			"--query", "id",
@@ -586,7 +591,8 @@ func (a *AzureVMManager) vmExists() (vmExists bool, err error) {
 
 func (a *AzureVMManager) deleteBlobs() error {
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"storage", "blob", "delete-batch",
+		[]interface{}{
+			"storage", "blob", "delete-batch",
 			"--source", a.Config.OpsmanConfig.Azure.Container,
 			"--pattern", "opsman-image-*.vhd",
 		})
@@ -611,7 +617,8 @@ func (a *AzureVMManager) deleteUnmanagedDisk(diskURI string) error {
 	container := splitURI[len(splitURI)-2]
 	diskName := splitURI[len(splitURI)-1]
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"storage", "blob", "delete",
+		[]interface{}{
+			"storage", "blob", "delete",
 			"--container-name", container,
 			"--name", diskName,
 		})
@@ -620,11 +627,11 @@ func (a *AzureVMManager) deleteUnmanagedDisk(diskURI string) error {
 
 func (a *AzureVMManager) deleteManagedDisk(id string) error {
 	_, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-		[]interface{}{"disk", "delete",
+		[]interface{}{
+			"disk", "delete",
 			"--yes",
 			"--ids", id,
 		})
-
 	if err != nil {
 		return fmt.Errorf("azure error deleting disk: %s", err)
 	}
@@ -634,7 +641,7 @@ func (a *AzureVMManager) deleteManagedDisk(id string) error {
 
 func (a *AzureVMManager) validateDeprecatedVars() error {
 	if a.Config.OpsmanConfig.Azure.VPCSubnetDEPRECATED != "" && a.Config.OpsmanConfig.Azure.SubnetID != "" {
-		return fmt.Errorf("\"vpc_subnet\" is DEPRECATED. Cannot use \"vpc_subnet\" and \"subnet_id\" together. Use \"subnet_id\" instead")
+		return errors.New("\"vpc_subnet\" is DEPRECATED. Cannot use \"vpc_subnet\" and \"subnet_id\" together. Use \"subnet_id\" instead")
 	}
 
 	if a.Config.OpsmanConfig.Azure.VPCSubnetDEPRECATED != "" {
@@ -643,7 +650,7 @@ func (a *AzureVMManager) validateDeprecatedVars() error {
 	}
 
 	if a.Config.OpsmanConfig.Azure.UseManagedDisk != "" && a.Config.OpsmanConfig.Azure.UseUnmanagedDiskDEPRECATED != "" {
-		return fmt.Errorf("\"use_unmanaged_disk\" is DEPRECATED. Cannot use \"use_unmanaged_disk\" and \"use_managed_disk\" together. Use \"use_managed_disk\" instead")
+		return errors.New("\"use_unmanaged_disk\" is DEPRECATED. Cannot use \"use_unmanaged_disk\" and \"use_managed_disk\" together. Use \"use_managed_disk\" instead")
 	}
 
 	if a.Config.OpsmanConfig.Azure.UseUnmanagedDiskDEPRECATED != "" {

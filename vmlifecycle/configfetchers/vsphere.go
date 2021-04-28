@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
+	"strconv"
+	"strings"
+
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/object"
@@ -11,9 +15,6 @@ import (
 	"github.com/vmware/govmomi/vim25"
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/types"
-	"path"
-	"strconv"
-	"strings"
 )
 
 type VSphereConfigFetcher struct {
@@ -46,7 +47,7 @@ func (v *VSphereConfigFetcher) FetchConfig() (*vmmanagers.OpsmanConfigFilePayloa
 	}
 
 	if len(machine.Guest.Net) == 0 {
-		return nil, fmt.Errorf("expected the VM to be assigned to a network")
+		return nil, errors.New("expected the VM to be assigned to a network")
 	}
 
 	appConfigProperties, err := v.lookupAppConfigProperties(machine)

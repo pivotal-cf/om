@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -36,7 +37,7 @@ func (e *Executor) Generate() error {
 	}
 	productVersion := metadata.ProductVersion()
 	if productVersion == "" {
-		return fmt.Errorf("version in metadata is blank")
+		return errors.New("version in metadata is blank")
 	}
 
 	productName := metadata.ProductName()

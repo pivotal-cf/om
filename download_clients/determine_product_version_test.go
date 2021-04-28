@@ -1,13 +1,14 @@
 package download_clients_test
 
 import (
-	"fmt"
+	"errors"
+	"log"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
-	"log"
 )
 
 var _ = Describe("DetermineProductVersion", func() {
@@ -135,7 +136,7 @@ var _ = Describe("DetermineProductVersion", func() {
 		When("versions cannot be loaded", func() {
 			It("returns an error", func() {
 				versioner := &fakes.ProductVersioner{}
-				versioner.GetAllProductVersionsReturns(nil, fmt.Errorf("some error"))
+				versioner.GetAllProductVersionsReturns(nil, errors.New("some error"))
 
 				_, err := download_clients.DetermineProductVersion(
 					"product",

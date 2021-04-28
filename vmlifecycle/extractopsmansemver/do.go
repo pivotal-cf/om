@@ -1,15 +1,18 @@
 package extractopsmansemver
 
 import (
-	"fmt"
-	"github.com/blang/semver"
+	"errors"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/blang/semver"
 )
 
-var extractSemverVersionRegex = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)(-build\.\d+)?`)
-var extractOldOpsmanVersionRegex = regexp.MustCompile(`(\d+)\.(\d+)-build\.(\d+)`)
+var (
+	extractSemverVersionRegex    = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)(-build\.\d+)?`)
+	extractOldOpsmanVersionRegex = regexp.MustCompile(`(\d+)\.(\d+)-build\.(\d+)`)
+)
 
 func Do(s string) (semver.Version, error) {
 	name := regexp.MustCompile(`^\[.*?]`).ReplaceAllString(filepath.Base(s), "")
@@ -26,7 +29,7 @@ func Do(s string) (semver.Version, error) {
 	}
 
 	if foundVersion == "" {
-		return semver.Version{}, fmt.Errorf("cannot find version from string")
+		return semver.Version{}, errors.New("cannot find version from string")
 	}
 
 	return semver.Make(foundVersion)

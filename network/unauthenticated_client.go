@@ -1,6 +1,7 @@
 package network
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -41,7 +42,7 @@ func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error)
 	}
 
 	if targetURL.Host == "" {
-		return nil, fmt.Errorf("target flag is required. Run `om help` for more info.")
+		return nil, errors.New("target flag is required. Run `om help` for more info.")
 	}
 
 	request.URL.Scheme = targetURL.Scheme

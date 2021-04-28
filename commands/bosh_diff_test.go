@@ -1,7 +1,7 @@
 package commands_test
 
 import (
-	"fmt"
+	"errors"
 	"log"
 
 	"github.com/fatih/color"
@@ -126,8 +126,8 @@ var _ = Describe("BoshDiff", func() {
 			})
 
 			It("prints both", func() {
-				//disable color for just this test;
-				//we don't want to try to assemble this whole example with color
+				// disable color for just this test;
+				// we don't want to try to assemble this whole example with color
 				color.NoColor = true
 				defer func() { color.NoColor = false }()
 
@@ -245,7 +245,6 @@ var _ = Describe("BoshDiff", func() {
 				Expect(logBuffer).To(gbytes.Say("no changes"))
 				Expect(logBuffer).To(gbytes.Say("## Runtime Configs"))
 				Expect(logBuffer).To(gbytes.Say("timeout: 30"))
-
 			})
 		})
 
@@ -343,7 +342,7 @@ var _ = Describe("BoshDiff", func() {
 			It("returns that error", func() {
 				// setup
 				service.ProductDiffReturns(
-					api.ProductDiff{}, fmt.Errorf("too many cooks"))
+					api.ProductDiff{}, errors.New("too many cooks"))
 
 				// execute
 				diff := commands.NewBoshDiff(service, logger)
@@ -528,8 +527,8 @@ var _ = Describe("BoshDiff", func() {
 			})
 
 			It("--check prints runtime and manifest configs for the director and the product and exits with 1", func() {
-				//disable color for just this test;
-				//we don't want to try to assemble this whole example with color
+				// disable color for just this test;
+				// we don't want to try to assemble this whole example with color
 				color.NoColor = true
 				defer func() { color.NoColor = false }()
 
@@ -587,7 +586,7 @@ var _ = Describe("BoshDiff", func() {
 					GUID: "another-product-guid",
 					Type: "another-product",
 				}}}, nil)
-				service.DirectorDiffReturns(api.DirectorDiff{}, fmt.Errorf("insufficient cooks"))
+				service.DirectorDiffReturns(api.DirectorDiff{}, errors.New("insufficient cooks"))
 
 				diff := commands.NewBoshDiff(service, logger)
 				err = executeCommand(diff, []string{""})
@@ -599,7 +598,7 @@ var _ = Describe("BoshDiff", func() {
 		When("there is an error from the ListStagedProducts method", func() {
 			It("returns that error", func() {
 				service.ListStagedProductsReturns(
-					api.StagedProductsOutput{}, fmt.Errorf("insufficient cooks"))
+					api.StagedProductsOutput{}, errors.New("insufficient cooks"))
 
 				diff := commands.NewBoshDiff(service, logger)
 				err = executeCommand(diff, []string{""})

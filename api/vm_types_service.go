@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 )
@@ -44,21 +45,21 @@ func (c *CreateVMType) UnmarshalJSON(b []byte) error {
 
 		case "ram":
 			if u, ok = value.(float64); !ok {
-				return fmt.Errorf("could not marshal ram into uint")
+				return errors.New("could not marshal ram into uint")
 			}
 
 			c.RAM = uint(u)
 
 		case "cpu":
 			if u, ok = value.(float64); !ok {
-				return fmt.Errorf("could not marshal cpu into uint")
+				return errors.New("could not marshal cpu into uint")
 			}
 
 			c.CPU = uint(u)
 
 		case "ephemeral_disk":
 			if u, ok = value.(float64); !ok {
-				return fmt.Errorf("could not marshal ephemeral_disk into uint")
+				return errors.New("could not marshal ephemeral_disk into uint")
 			}
 
 			c.EphemeralDisk = uint(u)
