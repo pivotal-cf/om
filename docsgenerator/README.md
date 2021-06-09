@@ -30,5 +30,5 @@ To generate docs from the usage and templates, run
 go run docsgenerator/update-docs.go
 ```
 and commit the result. 
-The Platform Automation team would prefer 
+The Platform Provider Experience team would prefer 
 the docs update to be a separate commit.

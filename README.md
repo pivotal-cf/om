@@ -5,9 +5,8 @@ _a mantra, or vibration, that is traditionally chanted_
 ![enhancing your calm](http://i.giphy.com/3o7qDQ5iw1oXyDeJAk.gif)
 
 `om` is a tool that helps you configure and deploy tiles to Ops-Manager.
-Currently being maintained by the PCF Platform Automation team,
-with engineering support and review from PCF Release Engineering.
-The (private) backlog for Platform Automation is [here](https://www.pivotaltracker.com/n/projects/1472134).
+Currently being maintained by the Developer and Application Platform (DAP) 
+Tanzu Application Service (TAS) Platform Provider Experience (PPE) team.
 
 ## Documentation
 
@@ -19,8 +18,8 @@ You can find them at
 `https://pcf.your-ops-manager.example.com/docs`.
 
 **NOTE**: Additional documentation for om commands
-used in Pivotal Platform Automation
-can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automation).
+used in Platform Automation can be found in
+the [VMware Tanzu Documentation](https://docs.pivotal.io/platform-automation).
 
 ## Versioning
 

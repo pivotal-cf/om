@@ -147,8 +147,7 @@ on code that is a work in progress.
 # Becoming a committer
 
 At this time, there is no official process for becoming a comitter to `om`.  The
-project is currently jointly maintained by Pivotal's PAS Release Engineering
-team and Pivotal's Platform Automation team. But we're open to new ideas here!
+project is currently maintained by the Platform Provider Experience team. But we're open to new ideas here!
 
 # Prior Art
 
