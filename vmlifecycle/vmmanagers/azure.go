@@ -7,15 +7,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pivotal-cf/om/vmlifecycle/runner"
 	"io"
 	"io/ioutil"
 	"log"
 	"strconv"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"github.com/pivotal-cf/om/vmlifecycle/runner"
+
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 type AzureCredential struct {
@@ -45,6 +47,7 @@ type AzureConfig struct {
 	UseManagedDisk             string `yaml:"use_managed_disk"`
 	StorageSKU                 string `yaml:"storage_sku,omitempty"`
 	VMSize                     string `yaml:"vm_size"`
+	Tags                       string `yaml:"tags"`
 }
 
 type AzureVMInfo struct {
@@ -488,6 +491,10 @@ func (a *AzureVMManager) createVM(imageUrl string, imageID string, publicIP stri
 			"--storage-sku", azure.StorageSKU,
 			"--image", imageID,
 		)
+	}
+
+	if azure.Tags != "" {
+		args = append(args, "--tags", azure.Tags)
 	}
 
 	_, _, err = a.runner.ExecuteWithEnvVars(a.addEnvVars(), args)
