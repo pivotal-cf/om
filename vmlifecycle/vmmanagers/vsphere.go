@@ -47,6 +47,7 @@ type VsphereConfig struct {
 	Netmask      string `yaml:"netmask" validate:"required"`
 	Gateway      string `yaml:"gateway" validate:"required"`
 	VMName       string `yaml:"vm_name"`
+	DiskSize     string `yaml:"disk_size"`
 	Memory       string `yaml:"memory"`
 	CPU          string `yaml:"cpu"`
 }
@@ -85,6 +86,7 @@ type VsphereVMManager struct {
 
 const DefaultMemory = "8"
 const DefaultCPU = "1"
+const DefaultDiskSize = "160"
 
 func NewVsphereVMManager(config *OpsmanConfigFilePayload, imageFileName string, state StateInfo, govcRunner govcRunner) *VsphereVMManager {
 	return &VsphereVMManager{
@@ -178,7 +180,14 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 
 	if v.Config.OpsmanConfig.Vsphere.Memory != DefaultMemory || v.Config.OpsmanConfig.Vsphere.CPU != DefaultCPU {
-		err := v.updateVM(env, ipath)
+		err := v.updateVMProperties(env, ipath)
+		if err != nil {
+			return Incomplete, fullState, err
+		}
+	}
+
+	if v.Config.OpsmanConfig.Vsphere.DiskSize != DefaultDiskSize {
+		err := v.updateVMDiskProperties(env, ipath)
 		if err != nil {
 			return Incomplete, fullState, err
 		}
@@ -333,6 +342,9 @@ func (v *VsphereVMManager) addDefaultConfigFields() {
 	if v.Config.OpsmanConfig.Vsphere.VMName == "" {
 		v.Config.OpsmanConfig.Vsphere.VMName = "ops-manager-vm"
 	}
+	if v.Config.OpsmanConfig.Vsphere.DiskSize == "" {
+		v.Config.OpsmanConfig.Vsphere.DiskSize = "160"
+	}
 }
 
 func (v *VsphereVMManager) validateVsphereConfig() error {
@@ -366,7 +378,7 @@ func (v *VsphereVMManager) validateVsphereConfig() error {
 	return nil
 }
 
-func (v *VsphereVMManager) updateVM(env []string, ipath string) error {
+func (v *VsphereVMManager) updateVMProperties(env []string, ipath string) error {
 	log.Println("Setting Memory and CPU for the VM...")
 	err := v.powerOffVM(env, ipath)
 	if err != nil {
@@ -384,6 +396,26 @@ func (v *VsphereVMManager) updateVM(env []string, ipath string) error {
 	}
 
 	log.Println("Memory and CPU set")
+	return nil
+}
+func (v *VsphereVMManager) updateVMDiskProperties(env []string, ipath string) error {
+	log.Println("Setting Disk Size for the VM...")
+	err := v.powerOffVM(env, ipath)
+	if err != nil {
+		return fmt.Errorf("govc error: could not turn off VM")
+	}
+
+	err = v.setVMDiskProperties(env, ipath)
+	if err != nil {
+		return fmt.Errorf("govc error: could not reassign disk size")
+	}
+
+	err = v.powerOnVM(env, ipath)
+	if err != nil {
+		return fmt.Errorf("govc error: could not turn on VM")
+	}
+
+	log.Println("Disk Size set")
 	return nil
 }
 
@@ -409,6 +441,14 @@ func (v *VsphereVMManager) setVMProperties(env []string, ipath string) error {
 		"-vm.ipath=" + ipath,
 		"-m=" + memory,
 		"-c=" + v.Config.OpsmanConfig.Vsphere.CPU,
+	})
+	return err
+}
+
+func (v *VsphereVMManager) setVMDiskProperties(env []string, ipath string) error {
+	_, _, err := v.runner.ExecuteWithEnvVars(env, []interface{}{"vm.disk.change",
+		"-vm.ipath=" + ipath,
+		"-size=" + fmt.Sprintf("%sG", v.Config.OpsmanConfig.Vsphere.DiskSize),
 	})
 	return err
 }
