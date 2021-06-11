@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"strings"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -13,9 +17,6 @@ import (
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"strings"
-	"time"
 )
 
 var _ = Describe("Azure VMManager", func() {
@@ -64,6 +65,7 @@ opsman-configuration:
     storage_key: key
     ssh_public_key: asdfasdfs
     cloud_name: AzureGermanCloud
+    tags: Project=ECommerce CostCenter=00123 Team=Web
 `
 		const configWithManagedDiskDisabledStrTemplate = `
 opsman-configuration:
@@ -208,6 +210,7 @@ opsman-configuration:
 						"--private-ip-address", "10.0.0.3",
 						"--storage-sku", "Standard_LRS",
 						"--image", "/some/resource/id/image",
+						"--tags", "Project=ECommerce CostCenter=00123 Team=Web",
 					},
 					{
 						"storage", "blob", "delete-batch",
