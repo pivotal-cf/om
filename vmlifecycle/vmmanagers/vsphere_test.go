@@ -65,6 +65,7 @@ opsman-configuration:
     netmask: 255.255.255.192
     gateway: 2.2.2.2
     vm_name: vm_name
+    disk_size: 200
     memory: 25
     cpu: 10
 `
@@ -196,6 +197,95 @@ opsman-configuration:
 
 					It("returns an error when the cpu/memory fails", func() {
 						memDefault := fmt.Sprintf(configTemplate, vmmanagers.DefaultMemory, "12")
+						command, runner := createCommand(memDefault, opsmanVersionBelow26)
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, nil, nil, errors.New("some error occurred"))
+						status, stateInfo, err := command.CreateVM()
+
+						Expect(err).To(HaveOccurred())
+						Expect(status).To(Equal(vmmanagers.Incomplete))
+						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
+					})
+				})
+
+
+				When("setting custom disk_size", func() {
+					const configTemplate = `
+opsman-configuration:
+  vsphere:
+    vcenter:
+      url: vcenter.nowhere.nonexist
+      username: goodman
+      password: badguy
+      datastore: datastore
+      datacenter: datacenter
+      insecure: 1
+      ca_cert: ca
+      resource_pool: resource-pool
+      host: host
+      folder: /datacenter/vm/folder
+    disk_type: thin
+    private_ip: 1.2.3.4
+    dns: 1.1.1.1
+    ntp: ntp.server.xyz
+    ssh_password: password
+    hostname: full.domain.name
+    network: some-edge
+    netmask: 255.255.255.192
+    gateway: 2.2.2.2
+    vm_name: vm_name
+    disk_size: %s
+`
+					It("sets disk_size if not default", func() {
+						diskSizeDefault := fmt.Sprintf(configTemplate, "200")
+						command, runner := createCommand(diskSizeDefault, opsmanVersionBelow26)
+						_, _, _ = command.CreateVM()
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+					})
+
+					It("does not make extra calls if disk_size is default", func() {
+						defaultConfigStr := `
+opsman-configuration:
+  vsphere:
+    vcenter:
+      url: vcenter.nowhere.nonexist
+      username: goodman
+      password: badguy
+      datastore: datastore
+      datacenter: datacenter
+      insecure: 1
+      ca_cert: ca
+      resource_pool: resource-pool
+      host: host
+      folder: /datacenter/vm/folder
+    disk_type: thin
+    private_ip: 1.2.3.4
+    dns: 1.1.1.1
+    ntp: ntp.server.xyz
+    ssh_password: password
+    hostname: full.domain.name
+    network: some-edge
+    netmask: 255.255.255.192
+    gateway: 2.2.2.2
+    vm_name: vm_name
+`
+						command, runner := createCommand(defaultConfigStr, opsmanVersionBelow26)
+
+						status, state, err := command.CreateVM()
+						Expect(err).ToNot(HaveOccurred())
+						Expect(status).To(Equal(vmmanagers.Success))
+						Expect(state).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
+
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(1))
+						_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+						Expect(args).To(matchers.OrderedConsistOf(
+							"import.ova",
+							MatchRegexp("-options=.*options.json.*"),
+							MatchRegexp(".*ova"),
+						))
+					})
+
+					It("returns an error when the disk_size fails", func() {
+						memDefault := fmt.Sprintf(configTemplate, "120")
 						command, runner := createCommand(memDefault, opsmanVersionBelow26)
 						runner.ExecuteWithEnvVarsReturnsOnCall(1, nil, nil, errors.New("some error occurred"))
 						status, stateInfo, err := command.CreateVM()
