@@ -47,6 +47,68 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.3.0
+### Features
+- An Ops Manager VM on Vsphere can be created with the property `disk_size`.
+  This allows a user to assign a size larger than the default 160 (GB).
+
+  Usage:
+  ```yaml
+  ---
+    opsman-configuration:
+      vsphere:
+        disk_size: 200
+        vm_name: ops-manager-vm
+        cpu: 4
+        memory: 16
+        disk_type: thin
+        dns: 8.8.8.8
+        gateway: 192.168.10.1
+        hostname: ops-manager.example.com
+        netmask: 255.255.255.192
+        network: example-virtual-network
+        ntp: ntp.ubuntu.com
+        private_ip: 10.0.0.10
+        ssh_public_key: ssh-rsa ......
+        vcenter:
+          ca_cert: cert
+          datacenter: example-dc
+          datastore: example-ds-1
+          folder: /example-dc/vm/Folder
+          url: vcenter.example.com
+          username: ((vcenter-username))
+          password: ((vcenter-password))
+          resource_pool: /example-dc/host/example-cluster/Resources/example-pool
+  ```
+
+- An Ops Manager VM on Azure can be created with the property `tags`.
+  This allows a user to assign tags to the Ops Manager VM.
+
+  Usage:
+  ```yaml
+  ---
+  opsman-configuration:
+    azure:
+      tags: Key=Value
+      vm_name: ops-manager-vm
+      boot_disk_size: 200
+      tenant_id: 3e52862f-a01e-4b97-98d5-f31a409df682
+      subscription_id: 90f35f10-ea9e-4e80-aac4-d6778b995532
+      client_id: 5782deb6-9195-4827-83ae-a13fda90aa0d
+      client_secret: ((opsman-client-secret))
+      location: westus
+      resource_group: res-group
+      storage_account: opsman
+      ssh_public_key: ssh-rsa ......
+      subnet_id: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Network/virtualNetworks/<VNET>/subnets/<SUBNET>
+      private_ip: 10.0.0.3
+  ```
+
+- `om curl` defaults to POST method when data provided. [#533]
+
+### Bug Fixes
+- The output from `download-product` is compatible with `assign-multi-stemcell`. [#539]
+
 ## 7.2.0
 ### Features
 - An Ops Manager VM on GCP can be created with the property [`hostname`](https://cloud.google.com/compute/docs/instances/custom-hostname-vm).
