@@ -645,7 +645,7 @@ func (a *AzureVMManager) validateDeprecatedVars() error {
 	}
 
 	if a.Config.OpsmanConfig.Azure.VPCSubnetDEPRECATED != "" {
-		log.Println("\"vpc_subnet\" is DEPRECATED. Please use \"subnet-id\"")
+		log.Println("\"vpc_subnet\" is DEPRECATED. Please use \"subnet_id\"")
 		a.Config.OpsmanConfig.Azure.SubnetID = a.Config.OpsmanConfig.Azure.VPCSubnetDEPRECATED
 	}
 
