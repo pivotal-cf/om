@@ -34,6 +34,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		Expect(err).ToNot(HaveOccurred())
 		command := exec.Command("minio", "server", "--config-dir", dataDir, "--address", ":9001", dataDir)
 		command.Env = []string{
+			fmt.Sprintf("HOME=%s", os.Getenv("HOME")),
 			"MINIO_ACCESS_KEY=minio",
 			"MINIO_SECRET_KEY=password",
 			"MINIO_BROWSER=off",
