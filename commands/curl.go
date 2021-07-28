@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/pivotal-cf/om/api"
@@ -23,7 +25,7 @@ type Curl struct {
 	Options struct {
 		Path    string   `long:"path"    short:"p" required:"true" description:"path to api endpoint"`
 		Method  string   `long:"request" short:"x"                 description:"http verb (defaults to GET, POST when 'data' specified"`
-		Data    string   `long:"data"    short:"d"                 description:"api request payload"`
+		Data    string   `long:"data"    short:"d"                 description:"api request payload (prefix with @ to read file contents)"`
 		Silent  bool     `long:"silent"  short:"s"                 description:"only write response headers to stderr if response status is 4XX or 5XX"`
 		Headers []string `long:"header"  short:"H"                 description:"used to specify custom headers with your command" default:"Content-Type: application/json"`
 	}
@@ -40,10 +42,21 @@ func (c Curl) Execute(args []string) error {
 		requestHeaders.Set(strings.TrimSuffix(split[0], ":"), split[1])
 	}
 
+	var data io.Reader = strings.NewReader(c.Options.Data)
+	if strings.HasPrefix(c.Options.Data, "@") {
+		fname := strings.TrimPrefix(c.Options.Data, "@")
+		f, err := os.Open(fname)
+		if err != nil {
+			return fmt.Errorf("couldn't open %s: %w", fname, err)
+		}
+		data = f
+		defer f.Close()
+	}
+
 	input := api.RequestServiceCurlInput{
 		Path:    c.Options.Path,
 		Method:  c.Options.Method,
-		Data:    strings.NewReader(c.Options.Data),
+		Data:    data,
 		Headers: requestHeaders,
 	}
 
