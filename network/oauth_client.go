@@ -2,12 +2,13 @@ package network
 
 import (
 	"fmt"
-	"github.com/cloudfoundry-community/go-uaa"
-	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/cloudfoundry-community/go-uaa"
+	"golang.org/x/oauth2"
 )
 
 type OAuthClient struct {
@@ -94,13 +95,13 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 			"",
 			oc.username,
 			oc.password,
-			uaa.OpaqueToken,
+			uaa.JSONWebToken,
 		)
 	} else {
 		authOption = uaa.WithClientCredentials(
 			oc.clientID,
 			oc.clientSecret,
-			uaa.OpaqueToken,
+			uaa.JSONWebToken,
 		)
 	}
 

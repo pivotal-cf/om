@@ -4,12 +4,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/onsi/gomega/ghttp"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
+
+	"github.com/onsi/gomega/ghttp"
 
 	"github.com/pivotal-cf/om/network"
 
@@ -139,7 +140,7 @@ var _ = Describe("OAuthClient", func() {
 					"grant_type":   []string{"password"},
 					"username":     []string{"opsman-username"},
 					"password":     []string{"opsman-password"},
-					"token_format": []string{"opaque"},
+					"token_format": []string{"jwt"},
 					"client_id":    []string{"opsman"},
 				}),
 				ghttp.RespondWith(http.StatusOK, `{
@@ -169,7 +170,7 @@ var _ = Describe("OAuthClient", func() {
 				ghttp.VerifyBasicAuth("client_id", "client_secret"),
 				ghttp.VerifyForm(url.Values{
 					"grant_type":   []string{"client_credentials"},
-					"token_format": []string{"opaque"},
+					"token_format": []string{"jwt"},
 				}),
 				ghttp.RespondWith(http.StatusOK, `{
 					"access_token": "some-opsman-token",
@@ -360,7 +361,7 @@ func setupBasicOauth(server *ghttp.Server) {
 			"grant_type":   []string{"password"},
 			"username":     []string{"opsman-username"},
 			"password":     []string{"opsman-password"},
-			"token_format": []string{"opaque"},
+			"token_format": []string{"jwt"},
 			"client_id":    []string{"opsman"},
 		}),
 		ghttp.RespondWith(http.StatusOK, `{
