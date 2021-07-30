@@ -1,12 +1,13 @@
 package docs_test
 
 import (
-	"github.com/onsi/gomega/gexec"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/onsi/gomega/gexec"
 
 	"fmt"
 
@@ -63,7 +64,7 @@ func getCommandNames() []string {
 	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
 
-	session.Wait()
+	session.Wait(15)
 
 	output := strings.Split(string(session.Out.Contents()), "\n")
 
