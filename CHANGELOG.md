@@ -47,6 +47,26 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.3.1
+
+### Bug Fixes
+
+- Way back in 7.0, incidental to switching to the uaa-go library,
+  om started requesting `opaque` access tokens from UAA
+  to access Ops Manager.
+  The change wasn't deliberate, and didn't even make the release notes.
+
+  These implicitly revocable tokens may be contributing to
+  a hard-to-repro issue around parallel access
+  in a customer environment.
+
+  Before the change, the optional `token_format` parameter went unused,
+  and UAA's default `token_format`, `jwt`, was used.
+
+  This release explicitly requests `jwt` access tokens,
+  restoring the previous behavior,
+  and potentially addressing said parallel-access issue.
+
 ## 7.3.0
 ### Features
 - An Ops Manager VM on Vsphere can be created with the property `disk_size`.
