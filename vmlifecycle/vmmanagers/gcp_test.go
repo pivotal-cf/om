@@ -92,31 +92,6 @@ opsman-configuration:
 			Expect(err.Error()).To(ContainSubstring("gcp_service_account or gcp_service_account_name must be set"))
 		})
 
-		It("requires gcp_service_account or gcp_service_account_name not both to be defined", func() {
-			const configStrTemplate = `
-opsman-configuration:
-  gcp:
-    version: 1.2.3
-    gcp_service_account: something
-    gcp_service_account_name: something@something.com
-    project: dummy-project
-    region: %s
-    zone: us-west1-c
-    vm_name: opsman-vm
-    vpc_network: dummy-network
-    vpc_subnet: dummy-subnet
-    tags: good
-    custom_cpu: 8
-    custom_memory: 16
-    boot_disk_size: 400
-    public_ip: 1.2.3.4
-`
-			command, _ := createCommand("us-west1", configStrTemplate)
-			_, _, err := command.CreateVM()
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("both gcp_service_account and gcp_service_account_name cannot be set"))
-		})
-
 		It("does not set private IP address when not defined", func() {
 			const configStrTemplate = `
 opsman-configuration:
