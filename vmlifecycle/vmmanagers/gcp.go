@@ -118,10 +118,6 @@ func (g *GCPVMManager) CreateVM() (Status, StateInfo, error) {
 		return Unknown, StateInfo{}, errors.New("gcp_service_account or gcp_service_account_name must be set")
 	}
 
-	if g.Config.OpsmanConfig.GCP.ServiceAccount != "" && g.Config.OpsmanConfig.GCP.ServiceAccountName != "" {
-		return Unknown, StateInfo{}, errors.New("both gcp_service_account and gcp_service_account_name cannot be set")
-	}
-
 	imageUriMap, err := loadImageYaml(g.ImageYaml)
 	g.imageUriMap = imageUriMap
 	if err != nil {
