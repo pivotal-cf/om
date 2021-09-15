@@ -68,7 +68,6 @@ require (
 	github.com/pivotal-cf/winfs-injector v0.0.0-20200827170301-91411420d92f
 	github.com/sclevine/spec v1.4.0 // indirect
 	github.com/shirou/gopsutil v3.20.12+incompatible // indirect
-	github.com/tedsuo/ifrit v0.0.0-20191009134036-9a97d0632f00 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	github.com/vito/go-interact v1.0.0 // indirect
 	github.com/vmware/govmomi v0.24.0

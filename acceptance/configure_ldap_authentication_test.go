@@ -1,9 +1,10 @@
 package acceptance
 
 import (
-	"github.com/onsi/gomega/ghttp"
 	"net/http"
 	"os/exec"
+
+	"github.com/onsi/gomega/ghttp"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
