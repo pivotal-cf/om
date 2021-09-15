@@ -191,7 +191,7 @@ var _ = Describe("Formcontent", func() {
 			content, err := ioutil.ReadAll(submission.Content)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(submission.ContentLength).To(Equal(int64(373)))
+			Expect(submission.ContentLength).To(Or(Equal(int64(373)), Equal(int64(374))))
 			Expect(string(content)).To(MatchRegexp(`^--\w+\r\nContent-Disposition: form-data; name=\"file1\"; filename=\"\w+\"\r\n` +
 				`Content-Type: application/octet-stream\r\n\r\n` +
 				`some content` +
