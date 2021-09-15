@@ -653,6 +653,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	parser.Options |= flags.HelpFlag
 
 	_, err = parser.ParseArgs(args)
+
 	if err != nil {
 		if e, ok := err.(*flags.Error); ok {
 			switch e.Type {

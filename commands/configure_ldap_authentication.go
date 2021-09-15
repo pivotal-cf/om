@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+
 	"github.com/pivotal-cf/om/api"
 )
 

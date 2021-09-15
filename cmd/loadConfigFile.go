@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/jessevdk/go-flags"
 	"github.com/pivotal-cf/om/interpolate"
 	"gopkg.in/yaml.v2"
@@ -72,8 +74,21 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		return nil, fmt.Errorf("failed to unmarshal config file %s: %s", configFile, err)
 	}
 
+	fileArgs, err := parseOptions(options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse options : %s", err)
+	}
+
+	cmdArgs := []string{args[0]}
+	cmdArgs = append(cmdArgs, fileArgs...)
+	cmdArgs = append(cmdArgs, args[1:]...)
+	return cmdArgs, err
+}
+
+func parseOptions(opts map[string]interface{}) ([]string, error) {
+
 	var fileArgs []string
-	for key, value := range options {
+	for key, value := range opts {
 		switch convertedValue := value.(type) {
 		case []interface{}:
 			for _, v := range convertedValue {
@@ -84,13 +99,10 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 				fileArgs = append(fileArgs, fmt.Sprintf("--%s", key))
 			}
 		default:
-			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, value))
+			nval := strings.Replace(convertedValue.(string), "\"", "\\\"", -1)
+			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, nval))
 		}
 
 	}
-
-	cmdArgs := []string{args[0]}
-	cmdArgs = append(cmdArgs, fileArgs...)
-	cmdArgs = append(cmdArgs, args[1:]...)
-	return cmdArgs, err
+	return fileArgs, nil
 }
