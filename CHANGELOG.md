@@ -47,6 +47,16 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.3.2
+
+### Bug fix
+
+We fixed an error that occured while parsing a string with double quotes.
+
+### Tests
+
+We increased the tolerance of the acceptance suite by capturing additional test states.
+
 ## 7.3.1
 
 ### Bug Fixes
