@@ -81,11 +81,11 @@ on the Ops Manager Settings page (will update as more functionality is added):
 ssl-certificate:
   certificate: |
     -----BEGIN CERTIFICATE-----
-    certificate
+    [ CERTIFICATE BODY REDACTED ]
     -----END CERTIFICATE-----
   private_key:
     ----BEGIN RSA PRIVATE KEY-----
-    private-key
+    [ PRIVATE KEY REDACTED ]
     -----END RSA PRIVATE KEY-----
 pivotal-network-settings:
   api_token: your-pivnet-token
@@ -101,7 +101,7 @@ syslog-settings:
   permitted_peer: "*.example.com"
   ssl_ca_certificate: |
     -----BEGIN CERTIFICATE-----
-    certificate
+    [ CERTIFICATE BODY REDACTED ]
     -----END CERTIFICATE-----
   queue_size: 100000
   forward_debug_logs: false
