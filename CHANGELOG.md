@@ -46,6 +46,12 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Note the additional space before the `export` command.
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
+  
+
+## 7.3.3
+
+### Features
+  - Deleted an unnecessary verification on which we were throwing an error when a user specified both the variables `ServiceAccountName` and `ServiceAccount`,    now you can specify both variables and no error will be thrown. For more information, see discussion [here](https://github.com/pivotal-cf/om/issues/554) 
 
 ## 7.3.2
 
