@@ -51,6 +51,12 @@ Help Options:
   -h, --help                   Show this help message
 
 [assign-multi-stemcell command options]
+      -p, --product=           name of Ops Manager tile to associate a stemcell
+                               to
+      -s, --stemcell=          associate a particular stemcell version to a
+                               tile (ie 'ubuntu-trusty:123.4')
+
+    config file interpolation:
       -c, --config=            path to yml file for configuration (keys must
                                match the following command line flags)
           --vars-env=          load variables from environment variables
@@ -59,9 +65,5 @@ Help Options:
       -l, --vars-file=         load variables from a YAML file
       -v, --var=               load variable from the command line. Format:
                                VAR=VAL
-      -p, --product=           name of Ops Manager tile to associate a stemcell
-                               to
-      -s, --stemcell=          associate a particular stemcell version to a
-                               tile (ie 'ubuntu-trusty:123.4')
 ```
 

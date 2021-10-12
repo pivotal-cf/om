@@ -48,7 +48,7 @@ Help Options:
   -h, --help                   Show this help message
 
 [disable-product-verifiers command options]
-      -c, --product-name=      the name of the product
+      -n, --product-name=      the name of the product
       -t, --type=              verifier types to disable
 ```
 

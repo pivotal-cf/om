@@ -49,7 +49,8 @@ Help Options:
 
 [curl command options]
       -p, --path=              path to api endpoint
-      -x, --request=           http verb (default: GET)
+      -x, --request=           http verb (defaults to GET, POST when 'data'
+                               specified
       -d, --data=              api request payload
       -s, --silent             only write response headers to stderr if
                                response status is 4XX or 5XX

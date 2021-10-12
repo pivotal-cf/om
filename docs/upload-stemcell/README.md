@@ -50,6 +50,15 @@ Help Options:
   -h, --help                   Show this help message
 
 [upload-stemcell command options]
+      -s, --stemcell=          path to stemcell
+      -f, --force              upload stemcell even if it already exists on the
+                               target Ops Manager
+          --floating=          assigns the stemcell to all compatible products
+                               (default: true)
+          --shasum=            shasum of the provided product file to be used
+                               for validation
+
+    config file interpolation:
       -c, --config=            path to yml file for configuration (keys must
                                match the following command line flags)
           --vars-env=          load variables from environment variables
@@ -58,12 +67,5 @@ Help Options:
       -l, --vars-file=         load variables from a YAML file
       -v, --var=               load variable from the command line. Format:
                                VAR=VAL
-      -s, --stemcell=          path to stemcell
-      -f, --force              upload stemcell even if it already exists on the
-                               target Ops Manager
-          --floating=          assigns the stemcell to all compatible products
-                               (default: true)
-          --shasum=            shasum of the provided product file to be used
-                               for validation
 ```
 

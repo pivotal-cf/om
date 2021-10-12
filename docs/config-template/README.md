@@ -50,14 +50,6 @@ Help Options:
   -h, --help                     Show this help message
 
 [config-template command options]
-      -c, --config=              path to yml file for configuration (keys must
-                                 match the following command line flags)
-          --vars-env=            load variables from environment variables
-                                 matching the provided prefix (e.g.: 'MY' to
-                                 load MY_var=value) [$OM_VARS_ENV]
-      -l, --vars-file=           load variables from a YAML file
-      -v, --var=                 load variable from the command line. Format:
-                                 VAR=VAL
           --pivnet-api-token=
           --pivnet-product-slug= the product name in pivnet
           --product-version=     the version of the product from which to
@@ -74,5 +66,15 @@ Help Options:
           --exclude-version      if set, will not output a version-specific
                                  directory
           --size-of-collections=
+
+    config file interpolation:
+      -c, --config=              path to yml file for configuration (keys must
+                                 match the following command line flags)
+          --vars-env=            load variables from environment variables
+                                 matching the provided prefix (e.g.: 'MY' to
+                                 load MY_var=value) [$OM_VARS_ENV]
+      -l, --vars-file=           load variables from a YAML file
+      -v, --var=                 load variable from the command line. Format:
+                                 VAR=VAL
 ```
 

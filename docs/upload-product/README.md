@@ -49,6 +49,15 @@ Help Options:
   -h, --help                   Show this help message
 
 [upload-product command options]
+      -p, --product=           path to product
+      -i, --polling-interval=  interval (in seconds) at which to print status
+                               (default: 1)
+          --shasum=            shasum of the provided product file to be used
+                               for validation
+          --product-version=   version of the provided product file to be used
+                               for validation
+
+    config file interpolation:
       -c, --config=            path to yml file for configuration (keys must
                                match the following command line flags)
           --vars-env=          load variables from environment variables
@@ -57,12 +66,5 @@ Help Options:
       -l, --vars-file=         load variables from a YAML file
       -v, --var=               load variable from the command line. Format:
                                VAR=VAL
-      -p, --product=           path to product
-      -i, --polling-interval=  interval (in seconds) at which to print status
-                               (default: 1)
-          --shasum=            shasum of the provided product file to be used
-                               for validation
-          --product-version=   version of the provided product file to be used
-                               for validation
 ```
 
