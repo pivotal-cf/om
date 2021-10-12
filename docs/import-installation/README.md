@@ -51,6 +51,11 @@ Help Options:
   -h, --help                   Show this help message
 
 [import-installation command options]
+      -i, --installation=      path to installation.
+      -p, --polling-interval=  interval (in seconds) to check OpsManager
+                               availability (default: 10)
+
+    config file interpolation:
       -c, --config=            path to yml file for configuration (keys must
                                match the following command line flags)
           --vars-env=          load variables from environment variables
@@ -59,8 +64,5 @@ Help Options:
       -l, --vars-file=         load variables from a YAML file
       -v, --var=               load variable from the command line. Format:
                                VAR=VAL
-      -i, --installation=      path to installation.
-      -p, --polling-interval=  interval (in seconds) to check OpsManager
-                               availability (default: 10)
 ```
 

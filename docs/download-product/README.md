@@ -88,16 +88,6 @@ Help Options:
           --gcs-service-account-json=  the service account key JSON
           --gcs-project-id=            the project id for the bucket's gcp
                                        account
-      -c, --config=                    path to yml file for configuration (keys
-                                       must match the following command line
-                                       flags)
-          --vars-env=                  load variables from environment
-                                       variables matching the provided prefix
-                                       (e.g.: 'MY' to load MY_var=value)
-                                       [$OM_VARS_ENV]
-      -l, --vars-file=                 load variables from a YAML file
-      -v, --var=                       load variable from the command line.
-                                       Format: VAR=VAL
       -p, --pivnet-product-slug=       path to product
           --pivnet-disable-ssl         whether to disable ssl validation when
                                        contacting the Pivotal Network
@@ -145,5 +135,17 @@ Help Options:
                                        download (ie 458.61)
           --stemcell-heavy             force the downloading of a heavy
                                        stemcell, will fail if non exists
+
+    config file interpolation:
+      -c, --config=                    path to yml file for configuration (keys
+                                       must match the following command line
+                                       flags)
+          --vars-env=                  load variables from environment
+                                       variables matching the provided prefix
+                                       (e.g.: 'MY' to load MY_var=value)
+                                       [$OM_VARS_ENV]
+      -l, --vars-file=                 load variables from a YAML file
+      -v, --var=                       load variable from the command line.
+                                       Format: VAR=VAL
 ```
 

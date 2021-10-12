@@ -56,16 +56,6 @@ Help Options:
   -h, --help                               Show this help message
 
 [configure-ldap-authentication command options]
-      -c, --config=                        path to yml file for configuration
-                                           (keys must match the following
-                                           command line flags)
-          --vars-env=                      load variables from environment
-                                           variables matching the provided
-                                           prefix (e.g.: 'MY' to load
-                                           MY_var=value) [$OM_VARS_ENV]
-      -l, --vars-file=                     load variables from a YAML file
-      -v, --var=                           load variable from the command line.
-                                           Format: VAR=VAL
       -d, --decryption-passphrase=         passphrase used to encrypt the
                                            installation
           --http-proxy-url=                proxy for outbound HTTP network
@@ -107,5 +97,17 @@ Help Options:
           --precreated-client-secret=      create a UAA client on the Ops
                                            Manager vm. The client_secret will
                                            be the value provided to this option
+
+    config file interpolation:
+      -c, --config=                        path to yml file for configuration
+                                           (keys must match the following
+                                           command line flags)
+          --vars-env=                      load variables from environment
+                                           variables matching the provided
+                                           prefix (e.g.: 'MY' to load
+                                           MY_var=value) [$OM_VARS_ENV]
+      -l, --vars-file=                     load variables from a YAML file
+      -v, --var=                           load variable from the command line.
+                                           Format: VAR=VAL
 ```
 
