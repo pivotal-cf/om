@@ -52,7 +52,7 @@ The `om` team may change any internal structs, interfaces, etc,
 without reflecting such changes in the version,
 so long as the outputs and behavior of the commands remain the same.
 
-Though `om` is used heavily in [Platform Automation for PCF](network.pivotal.io/platform-automation),
+Though `om` is used heavily in [Platform Automation for PCF](https://network.pivotal.io/products/platform-automation/),
 which is also semantically versioned.
 `om` is versioned independently from `platform-automation`.
 
