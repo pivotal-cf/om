@@ -11,7 +11,7 @@ import (
 
 type ConfigTemplate struct {
 	environFunc   envProvider
-	buildProvider buildProvider
+	buildProvider configTemplateBuildProvider
 	Options       struct {
 		InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
 
@@ -37,7 +37,7 @@ type MetadataProvider interface {
 	MetadataBytes() ([]byte, error)
 }
 
-var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
+var DefaultConfigTemplateProvider = func() func(c *ConfigTemplate) MetadataProvider {
 	return func(c *ConfigTemplate) MetadataProvider {
 		options := c.Options
 		if options.ProductPath != "" {
@@ -48,15 +48,15 @@ var DefaultProvider = func() func(c *ConfigTemplate) MetadataProvider {
 }
 
 type (
-	buildProvider func(*ConfigTemplate) MetadataProvider
-	envProvider   func() []string
+	configTemplateBuildProvider func(*ConfigTemplate) MetadataProvider
+	envProvider                 func() []string
 )
 
-func NewConfigTemplate(bp buildProvider) *ConfigTemplate {
+func NewConfigTemplate(bp configTemplateBuildProvider) *ConfigTemplate {
 	return NewConfigTemplateWithEnvironment(bp, os.Environ)
 }
 
-func NewConfigTemplateWithEnvironment(bp buildProvider, environFunc envProvider) *ConfigTemplate {
+func NewConfigTemplateWithEnvironment(bp configTemplateBuildProvider, environFunc envProvider) *ConfigTemplate {
 	return &ConfigTemplate{
 		environFunc:   environFunc,
 		buildProvider: bp,

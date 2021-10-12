@@ -1,12 +1,7 @@
 package commands_test
 
 import (
-	"archive/zip"
-
-	"os"
-
-	"io/ioutil"
-
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/commands"
@@ -18,100 +13,75 @@ var _ = Describe("ProductMetadata", func() {
 		var (
 			command *commands.ProductMetadata
 			stdout  *fakes.Logger
-
-			productFile *os.File
 			err         error
 		)
 
 		BeforeEach(func() {
 			stdout = &fakes.Logger{}
 
-			command = commands.NewProductMetadata(stdout)
-
-			// write fake file
-			productFile, err = ioutil.TempFile("", "fake-tile")
-			z := zip.NewWriter(productFile)
-
-			// https://github.com/pivotal-cf/om/issues/239
-			// writing a "directory" as well, because some tiles seem to
-			// have this as a separate file in the zip, which influences the regexp
-			// needed to capture the metadata file
-			_, err := z.Create("metadata/")
-			Expect(err).ToNot(HaveOccurred())
-
-			f, err := z.Create("metadata/fake-tile.yml")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = f.Write([]byte(`
-name: fake-tile
-product_version: 1.2.3
-`))
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(z.Close()).To(Succeed())
-		})
-
-		AfterEach(func() {
-			Expect(os.RemoveAll(productFile.Name())).To(Succeed())
+			command = commands.NewProductMetadata(func(*commands.ProductMetadata) commands.MetadataProvider {
+				f := &fakes.MetadataProvider{}
+				f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
+				return f
+			}, stdout)
 		})
 
 		It("shows product name from tile metadata file", func() {
 			err = executeCommand(command, []string{
 				"-p",
-				productFile.Name(),
+				"product-filename",
 				"--product-name",
 			})
 			Expect(err).ToNot(HaveOccurred())
 
 			content := stdout.PrintlnArgsForCall(0)
-			Expect(content).To(ContainElement("fake-tile"))
+			Expect(content).To(ContainElement("example-product"))
 		})
 
 		It("shows product version from tile metadata file", func() {
 			err = executeCommand(command, []string{
 				"-p",
-				productFile.Name(),
+				"product-filename",
 				"--product-version",
 			})
 			Expect(err).ToNot(HaveOccurred())
 
 			content := stdout.PrintlnArgsForCall(0)
-			Expect(content).To(ContainElement("1.2.3"))
+			Expect(content).To(ContainElement("1.1.1"))
 		})
 
-		When("the flags are not specified", func() {
-			It("returns an error", func() {
-				err = executeCommand(command, []string{"-p", productFile.Name()})
-				Expect(err).To(MatchError(MatchRegexp("you must specify product-name and/or product-version")))
+		Describe("flag handling", func() {
+			When("the required flags are not specified", func() {
+				It("returns an error", func() {
+					err = executeCommand(command, []string{"-p", "product-filename"})
+					Expect(err).To(MatchError(MatchRegexp("you must specify product-name and/or product-version")))
+				})
+			})
+
+			When("pivnet and product path args are provided", func() {
+				It("returns an error", func() {
+					err := executeCommand(command, []string{
+						"--pivnet-api-token", "b",
+						"--product-path", "c",
+						"--product-name",
+					})
+					Expect(err).To(MatchError(ContainSubstring("please provide either pivnet flags OR product-path")))
+				})
 			})
 		})
 
 		When("the specified product file is not found", func() {
+			BeforeEach(func() {
+				command = commands.NewProductMetadata(func(*commands.ProductMetadata) commands.MetadataProvider {
+					f := &fakes.MetadataProvider{}
+					f.MetadataBytesReturns(nil, errors.New("open non-existent-file"))
+					return f
+				}, stdout)
+			})
+
 			It("returns an error", func() {
 				err = executeCommand(command, []string{"-p", "non-existent-file", "--product-name"})
 				Expect(err).To(MatchError(MatchRegexp("open non-existent-file")))
-			})
-		})
-
-		When("the file does not have metadata", func() {
-			var (
-				badTile *os.File
-			)
-
-			BeforeEach(func() {
-				badTile, err = ioutil.TempFile("", "bad-tile")
-				Expect(err).ToNot(HaveOccurred())
-				z := zip.NewWriter(badTile)
-				Expect(z.Close()).To(Succeed())
-			})
-
-			AfterEach(func() {
-				Expect(os.RemoveAll(badTile.Name())).To(Succeed())
-			})
-
-			It("returns an error", func() {
-				err = executeCommand(command, []string{"-p", badTile.Name(), "--product-name"})
-				Expect(err).To(MatchError(MatchRegexp("failed to getting metadata")))
 			})
 		})
 	})
