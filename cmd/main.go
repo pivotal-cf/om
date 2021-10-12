@@ -215,8 +215,8 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	_, err = parser.AddCommand(
 		"config-template",
 		"generates a config template from a Pivnet product",
-		"this command generates a product configuration template from a .pivotal file on Pivnet",
-		commands.NewConfigTemplate(commands.DefaultProvider()),
+		"this command generates a product configuration template from a .pivotal file or Pivnet",
+		commands.NewConfigTemplate(commands.DefaultConfigTemplateProvider()),
 	)
 	if err != nil {
 		return err
@@ -521,8 +521,8 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	_, err = parser.AddCommand(
 		"product-metadata",
 		"prints product metadata",
-		"This command prints metadata about the given product",
-		commands.NewProductMetadata(stdout),
+		"This command prints metadata about the given product from a .pivotal file or Pivnet",
+		commands.NewProductMetadata(commands.DefaultProductMetadataProvider(), stdout),
 	)
 	if err != nil {
 		return err
