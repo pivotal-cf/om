@@ -32,7 +32,7 @@ as long as the outputs and behavior of the commands remain the same.
 
 **NOTE**: Additional documentation for om commands
 leveraged by Pivotal Platform Automation
-can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
+can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automation).
 
 `om` is versioned independently from platform-automation.
 
@@ -46,7 +46,17 @@ can be found in [Pivotal Documentation](docs.pivotal.io/platform-automation).
   Note the additional space before the `export` command.
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
-  
+
+## 7.4.0
+
+### Features
+- [#555](https://github.com/pivotal-cf/om/pull/555): Added new functionality to read files using the `--data` flag in `curl` command.
+
+### Bug fixes
+Fixes included in this release:
+- [#552](https://github.com/pivotal-cf/om/pull/552): Fixed typo in error message for command `vm-lifecycle`.
+- [#545](https://github.com/pivotal-cf/om/pull/545): Adjusted message for `s3-disable-ssl` parameter in `download-product` command.
+- [#566](https://github.com/pivotal-cf/om/pull/566): Fixed link to `Platform automation` docs.
 
 ## 7.3.3
 
