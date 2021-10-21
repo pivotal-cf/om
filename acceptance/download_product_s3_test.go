@@ -2,17 +2,22 @@ package acceptance
 
 import (
 	"fmt"
-	"github.com/onsi/ginkgo/config"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+var minioEndpoint = "http://minio:9001"
+var minioUser = "minioadmin"
+var minioPassword = "minioadmin"
 
 var _ = Describe("download-product command", func() {
 	When("downloading from s3", func() {
@@ -36,7 +41,7 @@ var _ = Describe("download-product command", func() {
 		})
 
 		AfterEach(func() {
-			runCommand("mc", "rb", "--force", "testing/"+bucketName)
+			runCommand2(true, "mc", "rb", "--force", "testing/"+bucketName)
 		})
 
 		When("specifying the stemcell iaas to download", func() {
@@ -44,6 +49,8 @@ var _ = Describe("download-product command", func() {
 				pivotalFile := createPivotalFile("[pivnet-example-slug,1.10.1]example*pivotal", "./fixtures/example-product.yml")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
+				runCommand("mc", "ls", "testing/"+bucketName+"/some/product/")
+				runCommand("mc", "ls", "testing/"+bucketName+"/another/stemcell/")
 
 				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
@@ -54,10 +61,10 @@ var _ = Describe("download-product command", func() {
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 					"--stemcell-iaas", "google",
 					"--s3-stemcell-path", "/another/stemcell",
 					"--s3-product-path", "/some/product",
@@ -93,10 +100,10 @@ var _ = Describe("download-product command", func() {
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 					"--stemcell-iaas", "google",
 					"--s3-stemcell-path", "/another/stemcell",
 					"--s3-product-path", "/some/product",
@@ -136,10 +143,10 @@ file-glob: example-product.pivotal
 pivnet-product-slug: pivnet-example-slug
 product-version: 1.10.1
 source: s3
-s3-access-key-id: minio
-s3-secret-access-key: password
+s3-access-key-id: `+minioUser+`
+s3-secret-access-key: `+minioPassword+`
 s3-region-name: unknown
-s3-endpoint: http://127.0.0.1:9001
+s3-endpoint: `+minioEndpoint+`
 stemcell-iaas: google
 s3-stemcell-path: /another/stemcell
 s3-product-path: /some/product
@@ -171,7 +178,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 					"--s3-enable-v2-signing", "true",
 				)
 
@@ -197,7 +204,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 					"--s3-enable-v2-signing", "true",
 				)
 
@@ -221,7 +228,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -246,7 +253,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -277,7 +284,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -306,7 +313,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 					"--s3-product-path", "/some-path",
 				)
 
@@ -344,7 +351,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -373,7 +380,7 @@ stemcell-heavy: true`))
 					"--s3-access-key-id", "minio",
 					"--s3-secret-access-key", "password",
 					"--s3-region-name", "unknown",
-					"--s3-endpoint", "http://127.0.0.1:9001",
+					"--s3-endpoint", minioEndpoint,
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

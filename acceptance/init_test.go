@@ -2,15 +2,16 @@ package acceptance
 
 import (
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
-	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/ghttp"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -29,7 +30,9 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	Expect(err).ToNot(HaveOccurred())
 
 	minioPath, _ := exec.LookPath("minio")
-	if minioPath != "" {
+	fmt.Fprintf(GinkgoWriter, "Minio PATH : %s", minioPath)
+	Expect(minioPath).ToNot(BeEmpty(), "Minio not found")
+	if minioPath != "" && 1 == 2 {
 		dataDir, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 		command := exec.Command("minio", "server", "--config-dir", dataDir, "--address", ":9001", dataDir)
@@ -44,7 +47,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(minio.Out, "10s").Should(gbytes.Say("API:"))
-		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://127.0.0.1:9001", "minio", "password")
+		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://minio:9001", minioUser, minioPassword)
 	}
 	return []byte(omPath)
 }, func(data []byte) {
@@ -79,6 +82,16 @@ func runCommand(args ...string) {
 	configure, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
 	Eventually(configure, "20s").Should(gexec.Exit(0))
+}
+
+func runCommand2(ignoreError bool, args ...string) {
+	fmt.Fprintf(GinkgoWriter, "cmd: %s\n", args)
+	command := exec.Command(args[0], args[1:]...)
+	configure, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+	if !ignoreError {
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(configure, "20s").Should(gexec.Exit(0))
+	}
 }
 
 func createTLSServer() *ghttp.Server {

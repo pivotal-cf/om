@@ -1,0 +1,19 @@
+name: OM container CI 
+
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+  
+jobs:
+  push_to_registries:
+    name: Build container
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      
+      - name: Build the container
+        run: docker build .
