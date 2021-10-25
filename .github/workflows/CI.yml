@@ -1,0 +1,40 @@
+name: PR Checker
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: internalpcfplatformautomation/ci:testing
+      credentials:
+        username: kmexe
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    steps:
+
+    - name: Set up Ginkgo
+      run: go get github.com/onsi/ginkgo@latest
+
+    - uses: actions/checkout@v2
+      name: Sync OM repository
+      with:
+        path: om
+
+    - name: Run tests
+      run: |
+        cd om
+        CGO_ENABLED=1 ginkgo \
+        -r \
+        -race \
+        --focus=acceptance \
+        --v \
+        .
+        cd ..
+
+    - name: Build binary
+      run: |
+        cd om
+        go build -o om --ldflags "-X main.version=$(git rev-list --format=format:'%H-%aI' --max-count=1 "$(git rev-parse HEAD)" | tail -1)" main.go
+        cd ..
