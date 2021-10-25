@@ -6,7 +6,6 @@ class Om < Formula
   desc ""
   homepage ""
   version "7.3.2"
-  bottle :unneeded
 
   on_macos do
     if Hardware::CPU.intel?
