@@ -709,6 +709,18 @@ opsman-configuration:
 						Expect(err.Error()).To(ContainSubstring("open does-not-exist.yml"))
 					})
 				})
+
+				When("Provided publicIP address does not exists", func() {
+					It("returns an error specifying the wrong IP address", func() {
+						setupCommand(configStrTemplate)
+						runner.ExecuteWithEnvVarsReturnsOnCall(7, bytes.NewBufferString(""), nil, nil)
+						command.Config.OpsmanConfig.Azure.PublicIP = "1.2.3.4"
+						command.Config.OpsmanConfig.Azure.PrivateIP = "10.0.0.3"
+						_, _, err := command.CreateVM()
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("could not find resource assignment for public ip address " + command.Config.OpsmanConfig.Azure.PublicIP))
+					})
+				})
 			})
 		})
 

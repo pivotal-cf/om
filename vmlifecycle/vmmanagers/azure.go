@@ -427,6 +427,10 @@ func (a *AzureVMManager) getPublicIP() (publicIP string, err error) {
 			"--query", fmt.Sprintf("[?ipAddress == '%s'].name | [0]", a.Config.OpsmanConfig.Azure.PublicIP),
 		})
 
+	if out.String() == "" {
+		return "", fmt.Errorf("could not find resource assignment for public ip address %s", a.Config.OpsmanConfig.Azure.PublicIP)
+	}
+
 	return cleanupString(out.String()), checkFormatedError("azure error: %s", err)
 }
 
