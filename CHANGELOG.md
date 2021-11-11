@@ -47,6 +47,11 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.4.1
+
+### Bug fixes
+- [#570](https://github.com/pivotal-cf/om/pull/571): Fixes a problem on `vm-lifecycle create-vm`, which, under specific circumstances on Azure, would lead to the creation of a VM without public IP address when such configuration was specified as part of the configuration.
+
 ## 7.4.0
 
 ### Features
