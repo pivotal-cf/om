@@ -1,13 +1,6 @@
-# Sign the CLA
-
-If you have not previously done so, please fill out and
-submit the [Contributor License Agreement](https://cla.pivotal.io/sign/pivotal).
-
 # Contributing to om
 
-All kinds of contributions to `om` are welcome, whether they be improvements to
-documentation, feedback or new ideas, or improving the application directly with
-bug fixes, improvements to existing features or adding new features.
+The `om` project team welcomes contributions from the community. If you wish to contribute code and you have not signed our [contributor license agreement](https://cla.vmware.com/cla/1/preview), our bot will update the issue when you open a Pull Request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq).
 
 ## Start with a github issue
 
