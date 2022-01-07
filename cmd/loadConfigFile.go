@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/pivotal-cf/om/interpolate"
@@ -99,8 +98,7 @@ func parseOptions(opts map[string]interface{}) ([]string, error) {
 				fileArgs = append(fileArgs, fmt.Sprintf("--%s", key))
 			}
 		default:
-			nval := strings.Replace(convertedValue.(string), "\"", "\\\"", -1)
-			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, nval))
+			fileArgs = append(fileArgs, fmt.Sprintf("--%s=%s", key, convertedValue))
 		}
 
 	}
