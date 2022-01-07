@@ -311,5 +311,5 @@ func buildURL(creds *Credentials) (string, error) {
 		return "", fmt.Errorf("the '--vsphere-url=%s' was not supplied a protocol (http or https), like https://vcenter.example.com", creds.VSphere.URL)
 	}
 
-	return fmt.Sprintf("%s://%s:%s@%s/sdk", parsedURL.Scheme, creds.VSphere.Username, creds.VSphere.Password, parsedURL.Host), nil
+	return fmt.Sprintf("%s://%s:%s@%s/sdk", parsedURL.Scheme, creds.VSphere.Username, url.QueryEscape(creds.VSphere.Password), parsedURL.Host), nil
 }
