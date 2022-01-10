@@ -104,7 +104,7 @@ func (ii ImportInstallation) ensureAvailability() error {
 		time.Sleep(time.Second * time.Duration(ii.Options.PollingInterval))
 		ensureAvailabilityOutput, err := ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {
-			if strings.Contains(err.Error(), "connection refused") && tryCount < maxRetries {
+			if (strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "bad gateway")) && tryCount < maxRetries {
 				ii.logger.Printf("waiting for ops manager web server boots up...")
 				tryCount++
 				continue

@@ -210,6 +210,79 @@ var _ = Describe("ImportInstallation", func() {
 		}, 1)
 	})
 
+	When("EnsureAvailability returns 'bad gateway'", func() {
+		var command *commands.ImportInstallation
+
+		BeforeEach(func() {
+			submission := formcontent.ContentSubmission{
+				Content:       ioutil.NopCloser(strings.NewReader("")),
+				ContentType:   "some content-type",
+				ContentLength: 10,
+			}
+			multipart.FinalizeReturns(submission)
+
+			command = commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+		})
+
+		It("it retries on the specified polling interval to allow nginx time to boot up", func() {
+			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				if fakeService.EnsureAvailabilityCallCount() < 4 && fakeService.EnsureAvailabilityCallCount() > 2 {
+					return api.EnsureAvailabilityOutput{}, errors.New("bad gateway")
+				}
+
+				eaOutputs := []api.EnsureAvailabilityOutput{
+					{Status: api.EnsureAvailabilityStatusUnstarted},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusPending},
+					{Status: api.EnsureAvailabilityStatusComplete},
+				}
+				return eaOutputs[fakeService.EnsureAvailabilityCallCount()-1], nil
+			}
+
+			err := executeCommand(command, []string{
+				"--polling-interval", "0",
+				"--installation", installationFile,
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fakeService.EnsureAvailabilityCallCount()).To(Equal(5))
+
+			Expect(logger.PrintfCallCount()).To(Equal(5))
+
+			format, v := logger.PrintfArgsForCall(0)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("processing installation"))
+
+			format, v = logger.PrintfArgsForCall(1)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("beginning installation import to Ops Manager"))
+
+			format, v = logger.PrintfArgsForCall(2)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("waiting for import to complete, this should take only a couple minutes..."))
+
+			format, v = logger.PrintfArgsForCall(3)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("waiting for ops manager web server boots up..."))
+
+			format, v = logger.PrintfArgsForCall(4)
+			Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
+		})
+
+		It("it only retries 3 times before giving up", func(done Done) {
+			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				if fakeService.EnsureAvailabilityCallCount() > 2 {
+					return api.EnsureAvailabilityOutput{}, errors.New("connection refused")
+				}
+
+				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
+			}
+
+			err := executeCommand(command, []string{
+				"--polling-interval", "0",
+				"--installation", installationFile,
+			})
+			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))
+			close(done)
+		}, 1)
+	})
+
 	When("the global decryption-passphrase is not provided", func() {
 		It("returns an error", func() {
 			command := commands.NewImportInstallation(multipart, fakeService, "", logger)
