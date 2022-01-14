@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -104,9 +105,19 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 			uaa.JSONWebToken,
 		)
 	}
+	var targetString string
+	if len(os.Getenv("OM_UAA_HOST")) != 0 {
+		uaaTargetURL, err := url.Parse(os.Getenv("OM_UAA_HOST"))
+		if err != nil {
+			return nil, fmt.Errorf("could not reset UAA Host: %w", err)
+		}
+		targetString = uaaTargetURL.String()
+	} else {
+		targetString = targetURL.String()
+	}
 
 	api, err := uaa.New(
-		targetURL.String(),
+		targetString,
 		authOption,
 		options...,
 	)
