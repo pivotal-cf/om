@@ -104,7 +104,7 @@ func (ii ImportInstallation) ensureAvailability() error {
 		time.Sleep(time.Second * time.Duration(ii.Options.PollingInterval))
 		ensureAvailabilityOutput, err := ii.service.EnsureAvailability(api.EnsureAvailabilityInput{})
 		if err != nil {
-			if (strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "bad gateway")) && tryCount < maxRetries {
+			if isErrThatMightResolveOnRetry(err, tryCount) {
 				ii.logger.Printf("waiting for ops manager web server boots up...")
 				tryCount++
 				continue
@@ -145,4 +145,9 @@ func (ii *ImportInstallation) validate(args []string) error {
 	}
 
 	return nil
+}
+
+func isErrThatMightResolveOnRetry(err error, tryCount int) bool {
+	return (strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "bad gateway")) &&
+		tryCount < maxRetries
 }
