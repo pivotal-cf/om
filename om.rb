@@ -5,12 +5,12 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.4.3"
+  version "7.5.0"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.4.3/om-darwin-7.4.3.tar.gz"
-      sha256 "b74833202bb8606bfdc47be4d7c615cbdcb526454aafdc1e10cee96be9f49988"
+      url "https://github.com/pivotal-cf/om/releases/download/7.5.0/om-darwin-7.5.0.tar.gz"
+      sha256 "4eeaf0af2f71d1959008ad528e2fa7e050641528a19404f98e6ee4fcc8dcb763"
 
       def install
         bin.install "om"
@@ -20,8 +20,8 @@ class Om < Formula
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.4.3/om-linux-7.4.3.tar.gz"
-      sha256 "2354a8a3f404bbf0986db181426dbca6342f2d9c539699a8a19fe77fe6395667"
+      url "https://github.com/pivotal-cf/om/releases/download/7.5.0/om-linux-7.5.0.tar.gz"
+      sha256 "61010869197818e9f8221e19f197254ebeed4e3e4b361c15c755944e23014e70"
 
       def install
         bin.install "om"
