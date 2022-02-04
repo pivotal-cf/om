@@ -10,21 +10,20 @@ release:
 builds:
 - env:
   - CGO_ENABLED=0
-  goos:
-  - darwin
-  - linux
-  - windows
-  goarch:
-  - amd64
+  targets:
+  - darwin_amd64
+  - linux_amd64
+  - linux_arm64
+  - windows_amd64
   ldflags:
   - -s -w -X "main.version={{.Version}}"
 archives:
 - id: github
   format: binary
-  name_template: "om-{{ .Os }}-{{ .Version }}"
+  name_template: "om-{{ .Os }}-{{ .Arch }}-{{ .Version }}"
 - id: homebrew
   format: "tar.gz"
-  name_template: "om-{{ .Os }}-{{ .Version }}"
+  name_template: "om-{{ .Os }}-{{ .Arch }}-{{ .Version }}"
   format_overrides:
   - goos: windows
     format: zip
