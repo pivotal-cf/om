@@ -13,15 +13,17 @@ type ExpiringCertificatesResponse struct {
 }
 
 type ExpiringCertificate struct {
-	Issuer            string    `json:"issuer"`
-	ValidFrom         time.Time `json:"valid_from"`
-	ValidUntil        time.Time `json:"valid_until"`
-	Configurable      bool      `json:"configurable"`
-	PropertyReference string    `json:"property_reference"`
-	PropertyType      string    `json:"property_type"`
-	ProductGUID       string    `json:"product_guid"`
-	Location          string    `json:"location"`
-	VariablePath      string    `json:"variable_path"`
+	Issuer                string    `json:"issuer"`
+	ValidFrom             time.Time `json:"valid_from"`
+	ValidUntil            time.Time `json:"valid_until"`
+	Configurable          bool      `json:"configurable"`
+	PropertyReference     string    `json:"property_reference"`
+	PropertyType          string    `json:"property_type"`
+	ProductGUID           string    `json:"product_guid"`
+	Location              string    `json:"location"`
+	VariablePath          string    `json:"variable_path"`
+	RotationProcedureName string    `json:"rotation_procedure_name"`
+	RotationProcedureUrl  string    `json:"rotation_procedure_url"`
 }
 
 func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertificate, error) {

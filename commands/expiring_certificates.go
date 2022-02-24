@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -54,26 +55,90 @@ func (e *ExpiringCerts) Execute(args []string) error {
 
 	e.logger.Println(color.RedString("Found expiring certificates in the foundation:\n"))
 
-	expiringCertsWithVariablePath, expiringCertsWithProductGUID := e.groupByLocation(expiringCerts)
-	for location, certs := range expiringCertsWithVariablePath {
-		e.logger.Printf(color.RedString("[X] %s", location))
+	if len(expiringCerts[0].RotationProcedureName) == 0 {
+		expiringCertsWithVariablePath, expiringCertsWithProductGUID := e.groupByLocation(expiringCerts)
+		for location, certs := range expiringCertsWithVariablePath {
+			e.logger.Printf(color.RedString("[X] %s", location))
 
-		for _, cert := range certs {
-			e.printExpiringCertInfo(cert)
-		}
-	}
-
-	for location, productGUIDs := range expiringCertsWithProductGUID {
-		e.logger.Printf(color.RedString("[X] %s", location))
-		for guid, certs := range productGUIDs {
-			e.logger.Printf(color.RedString("    %s:", guid))
 			for _, cert := range certs {
-				e.printExpiringCertInfo(cert)
+				e.printExpiringCertInfo(cert, 4)
 			}
+		}
+
+		for location, productGUIDs := range expiringCertsWithProductGUID {
+			e.logger.Printf(color.RedString("[X] %s", location))
+			for guid, certs := range productGUIDs {
+				e.logger.Printf(color.RedString("    %s:", guid))
+				for _, cert := range certs {
+					e.printExpiringCertInfo(cert, 8)
+				}
+			}
+		}
+	} else {
+		remainingDuration := e.earliestExpiryDate(expiringCerts).Sub(time.Now())
+		remainingDays := int(remainingDuration.Hours() / 24)
+		expiringCertsByProcedure, procedures := e.groupByProcedure(expiringCerts)
+
+		e.logger.Printf(color.RedString("One or more certificates will expire in %d days. Please refer to the certificate rotation procedures below. To optimize deployment time, please rotate expiring CA certificates prior to any leaf certificates."), remainingDays)
+		e.logger.Println()
+		for _, procedure := range procedures {
+			certsByTile := expiringCertsByProcedure[procedure]
+			e.logger.Printf(color.RedString(procedure))
+			for tile, certs := range certsByTile {
+				e.logger.Printf(color.RedString("    %s:", tile))
+				for _, cert := range certs {
+					e.printExpiringCertInfo(cert, 8)
+				}
+			}
+			e.logger.Println()
 		}
 	}
 
 	return errors.New("found expiring certificates in the foundation")
+}
+
+func (e *ExpiringCerts) earliestExpiryDate(certs []api.ExpiringCertificate) time.Time {
+	earliestExpiry := certs[0].ValidUntil
+	for _, cert := range certs {
+		if cert.ValidUntil.Before(earliestExpiry) {
+			earliestExpiry = cert.ValidUntil
+		}
+	}
+	return earliestExpiry
+}
+
+func (e *ExpiringCerts) groupByProcedure(certs []api.ExpiringCertificate) (map[string]map[string][]api.ExpiringCertificate, []string) {
+	expiringCertsByProcedure := make(map[string]map[string][]api.ExpiringCertificate)
+	for _, cert := range certs {
+		procedureKey := fmt.Sprintf("%v (%v)", cert.RotationProcedureName, cert.RotationProcedureUrl)
+		tileKey := cert.ProductGUID
+
+		// Only CredHub-base certificates may be missing the tile / product GUID
+		if len(tileKey) == 0 {
+			tileKey = "credhub"
+		}
+
+		if expiringCertsByProcedure[procedureKey] == nil {
+			expiringCertsByProcedure[procedureKey] = make(map[string][]api.ExpiringCertificate)
+		}
+
+		expiringCertsByProcedure[procedureKey][tileKey] = append(expiringCertsByProcedure[procedureKey][tileKey], cert)
+	}
+
+	procedureNames := []string{}
+	for key := range expiringCertsByProcedure {
+		procedureNames = append(procedureNames, key)
+	}
+
+	sort.SliceStable(procedureNames, func(i, j int) bool {
+		if strings.Contains(procedureNames[i], "CA") {
+			return true
+		}
+
+		return procedureNames[i] < procedureNames[j]
+	})
+
+	return expiringCertsByProcedure, procedureNames
 }
 
 func (e *ExpiringCerts) groupByLocation(certs []api.ExpiringCertificate) (map[string][]api.ExpiringCertificate, map[string]map[string][]api.ExpiringCertificate) {
@@ -96,7 +161,7 @@ func (e *ExpiringCerts) groupByLocation(certs []api.ExpiringCertificate) (map[st
 	return expiringCertsWithVariablePath, expiringCertsWithProductGUID
 }
 
-func (e *ExpiringCerts) printExpiringCertInfo(cert api.ExpiringCertificate) {
+func (e *ExpiringCerts) printExpiringCertInfo(cert api.ExpiringCertificate, indent int) {
 	expiringStr := "expiring"
 	if time.Now().After(cert.ValidUntil) {
 		expiringStr = "expired"
@@ -105,11 +170,11 @@ func (e *ExpiringCerts) printExpiringCertInfo(cert api.ExpiringCertificate) {
 	validUntil := cert.ValidUntil.Format(time.RFC822)
 
 	if cert.VariablePath != "" {
-		e.logger.Printf(color.RedString("    %s: %s on %s"), cert.VariablePath, expiringStr, validUntil)
+		e.logger.Printf(color.RedString("%s%s: %s on %s"), strings.Repeat(" ", indent), cert.VariablePath, expiringStr, validUntil)
 		return
 	}
 
-	e.logger.Printf(color.RedString("        %s: %s on %s"), cert.PropertyReference, expiringStr, validUntil)
+	e.logger.Printf(color.RedString("%s%s: %s on %s"), strings.Repeat(" ", indent), cert.PropertyReference, expiringStr, validUntil)
 }
 
 func (e ExpiringCerts) validateConfig() error {

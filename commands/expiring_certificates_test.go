@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/pivotal-cf/om/api"
@@ -55,106 +56,248 @@ var _ = Describe("ExpiringCertificates", func() {
 	})
 
 	When("there are expiring certs", func() {
-		It("prints a clear message of the cert expiring or expired", func() {
-			omTime := "2999-01-01T01:01:01Z"
-			opsManagerUntilTime, err := time.Parse(time.RFC3339, omTime)
-			Expect(err).ToNot(HaveOccurred())
-			credhubTime := "2999-12-12T12:12:12Z"
-			credhubUntilTime, err := time.Parse(time.RFC3339, credhubTime)
-			Expect(err).ToNot(HaveOccurred())
-			credhubTimeAlreadyExpired := "2015-12-12T12:12:12Z"
-			credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
-			Expect(err).ToNot(HaveOccurred())
+		When("the rotation procedure is missing from API response", func() {
+			It("prints a clear message of the cert expiring or expired", func() {
+				omTime := "2999-01-01T01:01:01Z"
+				opsManagerUntilTime, err := time.Parse(time.RFC3339, omTime)
+				Expect(err).ToNot(HaveOccurred())
+				credhubTime := "2999-12-12T12:12:12Z"
+				credhubUntilTime, err := time.Parse(time.RFC3339, credhubTime)
+				Expect(err).ToNot(HaveOccurred())
+				credhubTimeAlreadyExpired := "2015-12-12T12:12:12Z"
+				credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
+				Expect(err).ToNot(HaveOccurred())
 
-			service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
-				return []api.ExpiringCertificate{
-					{
-						Issuer:            "",
-						ValidFrom:         time.Time{},
-						ValidUntil:        opsManagerUntilTime,
-						Configurable:      false,
-						PropertyReference: "property-reference-1",
-						PropertyType:      "",
-						ProductGUID:       "product-guid-1",
-						Location:          "ops_manager",
-						VariablePath:      "",
-					},
-					{
-						Issuer:            "",
-						ValidFrom:         time.Time{},
-						ValidUntil:        opsManagerUntilTime,
-						Configurable:      false,
-						PropertyReference: "property-reference-2",
-						PropertyType:      "",
-						ProductGUID:       "product-guid-1",
-						Location:          "ops_manager",
-						VariablePath:      "",
-					},
-					{
-						Issuer:            "",
-						ValidFrom:         time.Time{},
-						ValidUntil:        opsManagerUntilTime,
-						Configurable:      false,
-						PropertyReference: "property-reference-3",
-						PropertyType:      "",
-						ProductGUID:       "product-guid-2",
-						Location:          "ops_manager",
-						VariablePath:      "",
-					},
-					{
-						Issuer:            "",
-						ValidFrom:         time.Time{},
-						ValidUntil:        opsManagerUntilTime,
-						Configurable:      false,
-						PropertyReference: "property-reference-4",
-						PropertyType:      "",
-						ProductGUID:       "product-guid-4",
-						Location:          "other_location",
-						VariablePath:      "",
-					},
-					{
-						Issuer:            "",
-						ValidFrom:         time.Time{},
-						ValidUntil:        credhubUntilTimeAlreadyExpired,
-						Configurable:      false,
-						PropertyReference: "",
-						PropertyType:      "",
-						ProductGUID:       "",
-						Location:          "credhub_location",
-						VariablePath:      "/opsmgr/bosh_dns/other_ca",
-					},
-					{
-						Issuer:            "",
-						ValidFrom:         time.Time{},
-						ValidUntil:        credhubUntilTime,
-						Configurable:      false,
-						PropertyReference: "",
-						PropertyType:      "",
-						ProductGUID:       "",
-						Location:          "credhub_location",
-						VariablePath:      "/opsmgr/bosh_dns/tls_ca",
-					},
-				}, nil
-			}
-			command := commands.NewExpiringCertificates(service, logger)
-			err = executeCommand(command, []string{})
-			Expect(err).To(HaveOccurred())
+				service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
+					return []api.ExpiringCertificate{
+						{
+							Issuer:            "",
+							ValidFrom:         time.Time{},
+							ValidUntil:        opsManagerUntilTime,
+							Configurable:      false,
+							PropertyReference: "property-reference-1",
+							PropertyType:      "",
+							ProductGUID:       "product-guid-1",
+							Location:          "ops_manager",
+							VariablePath:      "",
+						},
+						{
+							Issuer:            "",
+							ValidFrom:         time.Time{},
+							ValidUntil:        opsManagerUntilTime,
+							Configurable:      false,
+							PropertyReference: "property-reference-2",
+							PropertyType:      "",
+							ProductGUID:       "product-guid-1",
+							Location:          "ops_manager",
+							VariablePath:      "",
+						},
+						{
+							Issuer:            "",
+							ValidFrom:         time.Time{},
+							ValidUntil:        opsManagerUntilTime,
+							Configurable:      false,
+							PropertyReference: "property-reference-3",
+							PropertyType:      "",
+							ProductGUID:       "product-guid-2",
+							Location:          "ops_manager",
+							VariablePath:      "",
+						},
+						{
+							Issuer:            "",
+							ValidFrom:         time.Time{},
+							ValidUntil:        opsManagerUntilTime,
+							Configurable:      false,
+							PropertyReference: "property-reference-4",
+							PropertyType:      "",
+							ProductGUID:       "product-guid-4",
+							Location:          "other_location",
+							VariablePath:      "",
+						},
+						{
+							Issuer:            "",
+							ValidFrom:         time.Time{},
+							ValidUntil:        credhubUntilTimeAlreadyExpired,
+							Configurable:      false,
+							PropertyReference: "",
+							PropertyType:      "",
+							ProductGUID:       "",
+							Location:          "credhub_location",
+							VariablePath:      "/opsmgr/bosh_dns/other_ca",
+						},
+						{
+							Issuer:            "",
+							ValidFrom:         time.Time{},
+							ValidUntil:        credhubUntilTime,
+							Configurable:      false,
+							PropertyReference: "",
+							PropertyType:      "",
+							ProductGUID:       "",
+							Location:          "credhub_location",
+							VariablePath:      "/opsmgr/bosh_dns/tls_ca",
+						},
+					}, nil
+				}
+				command := commands.NewExpiringCertificates(service, logger)
+				err = executeCommand(command, []string{})
+				Expect(err).To(HaveOccurred())
 
-			contentsStr := string(stdout.Contents())
-			Expect(contentsStr).To(ContainSubstring("Getting expiring certificates..."))
-			Expect(contentsStr).To(ContainSubstring("[X] Credhub Location"))
-			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/other_ca: expired on %s", credhubUntilTimeAlreadyExpired.Format(time.RFC822))))
-			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/tls_ca: expiring on %s", credhubUntilTime.Format(time.RFC822))))
-			Expect(contentsStr).To(ContainSubstring("[X] Ops Manager"))
-			Expect(contentsStr).To(ContainSubstring("    product-guid-1:"))
-			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-1: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-2: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(contentsStr).To(ContainSubstring("    product-guid-2:"))
-			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-3: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(contentsStr).To(ContainSubstring("[X] Other Location"))
-			Expect(contentsStr).To(ContainSubstring("    product-guid-4:"))
-			Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-4: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
-			Expect(contentsStr).To(ContainSubstring(""))
+				contentsStr := string(stdout.Contents())
+				Expect(contentsStr).To(ContainSubstring("Getting expiring certificates..."))
+				Expect(contentsStr).To(ContainSubstring("[X] Credhub Location"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/other_ca: expired on %s", credhubUntilTimeAlreadyExpired.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/tls_ca: expiring on %s", credhubUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("[X] Ops Manager"))
+				Expect(contentsStr).To(ContainSubstring("    product-guid-1:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-1: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-2: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("    product-guid-2:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-3: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("[X] Other Location"))
+				Expect(contentsStr).To(ContainSubstring("    product-guid-4:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-4: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring(""))
+			})
+		})
+
+		When("the rotation procedure is present in the API response", func() {
+			It("prints a clear message of the cert expiring or expired", func() {
+				omTime := "2999-01-01T01:01:01Z"
+				opsManagerUntilTime, err := time.Parse(time.RFC3339, omTime)
+				Expect(err).ToNot(HaveOccurred())
+				credhubTime := "2999-12-12T12:12:12Z"
+				credhubUntilTime, err := time.Parse(time.RFC3339, credhubTime)
+				Expect(err).ToNot(HaveOccurred())
+				credhubTimeAlreadyExpired := "2015-12-12T12:12:12Z"
+				credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
+				Expect(err).ToNot(HaveOccurred())
+
+				service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
+					return []api.ExpiringCertificate{
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            opsManagerUntilTime,
+							Configurable:          false,
+							PropertyReference:     "property-reference-1",
+							PropertyType:          "",
+							ProductGUID:           "product-guid-1",
+							Location:              "ops_manager",
+							VariablePath:          "",
+							RotationProcedureName: "Standard Procedure",
+							RotationProcedureUrl:  "https://procedure/standard/url",
+						},
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            opsManagerUntilTime,
+							Configurable:          false,
+							PropertyReference:     "property-reference-2",
+							PropertyType:          "",
+							ProductGUID:           "product-guid-1",
+							Location:              "ops_manager",
+							VariablePath:          "",
+							RotationProcedureName: "Standard Procedure",
+							RotationProcedureUrl:  "https://procedure/standard/url",
+						},
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            opsManagerUntilTime,
+							Configurable:          false,
+							PropertyReference:     "property-reference-3",
+							PropertyType:          "",
+							ProductGUID:           "product-guid-2",
+							Location:              "ops_manager",
+							VariablePath:          "",
+							RotationProcedureName: "Standard Procedure",
+							RotationProcedureUrl:  "https://procedure/standard/url",
+						},
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            opsManagerUntilTime,
+							Configurable:          false,
+							PropertyReference:     "property-reference-4",
+							PropertyType:          "",
+							ProductGUID:           "product-guid-4",
+							Location:              "other_location",
+							VariablePath:          "",
+							RotationProcedureName: "Standard Procedure",
+							RotationProcedureUrl:  "https://procedure/standard/url",
+						},
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            credhubUntilTime,
+							Configurable:          false,
+							PropertyReference:     "",
+							PropertyType:          "",
+							ProductGUID:           "product-guid-1",
+							Location:              "credhub_location",
+							VariablePath:          "/opsmgr/bosh_dns/tls_ca",
+							RotationProcedureName: "Other Procedure",
+							RotationProcedureUrl:  "https://procedure/other/url",
+						},
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            credhubUntilTimeAlreadyExpired,
+							Configurable:          false,
+							PropertyReference:     "",
+							PropertyType:          "",
+							ProductGUID:           "",
+							Location:              "credhub_location",
+							VariablePath:          "/opsmgr/bosh_dns/other_ca",
+							RotationProcedureName: "CA Procedure",
+							RotationProcedureUrl:  "https://procedure/ca/url",
+						},
+						{
+							Issuer:                "",
+							ValidFrom:             time.Time{},
+							ValidUntil:            credhubUntilTimeAlreadyExpired,
+							Configurable:          false,
+							PropertyReference:     "",
+							PropertyType:          "",
+							ProductGUID:           "product-guid-3",
+							Location:              "credhub_location",
+							VariablePath:          "/telemetry_ca",
+							RotationProcedureName: "Procedure for Telemetry CA",
+							RotationProcedureUrl:  "https://procedure/telemetry/url",
+						},
+					}, nil
+				}
+				command := commands.NewExpiringCertificates(service, logger)
+				err = executeCommand(command, []string{})
+				Expect(err).To(HaveOccurred())
+
+				contentsStr := string(stdout.Contents())
+				Expect(contentsStr).To(ContainSubstring("Getting expiring certificates..."))
+				Expect(contentsStr).To(ContainSubstring("One or more certificates will expire in "))
+				Expect(contentsStr).To(ContainSubstring("CA Procedure (https://procedure/ca/url)"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/other_ca: expired on %s", credhubUntilTimeAlreadyExpired.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("Procedure for Telemetry CA (https://procedure/telemetry/url)"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /telemetry_ca: expired on %s", credhubUntilTimeAlreadyExpired.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("Standard Procedure (https://procedure/standard/url)"))
+				Expect(contentsStr).To(ContainSubstring("    product-guid-1:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-1: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-2: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("    product-guid-2:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-3: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("    product-guid-4:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("        property-reference-4: expiring on %s", opsManagerUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring("Other Procedure (https://procedure/other/url)"))
+				Expect(contentsStr).To(ContainSubstring("    credhub:"))
+				Expect(contentsStr).To(ContainSubstring(fmt.Sprintf("    /opsmgr/bosh_dns/tls_ca: expiring on %s", credhubUntilTime.Format(time.RFC822))))
+				Expect(contentsStr).To(ContainSubstring(""))
+
+				// Ensure that CA procedures appear before the leaf procedures
+				caProcedureIndex := strings.Index(contentsStr, "CA Procedure")
+				telemetryProcedureIndex := strings.Index(contentsStr, "Procedure for Telemetry CA")
+				standardProcedureIndex := strings.Index(contentsStr, "Standard Procedure")
+				Expect(caProcedureIndex).To(BeNumerically("<", standardProcedureIndex))
+				Expect(telemetryProcedureIndex).To(BeNumerically("<", standardProcedureIndex))
+			})
 		})
 
 		It("sets ExpiresWithin to 3m as default", func() {
