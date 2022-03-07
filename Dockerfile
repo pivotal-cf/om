@@ -1,4 +1,4 @@
-FROM golang:1.16-buster
+FROM golang:1.17-buster
 
 RUN apt-get -y update && apt-get -y install rsync build-essential bash zip unzip curl gettext jq python3-pip python3-dev git wget tar xz-utils
 RUN pip3 install --upgrade pip
@@ -11,9 +11,9 @@ RUN wget "https://dl.minio.io/server/minio/release/linux-amd64/minio" && \
     chmod +x minio && \
     mv minio /usr/bin/minio
 
-# RUN wget "https://dl.minio.io/client/mc/release/linux-amd64/mc" && \
-#     chmod +x mc && \
-#     mv mc /usr/bin/mc
+RUN wget "https://dl.minio.io/client/mc/release/linux-amd64/mc" && \
+    chmod +x mc && \
+    mv mc /usr/bin/mc
 
 RUN wget https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip && \
     unzip terraform_1.0.11_linux_amd64.zip -d /usr/bin

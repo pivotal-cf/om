@@ -47,8 +47,8 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(minio.Out, "10s").Should(gbytes.Say("API:"))
-		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://minio:9001", minioUser, minioPassword)
 	}
+	runCommand("mc", "--debug", "config", "host", "add", "testing", "http://minio:9000", minioUser, minioPassword)
 	return []byte(omPath)
 }, func(data []byte) {
 	pathToMain = string(data)

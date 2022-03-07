@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var minioEndpoint = "http://minio:9001"
+var minioEndpoint = "http://minio:9000"
 var minioUser = "minioadmin"
 var minioPassword = "minioadmin"
 
@@ -70,6 +70,7 @@ var _ = Describe("download-product command", func() {
 					"--s3-product-path", "/some/product",
 				)
 
+				fmt.Fprintf(GinkgoWriter, "Command: %s\n", command.String())
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
@@ -175,13 +176,12 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", "unknown",
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 					"--s3-enable-v2-signing", "true",
 				)
-
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(1))
@@ -201,8 +201,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 					"--s3-enable-v2-signing", "true",
@@ -225,8 +225,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 				)
@@ -250,8 +250,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 				)
@@ -281,8 +281,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 				)
@@ -310,8 +310,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 					"--s3-product-path", "/some-path",
@@ -348,8 +348,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 				)
@@ -377,8 +377,8 @@ stemcell-heavy: true`))
 					"--output-directory", tmpDir,
 					"--source", "s3",
 					"--s3-bucket", bucketName,
-					"--s3-access-key-id", "minio",
-					"--s3-secret-access-key", "password",
+					"--s3-access-key-id", minioUser,
+					"--s3-secret-access-key", minioPassword,
 					"--s3-region-name", "unknown",
 					"--s3-endpoint", minioEndpoint,
 				)
