@@ -47,6 +47,23 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.6.0
+
+### What's Changed
+- [#583](https://github.com/pivotal-cf/om/pull/583): Added rotation procedure to `expiring-certificates`
+
+### Bug fixes
+- Fixed `acceptance/download_product_azure_test.go`: Specify --overwrite to overwrite existing blobs, this was needed since the last update to az cli `v2.34.0` introduced a breaking change to prevent silent overwrites. (https://github.com/Azure/azure-cli/issues/21477)
+
+## 7.5.0
+
+### What's Changed
+* Merged PR by @iplay88keys from https://github.com/pivotal-cf/om/issues/408 that adds flags to the product-metadata command which parses hidden version names (ie: build suffixes in tile metadata) from TanzuNet.  This helps users specify the correct product during workflows like "om stage-product".
+
+### Bug Fixes
+* Added escaping for passwords in vSphere clients.
+* Better handling of bad gateway responses like "connection refused".
+
 ## 7.4.2
 
 ### Bug fixes
