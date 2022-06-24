@@ -12,9 +12,10 @@ import (
 
 var _ = Describe("aws", func() {
 	var (
-		state          *vmmanagers.StateInfo
-		expectedOutput *vmmanagers.OpsmanConfigFilePayload
-		ec2Client      *fakes.Ec2Client
+		state           *vmmanagers.StateInfo
+		instancesOutput *ec2.DescribeInstancesOutput
+		expectedOutput  *vmmanagers.OpsmanConfigFilePayload
+		ec2Client       *fakes.Ec2Client
 	)
 
 	When("the api returns valid responses", func() {
@@ -45,42 +46,44 @@ var _ = Describe("aws", func() {
 				},
 			}
 
+			instancesOutput = &ec2.DescribeInstancesOutput{
+				Reservations: []*ec2.Reservation{{
+					Instances: []*ec2.Instance{{
+						Placement: &ec2.Placement{
+							AvailabilityZone: aws.String("current-availability-zone"),
+						},
+						Tags: []*ec2.Tag{{
+							Key:   aws.String("Name"),
+							Value: aws.String("opsman-vm"),
+						}},
+						SubnetId: aws.String("some-subnet"),
+						SecurityGroups: []*ec2.GroupIdentifier{{
+							GroupId: aws.String("some-security-group"),
+						}, {
+							GroupId: aws.String("another-security-group"),
+						}},
+						KeyName: aws.String("some-key-pair"),
+						IamInstanceProfile: &ec2.IamInstanceProfile{
+							Arn: aws.String("arn:aws:iam::473893145203:instance-profile/some-instance-profile"),
+						},
+						PublicIpAddress:  aws.String("1.2.3.4"),
+						PrivateIpAddress: aws.String("5.6.7.8"),
+						InstanceType:     aws.String("some-instance-type"),
+						BlockDeviceMappings: []*ec2.InstanceBlockDeviceMapping{{
+							Ebs: &ec2.EbsInstanceBlockDevice{
+								VolumeId: aws.String("some-volume-id"),
+							},
+						}},
+					}},
+				}},
+			}
+
 			ec2Client.DescribeInstancesStub = func(input *ec2.DescribeInstancesInput) (output *ec2.DescribeInstancesOutput, e error) {
 				Expect(input).To(Equal(&ec2.DescribeInstancesInput{
 					InstanceIds: []*string{aws.String("some-vm-id")},
 				}))
 
-				return &ec2.DescribeInstancesOutput{
-					Reservations: []*ec2.Reservation{{
-						Instances: []*ec2.Instance{{
-							Placement: &ec2.Placement{
-								AvailabilityZone: aws.String("current-availability-zone"),
-							},
-							Tags: []*ec2.Tag{{
-								Key:   aws.String("Name"),
-								Value: aws.String("opsman-vm"),
-							}},
-							SubnetId: aws.String("some-subnet"),
-							SecurityGroups: []*ec2.GroupIdentifier{{
-								GroupId: aws.String("some-security-group"),
-							}, {
-								GroupId: aws.String("another-security-group"),
-							}},
-							KeyName: aws.String("some-key-pair"),
-							IamInstanceProfile: &ec2.IamInstanceProfile{
-								Arn: aws.String("arn:aws:iam::473893145203:instance-profile/some-instance-profile"),
-							},
-							PublicIpAddress:  aws.String("1.2.3.4"),
-							PrivateIpAddress: aws.String("5.6.7.8"),
-							InstanceType:     aws.String("some-instance-type"),
-							BlockDeviceMappings: []*ec2.InstanceBlockDeviceMapping{{
-								Ebs: &ec2.EbsInstanceBlockDevice{
-									VolumeId: aws.String("some-volume-id"),
-								},
-							}},
-						}},
-					}},
-				}, nil
+				return instancesOutput, nil
 			}
 
 			ec2Client.DescribeVolumesStub = func(input *ec2.DescribeVolumesInput) (output *ec2.DescribeVolumesOutput, e error) {
@@ -134,6 +137,25 @@ var _ = Describe("aws", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(output).To(Equal(extendedExpectedOutput))
+			})
+		})
+
+		When("the ops man VM does not have a public IP", func() {
+			It("creates an opsman.yml that does't include a public IP", func() {
+				creds := &configfetchers.Credentials{
+					AWS: &vmmanagers.AWSCredential{
+						Region: "some-region",
+					},
+				}
+
+				instancesOutput.Reservations[0].Instances[0].PublicIpAddress = nil
+
+				fetcher := configfetchers.NewAWSConfigFetcher(state, creds, ec2Client)
+
+				output, err := fetcher.FetchConfig()
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(output.OpsmanConfig.AWS.PublicIP).To(Equal(""))
 			})
 		})
 	})

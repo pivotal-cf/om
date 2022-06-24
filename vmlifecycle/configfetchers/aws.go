@@ -2,6 +2,7 @@ package configfetchers
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"strconv"
@@ -88,7 +89,7 @@ func (a *AWSConfigFetcher) createConfig(output *ec2.DescribeInstancesOutput, vol
 				SecurityGroupIds:       securityGroups,
 				KeyPairName:            *instance.KeyName,
 				IAMInstanceProfileName: splitARN[1],
-				PublicIP:               *instance.PublicIpAddress,
+				PublicIP:               aws.StringValue(instance.PublicIpAddress),
 				PrivateIP:              *instance.PrivateIpAddress,
 				InstanceType:           *instance.InstanceType,
 				BootDiskSize:           strconv.Itoa(int(*volumesOutput.Volumes[0].Size)),
