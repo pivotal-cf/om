@@ -5,11 +5,11 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.6.0"
+  version "7.7.0"
 
   on_macos do
-    url "https://github.com/pivotal-cf/om/releases/download/7.6.0/om-darwin-7.6.0.tar.gz"
-    sha256 "175b778e1a254162fee13e945586e4ec1aea7feaf8b95b75fadc229092f4ed75"
+    url "https://github.com/pivotal-cf/om/releases/download/7.7.0/om-darwin-7.7.0.tar.gz"
+    sha256 "628281d813bc113c959d7fb83a6cdd8bd05e2d32b78b9b113400274a225ddb25"
 
     def install
       bin.install "om"
@@ -28,8 +28,8 @@ class Om < Formula
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.6.0/om-linux-7.6.0.tar.gz"
-      sha256 "b4a00f4bf8d20d7b6925874b44dcb5e1851f9e0146d9479e0e8f521b589012fb"
+      url "https://github.com/pivotal-cf/om/releases/download/7.7.0/om-linux-7.7.0.tar.gz"
+      sha256 "ffcbe07f81500ab353bf2ee452580bd3610bd4eca1a74e6a5e92e109914f6704"
 
       def install
         bin.install "om"
