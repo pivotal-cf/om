@@ -47,6 +47,16 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.7.0
+
+Features
+
+- [#582](https://github.com/pivotal-cf/om/pull/582): Include builds for M1 architecture in Mac and Linux builds. This may require changes to CI that pulls artifacts from GitHub releases.
+
+Bug fixes
+
+- [#586](https://github.com/pivotal-cf/om/pull/586): Fixes `om nom` panic when OpsMan instance does not have a public IP address.
+
 ## 7.6.0
 
 ### What's Changed
