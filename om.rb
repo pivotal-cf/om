@@ -5,31 +5,39 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.7.0"
+  version "7.8.0"
 
   on_macos do
-    url "https://github.com/pivotal-cf/om/releases/download/7.7.0/om-darwin-7.7.0.tar.gz"
-    sha256 "628281d813bc113c959d7fb83a6cdd8bd05e2d32b78b9b113400274a225ddb25"
-
-    def install
-      bin.install "om"
-    end
-
     if Hardware::CPU.arm?
-      def caveats
-        <<~EOS
-          The darwin_arm64 architecture is not supported for the Om
-          formula at this time. The darwin_amd64 binary may work in compatibility
-          mode, but it might not be fully supported.
-        EOS
+      url "https://github.com/pivotal-cf/om/releases/download/7.8.0/om-darwin-arm64-7.8.0.tar.gz"
+      sha256 "cc26cc1fb1f5cca1b98c86c67fe1b1035f2dfb7b3ceb110cceede301899c5608"
+
+      def install
+        bin.install "om"
+      end
+    end
+    if Hardware::CPU.intel?
+      url "https://github.com/pivotal-cf/om/releases/download/7.8.0/om-darwin-amd64-7.8.0.tar.gz"
+      sha256 "1d0c6aeea1dac898e32f7b840fcfd6ee882567bb27614fc75169043d56e1224f"
+
+      def install
+        bin.install "om"
       end
     end
   end
 
   on_linux do
+    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+      url "https://github.com/pivotal-cf/om/releases/download/7.8.0/om-linux-arm64-7.8.0.tar.gz"
+      sha256 "d9e01e1d11641abd634610a058a03a8b3efa83e5f237766231d00abad0f1ae9f"
+
+      def install
+        bin.install "om"
+      end
+    end
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.7.0/om-linux-7.7.0.tar.gz"
-      sha256 "ffcbe07f81500ab353bf2ee452580bd3610bd4eca1a74e6a5e92e109914f6704"
+      url "https://github.com/pivotal-cf/om/releases/download/7.8.0/om-linux-amd64-7.8.0.tar.gz"
+      sha256 "228b6ea80f5ff728c4ca60d6a6293254143527d3cb2a906692b847f9652425ab"
 
       def install
         bin.install "om"
