@@ -300,6 +300,7 @@ func stemcellFromProduct(filename string) (*stemcell, error) {
 	}
 
 	stemcellNameToPivnetProductName := map[string]string{
+		"ubuntu-jammy":  "stemcells-ubuntu-jammy",
 		"ubuntu-xenial": "stemcells-ubuntu-xenial",
 		"ubuntu-trusty": "stemcells",
 		"windows2016":   "stemcells-windows-server",

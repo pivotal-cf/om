@@ -310,6 +310,7 @@ var _ = Describe("stowClient", func() {
 				Expect(stemcell.Version()).To(Equal("97.101"))
 				Expect(stemcell.Slug()).To(Equal(stemcellProductName))
 			},
+				Entry("supporting jammy", "ubuntu-jammy", "stemcells-ubuntu-jammy", ""),
 				Entry("supporting xenial", "ubuntu-xenial", "stemcells-ubuntu-xenial", ""),
 				Entry("supporting trusty", "ubuntu-trusty", "stemcells", ""),
 				Entry("supporting windows2016", "windows2016", "stemcells-windows-server", ""),
