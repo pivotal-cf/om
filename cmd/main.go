@@ -644,6 +644,17 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	if err != nil {
 		return err
 	}
+	_, err = parser.AddCommand(
+		// TODO: consider adding "unsafe-" as prefix on command name
+		"unsafe--replace-release",
+		"replaces a BOSH release in a product",
+		// TODO: wordsmith why using this command is a bad idea in most cases
+		"This command replaces a BOSH release in a product.",
+		commands.NewReplaceRelease(stdout),
+	)
+	if err != nil {
+		return err
+	}
 
 	args, err = loadConfigFile(args, os.Environ)
 	if err != nil {
