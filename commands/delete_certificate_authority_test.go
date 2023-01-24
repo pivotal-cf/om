@@ -41,6 +41,67 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 			Expect(fmt.Sprintf(format, content...)).To(Equal("Certificate authority 'some-certificate-authority-id' deleted\n"))
 		})
 
+		When("using the --all-inactive flag", func() {
+			args := []string{"--all-inactive"}
+
+			Context("with one inactive CA", func() {
+				BeforeEach(func() {
+					fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{CAs: []api.CA{
+						{
+							GUID:   "active-ca-guid",
+							Active: true,
+						},
+						{
+							GUID:   "inactive-ca-guid",
+							Active: false,
+						},
+					}}, nil)
+				})
+
+				It("deletes the inactive certificate authority", func() {
+					err := executeCommand(command, args)
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
+					Expect(fakeService.DeleteCertificateAuthorityCallCount()).To(Equal(1))
+					Expect(fakeService.DeleteCertificateAuthorityArgsForCall(0)).To(Equal(api.DeleteCertificateAuthorityInput{
+						GUID: "inactive-ca-guid",
+					}))
+
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					format, content := fakeLogger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("Certificate authority 'inactive-ca-guid' deleted\n"))
+				})
+			})
+
+			Context("with no inactive CAs", func() {
+				BeforeEach(func() {
+					fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{CAs: []api.CA{
+						{
+							GUID:   "active-ca-guid",
+							Active: true,
+						},
+					}}, nil)
+				})
+
+				It("does not delete anything", func() {
+					err := executeCommand(command, args)
+					Expect(err).To(HaveOccurred())
+
+					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
+					Expect(fakeService.DeleteCertificateAuthorityCallCount()).To(Equal(0))
+				})
+			})
+		})
+
+		When("called with no args", func() {
+			args := []string{}
+			It("returns an error", func() {
+				err := executeCommand(command, args)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
 		When("the service fails to delete a certificate", func() {
 			It("returns an error", func() {
 				fakeService.DeleteCertificateAuthorityReturns(errors.New("failed to delete certificate"))
