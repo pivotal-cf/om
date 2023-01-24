@@ -19,6 +19,18 @@ type DeleteCertificateAuthorityService struct {
 	deleteCertificateAuthorityReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ListCertificateAuthoritiesStub        func() (api.CertificateAuthoritiesOutput, error)
+	listCertificateAuthoritiesMutex       sync.RWMutex
+	listCertificateAuthoritiesArgsForCall []struct {
+	}
+	listCertificateAuthoritiesReturns struct {
+		result1 api.CertificateAuthoritiesOutput
+		result2 error
+	}
+	listCertificateAuthoritiesReturnsOnCall map[int]struct {
+		result1 api.CertificateAuthoritiesOutput
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -83,11 +95,68 @@ func (fake *DeleteCertificateAuthorityService) DeleteCertificateAuthorityReturns
 	}{result1}
 }
 
+func (fake *DeleteCertificateAuthorityService) ListCertificateAuthorities() (api.CertificateAuthoritiesOutput, error) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	ret, specificReturn := fake.listCertificateAuthoritiesReturnsOnCall[len(fake.listCertificateAuthoritiesArgsForCall)]
+	fake.listCertificateAuthoritiesArgsForCall = append(fake.listCertificateAuthoritiesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListCertificateAuthorities", []interface{}{})
+	fake.listCertificateAuthoritiesMutex.Unlock()
+	if fake.ListCertificateAuthoritiesStub != nil {
+		return fake.ListCertificateAuthoritiesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listCertificateAuthoritiesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *DeleteCertificateAuthorityService) ListCertificateAuthoritiesCallCount() int {
+	fake.listCertificateAuthoritiesMutex.RLock()
+	defer fake.listCertificateAuthoritiesMutex.RUnlock()
+	return len(fake.listCertificateAuthoritiesArgsForCall)
+}
+
+func (fake *DeleteCertificateAuthorityService) ListCertificateAuthoritiesCalls(stub func() (api.CertificateAuthoritiesOutput, error)) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	defer fake.listCertificateAuthoritiesMutex.Unlock()
+	fake.ListCertificateAuthoritiesStub = stub
+}
+
+func (fake *DeleteCertificateAuthorityService) ListCertificateAuthoritiesReturns(result1 api.CertificateAuthoritiesOutput, result2 error) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	defer fake.listCertificateAuthoritiesMutex.Unlock()
+	fake.ListCertificateAuthoritiesStub = nil
+	fake.listCertificateAuthoritiesReturns = struct {
+		result1 api.CertificateAuthoritiesOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *DeleteCertificateAuthorityService) ListCertificateAuthoritiesReturnsOnCall(i int, result1 api.CertificateAuthoritiesOutput, result2 error) {
+	fake.listCertificateAuthoritiesMutex.Lock()
+	defer fake.listCertificateAuthoritiesMutex.Unlock()
+	fake.ListCertificateAuthoritiesStub = nil
+	if fake.listCertificateAuthoritiesReturnsOnCall == nil {
+		fake.listCertificateAuthoritiesReturnsOnCall = make(map[int]struct {
+			result1 api.CertificateAuthoritiesOutput
+			result2 error
+		})
+	}
+	fake.listCertificateAuthoritiesReturnsOnCall[i] = struct {
+		result1 api.CertificateAuthoritiesOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *DeleteCertificateAuthorityService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.deleteCertificateAuthorityMutex.RLock()
 	defer fake.deleteCertificateAuthorityMutex.RUnlock()
+	fake.listCertificateAuthoritiesMutex.RLock()
+	defer fake.listCertificateAuthoritiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
