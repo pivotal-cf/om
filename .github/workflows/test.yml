@@ -25,7 +25,9 @@ jobs:
           go-version: 1.19.5
  
       - name: Test
-        run: go test ./...
+        run: |
+          go install github.com/onsi/ginkgo/v2/ginkgo
+          ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing .
         working-directory: om
         env:
           CGO_ENABLED: 1
