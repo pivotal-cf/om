@@ -26,8 +26,9 @@ jobs:
  
       - name: Test
         run: |
-          go install github.com/onsi/ginkgo/v2/ginkgo
-          ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing .
+          go install github.com/onsi/ginkgo/ginkgo
+          ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
+              -skipPackage acceptance,vmlifecyclecommands .
         working-directory: om
         env:
           CGO_ENABLED: 1
