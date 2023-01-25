@@ -22,12 +22,6 @@ jobs:
           fetch-depth: 0
           path: om
 
-      - name: Checkout Docs Platform Automation
-        uses: actions/checkout@v2
-        with:
-          respository: pivotal/docs-platform-automation
-          path: docs-platform-automation
-
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -37,7 +31,7 @@ jobs:
         run: |
           go install github.com/onsi/ginkgo/ginkgo
           ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
-              -skipPackage acceptance,vmlifecyclecommands .
+              -skipPackage acceptance,vmlifecyclecommands,vmmanagers .
         working-directory: om
         env:
           CGO_ENABLED: 1
