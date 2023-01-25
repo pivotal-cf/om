@@ -12,6 +12,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    container:
+      image: internalpcfplatformautomation/ci:testing
+
     steps:
       - name: Checkout OM
         uses: actions/checkout@v2
