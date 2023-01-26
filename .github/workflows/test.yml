@@ -29,8 +29,6 @@ jobs:
  
       - name: Test
         run: |
-          pwd
-          ls -la
           go install github.com/onsi/ginkgo/ginkgo
           ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
               -skipPackage acceptance,vmlifecyclecommands,vmmanagers .
