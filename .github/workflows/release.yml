@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-    - '*'
+    branches:
+    - "actions/CI"
 
 permissions: 
   contents: write

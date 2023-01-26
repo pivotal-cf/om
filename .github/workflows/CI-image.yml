@@ -2,6 +2,8 @@ name: OM container CI
 
 on:
   pull_request:
+    branches:
+    - "actions/CI"
     paths:
       - Dockerfile
   

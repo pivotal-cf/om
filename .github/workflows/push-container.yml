@@ -3,7 +3,7 @@ name: OM container CD
 on:
   push:
     branches:
-      - main
+    - "actions/CI"
     paths:
       - Dockerfile
 
