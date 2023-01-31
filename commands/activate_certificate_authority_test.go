@@ -213,12 +213,16 @@ var _ = Describe("ActivateCertificateAuthority", func() {
 					}}, nil)
 				})
 
-				It("returns an error", func() {
+				It("makes no activate call", func() {
 					err := executeCommand(command, args)
-					Expect(err).To(MatchError("no inactive certificate authorities to activate"))
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1), "list certificates call count")
 					Expect(fakeService.ActivateCertificateAuthorityCallCount()).To(Equal(0), "activate certificate call count")
+
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					format, content := fakeLogger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("No newer certificate authority available to activate\n"))
 				})
 			})
 		})
