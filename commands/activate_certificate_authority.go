@@ -3,7 +3,6 @@ package commands
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/pivotal-cf/om/api"
@@ -30,34 +29,19 @@ func NewActivateCertificateAuthority(service activateCertificateAuthorityService
 func (a ActivateCertificateAuthority) Execute(args []string) error {
 	guid := a.Options.Id
 	if a.Options.Id == "" {
-		caList, _ := a.service.ListCertificateAuthorities()
-		var activeCA api.CA
-		var newestInActiveCA api.CA
-		var newestInActiveCACreationTime time.Time
-		for _, ca := range caList.CAs {
-			if ca.Active {
-				activeCA = ca
-			} else {
-				tmp, _ := time.Parse(time.RFC3339, ca.CreatedOn)
-				if tmp.After(newestInActiveCACreationTime) {
-					newestInActiveCACreationTime = tmp
-					newestInActiveCA = ca
-				}
-			}
+		caList, err := a.service.ListCertificateAuthorities()
+
+		if err != nil {
+			return err
 		}
 
-		if newestInActiveCA.GUID == "" {
-			return fmt.Errorf("no inactive certificate authorities to activate")
-		}
+		latestCA := getLatestCertificateAuthority(caList.CAs)
 
-		activeCreationTime, _ := time.Parse(time.RFC3339, activeCA.CreatedOn)
-
-		if activeCreationTime.After(newestInActiveCACreationTime) {
+		if latestCA.Active {
 			a.logger.Printf("No newer certificate authority available to activate\n")
 			return nil
 		}
-
-		guid = newestInActiveCA.GUID
+		guid = latestCA.GUID
 	}
 
 	err := a.service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
@@ -71,4 +55,17 @@ func (a ActivateCertificateAuthority) Execute(args []string) error {
 	a.logger.Printf("Certificate authority '%s' activated\n", a.Options.Id)
 
 	return nil
+}
+
+func getLatestCertificateAuthority(caList []api.CA) api.CA {
+	var newestCA api.CA
+	var newestCACreationTime time.Time
+	for _, ca := range caList {
+		tmp, _ := time.Parse(time.RFC3339, ca.CreatedOn)
+		if tmp.After(newestCACreationTime) {
+			newestCA = ca
+			newestCACreationTime = tmp
+		}
+	}
+	return newestCA
 }
