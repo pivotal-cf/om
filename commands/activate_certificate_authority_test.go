@@ -100,6 +100,108 @@ var _ = Describe("ActivateCertificateAuthority", func() {
 				})
 			})
 
+			Context("with multiple inactive CAs that are newer than the active CA", func() {
+				BeforeEach(func() {
+					fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{CAs: []api.CA{
+						{
+							GUID:      "active-ca-guid",
+							Active:    true,
+							CreatedOn: "1950-06-16T05:17:43Z",
+						},
+						{
+							GUID:      "inactive-ca-guid-2",
+							Active:    false,
+							CreatedOn: "1952-06-16T09:17:44Z",
+						},
+						{
+							GUID:      "inactive-ca-guid-1",
+							Active:    false,
+							CreatedOn: "1951-06-16T05:17:44Z",
+						},
+					}}, nil)
+				})
+
+				It("makes activate call with the newest inactive CA", func() {
+					err := executeCommand(command, args)
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1), "list certificates call count")
+					Expect(fakeService.ActivateCertificateAuthorityCallCount()).To(Equal(1), "activate certificate call count")
+					Expect(fakeService.ActivateCertificateAuthorityArgsForCall(0)).To(Equal(api.ActivateCertificateAuthorityInput{
+						GUID: "inactive-ca-guid-2",
+					}), "activate ca API args")
+
+				})
+			})
+
+			Context("with multiple inactive CAs that are older than the active CA", func() {
+				BeforeEach(func() {
+					fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{CAs: []api.CA{
+						{
+							GUID:      "active-ca-guid",
+							Active:    true,
+							CreatedOn: "1965-06-16T05:17:43Z",
+						},
+						{
+							GUID:      "inactive-ca-guid-2",
+							Active:    false,
+							CreatedOn: "1964-06-16T09:17:44Z",
+						},
+						{
+							GUID:      "inactive-ca-guid-1",
+							Active:    false,
+							CreatedOn: "1962-06-16T05:17:44Z",
+						},
+					}}, nil)
+				})
+
+				It("makes no activate call", func() {
+					err := executeCommand(command, args)
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1), "list certificates call count")
+					Expect(fakeService.ActivateCertificateAuthorityCallCount()).To(Equal(0), "activate certificate call count")
+
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					format, content := fakeLogger.PrintfArgsForCall(0)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("No newer certificate authority available to activate\n"))
+				})
+			})
+
+			Context("with multiple inactive CAs one older and one newer than the active CA", func() {
+				BeforeEach(func() {
+					fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{CAs: []api.CA{
+						{
+							GUID:      "active-ca-guid",
+							Active:    true,
+							CreatedOn: "1974-06-16T05:17:43Z",
+						},
+						{
+							GUID:      "inactive-ca-guid-2",
+							Active:    false,
+							CreatedOn: "1975-06-16T09:17:44Z",
+						},
+						{
+							GUID:      "inactive-ca-guid-1",
+							Active:    false,
+							CreatedOn: "1972-06-16T05:17:44Z",
+						},
+					}}, nil)
+				})
+
+				It("makes activate call with the newest inactive CA", func() {
+					err := executeCommand(command, args)
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1), "list certificates call count")
+					Expect(fakeService.ActivateCertificateAuthorityCallCount()).To(Equal(1), "activate certificate call count")
+					Expect(fakeService.ActivateCertificateAuthorityArgsForCall(0)).To(Equal(api.ActivateCertificateAuthorityInput{
+						GUID: "inactive-ca-guid-2",
+					}), "activate ca API args")
+
+				})
+			})
+
 			Context("with no inactive CA", func() {
 				BeforeEach(func() {
 					fakeService.ListCertificateAuthoritiesReturns(api.CertificateAuthoritiesOutput{CAs: []api.CA{
