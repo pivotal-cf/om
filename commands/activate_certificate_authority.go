@@ -32,31 +32,32 @@ func (a ActivateCertificateAuthority) Execute(args []string) error {
 	if a.Options.Id == "" {
 		caList, _ := a.service.ListCertificateAuthorities()
 		var activeCA api.CA
-		var inactiveCA api.CA
-
+		var newestInActiveCA api.CA
+		var newestInActiveCACreationTime time.Time
 		for _, ca := range caList.CAs {
 			if ca.Active {
 				activeCA = ca
 			} else {
-				inactiveCA = ca
+				tmp, _ := time.Parse(time.RFC3339, ca.CreatedOn)
+				if tmp.After(newestInActiveCACreationTime) {
+					newestInActiveCACreationTime = tmp
+					newestInActiveCA = ca
+				}
 			}
 		}
 
-		if inactiveCA.GUID == "" {
+		if newestInActiveCA.GUID == "" {
 			return fmt.Errorf("no inactive certificate authorities to activate")
 		}
 
-		inactiveCreationTime, _ := time.Parse(time.RFC3339, inactiveCA.CreatedOn)
-		fmt.Printf("%+v\n", inactiveCreationTime)
 		activeCreationTime, _ := time.Parse(time.RFC3339, activeCA.CreatedOn)
-		fmt.Printf("%+v\n", activeCreationTime)
 
-		if activeCreationTime.After(inactiveCreationTime) {
+		if activeCreationTime.After(newestInActiveCACreationTime) {
 			a.logger.Printf("No newer certificate authority available to activate\n")
 			return nil
 		}
 
-		guid = inactiveCA.GUID
+		guid = newestInActiveCA.GUID
 	}
 
 	err := a.service.ActivateCertificateAuthority(api.ActivateCertificateAuthorityInput{
