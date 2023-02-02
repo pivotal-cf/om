@@ -146,7 +146,7 @@ func (a Api) DeleteCertificateAuthority(input DeleteCertificateAuthorityInput) e
 
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
+	if err = validateStatusOKOrVerificationWarning(resp, true); err != nil {
 		return err
 	}
 

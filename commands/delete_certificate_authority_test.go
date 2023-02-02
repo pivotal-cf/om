@@ -55,22 +55,31 @@ var _ = Describe("DeleteCertificateAuthority", func() {
 							GUID:   "inactive-ca-guid",
 							Active: false,
 						},
+						{
+							GUID:   "another-inactive-ca-guid",
+							Active: false,
+						},
 					}}, nil)
 				})
 
-				It("deletes the inactive certificate authority", func() {
+				It("deletes the inactive certificate authorities", func() {
 					err := executeCommand(command, args)
 					Expect(err).ToNot(HaveOccurred())
 
 					Expect(fakeService.ListCertificateAuthoritiesCallCount()).To(Equal(1))
-					Expect(fakeService.DeleteCertificateAuthorityCallCount()).To(Equal(1))
+					Expect(fakeService.DeleteCertificateAuthorityCallCount()).To(Equal(2))
 					Expect(fakeService.DeleteCertificateAuthorityArgsForCall(0)).To(Equal(api.DeleteCertificateAuthorityInput{
 						GUID: "inactive-ca-guid",
 					}))
+					Expect(fakeService.DeleteCertificateAuthorityArgsForCall(1)).To(Equal(api.DeleteCertificateAuthorityInput{
+						GUID: "another-inactive-ca-guid",
+					}))
 
-					Expect(fakeLogger.PrintfCallCount()).To(Equal(1))
+					Expect(fakeLogger.PrintfCallCount()).To(Equal(2))
 					format, content := fakeLogger.PrintfArgsForCall(0)
 					Expect(fmt.Sprintf(format, content...)).To(Equal("Certificate authority 'inactive-ca-guid' deleted\n"))
+					format, content = fakeLogger.PrintfArgsForCall(1)
+					Expect(fmt.Sprintf(format, content...)).To(Equal("Certificate authority 'another-inactive-ca-guid' deleted\n"))
 				})
 			})
 
