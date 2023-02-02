@@ -31,6 +31,11 @@ type CA struct {
 	CertPEM   string `json:"cert_pem"`
 }
 
+type GenerateCAResponse struct {
+	CA
+	Warnings []string `json:"warnings"`
+}
+
 func (a Api) ListCertificateAuthorities() (CertificateAuthoritiesOutput, error) {
 	var output CertificateAuthoritiesOutput
 
@@ -68,50 +73,50 @@ func (a Api) RegenerateCertificates() error {
 	return nil
 }
 
-func (a Api) GenerateCertificateAuthority() (CA, error) {
-	var output CA
+func (a Api) GenerateCertificateAuthority() (GenerateCAResponse, error) {
+	var output GenerateCAResponse
 
 	resp, err := a.sendAPIRequest("POST", "/api/v0/certificate_authorities/generate", nil)
 	if err != nil {
-		return CA{}, err
+		return GenerateCAResponse{}, err
 	}
 
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return CA{}, err
+	if err = validateStatusOKOrVerificationWarning(resp, true); err != nil {
+		return GenerateCAResponse{}, err
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err != nil {
-		return CA{}, err
+		return GenerateCAResponse{}, err
 	}
 
 	return output, nil
 }
 
-func (a Api) CreateCertificateAuthority(certBody CertificateAuthorityInput) (CA, error) {
-	var output CA
+func (a Api) CreateCertificateAuthority(certBody CertificateAuthorityInput) (GenerateCAResponse, error) {
+	var output GenerateCAResponse
 
 	body, err := json.Marshal(certBody)
 	if err != nil {
-		return CA{}, err // not tested
+		return GenerateCAResponse{}, err // not tested
 	}
 
 	resp, err := a.sendAPIRequest("POST", "/api/v0/certificate_authorities", body)
 	if err != nil {
-		return CA{}, err
+		return GenerateCAResponse{}, err
 	}
 
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
-		return CA{}, err
+	if err = validateStatusOKOrVerificationWarning(resp, true); err != nil {
+		return GenerateCAResponse{}, err
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err != nil {
-		return CA{}, err
+		return GenerateCAResponse{}, err
 	}
 
 	return output, nil

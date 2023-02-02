@@ -50,6 +50,11 @@ type Presenter struct {
 	presentErrandsArgsForCall []struct {
 		arg1 []models.Errand
 	}
+	PresentGenerateCAResponseStub        func(api.GenerateCAResponse)
+	presentGenerateCAResponseMutex       sync.RWMutex
+	presentGenerateCAResponseArgsForCall []struct {
+		arg1 api.GenerateCAResponse
+	}
 	PresentInstallationsStub        func([]models.Installation)
 	presentInstallationsMutex       sync.RWMutex
 	presentInstallationsArgsForCall []struct {
@@ -352,6 +357,37 @@ func (fake *Presenter) PresentErrandsArgsForCall(i int) []models.Errand {
 	return argsForCall.arg1
 }
 
+func (fake *Presenter) PresentGenerateCAResponse(arg1 api.GenerateCAResponse) {
+	fake.presentGenerateCAResponseMutex.Lock()
+	fake.presentGenerateCAResponseArgsForCall = append(fake.presentGenerateCAResponseArgsForCall, struct {
+		arg1 api.GenerateCAResponse
+	}{arg1})
+	fake.recordInvocation("PresentGenerateCAResponse", []interface{}{arg1})
+	fake.presentGenerateCAResponseMutex.Unlock()
+	if fake.PresentGenerateCAResponseStub != nil {
+		fake.PresentGenerateCAResponseStub(arg1)
+	}
+}
+
+func (fake *Presenter) PresentGenerateCAResponseCallCount() int {
+	fake.presentGenerateCAResponseMutex.RLock()
+	defer fake.presentGenerateCAResponseMutex.RUnlock()
+	return len(fake.presentGenerateCAResponseArgsForCall)
+}
+
+func (fake *Presenter) PresentGenerateCAResponseCalls(stub func(api.GenerateCAResponse)) {
+	fake.presentGenerateCAResponseMutex.Lock()
+	defer fake.presentGenerateCAResponseMutex.Unlock()
+	fake.PresentGenerateCAResponseStub = stub
+}
+
+func (fake *Presenter) PresentGenerateCAResponseArgsForCall(i int) api.GenerateCAResponse {
+	fake.presentGenerateCAResponseMutex.RLock()
+	defer fake.presentGenerateCAResponseMutex.RUnlock()
+	argsForCall := fake.presentGenerateCAResponseArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *Presenter) PresentInstallations(arg1 []models.Installation) {
 	var arg1Copy []models.Installation
 	if arg1 != nil {
@@ -536,6 +572,8 @@ func (fake *Presenter) Invocations() map[string][][]interface{} {
 	defer fake.presentDiagnosticReportMutex.RUnlock()
 	fake.presentErrandsMutex.RLock()
 	defer fake.presentErrandsMutex.RUnlock()
+	fake.presentGenerateCAResponseMutex.RLock()
+	defer fake.presentGenerateCAResponseMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
 	fake.presentPendingChangesMutex.RLock()

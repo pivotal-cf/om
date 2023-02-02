@@ -3,6 +3,7 @@ package presenters
 import (
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/olekukonko/tablewriter"
@@ -105,6 +106,20 @@ func (t TablePresenter) PresentCertificateAuthority(certificateAuthority api.CA)
 		certificateAuthority.CreatedOn,
 		certificateAuthority.ExpiresOn,
 		certificateAuthority.CertPEM})
+	t.tableWriter.Render()
+}
+
+func (t TablePresenter) PresentGenerateCAResponse(car api.GenerateCAResponse) {
+	t.tableWriter.SetAutoWrapText(false)
+	t.tableWriter.SetHeader([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem", "warnings"})
+	t.tableWriter.Append([]string{car.GUID,
+		car.Issuer,
+		strconv.FormatBool(car.Active),
+		car.CreatedOn,
+		car.ExpiresOn,
+		car.CertPEM,
+		strings.Join(car.Warnings, ";"),
+	})
 	t.tableWriter.Render()
 }
 

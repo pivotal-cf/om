@@ -15,7 +15,7 @@ type GenerateCertificateAuthority struct {
 
 //counterfeiter:generate -o ./fakes/generate_certificate_authority_service.go --fake-name GenerateCertificateAuthorityService . generateCertificateAuthorityService
 type generateCertificateAuthorityService interface {
-	GenerateCertificateAuthority() (api.CA, error)
+	GenerateCertificateAuthority() (api.GenerateCAResponse, error)
 }
 
 func NewGenerateCertificateAuthority(service generateCertificateAuthorityService, presenter presenters.FormattedPresenter) *GenerateCertificateAuthority {
@@ -23,13 +23,17 @@ func NewGenerateCertificateAuthority(service generateCertificateAuthorityService
 }
 
 func (g GenerateCertificateAuthority) Execute(args []string) error {
-	certificateAuthority, err := g.service.GenerateCertificateAuthority()
+	caResp, err := g.service.GenerateCertificateAuthority()
 	if err != nil {
 		return err
 	}
 
 	g.presenter.SetFormat(g.Options.Format)
-	g.presenter.PresentCertificateAuthority(certificateAuthority)
+	if caResp.Warnings != nil {
+		g.presenter.PresentGenerateCAResponse(caResp)
+	} else {
+		g.presenter.PresentCertificateAuthority(caResp.CA)
+	}
 
 	return nil
 }

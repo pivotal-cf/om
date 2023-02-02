@@ -8,24 +8,24 @@ import (
 )
 
 type CreateCertificateAuthorityService struct {
-	CreateCertificateAuthorityStub        func(api.CertificateAuthorityInput) (api.CA, error)
+	CreateCertificateAuthorityStub        func(api.CertificateAuthorityInput) (api.GenerateCAResponse, error)
 	createCertificateAuthorityMutex       sync.RWMutex
 	createCertificateAuthorityArgsForCall []struct {
 		arg1 api.CertificateAuthorityInput
 	}
 	createCertificateAuthorityReturns struct {
-		result1 api.CA
+		result1 api.GenerateCAResponse
 		result2 error
 	}
 	createCertificateAuthorityReturnsOnCall map[int]struct {
-		result1 api.CA
+		result1 api.GenerateCAResponse
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *CreateCertificateAuthorityService) CreateCertificateAuthority(arg1 api.CertificateAuthorityInput) (api.CA, error) {
+func (fake *CreateCertificateAuthorityService) CreateCertificateAuthority(arg1 api.CertificateAuthorityInput) (api.GenerateCAResponse, error) {
 	fake.createCertificateAuthorityMutex.Lock()
 	ret, specificReturn := fake.createCertificateAuthorityReturnsOnCall[len(fake.createCertificateAuthorityArgsForCall)]
 	fake.createCertificateAuthorityArgsForCall = append(fake.createCertificateAuthorityArgsForCall, struct {
@@ -49,7 +49,7 @@ func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityCallCou
 	return len(fake.createCertificateAuthorityArgsForCall)
 }
 
-func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityCalls(stub func(api.CertificateAuthorityInput) (api.CA, error)) {
+func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityCalls(stub func(api.CertificateAuthorityInput) (api.GenerateCAResponse, error)) {
 	fake.createCertificateAuthorityMutex.Lock()
 	defer fake.createCertificateAuthorityMutex.Unlock()
 	fake.CreateCertificateAuthorityStub = stub
@@ -62,28 +62,28 @@ func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityArgsFor
 	return argsForCall.arg1
 }
 
-func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturns(result1 api.CA, result2 error) {
+func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturns(result1 api.GenerateCAResponse, result2 error) {
 	fake.createCertificateAuthorityMutex.Lock()
 	defer fake.createCertificateAuthorityMutex.Unlock()
 	fake.CreateCertificateAuthorityStub = nil
 	fake.createCertificateAuthorityReturns = struct {
-		result1 api.CA
+		result1 api.GenerateCAResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturnsOnCall(i int, result1 api.CA, result2 error) {
+func (fake *CreateCertificateAuthorityService) CreateCertificateAuthorityReturnsOnCall(i int, result1 api.GenerateCAResponse, result2 error) {
 	fake.createCertificateAuthorityMutex.Lock()
 	defer fake.createCertificateAuthorityMutex.Unlock()
 	fake.CreateCertificateAuthorityStub = nil
 	if fake.createCertificateAuthorityReturnsOnCall == nil {
 		fake.createCertificateAuthorityReturnsOnCall = make(map[int]struct {
-			result1 api.CA
+			result1 api.GenerateCAResponse
 			result2 error
 		})
 	}
 	fake.createCertificateAuthorityReturnsOnCall[i] = struct {
-		result1 api.CA
+		result1 api.GenerateCAResponse
 		result2 error
 	}{result1, result2}
 }

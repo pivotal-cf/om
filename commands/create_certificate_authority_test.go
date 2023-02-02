@@ -40,16 +40,18 @@ var _ = Describe("CreateCertificateAuthority", func() {
 		})
 
 		It("prints a table containing the certificate authority that was created", func() {
-			ca := api.CA{
-				GUID:      "some GUID",
-				Issuer:    "some Issuer",
-				CreatedOn: "2017-09-12",
-				ExpiresOn: "2018-09-12",
-				Active:    true,
-				CertPEM:   "some CertPem",
+			caResp := api.GenerateCAResponse{
+				CA: api.CA{
+					GUID:      "some GUID",
+					Issuer:    "some Issuer",
+					CreatedOn: "2017-09-12",
+					ExpiresOn: "2018-09-12",
+					Active:    true,
+					CertPEM:   "some CertPem",
+				},
 			}
 
-			fakeService.CreateCertificateAuthorityReturns(ca, nil)
+			fakeService.CreateCertificateAuthorityReturns(caResp, nil)
 
 			err := executeCommand(command, []string{
 				"--certificate-pem", "some CertPem",
@@ -58,7 +60,36 @@ var _ = Describe("CreateCertificateAuthority", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
-			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(ca))
+			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(caResp.CA))
+		})
+
+		When("warnings are returned", func() {
+			It("prints the response including warnings", func() {
+				caResp := api.GenerateCAResponse{
+					CA: api.CA{
+						GUID:      "some GUID",
+						Issuer:    "some Issuer",
+						CreatedOn: "2017-09-12",
+						ExpiresOn: "2018-09-12",
+						Active:    false,
+						CertPEM:   "some CertPem",
+					},
+					Warnings: []string{"something went wrong, but only kinda!"},
+				}
+
+				fakeService.CreateCertificateAuthorityReturns(caResp, nil)
+
+				err := executeCommand(command, []string{
+					"--certificate-pem", "some CertPem",
+					"--private-key-pem", "some PrivateKey",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakeService.CreateCertificateAuthorityCallCount()).To(Equal(1))
+
+				Expect(fakePresenter.PresentGenerateCAResponseCallCount()).To(Equal(1))
+				Expect(fakePresenter.PresentGenerateCAResponseArgsForCall(0)).To(Equal(caResp))
+			})
 		})
 
 		When("the format flag is provided", func() {
@@ -77,7 +108,7 @@ var _ = Describe("CreateCertificateAuthority", func() {
 
 		When("the service fails to create a certificate", func() {
 			It("returns an error", func() {
-				fakeService.CreateCertificateAuthorityReturns(api.CA{}, errors.New("failed to create certificate"))
+				fakeService.CreateCertificateAuthorityReturns(api.GenerateCAResponse{}, errors.New("failed to create certificate"))
 
 				err := executeCommand(command, []string{
 					"--certificate-pem", "some CertPem",

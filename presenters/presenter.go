@@ -11,6 +11,7 @@ type Presenter interface {
 	PresentAvailableProducts([]models.Product)
 	PresentCertificateAuthorities([]api.CA)
 	PresentCertificateAuthority(api.CA)
+	PresentGenerateCAResponse(api.GenerateCAResponse)
 	PresentSSLCertificate(api.SSLCertificate)
 	PresentCredentialReferences([]string)
 	PresentCredentials(map[string]string)
@@ -73,6 +74,15 @@ func (p *MultiPresenter) PresentCertificateAuthority(ca api.CA) {
 		p.jsonPresenter.PresentCertificateAuthority(ca)
 	default:
 		p.tablePresenter.PresentCertificateAuthority(ca)
+	}
+}
+
+func (p *MultiPresenter) PresentGenerateCAResponse(car api.GenerateCAResponse) {
+	switch p.format {
+	case "json":
+		p.jsonPresenter.PresentGenerateCAResponse(car)
+	default:
+		p.tablePresenter.PresentGenerateCAResponse(car)
 	}
 }
 

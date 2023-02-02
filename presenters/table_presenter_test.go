@@ -167,6 +167,39 @@ var _ = Describe("TablePresenter", func() {
 		})
 	})
 
+	Describe("PresentGenerateCAResponse", func() {
+		var car api.GenerateCAResponse
+
+		BeforeEach(func() {
+			car = api.GenerateCAResponse{
+				CA: api.CA{
+					GUID:      "some GUID",
+					Issuer:    "some Issuer",
+					CreatedOn: "2017-09-12",
+					ExpiresOn: "2018-09-12",
+					Active:    true,
+					CertPEM:   "some CertPem",
+				},
+				Warnings: []string{"something not ideal!", "maybe even two things!"},
+			}
+		})
+
+		It("creates a table", func() {
+			tablePresenter.PresentGenerateCAResponse(car)
+			Expect(fakeTableWriter.SetAutoWrapTextCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAutoWrapTextArgsForCall(0)).To(BeFalse())
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetHeaderArgsForCall(0)).To(Equal([]string{"id", "issuer", "active", "created on", "expires on", "certicate pem", "warnings"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some GUID", "some Issuer",
+				"true", "2017-09-12", "2018-09-12", "some CertPem", "something not ideal!;maybe even two things!"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
+
 	Describe("PresentInstallations", func() {
 		var installations []models.Installation
 

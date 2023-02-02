@@ -25,29 +25,57 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 	})
 
 	Describe("Execute", func() {
-		var certificateAuthority api.CA
+		var caResp api.GenerateCAResponse
 
-		BeforeEach(func() {
-			certificateAuthority = api.CA{
-				GUID:      "some GUID",
-				Issuer:    "some Issuer",
-				CreatedOn: "2017-09-12",
-				ExpiresOn: "2018-09-12",
-				Active:    true,
-				CertPEM:   "some CertPem",
-			}
+		When("no warnings are returned", func() {
+			It("makes a request to the Opsman to generate a certificate authority and prints to a table", func() {
+				caResp = api.GenerateCAResponse{
+					CA: api.CA{
+						GUID:      "some GUID",
+						Issuer:    "some Issuer",
+						CreatedOn: "2017-09-12",
+						ExpiresOn: "2018-09-12",
+						Active:    true,
+						CertPEM:   "some CertPem",
+					},
+				}
 
-			fakeService.GenerateCertificateAuthorityReturns(certificateAuthority, nil)
+				fakeService.GenerateCertificateAuthorityReturns(caResp, nil)
+
+				err := executeCommand(command, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
+
+				Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
+				Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(caResp.CA))
+			})
 		})
 
-		It("makes a request to the Opsman to generate a certificate authority and prints to a table", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).ToNot(HaveOccurred())
+		When("warnings are returned", func() {
+			It("prints the response including warnings", func() {
+				caResp = api.GenerateCAResponse{
+					CA: api.CA{
+						GUID:      "some GUID",
+						Issuer:    "some Issuer",
+						CreatedOn: "2017-09-12",
+						ExpiresOn: "2018-09-12",
+						Active:    true,
+						CertPEM:   "some CertPem",
+					},
+					Warnings: []string{"something went wrong, but only kinda!"},
+				}
 
-			Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
+				fakeService.GenerateCertificateAuthorityReturns(caResp, nil)
 
-			Expect(fakePresenter.PresentCertificateAuthorityCallCount()).To(Equal(1))
-			Expect(fakePresenter.PresentCertificateAuthorityArgsForCall(0)).To(Equal(certificateAuthority))
+				err := executeCommand(command, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakeService.GenerateCertificateAuthorityCallCount()).To(Equal(1))
+
+				Expect(fakePresenter.PresentGenerateCAResponseCallCount()).To(Equal(1))
+				Expect(fakePresenter.PresentGenerateCAResponseArgsForCall(0)).To(Equal(caResp))
+			})
 		})
 
 		When("the format flag is provided", func() {
@@ -63,7 +91,7 @@ var _ = Describe("GenerateCertificateAuthority", func() {
 		})
 
 		It("returns an error when the service fails to generate a certificate", func() {
-			fakeService.GenerateCertificateAuthorityReturns(api.CA{}, errors.New("failed to generate certificate"))
+			fakeService.GenerateCertificateAuthorityReturns(api.GenerateCAResponse{}, errors.New("failed to generate certificate"))
 
 			err := executeCommand(command, []string{})
 			Expect(err).To(MatchError("failed to generate certificate"))

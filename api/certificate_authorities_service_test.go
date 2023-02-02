@@ -1,11 +1,12 @@
 package api_test
 
 import (
+	"net/http"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-cf/om/api"
-	"net/http"
 )
 
 var _ = Describe("CertificateAuthorities", func() {
@@ -129,13 +130,15 @@ var _ = Describe("CertificateAuthorities", func() {
 			ca, err := service.GenerateCertificateAuthority()
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(ca).To(Equal(api.CA{
-				GUID:      "some-guid",
-				Issuer:    "some-issuer",
-				CreatedOn: "2017-01-09",
-				ExpiresOn: "2021-01-09",
-				Active:    true,
-				CertPEM:   "some-cert-pem",
+			Expect(ca).To(Equal(api.GenerateCAResponse{
+				CA: api.CA{
+					GUID:      "some-guid",
+					Issuer:    "some-issuer",
+					CreatedOn: "2017-01-09",
+					ExpiresOn: "2021-01-09",
+					Active:    true,
+					CertPEM:   "some-cert-pem",
+				},
 			}))
 		})
 
@@ -145,6 +148,40 @@ var _ = Describe("CertificateAuthorities", func() {
 
 				_, err := service.GenerateCertificateAuthority()
 				Expect(err).To(MatchError(ContainSubstring("could not send api request to POST /api/v0/certificate_authorities/generate")))
+			})
+		})
+
+		When("Ops Manager returns 207 (multi-status)", func() {
+			It("prints the certificate AND a warning", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/certificate_authorities/generate"),
+						ghttp.RespondWith(http.StatusMultiStatus, `{
+							"guid": "some-guid",
+							"issuer": "some-issuer",
+							"created_on": "2017-01-09",
+							"expires_on": "2021-01-09",
+							"active": true,
+							"cert_pem": "some-cert-pem",
+							"warnings": ["oh no! something went wrong!"]
+						}`),
+					),
+				)
+
+				ca, err := service.GenerateCertificateAuthority()
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(ca).To(Equal(api.GenerateCAResponse{
+					CA: api.CA{
+						GUID:      "some-guid",
+						Issuer:    "some-issuer",
+						CreatedOn: "2017-01-09",
+						ExpiresOn: "2021-01-09",
+						Active:    true,
+						CertPEM:   "some-cert-pem",
+					},
+					Warnings: []string{"oh no! something went wrong!"},
+				}))
 			})
 		})
 
@@ -242,19 +279,21 @@ var _ = Describe("CertificateAuthorities", func() {
 				),
 			)
 
-			ca, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
+			car, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 				CertPem:       certPem,
 				PrivateKeyPem: privateKey,
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(ca).To(Equal(api.CA{
-				GUID:      "some-guid",
-				Issuer:    "some-issuer",
-				CreatedOn: "2017-01-09",
-				ExpiresOn: "2021-01-09",
-				Active:    true,
-				CertPEM:   "some-cert",
+			Expect(car).To(Equal(api.GenerateCAResponse{
+				CA: api.CA{
+					GUID:      "some-guid",
+					Issuer:    "some-issuer",
+					CreatedOn: "2017-01-09",
+					ExpiresOn: "2021-01-09",
+					Active:    true,
+					CertPEM:   "some-cert",
+				},
 			}))
 		})
 
@@ -284,6 +323,43 @@ var _ = Describe("CertificateAuthorities", func() {
 					PrivateKeyPem: privateKey,
 				})
 				Expect(err).To(MatchError(ContainSubstring("invalid character")))
+			})
+		})
+
+		When("Ops Manager returns 207 (multi-status)", func() {
+			It("prints the certificate AND a warning", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/certificate_authorities"),
+						ghttp.RespondWith(http.StatusMultiStatus, `{
+							"guid": "some-guid",
+							"issuer": "some-issuer",
+							"created_on": "2017-01-09",
+							"expires_on": "2021-01-09",
+							"active": false,
+							"cert_pem": "some-cert",
+							"warnings": ["oh no! something went wrong!"]
+						}`),
+					),
+				)
+
+				car, err := service.CreateCertificateAuthority(api.CertificateAuthorityInput{
+					CertPem:       certPem,
+					PrivateKeyPem: privateKey,
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(car).To(Equal(api.GenerateCAResponse{
+					CA: api.CA{
+						GUID:      "some-guid",
+						Issuer:    "some-issuer",
+						CreatedOn: "2017-01-09",
+						ExpiresOn: "2021-01-09",
+						Active:    false,
+						CertPEM:   "some-cert",
+					},
+					Warnings: []string{"oh no! something went wrong!"},
+				}))
 			})
 		})
 

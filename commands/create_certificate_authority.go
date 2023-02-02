@@ -17,7 +17,7 @@ type CreateCertificateAuthority struct {
 
 //counterfeiter:generate -o ./fakes/create_certificate_authority_service.go --fake-name CreateCertificateAuthorityService . createCertificateAuthorityService
 type createCertificateAuthorityService interface {
-	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.CA, error)
+	CreateCertificateAuthority(api.CertificateAuthorityInput) (api.GenerateCAResponse, error)
 }
 
 func NewCreateCertificateAuthority(service createCertificateAuthorityService, presenter presenters.FormattedPresenter) *CreateCertificateAuthority {
@@ -25,7 +25,7 @@ func NewCreateCertificateAuthority(service createCertificateAuthorityService, pr
 }
 
 func (c CreateCertificateAuthority) Execute(args []string) error {
-	ca, err := c.service.CreateCertificateAuthority(api.CertificateAuthorityInput{
+	caResp, err := c.service.CreateCertificateAuthority(api.CertificateAuthorityInput{
 		CertPem:       c.Options.CertPem,
 		PrivateKeyPem: c.Options.PrivateKey,
 	})
@@ -34,7 +34,11 @@ func (c CreateCertificateAuthority) Execute(args []string) error {
 	}
 
 	c.presenter.SetFormat(c.Options.Format)
-	c.presenter.PresentCertificateAuthority(ca)
+	if caResp.Warnings != nil {
+		c.presenter.PresentGenerateCAResponse(caResp)
+	} else {
+		c.presenter.PresentCertificateAuthority(caResp.CA)
+	}
 
 	return nil
 }
