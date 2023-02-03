@@ -66,7 +66,7 @@ func (a Api) RegenerateCertificates() error {
 
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
+	if err = validateStatusOKOrVerificationWarning(resp, true); err != nil {
 		return err
 	}
 
@@ -130,7 +130,7 @@ func (a Api) ActivateCertificateAuthority(input ActivateCertificateAuthorityInpu
 
 	defer resp.Body.Close()
 
-	if err = validateStatusOK(resp); err != nil {
+	if err = validateStatusOKOrVerificationWarning(resp, true); err != nil {
 		return err
 	}
 
