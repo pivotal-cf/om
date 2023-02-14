@@ -47,6 +47,13 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.7.1
+
+Bug Fixes
+
+- vSphere usernames containing URI-reserved characters
+  are now URI-encoded for use in requests.
+
 ## 7.7.0
 
 Features
