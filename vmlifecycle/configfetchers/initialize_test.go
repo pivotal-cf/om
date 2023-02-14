@@ -280,6 +280,39 @@ var _ = Describe("selects the correct config fetcher based on the state file", f
 			})
 		})
 
+		When("the username and password include URI-reserved characters", func() {
+			It("URI-encodes them for use in requests in the fetcher", func() {
+				state := &vmmanagers.StateInfo{
+					IAAS: "vsphere",
+					ID:   "/DC0/vm/DC0_H0_VM0",
+				}
+
+				model := simulator.VPX()
+				err := model.Create()
+				Expect(err).ToNot(HaveOccurred())
+
+				model.Service.TLS = nil
+				s := model.Service.NewServer()
+				defer s.Close()
+
+				creds := &configfetchers.Credentials{
+					VSphere: &configfetchers.VCenterCredentialsWrapper{
+						VcenterCredential: vmmanagers.VcenterCredential{
+							URL:      s.URL.String(),
+							Username: `some\username`,
+							Password: "some-password-with-ampersand-&",
+						},
+						Insecure: true,
+					},
+				}
+
+				vSphereConfigFetcher, err := configfetchers.NewOpsmanConfigFetcher(state, creds)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(reflect.TypeOf(vSphereConfigFetcher)).To(Equal(reflect.TypeOf(&configfetchers.VSphereConfigFetcher{})))
+			})
+		})
+
 		When("the insecure value is set to false and the server url is https", func() {
 			It("does not return an error", func() {
 				state := &vmmanagers.StateInfo{
