@@ -47,12 +47,12 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 7.8.0
+## 7.9.0
 
 ### What's Changed
 
 - [#595](https://github.com/pivotal-cf/om/pull/595): Add `--all-inactive` option to delete CAs. This adds an optional flag to `om delete-certificate-authority` that finds all the inactive certificate authorities and deletes them rather than requiring that the operator specify the GUID.
-- [#596](https://github.com/pivotal-cf/om/pull/596): feat: Update activate-certificate-authority to activate latest inactive CA without passing CA GUID.
+- [#596](https://github.com/pivotal-cf/om/pull/596): Update activate-certificate-authority to activate latest inactive CA without passing CA GUID.
 - Handle 207 multi-status warning message in `activate-certificate-authority, create-certificate-authority,
  generate-certificate-authority and regenerate-certificates` commands.
 
@@ -60,6 +60,25 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
 
 - vSphere usernames containing URI-reserved characters
   are now URI-encoded for use in requests.
+
+## 7.8.2
+
+### Bug Fixes
+
+- [#591](https://github.com/pivotal-cf/om/pull/591): added support for jammy stemcell
+
+## 7.8.1
+
+### What's Changed
+
+- This version of OM is built with Go 1.19.1.
+
+## 7.8.0
+
+### Bug Fixes
+-  [#586](https://github.com/pivotal-cf/om/pull/586): Fixes om nom panic when OpsMan instance does not have a public IP address. @crhntr
+
+Note: the previous version (7.7.0) erroneously claimed to have included the om nom bugfix when it actually didn't. This version (7.8.0) has been confirmed to contain the fix. @Spimtav
 
 ## 7.7.0
 
