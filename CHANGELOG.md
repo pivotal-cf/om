@@ -47,20 +47,27 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 7.7.1
+## 7.8.0
 
-Bug Fixes
+### What's Changed
+
+- [#595](https://github.com/pivotal-cf/om/pull/595): Add `--all-inactive` option to delete CAs. This adds an optional flag to `om delete-certificate-authority` that finds all the inactive certificate authorities and deletes them rather than requiring that the operator specify the GUID.
+- [#596](https://github.com/pivotal-cf/om/pull/596): feat: Update activate-certificate-authority to activate latest inactive CA without passing CA GUID.
+- Handle 207 multi-status warning message in `activate-certificate-authority, create-certificate-authority,
+ generate-certificate-authority and regenerate-certificates` commands.
+
+### Bug Fixes
 
 - vSphere usernames containing URI-reserved characters
   are now URI-encoded for use in requests.
 
 ## 7.7.0
 
-Features
+### Features
 
 - [#582](https://github.com/pivotal-cf/om/pull/582): Include builds for M1 architecture in Mac and Linux builds. This may require changes to CI that pulls artifacts from GitHub releases.
 
-Bug fixes
+### Bug fixes
 
 - [#586](https://github.com/pivotal-cf/om/pull/586): Fixes `om nom` panic when OpsMan instance does not have a public IP address.
 
