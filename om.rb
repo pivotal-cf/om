@@ -5,20 +5,20 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.8.2"
+  version "7.9.0"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.8.2/om-darwin-arm64-7.8.2.tar.gz"
-      sha256 "c6a855d8a5ba2eb8c13b796419eee8d886c3c25db76f9b05394b5117a2f9b971"
+      url "https://github.com/pivotal-cf/om/releases/download/7.9.0/om-darwin-arm64-7.9.0.tar.gz"
+      sha256 "3e4845c78c4949911e6a6d8572b582379e5147f5baac50a480c849b0b7f1458b"
 
       def install
         bin.install "om"
       end
     end
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.8.2/om-darwin-amd64-7.8.2.tar.gz"
-      sha256 "4c3cefa82ba21b7535cfe58c1588a5f0e59ff85ee789469ee25acf05aef87fbd"
+      url "https://github.com/pivotal-cf/om/releases/download/7.9.0/om-darwin-amd64-7.9.0.tar.gz"
+      sha256 "345ed41965edae81828fc9fd9e840482e60316007e0fc03a99b06121ac017bdd"
 
       def install
         bin.install "om"
@@ -27,17 +27,17 @@ class Om < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.8.2/om-linux-amd64-7.8.2.tar.gz"
-      sha256 "4a9492d2812a777146318008f1cebf4ef6348a108b35868636e608a4ab2f2a51"
+    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+      url "https://github.com/pivotal-cf/om/releases/download/7.9.0/om-linux-arm64-7.9.0.tar.gz"
+      sha256 "7f517a03b52a10df62e47be2959effc7e7bf4256b5f7915662f9c342545e922e"
 
       def install
         bin.install "om"
       end
     end
-    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.8.2/om-linux-arm64-7.8.2.tar.gz"
-      sha256 "484838675f7c085cf9778e0e28aa4e78262fab3194d5cd710702664790b71dbb"
+    if Hardware::CPU.intel?
+      url "https://github.com/pivotal-cf/om/releases/download/7.9.0/om-linux-amd64-7.9.0.tar.gz"
+      sha256 "746923cdd9199c8b014d7d334ede46c5dcdd0d215440617c12b5094844d5ce0d"
 
       def install
         bin.install "om"
