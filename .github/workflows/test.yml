@@ -32,7 +32,7 @@ jobs:
           go install github.com/onsi/ginkgo/ginkgo
           ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
               -skipPackage acceptance,vmlifecyclecommands,vmmanagers \
-              --covermode=atomic --coverprofile=om-${{ github.sha }}-unit-test-code-coverage.out .
+              --covermode=atomic --coverprofile=../om-${{ github.sha }}-unit-test-code-coverage.out .
 
         working-directory: om
         env:
