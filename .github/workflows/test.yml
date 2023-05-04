@@ -32,7 +32,9 @@ jobs:
           go install github.com/onsi/ginkgo/ginkgo
           ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
               -skipPackage acceptance,vmlifecyclecommands,vmmanagers \
-              --covermode=atomic --coverprofile=om-${{ github.sha }}-unit-test-code-coverage.out .
+              -covermode=atomic -coverprofile=coverage.out .
+          mkdir -p ../coverage
+          find . -type f -name '*.out' | xargs -I{} bash -c 'mv {} "../coverage/$(echo {} | sha1sum | head -c 40 ).out"'
 
         working-directory: om
         env:
@@ -42,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Unit Test Code Coverage Output
-          path: om/om-${{ github.sha }}-unit-test-code-coverage.out
+          path: coverage/*.out
