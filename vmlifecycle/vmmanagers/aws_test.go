@@ -1,20 +1,23 @@
 package vmmanagers_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
-
-	"bytes"
+	"os"
+	"strings"
+	"sync/atomic"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v3"
+
 	"github.com/pivotal-cf/om/vmlifecycle/matchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
-	"gopkg.in/yaml.v2"
-	"time"
 )
 
 var _ = Describe("AWS VMManager", func() {
@@ -216,16 +219,56 @@ opsman-configuration:
 				})
 
 				It("calls aws with the correct environment variables when assume_role is set", func() {
-					command, runner := CreateValidCommandWithSecrets("1.2.3.4", "10.10.10.10", "us-west-2", "test_role", "", "")
+					config := `
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    assume_role: "toad" # this field is the thing that makes the config file be written
+    region: us-west-2
+    vm_name: awesome-vm
+    vpc_subnet_id: awesome-subnet
+    security_group_ids: [sg-awesome, sg-great]
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    boot_disk_size: 200
+    public_ip: 1.1.1.1
+    private_ip: 10.0.0.1
+    instance_type: m3.large
+    tags:
+      Owner: DbAdmin
+      Stack: Test`
+					command, runner := createCommand(config)
+
+					var (
+						// awsConfigFileContents
+						awsConfigFileContents []string
+					)
+					happyPathStub := happyPathAWSRunnerStubFunc(vmID)
+					runner.ExecuteWithEnvVarsCalls(func(env []string, _ []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+						p, found := makeEnvironmentMap(env)["AWS_CONFIG_FILE"]
+						if found {
+							buf, err := os.ReadFile(p)
+							if err != nil {
+								panic(err)
+							}
+							awsConfigFileContents = append(awsConfigFileContents, string(buf))
+						}
+						return happyPathStub()
+					})
 					_, _, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
 
 					for i := 0; i < runner.ExecuteWithEnvVarsCallCount(); i++ {
 						env, _ := runner.ExecuteWithEnvVarsArgsForCall(i)
-						Expect(env).ShouldNot(ContainElement(`AWS_ACCESS_KEY_ID=some-key-id`))
-						Expect(env).ShouldNot(ContainElement(`AWS_SECRET_ACCESS_KEY=some-key-secret`))
-						Expect(env).Should(ContainElement(`AWS_DEFAULT_REGION=us-west-2`))
-						Expect(env).To(HaveLen(2)) // Missing test to validate the AWS_CONFIG_FILE env variable
+						comment := fmt.Sprintf("call %d", i)
+						Expect(env).ToNot(ContainElement(`AWS_ACCESS_KEY_ID=some-key-id`), comment)
+						Expect(env).ToNot(ContainElement(`AWS_SECRET_ACCESS_KEY=some-key-secret`), comment)
+						Expect(env).To(ContainElement(`AWS_DEFAULT_REGION=us-west-2`), comment)
+						envMap := makeEnvironmentMap(env)
+						Expect(envMap).To(HaveKey("AWS_CONFIG_FILE"), comment)
+						Expect(strings.TrimSpace(awsConfigFileContents[i])).To(Equal(strings.TrimSpace(`[profile p-automator-assume]
+role_arn = toad
+credential_source = Ec2InstanceMetadata`)), comment)
 					}
 				})
 
@@ -705,3 +748,44 @@ opsman-configuration:
 
 	testIAASForPropertiesInExampleFile("AWS")
 })
+
+func makeEnvironmentMap(values []string) map[string]string {
+	m := make(map[string]string, len(values))
+	for _, val := range values {
+		elements := strings.SplitN(val, "=", 2)
+		if len(elements) <= 1 {
+			panic("unexpected environment string without an equals sign")
+		}
+		m[elements[0]] = elements[1]
+	}
+	return m
+}
+
+func happyPathAWSRunnerStubFunc(vmID string) func() (*bytes.Buffer, *bytes.Buffer, error) {
+	var executeCallCount int64
+	return func() (*bytes.Buffer, *bytes.Buffer, error) {
+		defer atomic.AddInt64(&executeCallCount, 1)
+		switch executeCallCount {
+		case 0:
+			return bytes.NewBufferString(fmt.Sprintf("%q\r\n", vmID)), nil, nil
+		case 1:
+			return bytes.NewBufferString("null\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil
+		case 2:
+			return bytes.NewBufferString("\"vol-0cf5b911680a78bb9\"\r\n"), bytes.NewBufferString("TestStatus: volume created"), nil
+		case 3:
+			return nil, nil, nil
+		case 4:
+			return bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil
+		case 5, 6:
+			return nil, nil, nil
+		case 7:
+			return bytes.NewBufferString("\"stopping\"\r\n"), nil, nil
+		case 8:
+			return bytes.NewBufferString("\"stopped\"\r\n"), nil, nil
+		case 9, 10:
+			return nil, nil, nil
+		default:
+			panic("stub for nth call not implemented")
+		}
+	}
+}

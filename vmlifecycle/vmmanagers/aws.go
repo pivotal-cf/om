@@ -161,6 +161,10 @@ func (a *AWSVMManager) CreateVM() (Status, StateInfo, error) {
 	return Success, StateInfo{IAAS: "aws", ID: instanceID}, nil
 }
 
+func (a *AWSVMManager) AddEnvVars() []string {
+	return a.addEnvVars()
+}
+
 func (a *AWSVMManager) addEnvVars() []string {
 	aws := a.Config.OpsmanConfig.AWS
 
@@ -448,6 +452,10 @@ func (a *AWSVMManager) vmExists() (vmExists bool, err error) {
 	}
 
 	return false, fmt.Errorf("an unexpected error occurred: %s", err)
+}
+
+func (a *AWSConfig) ValidateConfig() error {
+	return a.validateConfig()
 }
 
 func (a *AWSConfig) validateConfig() error {
