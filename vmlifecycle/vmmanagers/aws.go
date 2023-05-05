@@ -40,6 +40,7 @@ type AWSConfig struct {
 	BootDiskSize              string            `yaml:"boot_disk_size"`
 	InstanceType              string            `yaml:"instance_type"`
 	Tags                      map[string]string `yaml:"tags"`
+	AuthenticationType        string            `yaml:"authentication_type"`
 }
 
 //go:generate counterfeiter -o ./fakes/awsRunner.go --fake-name AwsRunner . awsRunner
@@ -196,19 +197,27 @@ func (a *AWSVMManager) addDefaultConfigFields() {
 func (a *AWSVMManager) ExecuteWithInstanceProfile(env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
 	config := a.Config.OpsmanConfig.AWS
 
+	configStrTemplate := fmt.Sprintf(`[svc-account]
+aws_access_key_id = %s
+aws_secret_access_key = %s
+[assume-svc-account]
+role_arn = %s
+source_profile = svc-account
+region = %s`, config.AccessKeyId, config.SecretAccessKey, config.AssumeRole, config.Region)
+
 	if config.AssumeRole != "" {
 		file, err := ioutil.TempFile("", "awsConfig")
 		defer os.Remove(file.Name())
 		if err != nil {
 			return nil, nil, err
 		}
-		configStrTemplate := `
-[profile p-automator-assume]
+		if config.AWSCredential.AccessKeyId == "" && config.AWSCredential.SecretAccessKey == "" {
+			configStrTemplate = fmt.Sprintf(`[profile p-automator-assume]
 role_arn = %s
-credential_source = Ec2InstanceMetadata
-`
+credential_source = Ec2InstanceMetadata`, config.AssumeRole)
+		}
 
-		_, err = fmt.Fprintf(file, configStrTemplate, config.AssumeRole)
+		_, err = file.WriteString(configStrTemplate)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -459,22 +468,9 @@ func (a *AWSConfig) ValidateConfig() error {
 }
 
 func (a *AWSConfig) validateConfig() error {
-	err := a.validateInstanceProfileConfig()
+	err := a.validateDeprecations()
 	if err != nil {
 		return err
-	}
-
-	err = a.validateDeprecations()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *AWSConfig) validateInstanceProfileConfig() error {
-	if a.AssumeRole != "" && (a.AccessKeyId != "" || a.SecretAccessKey != "") {
-		return errors.New("Assume Role only works when using an instance profile for AWS authentication")
 	}
 
 	return nil
