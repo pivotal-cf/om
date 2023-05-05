@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -30,18 +31,7 @@ var _ = Describe("AWS VMManager", func() {
 		err = yaml.Unmarshal([]byte(config), &validConfig)
 		Expect(err).ToNot(HaveOccurred())
 
-		testUriFile, err := ioutil.TempFile("", "some*.yaml")
-		Expect(err).ToNot(HaveOccurred())
-		_, _ = testUriFile.WriteString(`
----
-us-east-1: ami-63b6961c
-us-east-2: ami-11e1d974
-us-west-1: ami-19a9497a
-us-west-2: ami-789dc900
-`)
-		Expect(testUriFile.Close()).ToNot(HaveOccurred())
-
-		command := vmmanagers.NewAWSVMManager(ioutil.Discard, ioutil.Discard, validConfig, testUriFile.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
+		command := vmmanagers.NewAWSVMManager(ioutil.Discard, ioutil.Discard, validConfig, writeAMIRegionFile(), vmmanagers.StateInfo{}, runner, time.Millisecond)
 
 		return command, runner
 	}
@@ -245,14 +235,7 @@ opsman-configuration:
 					)
 					happyPathStub := happyPathAWSRunnerStubFunc(vmID)
 					runner.ExecuteWithEnvVarsCalls(func(env []string, _ []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
-						p, found := makeEnvironmentMap(env)["AWS_CONFIG_FILE"]
-						if found {
-							buf, err := os.ReadFile(p)
-							if err != nil {
-								panic(err)
-							}
-							awsConfigFileContents = append(awsConfigFileContents, string(buf))
-						}
+						awsConfigFileContents = append(awsConfigFileContents, readAWSConfigFile(env))
 						return happyPathStub()
 					})
 					_, _, err := command.CreateVM()
@@ -272,12 +255,6 @@ credential_source = Ec2InstanceMetadata`)), comment)
 					}
 				})
 
-				It("requires assume role to be set without credentials", func() {
-					command, _ := CreateValidCommandWithSecrets("1.2.3.4", "1.2.3.4", "us-west-2", "test_role", "test", "test")
-					_, _, err := command.CreateVM()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Assume Role only works when using an instance profile for AWS authentication"))
-				})
 			})
 
 			It("returns a stateFile with VM details upon success", func() {
@@ -721,16 +698,6 @@ opsman-configuration:
 			Entry("requires Region", "Region"),
 		)
 
-		When("using instance profiles", func() {
-			It("requires assume role to be set without credentials", func() {
-				command, _ := CreateValidCommandWithSecrets("1.2.3.4", "1.2.3.4", "us-west-2", "test_role", "test", "test")
-				command.State = state
-				err := command.DeleteVM()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("Assume Role only works when using an instance profile for AWS authentication"))
-			})
-		})
-
 		Context("with an invalid iaas", func() {
 			It("prints error", func() {
 				command, runner := createValidCommand("1.1.1.1", "1.1.1.1", "us-west-2")
@@ -746,8 +713,112 @@ opsman-configuration:
 		})
 	})
 
+	DescribeTable("aws cli authentication", func(config vmmanagers.AWSConfig, expectedConfig string) {
+		//Setting default values for required fields
+		config.VPCSubnetId = "home"
+		config.PublicIP = "127.0.0.1"
+		config.KeyPairName = "carkeys"
+		config.IAMInstanceProfileName = "cheetos"
+		runner := new(fakes.AwsRunner)
+		manager := vmmanagers.NewAWSVMManager(io.Discard, io.Discard, &vmmanagers.OpsmanConfigFilePayload{
+			OpsmanConfig: vmmanagers.OpsmanConfig{
+				AWS: &config,
+			},
+		}, writeAMIRegionFile(), vmmanagers.StateInfo{
+			IAAS: "aws",
+			ID:   "1234",
+		}, runner, 0)
+
+		var configFileContents string
+		runner.ExecuteWithEnvVarsStub = func(env []string, _ []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+			configFileContents = readAWSConfigFile(env)
+			return nil, nil, errors.New("lemon")
+		}
+		When("calling CreateVM", func() {
+			_, _, err := manager.CreateVM()
+			Expect(err).To(MatchError(HaveSuffix("lemon")))
+			Expect(configFileContents).To(Equal(expectedConfig))
+		})
+
+		When("calling DeleteVM", func() {
+			err := manager.DeleteVM()
+			Expect(err).To(MatchError(HaveSuffix("lemon")))
+			Expect(configFileContents).To(Equal(expectedConfig))
+		})
+
+	},
+		Entry("for instance profile ", vmmanagers.AWSConfig{
+			SecurityGroupIds:       []string{"banana"},
+			IAMInstanceProfileName: "cheetos",
+			AWSCredential: vmmanagers.AWSCredential{
+				Region: "us-east-1",
+				AWSInstanceProfile: vmmanagers.AWSInstanceProfile{
+					AssumeRole: "dice",
+				},
+			},
+		}, `[profile p-automator-assume]
+role_arn = dice
+credential_source = Ec2InstanceMetadata`),
+		Entry("for access keys", vmmanagers.AWSConfig{
+			SecurityGroupIds: []string{"banana"},
+			AWSCredential: vmmanagers.AWSCredential{
+				Region:          "us-east-1",
+				AccessKeyId:     "chocolate",
+				SecretAccessKey: "apple",
+			},
+		}, ""),
+		Entry("for assume role", vmmanagers.AWSConfig{
+			SecurityGroupIds: []string{"banana"},
+			AWSCredential: vmmanagers.AWSCredential{
+				Region:          "us-east-1",
+				AccessKeyId:     "chocolate",
+				SecretAccessKey: "apple",
+				AWSInstanceProfile: vmmanagers.AWSInstanceProfile{
+					AssumeRole: "dice",
+				},
+			},
+		}, `[svc-account]
+aws_access_key_id = chocolate
+aws_secret_access_key = apple
+[assume-svc-account]
+role_arn = dice
+source_profile = svc-account
+region = us-east-1`),
+	)
 	testIAASForPropertiesInExampleFile("AWS")
 })
+
+func writeAMIRegionFile() string {
+	file, err := os.CreateTemp("", "some*.yaml")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	_, err = file.WriteString(`
+---
+us-east-1: ami-63b6961c
+us-east-2: ami-11e1d974
+us-west-1: ami-19a9497a
+us-west-2: ami-789dc900
+`)
+	if err != nil {
+		panic(err)
+	}
+
+	return file.Name()
+}
+
+func readAWSConfigFile(env []string) string {
+	p, found := makeEnvironmentMap(env)["AWS_CONFIG_FILE"]
+	if !found {
+		return ""
+	}
+	buf, err := os.ReadFile(p)
+	if err != nil {
+		panic(err)
+	}
+	return string(buf)
+}
 
 func makeEnvironmentMap(values []string) map[string]string {
 	m := make(map[string]string, len(values))
