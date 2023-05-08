@@ -713,7 +713,7 @@ opsman-configuration:
 		})
 	})
 
-	DescribeTable("aws cli authentication", func(config vmmanagers.AWSConfig, expectedConfig string) {
+	DescribeTable("aws cli authentication", func(config vmmanagers.AWSConfig, expectedConfig, expectedProfileName string) {
 		//Setting default values for required fields
 		config.VPCSubnetId = "home"
 		config.PublicIP = "127.0.0.1"
@@ -729,7 +729,9 @@ opsman-configuration:
 			ID:   "1234",
 		}, runner, 0)
 
-		var configFileContents string
+		var (
+			configFileContents string
+		)
 		runner.ExecuteWithEnvVarsStub = func(env []string, _ []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
 			configFileContents = readAWSConfigFile(env)
 			return nil, nil, errors.New("lemon")
@@ -738,6 +740,11 @@ opsman-configuration:
 			_, _, err := manager.CreateVM()
 			Expect(err).To(MatchError(HaveSuffix("lemon")))
 			Expect(configFileContents).To(Equal(expectedConfig))
+			Expect(runner.ExecuteWithEnvVarsCallCount()).NotTo(BeZero())
+			_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+			if expectedProfileName != "" {
+				Expect(fmt.Sprintf("%v", args)).To(ContainSubstring(fmt.Sprintf("--profile %s", expectedProfileName)))
+			}
 		})
 
 		When("calling DeleteVM", func() {
@@ -758,7 +765,7 @@ opsman-configuration:
 			},
 		}, `[profile p-automator-assume]
 role_arn = dice
-credential_source = Ec2InstanceMetadata`),
+credential_source = Ec2InstanceMetadata`, "p-automator-assume"),
 		Entry("for access keys", vmmanagers.AWSConfig{
 			SecurityGroupIds: []string{"banana"},
 			AWSCredential: vmmanagers.AWSCredential{
@@ -766,7 +773,7 @@ credential_source = Ec2InstanceMetadata`),
 				AccessKeyId:     "chocolate",
 				SecretAccessKey: "apple",
 			},
-		}, ""),
+		}, "", ""),
 		Entry("for assume role", vmmanagers.AWSConfig{
 			SecurityGroupIds: []string{"banana"},
 			AWSCredential: vmmanagers.AWSCredential{
@@ -783,7 +790,7 @@ aws_secret_access_key = apple
 [assume-svc-account]
 role_arn = dice
 source_profile = svc-account
-region = us-east-1`),
+region = us-east-1`, "assume-svc-account"),
 	)
 	testIAASForPropertiesInExampleFile("AWS")
 })
