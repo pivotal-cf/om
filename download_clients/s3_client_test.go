@@ -4,13 +4,16 @@ import (
 	"archive/zip"
 	"errors"
 	"github.com/graymeta/stow"
+	"github.com/graymeta/stow/s3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/om/download_clients"
 	"log"
 	"net/url"
+	"os"
 	"strings"
+	"testing"
 
 	"io"
 	"io/ioutil"
@@ -311,4 +314,40 @@ func createPivotalFile(productFileName, stemcellName, stemcellVersion string) st
 
 	Expect(zipper.Close()).ToNot(HaveOccurred())
 	return tempfile.Name()
+}
+
+func TestStowS3(t *testing.T) {
+	kind := "s3"
+	config := stow.ConfigMap{
+		s3.ConfigAuthType: "iam",
+		s3.ConfigRegion:   "us-west-2",
+	}
+	configFilePath, ok := os.LookupEnv("AWS_CONFIG_FILE")
+	if !ok {
+		t.Fatal("AWS_CONFIG_FILE must be set for test")
+	}
+	t.Setenv("AWS_CONFIG_FILE", configFilePath)
+
+	awsProfile, ok := os.LookupEnv("AWS_PROFILE")
+	if !ok {
+		t.Fatal("AWS_CONFIG_FILE must be set for test")
+	}
+	t.Setenv("AWS_PROFILE", awsProfile)
+
+	location, err := stow.Dial(kind, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		closeAndIgnoreError(location)
+	})
+	container, err := location.Container("ref-pipeline-state")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(container.ID(), container.Name())
+}
+
+func closeAndIgnoreError(c io.Closer) {
+	_ = c.Close()
 }
