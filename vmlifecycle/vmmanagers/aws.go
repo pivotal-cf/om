@@ -197,10 +197,10 @@ func (a *AWSVMManager) addDefaultConfigFields() {
 func (a *AWSVMManager) ExecuteWithInstanceProfile(env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
 	config := a.Config.OpsmanConfig.AWS
 
-	configStrTemplate := fmt.Sprintf(`[svc-account]
+	configStrTemplate := fmt.Sprintf(`[profile svc-account]
 aws_access_key_id = %s
 aws_secret_access_key = %s
-[assume-svc-account]
+[profile assume-svc-account]
 role_arn = %s
 source_profile = svc-account
 region = %s`, config.AccessKeyId, config.SecretAccessKey, config.AssumeRole, config.Region)

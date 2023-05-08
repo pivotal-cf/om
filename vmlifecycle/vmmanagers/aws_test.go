@@ -784,10 +784,10 @@ credential_source = Ec2InstanceMetadata`, "p-automator-assume"),
 					AssumeRole: "dice",
 				},
 			},
-		}, `[svc-account]
+		}, `[profile svc-account]
 aws_access_key_id = chocolate
 aws_secret_access_key = apple
-[assume-svc-account]
+[profile assume-svc-account]
 role_arn = dice
 source_profile = svc-account
 region = us-east-1`, "assume-svc-account"),
