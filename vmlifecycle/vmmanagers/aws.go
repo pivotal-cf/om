@@ -211,10 +211,12 @@ region = %s`, config.AccessKeyId, config.SecretAccessKey, config.AssumeRole, con
 		if err != nil {
 			return nil, nil, err
 		}
+		profile := "assume-svc-account"
 		if config.AWSCredential.AccessKeyId == "" && config.AWSCredential.SecretAccessKey == "" {
 			configStrTemplate = fmt.Sprintf(`[profile p-automator-assume]
 role_arn = %s
 credential_source = Ec2InstanceMetadata`, config.AssumeRole)
+			profile = "p-automator-assume"
 		}
 
 		_, err = file.WriteString(configStrTemplate)
@@ -222,7 +224,7 @@ credential_source = Ec2InstanceMetadata`, config.AssumeRole)
 			return nil, nil, err
 		}
 		env = append(env, fmt.Sprintf("AWS_CONFIG_FILE=%s", file.Name()))
-		args = append(args, "--profile", "p-automator-assume")
+		args = append(args, "--profile", profile)
 	}
 	return a.runner.ExecuteWithEnvVars(env, args)
 }
