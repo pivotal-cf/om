@@ -606,7 +606,6 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 		)
 	case "s3":
 		return download_clients.NewS3Client(
-			download_clients.StowWrapper{},
 			download_clients.S3Configuration{
 				Bucket:          c.Bucket,
 				AccessKeyID:     c.S3AccessKeyID,

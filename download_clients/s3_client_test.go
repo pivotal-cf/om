@@ -6,10 +6,13 @@ import (
 	"log"
 	"text/template"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"github.com/pivotal-cf/om/download_clients"
+	"github.com/pivotal-cf/om/download_clients/fakes"
 )
 
 var _ = Describe("S3Client", func() {
@@ -19,12 +22,23 @@ var _ = Describe("S3Client", func() {
 		stderr = log.New(GinkgoWriter, "", 0)
 	})
 
+	Describe("NewS3Client", func() {
+		When("auth type is not set and key/secret are missing", func() {
+			It("defaults to accesskey and fails", func() {
+				_, err := download_clients.NewS3Client(download_clients.S3Configuration{}, stderr)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("Name", func() {
 		It("returns the name of the client", func() {
 			config := download_clients.S3Configuration{
-				Bucket: "bucket",
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				Bucket:          "bucket",
 			}
-			client, err := download_clients.NewS3Client(nil, config, stderr)
+			client, err := download_clients.NewS3Client(config, stderr)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(client.Name()).To(ContainSubstring("s3://bucket"))
@@ -32,10 +46,37 @@ var _ = Describe("S3Client", func() {
 	})
 
 	Describe("GetAllProductVersions", func() {
-		// When("configuring s3", func() {
-		// 	It("can support v2 signing", func() {
-		// 	})
-		// })
+		When("the bucket contains a product", func() {
+			config := download_clients.S3Configuration{
+				AccessKeyID:     "access-key-id",
+				SecretAccessKey: "secret-access-key",
+				Bucket:          "bucket",
+			}
+
+			client, err := download_clients.NewS3Client(config, stderr)
+			Expect(err).ToNot(HaveOccurred())
+
+			fakeClient := fakes.FakeAWSS3Client{}
+			bucket := "bucket"
+			fileName := "some-thing-v1.2.3"
+			out := s3.ListObjectsV2Output{
+				Name: &bucket,
+				Contents: []types.Object{
+					{
+						Key: &fileName,
+					},
+				},
+			}
+			fakeClient.ListObjectsV2Returns(&out, nil)
+			client.Client = &fakeClient
+
+			It("finds the stupid thing", func() {
+				products, err := client.GetAllProductVersions("product-slug")
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(products).To(ContainElement("some-thing-v1.2.3"))
+			})
+		})
 	})
 
 	Describe("GetLatestProductFile", func() {})
