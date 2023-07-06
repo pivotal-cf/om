@@ -6,6 +6,7 @@ import (
 	"log"
 	"text/template"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	. "github.com/onsi/ginkgo"
@@ -51,19 +52,18 @@ var _ = Describe("S3Client", func() {
 				AccessKeyID:     "access-key-id",
 				SecretAccessKey: "secret-access-key",
 				Bucket:          "bucket",
+				ProductPath:     "some/directory",
 			}
 
 			client, err := download_clients.NewS3Client(config, stderr)
 			Expect(err).ToNot(HaveOccurred())
 
 			fakeClient := fakes.FakeAWSS3Client{}
-			bucket := "bucket"
-			fileName := "some-thing-v1.2.3"
 			out := s3.ListObjectsV2Output{
-				Name: &bucket,
+				Name: aws.String("bucket"),
 				Contents: []types.Object{
 					{
-						Key: &fileName,
+						Key: aws.String("some/directory/product-slug-1.2.3.tgz"),
 					},
 				},
 			}
@@ -74,7 +74,7 @@ var _ = Describe("S3Client", func() {
 				products, err := client.GetAllProductVersions("product-slug")
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(products).To(ContainElement("some-thing-v1.2.3"))
+				Expect(products).To(ContainElement("1.2.3"))
 			})
 		})
 	})
@@ -82,128 +82,6 @@ var _ = Describe("S3Client", func() {
 	Describe("GetLatestProductFile", func() {})
 	Describe("DownloadProductToFile", func() {})
 	Describe("GetLatestStemcellForProduct", func() {})
-
-	// Describe("property validation and defaults", func() {
-	// 	DescribeTable("required property validation", func(param string) {
-	// 		stower := &mockStower{}
-	// 		config := download_clients.S3Configuration{}
-	// 		_, err := download_clients.NewS3Client(stower, config, stderr)
-	// 		Expect(err).To(MatchError(ContainSubstring("Field validation for '%s' failed on the 'required' tag", param)))
-	// 	},
-	// 		Entry("requires Bucket", "Bucket"),
-	// 		Entry("requires RegionName", "RegionName"),
-	// 	)
-
-	// 	It("defaults optional properties", func() {
-	// 		config := download_clients.S3Configuration{
-	// 			Bucket:          "bucket",
-	// 			AccessKeyID:     "access-key-id",
-	// 			SecretAccessKey: "secret-access-key",
-	// 			RegionName:      "region",
-	// 			Endpoint:        "endpoint",
-	// 		}
-	// 		stower := &mockStower{itemsList: []mockItem{}}
-	// 		client, err := download_clients.NewS3Client(stower, config, stderr)
-	// 		Expect(err).ToNot(HaveOccurred())
-
-	// 		retrievedDisableSSLValue, retrievedValuePresence := client.Config.Config("disable_ssl")
-	// 		Expect(retrievedValuePresence).To(Equal(true))
-	// 		Expect(retrievedDisableSSLValue).To(Equal("false"))
-
-	// 		retrievedAuthTypeValue, retrievedValuePresence := client.Config.Config("auth_type")
-	// 		Expect(retrievedValuePresence).To(Equal(true))
-	// 		Expect(retrievedAuthTypeValue).To(Equal("accesskey"))
-	// 	})
-
-	// 	When("both region and endpoint are given", func() {
-	// 		It("returns an error if they do not match", func() {
-	// 			config := download_clients.S3Configuration{
-	// 				Bucket:          "bucket",
-	// 				AccessKeyID:     "access-key-id",
-	// 				SecretAccessKey: "secret-access-key",
-	// 				RegionName:      "wrongRegion",
-	// 				Endpoint:        "endpoint",
-	// 			}
-	// 			stower := &mockStower{itemsList: []mockItem{}}
-	// 			_, err := download_clients.NewS3Client(stower, config, stderr)
-	// 			Expect(err).ToNot(HaveOccurred())
-	// 		})
-	// 	})
-	// 	When("AuthType is set", func() {
-	// 		var config download_clients.S3Configuration
-	// 		BeforeEach(func() {
-	// 			config = download_clients.S3Configuration{
-	// 				Bucket:          "bucket",
-	// 				AccessKeyID:     "access-key-id",
-	// 				SecretAccessKey: "secret-access-key",
-	// 				RegionName:      "wrongRegion",
-	// 				Endpoint:        "endpoint",
-	// 				AuthType:        "fakeAuthType",
-	// 			}
-	// 		})
-
-	// 		It("passes the auth_type down to stow", func() {
-	// 			stower := &mockStower{itemsList: []mockItem{}}
-	// 			client, err := download_clients.NewS3Client(stower, config, stderr)
-	// 			Expect(err).ToNot(HaveOccurred())
-
-	// 			retrievedAuthTypeValue, retrievedValuePresence := client.Config.Config("auth_type")
-	// 			Expect(retrievedValuePresence).To(Equal(true))
-	// 			Expect(retrievedAuthTypeValue).To(Equal("fakeAuthType"))
-
-	// 		})
-
-	// 		When("AuthType is 'iam' and the id/secret are not provided", func() {
-	// 			BeforeEach(func() {
-	// 				config.AuthType = "iam"
-	// 				config.AccessKeyID = ""
-	// 				config.SecretAccessKey = ""
-	// 			})
-
-	// 			It("does not raise a validation error", func() {
-	// 				stower := &mockStower{itemsList: []mockItem{}}
-	// 				_, err := download_clients.NewS3Client(stower, config, stderr)
-	// 				Expect(err).ToNot(HaveOccurred())
-	// 			})
-	// 		})
-	// 		When("AuthType is accesskey/default and the id/secret are not provided", func() {
-	// 			BeforeEach(func() {
-	// 				config.AuthType = "accesskey"
-	// 				config.AccessKeyID = ""
-	// 				config.SecretAccessKey = ""
-
-	// 			})
-
-	// 			It("raises a validation error", func() {
-	// 				stower := &mockStower{itemsList: []mockItem{}}
-	// 				_, err := download_clients.NewS3Client(stower, config, stderr)
-	// 				Expect(err).To(HaveOccurred())
-	// 			})
-	// 		})
-	// 	})
-	// })
-
-	// It("returns an error on stower failure", func() {
-	// 	dialError := errors.New("dial error")
-	// 	itemsList := []mockItem{{}}
-	// 	stower := newMockStower(itemsList)
-	// 	stower.dialError = dialError
-
-	// 	config := download_clients.S3Configuration{
-	// 		Bucket:          "bucket",
-	// 		AccessKeyID:     "access-key-id",
-	// 		SecretAccessKey: "secret-access-key",
-	// 		RegionName:      "region",
-	// 		Endpoint:        "endpoint",
-	// 	}
-
-	// 	client, err := download_clients.NewS3Client(stower, config, stderr)
-	// 	Expect(err).ToNot(HaveOccurred())
-
-	// 	_, err = client.GetAllProductVersions("product-slug")
-	// 	Expect(err).To(HaveOccurred())
-	// 	Expect(err).To(Equal(dialError))
-	// })
 })
 
 func createPivotalFile(productFileName, stemcellName, stemcellVersion string) string {

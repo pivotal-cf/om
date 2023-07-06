@@ -40,6 +40,8 @@ type S3Options struct {
 	S3AccessKeyID     string `long:"s3-access-key-id"                 description:"access key for the s3 compatible blobstore"`
 	S3AuthType        string `long:"s3-auth-type"                     description:"can be set to \"iam\" in order to allow use of instance credentials" default:"accesskey"`
 	S3SecretAccessKey string `long:"s3-secret-access-key"             description:"secret key for the s3 compatible blobstore"`
+	S3SessionToken    string `long:"s3-session-token"                 description:"session token for the s3 compatible blobstore"`
+	S3RoleARN         string `long:"s3-role-arn"											description:"the role arn to be assumed for s3 access"`
 	S3RegionName      string `long:"s3-region-name"                   description:"bucket region in the s3 compatible blobstore. If not using AWS, this value is 'region'"`
 	S3Endpoint        string `long:"s3-endpoint"                      description:"the endpoint to access the s3 compatible blobstore. If not using AWS, this is required"`
 	S3DisableSSL      bool   `long:"s3-disable-ssl"                   description:"whether to disable ssl (https or http) when contacting the s3 compatible blobstore"`
@@ -611,6 +613,8 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 				AccessKeyID:     c.S3AccessKeyID,
 				AuthType:        c.S3AuthType,
 				SecretAccessKey: c.S3SecretAccessKey,
+				SessionToken:    c.S3SessionToken,
+				RoleARN:         c.S3RoleARN,
 				RegionName:      c.S3RegionName,
 				Endpoint:        c.S3Endpoint,
 				DisableSSL:      c.S3DisableSSL,
