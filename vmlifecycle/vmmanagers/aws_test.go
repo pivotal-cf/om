@@ -792,6 +792,7 @@ role_arn = dice
 source_profile = svc-account
 region = us-east-1`, "assume-svc-account"),
 	)
+
 	testIAASForPropertiesInExampleFile("AWS")
 })
 
