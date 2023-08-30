@@ -147,22 +147,21 @@ We increased the tolerance of the acceptance suite by capturing additional test 
 ## 7.3.1
 
 ### Bug Fixes
+- Before version 7.0, om had been using UAA's default `token_format`
+  (`jwt`), and the optional `token_format` parameter went unused.
 
-- Way back in 7.0, incidental to switching to the uaa-go library,
+  However in version 7.0, incidental to switching to the uaa-go library,
   om started requesting `opaque` access tokens from UAA
-  to access Ops Manager.
-  The change wasn't deliberate, and didn't even make the release notes.
+  to access Ops Manager instead of `jwt` ones.  This wasn't
+  deliberate, and didn't even make the release notes.
 
   These implicitly revocable tokens may be contributing to
   a hard-to-repro issue around parallel access
   in a customer environment.
 
-  Before the change, the optional `token_format` parameter went unused,
-  and UAA's default `token_format`, `jwt`, was used.
-
   This release explicitly requests `jwt` access tokens,
-  restoring the previous behavior,
-  and potentially addressing said parallel-access issue.
+  restoring the pre-7.0 behavior and potentially addressing said
+  parallel-access issue.
 
 ## 7.3.0
 ### Features
