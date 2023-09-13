@@ -25,8 +25,15 @@ type Networks struct {
 }
 
 type Network struct {
+	GUID    string                 `yaml:"guid,omitempty"`
+	Name    string                 `yaml:"name"`
+	Subnets []Subnet               `yaml:"subnets,omitempty"`
+	Fields  map[string]interface{} `yaml:",inline"`
+}
+
+type Subnet struct {
 	GUID   string                 `yaml:"guid,omitempty"`
-	Name   string                 `yaml:"name"`
+	CIDR   string                 `yaml:"cidr"`
 	Fields map[string]interface{} `yaml:",inline"`
 }
 
@@ -254,12 +261,26 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 		for _, existingNetwork := range existingNetworks.Networks {
 			if network.Name == existingNetwork.Name {
 				network.GUID = existingNetwork.GUID
+				network.Subnets = a.addGUIDToExistingSubnet(network, existingNetwork)
 				break
 			}
 		}
 	}
 
 	return networks, nil
+}
+
+func (a Api) addGUIDToExistingSubnet(network *Network, existingNetwork *Network) []Subnet {
+	for k, subnet := range network.Subnets {
+		for _, existingSubnet := range existingNetwork.Subnets {
+			if subnet.CIDR == existingSubnet.CIDR {
+				network.Subnets[k].GUID = existingSubnet.GUID
+				break
+			}
+		}
+	}
+
+	return network.Subnets
 }
 
 type IAASConfigurationsInput json.RawMessage
