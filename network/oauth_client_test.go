@@ -22,17 +22,22 @@ import (
 
 var _ = Describe("OAuthClient", func() {
 	var (
-		server *ghttp.Server
+		server    *ghttp.Server
+		opsmanURL *url.URL
+		uaaURL    *url.URL
 	)
 
 	BeforeEach(func() {
 		server = ghttp.NewTLSServer()
+		opsmanURL, _ = url.Parse(server.URL())
+		uaaURL, _ = url.Parse(server.URL())
+		uaaURL.Path = "/uaa"
 	})
 
 	Describe("Do", func() {
 		When("with a request timeout", func() {
 			It("use that timeout value", func() {
-				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Nanosecond, time.Nanosecond)
+				client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", true, "", time.Nanosecond, time.Nanosecond)
 				Expect(err).ToNot(HaveOccurred())
 
 				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -61,7 +66,7 @@ var _ = Describe("OAuthClient", func() {
 					ghttp.RespondWith(http.StatusOK, nil),
 				)
 
-				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
+				client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
 				Expect(err).ToNot(HaveOccurred())
 
 				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -93,7 +98,7 @@ var _ = Describe("OAuthClient", func() {
 					ghttp.RespondWith(http.StatusOK, nil),
 				)
 
-				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
+				client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
 				Expect(err).ToNot(HaveOccurred())
 
 				for i := 0; i < 2; i++ {
@@ -120,7 +125,7 @@ var _ = Describe("OAuthClient", func() {
 					ghttp.RespondWith(http.StatusOK, ""),
 				)
 
-				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
+				client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(100)*time.Millisecond, time.Duration(100)*time.Millisecond)
 				Expect(err).ToNot(HaveOccurred())
 
 				for i := 0; i < 2; i++ {
@@ -153,7 +158,7 @@ var _ = Describe("OAuthClient", func() {
 			))
 			server.AppendHandlers(ghttp.RespondWith(http.StatusOK, nil))
 
-			client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+			client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 			Expect(err).ToNot(HaveOccurred())
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -182,7 +187,7 @@ var _ = Describe("OAuthClient", func() {
 			))
 			server.AppendHandlers(ghttp.RespondWith(http.StatusOK, nil))
 
-			client, err := network.NewOAuthClient(server.URL(), "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+			client, err := network.NewOAuthClient(uaaURL, opsmanURL, "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 			Expect(err).ToNot(HaveOccurred())
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -200,7 +205,7 @@ var _ = Describe("OAuthClient", func() {
 			nonTLS12Server.Config.ErrorLog = log.New(GinkgoWriter, "", 0)
 			defer nonTLS12Server.Close()
 
-			client, err := network.NewOAuthClient(nonTLS12Server.URL, "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+			client, err := network.NewOAuthClient(serverURL(nonTLS12Server), serverURL(nonTLS12Server), "", "", "client_id", "client_secret", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 			Expect(err).ToNot(HaveOccurred())
 
 			req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -210,33 +215,10 @@ var _ = Describe("OAuthClient", func() {
 			Expect(err).To(MatchError(ContainSubstring("protocol version not supported")))
 		})
 
-		When("passing a url with no scheme", func() {
-			It("defaults to HTTPS", func() {
-				setupBasicOauth(server)
-
-				noScheme, err := url.Parse(server.URL())
-				Expect(err).ToNot(HaveOccurred())
-
-				noScheme.Scheme = ""
-				finalURL := noScheme.String()[2:] // removing leading "//"
-
-				client, err := network.NewOAuthClient(finalURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-				Expect(err).ToNot(HaveOccurred())
-
-				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-				Expect(err).ToNot(HaveOccurred())
-
-				resp, err := client.Do(req)
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(resp.StatusCode).To(Equal(http.StatusOK))
-			})
-		})
-
 		When("insecureSkipVerify is configured", func() {
 			When("it is set to false", func() {
 				It("throws an error for invalid certificates", func() {
-					client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+					client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -251,7 +233,7 @@ var _ = Describe("OAuthClient", func() {
 				It("does not verify certificates", func() {
 					setupBasicOauth(server)
 
-					client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+					client, err := network.NewOAuthClient(uaaURL, opsmanURL, "opsman-username", "opsman-password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
@@ -272,7 +254,7 @@ var _ = Describe("OAuthClient", func() {
 				pemCert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}))
 
 				client, err := network.NewOAuthClient(
-					server.URL(),
+					uaaURL, opsmanURL,
 					"opsman-username", "opsman-password",
 					"", "",
 					false,
@@ -297,7 +279,7 @@ var _ = Describe("OAuthClient", func() {
 				pemCert := writeFile(string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})))
 
 				client, err := network.NewOAuthClient(
-					server.URL(),
+					uaaURL, opsmanURL,
 					"opsman-username", "opsman-password",
 					"", "",
 					false,
@@ -327,27 +309,30 @@ var _ = Describe("OAuthClient", func() {
 				})
 
 				It("returns an error", func() {
-					client, err := network.NewOAuthClient(badServer.URL, "username", "password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+					client, err := network.NewOAuthClient(serverURL(badServer), serverURL(badServer), "username", "password", "", "", true, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					Expect(err).ToNot(HaveOccurred())
 
 					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = client.Do(req)
-					Expect(err).To(MatchError(ContainSubstring("token could not be retrieved from target url")))
+					Expect(err).To(MatchError(ContainSubstring("token could not be retrieved from target")))
 				})
 			})
 
-			When("the target url is empty", func() {
+			When("the UAA target url is nil", func() {
 				It("returns an error", func() {
-					client, err := network.NewOAuthClient("", "username", "password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-					Expect(err).ToNot(HaveOccurred())
+					_, err := network.NewOAuthClient(nil, &url.URL{}, "username", "password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("expected a non-nil UAA target"))
+				})
+			})
 
-					req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
-					Expect(err).ToNot(HaveOccurred())
-
-					_, err = client.Do(req)
-					Expect(err).To(MatchError(ContainSubstring("")))
+			When("the target url is nil", func() {
+				It("returns an error", func() {
+					_, err := network.NewOAuthClient(&url.URL{}, nil, "username", "password", "", "", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("expected a non-nil target"))
 				})
 			})
 		})
