@@ -10,27 +10,23 @@ import (
 )
 
 var (
-	extractSemverVersionRegex    = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)(-build\.\d+)?`)
-	extractOldOpsmanVersionRegex = regexp.MustCompile(`(\d+)\.(\d+)-build\.(\d+)`)
+	oldOpsmanBuildFormatRegex = regexp.MustCompile(`(\d+)\.(\d+)-build\.(\d+)`)
+	semverRegex               = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)`)
 )
 
 func Do(s string) (semver.Version, error) {
 	name := regexp.MustCompile(`^\[.*?]`).ReplaceAllString(filepath.Base(s), "")
-	foundVersion := ""
 
-	extractedVersion := extractSemverVersionRegex.FindStringSubmatch(name)
-	if extractedVersion != nil {
-		foundVersion = extractedVersion[0]
-	} else {
-		extractedVersion = extractOldOpsmanVersionRegex.FindStringSubmatch(name)
-		if extractedVersion != nil {
-			foundVersion = strings.Join([]string{extractedVersion[1], extractedVersion[2], extractedVersion[3]}, ".")
-		}
+	extractedVersion := semverRegex.FindStringSubmatch(name)
+	if extractedVersion == nil {
+		extractedVersion = oldOpsmanBuildFormatRegex.FindStringSubmatch(name)
 	}
 
-	if foundVersion == "" {
+	if extractedVersion == nil {
 		return semver.Version{}, errors.New("cannot find version from string")
 	}
+
+	foundVersion := strings.Join([]string{extractedVersion[1], extractedVersion[2], extractedVersion[3]}, ".")
 
 	return semver.Make(foundVersion)
 }
