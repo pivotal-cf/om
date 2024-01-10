@@ -25,7 +25,7 @@ var _ = Describe("Do", func() {
 			Expect(version.String()).To(Equal(expectedVersion))
 		},
 			table.Entry("semver numbers via patch", "2.5.3", "2.5.3"),
-			table.Entry("semver numbers that have build numbers", "2.5.0-build.0", "2.5.0-build.0"),
+			table.Entry("semver numbers that have build numbers", "2.5.0-build.0", "2.5.0"),
 			table.Entry("build numbers via patch", "2.4-build.193", "2.4.193"),
 		)
 	}
