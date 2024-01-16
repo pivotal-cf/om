@@ -47,6 +47,21 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## 7.10.0
+
+### Features
+
+- Add support for AWS Assume Role.
+
+### Bug fixes
+
+- Fixed a bug in `om vm-lifecycle upgrade-opsman` that occurred when both the input and currently-installed versions of
+  Ops Manager were identical 3.0.X+LTS-T versions.
+  - In previous versions of om that had the bug, this scenario would always cause Ops Manager to be reinstalled, even if
+    the `--recreate` flag wasn't used.
+  - This release restores the intended behavior: printing a message and exiting early if the `--recreate` flag isn't
+    passed, and reinstalling Ops Manager if it is.
+
 ## 7.9.0
 
 ### What's Changed
