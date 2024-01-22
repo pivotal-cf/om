@@ -47,11 +47,7 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
-## 7.10.0
-
-### Features
-
-- Add support for AWS Assume Role.
+## 7.10.1
 
 ### Bug fixes
 
@@ -61,6 +57,12 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
     the `--recreate` flag wasn't used.
   - This release restores the intended behavior: printing a message and exiting early if the `--recreate` flag isn't
     passed, and reinstalling Ops Manager if it is.
+
+## 7.10.0
+
+### Features
+
+- Add support for AWS Assume Role.
 
 ## 7.9.0
 
