@@ -34,11 +34,16 @@ jobs:
       - id: upgrade-golang
         name: Upgrade Golang
         run: |
+          cat go.mod
+
+          --------------------------->
           version=$(go version | awk '{print $3}' | sed 's/go//')
           echo "Current go version: $version"
-        # go mod edit -go=${{ steps.setup-go.outputs.go-version }}
-        # go get -u -t ./...
-        # go mod tidy
+          go mod edit -go=$version
+          go get -u -t ./...
+          go mod tidy
+
+          cat go.mod
           
 
       # step 5: commit the changes and create a PR
