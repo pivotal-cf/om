@@ -29,7 +29,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           check-latest: true
-          go-version: 1.19.0
 
     # step 4: update go.mod and go.sum to use the new go version
       - id: upgrade-golang
@@ -42,6 +41,7 @@ jobs:
           echo "--------------------------->"
           echo "--------------------------->"
           echo "--------------------------->"
+
           version=$(go version | awk '{print $3}' | sed 's/go//')
           echo "Current go version: $version"
           go mod edit -go=$version
@@ -49,6 +49,8 @@ jobs:
           go mod tidy
 
           cat go.mod
+
+          
           
 
       # step 5: commit the changes and create a PR
