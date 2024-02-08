@@ -131,7 +131,7 @@ var _ = Describe("When modifying task files", func() {
 
 				Expect(readFile(filepath.Join(taskDir, "some-dir/with-fields.yaml"))).To(MatchYAML(`{
 					task: true,
-					nested: {yes: it is},
+					nested: {true: it is},
 					params: { OM_VAR_secret: ((secret)), OM_VARS_ENV: OM_VAR}
 				}`))
 			})
