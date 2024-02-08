@@ -33,6 +33,7 @@ jobs:
     # step 4: update go.mod and go.sum to use the new go version
       - id: upgrade-golang
         name: Upgrade Golang
+        working-directory: om
         run: |
           cat go.mod
 
