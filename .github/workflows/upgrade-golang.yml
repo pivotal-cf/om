@@ -4,8 +4,8 @@ concurrency: Upgrade Golang 2
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'
+  # schedule:
+  #   - cron: '0 0 * * 0'
 
 jobs:
   upgrade-golang:
@@ -25,18 +25,18 @@ jobs:
           fetch-depth: 0
           path: om
 
-      # step 3: use actions/setup-go@v3 to install the go version
       - name: Set up latest Go
         uses: actions/setup-go@v5
         with:
           check-latest: true
 
-      # step 4: update go.mod and go.sum to use the new go version
+    # step 4: update go.mod and go.sum to use the new go version
       - id: upgrade-golang
         name: Upgrade Golang
         run: |
-          go version
-        # go mod edit -go=${go_version}
+          version=$(go version | awk '{print $3}' | sed 's/go//')
+          echo "Current go version: $version"
+        # go mod edit -go=${{ steps.setup-go.outputs.go-version }}
         # go get -u -t ./...
         # go mod tidy
           
