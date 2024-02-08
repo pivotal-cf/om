@@ -1,0 +1,24 @@
+name: Upgrade Golang
+
+concurrency: Upgrade Golang 2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upgrade-golang:
+    runs-on: ubuntu-latest
+
+    container:
+      image: internalpcfplatformautomation/ci:testing
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout Om
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: om
