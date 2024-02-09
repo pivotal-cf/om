@@ -8,13 +8,14 @@ import (
 )
 
 type ApplyChangesService struct {
-	CreateInstallationStub        func(bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
+	CreateInstallationStub        func(bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
 	createInstallationMutex       sync.RWMutex
 	createInstallationArgsForCall []struct {
 		arg1 bool
 		arg2 bool
-		arg3 []string
-		arg4 api.ApplyErrandChanges
+		arg3 bool
+		arg4 []string
+		arg5 api.ApplyErrandChanges
 	}
 	createInstallationReturns struct {
 		result1 api.InstallationsServiceOutput
@@ -101,24 +102,25 @@ type ApplyChangesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool, arg3 []string, arg4 api.ApplyErrandChanges) (api.InstallationsServiceOutput, error) {
-	var arg3Copy []string
-	if arg3 != nil {
-		arg3Copy = make([]string, len(arg3))
-		copy(arg3Copy, arg3)
+func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool, arg3 bool, arg4 []string, arg5 api.ApplyErrandChanges) (api.InstallationsServiceOutput, error) {
+	var arg4Copy []string
+	if arg4 != nil {
+		arg4Copy = make([]string, len(arg4))
+		copy(arg4Copy, arg4)
 	}
 	fake.createInstallationMutex.Lock()
 	ret, specificReturn := fake.createInstallationReturnsOnCall[len(fake.createInstallationArgsForCall)]
 	fake.createInstallationArgsForCall = append(fake.createInstallationArgsForCall, struct {
 		arg1 bool
 		arg2 bool
-		arg3 []string
-		arg4 api.ApplyErrandChanges
-	}{arg1, arg2, arg3Copy, arg4})
-	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2, arg3Copy, arg4})
+		arg3 bool
+		arg4 []string
+		arg5 api.ApplyErrandChanges
+	}{arg1, arg2, arg3, arg4Copy, arg5})
+	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2, arg3, arg4Copy, arg5})
 	fake.createInstallationMutex.Unlock()
 	if fake.CreateInstallationStub != nil {
-		return fake.CreateInstallationStub(arg1, arg2, arg3, arg4)
+		return fake.CreateInstallationStub(arg1, arg2, arg3, arg4, arg5)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -133,17 +135,17 @@ func (fake *ApplyChangesService) CreateInstallationCallCount() int {
 	return len(fake.createInstallationArgsForCall)
 }
 
-func (fake *ApplyChangesService) CreateInstallationCalls(stub func(bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)) {
+func (fake *ApplyChangesService) CreateInstallationCalls(stub func(bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)) {
 	fake.createInstallationMutex.Lock()
 	defer fake.createInstallationMutex.Unlock()
 	fake.CreateInstallationStub = stub
 }
 
-func (fake *ApplyChangesService) CreateInstallationArgsForCall(i int) (bool, bool, []string, api.ApplyErrandChanges) {
+func (fake *ApplyChangesService) CreateInstallationArgsForCall(i int) (bool, bool, bool, []string, api.ApplyErrandChanges) {
 	fake.createInstallationMutex.RLock()
 	defer fake.createInstallationMutex.RUnlock()
 	argsForCall := fake.createInstallationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
 }
 
 func (fake *ApplyChangesService) CreateInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
