@@ -42,22 +42,38 @@ jobs:
           go get -u -t ./...
           go mod tidy
 
-      - id: commit-changes-and-create-pr
-        name: Commit changes and create PR
-        working-directory: om
+      - id: set_branch_suffix
+        name: Set Branch Suffix
         run: |
-          files_changed=$(git status --porcelain)
-          if [[ -n ${files_changed} ]]; then
-            git config --global url.https://${GITHUB_TOKEN}@github.com/.insteadOf https://github.com/
-            git config --global user.email "149723437+tas-operability-bot@users.noreply.github.com"
-            git config --global user.name "tas-operability-bot"
+          branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo ::set-output name=branch_suffix::${branch_suffix}
 
-            branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            git checkout -b tmp/upgrade-golang-${branch_suffix}
-            git add .
-            git commit -m "Upgrade Golang"
-            git push --set-upstream origin tmp/upgrade-golang-${branch_suffix}
-            gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base main --head tmp/upgrade-golang-${branch_suffix}
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: create-pull-request
+        name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          author: tas-operability-bot <41898282+github-actions[bot]@users.noreply.github.com>
+          committer: tas-operability-bot <41898282+github-actions[bot]@users.noreply.github.com>
+          commit-message: Upgrade Golang
+          title: Upgrade Golang
+          branch: tmp/upgrade-golang-${{ steps.set_branch_name.outputs.branch_suffix }} # branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7) && tmp/upgrade-golang-${branch_suffix}
+
+      # - id: commit-changes-and-create-pr
+      #   name: Commit changes and create PR
+      #   working-directory: om
+      #   run: |
+      #     files_changed=$(git status --porcelain)
+      #     if [[ -n ${files_changed} ]]; then
+      #       git config --global url.https://${GITHUB_TOKEN}@github.com/.insteadOf https://github.com/
+      #       git config --global user.email "149723437+tas-operability-bot@users.noreply.github.com"
+      #       git config --global user.name "tas-operability-bot"
+
+      #       branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
+      #       git checkout -b tmp/upgrade-golang-${branch_suffix}
+      #       git add .
+      #       git commit -m "Upgrade Golang"
+      #       git push --set-upstream origin tmp/upgrade-golang-${branch_suffix}
+      #       gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base main --head tmp/upgrade-golang-${branch_suffix}
+      #     fi
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
