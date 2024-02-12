@@ -52,6 +52,7 @@ jobs:
         name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
+          path: om
           author: tas-operability-bot <41898282+github-actions[bot]@users.noreply.github.com>
           committer: tas-operability-bot <41898282+github-actions[bot]@users.noreply.github.com>
           commit-message: Upgrade Golang
