@@ -4,6 +4,8 @@ concurrency: Upgrade Golang 2
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   upgrade-golang:
@@ -17,8 +19,52 @@ jobs:
         shell: bash
 
     steps:
-      - name: Checkout Om
+      - id: checkout-om
+        name: Checkout Om
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
           path: om
+
+      - id: setup-go
+        name: Set Go to latest
+        uses: actions/setup-go@v5
+        with:
+          check-latest: true
+
+      - id: upgrade-golang
+        name: Upgrade Golang
+        working-directory: om
+        run: |
+          version=$(go version | awk '{print $3}' | sed 's/go//')
+          echo "Current go version: $version"
+          go mod edit -go=$version
+          go get -u -t ./...
+          go mod tidy
+
+      - id: install-gh-cli
+        name: Install GH CLI
+        uses: dev-hanz-ops/install-gh-cli-action@v0.1.0
+        with:
+          gh-cli-version: 2.43.1
+
+      - id: commit-changes-and-create-pr
+        name: Commit changes and create PR
+        working-directory: om
+        run: |
+          files_changed=$(git status --porcelain)
+          if [[ -n ${files_changed} ]]; then
+            git config --global url.https://${GITHUB_TOKEN}@github.com/.insteadOf https://github.com/
+            git config --global user.email "149723437+tas-operability-bot@users.noreply.github.com"
+            git config --global user.name "tas-operability-bot"
+
+            branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
+            git checkout -b tmp/upgrade-golang-${branch_suffix}
+            git add .
+            git commit -m "Upgrade Golang"
+            git push --set-upstream origin tmp/upgrade-golang-${branch_suffix}
+            gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base feat/autobump-go --head tmp/upgrade-golang-${branch_suffix}
+            gh pr merge tmp/upgrade-golang-${branch_suffix} --auto --rebase --delete-branch
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
