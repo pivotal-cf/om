@@ -67,4 +67,4 @@ jobs:
             gh pr merge tmp/upgrade-golang-${branch_suffix} --auto --rebase --delete-branch
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.VAULT_TAS_OPERABILITY_GITHUB_GITHUB_TOKEN }}
