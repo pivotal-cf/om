@@ -63,7 +63,7 @@ jobs:
             git add .
             git commit -m "Upgrade Golang"
             git push --set-upstream origin tmp/upgrade-golang-${branch_suffix}
-            gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base feat/autobump-go --head tmp/upgrade-golang-${branch_suffix}
+            gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base main --head tmp/upgrade-golang-${branch_suffix}
             gh pr merge tmp/upgrade-golang-${branch_suffix} --auto --rebase --delete-branch
           fi
         env:
