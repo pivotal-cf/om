@@ -59,6 +59,13 @@ jobs:
             git config --global user.name "tas-operability-bot"
 
             branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
+            branch_name="tmp/upgrade-golang-${branch_suffix}"
+
+            if git show-ref --exists "refs/heads/${branch_name}"; then
+              echo "Branch ${branch_name} already exists. Exiting..."
+              exit 0
+            fi
+
             git checkout -b tmp/upgrade-golang-${branch_suffix}
             git add .
             git commit -m "Upgrade Golang"
