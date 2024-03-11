@@ -21,8 +21,10 @@ jobs:
         with:
           fetch-depth: 0
           path: om
-          
-      - run: pwd
+
+      - run: |
+          pwd
+          ls -la
 
       - name: Set up Go
         uses: actions/setup-go@v3
