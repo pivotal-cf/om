@@ -52,26 +52,34 @@ jobs:
         name: Commit changes and create PR
         working-directory: om
         run: |
-          files_changed=$(git status --porcelain)
-          if [[ -n ${files_changed} ]]; then
-            git config --global url.https://${GITHUB_TOKEN}@github.com/.insteadOf https://github.com/
-            git config --global user.email "149723437+tas-operability-bot@users.noreply.github.com"
-            git config --global user.name "tas-operability-bot"
-
-            branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            branch_name="tmp/upgrade-golang-${branch_suffix}"
-
-            if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
-              echo "Branch ${branch_name} already exists. Exiting..."
-              exit 0
-            fi
-
-            git checkout -b tmp/upgrade-golang-${branch_suffix}
-            git add .
-            git commit -m "Upgrade Golang"
-            git push --set-upstream origin tmp/upgrade-golang-${branch_suffix}
-            gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base main --head tmp/upgrade-golang-${branch_suffix}
-            gh pr merge tmp/upgrade-golang-${branch_suffix} --auto --rebase --delete-branch
+          branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          branch_name="tmp/upgrade-golang-${branch_suffix}"
+          if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
+            echo "Branch ${branch_name} already exists. Exiting..."
+            exit 0
           fi
+
+          existing_pr=$(gh pr list --search "Upgrade Golang in:title" | grep "Upgrade Golang")
+          if [[ -n ${existing_pr} ]]; then
+            echo "PR with title 'Upgrade Golang' already exists. Exiting..."
+            exit 0
+          fi
+        
+          files_changed=$(git status --porcelain)
+          if [[ -z ${files_changed} ]]; then
+            echo "No changes to detected. Exiting..."
+            exit 0
+          fi
+
+          git config --global url.https://${GITHUB_TOKEN}@github.com/.insteadOf https://github.com/
+          git config --global user.email "149723437+tas-operability-bot@users.noreply.github.com"
+          git config --global user.name "tas-operability-bot"
+
+          git checkout -b ${branch_name}
+          git add .
+          git commit -m "Upgrade Golang"
+          git push --set-upstream origin ${branch_name}
+          gh pr create --title "Upgrade Golang" --body "Upgrade Golang" --base main --head ${branch_name}
+          gh pr merge ${branch_name} --auto --rebase --delete-branch
         env:
           GITHUB_TOKEN: ${{ secrets.TAS_OPERABILITY_BOT_OM_REPO_PAT }}
