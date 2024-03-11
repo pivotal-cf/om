@@ -61,7 +61,7 @@ jobs:
             branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
             branch_name="tmp/upgrade-golang-${branch_suffix}"
 
-            if git show-ref --exists "refs/heads/${branch_name}"; then
+            if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
               echo "Branch ${branch_name} already exists. Exiting..."
               exit 0
             fi
