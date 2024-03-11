@@ -25,8 +25,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version-file: 'go.mod'
- 
+          go-version-file: './om/go.mod'
+
       - name: Test
         run: |
           go install github.com/onsi/ginkgo/ginkgo
