@@ -20,12 +20,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          path: om
-
-      - run: |
-          pwd
-          ls -la
-
+          path: om  
+                 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
