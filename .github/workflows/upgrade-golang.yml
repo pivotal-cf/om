@@ -59,9 +59,8 @@ jobs:
             echo "Branch ${branch_name} already exists. Exiting..."
             exit 0
           fi
-
-          existing_pr=$(gh pr list --state open | grep "Upgrade Golang")
-          if [[ -n ${existing_pr} ]]; then
+          
+          if gh pr list --search "Upgrade Golang in:title" | grep -q "Upgrade Golang"; then
             echo "PR with title 'Upgrade Golang' already exists. Exiting..."
             exit 0
           fi
