@@ -41,22 +41,20 @@ git clone https://github.com/pivotal-cf/om
 
 ### Run the tests
 
-We recommend running using a minimum of [Go 1.12](https://golang.org/dl). 
-The tests may run fine, but you may experience issues when using `go run` or `go build`
+We recommend running tests through our docker image to ensure that the tests run in a consistent environment.
 
-`om` uses the [ginkgo](https://onsi.github.io/ginkgo/) test framework. 
-If you have used ginkgo before, make sure it is rebuilt so as to have proper `go mod` support.
-
-No special `bin` or `scripts` dir here, we run the tests with this one-liner:
+Here's a one-liner to run the tests:
 
 ```bash
-ginkgo -r -race -p .
+docker run \
+  -it \
+  -v $(pwd):/workspace \
+  -w /workspace internalpcfplatformautomation/ci:testing \
+  /bin/bash \
+  -c "go install github.com/onsi/ginkgo/ginkgo && CGO_ENABLED=1 ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing -skipPackage acceptance,vmlifecyclecommands,vmmanagers"
 ```
 
-Several integration tests require [`minio`](https://minio.io/)) to be installed for s3 testing.
-For OSX, `brew install minio/stable/minio minio/stable/mc`. These tests will be skipped if minio 
-is not installed, but to ensure that we will be able to pull in your PR, and that all tests will
-pass, it is recommended to install it for local development.
+This follows the setup that we use in our CI pipeline.
 
 ## Vendoring dependencies
 
@@ -140,7 +138,7 @@ on code that is a work in progress.
 # Becoming a committer
 
 At this time, there is no official process for becoming a comitter to `om`.  The
-project is currently maintained by the Platform Provider Experience team. But we're open to new ideas here!
+project is currently maintained by the TAS Operability team. But we're open to new ideas here!
 
 # Prior Art
 
