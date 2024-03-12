@@ -60,7 +60,7 @@ jobs:
             exit 0
           fi
 
-          existing_pr=$(gh pr list --search "Upgrade Golang in:title" | grep "Upgrade Golang")
+          existing_pr=$(gh pr list --state open | grep "Upgrade Golang")
           if [[ -n ${existing_pr} ]]; then
             echo "PR with title 'Upgrade Golang' already exists. Exiting..."
             exit 0
