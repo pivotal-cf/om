@@ -28,9 +28,7 @@ jobs:
           go-version-file: './om/go.mod'
 
       - name: Test
-          
         run: |
-          set -x
           go install github.com/onsi/ginkgo/ginkgo
           ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
               -skipPackage acceptance,vmlifecyclecommands,vmmanagers \
