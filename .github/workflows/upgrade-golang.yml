@@ -35,9 +35,6 @@ jobs:
       - id: upgrade-golang
         name: Upgrade Golang
         working-directory: om
-
-        run: set -x
-
         run: |
           version=$(go version | awk '{print $3}' | sed 's/go//')
           echo "Current go version: $version"
