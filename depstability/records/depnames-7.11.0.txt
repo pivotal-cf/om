@@ -47,7 +47,6 @@ github.com/cloudfoundry/config-server
 github.com/cloudfoundry/go-socks5
 github.com/cloudfoundry/socks5-proxy
 github.com/cncf/udpa/go
-github.com/cncf/xds/go
 github.com/cppforlife/go-patch
 github.com/cppforlife/go-semi-semantic
 github.com/creack/pty
