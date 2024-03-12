@@ -52,6 +52,7 @@ jobs:
         name: Commit changes and create PR
         working-directory: om
         run: |
+          set -x
           branch_suffix=$(echo "${GITHUB_SHA}" | cut -c1-7)
           branch_name="tmp/upgrade-golang-${branch_suffix}"
           if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
