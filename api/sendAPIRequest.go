@@ -50,7 +50,7 @@ func sendRequestNew(client httpClient, method, endpoint string, jsonData []byte)
 			return resp, nil // Request was successful
 		}
 		// If there is an error and we have more retries left, log the error and retry
-		fmt.Printf("could not send api request to %s %s: %w", method, endpoint, err)
+		fmt.Errorf("could not send api request to %s %s: %w", method, endpoint, err)
 	}
 	return nil, fmt.Errorf("could not send api request to %s %s", method, endpoint)
 
