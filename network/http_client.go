@@ -30,7 +30,7 @@ func newHTTPClient(insecureSkipVerify bool, caCert string, requestTimeout time.D
 			TLSClientConfig: tlsConfig,
 			Dial: (&net.Dialer{
 				Timeout:   connectTimeout,
-				KeepAlive: 30 * time.Second,
+				KeepAlive: 60 * time.Second,
 			}).Dial,
 		},
 		Timeout: requestTimeout,
