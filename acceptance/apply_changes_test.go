@@ -1,9 +1,10 @@
 package acceptance
 
 import (
-	"github.com/onsi/gomega/ghttp"
 	"net/http"
 	"os/exec"
+
+	"github.com/onsi/gomega/ghttp"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -49,6 +50,7 @@ var _ = Describe("apply-changes command", func() {
 				ghttp.VerifyRequest("POST", "/api/v0/installations"),
 				ghttp.VerifyJSON(`{
 					"ignore_warnings": "false",
+					"force_latest_variables": false,
 					"deploy_products": "all"
 				}`),
 				ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),
@@ -130,6 +132,7 @@ var _ = Describe("apply-changes command", func() {
 					ghttp.VerifyRequest("POST", "/api/v0/installations"),
 					ghttp.VerifyJSON(`{
 					"ignore_warnings": "false",
+					"force_latest_variables": false,
 					"deploy_products": "all"
 				}`),
 					ghttp.RespondWith(http.StatusOK, `{"install": {"id": 42}}`),

@@ -1,14 +1,16 @@
 package api_test
 
 import (
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/ghttp"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/ghttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -108,12 +110,12 @@ var _ = Describe("InstallationsService", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/api/v0/installations"),
-						ghttp.VerifyJSON(`{"ignore_warnings":"false", "deploy_products":"all"}`),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false, "deploy_products":"all"}`),
 						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -133,12 +135,12 @@ var _ = Describe("InstallationsService", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/api/v0/installations"),
-						ghttp.VerifyJSON(`{"ignore_warnings":"false", "deploy_products":"none"}`),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false, "deploy_products":"none"}`),
 						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 					),
 				)
 
-				output, err := service.CreateInstallation(false, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -158,30 +160,38 @@ var _ = Describe("InstallationsService", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/api/v0/installations"),
-						ghttp.VerifyJSON(`{"ignore_warnings":"false","deploy_products":["guid2"]}`),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":["guid2"]}`),
 						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 			})
+		})
 
-			It("errors when the product does not exist", func() {
+		When("forcing latest variables", func() {
+			It("triggers an installation on an Ops Manager, forcing latest variables", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}]`),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}]`),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":true,"deploy_products":["guid2"]}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
-				Expect(err).To(HaveOccurred())
+				output, err := service.CreateInstallation(false, true, true, []string{"product2"}, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
 			})
 		})
 
@@ -199,12 +209,12 @@ var _ = Describe("InstallationsService", func() {
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("POST", "/api/v0/installations"),
-							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid1"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "force_latest_variables": false, "deploy_products": ["guid1"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
 							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 						),
 					)
 
-					output, err := service.CreateInstallation(false, true, []string{"product1"}, api.ApplyErrandChanges{
+					output, err := service.CreateInstallation(false, true, false, []string{"product1"}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -229,12 +239,12 @@ var _ = Describe("InstallationsService", func() {
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("POST", "/api/v0/installations"),
-							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"]}`),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "force_latest_variables": false, "deploy_products": ["guid2"]}`),
 							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{
+					_, err := service.CreateInstallation(false, true, false, []string{"product2"}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product3": {
 								RunPostDeploy: map[string]interface{}{
@@ -261,12 +271,12 @@ var _ = Describe("InstallationsService", func() {
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("POST", "/api/v0/installations"),
-							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": "all", "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "force_latest_variables": false, "deploy_products": "all", "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
 							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 						),
 					)
 
-					output, err := service.CreateInstallation(false, true, []string{}, api.ApplyErrandChanges{
+					output, err := service.CreateInstallation(false, true, false, []string{}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -291,12 +301,12 @@ var _ = Describe("InstallationsService", func() {
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("POST", "/api/v0/installations"),
-							ghttp.VerifyJSON(`{"ignore_warnings": "false", "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
+							ghttp.VerifyJSON(`{"ignore_warnings": "false", "force_latest_variables": false, "deploy_products": ["guid2"], "errands": {"guid1": {"run_post_deploy": {"errand1": "default"}}}}`),
 							ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, []string{}, api.ApplyErrandChanges{
+					_, err := service.CreateInstallation(false, true, false, []string{}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -330,7 +340,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations")))
 			})
 		})
@@ -348,7 +358,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/api/v0/installations"),
-						ghttp.VerifyJSON(`{"ignore_warnings":"false","deploy_products":["guid2"]}`),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":["guid2"]}`),
 						ghttp.RespondWith(http.StatusUnprocessableEntity, `{
 							"errors": ["'Some IAAS Error', type: SomeVerifier""],
 							"deployment_errors": {
@@ -365,7 +375,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, []string{"product2"}, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer, you can use `om pre-deploy-check` to get a complete list of failed verifiers and om commands to disable them.")))
 			})
@@ -380,7 +390,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
@@ -402,7 +412,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 			})
 		})
