@@ -167,10 +167,24 @@ func (ac ApplyChanges) Execute(args []string) error {
 }
 
 func (ac ApplyChanges) waitForApplyChangesCompletion(installation api.InstallationsServiceOutput) error {
+	const maxRetries = 3
+
 	for {
-		current, err := ac.service.GetInstallation(installation.ID)
+		var current api.InstallationsServiceOutput
+		var err error
+
+		for i := 0; i < maxRetries; i++ {
+			current, err = ac.service.GetInstallation(installation.ID)
+			if err == nil {
+				break
+			}
+			if i < maxRetries-1 {
+				time.Sleep(ac.waitDuration)
+			}
+		}
+
 		if err != nil {
-			return fmt.Errorf("installation failed to get status: %s", err)
+			return fmt.Errorf("installation failed to get status after %d attempts: %s", maxRetries, err)
 		}
 
 		install, err := ac.service.GetInstallationLogs(installation.ID)
