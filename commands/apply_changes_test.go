@@ -502,12 +502,14 @@ errands: lolololol
 		When("getting the installation status has an error", func() {
 			It("returns an error", func() {
 				service.CreateInstallationReturns(api.InstallationsServiceOutput{ID: 311}, nil)
-				service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("another error"))
+				service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("first error"))
+				service.GetInstallationReturnsOnCall(1, api.InstallationsServiceOutput{}, errors.New("second error"))
+				service.GetInstallationReturnsOnCall(2, api.InstallationsServiceOutput{}, errors.New("third error"))
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := executeCommand(command, []string{})
-				Expect(err).To(MatchError("installation failed to get status: another error"))
+				Expect(err).To(MatchError("installation failed to get status after 3 attempts: third error"))
 			})
 		})
 
