@@ -78,6 +78,35 @@ var _ = Describe("ApplyChanges", func() {
 			Expect(writer.FlushArgsForCall(2)).To(Equal("some other logs"))
 		})
 
+		It("retries apply changes to the Ops Manager", func() {
+			service.GetInstallationReturnsOnCall(0, api.InstallationsServiceOutput{}, errors.New("some error"))
+			service.GetInstallationReturnsOnCall(1, api.InstallationsServiceOutput{Status: "running"}, nil)
+			service.GetInstallationReturnsOnCall(2, api.InstallationsServiceOutput{Status: "succeeded"}, nil)
+
+			command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+			err := executeCommand(command, []string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(service.CreateInstallationCallCount()).To(Equal(1))
+
+			ignoreWarnings, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
+			Expect(ignoreWarnings).To(Equal(false))
+			Expect(deployProducts).To(Equal(true))
+
+			Expect(stderr).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
+
+			Expect(service.GetInstallationArgsForCall(0)).To(Equal(311))
+			Expect(service.GetInstallationCallCount()).To(Equal(3))
+
+			Expect(service.GetInstallationLogsArgsForCall(0)).To(Equal(311))
+			Expect(service.GetInstallationLogsCallCount()).To(Equal(2))
+
+			Expect(writer.FlushCallCount()).To(Equal(2))
+			Expect(writer.FlushArgsForCall(0)).To(Equal("start of logs"))
+			Expect(writer.FlushArgsForCall(1)).To(Equal("these logs"))
+		})
+
 		When("passed the ignore-warnings flag", func() {
 			It("applies changes while ignoring warnings", func() {
 				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
