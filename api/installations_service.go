@@ -74,7 +74,7 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	return responseStruct.Installations, nil
 }
 
-func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
+func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
 	productGuidMapping, err := a.fetchProductGUID()
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("failed to list staged and/or deployed products: %w", err)
@@ -110,13 +110,15 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, produc
 	}
 
 	data, err := json.Marshal(&struct {
-		IgnoreWarnings string                   `json:"ignore_warnings"`
-		DeployProducts interface{}              `json:"deploy_products"`
-		Errands        map[string]ProductErrand `json:"errands,omitempty"`
+		IgnoreWarnings       string                   `json:"ignore_warnings"`
+		ForceLatestVariables bool                     `json:"force_latest_variables"`
+		DeployProducts       interface{}              `json:"deploy_products"`
+		Errands              map[string]ProductErrand `json:"errands,omitempty"`
 	}{
-		IgnoreWarnings: fmt.Sprintf("%t", ignoreWarnings),
-		DeployProducts: deployProductsVal,
-		Errands:        errandsPayload,
+		IgnoreWarnings:       fmt.Sprintf("%t", ignoreWarnings),
+		ForceLatestVariables: forceLatestVariables,
+		DeployProducts:       deployProductsVal,
+		Errands:              errandsPayload,
 	})
 	if err != nil {
 		return InstallationsServiceOutput{}, err

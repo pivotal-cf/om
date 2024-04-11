@@ -3,13 +3,14 @@ package commands_test
 import (
 	"errors"
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/onsi/gomega/gbytes"
+	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
@@ -60,9 +61,10 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, forceLatestVariables, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
+			Expect(forceLatestVariables).To(Equal(false))
 
 			Expect(stderr).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
 
@@ -90,7 +92,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
@@ -116,8 +118,22 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--ignore-warnings"})
 				Expect(err).ToNot(HaveOccurred())
 
-				ignoreWarnings, _, _, _ := service.CreateInstallationArgsForCall(0)
+				ignoreWarnings, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
+			})
+		})
+
+		When("passed the force-latest-variables flag", func() {
+			It("applies changes while forcing the latest variable versions to be used", func() {
+				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--force-latest-variables"})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, forceLatestVariables, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(forceLatestVariables).To(Equal(true))
 			})
 		})
 
@@ -128,7 +144,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--skip-deploy-products"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 
@@ -149,7 +165,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
-				_, _, productNames, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
 				Expect(productNames).To(ConsistOf("product1", "product2"))
 			})
 		})
@@ -382,9 +398,10 @@ errands:
 
 					Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-					ignoreWarnings, deployProducts, _, errands := service.CreateInstallationArgsForCall(0)
+					ignoreWarnings, deployProducts, forceLatestVariables, _, errands := service.CreateInstallationArgsForCall(0)
 					Expect(ignoreWarnings).To(Equal(false))
 					Expect(deployProducts).To(Equal(true))
+					Expect(forceLatestVariables).To(Equal(false))
 					Expect(errands).To(Equal(api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1_name": {
