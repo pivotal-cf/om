@@ -90,8 +90,8 @@ To build from source, after you've cloned the repo,
 run these commands from the top level of the repo:
 
 ```bash
-GO112MODULE=on go mod download
-GO112MODULE=on go build
+GO111MODULE=on go mod download
+GO111MODULE=on go build
 ```
 
 Go 1.11 uses some heuristics to determine if Go Modules should be used.
