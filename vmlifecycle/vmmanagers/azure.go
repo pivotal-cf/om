@@ -361,24 +361,28 @@ func (a *AzureVMManager) copyImageBlob(imageSourceURL string, imageName string) 
 	}
 
 	for {
-		out, _, err := a.runner.ExecuteWithEnvVars(a.addEnvVars(),
-			[]interface{}{
+		stdout, stderr, err := a.runner.ExecuteWithEnvVars(
+			a.addEnvVars(),
+			[]any{
 				"storage", "blob", "show",
 				"--name", imageName + ".vhd",
 				"--container-name", azure.Container,
 				"--query", "properties.copy.status",
-			})
-		if err != nil {
+			},
+		)
+
+		switch {
+		case err != nil && strings.Contains(stderr.String(), "ErrorCode:PendingCopyOperation"):
+			// Continue polling
+		case err != nil:
 			return fmt.Errorf("azure error: %s", err)
+		case strings.TrimSpace(stdout.String()) == `"success"`:
+			return nil // Operation is finished
 		}
-		if strings.TrimSpace(out.String()) == `"success"` {
-			break
-		}
+
 		_, _ = a.stderr.Write([]byte(fmt.Sprintf("blob not ready yet, polling in %s\n", a.pollingInterval)))
 		time.Sleep(a.pollingInterval)
 	}
-
-	return nil
 }
 
 func (a *AzureVMManager) addDefaultConfigFields() {
