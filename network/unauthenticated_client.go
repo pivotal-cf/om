@@ -2,21 +2,19 @@ package network
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
 type UnauthenticatedClient struct {
-	target *url.URL
+	target string
 	client *http.Client
 }
 
-func NewUnauthenticatedClient(target *url.URL, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration) (UnauthenticatedClient, error) {
-	if target == nil {
-		return UnauthenticatedClient{}, errors.New("expected a non-nil target")
-	}
-
+func NewUnauthenticatedClient(target string, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration) (UnauthenticatedClient, error) {
 	client, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout)
 	if err != nil {
 		return UnauthenticatedClient{}, err
@@ -29,8 +27,26 @@ func NewUnauthenticatedClient(target *url.URL, insecureSkipVerify bool, caCert s
 }
 
 func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error) {
-	request.URL.Scheme = c.target.Scheme
-	request.URL.Host = c.target.Host
+	candidateURL := c.target
+	if !strings.Contains(candidateURL, "//") {
+		candidateURL = fmt.Sprintf("//%s", candidateURL)
+	}
+
+	targetURL, err := url.Parse(candidateURL)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse target url: %s", err)
+	}
+
+	if targetURL.Scheme == "" {
+		targetURL.Scheme = "https"
+	}
+
+	if targetURL.Host == "" {
+		return nil, errors.New("target flag is required. Run `om help` for more info.")
+	}
+
+	request.URL.Scheme = targetURL.Scheme
+	request.URL.Host = targetURL.Host
 
 	return c.client.Do(request)
 }
