@@ -1,10 +1,10 @@
 package network
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/cloudfoundry-community/go-uaa"
@@ -17,8 +17,7 @@ type OAuthClient struct {
 	clientSecret       string
 	insecureSkipVerify bool
 	password           string
-	target             *url.URL
-	uaaTarget          *url.URL
+	target             string
 	token              *oauth2.Token
 	username           string
 	connectTimeout     time.Duration
@@ -26,29 +25,20 @@ type OAuthClient struct {
 }
 
 func NewOAuthClient(
-	uaaTarget, opsmanTarget *url.URL,
-	username, password string,
+	target, username, password string,
 	clientID, clientSecret string,
 	insecureSkipVerify bool,
 	caCert string,
 	connectTimeout time.Duration,
 	requestTimeout time.Duration,
 ) (*OAuthClient, error) {
-	if uaaTarget == nil {
-		return nil, errors.New("expected a non-nil UAA target")
-	}
-	if opsmanTarget == nil {
-		return nil, errors.New("expected a non-nil target")
-	}
-
 	return &OAuthClient{
 		caCert:             caCert,
 		clientID:           clientID,
 		clientSecret:       clientSecret,
 		insecureSkipVerify: insecureSkipVerify,
 		password:           password,
-		uaaTarget:          uaaTarget,
-		target:             opsmanTarget,
+		target:             target,
 		username:           username,
 		connectTimeout:     connectTimeout,
 		requestTimeout:     requestTimeout,
@@ -56,8 +46,22 @@ func NewOAuthClient(
 }
 
 func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
-	request.URL.Scheme = oc.target.Scheme
-	request.URL.Host = oc.target.Host
+	token := oc.token
+	target := oc.target
+
+	if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
+		target = "https://" + target
+	}
+
+	targetURL, err := url.Parse(target)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse target url: %s", err)
+	}
+
+	targetURL.Path = "/uaa"
+
+	request.URL.Scheme = targetURL.Scheme
+	request.URL.Host = targetURL.Host
 
 	client, err := newHTTPClient(
 		oc.insecureSkipVerify,
@@ -65,11 +69,11 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		oc.requestTimeout,
 		oc.connectTimeout,
 	)
+
 	if err != nil {
 		return nil, err
 	}
 
-	token := oc.token
 	if token != nil && token.Valid() {
 		request.Header.Set(
 			"Authorization",
@@ -102,7 +106,7 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	}
 
 	api, err := uaa.New(
-		oc.uaaTarget.String(),
+		targetURL.String(),
 		authOption,
 		options...,
 	)
@@ -118,11 +122,7 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	}
 
 	if err != nil {
-		if oauthErr, ok := err.(uaa.RequestError); ok {
-			return nil, fmt.Errorf("token could not be retrieved from target: %w: %s",
-				err, string(oauthErr.ErrorResponse))
-		}
-		return nil, fmt.Errorf("token could not be retrieved from target : %w", err)
+		return nil, fmt.Errorf("token could not be retrieved from target url: %w", err)
 	}
 
 	request.Header.Set(

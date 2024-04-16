@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -30,17 +29,16 @@ type httpClient interface {
 }
 
 type options struct {
-	CACert               string `yaml:"ca-cert"                          long:"ca-cert"               env:"OM_CA_CERT"                             description:"OpsManager CA certificate path or value"`
+	CACert               string `yaml:"ca-cert" long:"ca-cert" env:"OM_CA_CERT" description:"OpsManager CA certificate path or value"`
 	ClientID             string `yaml:"client-id"             short:"c"  long:"client-id"             env:"OM_CLIENT_ID"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
 	ClientSecret         string `yaml:"client-secret"         short:"s"  long:"client-secret"         env:"OM_CLIENT_SECRET"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
 	ConnectTimeout       int    `yaml:"connect-timeout"       short:"o"  long:"connect-timeout"       env:"OM_CONNECT_TIMEOUT"     default:"10"    description:"timeout in seconds to make TCP connections"`
-	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d"  long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE"               description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
-	Env                  string `                             short:"e"  long:"env"                                                                description:"env file with login credentials"`
+	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d"  long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE"             description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
+	Env                  string `                             short:"e"  long:"env"                                                              description:"env file with login credentials"`
 	Password             string `yaml:"password"              short:"p"  long:"password"              env:"OM_PASSWORD"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
 	RequestTimeout       int    `yaml:"request-timeout"       short:"r"  long:"request-timeout"       env:"OM_REQUEST_TIMEOUT"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
 	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"   short:"k"  long:"skip-ssl-validation"   env:"OM_SKIP_SSL_VALIDATION"                 description:"skip ssl certificate validation during http requests"`
 	Target               string `yaml:"target"                short:"t"  long:"target"                env:"OM_TARGET"                              description:"location of the Ops Manager VM"`
-	UAATarget            string `yaml:"uaa-target"                       long:"uaa-target"            env:"OM_UAA_TARGET"                          description:"location of the Ops Manager VM"`
 	Trace                bool   `yaml:"trace"                            long:"trace"                 env:"OM_TRACE"                               description:"prints HTTP requests and response payloads"`
 	Username             string `yaml:"username"              short:"u"  long:"username"              env:"OM_USERNAME"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
 	VarsEnv              string `                                        long:"vars-env"              env:"OM_VARS_ENV"                            description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
@@ -75,18 +73,13 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
-	opsmanURL, uaaURL, err := parseTargetURLs(global.Target, global.UAATarget)
-	if err != nil {
-		return err
-	}
-
 	var unauthenticatedClient, authedClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient, err = network.NewUnauthenticatedClient(opsmanURL, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
+	unauthenticatedClient, err = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 	if err != nil {
 		return err
 	}
 
-	authedClient, err = network.NewOAuthClient(uaaURL, opsmanURL, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
+	authedClient, err = network.NewOAuthClient(global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 
 	if err != nil {
 		return err
@@ -196,7 +189,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"bosh-env",
 		"prints environment variables for BOSH and Credhub",
 		"This prints environment variables to target the BOSH director and Credhub. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
-		commands.NewBoshEnvironment(api, stdout, opsmanURL.String(), envRendererFactory),
+		commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory),
 	)
 	if err != nil {
 		return err
@@ -268,7 +261,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"configure-product",
 		"configures a staged product",
 		"This authenticated command configures a staged product",
-		commands.NewConfigureProduct(os.Environ, api, opsmanURL.String(), stdout),
+		commands.NewConfigureProduct(os.Environ, api, global.Target, stdout),
 	)
 	if err != nil {
 		return err
@@ -724,9 +717,6 @@ func setEnvFileProperties(global *options) error {
 	if global.Target == "" {
 		global.Target = opts.Target
 	}
-	if global.UAATarget == "" {
-		global.UAATarget = opts.UAATarget
-	}
 	if !global.Trace {
 		global.Trace = opts.Trace
 	}
@@ -786,48 +776,4 @@ func checkForVars(opts *options) error {
 	}
 
 	return nil
-}
-
-func parseTargetURLs(opsmanTarget, uaaTarget string) (*url.URL, *url.URL, error) {
-	parseURL := func(u string) (*url.URL, error) {
-		// default the target protocol to https if none specified
-		if !strings.Contains(u, "://") {
-			u = "https://" + u
-		}
-
-		targetURL, err := url.Parse(u)
-		if err != nil {
-			return nil, err
-		}
-
-		// at a minimum ensure we have a host with http(s) protocol
-		if targetURL.Scheme != "https" && targetURL.Scheme != "http" {
-			return nil, fmt.Errorf("error parsing target, expected http(s) protocol but got: %s", targetURL.Scheme)
-		}
-		if targetURL.Host == "" {
-			return nil, errors.New("target flag is required, run `om help` for more info")
-		}
-
-		return targetURL, nil
-	}
-
-	opsmanURL, err := parseURL(opsmanTarget)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not parse Opsman target URL: %w", err)
-	}
-
-	var uaaURL *url.URL
-	if uaaTarget != "" {
-		uaaURL, err = parseURL(uaaTarget)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse UAA target URL: %w", err)
-		}
-	} else {
-		// default to opsman URL with /uaa path (shallow copy)
-		t := *opsmanURL
-		t.Path = "/uaa"
-		uaaURL = &t
-	}
-
-	return opsmanURL, uaaURL, nil
 }
