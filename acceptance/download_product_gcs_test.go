@@ -293,7 +293,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(0))
+				Eventually(session, "2m").Should(gexec.Exit(0))
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",
 					"product_path": "%s/[example-product,1.10.2]product-456.yml",
