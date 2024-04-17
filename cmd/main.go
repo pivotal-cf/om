@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -75,19 +74,13 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	requestTimeout := time.Duration(global.RequestTimeout) * time.Second
 	connectTimeout := time.Duration(global.ConnectTimeout) * time.Second
 
-	opsmanURL, uaaURL, err := parseTargetURLs(global.Target, global.UAATarget)
-	if err != nil {
-		return err
-	}
-
 	var unauthenticatedClient, authedClient, unauthenticatedProgressClient, authedProgressClient httpClient
-	unauthenticatedClient, err = network.NewUnauthenticatedClient(opsmanURL, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
+	unauthenticatedClient, err = network.NewUnauthenticatedClient(global.Target, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 	if err != nil {
 		return err
 	}
 
-	authedClient, err = network.NewOAuthClient(uaaURL, opsmanURL, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
-
+	authedClient, err = network.NewOAuthClient(global.UAATarget, global.Target, global.Username, global.Password, global.ClientID, global.ClientSecret, global.SkipSSLValidation, global.CACert, connectTimeout, requestTimeout)
 	if err != nil {
 		return err
 	}
@@ -196,7 +189,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"bosh-env",
 		"prints environment variables for BOSH and Credhub",
 		"This prints environment variables to target the BOSH director and Credhub. You can invoke it directly to see its output, or use it directly with an evaluate-type command:\nOn posix system: eval \"$(om bosh-env)\"\nOn powershell: iex $(om bosh-env | Out-String)",
-		commands.NewBoshEnvironment(api, stdout, opsmanURL.String(), envRendererFactory),
+		commands.NewBoshEnvironment(api, stdout, global.Target, envRendererFactory),
 	)
 	if err != nil {
 		return err
@@ -268,7 +261,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"configure-product",
 		"configures a staged product",
 		"This authenticated command configures a staged product",
-		commands.NewConfigureProduct(os.Environ, api, opsmanURL.String(), stdout),
+		commands.NewConfigureProduct(os.Environ, api, global.Target, stdout),
 	)
 	if err != nil {
 		return err
@@ -670,6 +663,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 			}
 		}
 	}
+
 	return err
 }
 
@@ -786,48 +780,4 @@ func checkForVars(opts *options) error {
 	}
 
 	return nil
-}
-
-func parseTargetURLs(opsmanTarget, uaaTarget string) (*url.URL, *url.URL, error) {
-	parseURL := func(u string) (*url.URL, error) {
-		// default the target protocol to https if none specified
-		if !strings.Contains(u, "://") {
-			u = "https://" + u
-		}
-
-		targetURL, err := url.Parse(u)
-		if err != nil {
-			return nil, err
-		}
-
-		// at a minimum ensure we have a host with http(s) protocol
-		if targetURL.Scheme != "https" && targetURL.Scheme != "http" {
-			return nil, fmt.Errorf("error parsing target, expected http(s) protocol but got: %s", targetURL.Scheme)
-		}
-		if targetURL.Host == "" {
-			return nil, errors.New("target flag is required, run `om help` for more info")
-		}
-
-		return targetURL, nil
-	}
-
-	opsmanURL, err := parseURL(opsmanTarget)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not parse Opsman target URL: %w", err)
-	}
-
-	var uaaURL *url.URL
-	if uaaTarget != "" {
-		uaaURL, err = parseURL(uaaTarget)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse UAA target URL: %w", err)
-		}
-	} else {
-		// default to opsman URL with /uaa path (shallow copy)
-		t := *opsmanURL
-		t.Path = "/uaa"
-		uaaURL = &t
-	}
-
-	return opsmanURL, uaaURL, nil
 }
