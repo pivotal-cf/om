@@ -3,8 +3,6 @@ package network
 import (
 	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/cloudfoundry-community/go-uaa"
@@ -17,7 +15,8 @@ type OAuthClient struct {
 	clientSecret       string
 	insecureSkipVerify bool
 	password           string
-	target             string
+	opsmanTarget       string
+	uaaTarget          string
 	token              *oauth2.Token
 	username           string
 	connectTimeout     time.Duration
@@ -25,7 +24,8 @@ type OAuthClient struct {
 }
 
 func NewOAuthClient(
-	target, username, password string,
+	uaaTarget, opsmanTarget string,
+	username, password string,
 	clientID, clientSecret string,
 	insecureSkipVerify bool,
 	caCert string,
@@ -38,7 +38,8 @@ func NewOAuthClient(
 		clientSecret:       clientSecret,
 		insecureSkipVerify: insecureSkipVerify,
 		password:           password,
-		target:             target,
+		uaaTarget:          uaaTarget,
+		opsmanTarget:       opsmanTarget,
 		username:           username,
 		connectTimeout:     connectTimeout,
 		requestTimeout:     requestTimeout,
@@ -47,21 +48,13 @@ func NewOAuthClient(
 
 func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	token := oc.token
-	target := oc.target
-
-	if !strings.HasPrefix(target, "http://") && !strings.HasPrefix(target, "https://") {
-		target = "https://" + target
-	}
-
-	targetURL, err := url.Parse(target)
+	opsmanTarget, uaaTarget, err := parseOpsmanAndUAAURLs(oc.opsmanTarget, oc.uaaTarget)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse target url: %s", err)
+		return nil, err
 	}
 
-	targetURL.Path = "/uaa"
-
-	request.URL.Scheme = targetURL.Scheme
-	request.URL.Host = targetURL.Host
+	request.URL.Scheme = opsmanTarget.Scheme
+	request.URL.Host = opsmanTarget.Host
 
 	client, err := newHTTPClient(
 		oc.insecureSkipVerify,
@@ -106,7 +99,7 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	}
 
 	api, err := uaa.New(
-		targetURL.String(),
+		uaaTarget.String(),
 		authOption,
 		options...,
 	)

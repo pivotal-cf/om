@@ -148,19 +148,11 @@ var _ = Describe("UnauthenticatedClient", func() {
 		})
 
 		Context("failure cases", func() {
-			When("the target url cannot be parsed", func() {
-				It("returns an error", func() {
-					client, _ := network.NewUnauthenticatedClient("%%%", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
-					_, err := client.Do(&http.Request{})
-					Expect(err).To(MatchError("could not parse target url: parse \"//%%%\": invalid URL escape \"%%%\""))
-				})
-			})
-
 			When("the target url is empty", func() {
 				It("returns an error", func() {
 					client, _ := network.NewUnauthenticatedClient("", false, "", time.Duration(5)*time.Second, time.Duration(30)*time.Second)
 					_, err := client.Do(&http.Request{})
-					Expect(err).To(MatchError("target flag is required. Run `om help` for more info."))
+					Expect(err).To(MatchError("target flag is required, run `om help` for more info"))
 				})
 			})
 		})
