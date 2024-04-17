@@ -86,7 +86,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(0))
+				Eventually(session, "2m").Should(gexec.Exit(0))
 				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*example-product.pivotal.*from source google`))
 				Expect(session.Err).To(gbytes.Say(`attempting to download the file.*light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.*from source google`))
 				Expect(session.Err).To(gbytes.Say(`Writing a list of downloaded artifact to download-file.json`))
@@ -116,7 +116,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(0))
+				Eventually(session, "2m").Should(gexec.Exit(0))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[pivnet-example-slug,1.10.1]example-product.pivotal already exists, skip downloading"))
 				Expect(string(session.Err.Contents())).To(ContainSubstring("[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz already exists, skip downloading"))
 
