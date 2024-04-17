@@ -1,10 +1,8 @@
 package network
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/cloudfoundry-community/go-uaa"
@@ -17,8 +15,8 @@ type OAuthClient struct {
 	clientSecret       string
 	insecureSkipVerify bool
 	password           string
-	target             *url.URL
-	uaaTarget          *url.URL
+	opsmanTarget       string
+	uaaTarget          string
 	token              *oauth2.Token
 	username           string
 	connectTimeout     time.Duration
@@ -26,7 +24,7 @@ type OAuthClient struct {
 }
 
 func NewOAuthClient(
-	uaaTarget, opsmanTarget *url.URL,
+	uaaTarget, opsmanTarget string,
 	username, password string,
 	clientID, clientSecret string,
 	insecureSkipVerify bool,
@@ -34,13 +32,6 @@ func NewOAuthClient(
 	connectTimeout time.Duration,
 	requestTimeout time.Duration,
 ) (*OAuthClient, error) {
-	if uaaTarget == nil {
-		return nil, errors.New("expected a non-nil UAA target")
-	}
-	if opsmanTarget == nil {
-		return nil, errors.New("expected a non-nil target")
-	}
-
 	return &OAuthClient{
 		caCert:             caCert,
 		clientID:           clientID,
@@ -48,7 +39,7 @@ func NewOAuthClient(
 		insecureSkipVerify: insecureSkipVerify,
 		password:           password,
 		uaaTarget:          uaaTarget,
-		target:             opsmanTarget,
+		opsmanTarget:       opsmanTarget,
 		username:           username,
 		connectTimeout:     connectTimeout,
 		requestTimeout:     requestTimeout,
@@ -56,8 +47,14 @@ func NewOAuthClient(
 }
 
 func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
-	request.URL.Scheme = oc.target.Scheme
-	request.URL.Host = oc.target.Host
+	token := oc.token
+	opsmanTarget, uaaTarget, err := parseOpsmanAndUAAURLs(oc.opsmanTarget, oc.uaaTarget)
+	if err != nil {
+		return nil, err
+	}
+
+	request.URL.Scheme = opsmanTarget.Scheme
+	request.URL.Host = opsmanTarget.Host
 
 	client, err := newHTTPClient(
 		oc.insecureSkipVerify,
@@ -69,7 +66,6 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	token := oc.token
 	if token != nil && token.Valid() {
 		request.Header.Set(
 			"Authorization",
@@ -102,7 +98,7 @@ func (oc *OAuthClient) Do(request *http.Request) (*http.Response, error) {
 	}
 
 	api, err := uaa.New(
-		oc.uaaTarget.String(),
+		uaaTarget.String(),
 		authOption,
 		options...,
 	)

@@ -1,22 +1,16 @@
 package network
 
 import (
-	"errors"
 	"net/http"
-	"net/url"
 	"time"
 )
 
 type UnauthenticatedClient struct {
-	target *url.URL
+	target string
 	client *http.Client
 }
 
-func NewUnauthenticatedClient(target *url.URL, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration) (UnauthenticatedClient, error) {
-	if target == nil {
-		return UnauthenticatedClient{}, errors.New("expected a non-nil target")
-	}
-
+func NewUnauthenticatedClient(target string, insecureSkipVerify bool, caCert string, connectTimeout time.Duration, requestTimeout time.Duration) (UnauthenticatedClient, error) {
 	client, err := newHTTPClient(insecureSkipVerify, caCert, requestTimeout, connectTimeout)
 	if err != nil {
 		return UnauthenticatedClient{}, err
@@ -29,8 +23,13 @@ func NewUnauthenticatedClient(target *url.URL, insecureSkipVerify bool, caCert s
 }
 
 func (c UnauthenticatedClient) Do(request *http.Request) (*http.Response, error) {
-	request.URL.Scheme = c.target.Scheme
-	request.URL.Host = c.target.Host
+	targetURL, err := parseURL(c.target)
+	if err != nil {
+		return nil, err
+	}
+
+	request.URL.Scheme = targetURL.Scheme
+	request.URL.Host = targetURL.Host
 
 	return c.client.Do(request)
 }
