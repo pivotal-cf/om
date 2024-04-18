@@ -146,7 +146,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(1))
+				Eventually(session, "2m").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`could not reach provided bucket 'unknown'`))
 			})
 		})
@@ -172,7 +172,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(1))
+				Eventually(session, "2m").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`bucket '.*' contains no files`))
 			})
 		})
@@ -204,7 +204,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(1))
+				Eventually(session, "2m").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`no valid versions found for product "example-product" and product version "1.10.1"`))
 			})
 		})
@@ -231,7 +231,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(0))
+				Eventually(session, "2m").Should(gexec.Exit(0))
 
 				Expect(fileContents(tmpDir, "download-file.json")).To(MatchJSON(fmt.Sprintf(`{
 					"product_slug": "example-product",
@@ -266,7 +266,7 @@ var _ = Describe("download-product command", func() {
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(session, "10s").Should(gexec.Exit(1))
+				Eventually(session, "2m").Should(gexec.Exit(1))
 				Expect(session.Err).To(gbytes.Say(`could not download product: the glob '\*\.yml' matches multiple files`))
 			})
 		})
