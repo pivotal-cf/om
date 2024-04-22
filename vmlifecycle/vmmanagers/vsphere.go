@@ -3,17 +3,18 @@ package vmmanagers
 import (
 	"archive/tar"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/blang/semver"
+	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/blang/semver"
-	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
+	"time"
 )
 
 type VcenterCredential struct {
@@ -74,6 +75,7 @@ type networkMapping struct {
 //go:generate counterfeiter -o ./fakes/govcRunner.go --fake-name GovcRunner . govcRunner
 type govcRunner interface {
 	ExecuteWithEnvVars(env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error)
+	ExecuteWithEnvVarsCtx(ctx context.Context, env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error)
 }
 
 type VsphereVMManager struct {
@@ -166,7 +168,7 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 
 	ipath := v.createIpath()
 
-	errBufWriter, err := v.createVM(env, optionFilename)
+	errBufWriter, err := v.createVM(env, optionFilename, ipath)
 	fullState := StateInfo{IAAS: "vsphere", ID: ipath}
 
 	if err != nil {
@@ -319,14 +321,47 @@ func (v *VsphereVMManager) validateImage() error {
 	}
 }
 
-func (v *VsphereVMManager) createVM(env []string, optionFilename string) (errorBuffer *bytes.Buffer, err error) {
-	_, errBufWriter, err := v.runner.ExecuteWithEnvVars(env, []interface{}{
+func (v *VsphereVMManager) createVM(env []string, optionFilename string, ipath string) (errBufWriter *bytes.Buffer, err error) {
+	_, errBufWriter, err = v.runner.ExecuteWithEnvVars(env, []interface{}{
 		"import.ova",
 		"-options=" + optionFilename,
 		v.ImageOVA,
 	})
+	if err != nil {
+		return errBufWriter, checkFormatedError("govc error: %s", err)
+	}
 
-	return errBufWriter, checkFormatedError("govc error: %s", err)
+	ctx, cancel := context.WithTimeout(context.Background(), 80*time.Second) // 80 seconds is adequate time for OM to get IP; typically it's 43 seconds
+	defer cancel()
+	// Wait 80 seconds for VM to boot and acquire its IP
+	_, errBufWriter, err = v.runner.ExecuteWithEnvVarsCtx(ctx, env, []interface{}{
+		"vm.info",
+		fmt.Sprintf(`-vm.ipath=%s`, ipath),
+		"-waitip",
+	})
+	if ctx.Err() != nil {
+		// VM hasn't acquired IP, is likely stuck, reset VM to free it (to boot)
+		buf, errPowerReset := v.resetVM(env, ipath)
+		if errPowerReset != nil {
+			// we don't need to return errBuffWriter because we already know it's nil
+			// because the ExecuteWithEnvVarsCtx that sets it never completes
+			return buf, fmt.Errorf("govc error: could not power-reset: %s", errPowerReset)
+		}
+	} else {
+		if err != nil {
+			return errBufWriter, checkFormatedError("govc error: %s", err)
+		}
+	}
+	return errBufWriter, nil
+}
+
+func (v *VsphereVMManager) resetVM(env []string, ipath string) (errBufWriter *bytes.Buffer, err error) {
+	_, errBufWriter, err = v.runner.ExecuteWithEnvVars(env, []interface{}{
+		"vm.power",
+		fmt.Sprintf(`-vm.ipath=%s`, ipath),
+		"-reset",
+	})
+	return errBufWriter, err
 }
 
 func (v *VsphereVMManager) addDefaultConfigFields() {

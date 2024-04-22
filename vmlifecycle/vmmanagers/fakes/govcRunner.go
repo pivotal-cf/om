@@ -3,6 +3,7 @@ package fakes
 
 import (
 	"bytes"
+	"context"
 	"sync"
 )
 
@@ -19,6 +20,23 @@ type GovcRunner struct {
 		result3 error
 	}
 	executeWithEnvVarsReturnsOnCall map[int]struct {
+		result1 *bytes.Buffer
+		result2 *bytes.Buffer
+		result3 error
+	}
+	ExecuteWithEnvVarsCtxStub        func(context.Context, []string, []interface{}) (*bytes.Buffer, *bytes.Buffer, error)
+	executeWithEnvVarsCtxMutex       sync.RWMutex
+	executeWithEnvVarsCtxArgsForCall []struct {
+		arg1 context.Context
+		arg2 []string
+		arg3 []interface{}
+	}
+	executeWithEnvVarsCtxReturns struct {
+		result1 *bytes.Buffer
+		result2 *bytes.Buffer
+		result3 error
+	}
+	executeWithEnvVarsCtxReturnsOnCall map[int]struct {
 		result1 *bytes.Buffer
 		result2 *bytes.Buffer
 		result3 error
@@ -104,11 +122,91 @@ func (fake *GovcRunner) ExecuteWithEnvVarsReturnsOnCall(i int, result1 *bytes.Bu
 	}{result1, result2, result3}
 }
 
+func (fake *GovcRunner) ExecuteWithEnvVarsCtx(arg1 context.Context, arg2 []string, arg3 []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+	var arg2Copy []string
+	if arg2 != nil {
+		arg2Copy = make([]string, len(arg2))
+		copy(arg2Copy, arg2)
+	}
+	var arg3Copy []interface{}
+	if arg3 != nil {
+		arg3Copy = make([]interface{}, len(arg3))
+		copy(arg3Copy, arg3)
+	}
+	fake.executeWithEnvVarsCtxMutex.Lock()
+	ret, specificReturn := fake.executeWithEnvVarsCtxReturnsOnCall[len(fake.executeWithEnvVarsCtxArgsForCall)]
+	fake.executeWithEnvVarsCtxArgsForCall = append(fake.executeWithEnvVarsCtxArgsForCall, struct {
+		arg1 context.Context
+		arg2 []string
+		arg3 []interface{}
+	}{arg1, arg2Copy, arg3Copy})
+	fake.recordInvocation("ExecuteWithEnvVarsCtx", []interface{}{arg1, arg2Copy, arg3Copy})
+	fake.executeWithEnvVarsCtxMutex.Unlock()
+	if fake.ExecuteWithEnvVarsCtxStub != nil {
+		return fake.ExecuteWithEnvVarsCtxStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.executeWithEnvVarsCtxReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *GovcRunner) ExecuteWithEnvVarsCtxCallCount() int {
+	fake.executeWithEnvVarsCtxMutex.RLock()
+	defer fake.executeWithEnvVarsCtxMutex.RUnlock()
+	return len(fake.executeWithEnvVarsCtxArgsForCall)
+}
+
+func (fake *GovcRunner) ExecuteWithEnvVarsCtxCalls(stub func(context.Context, []string, []interface{}) (*bytes.Buffer, *bytes.Buffer, error)) {
+	fake.executeWithEnvVarsCtxMutex.Lock()
+	defer fake.executeWithEnvVarsCtxMutex.Unlock()
+	fake.ExecuteWithEnvVarsCtxStub = stub
+}
+
+func (fake *GovcRunner) ExecuteWithEnvVarsCtxArgsForCall(i int) (context.Context, []string, []interface{}) {
+	fake.executeWithEnvVarsCtxMutex.RLock()
+	defer fake.executeWithEnvVarsCtxMutex.RUnlock()
+	argsForCall := fake.executeWithEnvVarsCtxArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *GovcRunner) ExecuteWithEnvVarsCtxReturns(result1 *bytes.Buffer, result2 *bytes.Buffer, result3 error) {
+	fake.executeWithEnvVarsCtxMutex.Lock()
+	defer fake.executeWithEnvVarsCtxMutex.Unlock()
+	fake.ExecuteWithEnvVarsCtxStub = nil
+	fake.executeWithEnvVarsCtxReturns = struct {
+		result1 *bytes.Buffer
+		result2 *bytes.Buffer
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *GovcRunner) ExecuteWithEnvVarsCtxReturnsOnCall(i int, result1 *bytes.Buffer, result2 *bytes.Buffer, result3 error) {
+	fake.executeWithEnvVarsCtxMutex.Lock()
+	defer fake.executeWithEnvVarsCtxMutex.Unlock()
+	fake.ExecuteWithEnvVarsCtxStub = nil
+	if fake.executeWithEnvVarsCtxReturnsOnCall == nil {
+		fake.executeWithEnvVarsCtxReturnsOnCall = make(map[int]struct {
+			result1 *bytes.Buffer
+			result2 *bytes.Buffer
+			result3 error
+		})
+	}
+	fake.executeWithEnvVarsCtxReturnsOnCall[i] = struct {
+		result1 *bytes.Buffer
+		result2 *bytes.Buffer
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *GovcRunner) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.executeWithEnvVarsMutex.RLock()
 	defer fake.executeWithEnvVarsMutex.RUnlock()
+	fake.executeWithEnvVarsCtxMutex.RLock()
+	defer fake.executeWithEnvVarsCtxMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

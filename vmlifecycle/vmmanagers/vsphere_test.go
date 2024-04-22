@@ -1,11 +1,10 @@
 package vmmanagers_test
 
 import (
+	"archive/tar"
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"archive/tar"
 
 	"bytes"
 	"errors"
@@ -111,6 +110,14 @@ opsman-configuration:
 						"-on=true",
 						"-vm.ipath=/datacenter/vm/folder/vm_name",
 					))
+
+					_, _, args = runner.ExecuteWithEnvVarsCtxArgsForCall(0)
+					Expect(args).To(matchers.OrderedConsistOf(
+						"vm.info",
+						"-vm.ipath=/datacenter/vm/folder/vm_name",
+						"-waitip",
+					))
+					Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(1))
 				})
 
 				When("setting custom cpu and memory", func() {

@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/onsi/gomega/gexec"
@@ -35,6 +36,10 @@ func (r *Runner) Execute(args []interface{}) (*bytes.Buffer, *bytes.Buffer, erro
 }
 
 func (r *Runner) ExecuteWithEnvVars(env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+	return r.ExecuteWithEnvVarsCtx(context.Background(), env, args)
+}
+
+func (r *Runner) ExecuteWithEnvVarsCtx(ctx context.Context, env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
 	var outBufWriter bytes.Buffer
 	var errBufWriter bytes.Buffer
 
@@ -53,7 +58,7 @@ func (r *Runner) ExecuteWithEnvVars(env []string, args []interface{}) (*bytes.Bu
 		}
 	}
 
-	command := exec.Command(r.command, stringArgs...)
+	command := exec.CommandContext(ctx, r.command, stringArgs...)
 	if len(env) > 0 {
 		command.Env = append(os.Environ(), env...)
 	}
