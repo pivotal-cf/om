@@ -1,5 +1,6 @@
 cloud.google.com/go
-cloud.google.com/go/compute
+cloud.google.com/go/auth
+cloud.google.com/go/auth/oauth2adapt
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/iam
 cloud.google.com/go/storage

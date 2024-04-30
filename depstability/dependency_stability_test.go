@@ -9,7 +9,7 @@ import (
 )
 
 var _ = Describe("Dependency Topology", func() {
-	It("is unchanged, allowing reuse of the 4.3.0 OSL file", func() {
+	It("is unchanged, allowing reuse of the OSL file", func() {
 		currentDepnames, err := listDepnamesFromGoSum()
 		Expect(err).NotTo(HaveOccurred())
 		oldDepnames, err := listDepnamesFromRecords()
