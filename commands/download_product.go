@@ -16,16 +16,28 @@ import (
 	"github.com/pivotal-cf/om/validator"
 )
 
-type PivnetOptions struct {
-	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
-	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
-	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
-	PivnetHost          string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
-	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded."`
+// type PivnetOptions struct {
+// 	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
+// 	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
+// 	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
+// 	PivnetHost          string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
+// 	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded."`
+// 	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+// 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+
+// 	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
+// }
+
+type RMTOptions struct {
+	RMTProductSlug      string `long:"rmt-product-slug"   short:"p"                          description:"path to product" required:"true"`
+	RMTDisableSSL       bool   `long:"rmt-disable-ssl"                                       description:"whether to disable ssl validation when contacting the RMT"`
+	RMTToken            string `long:"rmt-api-token"      short:"t"                          description:"API token to use when interacting with RMT. Can be retrieved from ???."`
+	RMTHost             string `long:"rmt-host" description:"the API endpoint for Pivotal Network" default:"https://eapi-gcpstg.broadcom.com"`
+	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within RMT product to be downloaded."`
 	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
-	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
+	RMTFileGlobSupport string `long:"rmt-file-glob" hidden:"true"`
 }
 
 type GCSOptions struct {
@@ -52,13 +64,13 @@ type AzureOptions struct {
 }
 
 type StemcellOptions struct {
-	StemcellIaas    string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
+	StemcellIaas    string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on RMT"`
 	StemcellVersion string `long:"stemcell-version" description:"the version number of the stemcell to download (ie 458.61)"`
 	StemcellHeavy   bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`
 }
 
 type DownloadProductOptions struct {
-	Source            string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|pivnet]" default:"pivnet"`
+	Source            string `long:"source"                     short:"s" description:"enables download from external sources when set to [s3|gcs|azure|rmt]" default:"rmt"`
 	OutputDir         string `long:"output-directory"           short:"o" description:"directory path to which the file will be outputted. File Name will be preserved from Pivotal Network" required:"true"`
 	StemcellOutputDir string `long:"stemcell-output-directory" short:"d" description:"directory path to which the stemcell file will be outputted. If not provided, output-directory will be used."`
 
@@ -81,7 +93,8 @@ type DownloadProductOptions struct {
 	AzureOptions
 	GCSOptions
 	InterpolateOptions interpolateConfigFileOptions `group:"config file interpolation"`
-	PivnetOptions
+	// PivnetOptions
+	RMTOptions
 	S3Options
 	StemcellOptions
 }
@@ -114,31 +127,35 @@ func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr 
 
 func (c *DownloadProduct) Execute(args []string) error {
 	err := c.validate()
+	fmt.Printf("\nValidated\n")
 	if err != nil {
 		return err
 	}
 
 	err = c.createClient()
+	fmt.Printf("\nClient Created\n")
 	if err != nil {
 		return err
 	}
 
 	productVersion, err := c.determineProductVersion()
+	fmt.Printf("\nProduct Version Determined\n")
 	if err != nil {
 		return err
 	}
 
 	productFileName, productFileArtifact, err := c.downloadProductFile(
-		c.Options.PivnetProductSlug,
+		c.Options.RMTProductSlug,
 		productVersion,
 		c.Options.FileGlob,
-		fmt.Sprintf("[%s,%s]", c.Options.PivnetProductSlug, productVersion),
+		fmt.Sprintf("[%s,%s]", c.Options.RMTProductSlug, productVersion),
 		c.Options.OutputDir,
 	)
+
 	if err != nil {
 		return fmt.Errorf("could not download product: %s", err)
 	}
-
+	fmt.Printf("\nProduct Downloaded\n")
 	if c.Options.StemcellIaas == "" {
 		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
@@ -220,7 +237,7 @@ func (c *DownloadProduct) downloadStemcell(productFileName string, productVersio
 
 func (c *DownloadProduct) determineProductVersion() (string, error) {
 	return download_clients.DetermineProductVersion(
-		c.Options.PivnetProductSlug,
+		c.Options.RMTProductSlug,
 		c.Options.ProductVersion,
 		c.Options.ProductVersionRegex,
 		c.downloadClient,
@@ -253,8 +270,11 @@ func (c *DownloadProduct) validate() error {
 		return errors.New("no version information provided; please provide either --product-version or --product-version-regex")
 	}
 
-	if c.Options.PivnetToken == "" && c.Options.Source == "pivnet" {
-		return errors.New(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
+	// if c.Options.PivnetToken == "" && c.Options.Source == "pivnet" {
+	// 	return errors.New(`could not execute "download-product": could not parse download-product flags: missing required flag "--pivnet-api-token"`)
+	// }
+	if c.Options.RMTToken == "" && (c.Options.Source == "rmt" || c.Options.Source == "RMT") {
+		return errors.New(`could not execute "download-product": could not parse download-product flags: missing required flag "--rmt-api-token"`)
 	}
 
 	if c.Options.StemcellHeavy && c.Options.StemcellIaas == "" {
@@ -316,8 +336,8 @@ func (c *DownloadProduct) handleAliases() {
 	if c.Options.AzureStemcellPathSupport != "" {
 		c.Options.StemcellPath = c.Options.AzureStemcellPathSupport
 	}
-	if c.Options.PivnetFileGlobSupport != "" {
-		c.Options.FileGlob = c.Options.PivnetFileGlobSupport
+	if c.Options.RMTFileGlobSupport != "" {
+		c.Options.FileGlob = c.Options.RMTFileGlobSupport
 	}
 	if c.Options.GCPServiceAccountSupport != "" {
 		c.Options.GCSServiceAccountJSON = c.Options.GCPServiceAccountSupport
@@ -339,7 +359,7 @@ func (c DownloadProduct) writeDownloadProductOutput(productFileName string, prod
 	}{
 		ProductPath:     productFileName,
 		StemcellPath:    stemcellFileName,
-		ProductSlug:     c.Options.PivnetProductSlug,
+		ProductSlug:     c.Options.RMTProductSlug,
 		ProductVersion:  productVersion,
 		StemcellVersion: stemcellVersion,
 	}
@@ -409,12 +429,14 @@ func (c DownloadProduct) writeAssignStemcellInput(productFile string, fileArtifa
 
 func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath string, outputDir string) (string, download_clients.FileArtifacter, error) {
 	fileArtifact, err := c.downloadClient.GetLatestProductFile(slug, version, glob)
+
 	if err != nil {
+		fmt.Printf("\nFailed line 418\n")
 		return "", nil, err
 	}
 
 	var productFilePath string
-	if c.Options.Source != "pivnet" || c.Options.Bucket == "" {
+	if c.Options.Source != "rmt" || c.Options.Bucket == "" {
 		productFilePath = filepath.Join(outputDir, filepath.Base(fileArtifact.Name()))
 	} else {
 		productFilePath = filepath.Join(outputDir, prefixPath+filepath.Base(fileArtifact.Name()))
@@ -425,6 +447,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	// check for already downloaded file
 	exist, err := checkFileExists(productFilePath)
 	if err != nil {
+		fmt.Printf("\nFailed line 434\n")
 		return productFilePath, nil, err
 	}
 
@@ -434,17 +457,20 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 			metadata, err := fileArtifact.ProductMetadata()
 			if err != nil {
+				fmt.Printf("\nFailed line 444\n")
 				return "", nil, fmt.Errorf("could not extract metadata from product: %w", err)
 			}
 
 			found, err := c.service.CheckProductAvailability(metadata.Name, metadata.Version)
 			if err != nil {
 				c.stderr.Printf("could not determine if product is already uploaded")
+				fmt.Printf("\nFailed line 451\n")
 				return "", nil, fmt.Errorf("could not check Ops Manager for product: %w", err)
 			}
 
 			if found {
 				c.stderr.Println("product found. Skipping download.")
+				fmt.Printf("\nFailed Line 457\n")
 				return productFilePath, fileArtifact, nil
 			}
 			c.stderr.Println("product not found. Continuing download...")
@@ -455,11 +481,13 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 			found, err := c.service.CheckStemcellAvailability(filename)
 			if err != nil {
 				c.stderr.Printf("could not determine if stemcell is already uploaded")
+				fmt.Printf("\nfailed 468\n")
 				return "", nil, fmt.Errorf("could not check Ops Manager for stemcell: %w", err)
 			}
 
 			if found {
 				c.stderr.Println("stemcell found. Skipping download.")
+				fmt.Printf("\nfailed 474\n")
 				return productFilePath, fileArtifact, nil
 			}
 			c.stderr.Println("stemcell not found. Continuing download...")
@@ -471,6 +499,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 		err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath, slug)
 		if err != nil {
+			fmt.Printf("\nfailed 486\n")
 			return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
 		}
 
@@ -479,6 +508,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 
 	err = c.cleanupCacheArtifacts(outputDir, glob, productFilePath, slug)
 	if err != nil {
+		fmt.Printf("\nfailed 495\n")
 		return "", nil, fmt.Errorf("could not cleanup cache: %w", err)
 	}
 
@@ -486,12 +516,14 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 	// create a new file to download
 	productFile, err := os.Create(partialProductFilePath)
 	if err != nil {
+		fmt.Printf("\nfailed 503\n")
 		return "", nil, fmt.Errorf("could not create file %s: %s", productFilePath, err)
 	}
 	defer productFile.Close()
 
 	err = c.downloadClient.DownloadProductToFile(fileArtifact, productFile)
 	if err != nil {
+		fmt.Printf("\nFailed 510\n")
 		return productFilePath, fileArtifact, err
 	}
 
@@ -504,6 +536,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 			productFilePath)
 		c.stderr.Print(e)
 		_ = os.Remove(partialProductFilePath)
+		fmt.Printf("\nfailed\n")
 		return productFilePath, fileArtifact, errors.New(e)
 	}
 
@@ -621,14 +654,14 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 			},
 			stderr,
 		)
-	case "pivnet", "":
+	case "rmt", "RMT", "":
 		return download_clients.NewPivnetClient(
 			stdout,
 			stderr,
 			download_clients.DefaultPivnetFactory,
-			c.PivnetToken,
-			c.PivnetDisableSSL,
-			c.PivnetHost,
+			c.RMTToken,
+			c.RMTDisableSSL,
+			c.RMTHost,
 		), nil
 	}
 
