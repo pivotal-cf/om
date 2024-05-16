@@ -2,14 +2,15 @@ package download_clients
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet/v6/logshim"
-	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 	"io"
 	"log"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/pivotal-cf/go-pivnet/v6/logshim"
+	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 
 	"github.com/pivotal-cf/go-pivnet/v6"
 	"github.com/pivotal-cf/go-pivnet/v6/download"
@@ -123,6 +124,10 @@ func (p *pivnetClient) DownloadProductToFile(fa FileArtifacter, file *os.File) e
 	fileInfo, err := download.NewFileInfo(file)
 	if err != nil {
 		return fmt.Errorf("could not create fileInfo for download product file %s: %s", fileArtifact.slug, err.Error())
+	}
+	err = p.client.EULA.Accept(fileArtifact.slug, fileArtifact.releaseID)
+	if err != nil {
+		return fmt.Errorf("could not accept EULA for download product file %s: %s", fileArtifact.slug, err)
 	}
 	err = p.downloader.DownloadProductFile(fileInfo, fileArtifact.slug, fileArtifact.releaseID, fileArtifact.productFile.ID, p.stderr.Writer())
 	if err != nil {
