@@ -111,6 +111,11 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 		return nil, fmt.Errorf("for product version %s: %s", version, err)
 	}
 
+	err = p.client.EULA.Accept(slug, release.ID)
+	if err != nil {
+		return nil, fmt.Errorf("could not accept EULA for download product file %s at version %s: %s", slug, version, err)
+	}
+
 	return &PivnetFileArtifact{
 		releaseID:   release.ID,
 		slug:        slug,
@@ -124,10 +129,6 @@ func (p *pivnetClient) DownloadProductToFile(fa FileArtifacter, file *os.File) e
 	fileInfo, err := download.NewFileInfo(file)
 	if err != nil {
 		return fmt.Errorf("could not create fileInfo for download product file %s: %s", fileArtifact.slug, err.Error())
-	}
-	err = p.client.EULA.Accept(fileArtifact.slug, fileArtifact.releaseID)
-	if err != nil {
-		return fmt.Errorf("could not accept EULA for download product file %s: %s", fileArtifact.slug, err)
 	}
 	err = p.downloader.DownloadProductFile(fileInfo, fileArtifact.slug, fileArtifact.releaseID, fileArtifact.productFile.ID, p.stderr.Writer())
 	if err != nil {
