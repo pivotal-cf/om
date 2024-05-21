@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/onsi/gomega/ghttp"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/v6/logger"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/onsi/gomega/ghttp"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v6/logger"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -187,6 +188,14 @@ var _ = Describe("PivnetClient", func() {
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
 			Expect(err).To(MatchError(ContainSubstring("could not fetch the release for someslug")))
+		})
+
+		It("returns an error if it could not accept the EULA", func() {
+			fakePivnetDownloader.AcceptEULAReturns(errors.New("some error"))
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			_, err := client.GetLatestProductFile("someslug", "1.0.0", "*.zip")
+			Expect(err).To(MatchError(ContainSubstring("could not accept EULA")))
 		})
 
 		It("returns an error if product files are not available for a slug", func() {

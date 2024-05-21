@@ -25,6 +25,7 @@ type PivnetDownloader interface {
 	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
 	DownloadProductFile(location *download.FileInfo, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
+	AcceptEULA(productSlug string, releaseID int) error
 }
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
@@ -90,10 +91,16 @@ func (p *pivnetClient) Name() string {
 }
 
 func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArtifacter, error) {
+
 	// 1. Check the release for given version / slug
 	release, err := p.downloader.ReleaseForVersion(slug, version)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch the release for %s %s: %s", slug, version, err)
+	}
+
+	err = p.downloader.AcceptEULA(slug, release.ID)
+	if err != nil {
+		return nil, fmt.Errorf("could not accept EULA for download product file %s at version %s: %s", slug, version, err)
 	}
 
 	// 2. Get filename from pivnet
@@ -109,11 +116,6 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 
 	if err := p.checkForSingleProductFile(glob, productFiles); err != nil {
 		return nil, fmt.Errorf("for product version %s: %s", version, err)
-	}
-
-	err = p.client.EULA.Accept(slug, release.ID)
-	if err != nil {
-		return nil, fmt.Errorf("could not accept EULA for download product file %s at version %s: %s", slug, version, err)
 	}
 
 	return &PivnetFileArtifact{
