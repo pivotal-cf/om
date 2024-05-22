@@ -80,6 +80,10 @@ Help Options:
                                            behavior
           --ldap-username=                 DN for the LDAP credentials used to
                                            search the directory
+          --ldap-max-search-depth=         The LDAP group search depth. Allowed
+                                           values are between 1 and 10. The
+                                           default value is 1, which will turn
+                                           off the nested group search.
           --server-ssl-cert=               the server certificate when using
                                            ldaps://
           --server-url=                    URL to the ldap server, must start
