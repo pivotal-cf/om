@@ -59,6 +59,10 @@ var _ = Describe("Grabbing Metadata", func() {
 					ghttp.RespondWith(http.StatusOK, `{"id":24}`),
 				),
 				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v2/products/pivnet-product/releases/24/pivnet_resource_eula_acceptance"),
+					ghttp.RespondWith(http.StatusOK, ""),
+				),
+				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v2/products/pivnet-product/releases/24/product_files"),
 					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
   "product_files": [

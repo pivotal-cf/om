@@ -91,7 +91,6 @@ func (p *pivnetClient) Name() string {
 }
 
 func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArtifacter, error) {
-
 	// 1. Check the release for given version / slug
 	release, err := p.downloader.ReleaseForVersion(slug, version)
 	if err != nil {

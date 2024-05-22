@@ -17,6 +17,9 @@ var _ = Describe("Pivnet Client", func() {
 			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/1",
 				ghttp.RespondWith(http.StatusOK, `{"id":1}`),
 			)
+			server.RouteToHandler("POST", "/api/v2/products/example-product/releases/1/pivnet_resource_eula_acceptance",
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			)
 			server.RouteToHandler("GET", "/api/v2/products/example-product/releases/1/file_groups",
 				ghttp.RespondWith(http.StatusOK, `{}`),
 			)
