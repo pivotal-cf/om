@@ -466,7 +466,8 @@ var _ = Describe("Director", func() {
 						ghttp.RespondWith(http.StatusOK, `{
 							"networks": [{
 								"guid": "existing-network-guid", 
-								"name": "existing-network"
+								"name": "existing-network",
+								"subnets": [{"guid": "existing-subnet-guid", "cidr":"10.0.0.0/24"}]
 							}]
 						}`),
 					),
@@ -530,6 +531,49 @@ var _ = Describe("Director", func() {
 
 				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
 					Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network"},{"name":"new-network"}]}`),
+				})
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("configures subnet and associates existing guids", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/networks"),
+						ghttp.VerifyJSON(`{
+							"icmp_checks_enabled":false,
+							"networks": [{
+								"name": "existing-network",
+								"guid": "existing-network-guid",
+								"subnets": [{"guid": "existing-subnet-guid", "cidr":"10.0.0.0/24"}]
+							}]
+						}`),
+					),
+				)
+
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network", "subnets": [{"guid": "existing-subnet-guid", "cidr":"10.0.0.0/24"}]}]}`),
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+			})
+
+			It("configures subnets and associates existing guids and no guid for new subnet", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/networks"),
+						ghttp.VerifyJSON(`{
+							"icmp_checks_enabled":false,
+							"networks": [{
+								"name": "existing-network",
+								"guid": "existing-network-guid",
+								"subnets": [{"guid": "existing-subnet-guid", "cidr":"10.0.0.0/24"}, {"cidr": "172.16.0.0/12"}]
+							}]
+						}`),
+					),
+				)
+
+				err := service.UpdateStagedDirectorNetworks(api.NetworkInput{
+					Networks: json.RawMessage(`{"icmp_checks_enabled":false, "networks": [{"name":"existing-network","subnets":[{"guid":"existing-subnet-guid","cidr":"10.0.0.0/24"},{"cidr":"172.16.0.0/12"}]}]}`),
 				})
 				Expect(err).ToNot(HaveOccurred())
 			})
