@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/onsi/gomega/ghttp"
@@ -30,6 +31,27 @@ var _ = Describe("OAuthClient", func() {
 	})
 
 	Describe("Do", func() {
+		When("OM_UAA_HOST is set in env", func() {
+			BeforeEach(func() {
+				os.Setenv("OM_UAA_HOST", server.URL())
+			})
+			AfterEach(func() {
+				os.Unsetenv("OM_UAA_HOST")
+			})
+			It("it rewrites the UAA TARGET", func() {
+
+				client, err := network.NewOAuthClient("wrong.host:8080", "opsman-username", "opsman-password", "", "", true, "", time.Nanosecond, time.Nanosecond)
+				Expect(err).ToNot(HaveOccurred())
+
+				req, err := http.NewRequest("GET", "/some/path", strings.NewReader("request-body"))
+				Expect(err).ToNot(HaveOccurred())
+
+				_, err = client.Do(req)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("context deadline exceeded"))
+			})
+
+		})
 		When("with a request timeout", func() {
 			It("use that timeout value", func() {
 				client, err := network.NewOAuthClient(server.URL(), "opsman-username", "opsman-password", "", "", true, "", time.Nanosecond, time.Nanosecond)
