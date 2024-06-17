@@ -11,6 +11,18 @@ import (
 )
 
 type PivnetDownloader struct {
+	AcceptEULAStub        func(string, int) error
+	acceptEULAMutex       sync.RWMutex
+	acceptEULAArgsForCall []struct {
+		arg1 string
+		arg2 int
+	}
+	acceptEULAReturns struct {
+		result1 error
+	}
+	acceptEULAReturnsOnCall map[int]struct {
+		result1 error
+	}
 	DownloadProductFileStub        func(*download.FileInfo, string, int, int, io.Writer) error
 	downloadProductFileMutex       sync.RWMutex
 	downloadProductFileArgsForCall []struct {
@@ -84,6 +96,67 @@ type PivnetDownloader struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *PivnetDownloader) AcceptEULA(arg1 string, arg2 int) error {
+	fake.acceptEULAMutex.Lock()
+	ret, specificReturn := fake.acceptEULAReturnsOnCall[len(fake.acceptEULAArgsForCall)]
+	fake.acceptEULAArgsForCall = append(fake.acceptEULAArgsForCall, struct {
+		arg1 string
+		arg2 int
+	}{arg1, arg2})
+	fake.recordInvocation("AcceptEULA", []interface{}{arg1, arg2})
+	fake.acceptEULAMutex.Unlock()
+	if fake.AcceptEULAStub != nil {
+		return fake.AcceptEULAStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.acceptEULAReturns
+	return fakeReturns.result1
+}
+
+func (fake *PivnetDownloader) AcceptEULACallCount() int {
+	fake.acceptEULAMutex.RLock()
+	defer fake.acceptEULAMutex.RUnlock()
+	return len(fake.acceptEULAArgsForCall)
+}
+
+func (fake *PivnetDownloader) AcceptEULACalls(stub func(string, int) error) {
+	fake.acceptEULAMutex.Lock()
+	defer fake.acceptEULAMutex.Unlock()
+	fake.AcceptEULAStub = stub
+}
+
+func (fake *PivnetDownloader) AcceptEULAArgsForCall(i int) (string, int) {
+	fake.acceptEULAMutex.RLock()
+	defer fake.acceptEULAMutex.RUnlock()
+	argsForCall := fake.acceptEULAArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *PivnetDownloader) AcceptEULAReturns(result1 error) {
+	fake.acceptEULAMutex.Lock()
+	defer fake.acceptEULAMutex.Unlock()
+	fake.AcceptEULAStub = nil
+	fake.acceptEULAReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *PivnetDownloader) AcceptEULAReturnsOnCall(i int, result1 error) {
+	fake.acceptEULAMutex.Lock()
+	defer fake.acceptEULAMutex.Unlock()
+	fake.AcceptEULAStub = nil
+	if fake.acceptEULAReturnsOnCall == nil {
+		fake.acceptEULAReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.acceptEULAReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *PivnetDownloader) DownloadProductFile(arg1 *download.FileInfo, arg2 string, arg3 int, arg4 int, arg5 io.Writer) error {
@@ -409,6 +482,8 @@ func (fake *PivnetDownloader) ReleasesForProductSlugReturnsOnCall(i int, result1
 func (fake *PivnetDownloader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.acceptEULAMutex.RLock()
+	defer fake.acceptEULAMutex.RUnlock()
 	fake.downloadProductFileMutex.RLock()
 	defer fake.downloadProductFileMutex.RUnlock()
 	fake.productFilesForReleaseMutex.RLock()

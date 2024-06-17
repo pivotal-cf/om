@@ -2,14 +2,15 @@ package download_clients
 
 import (
 	"fmt"
-	"github.com/pivotal-cf/go-pivnet/v6/logshim"
-	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 	"io"
 	"log"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/pivotal-cf/go-pivnet/v6/logshim"
+	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 
 	"github.com/pivotal-cf/go-pivnet/v6"
 	"github.com/pivotal-cf/go-pivnet/v6/download"
@@ -24,6 +25,7 @@ type PivnetDownloader interface {
 	ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error)
 	DownloadProductFile(location *download.FileInfo, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error
 	ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error)
+	AcceptEULA(productSlug string, releaseID int) error
 }
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
@@ -93,6 +95,11 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 	release, err := p.downloader.ReleaseForVersion(slug, version)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch the release for %s %s: %s", slug, version, err)
+	}
+
+	err = p.downloader.AcceptEULA(slug, release.ID)
+	if err != nil {
+		return nil, fmt.Errorf("could not accept EULA for download product file %s at version %s: %s", slug, version, err)
 	}
 
 	// 2. Get filename from pivnet
