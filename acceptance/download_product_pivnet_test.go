@@ -3,16 +3,8 @@ package acceptance
 import (
 	"archive/zip"
 	"bytes"
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
-	"github.com/onsi/gomega/ghttp"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -21,6 +13,15 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"cloud.google.com/go/storage"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/ghttp"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 )
 
 var _ = Describe("download-product command", func() {
@@ -56,6 +57,9 @@ var _ = Describe("download-product command", func() {
 }`))
 			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24",
 				ghttp.RespondWith(http.StatusOK, `{"id":24}`),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/pivnet-product/releases/24/pivnet_resource_eula_acceptance",
+				ghttp.RespondWith(http.StatusOK, nil),
 			)
 			server.RouteToHandler("GET", "/api/v2/products/pivnet-product/releases/24/product_files",
 				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
@@ -126,6 +130,9 @@ var _ = Describe("download-product command", func() {
 			)
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24",
 				ghttp.RespondWith(http.StatusOK, `{"id":24}`),
+			)
+			server.RouteToHandler("POST", "/api/v2/products/xenial-stemcells/releases/24/pivnet_resource_eula_acceptance",
+				ghttp.RespondWith(http.StatusOK, nil),
 			)
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files",
 				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
