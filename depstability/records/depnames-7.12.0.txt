@@ -3,6 +3,7 @@ cloud.google.com/go/auth
 cloud.google.com/go/auth/oauth2adapt
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/iam
+cloud.google.com/go/longrunning
 cloud.google.com/go/storage
 code.cloudfoundry.org/archiver
 code.cloudfoundry.org/clock
@@ -73,6 +74,7 @@ github.com/go-ole/go-ole
 github.com/go-playground/locales
 github.com/go-playground/universal-translator
 github.com/go-task/slim-sprig
+github.com/go-task/slim-sprig/v3
 github.com/gofrs/uuid
 github.com/golang-jwt/jwt/v4
 github.com/golang/glog
