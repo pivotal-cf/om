@@ -2,15 +2,16 @@ package acceptance
 
 import (
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
-	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/ghttp"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -41,9 +42,10 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 			"TERM=xterm-256color",
 		}
 		minio, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+
 		Expect(err).ToNot(HaveOccurred())
 
-		Eventually(minio.Out, "10s").Should(gbytes.Say("API:"))
+		Eventually(minio.Err, "10s").Should(gbytes.Say("API:"))
 		runCommand("mc", "--debug", "config", "host", "add", "testing", "http://127.0.0.1:9001", "minio", "password")
 	}
 	return []byte(omPath)
