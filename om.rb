@@ -5,20 +5,20 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.11.0"
+  version "7.12.0"
 
   on_macos do
-    if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.11.0/om-darwin-amd64-7.11.0.tar.gz"
-      sha256 "2fd9d9278cfd9572e6082486b6a4245a35e405209fc08d16b3e20df47e6f3e0d"
+    on_intel do
+      url "https://github.com/pivotal-cf/om/releases/download/7.12.0/om-darwin-amd64-7.12.0.tar.gz"
+      sha256 "afb5327c8e7d9ff62fb642c8c641e84d0c5f38172206a30d85c694af8bf77c3a"
 
       def install
         bin.install "om"
       end
     end
-    if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.11.0/om-darwin-arm64-7.11.0.tar.gz"
-      sha256 "85dab7382b69ee231ecae759539916120cc45f6f1dcd5aea332db6e3583e1bcd"
+    on_arm do
+      url "https://github.com/pivotal-cf/om/releases/download/7.12.0/om-darwin-arm64-7.12.0.tar.gz"
+      sha256 "f699569892376411c898b2e4b456c1fd3e909ccf83da92c795e19088dbea70e5"
 
       def install
         bin.install "om"
@@ -27,20 +27,24 @@ class Om < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.11.0/om-linux-amd64-7.11.0.tar.gz"
-      sha256 "3faefdce4565bf0d574310e99e29199128f97818bd5a9c881bd2aba545f9eb40"
+    on_intel do
+      if Hardware::CPU.is_64_bit?
+        url "https://github.com/pivotal-cf/om/releases/download/7.12.0/om-linux-amd64-7.12.0.tar.gz"
+        sha256 "4f48da4531ed358b1120a7fb56914e400c201bddda5e68a70274dc91428129fe"
 
-      def install
-        bin.install "om"
+        def install
+          bin.install "om"
+        end
       end
     end
-    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.11.0/om-linux-arm64-7.11.0.tar.gz"
-      sha256 "279d34add957a815044132602966f471bfaf86b6eb35479f797b9d98bd7f0aac"
+    on_arm do
+      if Hardware::CPU.is_64_bit?
+        url "https://github.com/pivotal-cf/om/releases/download/7.12.0/om-linux-arm64-7.12.0.tar.gz"
+        sha256 "a25ba49c2593575ae7adc7f9efc9441f0f216d35fba815436a812fa078a004d3"
 
-      def install
-        bin.install "om"
+        def install
+          bin.install "om"
+        end
       end
     end
   end
