@@ -153,6 +153,67 @@ This is only supported in OpsManager 2.5 and up.
 		})
 	})
 
+	When("OpsMan is < 3.0", func() {
+		BeforeEach(func() {
+			service.InfoReturns(api.Info{
+				Version: "2.4-build.1",
+			}, nil)
+		})
+
+		When("the ldap-max-search-depth flag is set", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--ldap-max-search-depth", "5")
+			})
+
+			It("errors out if you try to provide a ldap max search depth", func() {
+				err := executeCommand(command, commandLineArgs)
+				Expect(err).To(MatchError(ContainSubstring(`
+Cannot use the "--ldap-max-search-depth" argument.
+This is only supported in OpsManager 3.0 and up.
+`)))
+			})
+		})
+	})
+
+	When("OpsMan is >= 3.0", func() {
+		BeforeEach(func() {
+			service.InfoReturns(api.Info{
+				Version: "3.0.27-build.1300",
+			}, nil)
+		})
+
+		When("the ldap-max-search-depth flag is set to 5", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--ldap-max-search-depth", "5")
+				expectedPayload.LDAPSettings.LDAPMaxSearchDepth = 5
+			})
+
+			It("configures LDAP with a max search depth", func() {
+				err := executeCommand(command, commandLineArgs)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(service.SetupArgsForCall(0)).To(Equal(expectedPayload))
+
+				Expect(stdout).To(gbytes.Say("configuring LDAP authentication..."))
+				Expect(stdout).To(gbytes.Say("waiting for configuration to complete..."))
+				Expect(stdout).To(gbytes.Say("configuration complete"))
+			})
+		})
+
+		When("the ldap-max-search-depth flag is set to 11", func() {
+			BeforeEach(func() {
+				commandLineArgs = append(commandLineArgs, "--ldap-max-search-depth", "11")
+			})
+
+			It("errors out", func() {
+				err := executeCommand(command, commandLineArgs)
+				Expect(err).To(MatchError(ContainSubstring(`
+The "--ldap-max-search-depth" argument must be between 1 and 10.
+`)))
+			})
+		})
+	})
+
 	When("the skip-create-bosh-admin-client flag is set", func() {
 		BeforeEach(func() {
 			commandLineArgs = append(commandLineArgs, "--skip-create-bosh-admin-client")

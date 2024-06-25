@@ -25,6 +25,7 @@ type ConfigureLDAPAuthentication struct {
 		LDAPRBACAdminGroup        string `long:"ldap-rbac-admin-group-name"       required:"true" description:"the name of LDAP group whose members should be considered admins of OpsManager"`
 		LDAPReferral              string `long:"ldap-referrals"                   required:"true" description:"configure the UAA LDAP referral behavior"`
 		LDAPUsername              string `long:"ldap-username"                    required:"true" description:"DN for the LDAP credentials used to search the directory"`
+		LDAPMaxSearchDepth        uint   `long:"ldap-max-search-depth"                            description:"The LDAP group search depth. Allowed values are between 1 and 10. The default value is 1, which will turn off the nested group search."`
 		ServerSSLCert             string `long:"server-ssl-cert"                                  description:"the server certificate when using ldaps://"`
 		ServerURL                 string `long:"server-url"                       required:"true" description:"URL to the ldap server, must start with ldap:// or ldaps://"`
 		UserSearchBase            string `long:"user-search-base"                 required:"true" description:"a base at which the search starts, e.g. 'ou=users,dc=mycompany,dc=com'"`
@@ -80,6 +81,7 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 			LDAPRBACAdminGroup: ca.Options.LDAPRBACAdminGroup,
 			LDAPReferral:       ca.Options.LDAPReferral,
 			LDAPUsername:       ca.Options.LDAPUsername,
+			LDAPMaxSearchDepth: ca.Options.LDAPMaxSearchDepth,
 			ServerSSLCert:      ca.Options.ServerSSLCert,
 			ServerURL:          ca.Options.ServerURL,
 			UserSearchBase:     ca.Options.UserSearchBase,
@@ -98,6 +100,11 @@ func (ca ConfigureLDAPAuthentication) Execute(args []string) error {
 	}
 
 	versionAtLeast25, err := info.VersionAtLeast(2, 5)
+	if err != nil {
+		return err
+	}
+
+	versionAtLeast3, err := info.VersionAtLeast(3, 0)
 	if err != nil {
 		return err
 	}
@@ -137,6 +144,19 @@ Cannot use the "--precreated-client-secret" argument.
 This is only supported in OpsManager 2.5 and up.
 `)
 		}
+	}
+
+	if versionAtLeast3 {
+		if input.LDAPSettings.LDAPMaxSearchDepth > 10 {
+			return errors.New(`
+The "--ldap-max-search-depth" argument must be between 1 and 10.
+`)
+		}
+	} else if input.LDAPSettings.LDAPMaxSearchDepth != 0 {
+		return errors.New(`
+Cannot use the "--ldap-max-search-depth" argument.
+This is only supported in OpsManager 3.0 and up.
+`)
 	}
 
 	_, err = ca.service.Setup(input)
