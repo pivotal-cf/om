@@ -1,0 +1,7 @@
+---
+pivnet-product-slug: platform-automation
+
+file-glob: "*5.2.0.tar.gz*"
+product-version: 5.2.0
+
+pivnet-api-token: 3db9dc660fe141458b2c

@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/delete-all?/additional_vm_extensions?
-  value: ((resource-var-delete-all_additional_vm_extensions))

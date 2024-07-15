@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/run-tests?/elb_names?
-  value: ((resource-var-run-tests_elb_names))

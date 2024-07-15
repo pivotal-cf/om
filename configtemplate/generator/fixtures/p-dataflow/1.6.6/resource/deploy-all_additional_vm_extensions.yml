@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/deploy-all?/additional_vm_extensions?
-  value: ((resource-var-deploy-all_additional_vm_extensions))

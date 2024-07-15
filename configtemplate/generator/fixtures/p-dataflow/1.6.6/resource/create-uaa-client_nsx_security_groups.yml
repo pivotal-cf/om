@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/create-uaa-client?/nsx_security_groups?
-  value: ((resource-var-create-uaa-client_nsx_security_groups))

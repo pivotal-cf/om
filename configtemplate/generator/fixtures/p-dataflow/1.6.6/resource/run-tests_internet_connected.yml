@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/run-tests?/internet_connected?
-  value: ((resource-var-run-tests_internet_connected))

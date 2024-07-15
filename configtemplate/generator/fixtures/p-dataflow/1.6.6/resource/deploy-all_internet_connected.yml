@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/deploy-all?/internet_connected?
-  value: ((resource-var-deploy-all_internet_connected))

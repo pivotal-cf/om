@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/deploy-all?/elb_names?
-  value: ((resource-var-deploy-all_elb_names))

@@ -1,3 +1,0 @@
-- type: replace
-  path: /resource-config?/run-tests?/additional_vm_extensions?
-  value: ((resource-var-run-tests_additional_vm_extensions))
