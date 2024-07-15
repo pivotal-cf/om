@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.security_groups?
+  value:
+    value: ((security_groups))

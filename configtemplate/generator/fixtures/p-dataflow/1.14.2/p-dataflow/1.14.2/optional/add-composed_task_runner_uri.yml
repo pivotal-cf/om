@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.composed_task_runner_uri?
+  value:
+    value: ((composed_task_runner_uri))

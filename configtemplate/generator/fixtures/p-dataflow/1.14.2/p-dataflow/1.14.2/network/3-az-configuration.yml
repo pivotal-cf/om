@@ -1,0 +1,8 @@
+- type: replace
+  path: /network-properties/other_availability_zones/0:after
+  value:
+    name: ((az2_name))
+- type: replace
+  path: /network-properties/other_availability_zones/1:after
+  value:
+    name: ((az3_name))

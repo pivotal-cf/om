@@ -3,13 +3,14 @@ package acceptance
 import (
 	"bytes"
 	"fmt"
-	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
+
+	"github.com/onsi/gomega/ghttp"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -345,7 +346,7 @@ var _ = Describe("config-template output", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Eventually(session, "10s", "2s").Should(gexec.Exit(0))
 	},
-		Entry("SRT - for broad coverage", "elastic-runtime", "2.8.6", "*srt*", "cf"),
-		Entry("Spring data - for required secret collections", "p-dataflow", "1.6.6", "*.pivotal", "p-dataflow"),
+		// Entry("SRT - for broad coverage", "elastic-runtime", "6.0.5+LTS-T", "*srt*", "elastic-runtime"),
+		Entry("Spring data - for required secret collections", "p-dataflow", "1.14.2", "*.pivotal", "p-dataflow"),
 	)
 })

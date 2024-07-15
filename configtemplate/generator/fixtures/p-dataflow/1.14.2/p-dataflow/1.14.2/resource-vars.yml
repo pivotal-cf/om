@@ -1,0 +1,6 @@
+resource-var-create-uaa-client_instance_type: automatic
+resource-var-create-uaa-client_max_in_flight: default
+resource-var-delete-all_instance_type: automatic
+resource-var-delete-all_max_in_flight: default
+resource-var-deploy-all_instance_type: automatic
+resource-var-deploy-all_max_in_flight: default

@@ -1,0 +1,4 @@
+- type: replace
+  path: /product-properties/.properties.wavefront_uri?
+  value:
+    value: ((wavefront_uri))

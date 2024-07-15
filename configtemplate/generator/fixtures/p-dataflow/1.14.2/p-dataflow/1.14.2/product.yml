@@ -1,0 +1,58 @@
+product-name: p-dataflow
+network-properties:
+  network:
+    name: ((network_name))
+  other_availability_zones:
+  - name: ((singleton_availability_zone))
+  singleton_availability_zone:
+    name: ((singleton_availability_zone))
+product-properties:
+  .properties.custom_buildpack:
+    value: ((custom_buildpack))
+  .properties.dataflow_db_plan:
+    value: ((dataflow_db_plan))
+  .properties.dataflow_db_service:
+    value: ((dataflow_db_service))
+  .properties.dataflow_disable_public_internet:
+    value: ((dataflow_disable_public_internet))
+  .properties.dataflow_messaging_plan:
+    value: ((dataflow_messaging_plan))
+  .properties.dataflow_messaging_service:
+    value: ((dataflow_messaging_service))
+  .properties.maven_repositories:
+    value:
+    - key: spring
+      password:
+        secret: ((maven_repositories_0_password))
+      url: https://repo.spring.io/libs-release
+      username: ((maven_repositories_0_username))
+  .properties.p_dataflow_enable_global_access_to_plans:
+    value: ((p_dataflow_enable_global_access_to_plans))
+  .properties.skipper_db_plan:
+    value: ((skipper_db_plan))
+  .properties.skipper_db_service:
+    value: ((skipper_db_service))
+  .properties.timeout:
+    value: ((timeout))
+  .properties.wavefront_source_prefix:
+    value: ((wavefront_source_prefix))
+resource-config:
+  create-uaa-client:
+    instance_type:
+      id: ((resource-var-create-uaa-client_instance_type))
+    max_in_flight: ((resource-var-create-uaa-client_max_in_flight))
+  delete-all:
+    instance_type:
+      id: ((resource-var-delete-all_instance_type))
+    max_in_flight: ((resource-var-delete-all_max_in_flight))
+  deploy-all:
+    instance_type:
+      id: ((resource-var-deploy-all_instance_type))
+    max_in_flight: ((resource-var-deploy-all_max_in_flight))
+errand-config:
+  create-uaa-client:
+    post-deploy-state: ((create-uaa-client_post_deploy_state))
+  delete-all:
+    pre-delete-state: ((delete-all_pre_delete_state))
+  deploy-all:
+    post-deploy-state: ((deploy-all_post_deploy_state))
