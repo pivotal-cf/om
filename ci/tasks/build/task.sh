@@ -11,10 +11,10 @@ cd om
 git remote set-url origin https://github.com/pivotal-cf/om
 git fetch -t -P -p
 
-# Kludge to get this thing buillt by go 1.22.4
-wget https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
-tar xf go1.22.4.linux-amd64.tar.gz
-rm go1.22.4.linux-amd64.tar.gz
+# Kludge to get this thing buillt by go 1.22.5
+wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
+tar xf go1.22.5.linux-amd64.tar.gz
+rm go1.22.5.linux-amd64.tar.gz
 rm -rf /usr/local/go
 mv go /usr/local
 
