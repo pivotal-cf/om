@@ -3,18 +3,18 @@ package download_clients_test
 import (
 	"archive/zip"
 	"errors"
-	"github.com/graymeta/stow"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/om/download_clients"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"strings"
-
-	"io"
-	"io/ioutil"
 	"text/template"
+
+	"github.com/graymeta/stow"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 var _ = Describe("S3Client", func() {

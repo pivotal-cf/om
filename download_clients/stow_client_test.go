@@ -3,14 +3,15 @@ package download_clients_test
 import (
 	"errors"
 	"fmt"
-	"github.com/graymeta/stow"
-	"github.com/pivotal-cf/om/download_clients"
 	"io/ioutil"
 	"log"
 	"os"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	"github.com/graymeta/stow"
+
+	"github.com/pivotal-cf/om/download_clients"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

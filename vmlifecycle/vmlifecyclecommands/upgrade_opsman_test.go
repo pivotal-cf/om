@@ -2,19 +2,22 @@ package vmlifecyclecommands_test
 
 import (
 	"archive/zip"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 	"io"
 	"io/ioutil"
 	"os"
 	"time"
 
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+
 	"github.com/pivotal-cf/om/vmlifecycle/runner"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
@@ -241,7 +244,7 @@ var _ = Describe("upgradeOpsman", func() {
 			When("the versions are the same", func() {
 				When("the --Recreate flag is not passed", func() {
 					for _, fileNameFixture := range []string{"OpsManager%sonGCP.yml", "[ops-manager,2.2.3]ops-manager-vsphere-%s.ova"} {
-						table.DescribeTable("does not continue the upgrade process and the filename is "+fileNameFixture, func(currentVersion string, newerVersion string) {
+						DescribeTable("does not continue the upgrade process and the filename is "+fileNameFixture, func(currentVersion string, newerVersion string) {
 							info := map[string]interface{}{
 								"info": map[string]interface{}{
 									"version": currentVersion,
@@ -274,26 +277,26 @@ var _ = Describe("upgradeOpsman", func() {
 							Expect(deleteService.DeleteVMCallCount()).To(Equal(0))
 						},
 							// Same formats
-							table.Entry("semver", "2.10.4", "2.10.4"),
-							table.Entry("semver with build", "2.6.1-build.92", "2.6.1-build.92"),
-							table.Entry("build", "2.3-build.422", "2.3-build.422"),
+							Entry("semver", "2.10.4", "2.10.4"),
+							Entry("semver with build", "2.6.1-build.92", "2.6.1-build.92"),
+							Entry("build", "2.3-build.422", "2.3-build.422"),
 
 							// Different formats
-							table.Entry("semver vs semver with build", "2.10.4", "2.10.4-build-75"),
-							table.Entry("semver vs build", "2.10.4", "2.10-build.4"),
-							table.Entry("build vs semver with build", "2.6-build.3", "2.6.3-build.642"),
+							Entry("semver vs semver with build", "2.10.4", "2.10.4-build-75"),
+							Entry("semver vs build", "2.10.4", "2.10-build.4"),
+							Entry("build vs semver with build", "2.6-build.3", "2.6.3-build.642"),
 
 							// Different formats reversed
-							table.Entry("semver with build vs semver", "2.10.4-build-75", "2.10.4"),
-							table.Entry("build vs semver", "2.10-build.4", "2.10.4"),
-							table.Entry("semver with build vs build", "2.6.3-build.642", "2.6-build.3"),
+							Entry("semver with build vs semver", "2.10.4-build-75", "2.10.4"),
+							Entry("build vs semver", "2.10-build.4", "2.10.4"),
+							Entry("semver with build vs build", "2.6.3-build.642", "2.6-build.3"),
 						)
 					}
 				})
 
 				When("the --recreate flag is passed", func() {
 					for _, fileNameFixture := range []string{"OpsManager%sonGCP.yml", "[ops-manager,2.2.3]ops-manager-vsphere-%s.ova"} {
-						table.DescribeTable("runs the delete, create, and import commands with the filename, and the filename is "+fileNameFixture, func(currentVersion string, newerVersion string) {
+						DescribeTable("runs the delete, create, and import commands with the filename, and the filename is "+fileNameFixture, func(currentVersion string, newerVersion string) {
 							info := map[string]interface{}{
 								"info": map[string]interface{}{
 									"version": currentVersion,
@@ -326,19 +329,19 @@ var _ = Describe("upgradeOpsman", func() {
 							Expect(createService.CreateVMCallCount()).To(Equal(1))
 						},
 							// Same formats
-							table.Entry("semver", "2.10.4", "2.10.4"),
-							table.Entry("semver with build", "2.6.1-build.92", "2.6.1-build.92"),
-							table.Entry("build", "2.3-build.422", "2.3-build.422"),
+							Entry("semver", "2.10.4", "2.10.4"),
+							Entry("semver with build", "2.6.1-build.92", "2.6.1-build.92"),
+							Entry("build", "2.3-build.422", "2.3-build.422"),
 
 							// Different formats
-							table.Entry("semver vs semver with build", "2.10.4", "2.10.4-build-75"),
-							table.Entry("semver vs build", "2.10.4", "2.10-build.4"),
-							table.Entry("build vs semver with build", "2.6-build.3", "2.6.3-build.642"),
+							Entry("semver vs semver with build", "2.10.4", "2.10.4-build-75"),
+							Entry("semver vs build", "2.10.4", "2.10-build.4"),
+							Entry("build vs semver with build", "2.6-build.3", "2.6.3-build.642"),
 
 							// Different formats reversed
-							table.Entry("semver with build vs semver", "2.10.4-build-75", "2.10.4"),
-							table.Entry("build vs semver", "2.10-build.4", "2.10.4"),
-							table.Entry("semver with build vs build", "2.6.3-build.642", "2.6-build.3"),
+							Entry("semver with build vs semver", "2.10.4-build-75", "2.10.4"),
+							Entry("build vs semver", "2.10-build.4", "2.10.4"),
+							Entry("semver with build vs build", "2.6.3-build.642", "2.6-build.3"),
 						)
 					}
 				})
@@ -347,7 +350,7 @@ var _ = Describe("upgradeOpsman", func() {
 			When("the versions are different", func() {
 				When("the version to install is smaller than installed version", func() {
 					for _, fileNameFixture := range []string{"OpsManager%sonGCP.yml", "[ops-manager,2.2.3]ops-manager-vsphere-%s.ova"} {
-						table.DescribeTable("returns an error on the filename of "+fileNameFixture, func(currentVersion string, newerVersion string) {
+						DescribeTable("returns an error on the filename of "+fileNameFixture, func(currentVersion string, newerVersion string) {
 							info := map[string]interface{}{
 								"info": map[string]interface{}{
 									"version": currentVersion,
@@ -380,46 +383,46 @@ var _ = Describe("upgradeOpsman", func() {
 							Expect(err.Error()).To(ContainSubstring("downgrading is not supported by Ops Manager"))
 						},
 							// Same formats
-							table.Entry("semver, via patch", "2.5.3", "2.5.1"),
-							table.Entry("semver, via minor", "2.5.0", "2.4.3"),
-							table.Entry("semver, via major", "3.5.3", "2.5.3"),
-							table.Entry("semver with build, via patch", "2.5.3-build.0", "2.5.1-build.0"),
-							table.Entry("semver with build, via minor", "2.5.0-build.0", "2.4.3-build.0"),
-							table.Entry("semver with build, via major", "3.5.3-build.0", "2.5.3-build.0"),
-							table.Entry("build, via patch", "2.4-build.193", "2.4-build.100"),
-							table.Entry("build, via minor", "2.4-build.193", "2.3-build.193"),
-							table.Entry("build, via major", "2.4-build.193", "1.4-build.193"),
+							Entry("semver, via patch", "2.5.3", "2.5.1"),
+							Entry("semver, via minor", "2.5.0", "2.4.3"),
+							Entry("semver, via major", "3.5.3", "2.5.3"),
+							Entry("semver with build, via patch", "2.5.3-build.0", "2.5.1-build.0"),
+							Entry("semver with build, via minor", "2.5.0-build.0", "2.4.3-build.0"),
+							Entry("semver with build, via major", "3.5.3-build.0", "2.5.3-build.0"),
+							Entry("build, via patch", "2.4-build.193", "2.4-build.100"),
+							Entry("build, via minor", "2.4-build.193", "2.3-build.193"),
+							Entry("build, via major", "2.4-build.193", "1.4-build.193"),
 
 							// Semver vs. semver with build
-							table.Entry("semver vs semver with build, via patch", "2.5.3", "2.5.2-build.0"),
-							table.Entry("semver vs semver with build, via minor", "2.5.3", "2.4.3-build.0"),
-							table.Entry("semver vs semver with build, via major", "2.5.3", "1.5.3-build.0"),
-							table.Entry("semver with build vs semver, via patch", "2.5.3-build.0", "2.5.2"),
-							table.Entry("semver with build vs semver, via minor", "2.5.3-build.0", "2.4.3"),
-							table.Entry("semver with build vs semver, via major", "2.5.3-build.0", "1.5.3"),
+							Entry("semver vs semver with build, via patch", "2.5.3", "2.5.2-build.0"),
+							Entry("semver vs semver with build, via minor", "2.5.3", "2.4.3-build.0"),
+							Entry("semver vs semver with build, via major", "2.5.3", "1.5.3-build.0"),
+							Entry("semver with build vs semver, via patch", "2.5.3-build.0", "2.5.2"),
+							Entry("semver with build vs semver, via minor", "2.5.3-build.0", "2.4.3"),
+							Entry("semver with build vs semver, via major", "2.5.3-build.0", "1.5.3"),
 
 							// Semver vs. build
-							table.Entry("semver vs build, via patch", "2.5.1", "2.5-build.0"),
-							table.Entry("semver vs build, via minor", "2.5.1", "2.4-build.1"),
-							table.Entry("semver vs build, via major", "2.5.1", "1.5-build.1"),
-							table.Entry("build vs semver, via patch", "2.5-build.1", "2.5.0"),
-							table.Entry("build vs semver, via minor", "2.5-build.1", "2.4.1"),
-							table.Entry("build vs semver, via major", "2.5-build.1", "1.5.1"),
+							Entry("semver vs build, via patch", "2.5.1", "2.5-build.0"),
+							Entry("semver vs build, via minor", "2.5.1", "2.4-build.1"),
+							Entry("semver vs build, via major", "2.5.1", "1.5-build.1"),
+							Entry("build vs semver, via patch", "2.5-build.1", "2.5.0"),
+							Entry("build vs semver, via minor", "2.5-build.1", "2.4.1"),
+							Entry("build vs semver, via major", "2.5-build.1", "1.5.1"),
 
 							// Semver with build vs build
-							table.Entry("semver with build vs build, via patch", "2.5.1-build.103", "2.5-build.0"),
-							table.Entry("semver with build vs build, via minor", "2.5.1-build.103", "2.4-build.1"),
-							table.Entry("semver with build vs build, via major", "2.5.1-build.103", "1.5-build.1"),
-							table.Entry("build vs semver with build, via patch", "2.5-build.1", "2.5.0-build.103"),
-							table.Entry("build vs semver with build, via minor", "2.5-build.1", "2.4.1-build.103"),
-							table.Entry("build vs semver with build, via major", "2.5-build.1", "1.5.1-build.103"),
+							Entry("semver with build vs build, via patch", "2.5.1-build.103", "2.5-build.0"),
+							Entry("semver with build vs build, via minor", "2.5.1-build.103", "2.4-build.1"),
+							Entry("semver with build vs build, via major", "2.5.1-build.103", "1.5-build.1"),
+							Entry("build vs semver with build, via patch", "2.5-build.1", "2.5.0-build.103"),
+							Entry("build vs semver with build, via minor", "2.5-build.1", "2.4.1-build.103"),
+							Entry("build vs semver with build, via major", "2.5-build.1", "1.5.1-build.103"),
 						)
 					}
 				})
 
 				When("upgrading case", func() {
 					for _, fileNameFixture := range []string{"OpsManager%sonGCP.yml", "[ops-manager,2.2.3]ops-manager-vsphere-%s.ova"} {
-						table.DescribeTable("runs the delete, create, and import commands with the filename "+fileNameFixture, func(currentVersion string, newerVersion string) {
+						DescribeTable("runs the delete, create, and import commands with the filename "+fileNameFixture, func(currentVersion string, newerVersion string) {
 							info := map[string]interface{}{
 								"info": map[string]interface{}{
 									"version": currentVersion,
@@ -454,43 +457,43 @@ var _ = Describe("upgradeOpsman", func() {
 							Eventually(stderr).Should(gbytes.Say(`--skip-ssl-validation import-installation`))
 						},
 							// Same formats
-							table.Entry("semver, via patch", "2.5.1", "2.5.3"),
-							table.Entry("semver, via minor", "2.4.3", "2.5.0"),
-							table.Entry("semver, via major", "2.5.3", "3.5.3"),
-							table.Entry("semver with build, via patch", "2.5.1-build.0", "2.5.3-build.0"),
-							table.Entry("semver with build, via minor", "2.4.3-build.0", "2.5.0-build.0"),
-							table.Entry("semver with build, via major", "2.5.3-build.0", "3.5.3-build.0"),
-							table.Entry("build, via patch", "2.4-build.100", "2.4-build.193"),
-							table.Entry("build, via minor", "2.3-build.193", "2.4-build.193"),
-							table.Entry("build, via major", "1.4-build.193", "2.4-build.193"),
+							Entry("semver, via patch", "2.5.1", "2.5.3"),
+							Entry("semver, via minor", "2.4.3", "2.5.0"),
+							Entry("semver, via major", "2.5.3", "3.5.3"),
+							Entry("semver with build, via patch", "2.5.1-build.0", "2.5.3-build.0"),
+							Entry("semver with build, via minor", "2.4.3-build.0", "2.5.0-build.0"),
+							Entry("semver with build, via major", "2.5.3-build.0", "3.5.3-build.0"),
+							Entry("build, via patch", "2.4-build.100", "2.4-build.193"),
+							Entry("build, via minor", "2.3-build.193", "2.4-build.193"),
+							Entry("build, via major", "1.4-build.193", "2.4-build.193"),
 
 							// Semver vs. semver with build
-							table.Entry("semver vs semver with build, via patch", "2.5.2-build.0", "2.5.3"),
-							table.Entry("semver vs semver with build, via minor", "2.4.3-build.0", "2.5.3"),
-							table.Entry("semver vs semver with build, via major", "1.5.3-build.0", "2.5.3"),
-							table.Entry("semver with build vs semver, via patch", "2.5.2", "2.5.3-build.0"),
-							table.Entry("semver with build vs semver, via minor", "2.4.3", "2.5.3-build.0"),
-							table.Entry("semver with build vs semver, via major", "1.5.3", "2.5.3-build.0"),
+							Entry("semver vs semver with build, via patch", "2.5.2-build.0", "2.5.3"),
+							Entry("semver vs semver with build, via minor", "2.4.3-build.0", "2.5.3"),
+							Entry("semver vs semver with build, via major", "1.5.3-build.0", "2.5.3"),
+							Entry("semver with build vs semver, via patch", "2.5.2", "2.5.3-build.0"),
+							Entry("semver with build vs semver, via minor", "2.4.3", "2.5.3-build.0"),
+							Entry("semver with build vs semver, via major", "1.5.3", "2.5.3-build.0"),
 
 							// Semver vs. build
-							table.Entry("semver vs build, via patch", "2.5-build.0", "2.5.1"),
-							table.Entry("semver vs build, via minor", "2.4-build.1", "2.5.1"),
-							table.Entry("semver vs build, via major", "1.5-build.1", "2.5.1"),
-							table.Entry("build vs semver, via patch", "2.5.0", "2.5-build.1"),
-							table.Entry("build vs semver, via minor", "2.4.1", "2.5-build.1"),
-							table.Entry("build vs semver, via major", "1.5.1", "2.5-build.1"),
+							Entry("semver vs build, via patch", "2.5-build.0", "2.5.1"),
+							Entry("semver vs build, via minor", "2.4-build.1", "2.5.1"),
+							Entry("semver vs build, via major", "1.5-build.1", "2.5.1"),
+							Entry("build vs semver, via patch", "2.5.0", "2.5-build.1"),
+							Entry("build vs semver, via minor", "2.4.1", "2.5-build.1"),
+							Entry("build vs semver, via major", "1.5.1", "2.5-build.1"),
 
 							// Semver with build vs build
-							table.Entry("semver with build vs build, via patch", "2.5-build.0", "2.5.1-build.103"),
-							table.Entry("semver with build vs build, via minor", "2.4-build.1", "2.5.1-build.103"),
-							table.Entry("semver with build vs build, via major", "1.5-build.1", "2.5.1-build.103"),
-							table.Entry("build vs semver with build, via patch", "2.5.0-build.103", "2.5-build.1"),
-							table.Entry("build vs semver with build, via minor", "2.4.1-build.103", "2.5-build.1"),
-							table.Entry("build vs semver with build, via major", "1.5.1-build.103", "2.5-build.1"),
+							Entry("semver with build vs build, via patch", "2.5-build.0", "2.5.1-build.103"),
+							Entry("semver with build vs build, via minor", "2.4-build.1", "2.5.1-build.103"),
+							Entry("semver with build vs build, via major", "1.5-build.1", "2.5.1-build.103"),
+							Entry("build vs semver with build, via patch", "2.5.0-build.103", "2.5-build.1"),
+							Entry("build vs semver with build, via minor", "2.4.1-build.103", "2.5-build.1"),
+							Entry("build vs semver with build, via major", "1.5.1-build.103", "2.5-build.1"),
 						)
 					}
 
-					It("polls till the provided timeout then errors", func(done Done) {
+					It("polls till the provided timeout then errors", func(ctx context.Context) {
 						info := map[string]interface{}{
 							"info": map[string]interface{}{
 								"version": "2.10-build.0",
@@ -522,8 +525,8 @@ var _ = Describe("upgradeOpsman", func() {
 						err = command.Execute([]string{})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(ContainSubstring("exceeded 20ms"))
-						close(done)
-					}, 4)
+						//<-ctx.Done()
+					}, NodeTimeout(4*time.Minute))
 
 					When("environment variables are provided but not in import installation env file", func() {
 						BeforeEach(func() {

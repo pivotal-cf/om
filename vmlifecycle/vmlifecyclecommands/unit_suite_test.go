@@ -1,13 +1,12 @@
 package vmlifecyclecommands_test
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"io/ioutil"
-
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

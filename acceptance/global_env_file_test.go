@@ -4,15 +4,16 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 
+	"github.com/onsi/gomega/gbytes"
+
 	"github.com/onsi/gomega/gexec"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

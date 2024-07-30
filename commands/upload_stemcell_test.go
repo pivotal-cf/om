@@ -1,20 +1,22 @@
 package commands_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/jessevdk/go-flags"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/jessevdk/go-flags"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/formcontent"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -27,6 +29,32 @@ func executeCommand(command interface{}, args []string) error {
 	Expect(ok).To(BeTrue())
 
 	return commander.Execute(nil)
+}
+
+func executeCommandWithContext(ctx context.Context, command interface{}, args []string) error {
+	parser := flags.NewParser(command, flags.HelpFlag|flags.PassDoubleDash)
+	_, err := parser.ParseArgs(args)
+	Expect(err).NotTo(HaveOccurred())
+
+	commander, ok := command.(flags.Commander)
+	Expect(ok).To(BeTrue())
+
+	// Create a channel to receive the result of the Execute function
+	resultChan := make(chan error, 1)
+
+	go func() {
+		// Execute the command in a separate goroutine and send the result to the channel
+		resultChan <- commander.Execute(nil)
+	}()
+
+	select {
+	case <-ctx.Done():
+		// Context was canceled or timed out
+		return ctx.Err()
+	case err := <-resultChan:
+		// Command finished executing
+		return err
+	}
 }
 
 var _ = Describe("UploadStemcell", func() {

@@ -5,11 +5,12 @@ import (
 	"os"
 	"reflect"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/vmware/govmomi/simulator"
+
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"github.com/vmware/govmomi/simulator"
 )
 
 var _ = Describe("selects the correct config fetcher based on the state file", func() {

@@ -1,14 +1,16 @@
 package runner_test
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"testing"
 
-	"bytes"
-	. "github.com/onsi/ginkgo"
+	"github.com/fatih/color"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
 	"github.com/pivotal-cf/om/vmlifecycle/runner"
 )
 

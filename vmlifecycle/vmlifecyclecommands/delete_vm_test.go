@@ -2,17 +2,18 @@ package vmlifecyclecommands_test
 
 import (
 	"fmt"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
 	"io"
 	"io/ioutil"
 	"os"
 	"time"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
 )
 
 var _ = Describe("Delete VM", func() {

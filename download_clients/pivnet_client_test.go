@@ -12,9 +12,10 @@ import (
 	"github.com/onsi/gomega/ghttp"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/v6/logger"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/go-pivnet/v6"
+
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
 )

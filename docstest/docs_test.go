@@ -1,6 +1,7 @@
 package docs_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,9 +10,7 @@ import (
 
 	"github.com/onsi/gomega/gexec"
 
-	"fmt"
-
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

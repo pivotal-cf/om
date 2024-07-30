@@ -2,17 +2,18 @@ package acceptance
 
 import (
 	"archive/zip"
-	"github.com/onsi/gomega/ghttp"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/onsi/gomega/ghttp"
+
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

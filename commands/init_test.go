@@ -2,7 +2,7 @@ package commands_test
 
 import (
 	"github.com/fatih/color"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"io/ioutil"

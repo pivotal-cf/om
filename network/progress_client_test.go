@@ -2,15 +2,17 @@ package network_test
 
 import (
 	"errors"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/network"
-	"github.com/pivotal-cf/om/network/fakes"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/network"
+	"github.com/pivotal-cf/om/network/fakes"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

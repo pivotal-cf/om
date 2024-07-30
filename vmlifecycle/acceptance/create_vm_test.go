@@ -1,12 +1,13 @@
 package integration_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	"io/ioutil"
+	"os/exec"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
-	"io/ioutil"
-	"os/exec"
 )
 
 var _ = Describe("CreateVm", func() {

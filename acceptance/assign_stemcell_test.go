@@ -1,15 +1,16 @@
 package acceptance
 
 import (
-	"github.com/onsi/gomega/ghttp"
 	"net/http"
 	"os/exec"
 	"time"
 
+	"github.com/onsi/gomega/ghttp"
+
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

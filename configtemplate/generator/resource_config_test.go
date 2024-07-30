@@ -1,11 +1,12 @@
 package generator_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
+
 	"github.com/pivotal-cf/om/configtemplate/generator"
 	"github.com/pivotal-cf/om/configtemplate/generator/fakes"
-	"gopkg.in/yaml.v2"
 )
 
 var withPersistentDisk = `instance_type:

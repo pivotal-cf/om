@@ -3,7 +3,6 @@ package commands_test
 import (
 	"errors"
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,13 +10,15 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/onsi/gomega/gbytes"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/extractor"
 	"github.com/pivotal-cf/om/formcontent"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

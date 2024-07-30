@@ -1,12 +1,14 @@
 package api_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	"net/http"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/api/fakes"
-	"net/http"
 )
 
 var _ = Describe("Diff Service", func() {

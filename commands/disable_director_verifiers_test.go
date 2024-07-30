@@ -2,14 +2,16 @@ package commands_test
 
 import (
 	"errors"
+	"log"
+
 	"github.com/onsi/gomega/gbytes"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
-	"log"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

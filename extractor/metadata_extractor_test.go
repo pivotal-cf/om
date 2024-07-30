@@ -12,11 +12,12 @@ import (
 	"time"
 
 	"github.com/onsi/gomega/ghttp"
+
 	"github.com/pivotal-cf/om/extractor/fakes"
 
 	"github.com/pivotal-cf/om/extractor"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

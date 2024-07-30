@@ -8,7 +8,7 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

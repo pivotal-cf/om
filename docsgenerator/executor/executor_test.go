@@ -1,10 +1,11 @@
 package executor_test
 
 import (
-	"github.com/pivotal-cf/om/docsgenerator/executor"
 	"os"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/pivotal-cf/om/docsgenerator/executor"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -40,7 +40,7 @@ func listDepnamesFromGoSum() (deplist []string, err error) {
 }
 
 func listDepnamesFromRecords() (deplist []string, err error) {
-	depRecords, err := ioutil.ReadFile("records/depnames-7.12.0.txt")
+	depRecords, err := ioutil.ReadFile("records/depnames-7.13.0.txt")
 	trimmedDepRecords := strings.TrimSpace(string(depRecords))
 	deplist = strings.Split(trimmedDepRecords, "\n")
 	return

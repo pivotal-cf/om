@@ -2,15 +2,15 @@ package acceptance
 
 import (
 	"fmt"
-	"github.com/onsi/ginkgo/config"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -31,7 +31,7 @@ var _ = Describe("download-product command", func() {
 			}
 
 			// upload artifact to it
-			bucketName = fmt.Sprintf("bucket-%d", config.GinkgoConfig.ParallelNode)
+			bucketName = fmt.Sprintf("bucket-%d", GinkgoParallelProcess())
 			runCommand("mc", "mb", "--ignore-existing", "testing/"+bucketName)
 		})
 
