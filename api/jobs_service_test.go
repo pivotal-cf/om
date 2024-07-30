@@ -2,13 +2,14 @@ package api_test
 
 import (
 	"fmt"
-	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-cf/om/api"
-	"gopkg.in/yaml.v2"
 	"net/http"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	"github.com/onsi/gomega/ghttp"
+	"gopkg.in/yaml.v2"
+
+	"github.com/pivotal-cf/om/api"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

@@ -1,24 +1,23 @@
 package vmmanagers_test
 
 import (
-	"log"
-	"regexp"
-	"testing"
-
-	"os"
-	"path/filepath"
-
 	"fmt"
 	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
+	"testing"
 
 	"gopkg.in/yaml.v2"
 
 	"github.com/fatih/color"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 )
 

@@ -2,8 +2,10 @@ package commands_test
 
 import (
 	"errors"
-	. "github.com/onsi/ginkgo"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -13,7 +15,7 @@ var _ = Describe("ProductMetadata", func() {
 		var (
 			command *commands.ProductMetadata
 			stdout  *fakes.Logger
-			err         error
+			err     error
 		)
 
 		BeforeEach(func() {

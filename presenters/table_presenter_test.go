@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/models"

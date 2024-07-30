@@ -1,10 +1,11 @@
 package matchers_test
 
 import (
-	"github.com/pivotal-cf/om/vmlifecycle/matchers"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/pivotal-cf/om/vmlifecycle/matchers"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

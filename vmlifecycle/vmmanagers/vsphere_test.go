@@ -2,21 +2,20 @@ package vmmanagers_test
 
 import (
 	"archive/tar"
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 
-	"bytes"
-	"errors"
-	"io"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
+
 	"github.com/pivotal-cf/om/vmlifecycle/matchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
-	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("vSphere VMManager", func() {
@@ -213,7 +212,6 @@ opsman-configuration:
 						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
 					})
 				})
-
 
 				When("setting custom disk_size", func() {
 					const configTemplate = `

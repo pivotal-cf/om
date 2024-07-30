@@ -3,15 +3,18 @@ package vmlifecyclecommands_test
 import (
 	"errors"
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
-	"github.com/pivotal-cf/om/vmlifecycle/configfetchers/fakes"
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"io"
 	"io/ioutil"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
+	"github.com/pivotal-cf/om/vmlifecycle/configfetchers/fakes"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
 	. "github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 )
 

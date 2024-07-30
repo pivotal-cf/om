@@ -1,12 +1,13 @@
 package acceptance
 
 import (
-	. "github.com/onsi/ginkgo"
+	"net/http"
+	"os/exec"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/ghttp"
-	"net/http"
-	"os/exec"
 )
 
 var _ = Describe("When passing a config file to a command", func() {

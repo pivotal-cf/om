@@ -1,11 +1,12 @@
 package configparser_test
 
 import (
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/configparser"
-	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("Config Parser", func() {

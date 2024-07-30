@@ -2,18 +2,20 @@ package commands_test
 
 import (
 	"archive/zip"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/formcontent"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -192,7 +194,9 @@ var _ = Describe("ImportInstallation", func() {
 			Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 		})
 
-		It("it only retries 3 times before giving up", func(done Done) {
+		It("it only retries 3 times before giving up", func(ctx context.Context) {
+			ctx, cancel := context.WithTimeout(ctx, time.Minute)
+			defer cancel()
 			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 				if fakeService.EnsureAvailabilityCallCount() > 2 {
 					return api.EnsureAvailabilityOutput{}, errors.New("connection refused")
@@ -201,13 +205,12 @@ var _ = Describe("ImportInstallation", func() {
 				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
 			}
 
-			err := executeCommand(command, []string{
+			err := executeCommandWithContext(ctx, command, []string{
 				"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))
-			close(done)
-		}, 1)
+		}, SpecTimeout(time.Minute))
 	})
 
 	When("EnsureAvailability returns 'bad gateway'", func() {
@@ -265,7 +268,9 @@ var _ = Describe("ImportInstallation", func() {
 			Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 		})
 
-		It("it only retries 3 times before giving up", func(done Done) {
+		It("it only retries 3 times before giving up", func(ctx context.Context) {
+			ctx, cancel := context.WithTimeout(ctx, time.Minute)
+			defer cancel()
 			fakeService.EnsureAvailabilityStub = func(api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
 				if fakeService.EnsureAvailabilityCallCount() > 2 {
 					return api.EnsureAvailabilityOutput{}, errors.New("connection refused")
@@ -274,13 +279,12 @@ var _ = Describe("ImportInstallation", func() {
 				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
 			}
 
-			err := executeCommand(command, []string{
+			err := executeCommandWithContext(ctx, command, []string{
 				"--polling-interval", "0",
 				"--installation", installationFile,
 			})
 			Expect(err).To(MatchError(ContainSubstring("could not check Ops Manager Status:")))
-			close(done)
-		}, 1)
+		}, SpecTimeout(time.Minute))
 	})
 
 	When("the global decryption-passphrase is not provided", func() {

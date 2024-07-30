@@ -8,10 +8,10 @@ import (
 	"os"
 
 	"github.com/jessevdk/go-flags"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"

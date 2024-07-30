@@ -51,7 +51,7 @@ docker run \
   -v $(pwd):/workspace \
   -w /workspace internalpcfplatformautomation/ci:testing \
   /bin/bash \
-  -c "go install github.com/onsi/ginkgo/ginkgo && CGO_ENABLED=1 ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing -skipPackage acceptance,vmlifecyclecommands,vmmanagers"
+  -c "go install github.com/onsi/ginkgo/v2/ginkgo && CGO_ENABLED=1 ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing -skipPackage acceptance,vmlifecyclecommands,vmmanagers"
 ```
 
 This follows the setup that we use in our CI pipeline.

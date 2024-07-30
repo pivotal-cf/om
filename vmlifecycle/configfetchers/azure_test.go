@@ -4,14 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers/fakes"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"strconv"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

@@ -2,15 +2,17 @@ package network_test
 
 import (
 	"errors"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/network"
-	"github.com/pivotal-cf/om/network/fakes"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/network"
+	"github.com/pivotal-cf/om/network/fakes"
 )
 
 var _ = Describe("DecryptClient", func() {

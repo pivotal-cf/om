@@ -2,14 +2,16 @@ package vmlifecyclecommands_test
 
 import (
 	"errors"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
-	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands/fakes"
 	"io"
 	"io/ioutil"
 	"path/filepath"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
+	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands/fakes"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

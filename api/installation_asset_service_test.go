@@ -1,14 +1,16 @@
 package api_test
 
 import (
-	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-cf/om/api"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega/ghttp"
+
+	"github.com/pivotal-cf/om/api"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

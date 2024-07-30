@@ -1,11 +1,13 @@
 package integration_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/om/configtemplate/generator"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
+
+	"github.com/pivotal-cf/om/configtemplate/generator"
 )
 
 func getMetadata(filename string) *generator.Metadata {

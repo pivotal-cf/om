@@ -3,14 +3,16 @@ package generator_test
 import (
 	"errors"
 	"fmt"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/om/docsgenerator/fakes"
-	"github.com/pivotal-cf/om/docsgenerator/generator"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+
+	"github.com/pivotal-cf/om/docsgenerator/fakes"
+	"github.com/pivotal-cf/om/docsgenerator/generator"
 )
 
 var _ = Describe("Generator", func() {

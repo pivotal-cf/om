@@ -12,7 +12,7 @@ import (
 	"github.com/pivotal-cf/om/commands/fakes"
 	"github.com/pivotal-cf/om/renderers"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

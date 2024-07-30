@@ -2,11 +2,13 @@ package acceptance
 
 import (
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/pivotal-cf/om/cmd"
 	"time"
 
-	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega/gbytes"
+
+	"github.com/pivotal-cf/om/cmd"
+
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
