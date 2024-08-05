@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -24,7 +23,7 @@ var _ = Describe("product-metadata command", func() {
 
 		BeforeEach(func() {
 			var err error
-			productFile, err = ioutil.TempFile("", "fake-tile")
+			productFile, err = os.CreateTemp("", "fake-tile")
 			Expect(err).ToNot(HaveOccurred())
 			z := zip.NewWriter(productFile)
 
@@ -83,7 +82,7 @@ product_version: 1.2.3
 		When("there is only one .pivotal file for the product version", func() {
 			BeforeEach(func() {
 				pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-				contents, err := ioutil.ReadFile(pivotalFile)
+				contents, err := os.ReadFile(pivotalFile)
 				Expect(err).ToNot(HaveOccurred())
 				modTime := time.Now()
 
@@ -165,7 +164,7 @@ product_version: 1.2.3
 		When("there is more than one .pivotal file for a product version", func() {
 			BeforeEach(func() {
 				pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-				contents, err := ioutil.ReadFile(pivotalFile)
+				contents, err := os.ReadFile(pivotalFile)
 				Expect(err).ToNot(HaveOccurred())
 				modTime := time.Now()
 

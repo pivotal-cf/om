@@ -3,7 +3,6 @@ package generator
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -207,8 +206,8 @@ func (e *Executor) writeYamlFile(targetFile string, dataType interface{}) error 
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(targetFile, data, 0755)
+		return os.WriteFile(targetFile, data, 0755)
 	} else {
-		return ioutil.WriteFile(targetFile, nil, 0755)
+		return os.WriteFile(targetFile, nil, 0755)
 	}
 }

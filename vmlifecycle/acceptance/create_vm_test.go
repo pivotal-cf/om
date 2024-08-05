@@ -1,7 +1,7 @@
 package integration_test
 
 import (
-	"io/ioutil"
+	"os"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -44,7 +44,7 @@ opsman-configuration:
 
 		Eventually(session.Err).Should(gbytes.Say("gcloud compute instances create"))
 
-		contents, err := ioutil.ReadFile(stateFile)
+		contents, err := os.ReadFile(stateFile)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(contents).To(MatchYAML(`{"iaas": "gcp", "vm_id": "opsman-vm"}`))
 	})

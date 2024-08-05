@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -58,7 +57,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("downloads a product from the downloader", func() {
-				tempDir, err := ioutil.TempDir("", "om-tests-")
+				tempDir, err := os.MkdirTemp("", "om-tests-")
 				Expect(err).ToNot(HaveOccurred())
 
 				commandArgs := []string{
@@ -74,7 +73,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("supports the pivnet-file-glob alias for file-glob", func() {
-				tempDir, err := ioutil.TempDir("", "om-tests-")
+				tempDir, err := os.MkdirTemp("", "om-tests-")
 				Expect(err).ToNot(HaveOccurred())
 
 				commandArgs := []string{
@@ -102,7 +101,7 @@ var _ = Describe("DownloadProduct", func() {
 			})
 
 			It("downloads the highest version matching that regex", func() {
-				tempDir, err := ioutil.TempDir("", "om-tests-")
+				tempDir, err := os.MkdirTemp("", "om-tests-")
 				Expect(err).ToNot(HaveOccurred())
 
 				commandArgs := []string{
@@ -139,7 +138,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("ignores the version and prints a warning", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					commandArgs := []string{
@@ -166,7 +165,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("returns an error", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					commandArgs := []string{
@@ -192,12 +191,12 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
+						return os.WriteFile(file.Name(), []byte("contents"), 0777)
 					}
 				})
 
 				It("downloads a product from the downloader", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					commandArgs := []string{
@@ -222,12 +221,12 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturnsOnCall(0, fa, nil)
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
-						return ioutil.WriteFile(file.Name(), []byte("contents"), 0777)
+						return os.WriteFile(file.Name(), []byte("contents"), 0777)
 					}
 				})
 
 				It("errors and removes the file from the file system", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					commandArgs := []string{
@@ -264,7 +263,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("grabs the latest stemcell for the product that matches the glob", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
@@ -294,7 +293,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "stemcell.tgz.partial")))
 
 					fileName := path.Join(tempDir, "download-file.json")
-					fileContent, err := ioutil.ReadFile(fileName)
+					fileContent, err := os.ReadFile(fileName)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(fileName).To(BeAnExistingFile())
 					downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.pivotal")
@@ -309,7 +308,7 @@ var _ = Describe("DownloadProduct", func() {
 							}`, downloadedFilePath, downloadedStemcellFilePath)))
 
 					fileName = path.Join(tempDir, "assign-stemcell.yml")
-					fileContent, err = ioutil.ReadFile(fileName)
+					fileContent, err = os.ReadFile(fileName)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(fileName).To(BeAnExistingFile())
 					Expect(string(fileContent)).To(MatchJSON(`
@@ -321,7 +320,7 @@ var _ = Describe("DownloadProduct", func() {
 
 				When("the --check-upload-already is specified", func() {
 					It("does not download the stemcell and product", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
+						tempDir, err := os.MkdirTemp("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
 						commandArgs := []string{
@@ -350,16 +349,16 @@ var _ = Describe("DownloadProduct", func() {
 					)
 
 					tempFile := func(dir, pattern string) string {
-						file, err := ioutil.TempFile(dir, pattern)
+						file, err := os.CreateTemp(dir, pattern)
 						Expect(err).ToNot(HaveOccurred())
 						return file.Name()
 					}
 
 					BeforeEach(func() {
-						productOutputDir, err = ioutil.TempDir("", "om-tests-output-dir-")
+						productOutputDir, err = os.MkdirTemp("", "om-tests-output-dir-")
 						Expect(err).ToNot(HaveOccurred())
 
-						stemcellOutputDir, err = ioutil.TempDir("", "om-tests-stemcell-output-dir-")
+						stemcellOutputDir, err = os.MkdirTemp("", "om-tests-stemcell-output-dir-")
 						Expect(err).ToNot(HaveOccurred())
 
 						fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
@@ -472,7 +471,7 @@ var _ = Describe("DownloadProduct", func() {
 
 				When("the --stemcell-version flag is passed", func() {
 					It("downloads the specified stemcell at that version", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
+						tempDir, err := os.MkdirTemp("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
 						fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
@@ -499,7 +498,7 @@ var _ = Describe("DownloadProduct", func() {
 						Expect(pf.Name()).To(Equal(filepath.Join(tempDir, "[stemcells-ubuntu-xenial,100.00]stemcell.tgz.partial")))
 
 						fileName := path.Join(tempDir, "download-file.json")
-						fileContent, err := ioutil.ReadFile(fileName)
+						fileContent, err := os.ReadFile(fileName)
 						Expect(err).ToNot(HaveOccurred())
 						Expect(fileName).To(BeAnExistingFile())
 						downloadedFilePath := path.Join(tempDir, "[elastic-runtime,2.0.0]cf-2.0-build.1.pivotal")
@@ -514,7 +513,7 @@ var _ = Describe("DownloadProduct", func() {
 							}`, downloadedFilePath, downloadedStemcellFilePath)))
 
 						fileName = path.Join(tempDir, "assign-stemcell.yml")
-						fileContent, err = ioutil.ReadFile(fileName)
+						fileContent, err = os.ReadFile(fileName)
 						Expect(err).ToNot(HaveOccurred())
 						Expect(fileName).To(BeAnExistingFile())
 						Expect(string(fileContent)).To(MatchJSON(`
@@ -534,7 +533,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("prints a warning and returns available file artifacts", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -549,7 +548,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					downloadReportFileName := path.Join(tempDir, "download-file.json")
-					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					fileContent, err := os.ReadFile(downloadReportFileName)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					downloadedFilePath := path.Join(tempDir, "cf-2.0-build.1.tgz")
@@ -576,7 +575,7 @@ var _ = Describe("DownloadProduct", func() {
 					sa.VersionReturns("97.190")
 					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					fakeProductDownloader.DownloadProductToFileStub = func(artifacter download_clients.FileArtifacter, file *os.File) error {
@@ -618,7 +617,7 @@ var _ = Describe("DownloadProduct", func() {
 					sa.VersionReturns("97.190")
 					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -659,7 +658,7 @@ var _ = Describe("DownloadProduct", func() {
 					sa.VersionReturns("97.190")
 					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -680,7 +679,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("fails if --stemcell-heavy flag is provided but --stemcell-iaas is not", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -712,7 +711,7 @@ var _ = Describe("DownloadProduct", func() {
 					sa.VersionReturns("97.190")
 					fakeProductDownloader.GetLatestStemcellForProductReturns(sa, nil)
 
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -748,7 +747,7 @@ var _ = Describe("DownloadProduct", func() {
 					})
 
 					It("does not download it", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
+						tempDir, err := os.MkdirTemp("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
 						commandArgs := []string{
@@ -776,7 +775,7 @@ var _ = Describe("DownloadProduct", func() {
 					})
 
 					It("download the file", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
+						tempDir, err := os.MkdirTemp("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
 						commandArgs := []string{
@@ -808,7 +807,7 @@ var _ = Describe("DownloadProduct", func() {
 					})
 
 					It("returns that error", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
+						tempDir, err := os.MkdirTemp("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
 						commandArgs := []string{
@@ -841,7 +840,7 @@ var _ = Describe("DownloadProduct", func() {
 					})
 
 					It("does not download it", func() {
-						tempDir, err := ioutil.TempDir("", "om-tests-")
+						tempDir, err := os.MkdirTemp("", "om-tests-")
 						Expect(err).ToNot(HaveOccurred())
 
 						commandArgs := []string{
@@ -874,7 +873,7 @@ var _ = Describe("DownloadProduct", func() {
 						})
 
 						It("does not download it", func() {
-							tempDir, err := ioutil.TempDir("", "om-tests-")
+							tempDir, err := os.MkdirTemp("", "om-tests-")
 							Expect(err).ToNot(HaveOccurred())
 
 							commandArgs := []string{
@@ -903,7 +902,7 @@ var _ = Describe("DownloadProduct", func() {
 						})
 
 						It("download the file", func() {
-							tempDir, err := ioutil.TempDir("", "om-tests-")
+							tempDir, err := os.MkdirTemp("", "om-tests-")
 							Expect(err).ToNot(HaveOccurred())
 
 							commandArgs := []string{
@@ -937,7 +936,7 @@ var _ = Describe("DownloadProduct", func() {
 						})
 
 						It("returns that error", func() {
-							tempDir, err := ioutil.TempDir("", "om-tests-")
+							tempDir, err := os.MkdirTemp("", "om-tests-")
 							Expect(err).ToNot(HaveOccurred())
 
 							commandArgs := []string{
@@ -965,7 +964,7 @@ var _ = Describe("DownloadProduct", func() {
 			var tempDir string
 
 			BeforeEach(func() {
-				tempDir, err = ioutil.TempDir("", "om-tests-")
+				tempDir, err = os.MkdirTemp("", "om-tests-")
 				Expect(err).ToNot(HaveOccurred())
 
 				fa := &fakes.FileArtifacter{}
@@ -1029,7 +1028,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("prefixes the filename with a bracketed slug and version", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -1047,7 +1046,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("writes the prefixed filename to the download-file.json", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -1061,7 +1060,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					downloadReportFileName := path.Join(tempDir, "download-file.json")
-					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					fileContent, err := os.ReadFile(downloadReportFileName)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					prefixedFileName := path.Join(tempDir, "[mayhem-crew,2.0.0]my-great-product.pivotal")
@@ -1076,7 +1075,7 @@ var _ = Describe("DownloadProduct", func() {
 					fakeProductDownloader.GetLatestProductFileReturns(fa, nil)
 				})
 				It("doesn't prefix", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -1093,7 +1092,7 @@ var _ = Describe("DownloadProduct", func() {
 				})
 
 				It("writes the unprefixed filename to the download-file.json", func() {
-					tempDir, err := ioutil.TempDir("", "om-tests-")
+					tempDir, err := os.MkdirTemp("", "om-tests-")
 					Expect(err).ToNot(HaveOccurred())
 
 					err = executeCommand(command, []string{
@@ -1106,7 +1105,7 @@ var _ = Describe("DownloadProduct", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					downloadReportFileName := path.Join(tempDir, "download-file.json")
-					fileContent, err := ioutil.ReadFile(downloadReportFileName)
+					fileContent, err := os.ReadFile(downloadReportFileName)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(downloadReportFileName).To(BeAnExistingFile())
 					unPrefixedFileName := path.Join(tempDir, "my-great-product.pivotal")
@@ -1118,7 +1117,7 @@ var _ = Describe("DownloadProduct", func() {
 
 	When("--stemcell-version flag is provided, but --stemcell-iaas is missing", func() {
 		It("returns an error", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
+			tempDir, err := os.MkdirTemp("", "om-tests-")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = executeCommand(command, []string{
@@ -1143,7 +1142,7 @@ var _ = Describe("DownloadProduct", func() {
 
 		BeforeEach(func() {
 			nonexistingDir = "/invalid/dir/noexist"
-			validDirectory, err = ioutil.TempDir("", "")
+			validDirectory, err = os.MkdirTemp("", "")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -1186,10 +1185,10 @@ var _ = Describe("DownloadProduct", func() {
 		)
 
 		BeforeEach(func() {
-			existingNonDirFile, err = ioutil.TempFile("", "")
+			existingNonDirFile, err = os.CreateTemp("", "")
 			Expect(err).NotTo(HaveOccurred())
 
-			validDirectory, err = ioutil.TempDir("", "")
+			validDirectory, err = os.MkdirTemp("", "")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -1230,7 +1229,7 @@ var _ = Describe("DownloadProduct", func() {
 
 	When("pivnet-api-token is missing while no source is set", func() {
 		It("returns an error", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
+			tempDir, err := os.MkdirTemp("", "om-tests-")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = executeCommand(command, []string{
@@ -1245,7 +1244,7 @@ var _ = Describe("DownloadProduct", func() {
 
 	When("both product-version and product-version-regex are set", func() {
 		It("fails with an error saying that the user must pick one or the other", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
+			tempDir, err := os.MkdirTemp("", "om-tests-")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = executeCommand(command, []string{
@@ -1262,7 +1261,7 @@ var _ = Describe("DownloadProduct", func() {
 
 	When("neither product-version nor product-version-regex are set", func() {
 		It("fails with an error saying that the user must provide one or the other", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
+			tempDir, err := os.MkdirTemp("", "om-tests-")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = executeCommand(command, []string{
@@ -1281,7 +1280,7 @@ var _ = Describe("DownloadProduct", func() {
 		})
 
 		It("returns an error", func() {
-			tempDir, err := ioutil.TempDir("", "om-tests-")
+			tempDir, err := os.MkdirTemp("", "om-tests-")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = executeCommand(command, []string{

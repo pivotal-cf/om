@@ -3,7 +3,6 @@ package vmlifecyclecommands_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -86,7 +85,7 @@ opsman-configuration:
 			Expect(err).ToNot(HaveOccurred())
 			Expect(outWriter).To(gbytes.Say("VM deleted successfully\n"))
 
-			finalState, err := ioutil.ReadFile(command.StateFile)
+			finalState, err := os.ReadFile(command.StateFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(finalState).To(MatchYAML(fmt.Sprintf(`{"iaas": "iaas-%d"}`, uuid)))
@@ -104,7 +103,7 @@ opsman-configuration:
 			Expect(err).ToNot(HaveOccurred())
 			Expect(outWriter).To(gbytes.Say("Nothing to do\n"))
 
-			finalState, err := ioutil.ReadFile(command.StateFile)
+			finalState, err := os.ReadFile(command.StateFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(finalState).To(MatchYAML(`{"iaas": "gcp"}`))

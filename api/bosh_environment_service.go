@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -34,7 +34,7 @@ func (a Api) GetBoshEnvironment() (GetBoshEnvironmentOutput, error) {
 		return GetBoshEnvironmentOutput{}, err
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return GetBoshEnvironmentOutput{}, err
 	}

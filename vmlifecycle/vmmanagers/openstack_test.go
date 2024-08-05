@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	. "github.com/onsi/ginkgo/v2"
+
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gstruct"
 	"gopkg.in/yaml.v2"
@@ -20,7 +21,7 @@ var _ = Describe("Openstack VMManager", func() {
 	createCommand := func(configStrTemplate string) (*vmmanagers.OpenstackVMManager, *fakes.OpenstackRunner) {
 		var err error
 		runner := &fakes.OpenstackRunner{}
-		testUriFile, err := ioutil.TempFile("", "")
+		testUriFile, err := os.CreateTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		state := vmmanagers.StateInfo{

@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 )
 
@@ -38,7 +38,7 @@ func (a Api) ListStagedPendingChanges() (PendingChangesOutput, error) {
 		return PendingChangesOutput{}, err
 	}
 
-	reportBytes, err := ioutil.ReadAll(resp.Body)
+	reportBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

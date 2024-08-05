@@ -1,13 +1,13 @@
 package formcontent_test
 
 import (
+	"io"
+	"os"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/pivotal-cf/om/formcontent"
-
-	"io/ioutil"
-	"os"
 )
 
 var _ = Describe("Formcontent", func() {
@@ -17,7 +17,7 @@ var _ = Describe("Formcontent", func() {
 		var fileWithContent string
 
 		BeforeEach(func() {
-			handle, err := ioutil.TempFile("", "")
+			handle, err := os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle.WriteString("some content")
@@ -35,7 +35,7 @@ var _ = Describe("Formcontent", func() {
 			Expect(submission.ContentLength).ToNot(BeZero())
 
 			// drain the reader to force pipe to be closed
-			_, err = ioutil.ReadAll(submission.Content)
+			_, err = io.ReadAll(submission.Content)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -53,7 +53,7 @@ var _ = Describe("Formcontent", func() {
 			submission := form.Finalize()
 			Expect(submission.ContentLength).ToNot(BeZero())
 
-			contents, err := ioutil.ReadAll(submission.Content)
+			contents, err := io.ReadAll(submission.Content)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(ContainSubstring("other-file"))
 			Expect(contents).ToNot(ContainSubstring("original-file"))
@@ -67,7 +67,7 @@ var _ = Describe("Formcontent", func() {
 		)
 
 		BeforeEach(func() {
-			handle1, err := ioutil.TempFile("", "")
+			handle1, err := os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle1.WriteString("some content")
@@ -75,7 +75,7 @@ var _ = Describe("Formcontent", func() {
 
 			fileWithContent1 = handle1.Name()
 
-			handle2, err := ioutil.TempFile("", "")
+			handle2, err := os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle2.WriteString("some more content")
@@ -100,7 +100,7 @@ var _ = Describe("Formcontent", func() {
 
 			submission := form.Finalize()
 
-			content, err := ioutil.ReadAll(submission.Content)
+			content, err := io.ReadAll(submission.Content)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(content)).To(MatchRegexp(`^--\w+\r\nContent-Disposition: form-data; name=\"something\[file1\]\"; filename=\"\w+\"\r\n` +
@@ -114,7 +114,7 @@ var _ = Describe("Formcontent", func() {
 
 		When("the file provided is empty", func() {
 			It("returns an error", func() {
-				emptyFile, err := ioutil.TempFile("", "")
+				emptyFile, err := os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				form := formcontent.NewForm()
@@ -150,7 +150,7 @@ var _ = Describe("Formcontent", func() {
 
 			submission := form.Finalize()
 
-			content, err := ioutil.ReadAll(submission.Content)
+			content, err := io.ReadAll(submission.Content)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(content)).To(MatchRegexp(`^--\w+\r\nContent-Disposition: form-data; name="key1"\r\n\r\nvalue1` +
@@ -165,7 +165,7 @@ var _ = Describe("Formcontent", func() {
 		BeforeEach(func() {
 			var err error
 
-			handle1, err := ioutil.TempFile("", "")
+			handle1, err := os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = handle1.WriteString("some content")
@@ -189,7 +189,7 @@ var _ = Describe("Formcontent", func() {
 
 			submission := form.Finalize()
 
-			content, err := ioutil.ReadAll(submission.Content)
+			content, err := io.ReadAll(submission.Content)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(submission.ContentLength).To(Or(Equal(int64(373)), Equal(int64(374))))

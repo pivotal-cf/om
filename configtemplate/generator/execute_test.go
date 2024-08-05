@@ -2,7 +2,6 @@ package generator_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -72,7 +71,7 @@ var _ = Describe("Executor", func() {
 
 	Context("Generate", func() {
 		var (
-			pwd, _  = ioutil.TempDir("", "")
+			pwd, _  = os.MkdirTemp("", "")
 			testGen = path.Join(pwd, "_testGen")
 			tmpPath = path.Join(testGen, "templates")
 		)
@@ -207,12 +206,12 @@ func listFilesInDirectory(productPath string) []string {
 }
 
 func getFileBytes(metadataFile string) ([]byte, error) {
-	return ioutil.ReadFile(metadataFile)
+	return os.ReadFile(metadataFile)
 }
 
 func unmarshalProduct(targetFile string) (*Template, error) {
 	template := &Template{}
-	yamlFile, err := ioutil.ReadFile(targetFile)
+	yamlFile, err := os.ReadFile(targetFile)
 	if err != nil {
 		return nil, err
 	}

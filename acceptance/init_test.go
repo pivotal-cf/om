@@ -2,7 +2,6 @@ package acceptance
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -30,7 +29,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 
 	minioPath, _ := exec.LookPath("minio")
 	if minioPath != "" {
-		dataDir, err := ioutil.TempDir("", "")
+		dataDir, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 		command := exec.Command("minio", "server", "--config-dir", dataDir, "--address", ":9001", dataDir)
 		command.Env = []string{

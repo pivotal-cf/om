@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/jessevdk/go-flags"
@@ -100,7 +99,7 @@ opsman-configuration:
 			Expect(err).ToNot(HaveOccurred())
 			Expect(outWriter).To(gbytes.Say("OpsMan VM created successfully"))
 
-			finalState, err := ioutil.ReadFile(command.StateFile)
+			finalState, err := os.ReadFile(command.StateFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(finalState).To(MatchYAML(`{"iaas": "gcp", "vm_id": vm-id}`))
@@ -141,7 +140,7 @@ opsman-configuration:
 				Expect(outWriter).To(gbytes.Say("OpsMan VM created successfully"))
 
 				Expect(command.StateFile).To(Equal("state.yml"))
-				finalState, err := ioutil.ReadFile(command.StateFile)
+				finalState, err := os.ReadFile(command.StateFile)
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(finalState).To(MatchYAML(`{"iaas": "gcp", "vm_id": vm-id}`))
@@ -159,7 +158,7 @@ opsman-configuration:
 				Expect(err).ToNot(HaveOccurred())
 				Expect(outWriter).To(gbytes.Say("VM already exists, not attempting to create it"))
 
-				finalState, err := ioutil.ReadFile(command.StateFile)
+				finalState, err := os.ReadFile(command.StateFile)
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(finalState).To(MatchYAML(`{"iaas": "gcp", "vm_id": vm-id}`))
@@ -414,7 +413,7 @@ opsman-configuration:
 			err := command.Execute([]string{})
 			Expect(err.Error()).To(Equal("the VM was created, but subsequent configuration failed: unknown error"))
 
-			finalState, err := ioutil.ReadFile(command.StateFile)
+			finalState, err := os.ReadFile(command.StateFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(finalState).To(MatchYAML(`{"iaas": "gcp", "vm_id": vm-id}`))

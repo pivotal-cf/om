@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -60,7 +59,7 @@ var _ = Describe("ConfigureDirector", func() {
 	})
 
 	JustBeforeEach(func() {
-		configFile, err = ioutil.TempFile("", "config.yml")
+		configFile, err = os.CreateTemp("", "config.yml")
 		Expect(err).ToNot(HaveOccurred())
 		defer configFile.Close()
 
@@ -215,7 +214,7 @@ vmtypes-configuration:
 vmtypes-configuration:
   custom_only: true
 `
-					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					newConfigFile, err := os.CreateTemp("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -252,7 +251,7 @@ vmtypes-configuration:
     ram: 4096
     ephemeral_disk: 20480
 `
-					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					newConfigFile, err := os.CreateTemp("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -286,7 +285,7 @@ vmtypes-configuration:
     ram: 4096
     ephemeral_disk: 20480
 `
-					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					newConfigFile, err := os.CreateTemp("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -317,7 +316,7 @@ vmtypes-configuration:
     ram: 4096
     ephemeral_disk: 20480
 `
-					newConfigFile, err := ioutil.TempFile("", "config.yml")
+					newConfigFile, err := os.CreateTemp("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -344,7 +343,7 @@ vmtypes-configuration:
 				It("does not configure the director", func() {
 					configYAML := `invalidYAML`
 
-					configFile, err := ioutil.TempFile("", "config.yaml")
+					configFile, err := os.CreateTemp("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
 					_, err = configFile.WriteString(configYAML)
 					Expect(err).ToNot(HaveOccurred())

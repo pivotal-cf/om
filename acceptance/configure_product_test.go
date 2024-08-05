@@ -2,7 +2,6 @@ package acceptance
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -171,7 +170,7 @@ var _ = Describe("configure-product command", func() {
 			),
 		)
 
-		configFile, err = ioutil.TempFile("", "")
+		configFile, err = os.CreateTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(configFileContents)
@@ -257,7 +256,7 @@ var _ = Describe("configure-product command", func() {
 			"resource-config": %s
 		}`, propertiesJSON, productNetworkJSON, nsxResourceConfigJSON)
 
-		configFile, err = ioutil.TempFile("", "")
+		configFile, err = os.CreateTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(nsxConfigFileContents)

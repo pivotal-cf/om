@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"sync/atomic"
@@ -30,7 +29,7 @@ var _ = Describe("AWS VMManager", func() {
 		err = yaml.Unmarshal([]byte(config), &validConfig)
 		Expect(err).ToNot(HaveOccurred())
 
-		command := vmmanagers.NewAWSVMManager(ioutil.Discard, ioutil.Discard, validConfig, writeAMIRegionFile(), vmmanagers.StateInfo{}, runner, time.Millisecond)
+		command := vmmanagers.NewAWSVMManager(io.Discard, io.Discard, validConfig, writeAMIRegionFile(), vmmanagers.StateInfo{}, runner, time.Millisecond)
 
 		return command, runner
 	}
@@ -433,7 +432,7 @@ credential_source = Ec2InstanceMetadata`)), comment)
 
 				When("the image file is not valid YAML", func() {
 					It("returns that the yaml is invalid", func() {
-						invalidUriFile, err := ioutil.TempFile("", "some*.yaml")
+						invalidUriFile, err := os.CreateTemp("", "some*.yaml")
 						Expect(err).ToNot(HaveOccurred())
 						_, _ = invalidUriFile.WriteString("not valid yaml")
 						Expect(invalidUriFile.Close()).ToNot(HaveOccurred())
@@ -688,7 +687,7 @@ opsman-configuration:
 					AWS: &vmmanagers.AWSConfig{},
 				}}
 
-			command := vmmanagers.NewAWSVMManager(ioutil.Discard, ioutil.Discard, invalidConfig, "", state, nil, time.Millisecond)
+			command := vmmanagers.NewAWSVMManager(io.Discard, io.Discard, invalidConfig, "", state, nil, time.Millisecond)
 
 			err := command.DeleteVM()
 			Expect(err).To(HaveOccurred())

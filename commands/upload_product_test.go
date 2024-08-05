@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -41,7 +40,7 @@ var _ = Describe("UploadProduct", func() {
 	It("uploads a product", func() {
 		submission := formcontent.ContentSubmission{
 			ContentLength: 10,
-			Content:       ioutil.NopCloser(strings.NewReader("")),
+			Content:       io.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
 		}
 		multipart.FinalizeReturns(submission)
@@ -58,7 +57,7 @@ var _ = Describe("UploadProduct", func() {
 		Expect(file).To(Equal("/path/to/some-product.tgz"))
 		Expect(fakeService.UploadAvailableProductArgsForCall(0)).To(Equal(api.UploadAvailableProductInput{
 			ContentLength:   10,
-			Product:         ioutil.NopCloser(strings.NewReader("")),
+			Product:         io.NopCloser(strings.NewReader("")),
 			ContentType:     "some content-type",
 			PollingInterval: 1,
 		}))
@@ -115,7 +114,7 @@ var _ = Describe("UploadProduct", func() {
 
 	When("the --shasum flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
-			file, err := ioutil.TempFile("", "test-file.yaml")
+			file, err := os.CreateTemp("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
@@ -149,7 +148,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 
 		It("returns an error when the sha sums don't match", func() {
-			file, err := ioutil.TempFile("", "test-file.yaml")
+			file, err := os.CreateTemp("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
@@ -180,7 +179,7 @@ var _ = Describe("UploadProduct", func() {
 
 	When("the --product-version flag is defined", func() {
 		It("proceeds normally when the versions match", func() {
-			file, err := ioutil.TempFile("", "test-file.yaml")
+			file, err := os.CreateTemp("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			err = file.Close()
 			Expect(err).ToNot(HaveOccurred())
@@ -211,7 +210,7 @@ var _ = Describe("UploadProduct", func() {
 		})
 
 		It("returns an error when the versions don't match", func() {
-			file, err := ioutil.TempFile("", "test-file.yaml")
+			file, err := os.CreateTemp("", "test-file.yaml")
 			Expect(err).ToNot(HaveOccurred())
 			err = file.Close()
 			Expect(err).ToNot(HaveOccurred())

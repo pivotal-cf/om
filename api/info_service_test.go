@@ -2,7 +2,7 @@ package api_test
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -73,7 +73,7 @@ var _ = Describe("Info Service", func() {
 		It("lists the info", func() {
 			client.DoReturns(&http.Response{
 				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(strings.NewReader(`{ "info": { "version": "v2.1-build.79" } }`)),
+				Body:       io.NopCloser(strings.NewReader(`{ "info": { "version": "v2.1-build.79" } }`)),
 			}, nil)
 
 			info, err := service.Info()
@@ -92,7 +92,7 @@ var _ = Describe("Info Service", func() {
 			It("errors if the response is not valid", func() {
 				client.DoReturns(&http.Response{
 					StatusCode: http.StatusNotFound,
-					Body:       ioutil.NopCloser(strings.NewReader("")),
+					Body:       io.NopCloser(strings.NewReader("")),
 				}, nil)
 				info, err := service.Info()
 				Expect(err).To(HaveOccurred())

@@ -3,7 +3,7 @@ package network_test
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -76,7 +76,7 @@ var _ = Describe("Trace Client", func() {
 
 	When("the request body is larger than some arbitrary value", func() {
 		It("only dumps the headers", func() {
-			request.Body = ioutil.NopCloser(strings.NewReader(`{}`))
+			request.Body = io.NopCloser(strings.NewReader(`{}`))
 			request.ContentLength = 1024 * 1024
 
 			_, err := traceClient.Do(request)
@@ -98,7 +98,7 @@ var _ = Describe("Trace Client", func() {
 				buffer.WriteString("a")
 			}
 
-			response.Body = ioutil.NopCloser(&buffer)
+			response.Body = io.NopCloser(&buffer)
 			response.ContentLength = int64(responseBodySize)
 
 			_, err := traceClient.Do(request)

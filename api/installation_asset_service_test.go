@@ -1,7 +1,6 @@
 package api_test
 
 import (
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -46,7 +45,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 		BeforeEach(func() {
 			var err error
-			outputFile, err = ioutil.TempFile("", "")
+			outputFile, err = os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -67,7 +66,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			By("writing the installation to a local file")
-			ins, err := ioutil.ReadFile(outputFile.Name())
+			ins, err := os.ReadFile(outputFile.Name())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(ins)).To(Equal("some-installation"))
 		})

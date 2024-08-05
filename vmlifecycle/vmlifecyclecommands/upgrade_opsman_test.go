@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -265,7 +264,7 @@ var _ = Describe("upgradeOpsman", func() {
 								"decryption-passphrase": "decryption-passphrase",
 							}))
 
-							fh, err := ioutil.TempFile("", fmt.Sprintf(fileNameFixture, newerVersion))
+							fh, err := os.CreateTemp("", fmt.Sprintf(fileNameFixture, newerVersion))
 							Expect(err).ToNot(HaveOccurred())
 							Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -317,7 +316,7 @@ var _ = Describe("upgradeOpsman", func() {
 								"decryption-passphrase": "decryption-passphrase",
 							}))
 
-							fh, err := ioutil.TempFile("", fmt.Sprintf(fileNameFixture, newerVersion))
+							fh, err := os.CreateTemp("", fmt.Sprintf(fileNameFixture, newerVersion))
 							Expect(err).ToNot(HaveOccurred())
 							Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -372,7 +371,7 @@ var _ = Describe("upgradeOpsman", func() {
 								"decryption-passphrase": "decryption-passphrase",
 							}))
 
-							fh, err := ioutil.TempFile("", fmt.Sprintf(fileNameFixture, newerVersion))
+							fh, err := os.CreateTemp("", fmt.Sprintf(fileNameFixture, newerVersion))
 							Expect(err).ToNot(HaveOccurred())
 							Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -444,7 +443,7 @@ var _ = Describe("upgradeOpsman", func() {
 								"decryption-passphrase": "decryption-passphrase",
 							}))
 
-							image, err := ioutil.TempFile("", fmt.Sprintf(fileNameFixture, newerVersion))
+							image, err := os.CreateTemp("", fmt.Sprintf(fileNameFixture, newerVersion))
 							Expect(err).ToNot(HaveOccurred())
 							command.CreateVM.ImageFile = image.Name()
 							err = command.Execute([]string{})
@@ -517,7 +516,7 @@ var _ = Describe("upgradeOpsman", func() {
 							"skip-ssl-validation":   true,
 							"decryption-passphrase": "decryption-passphrase",
 						}))
-						image, err := ioutil.TempFile("", "OpsManager2.10-build.296onGCP.yml")
+						image, err := os.CreateTemp("", "OpsManager2.10-build.296onGCP.yml")
 
 						Expect(err).ToNot(HaveOccurred())
 						command.CreateVM.ImageFile = image.Name()
@@ -555,7 +554,7 @@ var _ = Describe("upgradeOpsman", func() {
 								"decryption-passphrase": "passphrase",
 							}))
 
-							fh, err := ioutil.TempFile("", "OpsManager2.2-build.296onGCP.yml")
+							fh, err := os.CreateTemp("", "OpsManager2.2-build.296onGCP.yml")
 							Expect(err).ToNot(HaveOccurred())
 							Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -578,7 +577,7 @@ var _ = Describe("upgradeOpsman", func() {
 								"skip-ssl-validation": true,
 							}))
 
-							fh, err := ioutil.TempFile("", "OpsManager2.2-build.296onGCP.yml")
+							fh, err := os.CreateTemp("", "OpsManager2.2-build.296onGCP.yml")
 							Expect(err).ToNot(HaveOccurred())
 							Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -623,7 +622,7 @@ opsman-configuration:
 								"decryption-passphrase": "decryption-passphrase",
 							}))
 
-							image, err := ioutil.TempFile("", fmt.Sprintf("OpsManager%sonGCP.yml", "2.2.3"))
+							image, err := os.CreateTemp("", fmt.Sprintf("OpsManager%sonGCP.yml", "2.2.3"))
 							Expect(err).ToNot(HaveOccurred())
 							command.CreateVM.ImageFile = image.Name()
 						})
@@ -728,7 +727,7 @@ project_name: awesome-project
 					"decryption-passphrase": "decryption-passphrase",
 				}))
 
-				fh, err := ioutil.TempFile("", "OpsManager2.2-build.296onGCP.yml")
+				fh, err := os.CreateTemp("", "OpsManager2.2-build.296onGCP.yml")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -749,7 +748,7 @@ project_name: awesome-project
 				"skip-ssl-validation": true,
 			}))
 
-			fh, err := ioutil.TempFile("", "OpsManager2.2-build.296onGCP.yml")
+			fh, err := os.CreateTemp("", "OpsManager2.2-build.296onGCP.yml")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -769,7 +768,7 @@ project_name: awesome-project
 				"skip-ssl-validation": true,
 			}))
 
-			fh, err := ioutil.TempFile("", "OpsManager2.2-build.296onGCP.yml")
+			fh, err := os.CreateTemp("", "OpsManager2.2-build.296onGCP.yml")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -791,7 +790,7 @@ project_name: awesome-project
 				"decryption-passphrase": "passphrase",
 			}))
 
-			fh, err := ioutil.TempFile("", "OpsManager2.2.yml")
+			fh, err := os.CreateTemp("", "OpsManager2.2.yml")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -870,19 +869,19 @@ project_name: awesome-project
 		JustBeforeEach(func() {
 			var err error
 
-			configFile, err = ioutil.TempFile("", "")
+			configFile, err = os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(err).ToNot(HaveOccurred())
 			_, err = configFile.WriteString(configContent)
 			Expect(err).ToNot(HaveOccurred())
 
-			envFile, err = ioutil.TempFile("", "")
+			envFile, err = os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(err).ToNot(HaveOccurred())
 			_, err = envFile.WriteString(envContent)
 			Expect(err).ToNot(HaveOccurred())
 
-			imageFile, err = ioutil.TempFile("", "opsman-2.2.2*.yml")
+			imageFile, err = os.CreateTemp("", "opsman-2.2.2*.yml")
 			Expect(err).ToNot(HaveOccurred())
 			_, err = imageFile.WriteString(imageContent)
 			Expect(err).ToNot(HaveOccurred())
@@ -890,12 +889,12 @@ project_name: awesome-project
 			installationFile = createZipFile([]struct{ Name, Body string }{
 				{"installation.yml", ""}})
 
-			stateFile, err = ioutil.TempFile("", "")
+			stateFile, err = os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 			_, err = stateFile.WriteString(stateContent)
 			Expect(err).ToNot(HaveOccurred())
 
-			varsFile, err = ioutil.TempFile("", "")
+			varsFile, err = os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 			_, err = varsFile.WriteString(varsContent)
 			Expect(err).ToNot(HaveOccurred())
@@ -991,7 +990,7 @@ project_name: awesome-project
 		When("installation zip file does not have required installation.yml", func() {
 			var invalidInstallationZipName string
 			JustBeforeEach(func() {
-				invalidInstallationZip, err := ioutil.TempFile("", "")
+				invalidInstallationZip, err := os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 				_, err = invalidInstallationZip.WriteString(installationContent)
 				Expect(err).ToNot(HaveOccurred())
@@ -1107,7 +1106,7 @@ project_name: awesome-project
 })
 
 func createZipFile(files []struct{ Name, Body string }) string {
-	tmpFile, err := ioutil.TempFile("", "")
+	tmpFile, err := os.CreateTemp("", "")
 	w := zip.NewWriter(tmpFile)
 
 	Expect(err).ToNot(HaveOccurred())
