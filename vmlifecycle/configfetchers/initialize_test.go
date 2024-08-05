@@ -1,7 +1,6 @@
 package configfetchers_test
 
 import (
-	"io/ioutil"
 	"os"
 	"reflect"
 
@@ -545,7 +544,7 @@ var _ = Describe("selects the correct config fetcher based on the state file", f
 })
 
 func writeFile(contents string) string {
-	tempfile, err := ioutil.TempFile("", "some*.yaml")
+	tempfile, err := os.CreateTemp("", "some*.yaml")
 	Expect(err).ToNot(HaveOccurred())
 	_, err = tempfile.WriteString(contents)
 	Expect(err).ToNot(HaveOccurred())

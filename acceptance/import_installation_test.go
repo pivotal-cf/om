@@ -2,7 +2,6 @@ package acceptance
 
 import (
 	"archive/zip"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -26,7 +25,7 @@ var _ = Describe("import-installation command", func() {
 	)
 
 	createZipFile := func(files []struct{ Name, Body string }) *os.File {
-		tmpFile, err := ioutil.TempFile("", "")
+		tmpFile, err := os.CreateTemp("", "")
 		w := zip.NewWriter(tmpFile)
 
 		Expect(err).ToNot(HaveOccurred())

@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -28,7 +28,7 @@ var _ = Describe("ImportInstallation", func() {
 	)
 
 	createZipFile := func(files []struct{ Name, Body string }) string {
-		tmpFile, err := ioutil.TempFile("", "")
+		tmpFile, err := os.CreateTemp("", "")
 		w := zip.NewWriter(tmpFile)
 
 		Expect(err).ToNot(HaveOccurred())
@@ -58,12 +58,14 @@ var _ = Describe("ImportInstallation", func() {
 	})
 
 	AfterEach(func() {
-		os.Remove(installationFile)
+		if err := os.Remove(installationFile); err != nil {
+			fmt.Printf("Error during cleanup: %v\n", err)
+		}
 	})
 
 	It("imports an installation", func() {
 		submission := formcontent.ContentSubmission{
-			Content:       ioutil.NopCloser(strings.NewReader("")),
+			Content:       io.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
 			ContentLength: 10,
 		}
@@ -102,7 +104,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		Expect(fakeService.UploadInstallationAssetCollectionArgsForCall(0)).To(Equal(api.ImportInstallationInput{
 			ContentLength: 10,
-			Installation:  ioutil.NopCloser(strings.NewReader("")),
+			Installation:  io.NopCloser(strings.NewReader("")),
 			ContentType:   "some content-type",
 		}))
 
@@ -144,7 +146,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		BeforeEach(func() {
 			submission := formcontent.ContentSubmission{
-				Content:       ioutil.NopCloser(strings.NewReader("")),
+				Content:       io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 				ContentLength: 10,
 			}
@@ -218,7 +220,7 @@ var _ = Describe("ImportInstallation", func() {
 
 		BeforeEach(func() {
 			submission := formcontent.ContentSubmission{
-				Content:       ioutil.NopCloser(strings.NewReader("")),
+				Content:       io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 				ContentLength: 10,
 			}
@@ -306,13 +308,15 @@ var _ = Describe("ImportInstallation", func() {
 	When("the --installation provided is not a valid zip file", func() {
 		var notZipFile string
 		BeforeEach(func() {
-			tmpFile, err := ioutil.TempFile("", "")
+			tmpFile, err := os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 			notZipFile = tmpFile.Name()
 		})
 
 		AfterEach(func() {
-			os.Remove(notZipFile)
+			if err := os.Remove(installationFile); err != nil {
+				fmt.Printf("Error during cleanup: %v\n", err)
+			}
 		})
 
 		It("returns an error", func() {
@@ -329,7 +333,9 @@ var _ = Describe("ImportInstallation", func() {
 		})
 
 		AfterEach(func() {
-			os.Remove(invalidInstallation)
+			if err := os.Remove(installationFile); err != nil {
+				fmt.Printf("Error during cleanup: %v\n", err)
+			}
 		})
 
 		It("returns an error", func() {

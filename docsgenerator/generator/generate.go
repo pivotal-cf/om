@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -327,7 +326,7 @@ func (g *Generator) cleanupExtraDirs(baseDir string, commandDescriptions map[str
 }
 
 func getFileContents(filepath string) (string, error) {
-	contents, err := ioutil.ReadFile(filepath)
+	contents, err := os.ReadFile(filepath)
 	if err != nil {
 		return "", err
 	}

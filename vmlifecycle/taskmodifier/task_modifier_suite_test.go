@@ -1,7 +1,6 @@
 package taskmodifier_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,12 +19,12 @@ func writeFile(filename string, contents string) {
 	err := os.MkdirAll(dir, 0777)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = ioutil.WriteFile(filename, []byte(contents), 0644)
+	err = os.WriteFile(filename, []byte(contents), 0644)
 	Expect(err).NotTo(HaveOccurred())
 }
 
 func readFile(filename string) string {
-	contents, err := ioutil.ReadFile(filename)
+	contents, err := os.ReadFile(filename)
 	Expect(err).NotTo(HaveOccurred())
 
 	return string(contents)

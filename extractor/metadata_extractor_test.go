@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -35,7 +34,7 @@ stemcell_criteria:
 
 func createProductFile(metadataFilePath, contents string) *os.File {
 	var err error
-	productFile, err := ioutil.TempFile("", "")
+	productFile, err := os.CreateTemp("", "")
 	Expect(err).ToNot(HaveOccurred())
 
 	stat, err := productFile.Stat()
@@ -79,7 +78,7 @@ var _ = Describe("MetadataExtractor", func() {
 			server := ghttp.NewServer()
 			modTime := time.Now()
 
-			contents, err := ioutil.ReadFile(productFilename)
+			contents, err := os.ReadFile(productFilename)
 			Expect(err).ToNot(HaveOccurred())
 
 			server.AppendHandlers(

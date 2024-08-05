@@ -3,7 +3,6 @@ package generator_test
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -26,10 +25,10 @@ var _ = Describe("Generator", func() {
 		var err error
 		ex = &fakes.Executor{}
 
-		templatesDir, err = ioutil.TempDir("", "")
+		templatesDir, err = os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		docsDir, err = ioutil.TempDir("", "")
+		docsDir, err = os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -87,7 +86,7 @@ var _ = Describe("Generator", func() {
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
-			docsFolders, err := ioutil.ReadDir(docsDir)
+			docsFolders, err := os.ReadDir(docsDir)
 			Expect(err).ToNot(HaveOccurred())
 
 			var docsFolderNames []string
@@ -149,7 +148,7 @@ var _ = Describe("Generator", func() {
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
-			readmeContent, err := ioutil.ReadFile(filepath.Join(docsDir, generator.ReadmeFileName))
+			readmeContent, err := os.ReadFile(filepath.Join(docsDir, generator.ReadmeFileName))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(string(readmeContent)).To(Equal(fmt.Sprintf(
@@ -197,7 +196,7 @@ var _ = Describe("Generator", func() {
 			err := gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
-			docsFolders, err := ioutil.ReadDir(docsDir)
+			docsFolders, err := os.ReadDir(docsDir)
 			Expect(err).ToNot(HaveOccurred())
 
 			var docsFolderNames []string
@@ -268,7 +267,7 @@ var _ = Describe("Generator", func() {
 			err = gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
-			commandFolders, err := ioutil.ReadDir(templatesDir)
+			commandFolders, err := os.ReadDir(templatesDir)
 			Expect(err).ToNot(HaveOccurred())
 
 			var commandFolderNames []string
@@ -318,7 +317,7 @@ var _ = Describe("Generator", func() {
 			err = gen.GenerateDocs()
 			Expect(err).ToNot(HaveOccurred())
 
-			commandFolders, err := ioutil.ReadDir(docsDir)
+			commandFolders, err := os.ReadDir(docsDir)
 			Expect(err).ToNot(HaveOccurred())
 
 			var commandFolderNames []string
@@ -414,7 +413,7 @@ var _ = Describe("Generator", func() {
 func checkCommandReadmeContent(containingDir string, additional bool) {
 	commandName := filepath.Base(containingDir)
 
-	readmeContent, err := ioutil.ReadFile(filepath.Join(containingDir, generator.ReadmeFileName))
+	readmeContent, err := os.ReadFile(filepath.Join(containingDir, generator.ReadmeFileName))
 	Expect(err).ToNot(HaveOccurred())
 
 	additionalText := ""
@@ -435,27 +434,27 @@ func checkCommandReadmeContent(containingDir string, additional bool) {
 func checkTemplateFiles(containingDir string) {
 	commandName := filepath.Base(containingDir)
 
-	descriptionContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.DescriptionFileName))
+	descriptionContents, err := os.ReadFile(filepath.Join(containingDir, generator.DescriptionFileName))
 	Expect(err).ToNot(HaveOccurred())
 	Expect(string(descriptionContents)).To(Equal(fmt.Sprintf(generator.DescriptionTemplate, commandName)))
 
-	additionalInfoContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.AdditionalInfoFileName))
+	additionalInfoContents, err := os.ReadFile(filepath.Join(containingDir, generator.AdditionalInfoFileName))
 	Expect(err).ToNot(HaveOccurred())
 	Expect(string(additionalInfoContents)).To(Equal(fmt.Sprintf(generator.AdditionalInfoTemplate, commandName)))
 }
 
 func checkReadmeTemplateFiles(containingDir string) {
-	descriptionContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.ReadmeBeforeFileName))
+	descriptionContents, err := os.ReadFile(filepath.Join(containingDir, generator.ReadmeBeforeFileName))
 	Expect(err).ToNot(HaveOccurred())
 	Expect(string(descriptionContents)).To(Equal(generator.ReadmeBeforeTemplate))
 
-	additionalInfoContents, err := ioutil.ReadFile(filepath.Join(containingDir, generator.ReadmeAfterFileName))
+	additionalInfoContents, err := os.ReadFile(filepath.Join(containingDir, generator.ReadmeAfterFileName))
 	Expect(err).ToNot(HaveOccurred())
 	Expect(string(additionalInfoContents)).To(Equal(generator.ReadmeAfterTemplate))
 }
 
 func checkFileDoesNotContain(filePath string, lines ...string) {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	Expect(err).ToNot(HaveOccurred())
 
 	for _, line := range lines {
@@ -464,7 +463,7 @@ func checkFileDoesNotContain(filePath string, lines ...string) {
 }
 
 func checkFileEquals(filePath string, expected string) {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	Expect(err).ToNot(HaveOccurred())
 
 	Expect(string(content)).To(Equal(expected))

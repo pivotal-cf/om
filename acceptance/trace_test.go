@@ -3,7 +3,6 @@ package acceptance
 import (
 	"archive/zip"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -32,7 +31,7 @@ var _ = Describe("global trace flag", func() {
 
 	BeforeEach(func() {
 		var err error
-		productFile, err = ioutil.TempFile("", "cool_name.com")
+		productFile, err = os.CreateTemp("", "cool_name.com")
 		Expect(err).ToNot(HaveOccurred())
 
 		stat, err := productFile.Stat()
@@ -43,7 +42,7 @@ var _ = Describe("global trace flag", func() {
 		productWriter, err := zipper.CreateHeader(&zip.FileHeader{
 			Name:               "./metadata/some-product.yml",
 			UncompressedSize64: uint64(stat.Size()),
-			ModifiedTime:       uint16(stat.ModTime().Unix()),
+			Modified:           stat.ModTime(),
 		})
 		Expect(err).ToNot(HaveOccurred())
 

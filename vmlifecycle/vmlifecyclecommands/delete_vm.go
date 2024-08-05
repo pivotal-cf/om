@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"sort"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/pivotal-cf/om/interpolate"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"gopkg.in/yaml.v2"
 )
 
 type initDeleteFunc func(config *vmmanagers.OpsmanConfigFilePayload, image string, state vmmanagers.StateInfo, outWriter, errWriter io.Writer) (vmmanagers.DeleteVMService, error)
@@ -58,7 +58,7 @@ func (c DeleteVM) Execute(args []string) error {
 
 	_, _ = c.stdout.Write([]byte("VM deleted successfully\n"))
 
-	return ioutil.WriteFile(c.StateFile, []byte(fmt.Sprintf(`iaas: %s`, state.IAAS)), 0644)
+	return os.WriteFile(c.StateFile, []byte(fmt.Sprintf(`iaas: %s`, state.IAAS)), 0644)
 }
 
 func loadConfigAndState(configFilename string, stateFilename string, useStateFileError bool, varsEnv []string, varsFile []string) (*vmmanagers.OpsmanConfigFilePayload, vmmanagers.StateInfo, error) {
@@ -86,7 +86,7 @@ func loadConfigAndState(configFilename string, stateFilename string, useStateFil
 	}
 
 	state := vmmanagers.StateInfo{}
-	content, err := ioutil.ReadFile(stateFilename)
+	content, err := os.ReadFile(stateFilename)
 	if err != nil && useStateFileError {
 		return nil, vmmanagers.StateInfo{}, err
 	}

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -25,7 +24,7 @@ func (er errReader) Read([]byte) (int, error) {
 
 var _ = Describe("Curl", func() {
 	stringCloser := func(s string) io.ReadCloser {
-		return ioutil.NopCloser(strings.NewReader(s))
+		return io.NopCloser(strings.NewReader(s))
 	}
 	Describe("Execute", func() {
 		var (
@@ -65,7 +64,7 @@ var _ = Describe("Curl", func() {
 			Expect(input.Method).To(Equal("POST"))
 			Expect(input.Headers).To(HaveKeyWithValue("Content-Type", []string{"application/json"}))
 
-			data, err := ioutil.ReadAll(input.Data)
+			data, err := io.ReadAll(input.Data)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(data)).To(Equal(`{"some-key": "some-value"}`))
 			content := stdout.PrintlnArgsForCall(0)
@@ -212,7 +211,7 @@ var _ = Describe("Curl", func() {
 			})
 
 			It("reads request data from a file when --data is prefixed with @", func() {
-				f, err := ioutil.TempFile("", "om-curl-*")
+				f, err := os.CreateTemp("", "om-curl-*")
 				Expect(err).ToNot(HaveOccurred())
 				defer os.Remove(f.Name())
 
@@ -326,7 +325,7 @@ var _ = Describe("Curl", func() {
 		When("the response body cannot be read", func() {
 			It("returns an error", func() {
 				fakeService.CurlReturns(api.RequestServiceCurlOutput{
-					Body: ioutil.NopCloser(errReader{}),
+					Body: io.NopCloser(errReader{}),
 				}, nil)
 				err := executeCommand(command, []string{
 					"--path", "/api/v0/some/path",

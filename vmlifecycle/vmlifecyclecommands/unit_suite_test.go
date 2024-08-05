@@ -1,7 +1,6 @@
 package vmlifecyclecommands_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,12 +19,12 @@ func writeSpecifiedFile(filename string, contents string) {
 	err := os.MkdirAll(dir, 0777)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = ioutil.WriteFile(filename, []byte(contents), 0644)
+	err = os.WriteFile(filename, []byte(contents), 0644)
 	Expect(err).NotTo(HaveOccurred())
 }
 
 func writeFile(contents string) string {
-	tempfile, err := ioutil.TempFile("", "2.2-build.296.yml")
+	tempfile, err := os.CreateTemp("", "2.2-build.296.yml")
 	Expect(err).ToNot(HaveOccurred())
 	_, err = tempfile.WriteString(contents)
 	Expect(err).ToNot(HaveOccurred())
@@ -36,7 +35,7 @@ func writeFile(contents string) string {
 }
 
 func readFile(filename string) string {
-	contents, err := ioutil.ReadFile(filename)
+	contents, err := os.ReadFile(filename)
 	Expect(err).ToNot(HaveOccurred())
 	return string(contents)
 }

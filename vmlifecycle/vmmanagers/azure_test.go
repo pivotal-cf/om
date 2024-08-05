@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ var _ = Describe("Azure VMManager", func() {
 	createCommand := func(region string, configStrTemplate string, state vmmanagers.StateInfo) (*vmmanagers.AzureVMManager, *fakes.AzureRunner, *bytes.Buffer) {
 		var err error
 		runner := &fakes.AzureRunner{}
-		testUriFile, err := ioutil.TempFile("", "some*.yaml")
+		testUriFile, err := os.CreateTemp("", "some*.yaml")
 		Expect(err).ToNot(HaveOccurred())
 		_, _ = testUriFile.WriteString(`
 ---
@@ -40,7 +41,7 @@ southeast_asia: https://opsmanagersoutheastasia.blob.core.windows.net/images/ops
 		Expect(err).ToNot(HaveOccurred())
 
 		stderr := &bytes.Buffer{}
-		command := vmmanagers.NewAzureVMManager(ioutil.Discard, stderr, validConfig, testUriFile.Name(), state, runner, time.Millisecond)
+		command := vmmanagers.NewAzureVMManager(io.Discard, stderr, validConfig, testUriFile.Name(), state, runner, time.Millisecond)
 		return command, runner, stderr
 	}
 
@@ -666,14 +667,14 @@ opsman-configuration:
 						runner := &fakes.AzureRunner{}
 						runner.ExecuteWithEnvVarsReturns(bytes.NewBufferString("\"success\"\r\n"), nil, nil)
 
-						invalidUriFile, err := ioutil.TempFile("", "some*.yaml")
+						invalidUriFile, err := os.CreateTemp("", "some*.yaml")
 						Expect(err).ToNot(HaveOccurred())
 						_, _ = invalidUriFile.WriteString("not valid yaml")
 						Expect(invalidUriFile.Close()).ToNot(HaveOccurred())
 						err = yaml.UnmarshalStrict([]byte(fmt.Sprintf(configStrTemplate, "us-west-1")), &validConfig)
 						Expect(err).ToNot(HaveOccurred())
 
-						command := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, validConfig, invalidUriFile.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
+						command := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, validConfig, invalidUriFile.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
 						_, _, err = command.CreateVM()
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(ContainSubstring("cannot unmarshal"))
@@ -703,7 +704,7 @@ opsman-configuration:
 
 						err := yaml.UnmarshalStrict([]byte(fmt.Sprintf(configStrTemplate, "us-west-1")), &validConfig)
 						Expect(err).ToNot(HaveOccurred())
-						command := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, validConfig, "does-not-exist.yml", vmmanagers.StateInfo{}, runner, time.Millisecond)
+						command := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, validConfig, "does-not-exist.yml", vmmanagers.StateInfo{}, runner, time.Millisecond)
 						_, _, err = command.CreateVM()
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(ContainSubstring("open does-not-exist.yml"))
@@ -730,7 +731,7 @@ opsman-configuration:
 			}}
 			runner := &fakes.AzureRunner{}
 
-			command := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, invalidConfig, "", vmmanagers.StateInfo{}, runner, time.Millisecond)
+			command := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, invalidConfig, "", vmmanagers.StateInfo{}, runner, time.Millisecond)
 			_, _, err := command.CreateVM()
 			Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("Field validation for '%s' failed on the 'required' tag", param)))
 		},
@@ -768,10 +769,10 @@ opsman-configuration:
 
 			runner := &fakes.AzureRunner{}
 
-			file, err := ioutil.TempFile("", "some*.yml")
+			file, err := os.CreateTemp("", "some*.yml")
 			Expect(err).ToNot(HaveOccurred())
 
-			command := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, validConfig, file.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
+			command := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, validConfig, file.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
 			runner.ExecuteWithEnvVarsReturns(bytes.NewBufferString("\"success\"\r\n"), nil, nil)
 			_, _, err = command.CreateVM()
 			Expect(err).ToNot(HaveOccurred())
@@ -806,9 +807,9 @@ opsman-configuration:
 			err := yaml.UnmarshalStrict([]byte(configStr), &validConfig)
 			Expect(err).ToNot(HaveOccurred())
 
-			file, err := ioutil.TempFile("", "some*.yml")
+			file, err := os.CreateTemp("", "some*.yml")
 			Expect(err).ToNot(HaveOccurred())
-			command := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, validConfig, file.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
+			command := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, validConfig, file.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
 
 			runner.ExecuteWithEnvVarsReturns(bytes.NewBufferString("\"success\"\r\n"), nil, nil)
 			_, _, err = command.CreateVM()
@@ -842,10 +843,10 @@ opsman-configuration:
 
 				runner := &fakes.AzureRunner{}
 
-				file, err := ioutil.TempFile("", "some*.yml")
+				file, err := os.CreateTemp("", "some*.yml")
 				Expect(err).ToNot(HaveOccurred())
 
-				command := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, validConfig, file.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
+				command := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, validConfig, file.Name(), vmmanagers.StateInfo{}, runner, time.Millisecond)
 				_, _, err = command.CreateVM()
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("expected \"use_managed_disk\" to be a boolean. Got: notABoolean."))
@@ -1046,7 +1047,7 @@ opsman-configuration:
 			}}
 			runner := &fakes.AzureRunner{}
 
-			azureRunner := vmmanagers.NewAzureVMManager(ioutil.Discard, ioutil.Discard, invalidConfig, "", vmmanagers.StateInfo{}, runner, time.Millisecond)
+			azureRunner := vmmanagers.NewAzureVMManager(io.Discard, io.Discard, invalidConfig, "", vmmanagers.StateInfo{}, runner, time.Millisecond)
 			err := azureRunner.DeleteVM()
 			Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("Field validation for '%s' failed on the 'required' tag", param)))
 		},

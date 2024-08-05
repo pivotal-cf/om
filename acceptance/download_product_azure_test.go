@@ -1,7 +1,6 @@
 package acceptance
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -62,7 +61,7 @@ var _ = Describe("download-product command", func() {
 				az("storage", "blob", "upload", "--overwrite", "-f", pivotalFile, "-n", "/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 				az("storage", "blob", "upload", "--overwrite", "-f", pivotalFile, "-n", "/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
-				tmpDir, err := ioutil.TempDir("", "")
+				tmpDir, err := os.MkdirTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "example-product.pivotal",
@@ -91,7 +90,7 @@ var _ = Describe("download-product command", func() {
 				Expect(filepath.Join(tmpDir, "[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.partial")).ToNot(BeAnExistingFile())
 
 				By("ensuring an assign stemcell artifact is created")
-				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
+				contents, err := os.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 

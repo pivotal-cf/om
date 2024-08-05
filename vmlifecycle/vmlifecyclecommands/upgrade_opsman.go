@@ -6,18 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/pivotal-cf/om/interpolate"
 	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
 	"github.com/pivotal-cf/om/vmlifecycle/runner"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
-	"gopkg.in/yaml.v2"
 )
 
 type opsmanVersion struct {
@@ -290,7 +290,7 @@ func (n *UpgradeOpsman) validate() error {
 
 func (n *UpgradeOpsman) validateImportInstallationConfig() error {
 	target := target{}
-	content, err := ioutil.ReadFile(n.ImportInstallation.EnvFile)
+	content, err := os.ReadFile(n.ImportInstallation.EnvFile)
 	if err != nil {
 		return err
 	}

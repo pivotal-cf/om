@@ -1,7 +1,7 @@
 package validator_test
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/pivotal-cf/om/validator"
@@ -19,11 +19,11 @@ var _ = Describe("FileSHA256HashCalculator", func() {
 	BeforeEach(func() {
 		fileSHA256HashCalculator = validator.NewSHA256Calculator()
 
-		tempDir, err := ioutil.TempDir("", "")
+		tempDir, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		fileToSHA256 = filepath.Join(tempDir, "file-to-sum")
-		err = ioutil.WriteFile(fileToSHA256, []byte("file contents"), 0644)
+		err = os.WriteFile(fileToSHA256, []byte("file contents"), 0644)
 		Expect(err).ToNot(HaveOccurred())
 	})
 

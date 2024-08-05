@@ -2,7 +2,7 @@ package commands_test
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"log"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -21,7 +21,7 @@ var _ = Describe("ConfigureOpsman", func() {
 
 	BeforeEach(func() {
 		fakeService = &fakes.ConfigureOpsmanService{}
-		logger := log.New(ioutil.Discard, "", 0)
+		logger := log.New(io.Discard, "", 0)
 		command = commands.NewConfigureOpsman(func() []string { return []string{} }, fakeService, logger)
 	})
 

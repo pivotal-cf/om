@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -428,7 +427,7 @@ opsman-configuration:
 
 						BeforeEach(func() {
 							var err error
-							invalidOVA, err = ioutil.TempFile("", "test.ova")
+							invalidOVA, err = os.CreateTemp("", "test.ova")
 							Expect(err).ToNot(HaveOccurred())
 							_, _ = invalidOVA.WriteString("some-string-that-makes-the-ova-invalid")
 							Expect(invalidOVA.Close()).ToNot(HaveOccurred())
@@ -755,13 +754,13 @@ opsman-configuration:
 })
 
 func createOVA(opsmanVersion string) *os.File {
-	ovaFile, err := ioutil.TempFile("", fmt.Sprintf("opsman-%s-*-.ova", opsmanVersion))
+	ovaFile, err := os.CreateTemp("", fmt.Sprintf("opsman-%s-*-.ova", opsmanVersion))
 	Expect(err).ToNot(HaveOccurred())
 	defer ovaFile.Close()
 	tarWriter := tar.NewWriter(ovaFile)
 	defer tarWriter.Close()
 
-	ovfFile, err := ioutil.TempFile("", "file*.ovf")
+	ovfFile, err := os.CreateTemp("", "file*.ovf")
 	Expect(err).ToNot(HaveOccurred())
 
 	header := &tar.Header{

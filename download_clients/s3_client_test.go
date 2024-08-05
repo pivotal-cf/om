@@ -4,9 +4,9 @@ import (
 	"archive/zip"
 	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 	"text/template"
 
@@ -273,7 +273,7 @@ func (m mockItem) Open() (io.ReadCloser, error) {
 		return nil, m.fileError
 	}
 
-	return ioutil.NopCloser(strings.NewReader("hello world")), nil
+	return io.NopCloser(strings.NewReader("hello world")), nil
 }
 
 func (m mockItem) ID() string {
@@ -285,14 +285,14 @@ func (m mockItem) Size() (int64, error) {
 }
 
 func createPivotalFile(productFileName, stemcellName, stemcellVersion string) string {
-	tempfile, err := ioutil.TempFile("", productFileName)
+	tempfile, err := os.CreateTemp("", productFileName)
 	Expect(err).ToNot(HaveOccurred())
 
 	zipper := zip.NewWriter(tempfile)
 	file, err := zipper.Create("metadata/props.yml")
 	Expect(err).ToNot(HaveOccurred())
 
-	contents, err := ioutil.ReadFile("./fixtures/example-product-metadata.yml")
+	contents, err := os.ReadFile("./fixtures/example-product-metadata.yml")
 	Expect(err).ToNot(HaveOccurred())
 
 	context := struct {

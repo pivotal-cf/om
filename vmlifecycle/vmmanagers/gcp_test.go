@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/pivotal-cf/om/vmlifecycle/matchers"
 
@@ -20,7 +20,7 @@ var _ = Describe("GCP VMManager", func() {
 	createCommand := func(region string, configStrTemplate string) (*vmmanagers.GCPVMManager, *fakes.GCloudRunner) {
 		var err error
 		runner := &fakes.GCloudRunner{}
-		testUriFile, err := ioutil.TempFile("", "some*.yml")
+		testUriFile, err := os.CreateTemp("", "some*.yml")
 		Expect(err).ToNot(HaveOccurred())
 		_, _ = testUriFile.WriteString(`
 ---
@@ -443,7 +443,7 @@ opsman-configuration:
 					It("returns that the yaml is invalid", func() {
 						command, _ := createCommand("us-west1", configStrTemplate)
 
-						invalidUriFile, err := ioutil.TempFile("", "some*.yaml")
+						invalidUriFile, err := os.CreateTemp("", "some*.yaml")
 						Expect(err).ToNot(HaveOccurred())
 						_, _ = invalidUriFile.WriteString("not valid yaml")
 						Expect(invalidUriFile.Close()).ToNot(HaveOccurred())

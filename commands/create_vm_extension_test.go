@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -76,10 +75,10 @@ var _ = Describe("CreateVMExtension", func() {
 		When("using a config file", func() {
 			Context("with a vars file", func() {
 				It("makes a request to the OpsMan to create a VM extension", func() {
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
-					varsFile, err = ioutil.TempFile("", "")
+					varsFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
@@ -108,10 +107,10 @@ var _ = Describe("CreateVMExtension", func() {
 
 			Context("with a var defined", func() {
 				It("makes a request to the OpsMan to create a VM extension", func() {
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
-					varsFile, err = ioutil.TempFile("", "")
+					varsFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
@@ -141,7 +140,7 @@ var _ = Describe("CreateVMExtension", func() {
 						func() []string { return []string{"OM_VAR_vm_extension_name=some-vm-extension"} },
 						fakeService,
 						fakeLogger)
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlVMExtensionFile)
@@ -185,7 +184,7 @@ var _ = Describe("CreateVMExtension", func() {
 				Expect(fakeService.CreateStagedVMExtensionCallCount()).Should(Equal(0))
 			})
 			It("returns an error when name not in file", func() {
-				configFile, err = ioutil.TempFile("", "")
+				configFile, err = os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = configFile.WriteString(ymlVMExtensionNoNameFile)
@@ -203,7 +202,7 @@ var _ = Describe("CreateVMExtension", func() {
 
 		Context("fails to interpolate config file", func() {
 			It("returns an error", func() {
-				configFile, err = ioutil.TempFile("", "")
+				configFile, err = os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = configFile.WriteString(ymlVMExtensionFile)
@@ -220,7 +219,7 @@ var _ = Describe("CreateVMExtension", func() {
 
 		Context("bad yaml in config file", func() {
 			It("returns an error", func() {
-				configFile, err = ioutil.TempFile("", "")
+				configFile, err = os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = configFile.WriteString("asdfasdf")

@@ -1,7 +1,7 @@
 package generator_test
 
 import (
-	"io/ioutil"
+	"os"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -10,7 +10,7 @@ import (
 )
 
 func getMetadata(filename string) *generator.Metadata {
-	fileData, err := ioutil.ReadFile(filename)
+	fileData, err := os.ReadFile(filename)
 	Expect(err).ToNot(HaveOccurred())
 	metadata, err := generator.NewMetadata(fileData)
 	Expect(err).ToNot(HaveOccurred())

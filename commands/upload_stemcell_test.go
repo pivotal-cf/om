@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -74,7 +73,7 @@ var _ = Describe("UploadStemcell", func() {
 		It("to all compatible products", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			submission := formcontent.ContentSubmission{
-				Content:       ioutil.NopCloser(strings.NewReader("")),
+				Content:       io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 				ContentLength: 10,
 			}
@@ -99,7 +98,7 @@ var _ = Describe("UploadStemcell", func() {
 
 			Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 				ContentLength: 10,
-				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+				Stemcell:      io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 			}))
 
@@ -121,7 +120,7 @@ var _ = Describe("UploadStemcell", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
 					ContentLength: 10,
-					Content:       ioutil.NopCloser(strings.NewReader("")),
+					Content:       io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 				}
 				multipart.FinalizeReturns(submission)
@@ -148,7 +147,7 @@ var _ = Describe("UploadStemcell", func() {
 
 				Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 					ContentLength: 10,
-					Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+					Stemcell:      io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 				}))
 
@@ -189,7 +188,7 @@ var _ = Describe("UploadStemcell", func() {
 			It("tries again", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
-					Content:       ioutil.NopCloser(strings.NewReader("")),
+					Content:       io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 					ContentLength: 10,
 				}
@@ -219,7 +218,7 @@ var _ = Describe("UploadStemcell", func() {
 			It("returns an error", func() {
 				fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 				submission := formcontent.ContentSubmission{
-					Content:       ioutil.NopCloser(strings.NewReader("")),
+					Content:       io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 					ContentLength: 10,
 				}
@@ -250,7 +249,7 @@ var _ = Describe("UploadStemcell", func() {
 			It("exits successfully without uploading", func() {
 				submission := formcontent.ContentSubmission{
 					ContentLength: 10,
-					Content:       ioutil.NopCloser(strings.NewReader("")),
+					Content:       io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 				}
 				multipart.FinalizeReturns(submission)
@@ -271,7 +270,7 @@ var _ = Describe("UploadStemcell", func() {
 		Context("and force is specified", func() {
 			It("uploads the stemcell", func() {
 				submission := formcontent.ContentSubmission{
-					Content:       ioutil.NopCloser(strings.NewReader("")),
+					Content:       io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 					ContentLength: 10,
 				}
@@ -292,7 +291,7 @@ var _ = Describe("UploadStemcell", func() {
 				Expect(file).To(Equal("/path/to/stemcell.tgz"))
 				Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 					ContentLength: 10,
-					Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+					Stemcell:      io.NopCloser(strings.NewReader("")),
 					ContentType:   "some content-type",
 				}))
 
@@ -310,7 +309,7 @@ var _ = Describe("UploadStemcell", func() {
 	When("the --shasum flag is defined", func() {
 		It("proceeds normally when the sha sums match", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
-			file, err := ioutil.TempFile("", "test-file.tgz")
+			file, err := os.CreateTemp("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
@@ -321,7 +320,7 @@ var _ = Describe("UploadStemcell", func() {
 
 			submission := formcontent.ContentSubmission{
 				ContentLength: 10,
-				Content:       ioutil.NopCloser(strings.NewReader("")),
+				Content:       io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 			}
 			multipart.FinalizeReturns(submission)
@@ -338,7 +337,7 @@ var _ = Describe("UploadStemcell", func() {
 			Expect(fmt.Sprintf(format, v...)).To(ContainSubstring("expected shasum matches stemcell shasum."))
 		})
 		It("returns an error when the sha sums don't match", func() {
-			file, err := ioutil.TempFile("", "test-file.tgz")
+			file, err := os.CreateTemp("", "test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(file.Name())
 
@@ -371,7 +370,7 @@ var _ = Describe("UploadStemcell", func() {
 			fakeService.InfoReturns(api.Info{Version: "2.2-build.1"}, nil)
 			submission := formcontent.ContentSubmission{
 				ContentLength: 10,
-				Content:       ioutil.NopCloser(strings.NewReader("")),
+				Content:       io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 			}
 			multipart.FinalizeReturns(submission)
@@ -390,7 +389,7 @@ var _ = Describe("UploadStemcell", func() {
 			Expect(file).To(Equal("/path/to/stemcell.tgz"))
 			Expect(fakeService.UploadStemcellArgsForCall(0)).To(Equal(api.StemcellUploadInput{
 				ContentLength: 10,
-				Stemcell:      ioutil.NopCloser(strings.NewReader("")),
+				Stemcell:      io.NopCloser(strings.NewReader("")),
 				ContentType:   "some content-type",
 			}))
 
