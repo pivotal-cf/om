@@ -1,17 +1,14 @@
 package vmmanagers_test
 
 import (
+	"fmt"
 	"log"
-	"regexp"
-	"testing"
-
 	"os"
 	"path/filepath"
-
-	"fmt"
-	"io/ioutil"
 	"reflect"
+	"regexp"
 	"strings"
+	"testing"
 
 	"gopkg.in/yaml.v2"
 
@@ -19,6 +16,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 )
 
@@ -57,7 +55,7 @@ var _ = AfterSuite(func() {
 func testIAASForPropertiesInExampleFile(iaas string) {
 	It("has an example file the represents all the correct fields", func() {
 		filename := fmt.Sprintf("../../../docs-platform-automation/docs/examples/opsman-config/%s.yml", strings.ToLower(iaas))
-		exampleFile, err := ioutil.ReadFile(filename)
+		exampleFile, err := os.ReadFile(filename)
 		Expect(err).ToNot(HaveOccurred())
 
 		isolateCommentedParamRegex := regexp.MustCompile(`(?m)^(\s+)# ([\w-]+: )`)
@@ -104,7 +102,7 @@ func testPropertiesExist(vst reflect.Value, filename string) {
 }
 
 func writePDFFile(contents string) string {
-	tempfile, err := ioutil.TempFile("", "some*.pdf")
+	tempfile, err := os.CreateTemp("", "some*.pdf")
 	Expect(err).ToNot(HaveOccurred())
 	_, err = tempfile.WriteString(contents)
 	Expect(err).ToNot(HaveOccurred())

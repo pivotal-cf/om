@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,7 +55,7 @@ var _ = SynchronizedAfterSuite(func() {}, func() {
 })
 
 func writeFile(contents string) string {
-	tempfile, err := ioutil.TempFile("", "some*.yaml")
+	tempfile, err := os.CreateTemp("", "some*.yaml")
 	Expect(err).ToNot(HaveOccurred())
 	_, err = tempfile.WriteString(contents)
 	Expect(err).ToNot(HaveOccurred())

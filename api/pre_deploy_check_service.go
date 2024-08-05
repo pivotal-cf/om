@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -83,7 +83,7 @@ func (a Api) ListPendingDirectorChanges() (PendingDirectorChangesOutput, error) 
 		return PendingDirectorChangesOutput{}, err
 	}
 
-	reportBytes, err := ioutil.ReadAll(resp.Body)
+	reportBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return PendingDirectorChangesOutput{}, err
 	}

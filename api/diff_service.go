@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 )
 
 type DirectorDiff struct {
@@ -47,7 +47,7 @@ func (a Api) DirectorDiff() (DirectorDiff, error) {
 		return DirectorDiff{}, fmt.Errorf("could not retrieve director diff: %w", err)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return DirectorDiff{}, err
 	}
@@ -82,7 +82,7 @@ func (a Api) ProductDiff(productName string) (ProductDiff, error) {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return ProductDiff{}, fmt.Errorf("could not read response body for product diff: %w", err)
 	}

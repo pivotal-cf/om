@@ -5,7 +5,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -18,10 +17,10 @@ func TestCommands(t *testing.T) {
 }
 
 func writeTestConfigFile(contents string) string {
-	file, err := ioutil.TempFile("", "config-*.yml")
+	file, err := os.CreateTemp("", "config-*.yml")
 	Expect(err).ToNot(HaveOccurred())
 
-	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
+	err = os.WriteFile(file.Name(), []byte(contents), 0777)
 	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

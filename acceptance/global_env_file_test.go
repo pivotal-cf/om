@@ -4,11 +4,11 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/onsi/gomega/gbytes"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
+
+	"github.com/onsi/gomega/gbytes"
 
 	"github.com/onsi/gomega/gexec"
 
@@ -44,7 +44,7 @@ var _ = Describe("global env file", func() {
 		createConfigFile := func(configContent string) {
 			var err error
 
-			configFile, err = ioutil.TempFile("", "config.yml")
+			configFile, err = os.CreateTemp("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)

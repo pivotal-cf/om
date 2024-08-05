@@ -3,7 +3,6 @@ package acceptance
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,7 +28,7 @@ var _ = Describe("config-template command", func() {
 	When("there is only one .pivotal file for the product version", func() {
 		BeforeEach(func() {
 			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-			contents, err := ioutil.ReadFile(pivotalFile)
+			contents, err := os.ReadFile(pivotalFile)
 			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
@@ -86,7 +85,7 @@ var _ = Describe("config-template command", func() {
 		})
 
 		It("writes a config template subdir for the product in the output directory", func() {
-			outputDir, err := ioutil.TempDir("", "")
+			outputDir, err := os.MkdirTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			productSlug, productVersion := "example-product", "1.0-build.0"
@@ -112,7 +111,7 @@ var _ = Describe("config-template command", func() {
 
 		When("the metadata contains a required collection that contains a cert", func() {
 			It("renders the cert fields appropriately in the product.yml", func() {
-				outputDir, err := ioutil.TempDir("", "")
+				outputDir, err := os.MkdirTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				productSlug, metadataName, productVersion := "example-product", "example-product", "1.0-build.0"
@@ -135,7 +134,7 @@ var _ = Describe("config-template command", func() {
 				productYMLFile := filepath.Join(outputDir, metadataName, productVersion, "product.yml")
 				Expect(productYMLFile).To(BeAnExistingFile())
 
-				productYMLBytes, err := ioutil.ReadFile(productYMLFile)
+				productYMLBytes, err := os.ReadFile(productYMLFile)
 				Expect(err).ToNot(HaveOccurred())
 
 				expectedYAML := `.properties.example_required_cert_collection:
@@ -150,7 +149,7 @@ var _ = Describe("config-template command", func() {
 
 		When("the metadata contains a required collection that contains a cert", func() {
 			It("renders the cert fields appropriately in the product.yml", func() {
-				outputDir, err := ioutil.TempDir("", "")
+				outputDir, err := os.MkdirTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				productSlug, metadataName, productVersion := "example-product", "example-product", "1.0-build.0"
@@ -173,7 +172,7 @@ var _ = Describe("config-template command", func() {
 				productYMLFile := filepath.Join(outputDir, metadataName, productVersion, "product.yml")
 				Expect(productYMLFile).To(BeAnExistingFile())
 
-				productYMLBytes, err := ioutil.ReadFile(productYMLFile)
+				productYMLBytes, err := os.ReadFile(productYMLFile)
 				Expect(err).ToNot(HaveOccurred())
 
 				expectedYAML := `.properties.required_secret_collection:
@@ -189,7 +188,7 @@ var _ = Describe("config-template command", func() {
 	When("there is more than one .pivotal file for a product version", func() {
 		BeforeEach(func() {
 			pivotalFile := createPivotalFile("[example-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-			contents, err := ioutil.ReadFile(pivotalFile)
+			contents, err := os.ReadFile(pivotalFile)
 			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
@@ -264,7 +263,7 @@ var _ = Describe("config-template command", func() {
 		})
 		Context("and the user has not provided a product file glob", func() {
 			It("errors because the default glob did not match", func() {
-				outputDir, err := ioutil.TempDir("", "")
+				outputDir, err := os.MkdirTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				productSlug, productVersion := "another-example-product", "1.0-build.0"
@@ -287,7 +286,7 @@ var _ = Describe("config-template command", func() {
 		})
 		Context("and the user has provided a glob with a unique match", func() {
 			It("writes a config template subdir for the product in the output directory", func() {
-				outputDir, err := ioutil.TempDir("", "")
+				outputDir, err := os.MkdirTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				productSlug, productVersion := "another-example-product", "1.0-build.0"
@@ -321,7 +320,7 @@ var _ = Describe("config-template output", func() {
 			Skip("TEST_PIVNET_TOKEN not specified")
 		}
 
-		outputDir, err := ioutil.TempDir("", "")
+		outputDir, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		command := exec.Command(pathToMain,

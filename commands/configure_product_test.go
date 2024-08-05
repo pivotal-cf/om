@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/pivotal-cf/om/api"
@@ -31,7 +30,7 @@ var _ = Describe("ConfigureProduct", func() {
 		})
 
 		JustBeforeEach(func() {
-			configFile, err = ioutil.TempFile("", "config.yml")
+			configFile, err = os.CreateTemp("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())
 			defer configFile.Close()
 
@@ -350,13 +349,13 @@ var _ = Describe("ConfigureProduct", func() {
 					It("can interpolate variables into the configuration", func() {
 						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-						configFile, err = ioutil.TempFile("", "")
+						configFile, err = os.CreateTemp("", "")
 						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
 						Expect(err).ToNot(HaveOccurred())
 
-						varsFile, err := ioutil.TempFile("", "")
+						varsFile, err := os.CreateTemp("", "")
 						Expect(err).ToNot(HaveOccurred())
 
 						_, err = varsFile.WriteString(`password: something-secure`)
@@ -374,7 +373,7 @@ var _ = Describe("ConfigureProduct", func() {
 					It("can interpolate variables into the configuration", func() {
 						client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-						configFile, err = ioutil.TempFile("", "")
+						configFile, err = os.CreateTemp("", "")
 						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
@@ -392,7 +391,7 @@ var _ = Describe("ConfigureProduct", func() {
 					It("can interpolate variables into the configuration", func() {
 						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)
 
-						configFile, err = ioutil.TempFile("", "")
+						configFile, err = os.CreateTemp("", "")
 						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
@@ -411,7 +410,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 						client := commands.NewConfigureProduct(func() []string { return []string{"OM_VAR_password=something-secure"} }, service, "", logger)
 
-						configFile, err = ioutil.TempFile("", "")
+						configFile, err = os.CreateTemp("", "")
 						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
@@ -427,7 +426,7 @@ var _ = Describe("ConfigureProduct", func() {
 				It("returns an error if missing variables", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(productPropertiesWithVariableTemplate)
@@ -444,13 +443,13 @@ var _ = Describe("ConfigureProduct", func() {
 				It("can interpolate ops-files into the configuration", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlProductProperties)
 					Expect(err).ToNot(HaveOccurred())
 
-					opsFile, err := ioutil.TempFile("", "")
+					opsFile, err := os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = opsFile.WriteString(productOpsFile)
@@ -471,13 +470,13 @@ var _ = Describe("ConfigureProduct", func() {
 				It("returns an error if the ops file is invalid", func() {
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(ymlProductProperties)
 					Expect(err).ToNot(HaveOccurred())
 
-					opsFile, err := ioutil.TempFile("", "")
+					opsFile, err := os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = opsFile.WriteString(`%%%`)
@@ -716,7 +715,7 @@ var _ = Describe("ConfigureProduct", func() {
 							},
 						}, nil)
 
-						configFile, err = ioutil.TempFile("", "")
+						configFile, err = os.CreateTemp("", "")
 						Expect(err).ToNot(HaveOccurred())
 
 						_, err = configFile.WriteString(invalidConfig)
@@ -830,7 +829,7 @@ var _ = Describe("ConfigureProduct", func() {
 					service.UpdateStagedProductErrandsReturns(errors.New("error configuring errand"))
 					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
 
-					configFile, err = ioutil.TempFile("", "")
+					configFile, err = os.CreateTemp("", "")
 					Expect(err).ToNot(HaveOccurred())
 
 					_, err = configFile.WriteString(errandConfigFile)
@@ -846,7 +845,7 @@ var _ = Describe("ConfigureProduct", func() {
 			Context("with unrecognized top-level-keys", func() {
 				It("returns error saying the specified key", func() {
 					configYAML := `{"product-name": "cf", "unrecognized-other-key": {}, "unrecognized-key": {"some-attr1": "some-val1"}}`
-					configFile, err := ioutil.TempFile("", "config.yaml")
+					configFile, err := os.CreateTemp("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
 					_, err = configFile.WriteString(configYAML)
 					Expect(err).ToNot(HaveOccurred())

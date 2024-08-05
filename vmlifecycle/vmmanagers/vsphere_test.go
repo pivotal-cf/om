@@ -2,21 +2,20 @@ package vmmanagers_test
 
 import (
 	"archive/tar"
-	"fmt"
-	"io/ioutil"
-	"os"
-
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
+
 	"github.com/pivotal-cf/om/vmlifecycle/matchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
-	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("vSphere VMManager", func() {
@@ -213,7 +212,6 @@ opsman-configuration:
 						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
 					})
 				})
-
 
 				When("setting custom disk_size", func() {
 					const configTemplate = `
@@ -430,7 +428,7 @@ opsman-configuration:
 
 						BeforeEach(func() {
 							var err error
-							invalidOVA, err = ioutil.TempFile("", "test.ova")
+							invalidOVA, err = os.CreateTemp("", "test.ova")
 							Expect(err).ToNot(HaveOccurred())
 							_, _ = invalidOVA.WriteString("some-string-that-makes-the-ova-invalid")
 							Expect(invalidOVA.Close()).ToNot(HaveOccurred())
@@ -757,13 +755,13 @@ opsman-configuration:
 })
 
 func createOVA(opsmanVersion string) *os.File {
-	ovaFile, err := ioutil.TempFile("", fmt.Sprintf("opsman-%s-*-.ova", opsmanVersion))
+	ovaFile, err := os.CreateTemp("", fmt.Sprintf("opsman-%s-*-.ova", opsmanVersion))
 	Expect(err).ToNot(HaveOccurred())
 	defer ovaFile.Close()
 	tarWriter := tar.NewWriter(ovaFile)
 	defer tarWriter.Close()
 
-	ovfFile, err := ioutil.TempFile("", "file*.ovf")
+	ovfFile, err := os.CreateTemp("", "file*.ovf")
 	Expect(err).ToNot(HaveOccurred())
 
 	header := &tar.Header{

@@ -1,15 +1,13 @@
 package docs_test
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/onsi/gomega/gexec"
-
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -51,7 +49,7 @@ func readFile(docName string) (docContents string) {
 	docPath, err := filepath.Abs(docName)
 	Expect(err).ToNot(HaveOccurred())
 
-	docContentsBytes, err := ioutil.ReadFile(docPath)
+	docContentsBytes, err := os.ReadFile(docPath)
 	docContents = string(docContentsBytes)
 	Expect(err).ToNot(HaveOccurred())
 

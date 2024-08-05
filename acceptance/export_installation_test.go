@@ -1,13 +1,14 @@
 package acceptance
 
 import (
+	"net/http"
+	"os"
+	"os/exec"
+	"time"
+
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/ghttp"
-	"io/ioutil"
-	"net/http"
-	"os/exec"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,7 +21,7 @@ var _ = Describe("export-installation command", func() {
 	)
 
 	BeforeEach(func() {
-		tempFile, err := ioutil.TempFile("", "")
+		tempFile, err := os.CreateTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 		outputFileName = tempFile.Name()
 
@@ -60,7 +61,7 @@ var _ = Describe("export-installation command", func() {
 		Expect(session.Err).To(gbytes.Say("exporting installation"))
 		Expect(session.Err).To(gbytes.Say("finished exporting installation"))
 
-		content, err := ioutil.ReadFile(outputFileName)
+		content, err := os.ReadFile(outputFileName)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(content).To(Equal([]byte("some-installation")))
 	})

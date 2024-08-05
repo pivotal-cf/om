@@ -2,13 +2,13 @@ package acceptance
 
 import (
 	"fmt"
-	"github.com/onsi/gomega/ghttp"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
+
+	"github.com/onsi/gomega/ghttp"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -24,14 +24,14 @@ var _ = Describe("upload-stemcell command", func() {
 	)
 
 	createStemcell := func(filename string) (string, string) {
-		dir, err := ioutil.TempDir("", "")
+		dir, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		err = os.MkdirAll(filepath.Join(dir, "stemcells"), 0777)
 		Expect(err).ToNot(HaveOccurred())
 
 		path := filepath.Join(dir, "stemcells", filename)
-		err = ioutil.WriteFile(path, []byte("content so validation does not fail"), 0777)
+		err = os.WriteFile(path, []byte("content so validation does not fail"), 0777)
 		Expect(err).ToNot(HaveOccurred())
 		return path, dir
 	}
@@ -246,7 +246,7 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 		When("the content to upload is empty", func() {
 			It("returns an error", func() {
-				emptyContent, err := ioutil.TempFile("", "")
+				emptyContent, err := os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 
 				command := exec.Command(pathToMain,

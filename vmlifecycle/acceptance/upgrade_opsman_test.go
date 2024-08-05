@@ -3,20 +3,20 @@ package integration_test
 import (
 	"archive/zip"
 	"fmt"
+	"net/http"
+	"os"
+	"os/exec"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/ghttp"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"os/exec"
 )
 
 var _ = Describe("UpgradeOpsman", func() {
 	createZipFile := func(files []struct{ Name, Body string }) string {
-		tmpFile, err := ioutil.TempFile("", "")
+		tmpFile, err := os.CreateTemp("", "")
 		w := zip.NewWriter(tmpFile)
 
 		Expect(err).ToNot(HaveOccurred())
@@ -95,7 +95,7 @@ opsman-configuration:
 		installation := createZipFile([]struct{ Name, Body string }{
 			{"installation.yml", ""}})
 
-		fh, err := ioutil.TempFile("", "Ops1.1-build.123.yml")
+		fh, err := os.CreateTemp("", "Ops1.1-build.123.yml")
 		Expect(err).ToNot(HaveOccurred())
 		Expect(fh.Close()).ToNot(HaveOccurred())
 
@@ -121,7 +121,7 @@ decryption-passphrase: password
 
 		Eventually(session.Err).ShouldNot(gbytes.Say("gcloud"))
 
-		contents, err := ioutil.ReadFile(stateFile)
+		contents, err := os.ReadFile(stateFile)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(contents).To(MatchYAML(`{"iaas": "gcp", "vm_id": "opsman-vm"}`))
 	})

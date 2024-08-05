@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	yamlConverter "github.com/ghodss/yaml"
@@ -239,7 +239,7 @@ func (a Api) addGUIDToExistingNetworks(networks Networks) (Networks, error) {
 		return Networks{}, err
 	}
 
-	existingNetworksJSON, err := ioutil.ReadAll(existingNetworksResponse.Body)
+	existingNetworksJSON, err := io.ReadAll(existingNetworksResponse.Body)
 	if err != nil {
 		return Networks{}, fmt.Errorf("unable to read existing network configuration") // un-test: %w", erred
 	}
@@ -293,7 +293,7 @@ func (a Api) UpdateStagedDirectorIAASConfigurations(iaasConfig IAASConfiguration
 	}
 	defer iaasGetResp.Body.Close()
 
-	existingIAASJSON, err := ioutil.ReadAll(iaasGetResp.Body)
+	existingIAASJSON, err := io.ReadAll(iaasGetResp.Body)
 	if err != nil {
 		return err
 	}
@@ -405,7 +405,7 @@ func (a Api) updateIAASConfigurationInDirectorProperties(iaasConfigurations []*I
 	}
 	defer resp.Body.Close()
 
-	existingIAASJSON, err := ioutil.ReadAll(resp.Body)
+	existingIAASJSON, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("could not read IAAS configuration: %s", err)
 	}
@@ -464,7 +464,7 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 		return AvailabilityZones{}, fmt.Errorf("received unexpected status while fetching AZ configuration: %d", existingAzsResponse.StatusCode)
 	}
 
-	existingAzsJSON, err := ioutil.ReadAll(existingAzsResponse.Body)
+	existingAzsJSON, err := io.ReadAll(existingAzsResponse.Body)
 	if err != nil {
 		return AvailabilityZones{}, fmt.Errorf("unable to read existing AZ configuration: %w", err)
 	}

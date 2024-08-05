@@ -3,7 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
@@ -58,12 +58,12 @@ func (c Interpolate) Execute(args []string) error {
 	// Bitwise AND uses stdin's file mode mask against the unix character device to
 	// determine if it's pointing to stdin's pipe
 	if info.Mode()&os.ModeCharDevice == 0 && (len(c.Options.ConfigFile) == 0 || c.Options.ConfigFile == "-") {
-		contents, err := ioutil.ReadAll(c.input)
+		contents, err := io.ReadAll(c.input)
 		if err != nil {
 			return fmt.Errorf("error reading STDIN: %s", err)
 		}
 
-		tempFile, err := ioutil.TempFile("", "yml")
+		tempFile, err := os.CreateTemp("", "yml")
 		if err != nil {
 			return fmt.Errorf("error generating temp file for STDIN: %s", err)
 		}

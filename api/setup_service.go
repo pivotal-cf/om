@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -111,7 +111,7 @@ func (a Api) EnsureAvailability(input EnsureAvailabilityInput) (EnsureAvailabili
 		}
 
 	case http.StatusOK:
-		respBody, err := ioutil.ReadAll(response.Body)
+		respBody, err := io.ReadAll(response.Body)
 		if err != nil {
 			return EnsureAvailabilityOutput{}, err
 		}

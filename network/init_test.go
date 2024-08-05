@@ -1,11 +1,11 @@
 package network_test
 
 import (
+	"os"
+	"testing"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
-
-	"testing"
 )
 
 func TestNetwork(t *testing.T) {
@@ -14,10 +14,10 @@ func TestNetwork(t *testing.T) {
 }
 
 func writeFile(contents string) string {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	Expect(err).ToNot(HaveOccurred())
 
-	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
+	err = os.WriteFile(file.Name(), []byte(contents), 0777)
 	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

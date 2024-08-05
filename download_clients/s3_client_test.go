@@ -3,18 +3,19 @@ package download_clients_test
 import (
 	"archive/zip"
 	"errors"
+	"io"
+	"log"
+	"net/url"
+	"os"
+	"strings"
+	"text/template"
+
 	"github.com/graymeta/stow"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/om/download_clients"
-	"log"
-	"net/url"
-	"strings"
 
-	"io"
-	"io/ioutil"
-	"text/template"
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 var _ = Describe("S3Client", func() {
@@ -273,7 +274,7 @@ func (m mockItem) Open() (io.ReadCloser, error) {
 		return nil, m.fileError
 	}
 
-	return ioutil.NopCloser(strings.NewReader("hello world")), nil
+	return io.NopCloser(strings.NewReader("hello world")), nil
 }
 
 func (m mockItem) ID() string {
@@ -285,14 +286,14 @@ func (m mockItem) Size() (int64, error) {
 }
 
 func createPivotalFile(productFileName, stemcellName, stemcellVersion string) string {
-	tempfile, err := ioutil.TempFile("", productFileName)
+	tempfile, err := os.CreateTemp("", productFileName)
 	Expect(err).ToNot(HaveOccurred())
 
 	zipper := zip.NewWriter(tempfile)
 	file, err := zipper.Create("metadata/props.yml")
 	Expect(err).ToNot(HaveOccurred())
 
-	contents, err := ioutil.ReadFile("./fixtures/example-product-metadata.yml")
+	contents, err := os.ReadFile("./fixtures/example-product-metadata.yml")
 	Expect(err).ToNot(HaveOccurred())
 
 	context := struct {

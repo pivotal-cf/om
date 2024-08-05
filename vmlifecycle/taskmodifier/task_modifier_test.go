@@ -3,10 +3,11 @@ package taskmodifier_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/onsi/gomega/gbytes"
+
 	"github.com/pivotal-cf/om/vmlifecycle/taskmodifier"
 
 	. "github.com/onsi/ginkgo"
@@ -18,13 +19,13 @@ var _ = Describe("When modifying task files", func() {
 		var taskDir string
 		BeforeEach(func() {
 			var err error
-			taskDir, err = ioutil.TempDir("", "")
+			taskDir, err = os.MkdirTemp("", "")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		When("config directories are specified", func() {
 			It("errors when one of the config directories does not exist", func() {
-				configDir, err := ioutil.TempDir("", "")
+				configDir, err := os.MkdirTemp("", "")
 				Expect(err).NotTo(HaveOccurred())
 
 				taskModifier := taskmodifier.NewTaskModifier()
@@ -41,7 +42,7 @@ var _ = Describe("When modifying task files", func() {
 			var configDir string
 			BeforeEach(func() {
 				var err error
-				configDir, err = ioutil.TempDir("", "")
+				configDir, err = os.MkdirTemp("", "")
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -231,7 +232,7 @@ var _ = Describe("When modifying task files", func() {
 
 			BeforeEach(func() {
 				var err error
-				configDir, err = ioutil.TempDir("", "")
+				configDir, err = os.MkdirTemp("", "")
 				Expect(err).NotTo(HaveOccurred())
 
 				writeFile(filepath.Join(taskDir, "with-params.yml"), `params: {}`)
@@ -246,7 +247,7 @@ var _ = Describe("When modifying task files", func() {
 
 				BeforeEach(func() {
 					var err error
-					varsDir, err = ioutil.TempDir("", "")
+					varsDir, err = os.MkdirTemp("", "")
 					Expect(err).NotTo(HaveOccurred())
 					writeFile(filepath.Join(varsDir, "whitelist-secrets.yml"), "nested:\n  secret: secret-nested-value\nnon-nested-secret: non-nested-value")
 				})
@@ -273,7 +274,7 @@ var _ = Describe("When modifying task files", func() {
 
 				BeforeEach(func() {
 					var err error
-					varsDir, err = ioutil.TempDir("", "")
+					varsDir, err = os.MkdirTemp("", "")
 					Expect(err).NotTo(HaveOccurred())
 					writeFile(filepath.Join(varsDir, "all-secrets.yml"), "nested:\n  secret: secret-nested-value\nnon-nested-secret: non-nested-value\nnon-vars-file-secret: actually-a-secret\nanother-secret: secret2\nthird-secret: secret3")
 				})
@@ -306,7 +307,7 @@ var _ = Describe("When modifying task files", func() {
 				BeforeEach(func() {
 					var err error
 
-					invalidVarsDir, err = ioutil.TempDir("", "{invalid")
+					invalidVarsDir, err = os.MkdirTemp("", "{invalid")
 					Expect(err).NotTo(HaveOccurred())
 				})
 
@@ -325,7 +326,7 @@ var _ = Describe("When modifying task files", func() {
 
 				BeforeEach(func() {
 					var err error
-					varsDir, err = ioutil.TempDir("", "")
+					varsDir, err = os.MkdirTemp("", "")
 					invalidFile := filepath.Join(varsDir, "invalid.yml")
 					Expect(err).NotTo(HaveOccurred())
 					writeFile(filepath.Join(varsDir, "all-secrets.yml"), "nested:\n  secret: secret-nested-value\nnon-nested-secret: non-nested-value\nnon-vars-file-secret: actually-a-secret")

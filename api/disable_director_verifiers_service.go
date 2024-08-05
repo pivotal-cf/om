@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 )
 
 const listDirectorVerifiersEndpoint = "/api/v0/staged/director/verifiers/install_time"
@@ -29,7 +29,7 @@ func (a Api) ListDirectorVerifiers() ([]Verifier, error) {
 		return nil, err
 	}
 
-	verifiersBytes, err := ioutil.ReadAll(resp.Body)
+	verifiersBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

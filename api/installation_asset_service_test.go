@@ -1,12 +1,13 @@
 package api_test
 
 import (
-	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-cf/om/api"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/onsi/gomega/ghttp"
+
+	"github.com/pivotal-cf/om/api"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -44,7 +45,7 @@ var _ = Describe("InstallationAssetService", func() {
 
 		BeforeEach(func() {
 			var err error
-			outputFile, err = ioutil.TempFile("", "")
+			outputFile, err = os.CreateTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -65,7 +66,7 @@ var _ = Describe("InstallationAssetService", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			By("writing the installation to a local file")
-			ins, err := ioutil.ReadFile(outputFile.Name())
+			ins, err := os.ReadFile(outputFile.Name())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(ins)).To(Equal("some-installation"))
 		})

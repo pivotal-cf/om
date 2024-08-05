@@ -6,17 +6,16 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/pivotal-cf/om/network"
-
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,7 +47,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 			Expect(response).ToNot(BeNil())
 			Expect(response.StatusCode).To(Equal(http.StatusTeapot))
 
-			body, err := ioutil.ReadAll(response.Body)
+			body, err := io.ReadAll(response.Body)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(body)).To(Equal("response"))
 
@@ -58,7 +57,7 @@ var _ = Describe("UnauthenticatedClient", func() {
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.String()).To(Equal("/path?query"))
 
-			body, err = ioutil.ReadAll(request.Body)
+			body, err = io.ReadAll(request.Body)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(body)).To(Equal("request"))
 		})
