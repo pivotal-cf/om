@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -99,7 +100,7 @@ var _ = Describe("bosh-env", func() {
 			BeforeEach(func() {
 				err = os.Mkdir("./tmp", os.ModePerm)
 				Expect(err).ToNot(HaveOccurred())
-				f, err = os.CreateTemp("./tmp", "opsmankey-*.pem")
+				f, err = ioutil.TempFile("./tmp", "opsmankey-*.pem")
 				Expect(err).ToNot(HaveOccurred())
 
 				keyFile, err = filepath.Abs(f.Name())
@@ -208,7 +209,7 @@ var _ = Describe("bosh-env", func() {
 				err = os.RemoveAll("./tmp-all-env")
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			f, err := os.CreateTemp("./tmp-all-env", "opsmankey-*.pem")
+			f, err := ioutil.TempFile("./tmp-all-env", "opsmankey-*.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			keyFile, err := filepath.Abs(f.Name())
@@ -258,7 +259,7 @@ var _ = Describe("bosh-env", func() {
 				err = os.RemoveAll("./tmp-bosh-env")
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			f, err := os.CreateTemp("./tmp-bosh-env", "opsmankey-*.pem")
+			f, err := ioutil.TempFile("./tmp-bosh-env", "opsmankey-*.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			keyFile, err := filepath.Abs(f.Name())
@@ -303,7 +304,7 @@ var _ = Describe("bosh-env", func() {
 				err = os.RemoveAll("./tmp-credhub-env")
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			f, err := os.CreateTemp("./tmp-credhub-env", "opsmankey-*.pem")
+			f, err := ioutil.TempFile("./tmp-credhub-env", "opsmankey-*.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			keyFile, err := filepath.Abs(f.Name())

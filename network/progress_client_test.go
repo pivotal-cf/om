@@ -2,14 +2,13 @@ package network_test
 
 import (
 	"errors"
-	"io"
-	"net/http"
-	"strings"
-
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/network/fakes"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,13 +31,13 @@ var _ = Describe("ProgressClient", func() {
 	Describe("Do", func() {
 		It("makes a request to upload the product to the Ops Manager", func() {
 			client.DoStub = func(req *http.Request) (*http.Response, error) {
-				_, err := io.Copy(io.Discard, req.Body)
+				_, err := io.Copy(ioutil.Discard, req.Body)
 				Expect(err).ToNot(HaveOccurred())
 				err = req.Body.Close()
 				Expect(err).ToNot(HaveOccurred())
 				return &http.Response{
 					StatusCode: http.StatusOK,
-					Body:       io.NopCloser(strings.NewReader(`{}`)),
+					Body:       ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil
 			}
 
@@ -50,7 +49,7 @@ var _ = Describe("ProgressClient", func() {
 
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			rawRespBody, err := io.ReadAll(resp.Body)
+			rawRespBody, err := ioutil.ReadAll(resp.Body)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(rawRespBody)).To(Equal(`{}`))
 
@@ -65,7 +64,7 @@ var _ = Describe("ProgressClient", func() {
 			client.DoReturns(&http.Response{
 				StatusCode:    http.StatusOK,
 				ContentLength: int64(len([]byte("fake-server-response"))),
-				Body:          io.NopCloser(strings.NewReader("fake-server-response")),
+				Body:          ioutil.NopCloser(strings.NewReader("fake-server-response")),
 			}, nil)
 
 			req, err := http.NewRequest("GET", "/some/endpoint", nil)
@@ -76,7 +75,7 @@ var _ = Describe("ProgressClient", func() {
 
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			rawRespBody, err := io.ReadAll(resp.Body)
+			rawRespBody, err := ioutil.ReadAll(resp.Body)
 			resp.Body.Close()
 
 			Expect(err).ToNot(HaveOccurred())
@@ -108,7 +107,7 @@ var _ = Describe("ProgressClient", func() {
 				It("returns an error", func() {
 					client.DoReturns(&http.Response{
 						StatusCode: http.StatusRequestTimeout,
-						Body:       io.NopCloser(strings.NewReader(`something from nginx probably xml`)),
+						Body:       ioutil.NopCloser(strings.NewReader(`something from nginx probably xml`)),
 					}, nil)
 
 					var req *http.Request

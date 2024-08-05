@@ -4,10 +4,9 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"io"
-	"regexp"
-
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"regexp"
 )
 
 var metadataRegexp = regexp.MustCompile(`^(\.\/)?metadata/.*\.yml`)
@@ -46,7 +45,7 @@ func captureMetadata(file *zip.File) (*Metadata, error) {
 		return nil, err
 	}
 
-	contents, err := io.ReadAll(metadataFile)
+	contents, err := ioutil.ReadAll(metadataFile)
 	if err != nil {
 		return nil, err
 	}

@@ -2,14 +2,12 @@ package vmlifecyclecommands_test
 
 import (
 	"errors"
-	"io"
-	"os"
-	"path/filepath"
-
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands/fakes"
+	"io"
+	"io/ioutil"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,19 +30,19 @@ var _ = Describe("PrepareTasksWithSecrets", func() {
 		errWriter = gbytes.NewBuffer()
 
 		var err error
-		taskDir, err = os.MkdirTemp("", "")
+		taskDir, err = ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		configDir, err = os.MkdirTemp("", "")
+		configDir, err = ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		configDir2, err = os.MkdirTemp("", "")
+		configDir2, err = ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		varsDir, err = os.MkdirTemp("", "")
+		varsDir, err = ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		varsDir2, err = os.MkdirTemp("", "")
+		varsDir2, err = ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
 	})
 

@@ -3,12 +3,11 @@ package download_clients_test
 import (
 	"errors"
 	"fmt"
+	"github.com/graymeta/stow"
+	"github.com/pivotal-cf/om/download_clients"
+	"io/ioutil"
 	"log"
 	"os"
-
-	"github.com/graymeta/stow"
-
-	"github.com/pivotal-cf/om/download_clients"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -215,7 +214,7 @@ var _ = Describe("stowClient", func() {
 
 		BeforeEach(func() {
 			var err error
-			file, err = os.CreateTemp("", "")
+			file, err = ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = file.WriteString(fileContents)
@@ -240,13 +239,13 @@ var _ = Describe("stowClient", func() {
 
 			client := download_clients.NewStowClient(stower, stderr, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
-			file, err := os.CreateTemp("", "")
+			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.DownloadProductToFile(createPivnetFileArtifact(), file)
 			Expect(err).ToNot(HaveOccurred())
 
-			contents, err := os.ReadFile(file.Name())
+			contents, err := ioutil.ReadFile(file.Name())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(contents).To(Equal([]byte(fileContents)))
 		})
@@ -259,7 +258,7 @@ var _ = Describe("stowClient", func() {
 				location: location,
 			}
 
-			file, err := os.CreateTemp("", "")
+			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")

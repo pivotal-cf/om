@@ -2,11 +2,11 @@ package acceptance
 
 import (
 	"fmt"
+	"github.com/onsi/gomega/ghttp"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
-
-	"github.com/onsi/gomega/ghttp"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -170,7 +170,7 @@ var _ = Describe("configure-product command", func() {
 			),
 		)
 
-		configFile, err = os.CreateTemp("", "")
+		configFile, err = ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(configFileContents)
@@ -256,7 +256,7 @@ var _ = Describe("configure-product command", func() {
 			"resource-config": %s
 		}`, propertiesJSON, productNetworkJSON, nsxResourceConfigJSON)
 
-		configFile, err = os.CreateTemp("", "")
+		configFile, err = ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(nsxConfigFileContents)

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"path/filepath"
 	"strings"
 
@@ -330,7 +330,7 @@ func (g *GCPVMManager) deleteVM(id string) error {
 }
 
 func (g *GCPVMManager) generateServiceAccountKeyFile() (serviceAccountFileName string, err error) {
-	serviceAccountFile, err := os.CreateTemp("", "key.yaml")
+	serviceAccountFile, err := ioutil.TempFile("", "key.yaml")
 	if err != nil {
 		return "", err
 	}
@@ -410,7 +410,7 @@ func (f imageGCPFormat) get(s string) string {
 
 func loadImageYaml(imageYaml string) (imageGCPFormat, error) {
 	var imageUriMap imageGCPFormat
-	imageUriMapByte, err := os.ReadFile(imageYaml)
+	imageUriMapByte, err := ioutil.ReadFile(imageYaml)
 	if err != nil {
 		return imageUriMap, err
 	}

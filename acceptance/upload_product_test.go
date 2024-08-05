@@ -2,17 +2,17 @@ package acceptance
 
 import (
 	"archive/zip"
-	"io"
-	"net/http"
-	"os"
-	"os/exec"
-	"path/filepath"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/ghttp"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
 )
 
 var _ = Describe("upload-product command", func() {
@@ -23,7 +23,7 @@ var _ = Describe("upload-product command", func() {
 
 	BeforeEach(func() {
 		var err error
-		productFile, err = os.CreateTemp("", "cool_name.com")
+		productFile, err = ioutil.TempFile("", "cool_name.com")
 		Expect(err).ToNot(HaveOccurred())
 
 		stat, err := productFile.Stat()
@@ -34,7 +34,7 @@ var _ = Describe("upload-product command", func() {
 		productWriter, err := zipper.CreateHeader(&zip.FileHeader{
 			Name:               "./metadata/some-product.yml",
 			UncompressedSize64: uint64(stat.Size()),
-			Modified:           stat.ModTime(),
+			ModifiedTime:       uint16(stat.ModTime().Unix()),
 		})
 		Expect(err).ToNot(HaveOccurred())
 
@@ -125,7 +125,7 @@ name: some-product`)
 
 		BeforeEach(func() {
 			var err error
-			emptyContent, err = os.CreateTemp("", "")
+			emptyContent, err = ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 		})
 

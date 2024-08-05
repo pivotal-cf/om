@@ -3,7 +3,7 @@ package acceptance
 import (
 	"crypto/x509"
 	"encoding/pem"
-	"os"
+	"io/ioutil"
 	"os/exec"
 
 	"github.com/onsi/gomega/gexec"
@@ -123,10 +123,10 @@ var _ = Describe("global flags", func() {
 })
 
 func writeFile(contents string) string {
-	file, err := os.CreateTemp("", "")
+	file, err := ioutil.TempFile("", "")
 	Expect(err).ToNot(HaveOccurred())
 
-	err = os.WriteFile(file.Name(), []byte(contents), 0777)
+	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
 	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

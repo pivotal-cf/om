@@ -1,18 +1,17 @@
 package generator_test
 
 import (
-	"os"
+	"io/ioutil"
 
 	. "github.com/onsi/ginkgo/extensions/table"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/pivotal-cf/om/configtemplate/generator"
 )
 
 func getMetadata(filename string) *generator.Metadata {
-	fileData, err := os.ReadFile(filename)
+	fileData, err := ioutil.ReadFile(filename)
 	Expect(err).ToNot(HaveOccurred())
 	metadata, err := generator.NewMetadata(fileData)
 	Expect(err).ToNot(HaveOccurred())

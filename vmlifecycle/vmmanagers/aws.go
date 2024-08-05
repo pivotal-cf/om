@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"os"
 	"sort"
@@ -205,7 +206,7 @@ source_profile = svc-account
 region = %s`, config.AccessKeyId, config.SecretAccessKey, config.AssumeRole, config.Region)
 
 	if config.AssumeRole != "" {
-		file, err := os.CreateTemp("", "awsConfig")
+		file, err := ioutil.TempFile("", "awsConfig")
 		defer os.Remove(file.Name())
 		if err != nil {
 			return nil, nil, err
@@ -494,7 +495,7 @@ func (a *AWSConfig) validateDeprecations() error {
 func amiFromRegion(region, imageFile string) (imageURI string, err error) {
 	var images map[string]string
 
-	contents, err := os.ReadFile(imageFile)
+	contents, err := ioutil.ReadFile(imageFile)
 	if err != nil {
 		return "", err
 	}

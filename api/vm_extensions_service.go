@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 )
 
 type VMExtensionResponse struct {
@@ -50,7 +50,7 @@ func (a Api) ListStagedVMExtensions() ([]VMExtension, error) {
 		return nil, err
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

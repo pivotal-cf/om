@@ -1,12 +1,12 @@
 package acceptance
 
 import (
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -61,7 +61,7 @@ var _ = Describe("download-product command", func() {
 				az("storage", "blob", "upload", "--overwrite", "-f", pivotalFile, "-n", "/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 				az("storage", "blob", "upload", "--overwrite", "-f", pivotalFile, "-n", "/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "example-product.pivotal",
@@ -90,7 +90,7 @@ var _ = Describe("download-product command", func() {
 				Expect(filepath.Join(tmpDir, "[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.partial")).ToNot(BeAnExistingFile())
 
 				By("ensuring an assign stemcell artifact is created")
-				contents, err := os.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
+				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 

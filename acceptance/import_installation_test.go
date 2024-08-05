@@ -2,12 +2,12 @@ package acceptance
 
 import (
 	"archive/zip"
+	"github.com/onsi/gomega/ghttp"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/onsi/gomega/ghttp"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -25,7 +25,7 @@ var _ = Describe("import-installation command", func() {
 	)
 
 	createZipFile := func(files []struct{ Name, Body string }) *os.File {
-		tmpFile, err := os.CreateTemp("", "")
+		tmpFile, err := ioutil.TempFile("", "")
 		w := zip.NewWriter(tmpFile)
 
 		Expect(err).ToNot(HaveOccurred())

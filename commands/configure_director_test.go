@@ -7,10 +7,11 @@ import (
 	"log"
 	"os"
 
+	"io/ioutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
@@ -59,7 +60,7 @@ var _ = Describe("ConfigureDirector", func() {
 	})
 
 	JustBeforeEach(func() {
-		configFile, err = os.CreateTemp("", "config.yml")
+		configFile, err = ioutil.TempFile("", "config.yml")
 		Expect(err).ToNot(HaveOccurred())
 		defer configFile.Close()
 
@@ -214,7 +215,7 @@ vmtypes-configuration:
 vmtypes-configuration:
   custom_only: true
 `
-					newConfigFile, err := os.CreateTemp("", "config.yml")
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -251,7 +252,7 @@ vmtypes-configuration:
     ram: 4096
     ephemeral_disk: 20480
 `
-					newConfigFile, err := os.CreateTemp("", "config.yml")
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -285,7 +286,7 @@ vmtypes-configuration:
     ram: 4096
     ephemeral_disk: 20480
 `
-					newConfigFile, err := os.CreateTemp("", "config.yml")
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -316,7 +317,7 @@ vmtypes-configuration:
     ram: 4096
     ephemeral_disk: 20480
 `
-					newConfigFile, err := os.CreateTemp("", "config.yml")
+					newConfigFile, err := ioutil.TempFile("", "config.yml")
 					Expect(err).ToNot(HaveOccurred())
 					defer newConfigFile.Close()
 
@@ -343,7 +344,7 @@ vmtypes-configuration:
 				It("does not configure the director", func() {
 					configYAML := `invalidYAML`
 
-					configFile, err := os.CreateTemp("", "config.yaml")
+					configFile, err := ioutil.TempFile("", "config.yaml")
 					Expect(err).ToNot(HaveOccurred())
 					_, err = configFile.WriteString(configYAML)
 					Expect(err).ToNot(HaveOccurred())

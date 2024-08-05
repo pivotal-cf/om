@@ -2,17 +2,15 @@ package network_test
 
 import (
 	"errors"
-	"io"
-	"net"
-	"net/http"
-	"strings"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/network/fakes"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"strings"
 )
 
 var _ = Describe("DecryptClient", func() {
@@ -31,12 +29,12 @@ var _ = Describe("DecryptClient", func() {
 			fakeClient.DoReturnsOnCall(index, &http.Response{ // /api/v0/unlock
 				StatusCode:    http.StatusOK,
 				ContentLength: int64(len([]byte(`{}`))),
-				Body:          io.NopCloser(strings.NewReader(`{}`)),
+				Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
 			}, nil)
 			fakeClient.DoReturnsOnCall(index+1, &http.Response{ // /api/v0/ensure_availability
 				StatusCode:    http.StatusOK,
 				ContentLength: int64(len([]byte("Waiting for authentication system to start..."))),
-				Body:          io.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
+				Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
 			}, nil)
 			fakeClient.DoReturnsOnCall(index+2, &http.Response{ // /api/v0/ensure_availability
 				StatusCode: http.StatusFound,
@@ -46,7 +44,7 @@ var _ = Describe("DecryptClient", func() {
 					},
 				},
 				ContentLength: int64(len([]byte("Waiting for authentication system to start..."))),
-				Body:          io.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
+				Body:          ioutil.NopCloser(strings.NewReader("Waiting for authentication system to start...")),
 			}, nil)
 			fakeClient.DoReturnsOnCall(index+3, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
 			fakeClient.DoReturnsOnCall(index+4, &http.Response{StatusCode: http.StatusOK}, nil) // actual request
@@ -125,7 +123,7 @@ var _ = Describe("DecryptClient", func() {
 				fakeClient.DoReturnsOnCall(0, &http.Response{ // /api/v0/unlock
 					StatusCode:    http.StatusForbidden,
 					ContentLength: int64(len([]byte(`{}`))),
-					Body:          io.NopCloser(strings.NewReader(`{}`)),
+					Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
 				}, nil)
 			})
 

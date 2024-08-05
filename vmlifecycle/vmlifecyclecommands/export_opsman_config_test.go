@@ -3,18 +3,15 @@ package vmlifecyclecommands_test
 import (
 	"errors"
 	"fmt"
-	"io"
-	"os"
-
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers/fakes"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+	"io"
+	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	. "github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 )
 
@@ -35,10 +32,10 @@ var _ = Describe("Export Opsman Config", func() {
 				return &vmmanagers.OpsmanConfigFilePayload{}, nil
 			}
 
-			stateFile, err := os.CreateTemp("", "")
+			stateFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			configFile, err := os.CreateTemp("", "")
+			configFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			command := exportOpsmanConfigCommand(outWriter, errWriter, fakeService, "")
@@ -48,7 +45,7 @@ var _ = Describe("Export Opsman Config", func() {
 			err = command.Execute(nil)
 			Expect(err).ToNot(HaveOccurred())
 
-			config, err := os.ReadFile(configFile.Name())
+			config, err := ioutil.ReadFile(configFile.Name())
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(outWriter).To(gbytes.Say(fmt.Sprintf("successfully wrote the Ops Manager config file to: %s", configFile.Name())))
@@ -70,7 +67,7 @@ var _ = Describe("Export Opsman Config", func() {
 
 	When("the state file is invalid", func() {
 		It("returns an error", func() {
-			stateFile, err := os.CreateTemp("", "")
+			stateFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = stateFile.Write([]byte("invalid-state-file-content"))
@@ -87,10 +84,10 @@ var _ = Describe("Export Opsman Config", func() {
 
 	When("the init service fails to initialize", func() {
 		It("returns an error", func() {
-			stateFile, err := os.CreateTemp("", "")
+			stateFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			configFile, err := os.CreateTemp("", "")
+			configFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			command := exportOpsmanConfigCommand(outWriter, errWriter, fakeService, "failed to init")
@@ -109,10 +106,10 @@ var _ = Describe("Export Opsman Config", func() {
 				return &vmmanagers.OpsmanConfigFilePayload{}, errors.New("fetch failed")
 			}
 
-			stateFile, err := os.CreateTemp("", "")
+			stateFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
-			configFile, err := os.CreateTemp("", "")
+			configFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			command := exportOpsmanConfigCommand(outWriter, errWriter, fakeService, "")

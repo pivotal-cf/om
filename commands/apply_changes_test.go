@@ -3,6 +3,7 @@ package commands_test
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -335,7 +336,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Context("given a valid config file", func() {
 				BeforeEach(func() {
-					fh, err := os.CreateTemp("", "")
+					fh, err := ioutil.TempFile("", "")
 					defer func() { _ = fh.Close() }()
 					Expect(err).ToNot(HaveOccurred())
 					_, err = fh.WriteString(`
@@ -448,7 +449,7 @@ errands:
 
 			Context("given a invalid yaml file", func() {
 				BeforeEach(func() {
-					fh, err := os.CreateTemp("", "")
+					fh, err := ioutil.TempFile("", "")
 					defer func() { _ = fh.Close() }()
 					Expect(err).ToNot(HaveOccurred())
 					_, err = fh.WriteString(`

@@ -1,27 +1,26 @@
 package vmmanagers_test
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"os"
-
 	"github.com/pivotal-cf/om/vmlifecycle/matchers"
+	"io/ioutil"
+
+	"bytes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"gopkg.in/yaml.v2"
-
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
+	"gopkg.in/yaml.v2"
 )
 
 var _ = Describe("GCP VMManager", func() {
 	createCommand := func(region string, configStrTemplate string) (*vmmanagers.GCPVMManager, *fakes.GCloudRunner) {
 		var err error
 		runner := &fakes.GCloudRunner{}
-		testUriFile, err := os.CreateTemp("", "some*.yml")
+		testUriFile, err := ioutil.TempFile("", "some*.yml")
 		Expect(err).ToNot(HaveOccurred())
 		_, _ = testUriFile.WriteString(`
 ---
@@ -444,7 +443,7 @@ opsman-configuration:
 					It("returns that the yaml is invalid", func() {
 						command, _ := createCommand("us-west1", configStrTemplate)
 
-						invalidUriFile, err := os.CreateTemp("", "some*.yaml")
+						invalidUriFile, err := ioutil.TempFile("", "some*.yaml")
 						Expect(err).ToNot(HaveOccurred())
 						_, _ = invalidUriFile.WriteString("not valid yaml")
 						Expect(invalidUriFile.Close()).ToNot(HaveOccurred())

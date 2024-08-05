@@ -1,14 +1,13 @@
 package network
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -29,13 +28,10 @@ func newHTTPClient(insecureSkipVerify bool, caCert string, requestTimeout time.D
 		Transport: &http.Transport{
 			Proxy:           http.ProxyFromEnvironment,
 			TLSClientConfig: tlsConfig,
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				d := net.Dialer{
-					Timeout:   connectTimeout,
-					KeepAlive: 30 * time.Second,
-				}
-				return d.DialContext(ctx, network, addr)
-			},
+			Dial: (&net.Dialer{
+				Timeout:   connectTimeout,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
 		},
 		Timeout: requestTimeout,
 	}, nil
@@ -51,7 +47,7 @@ func setCACert(caCert string, tlsConfig *tls.Config) error {
 		caCertPool = x509.NewCertPool()
 	}
 	if !strings.Contains(caCert, "BEGIN") {
-		contents, err := os.ReadFile(caCert)
+		contents, err := ioutil.ReadFile(caCert)
 		if err != nil {
 			return fmt.Errorf("could not load ca cert from file: %s", err)
 		}

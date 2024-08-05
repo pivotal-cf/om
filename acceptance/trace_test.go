@@ -2,12 +2,12 @@ package acceptance
 
 import (
 	"archive/zip"
+	"github.com/onsi/gomega/ghttp"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
-
-	"github.com/onsi/gomega/ghttp"
 
 	"github.com/onsi/gomega/gexec"
 
@@ -31,7 +31,7 @@ var _ = Describe("global trace flag", func() {
 
 	BeforeEach(func() {
 		var err error
-		productFile, err = os.CreateTemp("", "cool_name.com")
+		productFile, err = ioutil.TempFile("", "cool_name.com")
 		Expect(err).ToNot(HaveOccurred())
 
 		stat, err := productFile.Stat()
@@ -42,7 +42,7 @@ var _ = Describe("global trace flag", func() {
 		productWriter, err := zipper.CreateHeader(&zip.FileHeader{
 			Name:               "./metadata/some-product.yml",
 			UncompressedSize64: uint64(stat.Size()),
-			Modified:           stat.ModTime(),
+			ModifiedTime:       uint16(stat.ModTime().Unix()),
 		})
 		Expect(err).ToNot(HaveOccurred())
 

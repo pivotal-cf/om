@@ -1,13 +1,11 @@
 package api_test
 
 import (
-	"net/http"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-
 	"github.com/pivotal-cf/om/api"
+	"net/http"
 )
 
 var _ = Describe("StagedProducts", func() {
@@ -682,7 +680,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		//		if strings.Contains(req.URL.Path, "some-product-guid") {
 		//			resp = &http.Response{
 		//				StatusCode: http.StatusOK,
-		//				Body: io.NopCloser(bytes.NewBufferString(`{
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
 		//						"syslog_configuration": {
 		//							"enabled": true,
 		//							"address": "example.com"
@@ -692,7 +690,7 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		//		} else if strings.Contains(req.URL.Path, "missing-syslog-config") {
 		//			resp = &http.Response{
 		//				StatusCode: http.StatusUnprocessableEntity,
-		//				Body: io.NopCloser(bytes.NewBufferString(`{
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
 		//						"errors": {
 		//						  "syslog": ["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint."]
 		//						}
@@ -701,12 +699,12 @@ valid options configurations include percentages ('50%'), counts ('2'), and 'def
 		//		} else if strings.Contains(req.URL.Path, "bad-response-code") {
 		//			resp = &http.Response{
 		//				StatusCode: http.StatusBadRequest,
-		//				Body:       io.NopCloser(bytes.NewBufferString("")),
+		//				Body:       ioutil.NopCloser(bytes.NewBufferString("")),
 		//			}
 		//		} else {
 		//			resp = &http.Response{
 		//				StatusCode: http.StatusOK,
-		//				Body: io.NopCloser(bytes.NewBufferString(`{
+		//				Body: ioutil.NopCloser(bytes.NewBufferString(`{
 		//						invalid-json
 		//					}`)),
 		//			}

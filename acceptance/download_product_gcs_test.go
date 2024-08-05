@@ -3,13 +3,13 @@ package acceptance
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
-
-	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,9 +48,9 @@ var _ = Describe("download-product command", func() {
 			}{}
 			err = json.Unmarshal([]byte(serviceAccountKey), &clientEmail)
 			Expect(err).ToNot(HaveOccurred())
-			authFile, err := os.CreateTemp("", "")
+			authFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
-			err = os.WriteFile(authFile.Name(), []byte(serviceAccountKey), 0600)
+			err = ioutil.WriteFile(authFile.Name(), []byte(serviceAccountKey), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(authFile.Close()).ToNot(HaveOccurred())
 			runCommand("gcloud", "auth", "activate-service-account", clientEmail.Email, "--key-file", authFile.Name())
@@ -68,7 +68,7 @@ var _ = Describe("download-product command", func() {
 				uploadGCSFile(pivotalFile, serviceAccountKey, bucketName, "some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 				uploadGCSFile(pivotalFile, serviceAccountKey, bucketName, "another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "example-product.pivotal",
@@ -95,7 +95,7 @@ var _ = Describe("download-product command", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				By("ensuring an assign stemcell artifact is created")
-				contents, err := os.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
+				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 
@@ -128,7 +128,7 @@ var _ = Describe("download-product command", func() {
 
 		When("the bucket does not exist", func() {
 			It("gives a helpful error message", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -154,7 +154,7 @@ var _ = Describe("download-product command", func() {
 		When("no files exist in the bucket", func() {
 			// The bucket we get from the before each is already empty, so, no setup
 			It("raises an error saying that no automation-downloaded files were found", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -186,7 +186,7 @@ var _ = Describe("download-product command", func() {
 			})
 
 			It("raises an error that no files with a prefixed name matching the slug and version are available", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -215,7 +215,7 @@ var _ = Describe("download-product command", func() {
 			})
 
 			It("outputs the file and downloaded file metadata", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -251,7 +251,7 @@ var _ = Describe("download-product command", func() {
 			})
 
 			It("raises an error that too many files match the glob", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -278,7 +278,7 @@ var _ = Describe("download-product command", func() {
 			})
 
 			It("raises an error that too many files match the glob", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",

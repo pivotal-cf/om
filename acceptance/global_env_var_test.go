@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -86,7 +87,7 @@ connect-timeout: 10
 
 		server := testServer(true)
 
-		configFile, err = os.CreateTemp("", "config.yml")
+		configFile, err = ioutil.TempFile("", "config.yml")
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))
@@ -123,7 +124,7 @@ target: ((target))
 username: ((username))
 `
 
-			configFile, err = os.CreateTemp("", "config.yml")
+			configFile, err = ioutil.TempFile("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(configContent)
@@ -164,7 +165,7 @@ connect-timeout: 10
 
 			server := testServer(true)
 
-			configFile, err = os.CreateTemp("", "config.yml")
+			configFile, err = ioutil.TempFile("", "config.yml")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = configFile.WriteString(fmt.Sprintf(configContent, server.URL))

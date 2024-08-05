@@ -3,14 +3,14 @@ package taskmodifier
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
-	"gopkg.in/yaml.v2"
-
 	"github.com/pivotal-cf/om/interpolate"
+	"gopkg.in/yaml.v2"
 )
 
 type TaskModifier struct {
@@ -75,7 +75,7 @@ func (c *TaskModifier) ModifyTasksWithSecrets(stderr io.Writer, taskDir string, 
 
 func (c *TaskModifier) updateTaskWithSecrets(taskFilename string, secretNames []string) error {
 	var task taskFile
-	contents, err := os.ReadFile(taskFilename)
+	contents, err := ioutil.ReadFile(taskFilename)
 	if err != nil {
 		return fmt.Errorf("could not read task file '%s': %s", taskFilename, err)
 	}
@@ -107,7 +107,7 @@ func (c *TaskModifier) updateTaskWithSecrets(taskFilename string, secretNames []
 		return fmt.Errorf("could not marshal modified task '%s': %s", taskFilename, err)
 	}
 
-	err = os.WriteFile(taskFilename, contents, 0666)
+	err = ioutil.WriteFile(taskFilename, contents, 0666)
 	if err != nil {
 		return fmt.Errorf("could write modified task '%s': %s", taskFilename, err)
 	}

@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 )
 
 const listProductVerifiersEndpointTemplate = "/api/v0/staged/products/%s/verifiers/install_time"
@@ -25,7 +25,7 @@ func (a Api) ListProductVerifiers(productName string) ([]Verifier, string, error
 		return nil, "", err
 	}
 
-	verifiersBytes, err := io.ReadAll(resp.Body)
+	verifiersBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}

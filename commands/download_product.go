@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -513,7 +514,7 @@ func (c *DownloadProduct) downloadProductFile(slug, version, glob, prefixPath st
 func (c *DownloadProduct) cleanupCacheArtifacts(outputDir string, glob string, productFilePath string, slug string) error {
 	if c.Options.CacheCleanup == "I acknowledge this will delete files in the output directories" {
 
-		outputDirContents, err := os.ReadDir(outputDir)
+		outputDirContents, err := ioutil.ReadDir(outputDir)
 		if err != nil {
 			return err
 		}

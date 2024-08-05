@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -88,7 +89,7 @@ func (c Curl) Execute(args []string) error {
 		c.stderr.Printf(headers.String())
 	}
 
-	body, err := io.ReadAll(output.Body)
+	body, err := ioutil.ReadAll(output.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read api response body: %s", err)
 	}

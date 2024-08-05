@@ -3,7 +3,7 @@ package network_test
 import (
 	"bytes"
 	"errors"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/network"
 	"github.com/pivotal-cf/om/network/fakes"
 )
@@ -76,7 +75,7 @@ var _ = Describe("Trace Client", func() {
 
 	When("the request body is larger than some arbitrary value", func() {
 		It("only dumps the headers", func() {
-			request.Body = io.NopCloser(strings.NewReader(`{}`))
+			request.Body = ioutil.NopCloser(strings.NewReader(`{}`))
 			request.ContentLength = 1024 * 1024
 
 			_, err := traceClient.Do(request)
@@ -98,7 +97,7 @@ var _ = Describe("Trace Client", func() {
 				buffer.WriteString("a")
 			}
 
-			response.Body = io.NopCloser(&buffer)
+			response.Body = ioutil.NopCloser(&buffer)
 			response.ContentLength = int64(responseBodySize)
 
 			_, err := traceClient.Do(request)

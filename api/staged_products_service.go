@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -485,7 +485,7 @@ func (a Api) GetStagedProductJobMaxInFlight(productGUID string) (ProductJobMaxIn
 	}
 
 	defer resp.Body.Close()
-	contents, err := io.ReadAll(resp.Body)
+	contents, err := ioutil.ReadAll(resp.Body)
 
 	var payload map[string]interface{}
 	err = json.Unmarshal(contents, &payload)

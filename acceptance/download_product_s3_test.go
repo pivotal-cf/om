@@ -2,13 +2,13 @@ package acceptance
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-
 	"github.com/onsi/ginkgo/config"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,7 +45,7 @@ var _ = Describe("download-product command", func() {
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 				runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "example-product.pivotal",
@@ -76,13 +76,13 @@ var _ = Describe("download-product command", func() {
 				Expect(filepath.Join(tmpDir, "[stemcells-ubuntu-xenial,97.57]light-bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz.partial")).ToNot(BeAnExistingFile())
 
 				By("ensuring an assign stemcell artifact is created")
-				contents, err := os.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
+				contents, err := ioutil.ReadFile(filepath.Join(tmpDir, "assign-stemcell.yml"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(`{product: example-product, stemcell: "97.57"}`))
 
-				err = os.WriteFile(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.0]example-product.pivotal"), nil, 0777)
+				err = ioutil.WriteFile(filepath.Join(tmpDir, "[pivnet-example-slug,1.10.0]example-product.pivotal"), nil, 0777)
 				Expect(err).ToNot(HaveOccurred())
-				err = os.WriteFile(filepath.Join(tmpDir, "example-product.pivotal"), nil, 0777)
+				err = ioutil.WriteFile(filepath.Join(tmpDir, "example-product.pivotal"), nil, 0777)
 				Expect(err).ToNot(HaveOccurred())
 
 				By("running the command again, it uses the cache")
@@ -126,7 +126,7 @@ var _ = Describe("download-product command", func() {
 					runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/some/product/[pivnet-example-slug,1.10.1]example-product.pivotal")
 					runCommand("mc", "cp", pivotalFile, "testing/"+bucketName+"/another/stemcell/[stemcells-ubuntu-xenial,97.57]bosh-stemcell-97.57-google-kvm-ubuntu-xenial-go_agent.tgz")
 
-					tmpDir, err := os.MkdirTemp("", "")
+					tmpDir, err := ioutil.TempDir("", "")
 					Expect(err).ToNot(HaveOccurred())
 					command := exec.Command(pathToMain, "download-product",
 						"--output-directory", tmpDir,
@@ -159,7 +159,7 @@ stemcell-heavy: true`))
 
 		When("the bucket does not exist", func() {
 			It("gives a helpful error message", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -185,7 +185,7 @@ stemcell-heavy: true`))
 		When("specifying the version of the AWS signature", func() {
 			It("supports v2 signing", func() {
 				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -209,7 +209,7 @@ stemcell-heavy: true`))
 
 			It("supports v4 signing", func() {
 				runCommand("mc", "cp", "fixtures/product.yml", "testing/"+bucketName+"/[example-product,1.10.1]product.yml")
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -234,7 +234,7 @@ stemcell-heavy: true`))
 		When("no files exist in the bucket", func() {
 			// The bucket we get from the before each is already empty, so, no setup
 			It("raises an error saying that no automation-downloaded files were found", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -265,7 +265,7 @@ stemcell-heavy: true`))
 			})
 
 			It("raises an error that no files with a prefixed name matching the slug and version are available", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -294,7 +294,7 @@ stemcell-heavy: true`))
 			})
 
 			It("outputs the file and downloaded file metadata", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -332,7 +332,7 @@ stemcell-heavy: true`))
 			})
 
 			It("raises an error that too many files match the glob", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",
@@ -361,7 +361,7 @@ stemcell-heavy: true`))
 			})
 
 			It("raises an error that too many files match the glob", func() {
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain, "download-product",
 					"--file-glob", "*.yml",

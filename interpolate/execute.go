@@ -2,7 +2,7 @@ package interpolate
 
 import (
 	"fmt"
-	"os"
+	"io/ioutil"
 	"strings"
 
 	"github.com/cloudfoundry/bosh-cli/director/template"
@@ -22,7 +22,7 @@ type Options struct {
 }
 
 func Execute(o Options) ([]byte, error) {
-	contents, err := os.ReadFile(o.TemplateFile)
+	contents, err := ioutil.ReadFile(o.TemplateFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read file (%s): %s", o.TemplateFile, err.Error())
 	}
@@ -138,7 +138,7 @@ func maintainMultilineString(v string, new interface{}) interface{} {
 }
 
 func readYAMLFile(path string, dataType interface{}) error {
-	payload, err := os.ReadFile(path)
+	payload, err := ioutil.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("could not read file (%s): %s", path, err.Error())
 	}

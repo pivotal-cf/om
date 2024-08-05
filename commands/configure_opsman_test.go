@@ -2,15 +2,13 @@ package commands_test
 
 import (
 	"errors"
-	"io"
-	"log"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"io/ioutil"
+	"log"
 )
 
 var _ = Describe("ConfigureOpsman", func() {
@@ -21,7 +19,7 @@ var _ = Describe("ConfigureOpsman", func() {
 
 	BeforeEach(func() {
 		fakeService = &fakes.ConfigureOpsmanService{}
-		logger := log.New(io.Discard, "", 0)
+		logger := log.New(ioutil.Discard, "", 0)
 		command = commands.NewConfigureOpsman(func() []string { return []string{} }, fakeService, logger)
 	})
 

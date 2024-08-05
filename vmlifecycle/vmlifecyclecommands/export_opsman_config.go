@@ -3,12 +3,12 @@ package vmlifecyclecommands
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
-
-	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+	"gopkg.in/yaml.v2"
 )
 
 type initExportOpsmanConfigFunc func(state *vmmanagers.StateInfo, creds *configfetchers.Credentials) (configfetchers.OpsmanConfigFetcherService, error)
@@ -47,7 +47,7 @@ func NewExportOpsmanConfigCommand(stdout, stderr io.Writer, initService initExpo
 
 func (e *ExportOpsmanConfig) Execute(args []string) error {
 	state := vmmanagers.StateInfo{}
-	content, err := os.ReadFile(e.StateFile)
+	content, err := ioutil.ReadFile(e.StateFile)
 	if err != nil {
 		return fmt.Errorf("could not read state file %s", err)
 	}
@@ -112,7 +112,7 @@ func (e *ExportOpsmanConfig) writeConfigFile(opsmanConfigFilePayload *vmmanagers
 		return fmt.Errorf("could not marshal the fetch opsman config: %s", err)
 	}
 
-	err = os.WriteFile(e.ConfigFile, bytes, os.ModePerm)
+	err = ioutil.WriteFile(e.ConfigFile, bytes, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("could not write the opsman config file: %s", err)
 	}

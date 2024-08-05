@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -258,7 +258,7 @@ func (a *AzureVMManager) addEnvVars() []string {
 func (a *AzureVMManager) getImage() (imageURL string, err error) {
 	var images map[string]string
 
-	contents, err := os.ReadFile(a.ImageYaml)
+	contents, err := ioutil.ReadFile(a.ImageYaml)
 	if err != nil {
 		return "", err
 	}
@@ -464,7 +464,7 @@ func (a *AzureVMManager) createImage(imageUri string, imageName string) (string,
 func (a *AzureVMManager) createVM(imageUrl string, imageID string, publicIP string) error {
 	azure := a.Config.OpsmanConfig.Azure
 
-	file, err := os.CreateTemp("", "ssh-key")
+	file, err := ioutil.TempFile("", "ssh-key")
 	if err != nil {
 		return fmt.Errorf("azure error: %s", err)
 	}

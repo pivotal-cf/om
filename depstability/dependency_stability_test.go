@@ -1,7 +1,7 @@
 package depstability_test
 
 import (
-	"os"
+	"io/ioutil"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -20,7 +20,7 @@ var _ = Describe("Dependency Topology", func() {
 })
 
 func listDepnamesFromGoSum() (deplist []string, err error) {
-	gosum, err := os.ReadFile("../go.sum")
+	gosum, err := ioutil.ReadFile("../go.sum")
 	if err != nil {
 		return
 	}
@@ -40,7 +40,7 @@ func listDepnamesFromGoSum() (deplist []string, err error) {
 }
 
 func listDepnamesFromRecords() (deplist []string, err error) {
-	depRecords, err := os.ReadFile("records/depnames-7.12.0.txt")
+	depRecords, err := ioutil.ReadFile("records/depnames-7.12.0.txt")
 	trimmedDepRecords := strings.TrimSpace(string(depRecords))
 	deplist = strings.Split(trimmedDepRecords, "\n")
 	return

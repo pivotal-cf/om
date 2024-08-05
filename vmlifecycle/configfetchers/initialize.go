@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -17,12 +18,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/vim25/soap"
 	google "google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
-
-	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 )
 
 //go:generate counterfeiter -o ./fakes/export_opsman_config.go --fake-name OpsmanConfigFetcherService . OpsmanConfigFetcherService
@@ -241,7 +241,7 @@ func validateGCPCreds(creds *Credentials) (err error) {
 			errs = append(errs, fmt.Sprintf("gcp-service-account-json file (%s) cannot be found", creds.GCP.ServiceAccount))
 		}
 
-		contents, err := os.ReadFile(creds.GCP.ServiceAccount)
+		contents, err := ioutil.ReadFile(creds.GCP.ServiceAccount)
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("could not read gcp-service-account-json file (%s): %s", creds.GCP.ServiceAccount, err))
 		}

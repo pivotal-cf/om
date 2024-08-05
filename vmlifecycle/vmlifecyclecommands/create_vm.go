@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
@@ -71,7 +72,7 @@ func (c *CreateVM) Execute(args []string) error {
 }
 
 func writeStatefile(filename string, info vmmanagers.StateInfo) error {
-	return os.WriteFile(filename, []byte(fmt.Sprintf("iaas: %s\nvm_id: %s", info.IAAS, info.ID)), 0644)
+	return ioutil.WriteFile(filename, []byte(fmt.Sprintf("iaas: %s\nvm_id: %s", info.IAAS, info.ID)), 0644)
 }
 
 func (c *CreateVM) checkImageExists() (err error) {

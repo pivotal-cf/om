@@ -2,12 +2,12 @@ package acceptance
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
-	"testing"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
@@ -15,6 +15,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"testing"
 )
 
 var (
@@ -29,7 +31,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 
 	minioPath, _ := exec.LookPath("minio")
 	if minioPath != "" {
-		dataDir, err := os.MkdirTemp("", "")
+		dataDir, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 		command := exec.Command("minio", "server", "--config-dir", dataDir, "--address", ":9001", dataDir)
 		command.Env = []string{

@@ -1,7 +1,7 @@
 package interpolate_test
 
 import (
-	"os"
+	"io/ioutil"
 	"testing"
 
 	"github.com/pivotal-cf/om/interpolate"
@@ -271,10 +271,10 @@ other-template-keys:
 })
 
 func writeFile(contents string) string {
-	file, err := os.CreateTemp("", "")
+	file, err := ioutil.TempFile("", "")
 	Expect(err).ToNot(HaveOccurred())
 
-	err = os.WriteFile(file.Name(), []byte(contents), 0777)
+	err = ioutil.WriteFile(file.Name(), []byte(contents), 0777)
 	Expect(err).ToNot(HaveOccurred())
 	return file.Name()
 }

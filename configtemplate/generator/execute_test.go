@@ -2,6 +2,7 @@ package generator_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,7 +13,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/pivotal-cf/om/configtemplate/generator"
 )
 
@@ -71,7 +71,7 @@ var _ = Describe("Executor", func() {
 
 	Context("Generate", func() {
 		var (
-			pwd, _  = os.MkdirTemp("", "")
+			pwd, _  = ioutil.TempDir("", "")
 			testGen = path.Join(pwd, "_testGen")
 			tmpPath = path.Join(testGen, "templates")
 		)
@@ -206,12 +206,12 @@ func listFilesInDirectory(productPath string) []string {
 }
 
 func getFileBytes(metadataFile string) ([]byte, error) {
-	return os.ReadFile(metadataFile)
+	return ioutil.ReadFile(metadataFile)
 }
 
 func unmarshalProduct(targetFile string) (*Template, error) {
 	template := &Template{}
-	yamlFile, err := os.ReadFile(targetFile)
+	yamlFile, err := ioutil.ReadFile(targetFile)
 	if err != nil {
 		return nil, err
 	}

@@ -1,13 +1,12 @@
 package integration_test
 
 import (
-	"os"
-	"os/exec"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"io/ioutil"
+	"os/exec"
 )
 
 var _ = Describe("CreateVm", func() {
@@ -44,7 +43,7 @@ opsman-configuration:
 
 		Eventually(session.Err).Should(gbytes.Say("gcloud compute instances create"))
 
-		contents, err := os.ReadFile(stateFile)
+		contents, err := ioutil.ReadFile(stateFile)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(contents).To(MatchYAML(`{"iaas": "gcp", "vm_id": "opsman-vm"}`))
 	})

@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,7 +16,7 @@ import (
 var _ = Describe("interpolate command", func() {
 	When("given a valid YAML file", func() {
 		createFile := func(contents string) *os.File {
-			file, err := os.CreateTemp("", "")
+			file, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 			_, err = file.WriteString(contents)
 			Expect(err).ToNot(HaveOccurred())

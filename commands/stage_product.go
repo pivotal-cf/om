@@ -2,11 +2,9 @@ package commands
 
 import (
 	"fmt"
-	"os"
-
-	"gopkg.in/yaml.v2"
-
 	"github.com/pivotal-cf/om/api"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type StageProduct struct {
@@ -109,7 +107,7 @@ func (sp StageProduct) Execute(args []string) error {
 
 func (sp *StageProduct) loadConfig() error {
 	if sp.Options.ConfigFile != "" {
-		contents, err := os.ReadFile(sp.Options.ConfigFile)
+		contents, err := ioutil.ReadFile(sp.Options.ConfigFile)
 		if err != nil {
 			return err
 		}

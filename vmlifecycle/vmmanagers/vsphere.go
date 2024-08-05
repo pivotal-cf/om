@@ -7,15 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/blang/semver"
+	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/blang/semver"
-
-	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
 )
 
 type VcenterCredential struct {
@@ -252,12 +251,12 @@ func (v *VsphereVMManager) createOptionsFile() (optionsFileName string, err erro
 		return "", fmt.Errorf("options failed to marshal: %s", err)
 	}
 
-	optionsFile, err := os.CreateTemp("", "options.json")
+	optionsFile, err := ioutil.TempFile("", "options.json")
 	if err != nil {
 		return "", fmt.Errorf("could not create temp option file: %s", err)
 	}
 
-	err = os.WriteFile(optionsFile.Name(), optionsBytes, 0644)
+	err = ioutil.WriteFile(optionsFile.Name(), optionsBytes, 0644)
 	if err != nil {
 		return "", fmt.Errorf("could not write options to file: %s", err)
 	}
@@ -290,7 +289,7 @@ func (v *VsphereVMManager) addEnvVars() (envVarsList []string, err error) {
 	)
 
 	if v.Config.OpsmanConfig.Vsphere.Vcenter.CACert != "" {
-		caCertFile, err := os.CreateTemp("", "ca.crt")
+		caCertFile, err := ioutil.TempFile("", "ca.crt")
 		if err != nil {
 			return []string{}, fmt.Errorf("could not create temp file for ca cert: %s", err)
 		}

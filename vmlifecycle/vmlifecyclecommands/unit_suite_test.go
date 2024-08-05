@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"io/ioutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -19,12 +21,12 @@ func writeSpecifiedFile(filename string, contents string) {
 	err := os.MkdirAll(dir, 0777)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = os.WriteFile(filename, []byte(contents), 0644)
+	err = ioutil.WriteFile(filename, []byte(contents), 0644)
 	Expect(err).NotTo(HaveOccurred())
 }
 
 func writeFile(contents string) string {
-	tempfile, err := os.CreateTemp("", "2.2-build.296.yml")
+	tempfile, err := ioutil.TempFile("", "2.2-build.296.yml")
 	Expect(err).ToNot(HaveOccurred())
 	_, err = tempfile.WriteString(contents)
 	Expect(err).ToNot(HaveOccurred())
@@ -35,7 +37,7 @@ func writeFile(contents string) string {
 }
 
 func readFile(filename string) string {
-	contents, err := os.ReadFile(filename)
+	contents, err := ioutil.ReadFile(filename)
 	Expect(err).ToNot(HaveOccurred())
 	return string(contents)
 }

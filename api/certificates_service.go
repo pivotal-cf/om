@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"io"
+	"io/ioutil"
 )
 
 type DomainsInput struct {
@@ -25,7 +25,7 @@ func (a Api) GenerateCertificate(domains DomainsInput) (string, error) {
 		return "", err
 	}
 
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}

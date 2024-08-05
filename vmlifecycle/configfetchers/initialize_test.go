@@ -1,15 +1,15 @@
 package configfetchers_test
 
 import (
+	"io/ioutil"
 	"os"
 	"reflect"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/vmware/govmomi/simulator"
-
 	"github.com/pivotal-cf/om/vmlifecycle/configfetchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
+	"github.com/vmware/govmomi/simulator"
 )
 
 var _ = Describe("selects the correct config fetcher based on the state file", func() {
@@ -544,7 +544,7 @@ var _ = Describe("selects the correct config fetcher based on the state file", f
 })
 
 func writeFile(contents string) string {
-	tempfile, err := os.CreateTemp("", "some*.yaml")
+	tempfile, err := ioutil.TempFile("", "some*.yaml")
 	Expect(err).ToNot(HaveOccurred())
 	_, err = tempfile.WriteString(contents)
 	Expect(err).ToNot(HaveOccurred())

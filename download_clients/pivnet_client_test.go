@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/onsi/gomega/ghttp"
@@ -15,7 +15,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/go-pivnet/v6"
-
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"
 )
@@ -28,7 +27,7 @@ var _ = Describe("Grabbing Metadata", func() {
 			modTime := time.Now()
 
 			productFile := createPivotalFile("some.pivotal", "", "")
-			contents, err := os.ReadFile(productFile)
+			contents, err := ioutil.ReadFile(productFile)
 			Expect(err).NotTo(HaveOccurred())
 
 			server := ghttp.NewTLSServer()
@@ -264,7 +263,7 @@ var _ = Describe("PivnetClient", func() {
 
 		It("downloads a product file to given destination", func() {
 			fakePivnetDownloader.DownloadProductFileReturns(nil)
-			tmpFile, err := os.CreateTemp("", "")
+			tmpFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
@@ -274,7 +273,7 @@ var _ = Describe("PivnetClient", func() {
 
 		It("returns an error if the product file could not be downloaded", func() {
 			fakePivnetDownloader.DownloadProductFileReturns(errors.New("download error"))
-			tmpFile, err := os.CreateTemp("", "")
+			tmpFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")

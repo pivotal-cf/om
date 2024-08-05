@@ -1,13 +1,12 @@
 package commands_test
 
 import (
-	"os"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
+	"io/ioutil"
+	"os"
 )
 
 var templateNoParameters = `hello: world`
@@ -33,9 +32,9 @@ var _ = Describe("Interpolate", func() {
 
 	BeforeEach(func() {
 		var err error
-		stdin, err = os.CreateTemp("", "")
+		stdin, err = ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
-		err = os.WriteFile(stdin.Name(), []byte(templateNoParametersOverStdin), os.ModeCharDevice|0755) // mimic a character device so it'll be picked up in the conditional
+		err = ioutil.WriteFile(stdin.Name(), []byte(templateNoParametersOverStdin), os.ModeCharDevice|0755) // mimic a character device so it'll be picked up in the conditional
 		Expect(err).ToNot(HaveOccurred())
 		logger = &fakes.Logger{}
 		command = commands.NewInterpolate(func() []string { return nil }, logger, stdin)
@@ -55,22 +54,22 @@ var _ = Describe("Interpolate", func() {
 		)
 
 		BeforeEach(func() {
-			tmpFile, err := os.CreateTemp("", "")
+			tmpFile, err := ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			inputFile = tmpFile.Name()
 
-			tmpFile, err = os.CreateTemp("", "")
+			tmpFile, err = ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			varsFile = tmpFile.Name()
 
-			tmpFile, err = os.CreateTemp("", "")
+			tmpFile, err = ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			varsFile2 = tmpFile.Name()
 
-			tmpFile, err = os.CreateTemp("", "")
+			tmpFile, err = ioutil.TempFile("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			opsFile = tmpFile.Name()
@@ -89,7 +88,7 @@ var _ = Describe("Interpolate", func() {
 
 		Context("no vars or ops file inputs", func() {
 			It("succeeds", func() {
-				err := os.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -101,7 +100,7 @@ var _ = Describe("Interpolate", func() {
 			})
 
 			It("fails when all parameters are not specified", func() {
-				err := os.WriteFile(inputFile, []byte(templateWithParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -113,9 +112,9 @@ var _ = Describe("Interpolate", func() {
 
 		Context("with vars file input", func() {
 			It("succeeds", func() {
-				err := os.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
-				err = os.WriteFile(varsFile, []byte(varsFileParameter), 0755)
+				err = ioutil.WriteFile(varsFile, []byte(varsFileParameter), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -128,11 +127,11 @@ var _ = Describe("Interpolate", func() {
 			})
 
 			It("succeeds when multiple vars files", func() {
-				err := os.WriteFile(inputFile, []byte(templateWithParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
-				err = os.WriteFile(varsFile, []byte(varsFileParameter), 0755)
+				err = ioutil.WriteFile(varsFile, []byte(varsFileParameter), 0755)
 				Expect(err).ToNot(HaveOccurred())
-				err = os.WriteFile(varsFile2, []byte(varsFileParameter2), 0755)
+				err = ioutil.WriteFile(varsFile2, []byte(varsFileParameter2), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -148,7 +147,7 @@ var _ = Describe("Interpolate", func() {
 
 		Context("with vars input", func() {
 			It("succeeds", func() {
-				err := os.WriteFile(inputFile, []byte(templateWithParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -161,7 +160,7 @@ var _ = Describe("Interpolate", func() {
 			})
 
 			It("succeeds with multiple vars inputs", func() {
-				err := os.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -175,7 +174,7 @@ var _ = Describe("Interpolate", func() {
 			})
 
 			It("takes the last value if there are duplicate vars", func() {
-				err := os.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateWithMultipleParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -192,9 +191,9 @@ var _ = Describe("Interpolate", func() {
 
 		Context("with ops file input", func() {
 			It("succeeds", func() {
-				err := os.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
-				err = os.WriteFile(opsFile, []byte(opsFileParameter), 0755)
+				err = ioutil.WriteFile(opsFile, []byte(opsFileParameter), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -210,9 +209,9 @@ hello: world`))
 
 		When("path flag is set", func() {
 			It("returns a value from the interpolated file", func() {
-				err := os.WriteFile(inputFile, []byte(`{"a": "((interpolated-value))", "c":"d" }`), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(`{"a": "((interpolated-value))", "c":"d" }`), 0755)
 				Expect(err).ToNot(HaveOccurred())
-				err = os.WriteFile(varsFile, []byte(`{"interpolated-value": "b"}`), 0755)
+				err = ioutil.WriteFile(varsFile, []byte(`{"interpolated-value": "b"}`), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,
@@ -229,7 +228,7 @@ hello: world`))
 		When("the skip-missing flag is set", func() {
 			When("there are missing parameters", func() {
 				It("succeeds", func() {
-					err := os.WriteFile(inputFile, []byte(templateWithParameters), 0755)
+					err := ioutil.WriteFile(inputFile, []byte(templateWithParameters), 0755)
 					Expect(err).ToNot(HaveOccurred())
 					err = executeCommand(command, []string{
 						"--config", inputFile,
@@ -280,7 +279,7 @@ hello: world`))
 
 		When("the config is passed via stdin and a config file", func() {
 			It("uses the config file", func() {
-				err := os.WriteFile(inputFile, []byte(templateNoParameters), 0755)
+				err := ioutil.WriteFile(inputFile, []byte(templateNoParameters), 0755)
 				Expect(err).ToNot(HaveOccurred())
 				err = executeCommand(command, []string{
 					"--config", inputFile,

@@ -1,11 +1,10 @@
 package acceptance
 
 import (
-	"net/http"
-	"os"
-	"os/exec"
-
 	"github.com/onsi/gomega/ghttp"
+	"io/ioutil"
+	"net/http"
+	"os/exec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -36,7 +35,7 @@ var _ = Describe("configure-director command", func() {
 	})
 
 	It("displays a helpful error message when using moved director properties", func() {
-		configFile, err := os.CreateTemp("", "config.yml")
+		configFile, err := ioutil.TempFile("", "config.yml")
 		Expect(err).ToNot(HaveOccurred())
 		_, err = configFile.WriteString(`{
             "iaas-configuration": {
@@ -93,7 +92,7 @@ var _ = Describe("configure-director command", func() {
 		Expect(session.Err).To(gbytes.Say("The following keys have recently been removed from the top level configuration: director-configuration, iaas-configuration, security-configuration, syslog-configuration"))
 		Expect(session.Err).To(gbytes.Say("To fix this error, move the above keys under 'properties-configuration' and change their dashes to underscores."))
 
-		configFile, err = os.CreateTemp("", "config.yml")
+		configFile, err = ioutil.TempFile("", "config.yml")
 		Expect(err).ToNot(HaveOccurred())
 		_, err = configFile.WriteString(`{
            		"what is this": "key?"
@@ -282,7 +281,7 @@ iaas-configurations:
     }
 `)
 
-		tempfile, err := os.CreateTemp("", "config.yaml")
+		tempfile, err := ioutil.TempFile("", "config.yaml")
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = tempfile.Write(configYAML)
@@ -375,7 +374,7 @@ iaas-configurations:
     }
 `)
 
-			tempfile, err := os.CreateTemp("", "config.yaml")
+			tempfile, err := ioutil.TempFile("", "config.yaml")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = tempfile.Write(configYAML)

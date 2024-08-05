@@ -2,18 +2,17 @@ package vmlifecyclecommands_test
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-
 	"github.com/pivotal-cf/om/vmlifecycle/vmlifecyclecommands"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers/fakes"
+	"io"
+	"io/ioutil"
+	"os"
+	"time"
 )
 
 var _ = Describe("Delete VM", func() {
@@ -86,7 +85,7 @@ opsman-configuration:
 			Expect(err).ToNot(HaveOccurred())
 			Expect(outWriter).To(gbytes.Say("VM deleted successfully\n"))
 
-			finalState, err := os.ReadFile(command.StateFile)
+			finalState, err := ioutil.ReadFile(command.StateFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(finalState).To(MatchYAML(fmt.Sprintf(`{"iaas": "iaas-%d"}`, uuid)))
@@ -104,7 +103,7 @@ opsman-configuration:
 			Expect(err).ToNot(HaveOccurred())
 			Expect(outWriter).To(gbytes.Say("Nothing to do\n"))
 
-			finalState, err := os.ReadFile(command.StateFile)
+			finalState, err := ioutil.ReadFile(command.StateFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(finalState).To(MatchYAML(`{"iaas": "gcp"}`))

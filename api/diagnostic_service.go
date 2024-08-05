@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -58,7 +58,7 @@ func (a Api) GetDiagnosticReport() (DiagnosticReport, error) {
 		} `json:"added_products"`
 	}
 
-	reportBytes, err := io.ReadAll(resp.Body)
+	reportBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,13 +2,12 @@ package commands_test
 
 import (
 	"errors"
-	"os"
+	"io/ioutil"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-
 	"github.com/pivotal-cf/om/commands"
 	"github.com/pivotal-cf/om/commands/fakes"
 )
@@ -19,7 +18,7 @@ var _ = Describe("ConfigTemplate", func() {
 	)
 
 	createOutputDirectory := func() string {
-		tempDir, err := os.MkdirTemp("", "")
+		tempDir, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		return tempDir
@@ -237,7 +236,7 @@ property_blueprints:
 				matches, err := filepath.Glob(filepath.Join(tempDir, "example-product", "1.1.1", "optional", "*.yml"))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(matches).To(HaveLen(1))
-				contents, err := os.ReadFile(matches[0])
+				contents, err := ioutil.ReadFile(matches[0])
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(contents)).To(MatchYAML(expectedContents))
 			})

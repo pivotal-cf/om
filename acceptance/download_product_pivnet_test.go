@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,7 +30,7 @@ var _ = Describe("download-product command", func() {
 
 		BeforeEach(func() {
 			pivotalFile := createPivotalFile("[pivnet-product,1.10.1]example*pivotal", "./fixtures/example-product.yml")
-			pivotalContents, err := os.ReadFile(pivotalFile)
+			pivotalContents, err := ioutil.ReadFile(pivotalFile)
 			Expect(err).ToNot(HaveOccurred())
 			modTime := time.Now()
 
@@ -194,7 +195,7 @@ var _ = Describe("download-product command", func() {
 		})
 
 		It("downloads the product", func() {
-			tmpDir, err := os.MkdirTemp("", "")
+			tmpDir, err := ioutil.TempDir("", "")
 			Expect(err).ToNot(HaveOccurred())
 			command := exec.Command(pathToMain, "download-product",
 				"--pivnet-api-token", "token",
@@ -235,7 +236,7 @@ var _ = Describe("download-product command", func() {
 					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.4.0"}}`),
 				)
 
-				tmpDir, err := os.MkdirTemp("", "")
+				tmpDir, err := ioutil.TempDir("", "")
 				Expect(err).ToNot(HaveOccurred())
 				command := exec.Command(pathToMain,
 					"-k",
@@ -267,20 +268,20 @@ var _ = Describe("download-product command", func() {
 
 func fileContents(paths ...string) []byte {
 	path := filepath.Join(paths...)
-	contents, err := os.ReadFile(filepath.Join(path))
+	contents, err := ioutil.ReadFile(filepath.Join(path))
 	Expect(err).ToNot(HaveOccurred())
 	return contents
 }
 
 func createPivotalFile(productFileName, metadataFilename string) string {
-	tempfile, err := os.CreateTemp("", productFileName)
+	tempfile, err := ioutil.TempFile("", productFileName)
 	Expect(err).ToNot(HaveOccurred())
 
 	zipper := zip.NewWriter(tempfile)
 	file, err := zipper.Create("metadata/props.yml")
 	Expect(err).ToNot(HaveOccurred())
 
-	contents, err := os.ReadFile(metadataFilename)
+	contents, err := ioutil.ReadFile(metadataFilename)
 	Expect(err).ToNot(HaveOccurred())
 
 	_, err = file.Write(contents)

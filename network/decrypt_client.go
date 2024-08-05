@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -176,7 +177,7 @@ func (c DecryptClient) checkAvailability() error {
 		}
 
 	case http.StatusOK:
-		respBody, err := io.ReadAll(response.Body)
+		respBody, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			return NonRetryableError(err)
 		}
