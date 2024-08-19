@@ -1,6 +1,6 @@
 module github.com/pivotal-cf/om
 
-go 1.22.6
+go 1.23.0
 
 require (
 	cloud.google.com/go/storage v1.43.0
@@ -29,9 +29,9 @@ require (
 	github.com/pivotal-cf/pivnet-cli/v2 v2.0.2
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
 	github.com/pivotal-cf/winfs-injector v0.0.0-20200827170301-91411420d92f
-	github.com/vmware/govmomi v0.39.0
+	github.com/vmware/govmomi v0.42.0
 	golang.org/x/oauth2 v0.22.0
-	google.golang.org/api v0.191.0
+	google.golang.org/api v0.192.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -39,15 +39,15 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.115.0 // indirect
-	cloud.google.com/go/auth v0.8.0 // indirect
+	cloud.google.com/go v0.115.1 // indirect
+	cloud.google.com/go/auth v0.8.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/iam v1.1.13 // indirect
 	code.cloudfoundry.org/archiver v0.0.0-20200131002800-4ca7245c29b1 // indirect
 	code.cloudfoundry.org/clock v1.0.0 // indirect
 	code.cloudfoundry.org/hydrator v0.0.0-20191120195058-919ca7133daa // indirect
-	code.cloudfoundry.org/tlsconfig v0.0.0-20240808182450-b1b581e211a2 // indirect
+	code.cloudfoundry.org/tlsconfig v0.1.0 // indirect
 	code.cloudfoundry.org/workpool v0.0.0-20200131000409-2ac56b354115 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.24 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/cloudfoundry/bosh-davcli v0.0.44 // indirect
 	github.com/cloudfoundry/bosh-gcscli v0.0.6 // indirect
 	github.com/cloudfoundry/bosh-s3cli v0.0.95 // indirect
-	github.com/cloudfoundry/bosh-utils v0.0.483 // indirect
+	github.com/cloudfoundry/bosh-utils v0.0.484 // indirect
 	github.com/cloudfoundry/config-server v0.1.21 // indirect
 	github.com/cloudfoundry/go-socks5 v0.0.0-20180221174514-54f73bdb8a8e // indirect
 	github.com/cloudfoundry/socks5-proxy v0.2.121 // indirect
@@ -139,9 +139,9 @@ require (
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
-	google.golang.org/genproto v0.0.0-20240808171019-573a1156607a // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240808171019-573a1156607a // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240808171019-573a1156607a // indirect
+	google.golang.org/genproto v0.0.0-20240814211410-ddb44dafa142 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.65.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
