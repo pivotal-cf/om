@@ -49,6 +49,7 @@ opsman-configuration:
     key_pair_name: superuser
     iam_instance_profile_name: awesome-profile
     boot_disk_size: 200
+    boot_disk_type: gp3
     public_ip: %s
     private_ip: %s
     instance_type: m3.large
@@ -60,11 +61,9 @@ opsman-configuration:
 
 		command, runner := createCommand(fmt.Sprintf(configStrTemplate, accessKey, secretAccessKey, assumeRole, region, publicIP, privateIP))
 		runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("null\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("\"vol-0cf5b911680a78bb9\"\r\n"), bytes.NewBufferString("TestStatus: volume created"), nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(7, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(8, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
 		return command, runner
 	}
 
@@ -75,13 +74,14 @@ opsman-configuration:
 	Context("create vm", func() {
 		Context("with a config with all values filled out", func() {
 			It("calls aws with correct cli arguments and does not describe instances", func() {
-				numCLICalls := 10
+				numCLICalls := 7
 				commands := [][]string{
-					{ //1
+					{
 						`ec2`, `run-instances`,
 						`--tag-specifications`, `ResourceType=instance,Tags=[{Key=Name,Value=awesome-vm},{Key=Owner,Value=DbAdmin},{Key=Stack,Value=Test}]`,
 						`--image-id`, `ami-789dc900`,
 						`--subnet-id`, `awesome-subnet`,
+						`--block-device-mappings`, `[{"DeviceName": "/dev/xvda", "Ebs": {"VolumeType": "gp3", "VolumeSize": 200}}]`,
 						`--security-group-ids`, `sg-awesome`, `sg-great`,
 						`--count`, `1`,
 						`--instance-type`, "m3.large",
@@ -91,50 +91,31 @@ opsman-configuration:
 						`--query`, `Instances[0].InstanceId`,
 						`--private-ip-address`, `10.10.10.10`,
 					},
-					{ //2
-						`ec2`, `describe-volumes`,
-						`--filters`, `Name=attachment.instance-id,Values=i-0016d0fe3a11c73c2`,
-						`Name=attachment.status,Values=attached`,
-						`Name=status,Values=in-use`,
-						`--query`, `Volumes[0].VolumeId`,
-					},
-					{ //3
-						`ec2`, `describe-volumes`,
-						`--filters`, `Name=attachment.instance-id,Values=i-0016d0fe3a11c73c2`,
-						`Name=attachment.status,Values=attached`,
-						`Name=status,Values=in-use`,
-						`--query`, `Volumes[0].VolumeId`,
-					},
-					{ //4
-						`ec2`, `modify-volume`,
-						`--volume-id`, `vol-0cf5b911680a78bb9`,
-						`--size`, `200`,
-					},
-					{ //5
+					{
 						`ec2`, `describe-addresses`,
 						`--filters`, `Name=public-ip,Values=1.2.3.4`,
 						`--query`, `Addresses[0].AllocationId`,
 					},
-					{ //6
+					{
 						`ec2`, `associate-address`,
 						`--allocation-id`, `eipalloc-18643c24`,
 						`--instance-id`, `i-0016d0fe3a11c73c2`,
 					},
-					{ //7
+					{
 						`ec2`, `stop-instances`,
 						`--instance-ids`, `i-0016d0fe3a11c73c2`,
 					},
-					{ //8
+					{
 						`ec2`, `describe-instances`,
 						`--instance-ids`, `i-0016d0fe3a11c73c2`,
 						`--query`, `Reservations[*].Instances[*].State.Name`,
 					},
-					{ //9
+					{
 						`ec2`, `describe-instances`,
 						`--instance-ids`, `i-0016d0fe3a11c73c2`,
 						`--query`, `Reservations[*].Instances[*].State.Name`,
 					},
-					{ //10
+					{
 						`ec2`, `start-instances`,
 						`--instance-ids`, `i-0016d0fe3a11c73c2`,
 					},
@@ -174,7 +155,7 @@ opsman-configuration:
 					Expect(invokes).ToNot(HaveLen(0))
 					for _, args := range invokes {
 						Expect(args[1]).ToNot(ContainElement(MatchRegexp("associate-address")))
-						Expect(args[1]).ToNot(ContainElement(MatchRegexp("decsribe-address")))
+						Expect(args[1]).ToNot(ContainElement(MatchRegexp("describe-address")))
 					}
 				})
 			})
@@ -269,11 +250,6 @@ credential_source = Ec2InstanceMetadata`)), comment)
 					command, runner := createValidCommand("1.2.3.4", "10.10.10.10", "us-west-2")
 					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("terminated\r\n"), nil, nil)
 					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("null\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(3, bytes.NewBufferString("\"vol-0cf5b911680a78bb9\"\r\n"), bytes.NewBufferString("TestStatus: volume created"), nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(8, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(9, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
 
 					command.State = vmmanagers.StateInfo{
 						IAAS: "aws",
@@ -293,11 +269,6 @@ credential_source = Ec2InstanceMetadata`)), comment)
 					command, runner := createValidCommand("1.2.3.4", "10.10.10.10", "us-west-2")
 					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("[]\n"), nil, nil)
 					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("null\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(3, bytes.NewBufferString("\"vol-0cf5b911680a78bb9\"\r\n"), bytes.NewBufferString("TestStatus: volume created"), nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(8, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(9, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
 
 					command.State = vmmanagers.StateInfo{
 						IAAS: "aws",
@@ -579,9 +550,8 @@ opsman-configuration:
 			_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
 			Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
 			Expect(args).To(ContainElement(MatchRegexp("m5\\.large")))
-
-			_, args = runner.ExecuteWithEnvVarsArgsForCall(2)
 			Expect(args).To(ContainElement(MatchRegexp("200")))
+			Expect(args).To(ContainElement(MatchRegexp("gp2")))
 
 		})
 	})
@@ -843,20 +813,14 @@ func happyPathAWSRunnerStubFunc(vmID string) func() (*bytes.Buffer, *bytes.Buffe
 		case 0:
 			return bytes.NewBufferString(fmt.Sprintf("%q\r\n", vmID)), nil, nil
 		case 1:
-			return bytes.NewBufferString("null\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil
-		case 2:
-			return bytes.NewBufferString("\"vol-0cf5b911680a78bb9\"\r\n"), bytes.NewBufferString("TestStatus: volume created"), nil
-		case 3:
+			return bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil
+		case 2, 3:
 			return nil, nil, nil
 		case 4:
-			return bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil
-		case 5, 6:
-			return nil, nil, nil
-		case 7:
 			return bytes.NewBufferString("\"stopping\"\r\n"), nil, nil
-		case 8:
+		case 5:
 			return bytes.NewBufferString("\"stopped\"\r\n"), nil, nil
-		case 9, 10:
+		case 6, 7:
 			return nil, nil, nil
 		default:
 			panic("stub for nth call not implemented")
