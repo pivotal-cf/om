@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
-	"sort"
 
 	"github.com/pivotal-cf/om/presenters"
 )
