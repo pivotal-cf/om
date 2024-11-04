@@ -1,10 +1,14 @@
+cel.dev/expr
 cloud.google.com/go
 cloud.google.com/go/auth
 cloud.google.com/go/auth/oauth2adapt
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/iam
+cloud.google.com/go/logging
 cloud.google.com/go/longrunning
+cloud.google.com/go/monitoring
 cloud.google.com/go/storage
+cloud.google.com/go/trace
 code.cloudfoundry.org/archiver
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/credhub-cli
@@ -25,6 +29,10 @@ github.com/Azure/go-autorest/autorest/validation
 github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/tracing
 github.com/BurntSushi/toml
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/cloudmock
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping
 github.com/StackExchange/wmi
 github.com/VividCortex/ewma
 github.com/a8m/tree
@@ -33,6 +41,7 @@ github.com/aws/aws-sdk-go
 github.com/blang/semver
 github.com/bmatcuk/doublestar
 github.com/census-instrumentation/opencensus-proto
+github.com/cespare/xxhash/v2
 github.com/charlievieth/fs
 github.com/cheekybits/is
 github.com/cheggaaa/pb
@@ -49,6 +58,7 @@ github.com/cloudfoundry/config-server
 github.com/cloudfoundry/go-socks5
 github.com/cloudfoundry/socks5-proxy
 github.com/cncf/udpa/go
+github.com/cncf/xds/go
 github.com/cppforlife/go-patch
 github.com/cppforlife/go-semi-semantic
 github.com/creack/pty
@@ -141,6 +151,7 @@ github.com/pivotal-cf/replicator
 github.com/pivotal-cf/winfs-injector
 github.com/pkg/errors
 github.com/pkg/sftp
+github.com/planetscale/vtprotobuf
 github.com/pmezard/go-difflib
 github.com/pquerna/ffjson
 github.com/prometheus/client_model
@@ -162,11 +173,13 @@ github.com/xlab/treeprint
 github.com/yuin/goldmark
 github.com/yusufpapurcu/wmi
 go.opencensus.io
+go.opentelemetry.io/contrib/detectors/gcp
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/sdk
+go.opentelemetry.io/otel/sdk/metric
 go.opentelemetry.io/otel/trace
 go.step.sm/crypto
 golang.org/x/crypto
@@ -188,6 +201,7 @@ google.golang.org/genproto
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/rpc
 google.golang.org/grpc
+google.golang.org/grpc/stats/opentelemetry
 google.golang.org/protobuf
 gopkg.in/check.v1
 gopkg.in/cheggaaa/pb.v1
