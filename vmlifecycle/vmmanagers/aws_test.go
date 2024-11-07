@@ -734,22 +734,19 @@ opsman-configuration:
 			configFileContents = readAWSConfigFile(env)
 			return nil, nil, errors.New("lemon")
 		}
-		When("calling CreateVM", func() {
-			_, _, err := manager.CreateVM()
-			Expect(err).To(MatchError(HaveSuffix("lemon")))
-			Expect(configFileContents).To(Equal(expectedConfig))
-			Expect(runner.ExecuteWithEnvVarsCallCount()).NotTo(BeZero())
-			_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
-			if expectedProfileName != "" {
-				Expect(fmt.Sprintf("%v", args)).To(ContainSubstring(fmt.Sprintf("--profile %s", expectedProfileName)))
-			}
-		})
 
-		When("calling DeleteVM", func() {
-			err := manager.DeleteVM()
-			Expect(err).To(MatchError(HaveSuffix("lemon")))
-			Expect(configFileContents).To(Equal(expectedConfig))
-		})
+		_, _, err := manager.CreateVM()
+		Expect(err).To(MatchError(HaveSuffix("lemon")))
+		Expect(configFileContents).To(Equal(expectedConfig))
+		Expect(runner.ExecuteWithEnvVarsCallCount()).NotTo(BeZero())
+		_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+		if expectedProfileName != "" {
+			Expect(fmt.Sprintf("%v", args)).To(ContainSubstring(fmt.Sprintf("--profile %s", expectedProfileName)))
+		}
+
+		err = manager.DeleteVM()
+		Expect(err).To(MatchError(HaveSuffix("lemon")))
+		Expect(configFileContents).To(Equal(expectedConfig))
 
 	},
 		Entry("for instance profile ", vmmanagers.AWSConfig{
