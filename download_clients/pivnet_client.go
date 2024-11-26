@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/pivotal-cf/go-pivnet/v6/logshim"
 	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 
@@ -185,7 +187,7 @@ func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency
 
 	for _, dependency := range dependencies {
 		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
-			if !contains(stemcellSlugs, dependency.Release.Product.Slug) {
+			if !slices.Contains(stemcellSlugs, dependency.Release.Product.Slug) {
 				stemcellSlugs = append(stemcellSlugs, dependency.Release.Product.Slug)
 			}
 			versions = append(versions, dependency.Release.Version)
@@ -202,15 +204,6 @@ func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency
 	}
 
 	return stemcellSlugs[0], stemcellVersion, nil
-}
-
-func contains(slice []string, str string) bool {
-    for _, s := range slice {
-        if s == str {
-            return true
-        }
-    }
-    return false
 }
 
 const (
