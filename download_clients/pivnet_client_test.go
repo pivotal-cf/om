@@ -401,6 +401,17 @@ var _ = Describe("PivnetClient", func() {
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "1.0def"))))
 		})
+
+		It("returns an error when multiple stemcell types are found", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
+			}, nil)
+		
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			Expect(err).To(MatchError(ContainSubstring("could not determine stemcell: multiple stemcell types found: stemcells-ubuntu-jammy, stemcells-windows-server")))
+		})
 	})
 
 })

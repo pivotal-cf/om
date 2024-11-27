@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/pivotal-cf/go-pivnet/v6/logshim"
 	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 
@@ -170,25 +172,38 @@ func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []piv
 	return nil
 }
 
+func (p *pivnetClient) checkForSingleStemcellType(stemcellSlugs []string) error {
+    if len(stemcellSlugs) > 1 {
+        return fmt.Errorf("multiple stemcell types found: %s", strings.Join(stemcellSlugs, ", "))
+    }
+    return nil
+}
+
 func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string, error) {
 	var (
-		stemcellSlug string
+		stemcellSlugs []string
 		versions     []string
 	)
 
 	for _, dependency := range dependencies {
 		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
-			stemcellSlug = dependency.Release.Product.Slug
+			if !slices.Contains(stemcellSlugs, dependency.Release.Product.Slug) {
+				stemcellSlugs = append(stemcellSlugs, dependency.Release.Product.Slug)
+			}
 			versions = append(versions, dependency.Release.Version)
 		}
 	}
+
+	if err := p.checkForSingleStemcellType(stemcellSlugs); err != nil {
+        return "", "", fmt.Errorf("could not determine stemcell: %s", err)
+    }
 
 	stemcellVersion, err := getLatestStemcellVersion(versions)
 	if err != nil {
 		return "", "", err
 	}
 
-	return stemcellSlug, stemcellVersion, nil
+	return stemcellSlugs[0], stemcellVersion, nil
 }
 
 const (

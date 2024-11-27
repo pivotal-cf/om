@@ -30,6 +30,7 @@ require (
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
 	github.com/pivotal-cf/winfs-injector v0.0.0-20200827170301-91411420d92f
 	github.com/vmware/govmomi v0.46.0
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	golang.org/x/oauth2 v0.24.0
 	google.golang.org/api v0.205.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
