@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cloudfoundry/bosh-cli/director/template"
+	"github.com/cloudfoundry/bosh-cli/v7/director/template"
 	"github.com/cppforlife/go-patch/patch"
 	"gopkg.in/yaml.v2"
 )
