@@ -401,6 +401,53 @@ var _ = Describe("PivnetClient", func() {
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "1.0def"))))
 		})
+
+		It("returns an error when multiple stemcell types but invalid stemcell slug is provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "xenial")
+			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency: provided \"xenial\" stemcell slug is invalid, please provide the correct one")))
+		})
+
+		It("when multiple stemcell types, downloads the stemcell when valid stemcell slug is provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "ubuntu")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stemcell).ToNot(BeNil())
+			Expect(stemcell.Version()).To(Equal("1.0"))
+		})
+
+		It("when single stemcell type, downloads the stemcell when valid stemcell slug is provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "ubuntu")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stemcell).ToNot(BeNil())
+			Expect(stemcell.Version()).To(Equal("1.0"))
+		})
+
+		It("returns an error when multiple stemcell types but stemcell slug is not provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
+			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency: multiple stemcell types found: \"stemcells-ubuntu-jammy,stemcells-windows-server\". Provide \"stemcell-slug\" option to specify the stemcell slug of stemcell that needs to be downloaded")))
+		})
 	})
 
 })
