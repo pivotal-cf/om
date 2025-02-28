@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/exp/slices"
-
 	"github.com/pivotal-cf/go-pivnet/v6/logshim"
 	"github.com/pivotal-cf/pivnet-cli/v2/filter"
 
@@ -140,14 +138,14 @@ func (p *pivnetClient) DownloadProductToFile(fa FileArtifacter, file *os.File) e
 	return nil
 }
 
-func (p *pivnetClient) GetLatestStemcellForProduct(fa FileArtifacter, _ string) (StemcellArtifacter, error) {
+func (p *pivnetClient) GetLatestStemcellForProduct(fa FileArtifacter, _ string, stemcellSlug string) (StemcellArtifacter, error) {
 	fileArtifact := fa.(*PivnetFileArtifact)
 	dependencies, err := p.downloader.ReleaseDependencies(fileArtifact.slug, fileArtifact.releaseID)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch stemcell dependency for %s: %s", fileArtifact.slug, err)
 	}
 
-	stemcellSlug, stemcellVersion, err := p.getLatestStemcell(dependencies)
+	stemcellSlug, stemcellVersion, err := p.getLatestStemcell(dependencies, stemcellSlug)
 	if err != nil {
 		return nil, fmt.Errorf("could not sort stemcell dependency: %s", err)
 	}
@@ -172,38 +170,49 @@ func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []piv
 	return nil
 }
 
-func (p *pivnetClient) checkForSingleStemcellType(stemcellSlugs []string) error {
-    if len(stemcellSlugs) > 1 {
-        return fmt.Errorf("multiple stemcell types found: %s", strings.Join(stemcellSlugs, ", "))
-    }
-    return nil
-}
-
-func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency) (string, string, error) {
+func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency, stemcellSlug string) (string, string, error) {
 	var (
-		stemcellSlugs []string
-		versions     []string
+		versions              []string
+		matched_stemcell_slug string
 	)
+	stemCellMap := make(map[string][]string)
 
 	for _, dependency := range dependencies {
 		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
-			if !slices.Contains(stemcellSlugs, dependency.Release.Product.Slug) {
-				stemcellSlugs = append(stemcellSlugs, dependency.Release.Product.Slug)
+			if _, exists := stemCellMap[dependency.Release.Product.Slug]; exists {
+				stemCellMap[dependency.Release.Product.Slug] = append(stemCellMap[dependency.Release.Product.Slug], dependency.Release.Version)
+			} else {
+				stemCellMap[dependency.Release.Product.Slug] = []string{dependency.Release.Version}
 			}
-			versions = append(versions, dependency.Release.Version)
+			if strings.Contains(dependency.Release.Product.Slug, stemcellSlug) {
+				matched_stemcell_slug = dependency.Release.Product.Slug
+			}
 		}
 	}
 
-	if err := p.checkForSingleStemcellType(stemcellSlugs); err != nil {
-        return "", "", fmt.Errorf("could not determine stemcell: %s", err)
-    }
+	if len(stemCellMap) >= 2 && stemcellSlug == "" {
+		var stemcells []string
+		for k := range stemCellMap {
+			stemcells = append(stemcells, k)
+		}
+		return "", "", fmt.Errorf("multiple stemcell types found: %q."+
+			" Provide %q option to specify the stemcell slug of stemcell that needs to be downloaded",
+			strings.Join(stemcells, ","), "stemcell-slug")
+	} else if matched_stemcell_slug == "" {
+		return "", "", fmt.Errorf("provided %q stemcell slug is invalid, please provide the correct one", stemcellSlug)
+	} else if stemcellSlug != "" {
+		versions = stemCellMap[matched_stemcell_slug]
+	} else {
+		for _, stemcellVersions := range stemCellMap {
+			versions = stemcellVersions
+		}
+	}
 
 	stemcellVersion, err := getLatestStemcellVersion(versions)
 	if err != nil {
 		return "", "", err
 	}
-
-	return stemcellSlugs[0], stemcellVersion, nil
+	return matched_stemcell_slug, stemcellVersion, nil
 }
 
 const (

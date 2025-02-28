@@ -2,15 +2,17 @@ package download_clients
 
 import (
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
-	"github.com/graymeta/stow"
-	"github.com/pivotal-cf/om/extractor"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
+	"github.com/graymeta/stow"
+
+	"github.com/pivotal-cf/om/extractor"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -252,7 +254,7 @@ func (s stowClient) streamBufferToFile(destinationFile *os.File, wrappedBlobRead
 	return err
 }
 
-func (s stowClient) GetLatestStemcellForProduct(_ FileArtifacter, downloadedProductFileName string) (StemcellArtifacter, error) {
+func (s stowClient) GetLatestStemcellForProduct(_ FileArtifacter, downloadedProductFileName string, stemcellSlug string) (StemcellArtifacter, error) {
 	definedStemcell, err := stemcellFromProduct(downloadedProductFileName)
 	if err != nil {
 		return nil, err

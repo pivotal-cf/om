@@ -1,8 +1,9 @@
 package download_clients
 
 import (
-	"github.com/pivotal-cf/om/extractor"
 	"os"
+
+	"github.com/pivotal-cf/om/extractor"
 )
 
 //counterfeiter:generate -o ./fakes/file_artifacter.go --fake-name FileArtifacter . FileArtifacter
@@ -24,5 +25,5 @@ type ProductDownloader interface {
 	GetAllProductVersions(slug string) ([]string, error)
 	GetLatestProductFile(slug, version, glob string) (FileArtifacter, error)
 	DownloadProductToFile(fa FileArtifacter, file *os.File) error
-	GetLatestStemcellForProduct(fa FileArtifacter, downloadedProductFileName string) (StemcellArtifacter, error)
+	GetLatestStemcellForProduct(fa FileArtifacter, downloadedProductFileName string, stemcellSlug string) (StemcellArtifacter, error)
 }
