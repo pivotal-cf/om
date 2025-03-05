@@ -54,7 +54,7 @@ type StemcellOptions struct {
 	StemcellIaas    string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
 	StemcellVersion string `long:"stemcell-version" description:"the version number of the stemcell to download (ie 458.61)"`
 	StemcellHeavy   bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`
-	StemcellSlug    string `long:"stemcell-slug" description:"download the stemcell for the product that matches with the specified stemcell slug"`
+	StemcellSlug    string `long:"stemcell-slug" description:"download the stemcell for the product that matches with the specified stemcell slug on Pivnet"`
 }
 
 type DownloadProductOptions struct {

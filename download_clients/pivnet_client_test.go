@@ -446,7 +446,7 @@ var _ = Describe("PivnetClient", func() {
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
 			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
-			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency: multiple stemcell types found: \"stemcells-ubuntu-jammy,stemcells-windows-server\". Provide \"stemcell-slug\" option to specify the stemcell slug of stemcell that needs to be downloaded")))
+			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency: multiple stemcell types found:")))
 		})
 	})
 

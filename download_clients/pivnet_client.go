@@ -172,38 +172,38 @@ func (p *pivnetClient) checkForSingleProductFile(glob string, productFiles []piv
 
 func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency, stemcellSlug string) (string, string, error) {
 	var (
-		versions              []string
-		matched_stemcell_slug string
+		versions            []string
+		matchedStemcellSlug string
 	)
-	stemCellMap := make(map[string][]string)
+	stemCellSlugVersions := make(map[string][]string)
 
 	for _, dependency := range dependencies {
 		if strings.Contains(dependency.Release.Product.Slug, "stemcells") {
-			if _, exists := stemCellMap[dependency.Release.Product.Slug]; exists {
-				stemCellMap[dependency.Release.Product.Slug] = append(stemCellMap[dependency.Release.Product.Slug], dependency.Release.Version)
-			} else {
-				stemCellMap[dependency.Release.Product.Slug] = []string{dependency.Release.Version}
-			}
+			stemCellSlugVersions[dependency.Release.Product.Slug] = append(stemCellSlugVersions[dependency.Release.Product.Slug], dependency.Release.Version)
 			if strings.Contains(dependency.Release.Product.Slug, stemcellSlug) {
-				matched_stemcell_slug = dependency.Release.Product.Slug
+				matchedStemcellSlug = dependency.Release.Product.Slug
 			}
 		}
 	}
 
-	if len(stemCellMap) >= 2 && stemcellSlug == "" {
+	if len(stemCellSlugVersions) >= 2 && stemcellSlug == "" {
 		var stemcells []string
-		for k := range stemCellMap {
+		for k := range stemCellSlugVersions {
 			stemcells = append(stemcells, k)
 		}
 		return "", "", fmt.Errorf("multiple stemcell types found: %q."+
 			" Provide %q option to specify the stemcell slug of stemcell that needs to be downloaded",
 			strings.Join(stemcells, ","), "stemcell-slug")
-	} else if matched_stemcell_slug == "" {
+	}
+
+	if matchedStemcellSlug == "" {
 		return "", "", fmt.Errorf("provided %q stemcell slug is invalid, please provide the correct one", stemcellSlug)
-	} else if stemcellSlug != "" {
-		versions = stemCellMap[matched_stemcell_slug]
+	}
+
+	if stemcellSlug != "" {
+		versions = stemCellSlugVersions[matchedStemcellSlug]
 	} else {
-		for _, stemcellVersions := range stemCellMap {
+		for _, stemcellVersions := range stemCellSlugVersions {
 			versions = stemcellVersions
 		}
 	}
@@ -212,7 +212,7 @@ func (p *pivnetClient) getLatestStemcell(dependencies []pivnet.ReleaseDependency
 	if err != nil {
 		return "", "", err
 	}
-	return matched_stemcell_slug, stemcellVersion, nil
+	return matchedStemcellSlug, stemcellVersion, nil
 }
 
 const (
