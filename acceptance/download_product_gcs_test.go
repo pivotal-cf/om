@@ -53,7 +53,7 @@ var _ = Describe("download-product command", func() {
 			err = os.WriteFile(authFile.Name(), []byte(serviceAccountKey), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(authFile.Close()).ToNot(HaveOccurred())
-			runCommand("gcloud", "auth", "activate-service-account", clientEmail.Email, "--project=", projectID, "--key-file", authFile.Name())
+			runCommand("gcloud", "auth", "activate-service-account", clientEmail.Email, "--project", projectID, "--key-file", authFile.Name())
 
 			runCommand("gsutil", "mb", "gs://"+bucketName)
 		})
